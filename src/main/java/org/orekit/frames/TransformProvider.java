@@ -45,4 +45,17 @@ public interface TransformProvider extends Serializable {
      */
     <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date);
 
+    /**
+     * Get a transform for only rotations and translations on the specified date.
+     *
+     * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
+     * but implementations may override it for better performance.
+     *
+     * @param date current date.
+     * @return the static transform.
+     */
+    default StaticTransform getStaticTransform(AbsoluteDate date) {
+        return getTransform(date);
+    }
+
 }

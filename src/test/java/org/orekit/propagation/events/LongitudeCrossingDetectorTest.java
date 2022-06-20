@@ -90,7 +90,7 @@ public class LongitudeCrossingDetectorTest {
             SpacecraftState state = e.getState();
             double longitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                                               earth.getBodyFrame(), null).getLongitude();
-            Assert.assertEquals(10.0, FastMath.toDegrees(longitude), 1.6e-7);
+            Assert.assertEquals(10.0, FastMath.toDegrees(longitude), 3.5e-7);
             if (previous != null) {
                 // same time interval regardless of increasing/decreasing,
                 // as increasing/decreasing flag is irrelevant for this detector

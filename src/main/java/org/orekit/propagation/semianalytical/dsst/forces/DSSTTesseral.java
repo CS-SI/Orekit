@@ -46,7 +46,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -1753,7 +1753,9 @@ public class DSSTTesseral implements DSSTForceModel {
                 final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanOrbit, I);
 
                 // Central body rotation angle from equation 2.7.1-(3)(4).
-                final Transform t = bodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+                final StaticTransform t = bodyFrame.getStaticTransformTo(
+                        auxiliaryElements.getFrame(),
+                        auxiliaryElements.getDate());
                 final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
                 final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
                 final Vector3D  f = auxiliaryElements.getVectorF();

@@ -122,6 +122,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             lastPropagationStart = start;
 
+            // Initialize additional states
+            initializeAdditionalStates(target);
+
             final boolean isForward = target.compareTo(start) >= 0;
             SpacecraftState state   = updateAdditionalStates(basicPropagate(start));
 

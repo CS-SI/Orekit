@@ -38,7 +38,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -1030,8 +1030,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
         // get the position in body frame
         final AbsoluteDate date       = s.getDate();
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
-        final Transform toBodyFrame   = fromBodyFrame.getInverse();
+        final StaticTransform fromBodyFrame =
+                bodyFrame.getStaticTransformTo(s.getFrame(), date);
+        final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
@@ -1066,8 +1067,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
         // get the position in body frame
         final FieldAbsoluteDate<T> date          = s.getDate();
-        final Transform            fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
-        final Transform            toBodyFrame   = fromBodyFrame.getInverse();
+        final StaticTransform      fromBodyFrame =
+                bodyFrame.getStaticTransformTo(s.getFrame(), date.toAbsoluteDate());
+        final StaticTransform      toBodyFrame   = fromBodyFrame.getInverse();
         final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
@@ -1198,8 +1200,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final int freeParameters = mu.getFreeParameters();
 
         // get the position in body frame
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
-        final Transform toBodyFrame   = fromBodyFrame.getInverse();
+        final StaticTransform fromBodyFrame =
+                bodyFrame.getStaticTransformTo(frame, date);
+        final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 
         // compute gradient and Hessian
@@ -1274,8 +1277,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final int freeParameters = mu.getFreeParameters();
 
         // get the position in body frame
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
-        final Transform toBodyFrame   = fromBodyFrame.getInverse();
+        final StaticTransform fromBodyFrame = bodyFrame.getStaticTransformTo(frame, date);
+        final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 
         // compute gradient and Hessian

@@ -58,8 +58,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Interpolation degree. */
     private int interpolationDegree;
 
-    /** Type of averaging (Osculating, mean Brouwer, other...). */
-    private String orbAveraging;
+    /** Orbit propagator used to generate this trajectory.
+     * @since 11.2
+     */
+    private String propagator;
 
     /** Origin of reference frame. */
     private BodyFacade center;
@@ -86,6 +88,9 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
 
     /** Trajectory element set type. */
     private ElementsType trajType;
+
+    /** Type of averaging (Osculating, mean Brouwer, other...). */
+    private String orbAveraging;
 
     /** Units of trajectory element set. */
     private List<Unit> trajUnits;
@@ -116,6 +121,11 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
+        if (trajType != ElementsType.CARTP   &&
+            trajType != ElementsType.CARTPV  &&
+            trajType != ElementsType.CARTPVA) {
+            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING);
+        }
         if (trajUnits != null) {
             trajType.checkUnits(trajUnits);
         }
@@ -230,19 +240,21 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         this.interpolationDegree = interpolationDegree;
     }
 
-    /** Get type of averaging (Osculating, mean Brouwer, other.
-     * @return type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public String getOrbAveraging() {
-        return orbAveraging;
+    /** Get the orbit propagator used to generate this trajectory.
+     * @return orbit propagator used to generate this trajectory
+     * @since 11.2
+     */
+    public String getPropagator() {
+        return propagator;
     }
 
-    /** Set type of averaging (Osculating, mean Brouwer, other.
-     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public void setOrbAveraging(final String orbAveraging) {
+    /** Set the orbit propagator used to generate this trajectory.
+     * @param propagator orbit propagator used to generate this trajectory
+     * @since 11.2
+     */
+    public void setPropagator(final String propagator) {
         refuseFurtherComments();
-        this.orbAveraging = orbAveraging;
+        this.propagator = propagator;
     }
 
     /** Get the origin of reference frame.
@@ -371,6 +383,21 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     public void setTrajType(final ElementsType trajType) {
         refuseFurtherComments();
         this.trajType = trajType;
+    }
+
+    /** Get type of averaging (Osculating, mean Brouwer, other.
+     * @return type of averaging (Osculating, mean Brouwer, other
+     .). */
+    public String getOrbAveraging() {
+        return orbAveraging;
+    }
+
+    /** Set type of averaging (Osculating, mean Brouwer, other.
+     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other
+     .). */
+    public void setOrbAveraging(final String orbAveraging) {
+        refuseFurtherComments();
+        this.orbAveraging = orbAveraging;
     }
 
     /** Get trajectory element set units.

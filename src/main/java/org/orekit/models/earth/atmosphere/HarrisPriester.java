@@ -386,7 +386,9 @@ public class HarrisPriester implements Atmosphere {
         final Vector3D sunInEarth = sun.getPVCoordinates(date, earth.getBodyFrame()).getPosition();
 
         // Target position in earth frame
-        final Vector3D posInEarth = frame.getTransformTo(earth.getBodyFrame(), date).transformPosition(position);
+        final Vector3D posInEarth = frame
+                .getStaticTransformTo(earth.getBodyFrame(), date)
+                .transformPosition(position);
 
         return getDensity(sunInEarth, posInEarth);
     }
@@ -406,7 +408,9 @@ public class HarrisPriester implements Atmosphere {
         final Vector3D sunInEarth = sun.getPVCoordinates(date.toAbsoluteDate(), earth.getBodyFrame()).getPosition();
 
         // Target position in earth frame
-        final FieldVector3D<T> posInEarth = frame.getTransformTo(earth.getBodyFrame(), date.toAbsoluteDate()).transformPosition(position);
+        final FieldVector3D<T> posInEarth = frame
+                .getStaticTransformTo(earth.getBodyFrame(), date.toAbsoluteDate())
+                .transformPosition(position);
 
         return getDensity(sunInEarth, posInEarth);
     }

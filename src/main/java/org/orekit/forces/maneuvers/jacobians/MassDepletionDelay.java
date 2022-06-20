@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 
 /** Generator for effect of delaying mass depletion when delaying a maneuver.
@@ -79,7 +80,14 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double[] derivatives(final SpacecraftState state) {
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         // retrieve current Jacobian column
         final double[] p = state.getAdditionalState(getName());
@@ -108,7 +116,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
         }
 
-        return pDot;
+        return new CombinedDerivatives(pDot, null);
 
     }
 

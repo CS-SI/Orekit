@@ -78,10 +78,17 @@ public class AdditionalEquationsAdapter implements AdditionalDerivativesProvider
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double[] derivatives(final SpacecraftState state) {
-        final double[] pDot = new double[getDimension()];
-        equations.computeDerivatives(state, pDot);
-        return pDot;
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
+        final double[] pDot    = new double[getDimension()];
+        final double[] mainDot = equations.computeDerivatives(state, pDot);
+        return new CombinedDerivatives(pDot, mainDot);
     }
 
 }

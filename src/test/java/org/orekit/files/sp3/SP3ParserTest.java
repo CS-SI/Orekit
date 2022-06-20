@@ -731,6 +731,36 @@ public class SP3ParserTest {
 
     }
 
+    @Test
+    public void testIssue895NoEOF() {
+
+        // Test issue 895
+        final String    ex     = "/sp3/issue895-no-eof.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assert.assertEquals(1, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
+        Assert.assertEquals(1, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        // 2021 12 26  0  0  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2021, 12, 26, 0, 0, 0,
+                TimeScalesFactory.getUTC()), coord.getDate());
+
+        // PL51   5029.867893   1304.362160 -11075.527276 999999.999999
+        // VL51 -17720.521773 -55720.482742 -14441.695083 999999.999999
+        checkPVEntry(new PVCoordinates(new Vector3D(5029867.893, 1304362.160, -11075527.276),
+                                       new Vector3D(-1772.0521773, -5572.0482742, -1444.1695083)),
+                     coord);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

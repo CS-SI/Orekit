@@ -130,6 +130,16 @@ public class ShiftingTransformProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        // retrieve a sample from the thread-safe cache
+        final Transform closest = cache.getNeighbors(date).reduce((t0, t1) ->
+                FastMath.abs(date.durationFrom(t0.getDate())) < FastMath.abs(date.durationFrom(t1.getDate())) ? t0 : t1
+        ).get();
+        return closest.staticShiftedBy(date.durationFrom(closest.getDate()));
+    }
+
+    /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         @SuppressWarnings("unchecked")
         GenericTimeStampedCache<FieldTransform<T>> fieldCache =

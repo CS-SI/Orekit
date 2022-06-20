@@ -200,6 +200,16 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         }
     }
 
+    /**
+     * Builds PV coordinates with the givne position, zero velocity, and zero
+     * acceleration.
+     *
+     * @param position position vector (m)
+     */
+    public PVCoordinates(final Vector3D position) {
+        this(position, Vector3D.ZERO);
+    }
+
     /** Transform the instance to a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
      * <p>
      * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
@@ -475,9 +485,27 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public PVCoordinates shiftedBy(final double dt) {
-        return new PVCoordinates(new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration),
+        return new PVCoordinates(positionShiftedBy(dt),
                                  new Vector3D(1, velocity, dt, acceleration),
                                  acceleration);
+    }
+
+    /**
+     * Get a time-shifted position. Same as {@link #shiftedBy(double)} except
+     * that only the sifted position is returned.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement
+     * for proper orbit propagation (it is not even Keplerian!) but should be
+     * sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     *
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is
+     * immutable)
+     */
+    public Vector3D positionShiftedBy(final double dt) {
+        return new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration);
     }
 
     /** Gets the position.

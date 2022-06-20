@@ -28,7 +28,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -107,7 +107,8 @@ public class LenseThirringRelativity extends AbstractForceModel {
         final double r2 = r * r;
 
         // Earth’s angular momentum per unit mass
-        final Transform t = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
+        final StaticTransform t =
+                bodyFrame.getStaticTransformTo(s.getFrame(), s.getDate());
         final Vector3D  j = t.transformVector(Vector3D.PLUS_K).scalarMultiply(J);
 
         // Eq. 10.12

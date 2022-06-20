@@ -54,7 +54,7 @@ public class Apm extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
      * @param dataContext used for creating frames, time scales, etc.
      */
     public Apm(final Header header, final List<Segment<AdmMetadata, ApmData>> segments,
-                   final IERSConventions conventions, final DataContext dataContext) {
+               final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }
 

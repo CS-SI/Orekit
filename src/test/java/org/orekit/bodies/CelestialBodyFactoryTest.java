@@ -158,18 +158,33 @@ public class CelestialBodyFactoryTest {
 
         Utils.setDataRoot("regular-data");
         final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
+        final Frame icrf = FramesFactory.getICRF();
         for (final TimeStampedPVCoordinates ref : refPV) {
             TimeStampedPVCoordinates testPV = jupiter.getPVCoordinates(ref.getDate(),
-                                                                       FramesFactory.getICRF());
+                    icrf);
             Assert.assertEquals(0.0,
                                 Vector3D.distance(ref.getPosition(), testPV.getPosition()),
                                 4.0e-4);
             Assert.assertEquals(0.0,
                                 Vector3D.distance(ref.getVelocity(), testPV.getVelocity()),
                                 1.0e-11);
+            Vector3D testP = jupiter.getInertiallyOrientedFrame()
+                    .getStaticTransformTo(icrf, ref.getDate())
+                    .transformPosition(Vector3D.ZERO);
+            Assert.assertEquals(
+                    0.0,
+                    Vector3D.distance(ref.getPosition(), testP),
+                    8.0e-4);
+            testP = jupiter.getBodyOrientedFrame()
+                    .getStaticTransformTo(icrf, ref.getDate())
+                    .transformPosition(Vector3D.ZERO);
+            Assert.assertEquals(
+                    0.0,
+                    Vector3D.distance(ref.getPosition(), testP),
+                    8.0e-4);
         }
 
-   }
+    }
 
     private TimeStampedPVCoordinates createPV(int year, int month, int day,
                                               double xKm, double yKm, double zKM,
@@ -311,6 +326,8 @@ public class CelestialBodyFactoryTest {
             for (final Frame frame : frames) {
                 Assert.assertEquals(0.0, frame.getTransformTo(icrf, date).getRotation().getAngle(), 1.0e-15);
                 Assert.assertEquals(0.0, frame.getTransformTo(gcrf, date).getRotation().getAngle(), 1.0e-15);
+                Assert.assertEquals(0.0, frame.getStaticTransformTo(icrf, date).getRotation().getAngle(), 1.0e-15);
+                Assert.assertEquals(0.0, frame.getStaticTransformTo(gcrf, date).getRotation().getAngle(), 1.0e-15);
             }
         }
     }

@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation;
 
+import org.orekit.time.AbsoluteDate;
+
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
  * {@link Propagator Propagators} generate {@link SpacecraftState states} that contain at
@@ -76,6 +78,15 @@ public interface AdditionalStateProvider {
      * with any case are reserved for the library internal use)
      */
     String getName();
+
+    /** Initialize the additional state provider at the start of propagation.
+     * @param initialState initial state information at the start of propagation
+     * @param target       date of propagation
+     * @since 11.2
+     */
+    default void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // nothing by default
+    }
 
     /** Check if this provider should yield so another provider has an opportunity to add missing parts.
      * <p>

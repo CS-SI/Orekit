@@ -60,7 +60,7 @@ verify:warning:
 # Cf. https://docs.gitlab.com/ee/user/project/merge_requests/test_coverage_visualization.html
 coverage-import:
   stage: visualize
-  image: haynes/jacoco2cobertura:1.0.4
+  image: haynes/jacoco2cobertura:1.0.8
   script:
     # Display total coverage
     - "grep -o '<tfoot.*tfoot>' target/site/jacoco/index.html | sed 's:<[^>]*>: :g'"
@@ -75,7 +75,9 @@ coverage-import:
     - verify
   artifacts:
     reports:
-      cobertura: target/site/cobertura.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: target/site/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 changelog:

@@ -45,6 +45,7 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
@@ -103,7 +104,10 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
-            public double[] derivatives(SpacecraftState s) { return new double[1]; }
+            public double[] derivatives(final SpacecraftState state) { return null; }
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[1], null);
+            }
         });
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]),
                                     propagator2.getPropagationType());
@@ -130,7 +134,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
-        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 5.0e-12 * stm1.getNorm1());
+        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
         Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-10 * jacobian1.getNorm1());
 
     }

@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 
 /** Generator for one column of a Jacobian matrix.
  * <p>
@@ -96,8 +97,15 @@ class IntegrableJacobianColumnGenerator
 
     /** {@inheritDoc} */
     @Override
-    public double[] derivatives(final SpacecraftState s) {
-        return pDot;
+    @Deprecated
+    public double[] derivatives(final SpacecraftState state) {
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
+        return new CombinedDerivatives(pDot, null);
     }
 
 }

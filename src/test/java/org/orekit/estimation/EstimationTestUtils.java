@@ -32,6 +32,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -128,6 +129,18 @@ public class EstimationTestUtils {
 
         context.TARstations.put(context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur"),
                                 context.createStation( 61.405833,   -6.705278,  470.0, "Sumba"));
+
+        // Bistatic range rate stations
+        // key/first    = emitter station
+        // value/second = receiver station
+        context.BRRstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
+                                                                     context.createStation(45.0, 0.0, 0.0, "Receiver"));
+
+        // TDOA stations
+        // key/first    = primary station that dates the measurement
+        // value/second = secondary station associated
+        context.TDOAstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "TDOA_Prime"),
+                                                                      context.createStation(45.0, 0.0, 0.0, "TDOA_Second"));
 
         return context;
 
@@ -227,6 +240,18 @@ public class EstimationTestUtils {
 
         context.TARstations.put(context.createStation(  49.867,  8.65 ,  144.0  , "Darmstadt"),
                                 context.createStation( -25.885, 27.707, 1566.633, "Pretoria"));
+
+        // Bistatic range rate stations
+        // key/first    = emitter station
+        // value/second = receiver station
+        context.BRRstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
+                                                                     context.createStation(45.0, 0.0, 0.0, "Receiver"));
+
+        // TDOA stations
+        // key/first    = primary station that dates the measurement
+        // value/second = secondary station associated
+        context.TDOAstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "TDOA_Prime"),
+                                                                      context.createStation(45.0, 0.0, 0.0, "TDOA_Second"));
 
         return context;
 

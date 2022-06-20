@@ -398,6 +398,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // prepare handling of STM and Jacobian matrices
             setUpStmAndJacobianGenerators();
 
+            // Initialize additional states
+            initializeAdditionalStates(tEnd);
+
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
@@ -820,12 +823,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     }
                 } else {
                     // we can use these equations right now
-                    final String   name        = provider.getName();
-                    final int      offset      = secondaryOffsets.get(name);
-                    final int      dimension   = provider.getDimension();
-                    final double[] derivatives = provider.derivatives(updated);
-                    System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
-                    updated = updated.addAdditionalStateDerivative(name, derivatives);
+                    final String              name           = provider.getName();
+                    final int                 offset         = secondaryOffsets.get(name);
+                    final int                 dimension      = provider.getDimension();
+                    final CombinedDerivatives derivatives    = provider.combinedDerivatives(updated);
+                    final double[]            additionalPart = derivatives.getAdditionalDerivatives();
+                    final double[]            mainPart       = derivatives.getMainStateDerivativesIncrements();
+                    System.arraycopy(additionalPart, 0, secondaryDot, offset, dimension);
+                    updated = updated.addAdditionalStateDerivative(name, additionalPart);
+                    if (mainPart != null) {
+                        // this equation does change the main state derivatives
+                        for (int i = 0; i < mainPart.length; ++i) {
+                            primaryDot[i] += mainPart[i];
+                        }
+                    }
                     yieldCount = 0;
                 }
             }
@@ -1048,7 +1059,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Generated ephemeris. */
         private BoundedPropagator ephemeris;
 
-        /** Variable used to store the last interpolator handled by the object.*/
+        /** Last interpolator handled by the object.*/
         private  ODEStateInterpolator lastInterpolator;
 
         /** Set the end date.
@@ -1104,6 +1115,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // Update the model's finalTime with the last interpolator.
             model.finish(lastInterpolator.getCurrentState());
+
             // set up the boundary dates
             final double tI = model.getInitialTime();
             final double tF = model.getFinalTime();
