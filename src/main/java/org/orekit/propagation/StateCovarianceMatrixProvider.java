@@ -54,14 +54,14 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * {@link #getStateCovariance(SpacecraftState)}
  * <p>
  * It is possible to change the covariance frame by using the
- * {@link #changeCovarianceFrame(AbsoluteDate, Frame, Frame, RealMatrix)}
+ * {@link #changeCovarianceFrame(Orbit, Frame, Frame, RealMatrix, OrbitType, PositionAngle)}
  * method. This method is based on Equation (18) of <i>Covariance
  * Transformations for Satellite Flight Dynamics Operations</i>
  * by David A. Vallado. It is important to highlight that the frames
  * must be inertial frames.
  * <p>
  * Finally, covariance orbit type can be changed using the
- * {@link #changeCovarianceType(SpacecraftState, OrbitType, PositionAngle, OrbitType, PositionAngle, RealMatrix)}
+ * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle, OrbitType, PositionAngle, RealMatrix)}
  * method.
  * </p>
  * @author Bryan Cazabonne
@@ -184,15 +184,16 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * same orbit type as {@link #getCovarianceOrbitType()}.
      * <p>
      * It is possible to change the covariance frame by using the
-     * {@link #changeCovarianceFrame(AbsoluteDate, Frame, Frame, RealMatrix)}
+     * {@link #changeCovarianceFrame(Orbit, Frame, Frame, RealMatrix, OrbitType, PositionAngle)}
      * method.
      * <p>
      * It is also possible to change the covariance orbit type by
-     * using the {@link #changeCovarianceType(SpacecraftState, OrbitType, PositionAngle,
-     *                                        OrbitType, PositionAngle, RealMatrix)}
+     * using the {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle, OrbitType, PositionAngle, RealMatrix)}
      * method.
      * @param state spacecraft state to which the covariance matrix should correspond
      * @return the state covariance matrix
+     * @see #getStateCovariance(SpacecraftState, Frame)
+     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngle)
      */
     public RealMatrix getStateCovariance(final SpacecraftState state) {
 
@@ -210,13 +211,14 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * same orbit type as {@link #getCovarianceOrbitType()}.
      * <p>
      * It is also possible to change the covariance orbit type by
-     * using the {@link #changeCovarianceType(SpacecraftState, OrbitType, PositionAngle,
-     *                                        OrbitType, PositionAngle, RealMatrix)}
+     * using the {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle, OrbitType, PositionAngle, RealMatrix)}
      * method.
      * @param state spacecraft state to which the covariance matrix should correspond
      * @param frame output frame for which the output covariance matrix must be expressed
      *        (must be inertial)
      * @return the state covariance matrix expressed in <code>frame</code>
+     * @see #getStateCovariance(SpacecraftState)
+     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngle)
      */
     public RealMatrix getStateCovariance(final SpacecraftState state, final Frame frame) {
 
@@ -234,6 +236,8 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @param angleType output position angle
      *        (not used if orbitType equals {@code CARTESIAN})
      * @return the state covariance matrix in <code>orbitType</code> and <code>angleType</code>
+     * @see #getStateCovariance(SpacecraftState)
+     * @see #getStateCovariance(SpacecraftState, Frame)
      */
     public RealMatrix getStateCovariance(final SpacecraftState state, final OrbitType orbitType, final PositionAngle angleType) {
 
