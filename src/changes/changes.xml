@@ -20,7 +20,18 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.2" date="TBD" description="TBD">
+    <release version="11.2" date="2022-06-20"
+             description="Version 11.2 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 11.2 are: the Hatch filter for GNSS measurements smoothing, the parsing
+             and writing of CCSDS CDM in both KVN and XML formats, the parsing of SOLFSMY
+             and DTC data for JB2008 atmospheric model, the parsing of EOP in Sinex
+             files, new measurements for orbit determination: TDOA, bi-static range and
+             range rate, support for ITRF 2020 version, the computation of mean orbital
+             parameters in the sense of Eckstein-Hechler or Brouwer-Lyddane models. It
+             also includes an update of the CCSDS ODM format to latest draft version and an
+             improvement of the frame transformation.
+             See the list below for a full description of the changes.">
       <action dev="bryan" type="update">
         Added possibility to custom analytical mean parameters conversion.
       </action>

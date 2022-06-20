@@ -310,16 +310,7 @@ button in [Nexus Repository Manager](https://oss.sonatype.org/).
 
 ## Upload to Gitlab
 
-Navigate to Projects > Orekit > Repository > Tags. Find the X.Y tag and
-click the edit button to enter release notes. Use the **path** in the [Nexus 
-repository](https://packages.orekit.org/#browse/browse:maven-releases) to
-set the artifacts in the release notes.
-
-- orekit-X.Y.jar
-- orekit-X.Y-sources.jar
-- orekit-X.Y-javadoc.jar
-
-Navigate to Projects > Orekit > Deployments > Releases and make sure it looks nice.
+Navigate to Projects > Orekit > Deployments > Releases and make sure the X.Y release notes looks nice.
 
 ## Synchronize the Github mirror
 
@@ -334,7 +325,7 @@ have to be declared manually to make visible the vitality of Orekit.
 4. In the “Tag version” field of the form and in the “Release title” field,
    enter the tag of the release to be declared
 5. Describe the release as it has been done on Gitlab
-6. Click on “Publish releaes”
+6. Click on “Publish release”
 
 Github automically adds two assets (zip and tarball archives of the tagged source code)
 
