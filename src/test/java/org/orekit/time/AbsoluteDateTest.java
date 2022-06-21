@@ -18,6 +18,7 @@ package org.orekit.time;
 
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -1371,6 +1372,45 @@ public class AbsoluteDateTest {
         AbsoluteDate d = present.shiftedBy(1e300).shiftedBy(1e300).shiftedBy(1e300);
         MatcherAssert.assertThat(d.toString(),
                 CoreMatchers.is("(-9223372036854775779 + 3.0E300) seconds past epoch"));
+    }
+
+    @Test
+    public void testNegativeOffsetConstructor() {
+        try {
+            AbsoluteDate date = new AbsoluteDate(2019, 10, 11, 20, 40,
+                                                 FastMath.scalb(6629298651489277.0, -55),
+                                                 TimeScalesFactory.getTT());
+            AbsoluteDate after = date.shiftedBy(Precision.EPSILON);
+            Field epochField = AbsoluteDate.class.getDeclaredField("epoch");
+            epochField.setAccessible(true);
+            Field offsetField = AbsoluteDate.class.getDeclaredField("offset");
+            offsetField.setAccessible(true);
+            Assert.assertEquals(624098367L, epochField.getLong(date));
+            Assert.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), offsetField.getDouble(date), 1.0e-20);
+            Assert.assertEquals(Precision.EPSILON, after.durationFrom(date), 1.0e-20);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void testNegativeOffsetShift() {
+        try {
+            AbsoluteDate reference = new AbsoluteDate(2019, 10, 11, 20, 40, 1.6667019180022178E-7,
+                                                      TimeScalesFactory.getTAI());
+            double dt = FastMath.scalb(6596520010750484.0, -39);
+            AbsoluteDate shifted = reference.shiftedBy(dt);
+            AbsoluteDate after   = shifted.shiftedBy(Precision.EPSILON);
+            Field epochField = AbsoluteDate.class.getDeclaredField("epoch");
+            epochField.setAccessible(true);
+            Field offsetField = AbsoluteDate.class.getDeclaredField("offset");
+            offsetField.setAccessible(true);
+            Assert.assertEquals(624110398L, epochField.getLong(shifted));
+            Assert.assertEquals(1.0 - 1.69267e-13, offsetField.getDouble(shifted), 1.0e-15);
+            Assert.assertEquals(Precision.EPSILON, after.durationFrom(shifted), 1.0e-20);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
     }
 
     @Before

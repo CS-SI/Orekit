@@ -287,6 +287,16 @@ public class FieldAbsoluteDateTest {
         doTestGetComponentsIssue681and676(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testNegativeOffsetConstructor() {
+        doTestNegativeOffsetConstructor(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testNegativeOffsetShift() {
+        doTestNegativeOffsetShift(Decimal64Field.getInstance());
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestStandardEpoch(final Field<T> field) {
 
         TimeScale tai = TimeScalesFactory.getTAI();
@@ -1198,6 +1208,46 @@ public class FieldAbsoluteDateTest {
         final double difference = new FieldAbsoluteDate<>(field, actual, utc)
                 .durationFrom(date).getReal();
         MatcherAssert.assertThat(difference, CoreMatchers.is(Double.NaN));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends CalculusFieldElement<T>> void doTestNegativeOffsetConstructor(final Field<T> field) {
+        try {
+            FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
+                                                               2019, 10, 11, 20, 40,
+                                                               FastMath.scalb(6629298651489277.0, -55),
+                                                               TimeScalesFactory.getTT());
+            FieldAbsoluteDate<T> after = date.shiftedBy(Precision.EPSILON);
+            java.lang.reflect.Field epochField = FieldAbsoluteDate.class.getDeclaredField("epoch");
+            epochField.setAccessible(true);
+            java.lang.reflect.Field offsetField = FieldAbsoluteDate.class.getDeclaredField("offset");
+            offsetField.setAccessible(true);
+            Assert.assertEquals(624098367L, epochField.getLong(date));
+            Assert.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), ((T) offsetField.get(date)).getReal(), 1.0e-20);
+            Assert.assertEquals(Precision.EPSILON, after.durationFrom(date).getReal(), 1.0e-20);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends CalculusFieldElement<T>> void doTestNegativeOffsetShift(final Field<T> field) {
+        try {
+            FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2019, 10, 11, 20, 40, 1.6667019180022178E-7,
+                                                                     TimeScalesFactory.getTAI());
+            T dt = field.getZero().newInstance(FastMath.scalb(6596520010750484.0, -39));
+            FieldAbsoluteDate<T> shifted = reference.shiftedBy(dt);
+            FieldAbsoluteDate<T> after   = shifted.shiftedBy(Precision.EPSILON);
+            java.lang.reflect.Field epochField = FieldAbsoluteDate.class.getDeclaredField("epoch");
+            epochField.setAccessible(true);
+            java.lang.reflect.Field offsetField = FieldAbsoluteDate.class.getDeclaredField("offset");
+            offsetField.setAccessible(true);
+            Assert.assertEquals(624110398L, epochField.getLong(shifted));
+            Assert.assertEquals(1.0 - 1.69267e-13, ((T) offsetField.get(shifted)).getReal(), 1.0e-15);
+            Assert.assertEquals(Precision.EPSILON, after.durationFrom(shifted).getReal(), 1.0e-20);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
     }
 
     private <T extends CalculusFieldElement<T>> void check(FieldAbsoluteDate<T> date,
