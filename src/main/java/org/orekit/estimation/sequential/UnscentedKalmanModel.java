@@ -342,7 +342,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         } else {
             // Normalized innovation of the measurement (Nx1)
             final double[] observed  = predictedMeasurement.getObservedMeasurement().getObservedValue();
-            final double[] estimated = predictedMeasurement.getEstimatedValue();
+            final double[] estimated = predictedMeas.toArray();
             final double[] sigma     = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
             final double[] residuals = new double[observed.length];
 
@@ -360,11 +360,9 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
      */
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
                                    final ProcessEstimate estimate) {
-        // Update the parameters with the estimated state
-        // The min/max values of the parameters are handled by the ParameterDriver implementation
+
         correctedEstimate = estimate;
 
-        updateParameters();
         final NumericalPropagatorBuilder copy = getEstimatedBuilder(estimate.getState().toArray());
         // update the predicted spacecraft state with predictedNormalizedState
         final SpacecraftState newCorrectedState = getEstimatedSpacecraftState(estimate.getState().toArray());
@@ -676,27 +674,6 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         return estimatedMeasurementsParameters.getNbParams();
     }
 
-    /** Update the estimated parameters after the correction phase of the filter.
-     * The min/max allowed values are handled by the parameter themselves.
-     */
-    private void updateParameters() {
-        final RealVector correctedState = correctedEstimate.getState();
-        int i = 0;
-        for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
-            // let the parameter handle min/max clipping
-            driver.setNormalizedValue(correctedState.getEntry(i));
-            correctedState.setEntry(i++, driver.getNormalizedValue());
-        }
-        for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
-            // let the parameter handle min/max clipping
-            driver.setNormalizedValue(correctedState.getEntry(i));
-            correctedState.setEntry(i++, driver.getNormalizedValue());
-        }
-        for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
-            // let the parameter handle min/max clipping
-            driver.setNormalizedValue(correctedState.getEntry(i));
-            correctedState.setEntry(i++, driver.getNormalizedValue());
-        }
-    }
+
 
 }
