@@ -74,7 +74,7 @@ public class DataSourceTest {
             checkHistory(br);
         }
     }
-    
+
     @Test
     public void testUri() throws IOException, URISyntaxException {
         URL url = DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");

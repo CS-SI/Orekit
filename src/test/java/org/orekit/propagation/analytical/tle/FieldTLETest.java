@@ -666,22 +666,22 @@ public class FieldTLETest {
 
     @Test
     public void testStateToTLELeo() {
-    	doTestStateToTLELeo(Decimal64Field.getInstance());
+        doTestStateToTLELeo(Decimal64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStateToTLELeo(final Field<T> field) {
-    	final FieldTLE<T> leoTLE = new FieldTLE<>(field, "1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
+        final FieldTLE<T> leoTLE = new FieldTLE<>(field, "1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
                                                   "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
         checkConversion(leoTLE, field);
     }
 
     @Test
     public void testStateToTLEGeo() {
-    	doTestStateToTLEGeo(Decimal64Field.getInstance());
+        doTestStateToTLEGeo(Decimal64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStateToTLEGeo(final Field<T> field) {
-    	final FieldTLE<T> geoTLE = new FieldTLE<>(field, "1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
+        final FieldTLE<T> geoTLE = new FieldTLE<>(field, "1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                                                          "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
         checkConversion(geoTLE, field);
     }

@@ -226,7 +226,7 @@ public class APMParserTest {
         Assert.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getQuaternionBlock().getEpoch());
-        
+
         Assert.assertEquals(0.47832, segment.getData().getQuaternionBlock().getQuaternion().getQ0(),    QUATERNION_PRECISION);
         Assert.assertEquals(0.03123, segment.getData().getQuaternionBlock().getQuaternion().getQ1(),    QUATERNION_PRECISION);
         Assert.assertEquals(0.78543, segment.getData().getQuaternionBlock().getQuaternion().getQ2(),    QUATERNION_PRECISION);
@@ -1046,7 +1046,7 @@ public class APMParserTest {
         final Apm apm = new ParserBuilder().buildApmParser().parseMessage(source);
         Assert.assertNotNull(apm);
         try {
-            apm.getAttitude(FramesFactory.getGCRF(), 
+            apm.getAttitude(FramesFactory.getGCRF(),
                             (date, frame) -> new TimeStampedPVCoordinates(date,
                                                                           new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
                                                                                             new Vector3D(-0.772e4,  5.002e4, 4.892e2))));

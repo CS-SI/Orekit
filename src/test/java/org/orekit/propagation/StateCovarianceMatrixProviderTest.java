@@ -87,7 +87,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCov = StateCovarianceMatrixProvider.changeCovarianceFrame(initialState.getOrbit(), frameA, frameB, referenceCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Second transformation
-        transformedCov = StateCovarianceMatrixProvider.changeCovarianceFrame(initialState.getOrbit(), frameB, frameA, transformedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        transformedCov = StateCovarianceMatrixProvider.changeCovarianceFrame(initialState.getOrbit(), frameB, frameA, transformedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(referenceCov, transformedCov, 5.2e-15);
@@ -113,7 +113,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Second transformation
         transformedCov = StateCovarianceMatrixProvider.changeCovarianceType(initialState.getOrbit(), kep, PositionAngle.MEAN,
-                                                                            cart, PositionAngle.MEAN, transformedCov); 
+                                                                            cart, PositionAngle.MEAN, transformedCov);
 
         // Verify
         compareCovariance(referenceCov, transformedCov, 3.5e-12);
@@ -186,7 +186,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovA = provider.getStateCovariance(propagated, frameB);
 
         // Second transformation
-        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(transformedCovA, transformedCovB, 1.0e-15);
@@ -203,7 +203,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType);
 
         // Second transformation
-        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov); 
+        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -261,7 +261,7 @@ public class StateCovarianceMatrixProviderTest {
         // Verify
         compareCovariance(referenceCov, propagatedCov, 3.0e-5);
         Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
-        
+
         ///////////
         // Test the frame transformation
         ///////////
@@ -273,7 +273,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovA = provider.getStateCovariance(propagated, frameB);
 
         // Second transformation
-        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(transformedCovA, transformedCovB, 1.0e-15);
@@ -286,7 +286,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType);
 
         // Second transformation
-        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov); 
+        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -349,7 +349,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovA = provider.getStateCovariance(propagated, frameB);
 
         // Second transformation
-        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(transformedCovA, transformedCovB, 1.0e-15);
@@ -362,7 +362,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType);
 
         // Second transformation
-        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov); 
+        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);

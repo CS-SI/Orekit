@@ -31,7 +31,7 @@ import org.junit.Test;
 public class FieldGammaMnsFunctionTest {
 
     int      nMax;
-    
+
     @Test
     public void testIndex()
         throws NoSuchMethodException, SecurityException,
@@ -50,7 +50,7 @@ public class FieldGammaMnsFunctionTest {
     }
 
     @Test
-    public void testPrecomputedRatios() 
+    public void testPrecomputedRatios()
         throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         doTestPrecomputedRatios(Decimal64Field.getInstance());
     }
@@ -75,7 +75,7 @@ public class FieldGammaMnsFunctionTest {
     }
 
     @Test
-    public void testReallocate() 
+    public void testReallocate()
         throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         doTestReallocate(Decimal64Field.getInstance());
     }

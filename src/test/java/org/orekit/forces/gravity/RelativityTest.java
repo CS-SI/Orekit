@@ -305,7 +305,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 5.0e-10, 3.0e-11, 3.0e-10,
@@ -367,7 +367,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 4.4e-3,

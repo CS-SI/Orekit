@@ -56,32 +56,32 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
- 
+
 /*
  * Test code based on the CssiSpaceWeatherDataTest class
  * by Clément Jonglez.
- * 
+ *
  * @author Louis Aucouturier
  * @since 11.2
  */
 
 public class SOLFSMYDataLoaderTest {
-    
+
     private TimeScale utc;
-    
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
     }
-    
+
     // DataLoader
     private JB2008SpaceEnvironmentData loadJB() {
         JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt", "DTCFILE_trunc.TXT");
         return JBData;
     }
-    
-    
+
+
     @Test
     public void testNoDataException() {
         try {
@@ -91,14 +91,14 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     public void tesDuplicatedEntry() {
         JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_double.txt", "DTCFILE_trunc.TXT");
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453000, Constants.JULIAN_DAY, utc);
         assertThat(137.2, closeTo(JBData.getF10(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testUnableParse() {
         try {
@@ -108,87 +108,87 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
-    
-    
-    
+
+
+
     @Test
     public void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 26, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
-    
+
     @Test
     public void testMaxDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate lastDate = new AbsoluteDate(2007, 1, 1, 12, 0, 0.0, utc);
         Assert.assertEquals(lastDate, JBData.getMaxDate());
     }
-    
+
     @Test
     public void testF10Interp() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 12*3600, utc);
         assertThat((116.0 + 105.6)/2, closeTo(JBData.getF10(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testF10() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(105.6, closeTo(JBData.getF10(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testF10B() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(120.6, closeTo(JBData.getF10B(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testS10() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(111.0, closeTo(JBData.getS10(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testS10B() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(116.8, closeTo(JBData.getS10B(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testM10() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(117.9, closeTo(JBData.getXM10(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testM10B() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(121.2, closeTo(JBData.getXM10B(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testY10() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(139.9, closeTo(JBData.getY10(julianDate), 1e-10));
     }
-    
+
     @Test
     public void testY10B() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate julianDate = AbsoluteDate.createJDDate(2453006, 0, utc);
         assertThat(129.5, closeTo(JBData.getY10B(julianDate), 1e-10));
     }
-    
-    
+
+
     /**
      * Check integration error is small when integrating the same equations over the same
      * interval.
@@ -233,7 +233,7 @@ public class SOLFSMYDataLoaderTest {
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));
 
     }
-    
+
     /**
      * Configure a numerical propagator with DTM2000 atmosphere.
      *
@@ -257,7 +257,7 @@ public class SOLFSMYDataLoaderTest {
 
         return propagator;
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -273,7 +273,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -289,7 +289,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -305,7 +305,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -321,7 +321,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -337,7 +337,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -353,7 +353,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -369,7 +369,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     /**
      * Testing for non-present day in the data
@@ -385,7 +385,7 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     public void testBracketDateSOL_lastDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
@@ -397,5 +397,5 @@ public class SOLFSMYDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
         }
     }
-    
+
 }

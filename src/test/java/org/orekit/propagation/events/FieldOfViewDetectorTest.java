@@ -174,7 +174,7 @@ public class FieldOfViewDetectorTest {
                 Assert.assertTrue(angles[1] > +halfAperture);
             }
         }
-        
+
     }
 
     private double[] dihedralAngles(final Vector3D center, final Vector3D axis1, final Vector3D axis2,
@@ -361,7 +361,7 @@ public class FieldOfViewDetectorTest {
             final Vector3D middle = edge.getPointAt(0.5 * edge.getLength());
             final double   innerRadius = Vector3D.angle(circFov.getCenter(), middle);
             circFov = new CircularFieldOfView(circFov.getCenter(), innerRadius, 0.0);
-            
+
         }
 
         // Extrapolate from the initial to the final date

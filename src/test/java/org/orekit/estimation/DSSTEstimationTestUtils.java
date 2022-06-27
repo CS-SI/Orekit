@@ -169,7 +169,7 @@ public class DSSTEstimationTestUtils {
 
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         context.gravity = GravityFieldFactory.getUnnormalizedProvider(20, 20);
-        
+
         // semimajor axis for a geostationnary satellite
         double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
 
@@ -367,7 +367,7 @@ public class DSSTEstimationTestUtils {
                                       final double[] expectedDeltaVel, final double []velEps) {
 
         // Add the measurements to the Kalman filter
-    	DSSTPropagator estimated = kalman.processMeasurements(measurements);
+        DSSTPropagator estimated = kalman.processMeasurements(measurements);
 
         // Check the number of measurements processed by the filter
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
@@ -376,7 +376,7 @@ public class DSSTEstimationTestUtils {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
             final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
-            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
+            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
             final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
@@ -386,7 +386,7 @@ public class DSSTEstimationTestUtils {
             final double[][] dCdY = new double[6][6];
             estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
-            final RealMatrix estimatedCartesianP = 
+            final RealMatrix estimatedCartesianP =
                             Jacobian.
                             multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
                             multiply(Jacobian.transpose());

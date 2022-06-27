@@ -50,14 +50,14 @@ public class FieldDSSTNewtonianAttractionTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
-        
+
         final T zero = field.getZero();
-        
+
         final Frame earthFrame = FramesFactory.getEME2000();
-        
+
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400,
                                                                   TimeScalesFactory.getUTC());
-        
+
         final double mu = 3.986004415E14;
         final FieldEquinoctialOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(2.655989E7),
                                                                            zero.add(2.719455286199036E-4),
@@ -69,21 +69,21 @@ public class FieldDSSTNewtonianAttractionTest {
                                                                            earthFrame,
                                                                            date,
                                                                            zero.add(mu));
-        
+
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
-        
+
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
-        
+
         final DSSTForceModel newton = new DSSTNewtonianAttraction(mu);
 
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
-        
+
         final T[] daidt = newton.getMeanElementRate(state, auxiliaryElements, newton.getParameters(field));
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-        
+
         Assert.assertEquals(0.0,                   elements[0].getReal(), eps);
         Assert.assertEquals(0.0,                   elements[1].getReal(), eps);
         Assert.assertEquals(0.0,                   elements[2].getReal(), eps);

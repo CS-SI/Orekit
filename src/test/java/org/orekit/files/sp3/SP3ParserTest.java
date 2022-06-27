@@ -257,7 +257,7 @@ public class SP3ParserTest {
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
-        // PR23  24552.470459   -242.899447   6925.437998     86.875825                    
+        // PR23  24552.470459   -242.899447   6925.437998     86.875825
         checkPVEntry(new PVCoordinates(new Vector3D(24552470.459, -242899.447, 6925437.998),
                                        Vector3D.ZERO),
                      coord);
@@ -327,7 +327,7 @@ public class SP3ParserTest {
 
         final SP3Coordinate coord = coords.get(228);
 
-        
+
         Assert.assertEquals(new AbsoluteDate(2015, 5, 5, 19, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 

@@ -45,7 +45,7 @@ public class SinexLoaderTest {
     public void testSmallIGSSinexFile() {
 
         SinexLoader loader = new SinexLoader("cod20842-small.snx");
- 
+
         Assert.assertEquals(2, loader.getStations().size());
 
         checkStation(loader.getStation("ABMF"), 2019, 350, 0.0, 2019, 352, 86370, 2019, 351, 43185,
@@ -265,5 +265,5 @@ public class SinexLoaderTest {
         Assert.assertEquals(0., refVel.distance(station.getVelocity()), 1.0e-10);
 
     }
-    
+
 }

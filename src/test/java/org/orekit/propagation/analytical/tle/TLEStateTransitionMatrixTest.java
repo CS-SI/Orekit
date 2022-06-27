@@ -26,12 +26,12 @@ public class TLEStateTransitionMatrixTest {
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        
+
         // GPS TLE propagation will use SDP4
         String line1GPS = "1 11783U 80032A   03300.87313441  .00000062  00000-0  10000-3 0  6416";
-        String line2GPS = "2 11783  62.0472 164.2367 0320924  39.0039 323.3716  2.03455768173530"; 
+        String line2GPS = "2 11783  62.0472 164.2367 0320924  39.0039 323.3716  2.03455768173530";
         tleGPS = new TLE(line1GPS, line2GPS);
-        
+
         // SPOT TLE propagation will use SGP4
         String line1SPOT = "1 22823U 93061A   03339.49496229  .00000173  00000-0  10336-3 0   133";
         String line2SPOT = "2 22823  98.4132 359.2998 0017888 100.4310 259.8872 14.18403464527664";
@@ -135,9 +135,9 @@ public class TLEStateTransitionMatrixTest {
                             state.getMu(), state.getAttitude());
 
     }
-    
-    
-    
+
+
+
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
 
@@ -146,7 +146,7 @@ public class TLEStateTransitionMatrixTest {
       }
 
 
-    private SpacecraftState arrayToState(double[][] array, 
+    private SpacecraftState arrayToState(double[][] array,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);

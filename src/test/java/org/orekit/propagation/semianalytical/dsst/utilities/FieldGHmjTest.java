@@ -30,7 +30,7 @@ import org.junit.Test;
 public class FieldGHmjTest {
 
     private static final double eps = 1e-10;
- 
+
     @Test
     public void testGHmsj() {
         doTestGHmsj(Decimal64Field.getInstance());
@@ -53,7 +53,7 @@ public class FieldGHmjTest {
             for (int s = -sMax; s <= sMax; s++) {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
-                    T[] GHmsj = MathArrays.buildArray(field, 2); 
+                    T[] GHmsj = MathArrays.buildArray(field, 2);
                     GHmsj = getGHmsj(k, h, a, b, m, s, j, field);
                     Assert.assertEquals(GHmsj[0].getReal(), gMSJ.getGmsj(m, s, j).getReal(), FastMath.abs(GHmsj[0].multiply(eps)).getReal());
                     Assert.assertEquals(GHmsj[1].getReal(), gMSJ.getHmsj(m, s, j).getReal(), FastMath.abs(GHmsj[1].multiply(eps)).getReal());
@@ -342,7 +342,7 @@ public class FieldGHmjTest {
     private static int sgn(final int i) {
         return (i < 0) ? -1 : 1;
     }
-    
+
     private static class FieldComplex <T extends CalculusFieldElement<T>> {
 
         /** The imaginary part. */
@@ -350,7 +350,7 @@ public class FieldGHmjTest {
 
         /** The real part. */
         private final T real;
-       
+
         /**
          * Create a complex number given the real and imaginary parts.
          *
@@ -412,7 +412,7 @@ public class FieldGHmjTest {
             return createComplex(real.multiply(factor.real).subtract(imaginary.multiply(factor.imaginary)),
                                  real.multiply(factor.imaginary).add(imaginary.multiply(factor.real)));
         }
-        
+
         /**
          * Returns a {@code Complex} whose value is {@code this * factor}, with {@code factor}
          * interpreted as a integer number.
@@ -435,7 +435,7 @@ public class FieldGHmjTest {
          public FieldComplex<T> pow(int x) {
             return this.log().multiply(x).exp();
         }
-         
+
          /**
           * Compute the
           * <a href="http://mathworld.wolfram.com/NaturalLogarithm.html" TARGET="_top">

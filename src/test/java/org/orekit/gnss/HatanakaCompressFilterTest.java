@@ -40,11 +40,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 public class HatanakaCompressFilterTest {
-    
-    
+
+
     @Test
     public void testNotFiltered() throws IOException {
-        
+
         final String name = "rinex/aaaa0000.00o";
         final DataSource raw = new DataSource(name,
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
@@ -202,7 +202,7 @@ public class HatanakaCompressFilterTest {
 
     @Test
     public void testCompressedRinex3() throws IOException, NoSuchAlgorithmException {
-        
+
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/GANP00SVK_R_20151890000_01H_10M_MO.crx.gz";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
@@ -603,7 +603,7 @@ public class HatanakaCompressFilterTest {
 
     @Test
     public void testIssue892() throws IOException, NoSuchAlgorithmException {
-        
+
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/DJIG00DJI_R_20191820000_01D_30S_MO.crx.gz";
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),

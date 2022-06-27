@@ -155,10 +155,10 @@ public class DSSTPropagatorBuilderTest {
     }
 
     private void doTestBuildPropagator(final ODEIntegratorBuilder foiBuilder) {
-        
+
         // We propagate using directly the propagator of the set up
         final Orbit orbitWithPropagator = propagator.propagate(initDate.shiftedBy(600)).getOrbit();
-        
+
         // We propagate using a build version of the propagator
         // We shall have the same results than before
         DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
@@ -166,14 +166,14 @@ public class DSSTPropagatorBuilderTest {
                                                                   1.0,
                                                                   PropagationType.MEAN,
                                                                   PropagationType.MEAN);
-        
+
         builder.addForceModel(moon);
         builder.setMass(1000.);
-        
+
         final DSSTPropagator prop = builder.buildPropagator(builder.getSelectedNormalizedParameters());
-        
+
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(600)).getOrbit();
-        
+
         // Verify
         Assert.assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
         Assert.assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
@@ -181,7 +181,7 @@ public class DSSTPropagatorBuilderTest {
         Assert.assertEquals(orbitWithPropagator.getHx(),            orbitWithBuilder.getHx(), eps);
         Assert.assertEquals(orbitWithPropagator.getHy(),            orbitWithBuilder.getHy(), eps);
         Assert.assertEquals(orbitWithPropagator.getLM(),            orbitWithBuilder.getLM(), 8.0e-10);
-        
+
     }
 
     @Test
@@ -245,20 +245,20 @@ public class DSSTPropagatorBuilderTest {
 
         builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
-    	    public String getName() {
-    	        return "linear";
-    	    }
+            public String getName() {
+                return "linear";
+            }
 
-    	    public int getDimension() {
-    	        return 1;
-    	    }
+            public int getDimension() {
+                return 1;
+            }
 
-    	    /** {@inheritDoc} */
-    	    @Override
-    	    @Deprecated
-    	    public double[] derivatives(final SpacecraftState state) {
-    	        return combinedDerivatives(state).getAdditionalDerivatives();
-    	    }
+            /** {@inheritDoc} */
+            @Override
+            @Deprecated
+            public double[] derivatives(final SpacecraftState state) {
+                return combinedDerivatives(state).getAdditionalDerivatives();
+            }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
@@ -267,14 +267,14 @@ public class DSSTPropagatorBuilderTest {
         });
 
         try {
-    	    // Build the propagator
-    	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            // Build the propagator
+            builder.buildPropagator(builder.getSelectedNormalizedParameters());
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
     }
-    
+
     @Test
     public void testDeselectOrbitals() {
         // Integrator builder
@@ -293,10 +293,10 @@ public class DSSTPropagatorBuilderTest {
             Assert.assertFalse(driver.isSelected());
         }
     }
-    
+
     @Before
     public void setUp() throws IOException, ParseException {
-        
+
         Utils.setDataRoot("regular-data");
 
         minStep = 1.0;
@@ -305,7 +305,7 @@ public class DSSTPropagatorBuilderTest {
 
         final Frame earthFrame = FramesFactory.getEME2000();
         initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
-        
+
         final double mu = 3.986004415E14;
         // a    = 42163393.0 m
         // ex =  -0.25925449177598586

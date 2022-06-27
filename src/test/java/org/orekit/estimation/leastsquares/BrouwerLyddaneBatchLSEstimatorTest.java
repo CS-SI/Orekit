@@ -172,7 +172,7 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     }
 
     /**
-     * Perfect range measurements with a perfect start and an on-board antenna range offset 
+     * Perfect range measurements with a perfect start and an on-board antenna range offset
      */
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() {

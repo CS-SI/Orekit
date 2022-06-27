@@ -47,7 +47,7 @@ public class CR3BPMultipleShooterTest {
 
     @Test
     public void testHaloOrbit() {
-        
+
         final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
@@ -112,7 +112,7 @@ public class CR3BPMultipleShooterTest {
         multipleShooting.setEpochFreedom(1, false);
         multipleShooting.setEpochFreedom(2, false);
         multipleShooting.addConstraint(1, 1, 1.0e-5);
-        
+
         // Differential correction
         h1.applyDifferentialCorrection();
         final PVCoordinates initialPVDC = h1.getInitialPV();
@@ -121,7 +121,7 @@ public class CR3BPMultipleShooterTest {
         // Multiple shooting computation
         List<SpacecraftState> result = multipleShooting.compute();
         final AbsolutePVCoordinates initialPVMS = result.get(0).getAbsPVA();
-        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate()); 
+        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate());
 
         Assert.assertEquals(0.0, initialPVDC.getPosition().getY(), 1E-15);
         Assert.assertEquals(0.0, initialPVDC.getVelocity().getX(), 1E-15);

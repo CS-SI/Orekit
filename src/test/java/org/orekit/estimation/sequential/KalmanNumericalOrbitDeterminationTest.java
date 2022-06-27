@@ -212,7 +212,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // Print results on console
         final boolean print = false;
-        
+
         // input in resources directory
         final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/kalman_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
@@ -224,7 +224,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // Choice of an orbit type to use
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
-        
+
         // Initial orbital Cartesian covariance matrix
         // These covariances are derived from the deltas between initial and reference orbits
         // So in a way they are "perfect"...
@@ -232,15 +232,15 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
         });
-        
+
         // Orbital Cartesian process noise matrix (Q)
         final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
-        
+
         // Initial measurement covariance matrix and process noise matrix
         final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-           1., 1., 1., 1. 
+           1., 1., 1., 1.
         });
         final RealMatrix measurementQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-6, 1e-6, 1e-6, 1e-6
@@ -259,7 +259,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // Tests
         // Note: The reference initial orbit is the same as in the batch LS tests
         // -----
-        
+
         // Number of measurements processed
         final int numberOfMeas  = 258;
         Assert.assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
@@ -271,19 +271,19 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // Reference position and velocity at initial date (same as in batch LS test)
         final Vector3D refPos0 = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
         final Vector3D refVel0 = new Vector3D(-3871.275109, -607.880985, 4280.972530);
-        
+
         // Run the reference until Kalman last date
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
         final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
-        
+
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
         Assert.assertEquals(0.0, dP, distanceAccuracy);
         Assert.assertEquals(0.0, dV, velocityAccuracy);
-        
+
         // Print orbit deltas
         if (print) {
             System.out.println("Test performances:");
@@ -328,7 +328,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // Print results on console
         final boolean print = false;
-        
+
         // input in resources directory
         final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
         final File input  = new File(inputPath);
@@ -340,7 +340,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // Choice of an orbit type to use
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
-        
+
         // Initial orbital Cartesian covariance matrix
         // These covariances are derived from the deltas between initial and reference orbits
         // So in a way they are "perfect"...
@@ -349,12 +349,12 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
             FastMath.pow(2.4e4, 2), FastMath.pow(1.e5, 2), FastMath.pow(4.e4, 2),
             FastMath.pow(3.5, 2), FastMath.pow(2., 2), FastMath.pow(0.6, 2)
         });
-        
+
         // Orbital Cartesian process noise matrix (Q)
         final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
-        
+
         // Propagation covariance and process noise matrices
         final RealMatrix propagationP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             FastMath.pow(2., 2), // Cd
@@ -366,7 +366,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
             FastMath.pow(1e-3, 2), // Cd
             0., 0., 0., 0., 0., 0.  // Leaks
         });
-        
+
         // Measurement covariance and process noise matrices
         // az/el bias sigma = 0.06deg
         // range bias sigma = 100m
@@ -384,7 +384,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         final RealMatrix measurementQ = MatrixUtils.
                         createRealIdentityMatrix(measurementP.getRowDimension()).
                         scalarMultiply(measQ);
-        
+
 
         // Kalman orbit determination run.
         ResultKalman kalmanW3B = runKalman(input, orbitType, print,
@@ -394,11 +394,11 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // Tests
         // -----
-        
+
         // Definition of the accuracy for the test
         final double distanceAccuracy = 0.1;
         final double angleAccuracy    = 1e-5; // degrees
-        
+
         // Number of measurements processed
         final int numberOfMeas  = 521;
         Assert.assertEquals(numberOfMeas, kalmanW3B.getNumberOfMeasurements());
@@ -406,7 +406,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // Test on propagator parameters
         // -----------------------------
-        
+
         // Batch LS result
         // final double dragCoef  = -0.2154;
         final double dragCoef  = 0.1931;
@@ -429,7 +429,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // Test on measurements parameters
         // -------------------------------
-        
+
         final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
         list.addAll(kalmanW3B.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
@@ -528,12 +528,12 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // leak-Z constant term variance
         Assert.assertEquals(1.717781E-11, covariances.getEntry(11, 11), 1.0e-15);
-        
-        
+
+
         // Test on orbital parameters
         // Done at the end to avoid changing the estimated propagation parameters
         // ----------------------------------------------------------------------
-        
+
         // Estimated position and velocity
         final Vector3D estimatedPos = kalmanW3B.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = kalmanW3B.getEstimatedPV().getVelocity();
@@ -541,7 +541,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // Reference position and velocity at initial date (same as in batch LS test)
         final Vector3D refPos0 = new Vector3D(-40541446.255, -9905357.41, 206777.413);
         final Vector3D refVel0 = new Vector3D(759.0685, -1476.5156, 54.793);
-        
+
         // Gather the selected propagation parameters and initialize them to the values found
         // with the batch LS method
         final ParameterDriversList refPropagationParameters = kalmanW3B.getPropagatorParameters();
@@ -549,7 +549,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         final double[] leakXRef = {+5.69040439901955E-06, 1.09710906802403E-11};
         final double[] leakYRef = {-7.66440256777678E-07, 1.25467464335066E-10};
         final double[] leakZRef = {-5.574055079952E-06  , 2.78703463746911E-10};
-        
+
         for (DelegatingDriver driver : refPropagationParameters.getDrivers()) {
             switch (driver.getName()) {
                 case "drag coefficient" : driver.setValue(dragCoefRef); break;
@@ -561,25 +561,25 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
                 case "leak-Z[1]"        : driver.setValue(leakZRef[1]); break;
             }
         }
-        
+
         // Run the reference until Kalman last date
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, refPropagationParameters,
                                             kalmanW3B.getEstimatedPV().getDate());
-        
+
         // Test on last orbit
         final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
-        
+
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        
+
         // FIXME: debug - Comparison with batch LS is bad
         final double debugDistanceAccuracy = 234.82;
         final double debugVelocityAccuracy = 0.086;
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), debugDistanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), debugVelocityAccuracy);
-        
+
         // Print orbit deltas
         if (print) {
             System.out.println("Test performances:");

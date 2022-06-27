@@ -578,7 +578,7 @@ public class TdmParserTest {
         Assert.assertEquals(dataComment, file.getSegments().get(0).getData().getComments());
 
         // check so global setters that are not used by parser (it uses successive add instead)
-        
+
         metadata.setParticipants(Collections.singletonMap(12, "p12"));
         Assert.assertNull(metadata.getParticipants().get(1));
         Assert.assertEquals("p12", metadata.getParticipants().get(12));

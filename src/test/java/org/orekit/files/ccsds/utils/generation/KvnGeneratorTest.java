@@ -37,7 +37,7 @@ public class KvnGeneratorTest {
             generator.endMessage("abc");
             Assert.assertEquals("CCSDS_ABC_VERSION = 99.0\n" +
                                 "BLOCK_START\n" +
-                                "KEY        = 1234567.8   [Hz]\n" + 
+                                "KEY        = 1234567.8   [Hz]\n" +
                                 "BLOCK_STOP\n",
                                 caw.toString());
         }

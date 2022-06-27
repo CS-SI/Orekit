@@ -94,7 +94,7 @@ public class DSSTBatchLSModelTest {
         final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
-        
+
         // Test forward propagation flag to true
         assertEquals(true, model.isForwardPropagation());
 
@@ -117,7 +117,7 @@ public class DSSTBatchLSModelTest {
         Assert.assertEquals(index, value.getFirst().getDimension());
 
     }
-    
+
     @Test
     public void testBackwardPropagation() {
 
@@ -149,7 +149,7 @@ public class DSSTBatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                // Do nothing here 
+                // Do nothing here
             }
         };
         final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
@@ -199,7 +199,7 @@ public class DSSTBatchLSModelTest {
 
             }
         };
-        
+
         final DSSTBatchLSModel modelMean = propagatorBuilderMean.buildLSModel(new DSSTPropagatorBuilder[] {propagatorBuilderMean}, measurements, estimatedMeasurementsParameters, observerMean);
         modelMean.setIterationsCounter(new Incrementor(100));
         modelMean.setEvaluationsCounter(new Incrementor(100));

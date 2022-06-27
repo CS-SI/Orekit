@@ -56,7 +56,7 @@ import org.orekit.utils.ParameterDriversList;
 
 public class SemiAnalyticalKalmanEstimatorTest {
 
-	@Test
+    @Test
     public void testMissingPropagatorBuilder() {
         try {
             new SemiAnalyticalKalmanEstimatorBuilder().build();
@@ -162,7 +162,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Reference propagator for estimation performances
         final DSSTPropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
@@ -252,7 +252,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Reference propagator for estimation performances
         final DSSTPropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
@@ -261,17 +261,17 @@ public class SemiAnalyticalKalmanEstimatorTest {
         aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -333,8 +333,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final DSSTPropagatorBuilder builder = context.createBuilder(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart, minStep, maxStep, dP);
         builder.addForceModel(new DSSTZonal(gravityField));
         builder.addForceModel(new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField,
-        		gravityField.getMaxDegree(),
-        		gravityField.getMaxOrder(), 2,  FastMath.min(12, gravityField.getMaxDegree() + 2),
+                gravityField.getMaxDegree(),
+                gravityField.getMaxOrder(), 2,  FastMath.min(12, gravityField.getMaxDegree() + 2),
                 gravityField.getMaxDegree(), gravityField.getMaxOrder(), FastMath.min(4, gravityField.getMaxDegree() - 2)));
 
         // Create perfect range measurements
@@ -349,14 +349,14 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
         propagatorBuilder.addForceModel(new DSSTZonal(gravityField));
         propagatorBuilder.addForceModel(new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField,
-        		gravityField.getMaxDegree(),
-        		gravityField.getMaxOrder(), 2,  FastMath.min(12, gravityField.getMaxDegree() + 2),
+                gravityField.getMaxDegree(),
+                gravityField.getMaxOrder(), 2,  FastMath.min(12, gravityField.getMaxDegree() + 2),
                 gravityField.getMaxDegree(), gravityField.getMaxOrder(), FastMath.min(4, gravityField.getMaxDegree() - 2)));
 
         // Reference propagator for estimation performances
         final DSSTPropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
@@ -365,17 +365,17 @@ public class SemiAnalyticalKalmanEstimatorTest {
         aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
-        
+
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -430,7 +430,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
             // Check
             if (estimatedMeasurement.getObservedMeasurement() instanceof Range) {
-            	final double[] estimated = estimatedMeasurement.getEstimatedValue();
+                final double[] estimated = estimatedMeasurement.getEstimatedValue();
                 final double[] observed  = estimatedMeasurement.getObservedValue();
                 // Calculate residual
                 final double res = observed[0] - estimated[0];
@@ -443,7 +443,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
          * @return the mean value of the residual in meters
          */
         public double getMeanResidual() {
-        	return stats.getMean();
+            return stats.getMean();
         }
 
     }
@@ -483,13 +483,13 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Reference propagator for estimation performances
         final DSSTPropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
@@ -505,7 +505,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
         final RealMatrix orbitalP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = MatrixUtils.createRealMatrix(7, 7);
         initialP.setSubMatrix(orbitalP.getData(), 0, 0);
@@ -590,13 +590,13 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Reference propagator for estimation performances
         final DSSTPropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
-        // 100m on position / 1e-2m/s on velocity 
+        // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
@@ -607,7 +607,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
         final RealMatrix orbitalP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
-        
+
         // Keplerian initial covariance matrix
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6, 6);
         initialP.setSubMatrix(orbitalP.getData(), 0, 0);

@@ -1444,7 +1444,7 @@ public class NumericalPropagatorTest {
 
     /** Test de-activation of event detection and step handling.
      *  When propagating out of start and target date in propagate(startDate, targetDate)
-     *  <p>See issue 449 in Orekit forge and 
+     *  <p>See issue 449 in Orekit forge and
      *  {@link org.orekit.propagation.Propagator#propagate(AbsoluteDate, AbsoluteDate)}.
      *  </p>
      */
@@ -1460,10 +1460,10 @@ public class NumericalPropagatorTest {
                         .withHandler(recordAndContinue);
 
         propagator.addEventDetector(dateDetector);
-        
+
         final AbsoluteDate startDate = initDate.shiftedBy(30.);
         final AbsoluteDate finalDate = initDate.shiftedBy(40.);
-        
+
         final DateRecorderHandler dateRecorderHandler = new DateRecorderHandler(startDate, finalDate);
         propagator.setStepHandler(1.0, dateRecorderHandler);
 
@@ -1473,7 +1473,7 @@ public class NumericalPropagatorTest {
         // Verify
         // No event is detected
         Assert.assertEquals(0, recordAndContinue.getEvents().size());
-        
+
         // Handler is deactivated (no dates recorded between start and stop date)
         Assert.assertEquals(0, dateRecorderHandler.handledDatesOutOfInterval.size());
     }
@@ -1626,13 +1626,13 @@ public class NumericalPropagatorTest {
 
         /** Start date of the propagation. */
         private final AbsoluteDate startDate;
-        
+
         /** Final date of the propagation. */
         private final AbsoluteDate finalDate;
-        
+
         /** List of handled date. Recorded only if they are out of the propagation interval. */
         public final List<AbsoluteDate> handledDatesOutOfInterval;
-        
+
         DateRecorderHandler(final AbsoluteDate startDate, final AbsoluteDate finalDate) {
           this.startDate = startDate;
           this.finalDate = finalDate;
@@ -1648,7 +1648,7 @@ public class NumericalPropagatorTest {
           }
         }
       }
-    
+
     /**
      * Assume we have 5 epochs, we will propagate from the input epoch to all the following epochs.
      *   If we have [0, 1, 2, 3, 4], and input is 2, then we will do 2->3, 2->4.

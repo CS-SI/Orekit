@@ -527,7 +527,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-14, 5.9e-8, 1.8e-11, 1.8e-10,

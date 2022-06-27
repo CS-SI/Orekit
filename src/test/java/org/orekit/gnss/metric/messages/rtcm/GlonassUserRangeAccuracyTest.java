@@ -28,7 +28,7 @@ public class GlonassUserRangeAccuracyTest {
     @Test
     public void testAccuracy() {
         AccuracyProvider ura;
-        
+
         // Index = 0
         ura = new GlonassUserRangeAccuracy(0);
         Assert.assertEquals(1.0, ura.getAccuracy(), eps);

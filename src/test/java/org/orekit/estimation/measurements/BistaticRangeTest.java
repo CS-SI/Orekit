@@ -144,9 +144,9 @@ public class BistaticRangeTest {
      */
     @Test
     public void testStateDerivativesWithModifier() {
-    
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-    
+
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -163,19 +163,19 @@ public class BistaticRangeTest {
                                                                new BistaticRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
-    
+
         final BistaticRangeTroposphericDelayModifier modifier = new BistaticRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
-    
+
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
-    
+
             ((BistaticRange) measurement).addModifier(modifier);
-    
+
             final AbsoluteDate    date  = measurement.getDate().shiftedBy(1);
             final SpacecraftState state = propagator.propagate(date);
-    
+
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
-    
+
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
@@ -183,10 +183,10 @@ public class BistaticRangeTest {
                 }
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
-    
+
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
-    
+
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
@@ -198,7 +198,7 @@ public class BistaticRangeTest {
         }
 
         Assert.assertEquals(0, maxRelativeError, 1.6e-5);
-    
+
     }
 
     /**

@@ -42,7 +42,7 @@ public class EventMultipleHandlerTest {
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
-    
+
      /**
      * check eventOccurred method.
      */
@@ -66,7 +66,7 @@ public class EventMultipleHandlerTest {
         EventMultipleHandler<DateDetector> facade2 = new EventMultipleHandler<DateDetector>().addHandler(handler1).addHandler(handler3);
         Assert.assertEquals(Action.CONTINUE, facade2.eventOccurred(s, detector, true));
     }
-    
+
     /**
      * check resetState method.
      */
@@ -80,7 +80,7 @@ public class EventMultipleHandlerTest {
         Orbit orbit = new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
                                          PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
         SpacecraftState s = new SpacecraftState(orbit);
-        
+
         // actions
         EventHandler<DateDetector> handler2 = getHandler(10);
         EventHandler<DateDetector> handler3 = getHandler(20);

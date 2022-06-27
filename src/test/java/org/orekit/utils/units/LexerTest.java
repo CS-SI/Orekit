@@ -103,7 +103,7 @@ public class LexerTest {
         expect(lexer, "pW", TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "^",  TokenType.POWER, 0, 1);
         expect(lexer, "2",  TokenType.INTEGER, 2, 1);
-        expectFailure(lexer); 
+        expectFailure(lexer);
     }
 
     @Test

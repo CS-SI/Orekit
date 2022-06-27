@@ -366,7 +366,7 @@ public class EstimationTestUtils {
                             velEps);
 
     }
-    
+
     /**
      * Checker for Kalman estimator validation
      * @param context context used for the test
@@ -425,7 +425,7 @@ public class EstimationTestUtils {
 
         // Add the measurements to the Kalman filter
         Propagator[] estimated = kalman.processMeasurements(measurements);
-        
+
         // Check the number of measurements processed by the filter
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
@@ -433,7 +433,7 @@ public class EstimationTestUtils {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated[k].getInitialState().getOrbit();
             final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
-            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
+            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
             final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
@@ -443,7 +443,7 @@ public class EstimationTestUtils {
             final double[][] dCdY = new double[6][6];
             estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
-            final RealMatrix estimatedCartesianP = 
+            final RealMatrix estimatedCartesianP =
                             Jacobian.
                             multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
                             multiply(Jacobian.transpose());

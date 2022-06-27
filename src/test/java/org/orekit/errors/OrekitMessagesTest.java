@@ -78,17 +78,17 @@ public class OrekitMessagesTest {
             Assert.assertNotEquals(message.name(), translated, message.getSourceString());
          }
     }
-    
+
     @Test
     public void testNoOpEnglishTranslation() {
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.ENGLISH);
-            
+
             // Check that the original message is not empty.
-            Assert.assertFalse(message.name(), message.getSourceString().length() == 0);  
-            
+            Assert.assertFalse(message.name(), message.getSourceString().length() == 0);
+
             // Check that both texts are the same
-            Assert.assertEquals(message.name(), message.getSourceString(), translated);                 
+            Assert.assertEquals(message.name(), message.getSourceString(), translated);
 
         }
     }

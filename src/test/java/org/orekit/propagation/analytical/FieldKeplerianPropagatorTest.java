@@ -149,7 +149,7 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(   926.046, maxTangential.getResult(), 1.0e-3);
         Assert.assertEquals(   -92.800, minRadial.getResult(),     1.0e-3);
         Assert.assertEquals(  7739.532, maxRadial.getResult(),     1.0e-3);
-        
+
     }
 
     @Test

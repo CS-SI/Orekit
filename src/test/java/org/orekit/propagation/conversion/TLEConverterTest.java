@@ -34,7 +34,7 @@ public class TLEConverterTest {
 
         final TLE tle = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                                 "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
-        
+
         TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1.0);
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             Assert.assertTrue(driver.isSelected());

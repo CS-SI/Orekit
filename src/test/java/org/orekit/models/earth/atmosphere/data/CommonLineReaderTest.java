@@ -47,11 +47,11 @@ public class CommonLineReaderTest {
         final String name = "DTCFILE_CommonLineReaderTest.txt";
         URL url = CommonLineReaderTest.class.getClassLoader().getResource("atmosphere/"+name);
         DataSource ds = new DataSource(Paths.get(url.toURI()).toString());
-        
+
         try (InputStream       is  = ds.getOpener().openStreamOnce();
                 InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
                 BufferedReader    br  = new BufferedReader(isr)) {
-            
+
                CommonLineReader reader = new CommonLineReader(br);
                reader.readLine();
                Assert.assertTrue(reader.isEmptyLine());
@@ -59,7 +59,7 @@ public class CommonLineReaderTest {
                Assert.assertEquals(reader.getLine(), "DTC 2003 360   50  17  17  17  38  38  38  74  74  74  74  74  74  31  31  31  38  38  38  38  38  38  44  44");
                Assert.assertEquals(reader.getLineNumber(), 2);
                Assert.assertFalse(reader.isEmptyLine());
-               
+
            }
     }
 

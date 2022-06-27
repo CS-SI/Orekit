@@ -195,7 +195,7 @@ public class IodGibbsTest {
         // Gibbs IOD
         final KeplerianOrbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
                                                     new Position(dateRef, posR1, 1.0, 1.0, satellite),
-                                                    new Position(date2,   posR2, 1.0, 1.0, satellite), 
+                                                    new Position(date2,   posR2, 1.0, 1.0, satellite),
                                                     new Position(date3,   posR3, 1.0, 1.0, satellite));
 
         // Test for the norm of the velocity

@@ -29,7 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;;
 
 public class MendesPavlisModelTest {
-    
+
     private static double epsilon = 1e-6;
 
     @BeforeClass
@@ -44,7 +44,7 @@ public class MendesPavlisModelTest {
 
     @Test
     public void testZenithDelay() {
-        
+
         // Site:   McDonald Observatory
         //         latitude:  30.67166667 °
         //         longitude: -104.0250 °
@@ -57,7 +57,7 @@ public class MendesPavlisModelTest {
         //
         // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
         //         IERS Technical Note No. 36, BKG (2010)
-        
+
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2010.344;
@@ -66,32 +66,32 @@ public class MendesPavlisModelTest {
         final double humidity     = 0.4;
         final double lambda       = 0.532;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
-        
+
         // Expected zenith hydrostatic delay: 1.932992 m (Ref)
         final double expectedHydroDelay = 1.932992;
         // Expected zenith wet delay: 0.223375*10-2 m (Ref)
         final double expectedWetDelay   = 0.223375e-2;
         // Expected total zenith delay: 1.935226 m (Ref)
         final double expectedDelay      = 1.935226;
-        
+
         final double precision = 4.0e-6;
-        
+
         final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
 
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, lambda);
-        
+
         final double[] computedDelay = model.computeZenithDelay(point, model.getParameters(), date);
-        
+
         Assert.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
         Assert.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
         Assert.assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
 
     }
-   
+
     @Test
     public void testMappingFactors() {
-        
+
         // Site:   McDonald Observatory
         //         latitude:  30.67166667 °
         //         longitude: -104.0250 °
@@ -106,7 +106,7 @@ public class MendesPavlisModelTest {
         //         IERS Technical Note No. 36, BKG (2010)
 
         final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2075;
@@ -115,15 +115,15 @@ public class MendesPavlisModelTest {
         final double humidity     = 0.4;
         final double lambda       = 0.532;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
-        
+
         final double elevation        = FastMath.toRadians(15.0);
         // Expected mapping factor: 3.80024367 (Ref)
         final double expectedMapping    = 3.80024367;
-        
+
         // Test for the second constructor
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, lambda);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
 
         Assert.assertEquals(expectedMapping, computedMapping[0], 5.0e-8);

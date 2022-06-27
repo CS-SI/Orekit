@@ -54,7 +54,7 @@ public class SBASPropagatorTest {
     /** SBAS orbital elements. */
     private SBASNavigationMessage soe;
     private Frames frames;
-    
+
     @Before
     public void setUp() {
         // Reference data are taken from IGS file brdm0370.17p

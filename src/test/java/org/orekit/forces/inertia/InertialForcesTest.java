@@ -189,21 +189,21 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         DerivativeStructure fvx = factory.variable(3, 0.0);
         DerivativeStructure fvy = factory.variable(4, 0.0);
         DerivativeStructure fvz = factory.variable(5, 0.1);
-        
+
         final FieldPVCoordinates<DerivativeStructure> initialConditions =
                         new FieldPVCoordinates<>(new FieldVector3D<>(fpx, fpy, fpz),
                                           new FieldVector3D<>(fvx, fvy, fvz));
 
         final double minStep = 0.00001;
         final double maxstep = 3600.0;
-        
+
         Field<DerivativeStructure> field = fpx.getField();
 
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
-        
-        // PVCoordinates linked to a Frame and a Date                
+
+        // PVCoordinates linked to a Frame and a Date
         final FieldAbsolutePVCoordinates<DerivativeStructure> initialAbsPV =
             new FieldAbsolutePVCoordinates<>(EME, J2000, initialConditions);
 
@@ -211,7 +211,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(initialAbsPV);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
+
         final double positionTolerance = 0.01;
         final double velocityTolerance = 0.01;
         final double massTolerance = 1.0e-6;
@@ -249,7 +249,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
 
         FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
@@ -284,17 +284,17 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
             double vx_shift = vx_R + rand_next[3];
             double vy_shift = vy_R + rand_next[4];
             double vz_shift = vz_R + rand_next[5];
-            
+
             final PVCoordinates shiftedConditions =
                             new PVCoordinates(new Vector3D(px_shift, py_shift, pz_shift),
                                               new Vector3D(vx_shift, vy_shift, vz_shift));
-            // PVCoordinates linked to a Frame and a Date                
+            // PVCoordinates linked to a Frame and a Date
             final AbsolutePVCoordinates shiftedAbsPV =
                 new AbsolutePVCoordinates(EME, J2000.toAbsoluteDate(), shiftedConditions);
-            
+
             SpacecraftState shift_iSR = new SpacecraftState(shiftedAbsPV);
-            
-            
+
+
 
             NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
 
@@ -303,7 +303,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
             shift_NP.setOrbitType(null);
             shift_NP.setIgnoreCentralAttraction(true);
             shift_NP.addForceModel(forceModel);
-            
+
 
             SpacecraftState finalState_shift = shift_NP.propagate(target.toAbsoluteDate());
 
@@ -342,11 +342,11 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            if (ax != 0 || ay !=0 || az != 0) { 
+            if (ax != 0 || ay !=0 || az != 0) {
                 maxA = FastMath.max(maxA, FastMath.abs((ax_DS - ax) / ax));
                 maxA = FastMath.max(maxA, FastMath.abs((ay_DS - ay) / ay));
                 maxA = FastMath.max(maxA, FastMath.abs((az_DS - az) / az));
-            } else { 
+            } else {
                 maxA = 0;
             }
         }

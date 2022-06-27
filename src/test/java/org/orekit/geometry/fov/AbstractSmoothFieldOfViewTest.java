@@ -165,5 +165,5 @@ public abstract class AbstractSmoothFieldOfViewTest {
 
     protected OneAxisEllipsoid earth;
     protected Orbit            orbit;
-    
+
 }

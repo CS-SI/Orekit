@@ -48,7 +48,7 @@ public class TDOAMeasurementCreator extends MeasurementCreator {
         this.secondary = context.TDOAstations.getValue();
         this.satellite = new ObservableSatellite(0);
     }
-    
+
     public ObservableSatellite getSatellite() {
         return satellite;
     }

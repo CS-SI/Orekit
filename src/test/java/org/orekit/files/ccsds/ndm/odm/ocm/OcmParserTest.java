@@ -791,7 +791,7 @@ public class OcmParserTest {
         Assert.assertEquals( 0.05,        man.get(0).getManeuvers().get(1).getDeployDvSigma(), 1.0e-10);
         Assert.assertEquals(-0.005051,    man.get(0).getManeuvers().get(1).getDeployDvRatio(), 1.0e-10);
         Assert.assertEquals( 0.033,       man.get(0).getManeuvers().get(1).getDeployDvCda(), 1.0e-10);
-        
+
         Assert.assertEquals(1, man.get(1).getMetadata().getComments().size());
         Assert.assertEquals("100 s of 0.5N +in-track thrust w/effic η=0.95, Isp=300s, 5% 1-sigma error", man.get(1).getMetadata().getComments().get(0));
         Assert.assertEquals("E W 20160305B",    man.get(1).getMetadata().getManID());

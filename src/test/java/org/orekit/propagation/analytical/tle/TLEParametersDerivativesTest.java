@@ -20,7 +20,7 @@ public class TLEParametersDerivativesTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");        
+        Utils.setDataRoot("regular-data");
         // SPOT TLE propagation will use SGP4
         String line1SPOT = "1 22823U 93061A   03339.49496229  .00000173  00000-0  10336-3 0   133";
         String line2SPOT = "2 22823  98.4132 359.2998 0017888 100.4310 259.8872 14.18403464527664";
@@ -109,7 +109,7 @@ public class TLEParametersDerivativesTest {
         SpacecraftState sP4h = propagator2.propagate(target);
         fillJacobianColumn(dYdPRef, 0, orbitType, h,
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
-       
+
         for (int i = 0; i < 6; ++i) {
             Assert.assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(tolerance));
         }
