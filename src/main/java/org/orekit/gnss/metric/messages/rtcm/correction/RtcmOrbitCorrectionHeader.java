@@ -14,39 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.ssr.igm;
-
-import org.orekit.gnss.metric.messages.common.ClockCorrection;
+package org.orekit.gnss.metric.messages.rtcm.correction;
 
 /**
- * Container for SSR IGM02 data.
+ * Container for common data in RTCM Orbit Correction Message type header.
  * @author Bryan Cazabonne
- * @since 11.0
+ * @since 12.0
  */
-public class SsrIgm02Data extends SsrIgmData {
+public class RtcmOrbitCorrectionHeader extends RtcmCorrectionHeader {
 
-    /** Container for clock correction data. */
-    private ClockCorrection clockCorrection;
+    /** Satellite reference datum. */
+    private int satelliteReferenceDatum;
 
     /** Constructor. */
-    public SsrIgm02Data() {
+    public RtcmOrbitCorrectionHeader() {
         // Nothing to do ...
     }
 
     /**
-     * Get the clock correction data.
-     * @return the clock correction data
+     * Get the satellite reference datum.
+     * <p>
+     * Orbit corrections refer to Satellite Reference Datum:
+     * 0 - ITRF. 1 - Regional
+     * </p>
+     * @return the indicator of the satellite reference datum
      */
-    public ClockCorrection getClockCorrection() {
-        return clockCorrection;
+    public int getSatelliteReferenceDatum() {
+        return satelliteReferenceDatum;
     }
 
     /**
-     * Set the clock correction data.
-     * @param clockCorrection the data to set
+     * Set the satellite reference datum.
+     * @param satelliteReferenceDatum the satellite reference datum to set
      */
-    public void setClockCorrection(final ClockCorrection clockCorrection) {
-        this.clockCorrection = clockCorrection;
+    public void setSatelliteReferenceDatum(final int satelliteReferenceDatum) {
+        this.satelliteReferenceDatum = satelliteReferenceDatum;
     }
 
 }

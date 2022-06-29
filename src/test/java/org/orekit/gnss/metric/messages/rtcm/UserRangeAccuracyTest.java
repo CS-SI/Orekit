@@ -18,8 +18,8 @@ package org.orekit.gnss.metric.messages.rtcm;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.UserRangeAccuracy;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
+import org.orekit.gnss.metric.messages.common.UserRangeAccuracy;
 
 public class UserRangeAccuracyTest {
 

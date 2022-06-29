@@ -14,39 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.ssr.igm;
-
-import org.orekit.gnss.metric.messages.common.ClockCorrection;
-
 /**
- * Container for SSR IGM02 data.
+ *
+ * This package contains utility classes relate to RTCM ephemeris messages.
+ *
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class SsrIgm02Data extends SsrIgmData {
-
-    /** Container for clock correction data. */
-    private ClockCorrection clockCorrection;
-
-    /** Constructor. */
-    public SsrIgm02Data() {
-        // Nothing to do ...
-    }
-
-    /**
-     * Get the clock correction data.
-     * @return the clock correction data
-     */
-    public ClockCorrection getClockCorrection() {
-        return clockCorrection;
-    }
-
-    /**
-     * Set the clock correction data.
-     * @param clockCorrection the data to set
-     */
-    public void setClockCorrection(final ClockCorrection clockCorrection) {
-        this.clockCorrection = clockCorrection;
-    }
-
-}
+package org.orekit.gnss.metric.messages.common;

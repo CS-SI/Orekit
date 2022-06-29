@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.ssr.igm;
+package org.orekit.gnss.metric.messages.rtcm.correction;
 
 import org.orekit.gnss.metric.messages.common.ClockCorrection;
 import org.orekit.gnss.metric.messages.common.OrbitCorrection;
 
 /**
- * Container for SSR IGM03 data.
+ * Container for common data in RTCM combined corrections message type.
  * @author Bryan Cazabonne
- * @since 11.0
+ * @since 12.0
  */
-public class SsrIgm03Data extends SsrIgmData {
+public class RtcmCombinedCorrectionData extends RtcmCorrectionData {
 
     /** GNSS IOD. */
     private int gnssIod;
@@ -36,7 +36,7 @@ public class SsrIgm03Data extends SsrIgmData {
     private ClockCorrection clockCorrection;
 
     /** Constructor. */
-    public SsrIgm03Data() {
+    public RtcmCombinedCorrectionData() {
         // Nothing to do ...
     }
 

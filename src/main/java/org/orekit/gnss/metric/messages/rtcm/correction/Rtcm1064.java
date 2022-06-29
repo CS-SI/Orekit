@@ -14,39 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.ssr.igm;
+package org.orekit.gnss.metric.messages.rtcm.correction;
 
-import org.orekit.gnss.metric.messages.common.ClockCorrection;
+import java.util.List;
+
+import org.orekit.gnss.SatelliteSystem;
 
 /**
- * Container for SSR IGM02 data.
+ * RTCM 1064 message: GLONASS Clock Correction Message.
  * @author Bryan Cazabonne
- * @since 11.0
+ * @since 12.0
  */
-public class SsrIgm02Data extends SsrIgmData {
-
-    /** Container for clock correction data. */
-    private ClockCorrection clockCorrection;
-
-    /** Constructor. */
-    public SsrIgm02Data() {
-        // Nothing to do ...
-    }
+public class Rtcm1064 extends RtcmCorrectionMessage<RtcmCorrectionHeader, RtcmClockCorrectionData> {
 
     /**
-     * Get the clock correction data.
-     * @return the clock correction data
+     * Constructor.
+     * @param typeCode message number
+     * @param header message header
+     * @param data message data
      */
-    public ClockCorrection getClockCorrection() {
-        return clockCorrection;
-    }
-
-    /**
-     * Set the clock correction data.
-     * @param clockCorrection the data to set
-     */
-    public void setClockCorrection(final ClockCorrection clockCorrection) {
-        this.clockCorrection = clockCorrection;
+    public Rtcm1064(final int typeCode, final RtcmCorrectionHeader header,
+                    final List<RtcmClockCorrectionData> data) {
+        super(typeCode, SatelliteSystem.GLONASS, header, data);
     }
 
 }

@@ -14,39 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.ssr.igm;
-
-import org.orekit.gnss.metric.messages.common.ClockCorrection;
+package org.orekit.gnss.metric.messages.common;
 
 /**
- * Container for SSR IGM02 data.
+ * This interface represents an accuracy providerused to validate RTCM ephemeris messages.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class SsrIgm02Data extends SsrIgmData {
+public interface AccuracyProvider {
 
-    /** Container for clock correction data. */
-    private ClockCorrection clockCorrection;
-
-    /** Constructor. */
-    public SsrIgm02Data() {
-        // Nothing to do ...
-    }
-
-    /**
-     * Get the clock correction data.
-     * @return the clock correction data
+    /** Get the accuracy of the ephemeris data from an accuracy index.
+     * @return accuracy in meters
      */
-    public ClockCorrection getClockCorrection() {
-        return clockCorrection;
-    }
-
-    /**
-     * Set the clock correction data.
-     * @param clockCorrection the data to set
-     */
-    public void setClockCorrection(final ClockCorrection clockCorrection) {
-        this.clockCorrection = clockCorrection;
-    }
+    double getAccuracy();
 
 }

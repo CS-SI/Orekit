@@ -14,29 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.rtcm.ephemeris;
+package org.orekit.gnss.metric.messages.rtcm.correction;
 
-import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.gnss.metric.messages.rtcm.RtcmData;
 
 /**
- * Container for common data in RTCM ephemeris message type.
+ * Container for common data in RTCM corrections message type.
  * @author Bryan Cazabonne
- * @since 11.0
+ * @since 12.0
  */
-public class RtcmEphemerisData extends RtcmData {
+public class RtcmCorrectionData extends RtcmData {
 
-    /** Seconds to milliseconds converter. */
-    protected static final double SEC_TO_MILLI = 1000.0;
-
-    /** Satellite ID. */
-    private int rtcmSatelliteId;
-
-    /** Accuracy indicator. */
-    private AccuracyProvider accuracy;
+    /** GNSS satellite ID. */
+    private int satelliteID;
 
     /** Constructor. */
-    public RtcmEphemerisData() {
+    public RtcmCorrectionData() {
         // Nothing to do ...
     }
 
@@ -45,7 +38,7 @@ public class RtcmEphemerisData extends RtcmData {
      * @return the satellite ID
      */
     public int getSatelliteID() {
-        return rtcmSatelliteId;
+        return satelliteID;
     }
 
     /**
@@ -53,23 +46,7 @@ public class RtcmEphemerisData extends RtcmData {
      * @param satelliteID the ID to set
      */
     public void setSatelliteID(final int satelliteID) {
-        this.rtcmSatelliteId = satelliteID;
-    }
-
-    /**
-     * Get the accuracy provider of the ephemeris message.
-     * @return the accuracy provider
-     */
-    public AccuracyProvider getAccuracyProvider() {
-        return accuracy;
-    }
-
-    /**
-     * Set the accuracy provider of the ephemeris message.
-     * @param provider the provider to set
-     */
-    public void setAccuracyProvider(final AccuracyProvider provider) {
-        this.accuracy = provider;
+        this.satelliteID = satelliteID;
     }
 
 }

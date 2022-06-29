@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.ssr.igm;
+package org.orekit.gnss.metric.messages.rtcm.correction;
 
-import org.orekit.gnss.metric.messages.common.ClockCorrection;
 import org.orekit.gnss.metric.messages.common.OrbitCorrection;
 
 /**
- * Container for SSR IGM03 data.
+ * Container for common data in RTCM orbit correction message type.
  * @author Bryan Cazabonne
- * @since 11.0
+ * @since 12.0
  */
-public class SsrIgm03Data extends SsrIgmData {
+public class RtcmOrbitCorrectionData extends RtcmCorrectionData {
 
     /** GNSS IOD. */
     private int gnssIod;
@@ -32,11 +31,8 @@ public class SsrIgm03Data extends SsrIgmData {
     /** Container for SSR orbit correction data. */
     private OrbitCorrection orbitCorrection;
 
-    /** Container for clock correction data. */
-    private ClockCorrection clockCorrection;
-
     /** Constructor. */
-    public SsrIgm03Data() {
+    public RtcmOrbitCorrectionData() {
         // Nothing to do ...
     }
 
@@ -74,22 +70,6 @@ public class SsrIgm03Data extends SsrIgmData {
      */
     public void setOrbitCorrection(final OrbitCorrection orbitCorrection) {
         this.orbitCorrection = orbitCorrection;
-    }
-
-    /**
-     * Get the clock correction data.
-     * @return the clock correction data
-     */
-    public ClockCorrection getClockCorrection() {
-        return clockCorrection;
-    }
-
-    /**
-     * Set the clock correction data.
-     * @param clockCorrection the data to set
-     */
-    public void setClockCorrection(final ClockCorrection clockCorrection) {
-        this.clockCorrection = clockCorrection;
     }
 
 }
