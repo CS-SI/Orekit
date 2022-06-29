@@ -25,19 +25,15 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  * attribute which can be acces with getRTNCovariaxMatrix method. Beware that
  * there are thus 2 ways to modify the RTN covariance : setC... ( setCrr,
  * setCtr ...) which should be prioritized and getRTNCovariaxMatrix.setEntry(row, col, value).
- *
  * @author Melina Vanel
  * @since 11.2
  */
 public class RTNCovariance extends CommentsContainer {
 
-    /**
-     * RTN covariance matrix.
-     */
-    private final RealMatrix covarianceMatrix;
+    /** RTN covariance matrix. */
+    private RealMatrix covarianceMatrix;
 
-    /**
-     * Simple constructor. To update matrix value there are 2 ways to modify the RTN
+    /** Simple constructor. To update matrix value there are 2 ways to modify the RTN
      * covariance : setC... ( setCrr, setCtr ...) which should be prioritized and
      * getRTNCovariaxMatrix.setEntry(row, col, value).
      */
@@ -48,65 +44,43 @@ public class RTNCovariance extends CommentsContainer {
                 covarianceMatrix.setEntry(i, j, Double.NaN);
             }
         }
+
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         super.validate(version);
         // We only check values that are mandatory in a cdm file
-        checkNotNaN(getCrr(), RTNCovarianceKey.CR_R);
-        checkNotNaN(getCtr(), RTNCovarianceKey.CT_R);
-        checkNotNaN(getCtt(), RTNCovarianceKey.CT_T);
-        checkNotNaN(getCnr(), RTNCovarianceKey.CN_R);
-        checkNotNaN(getCnt(), RTNCovarianceKey.CN_T);
-        checkNotNaN(getCnn(), RTNCovarianceKey.CN_N);
-        checkNotNaN(getCrdotr(), RTNCovarianceKey.CRDOT_R);
-        checkNotNaN(getCrdott(), RTNCovarianceKey.CRDOT_T);
-        checkNotNaN(getCrdotn(), RTNCovarianceKey.CRDOT_N);
-        checkNotNaN(getCrdotrdot(), RTNCovarianceKey.CRDOT_RDOT);
-        checkNotNaN(getCtdotr(), RTNCovarianceKey.CTDOT_R);
-        checkNotNaN(getCtdott(), RTNCovarianceKey.CTDOT_T);
-        checkNotNaN(getCtdotn(), RTNCovarianceKey.CTDOT_N);
-        checkNotNaN(getCtdotrdot(), RTNCovarianceKey.CTDOT_RDOT);
-        checkNotNaN(getCtdottdot(), RTNCovarianceKey.CTDOT_TDOT);
-        checkNotNaN(getCndotr(), RTNCovarianceKey.CNDOT_R);
-        checkNotNaN(getCndott(), RTNCovarianceKey.CNDOT_T);
-        checkNotNaN(getCndotn(), RTNCovarianceKey.CNDOT_N);
-        checkNotNaN(getCndotrdot(), RTNCovarianceKey.CNDOT_RDOT);
-        checkNotNaN(getCndottdot(), RTNCovarianceKey.CNDOT_TDOT);
-        checkNotNaN(getCndotndot(), RTNCovarianceKey.CNDOT_NDOT);
+        checkNotNaN(getCrr(),              RTNCovarianceKey.CR_R);
+        checkNotNaN(getCtr(),              RTNCovarianceKey.CT_R);
+        checkNotNaN(getCtt(),              RTNCovarianceKey.CT_T);
+        checkNotNaN(getCnr(),              RTNCovarianceKey.CN_R);
+        checkNotNaN(getCnt(),              RTNCovarianceKey.CN_T);
+        checkNotNaN(getCnn(),              RTNCovarianceKey.CN_N);
+        checkNotNaN(getCrdotr(),           RTNCovarianceKey.CRDOT_R);
+        checkNotNaN(getCrdott(),           RTNCovarianceKey.CRDOT_T);
+        checkNotNaN(getCrdotn(),           RTNCovarianceKey.CRDOT_N);
+        checkNotNaN(getCrdotrdot(),        RTNCovarianceKey.CRDOT_RDOT);
+        checkNotNaN(getCtdotr(),           RTNCovarianceKey.CTDOT_R);
+        checkNotNaN(getCtdott(),           RTNCovarianceKey.CTDOT_T);
+        checkNotNaN(getCtdotn(),           RTNCovarianceKey.CTDOT_N);
+        checkNotNaN(getCtdotrdot(),        RTNCovarianceKey.CTDOT_RDOT);
+        checkNotNaN(getCtdottdot(),        RTNCovarianceKey.CTDOT_TDOT);
+        checkNotNaN(getCndotr(),           RTNCovarianceKey.CNDOT_R);
+        checkNotNaN(getCndott(),           RTNCovarianceKey.CNDOT_T);
+        checkNotNaN(getCndotn(),           RTNCovarianceKey.CNDOT_N);
+        checkNotNaN(getCndotrdot(),        RTNCovarianceKey.CNDOT_RDOT);
+        checkNotNaN(getCndottdot(),        RTNCovarianceKey.CNDOT_TDOT);
+        checkNotNaN(getCndotndot(),        RTNCovarianceKey.CNDOT_NDOT);
     }
 
-    /**
-     * Get the object [1,1] in covariance matrix (with index starting at 1).
-     *
-     * @return the object [1,1] in covariance matrix (in m²)
-     */
-    public double getCrr() {
-        return covarianceMatrix.getEntry(0, 0);
-    }
-
-    /**
-     * Set the object [1,1] in covariance matrix (with index starting at 1).
-     *
-     * @param CRR = object [1,1] in covariance matrix (in m²)
-     */
-    public void setCrr(final double CRR) {
-        refuseFurtherComments();
-        setCovarianceMatrixEntry(0, 0, CRR);
-    }
-
-    /**
-     * Set an entry in the RTN covariance matrix.
+    /** Set an entry in the RTN covariance matrix.
      * <p>
      * Both m(j, k) and m(k, j) are set.
      * </p>
-     *
-     * @param j     row index (must be between 0 and 5 (inclusive)
-     * @param k     column index (must be between 0 and 5 (inclusive)
+     * @param j row index (must be between 0 and 5 (inclusive)
+     * @param k column index (must be between 0 and 5 (inclusive)
      * @param entry value of the matrix entry
      */
     public void setCovarianceMatrixEntry(final int j, final int k, final double entry) {
@@ -115,8 +89,32 @@ public class RTNCovariance extends CommentsContainer {
     }
 
     /**
+     * Get the RTN covariance matrix.
+     * @return the RTN covariance matrix
+     */
+    public RealMatrix getRTNCovarianceMatrix() {
+        return covarianceMatrix;
+    }
+
+    /**
+     * Get the object [1,1] in covariance matrix (with index starting at 1).
+     * @return the object [1,1] in covariance matrix (in m²)
+     */
+    public double getCrr() {
+        return covarianceMatrix.getEntry(0, 0);
+    }
+
+    /**
+     * Set the object [1,1] in covariance matrix (with index starting at 1).
+     * @param CRR = object [1,1] in covariance matrix (in m²)
+     */
+    public void setCrr(final double CRR) {
+        refuseFurtherComments();
+        setCovarianceMatrixEntry(0, 0, CRR);
+    }
+
+    /**
      * Get the object [2,1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [2,1] in covariance matrix (in m²)
      */
     public double getCtr() {
@@ -125,7 +123,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [2,1] in covariance matrix (with index starting at 1).
-     *
      * @param CTR = object [2,1] in covariance matrix (in m²)
      */
     public void setCtr(final double CTR) {
@@ -135,7 +132,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [2,2] in covariance matrix (with index starting at 1).
-     *
      * @return the object [2,2] in covariance matrix (in m²)
      */
     public double getCtt() {
@@ -144,7 +140,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [2,2] in covariance matrix (with index starting at 1).
-     *
      * @param CTT = object [2,2] in covariance matrix (in m²)
      */
     public void setCtt(final double CTT) {
@@ -154,7 +149,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [3,1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [3,1] in covariance matrix (in m²)
      */
     public double getCnr() {
@@ -163,7 +157,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [3,1] in covariance matrix (with index starting at 1).
-     *
      * @param CNR = object [3,1] in covariance matrix (in m²)
      */
     public void setCnr(final double CNR) {
@@ -173,7 +166,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [3,2] in covariance matrix (with index starting at 1).
-     *
      * @return the object [3,2] in covariance matrix (in m²)
      */
     public double getCnt() {
@@ -182,7 +174,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [3,2] in covariance matrix (with index starting at 1).
-     *
      * @param CNT = object [3,2] in covariance matrix (in m²)
      */
     public void setCnt(final double CNT) {
@@ -192,7 +183,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [3,3] in covariance matrix (with index starting at 1).
-     *
      * @return the object [3,3] in covariance matrix (in m²)
      */
     public double getCnn() {
@@ -201,7 +191,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [3,3] in covariance matrix (with index starting at 1).
-     *
      * @param CNN = object [3,3] in covariance matrix (in m²)
      */
     public void setCnn(final double CNN) {
@@ -211,7 +200,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [4,1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [4,1] in covariance matrix (in m²/s)
      */
     public double getCrdotr() {
@@ -220,7 +208,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [4,1] in covariance matrix (with index starting at 1).
-     *
      * @param CRdotR = object [4,1] in covariance matrix (in m²/s)
      */
     public void setCrdotr(final double CRdotR) {
@@ -230,7 +217,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [4,2] in covariance matrix (with index starting at 1).
-     *
      * @return the object [4,2] in covariance matrix (in m²/s)
      */
     public double getCrdott() {
@@ -239,7 +225,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [4, 2] in covariance matrix (with index starting at 1).
-     *
      * @param CRdotT = object [4, 2] in covariance matrix (in m²/s)
      */
     public void setCrdott(final double CRdotT) {
@@ -249,7 +234,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [4, 3] in covariance matrix (with index starting at 1) .
-     *
      * @return the object [4, 3] in covariance matrix (in m²/s)
      */
     public double getCrdotn() {
@@ -258,7 +242,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [4, 3] in covariance matrix (with index starting at 1).
-     *
      * @param CRdotN = object [4,3] in covariance matrix (in m²/s)
      */
     public void setCrdotn(final double CRdotN) {
@@ -268,7 +251,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [4, 4] in covariance matrix (with index starting at 1).
-     *
      * @return the object [4, 4] in covariance matrix (in m²/s²)
      */
     public double getCrdotrdot() {
@@ -277,7 +259,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [4, 4] in covariance matrix (with index starting at 1).
-     *
      * @param CRdotRdot = object [4, 4] in covariance matrix (in m²/s²)
      */
     public void setCrdotrdot(final double CRdotRdot) {
@@ -287,7 +268,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [5, 1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [5, 1] in covariance matrix (in m²/s)
      */
     public double getCtdotr() {
@@ -296,7 +276,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [5,1] in covariance matrix (with index starting at 1).
-     *
      * @param CTdotR = object [5,1] in covariance matrix (in m²/s)
      */
     public void setCtdotr(final double CTdotR) {
@@ -306,7 +285,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [5,2] in covariance matrix (with index starting at 1).
-     *
      * @return the object [5,2] in covariance matrix (in m²/s)
      */
     public double getCtdott() {
@@ -315,7 +293,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [5,2] in covariance matrix (with index starting at 1).
-     *
      * @param CTdotT = object [5,2] in covariance matrix (in m²/s)
      */
     public void setCtdott(final double CTdotT) {
@@ -325,7 +302,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [5,3] in covariance matrix (with index starting at 1).
-     *
      * @return the object [5,3] in covariance matrix (in m²/s)
      */
     public double getCtdotn() {
@@ -334,7 +310,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [5,3] in covariance matrix (with index starting at 1).
-     *
      * @param CTdotN = object [5,3] in covariance matrix (in m²/s)
      */
     public void setCtdotn(final double CTdotN) {
@@ -344,7 +319,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [5,4] in covariance matrix (with index starting at 1).
-     *
      * @return the object [5,4] in covariance matrix (in m²/s²)
      */
     public double getCtdotrdot() {
@@ -353,7 +327,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [5,4] in covariance matrix (with index starting at 1).
-     *
      * @param CTdotRdot = object [5,4] in covariance matrix (in m²/s²)
      */
     public void setCtdotrdot(final double CTdotRdot) {
@@ -363,7 +336,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [5,5] in covariance matrix (with index starting at 1).
-     *
      * @return the object [5,5] in covariance matrix (in m²/s²)
      */
     public double getCtdottdot() {
@@ -372,7 +344,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [5,5] in covariance matrix (with index starting at 1).
-     *
      * @param CTdotTdot = object [5,5] in covariance matrix (in m²/s²)
      */
     public void setCtdottdot(final double CTdotTdot) {
@@ -382,7 +353,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [6,1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [6,1] in covariance matrix (in m²/s)
      */
     public double getCndotr() {
@@ -391,7 +361,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [6,1] in covariance matrix (with index starting at 1).
-     *
      * @param CNdotR = object [6,1] in covariance matrix (in m²/s)
      */
     public void setCndotr(final double CNdotR) {
@@ -401,7 +370,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [6,2] in covariance matrix (with index starting at 1).
-     *
      * @return the object [6,2] in covariance matrix (in m²/s)
      */
     public double getCndott() {
@@ -410,7 +378,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [6,2] in covariance matrix (with index starting at 1).
-     *
      * @param CNdotT = object [6,2] in covariance matrix (in m²/s)
      */
     public void setCndott(final double CNdotT) {
@@ -420,7 +387,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [6,3] in covariance matrix (with index starting at 1).
-     *
      * @return the object [6,3] in covariance matrix (in m²/s)
      */
     public double getCndotn() {
@@ -429,7 +395,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [6,3] in covariance matrix (with index starting at 1).
-     *
      * @param CNdotN = object [6,3] in covariance matrix (in m²/s)
      */
     public void setCndotn(final double CNdotN) {
@@ -439,7 +404,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [6,4] in covariance matrix (with index starting at 1).
-     *
      * @return the object [6,4] in covariance matrix (in m²/s²)
      */
     public double getCndotrdot() {
@@ -448,7 +412,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [6,4] in covariance matrix (with index starting at 1).
-     *
      * @param CNdotRdot = object [6,4] in covariance matrix (in m²/s²)
      */
     public void setCndotrdot(final double CNdotRdot) {
@@ -458,7 +421,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [6,5] in covariance matrix (with index starting at 1).
-     *
      * @return the object [6,5] in covariance matrix (in m²/s²)
      */
     public double getCndottdot() {
@@ -467,7 +429,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [6,5] in covariance matrix (with index starting at 1).
-     *
      * @param CNdotTdot = object [6,5] in covariance matrix (in m²/s²)
      */
     public void setCndottdot(final double CNdotTdot) {
@@ -477,7 +438,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [6,6] in covariance matrix (with index starting at 1).
-     *
      * @return the object [6,6] in covariance matrix (in m²/s²)
      */
     public double getCndotndot() {
@@ -486,7 +446,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [6,6] in covariance matrix (with index starting at 1).
-     *
      * @param CNdotNdot = object [6,6] in covariance matrix (in m²/s²)
      */
     public void setCndotndot(final double CNdotNdot) {
@@ -495,17 +454,7 @@ public class RTNCovariance extends CommentsContainer {
     }
 
     /**
-     * Get the RTN covariance matrix.
-     *
-     * @return the RTN covariance matrix
-     */
-    public RealMatrix getRTNCovarianceMatrix() {
-        return covarianceMatrix;
-    }
-
-    /**
      * Get the object [7,1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [7,1] in covariance matrix (in m³/kg)
      */
     public double getCdrgr() {
@@ -514,7 +463,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,1] in covariance matrix (with index starting at 1).
-     *
      * @param CDRGR = object [7,1] in covariance matrix (in m³/kg)
      */
     public void setCdrgr(final double CDRGR) {
@@ -524,7 +472,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [7,2] in covariance matrix.
-     *
      * @return the object [7,2] in covariance matrix (in m³/kg)
      */
     public double getCdrgt() {
@@ -533,7 +480,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,2] in covariance matrix (with index starting at 1).
-     *
      * @param CDRGT = object [7,2] in covariance matrix (in m³/kg)
      */
     public void setCdrgt(final double CDRGT) {
@@ -543,7 +489,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [7,3] in covariance matrix (with index starting at 1).
-     *
      * @return the object [7,3] in covariance matrix (in m³/kg)
      */
     public double getCdrgn() {
@@ -552,7 +497,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,3] in covariance matrix (with index starting at 1).
-     *
      * @param CDRGN = object [7,3] in covariance matrix (in m³/kg)
      */
     public void setCdrgn(final double CDRGN) {
@@ -562,7 +506,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [7,4] in covariance matrix (with index starting at 1).
-     *
      * @return the object [7,4] in covariance matrix (in m³/(kg.s))
      */
     public double getCdrgrdot() {
@@ -571,7 +514,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,4] in covariance matrix (with index starting at 1).
-     *
      * @param CDRGRdot = object [7,4] in covariance matrix (in m³/(kg.s))
      */
     public void setCdrgrdot(final double CDRGRdot) {
@@ -581,7 +523,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [7,5] in covariance matrix (with index starting at 1).
-     *
      * @return the object [7,5] in covariance matrix (in m³/(kg.s))
      */
     public double getCdrgtdot() {
@@ -590,7 +531,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,5] in covariance matrix (with index starting at 1).
-     *
      * @param CDRGTdot = object [7,5] in covariance matrix (in m³/(kg.s))
      */
     public void setCdrgtdot(final double CDRGTdot) {
@@ -600,7 +540,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [7,6] in covariance matrix (with index starting at 1).
-     *
      * @return the object [7,6] in covariance matrix (in m³/(kg.s))
      */
     public double getCdrgndot() {
@@ -609,7 +548,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,6] in covariance matrix (with index starting at 1).
-     *
      * @param CDRGNdot = object [7,6] in covariance matrix (in m³/(kg.s))
      */
     public void setCdrgndot(final double CDRGNdot) {
@@ -619,7 +557,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [7,7] in covariance matrix (with index starting at 1).
-     *
      * @return the object [7,7] in covariance matrix (in m⁴/kg²)
      */
     public double getCdrgdrg() {
@@ -628,7 +565,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,7] in covariance matrix (with index starting at 1).
-     *
      * @param CDRGDRG = object [7,7] in covariance matrix (in m⁴/kg²)
      */
     public void setCdrgdrg(final double CDRGDRG) {
@@ -638,7 +574,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,1] in covariance matrix (in m³/kg)
      */
     public double getCsrpr() {
@@ -647,7 +582,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,1] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPR = object [8,1] in covariance matrix (in m³/kg)
      */
     public void setCsrpr(final double CSRPR) {
@@ -657,7 +591,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,2] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,2] in covariance matrix (in m³/kg)
      */
     public double getCsrpt() {
@@ -666,7 +599,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,2] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPT = object [8,2] in covariance matrix (in m³/kg)
      */
     public void setCsrpt(final double CSRPT) {
@@ -676,7 +608,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,3] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,3] in covariance matrix (in m³/kg)
      */
     public double getCsrpn() {
@@ -685,7 +616,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,3] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPN = object [8,3] in covariance matrix (in m³/kg)
      */
     public void setCsrpn(final double CSRPN) {
@@ -695,7 +625,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,4] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,4] in covariance matrix (in m³/(kg.s))
      */
     public double getCsrprdot() {
@@ -704,7 +633,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,4] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPRdot = object [8,4] in covariance matrix (in m³/(kg.s))
      */
     public void setCsrprdot(final double CSRPRdot) {
@@ -714,7 +642,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,5] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,5] in covariance matrix (in m³/(kg.s))
      */
     public double getCsrptdot() {
@@ -723,7 +650,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,5] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPTdot = object [8,5] in covariance matrix (in m³/(kg.s))
      */
     public void setCsrptdot(final double CSRPTdot) {
@@ -733,7 +659,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,6] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,6] in covariance matrix (in m³/(kg.s))
      */
     public double getCsrpndot() {
@@ -742,7 +667,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,6] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPNdot = object [8,6] in covariance matrix (in m³/(kg.s))
      */
     public void setCsrpndot(final double CSRPNdot) {
@@ -752,7 +676,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,7] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,7] in covariance matrix (in m⁴/kg²)
      */
     public double getCsrpdrg() {
@@ -761,7 +684,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,7] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPDRG = object [8,7] in covariance matrix (in m⁴/kg²)
      */
     public void setCsrpdrg(final double CSRPDRG) {
@@ -771,7 +693,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [8,8] in covariance matrix (with index starting at 1).
-     *
      * @return the object [8,8] in covariance matrix (in m⁴/kg²)
      */
     public double getCsrpsrp() {
@@ -780,7 +701,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,8] in covariance matrix (with index starting at 1).
-     *
      * @param CSRPSRP = object [8,8] in covariance matrix (in m⁴/kg²)
      */
     public void setCsrpsrp(final double CSRPSRP) {
@@ -790,7 +710,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,1] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,1] in covariance matrix (in m²/s²)
      */
     public double getCthrr() {
@@ -799,7 +718,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,1] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRR = object [9,1] in covariance matrix (in m²/s²)
      */
     public void setCthrr(final double CTHRR) {
@@ -809,7 +727,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,2] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,2] in covariance matrix (in m²/s²)
      */
     public double getCthrt() {
@@ -818,7 +735,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,2] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRT = object [9,2] in covariance matrix (in m²/s²)
      */
     public void setCthrt(final double CTHRT) {
@@ -828,7 +744,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,3] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,3] in covariance matrix (in m²/s²)
      */
     public double getCthrn() {
@@ -837,7 +752,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,3] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRN = object [9,3] in covariance matrix (in m²/s²)
      */
     public void setCthrn(final double CTHRN) {
@@ -847,7 +761,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,4] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,4] in covariance matrix (in m²/s³)
      */
     public double getCthrrdot() {
@@ -856,7 +769,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,4] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRRdot = object [9,4] in covariance matrix (in m²/s³)
      */
     public void setCthrrdot(final double CTHRRdot) {
@@ -866,7 +778,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,5] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,5] in covariance matrix (in m²/s³)
      */
     public double getCthrtdot() {
@@ -875,7 +786,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,5] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRTdot = object [9,5] in covariance matrix (in m²/s³)
      */
     public void setCthrtdot(final double CTHRTdot) {
@@ -885,7 +795,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,6] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,6] in covariance matrix (in m²/s³)
      */
     public double getCthrndot() {
@@ -894,7 +803,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,6] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRNdot = object [9,6] in covariance matrix (in m²/s³)
      */
     public void setCthrndot(final double CTHRNdot) {
@@ -904,7 +812,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,7] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,7] in covariance matrix (in m³/(kg.s²))
      */
     public double getCthrdrg() {
@@ -913,7 +820,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,7] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRDRG = object [9,7] in covariance matrix (in m³/(kg.s²))
      */
     public void setCthrdrg(final double CTHRDRG) {
@@ -923,7 +829,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,8] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,8] in covariance matrix (in m³/(kg.s²))
      */
     public double getCthrsrp() {
@@ -932,7 +837,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,8] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRSRP = object [9,8] in covariance matrix (in m³/(kg.s²))
      */
     public void setCthrsrp(final double CTHRSRP) {
@@ -942,7 +846,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the object [9,9] in covariance matrix (with index starting at 1).
-     *
      * @return the object [9,9] in covariance matrix (in m²/s⁴)
      */
     public double getCthrthr() {
@@ -951,7 +854,6 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,9] in covariance matrix (with index starting at 1).
-     *
      * @param CTHRTHR = object [9,9] in covariance matrix (in m²/s⁴)
      */
     public void setCthrthr(final double CTHRTHR) {
