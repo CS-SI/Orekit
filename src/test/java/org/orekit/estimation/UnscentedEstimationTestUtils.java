@@ -406,8 +406,8 @@ public class UnscentedEstimationTestUtils {
                 sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
             }
 //          // FIXME: debug print values
-//          final double dPos = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
-//          final double dVel = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
+//          final double dPos = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+//          final double dVel = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
 //          System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
 //          System.out.println("dPos    = " + dPos + " m");
 //          System.out.println("dVel    = " + dVel + " m/s");

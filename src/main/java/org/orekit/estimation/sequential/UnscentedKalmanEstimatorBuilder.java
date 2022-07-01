@@ -18,19 +18,16 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
-import org.hipparchus.util.MerweUnscentedTransform;
 import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for an Unscented Kalman filter estimator.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
  */
-
 public class UnscentedKalmanEstimatorBuilder {
 
     /** Decomposer to use for the correction phase. */
@@ -53,8 +50,6 @@ public class UnscentedKalmanEstimatorBuilder {
 
     /** Default constructor.
      *  Set an Unscented Kalman filter.
-     *  By default, a {@link MerweUnscentedTransform} provider is used. It considers that only the orbital parameters are estimated.
-     *  It is possible to override the default configuration by using {@link #unscentedTransformProvider(UnscentedTransformProvider)}.
      */
     public UnscentedKalmanEstimatorBuilder() {
         this.decomposer                      = new QRDecomposer(1.0e-15);
@@ -62,14 +57,19 @@ public class UnscentedKalmanEstimatorBuilder {
         this.estimatedMeasurementsParameters = new ParameterDriversList();
         this.processNoiseMatrixProvider      = null;
         this.measurementProcessNoiseMatrix   = null;
-        this.utProvider                      = new MerweUnscentedTransform(6);
+        this.utProvider                      = null;
     }
 
     /** Construct a {@link UnscentedKalmanEstimator} from the data in this builder.
      * <p>
-     * Before this method is called, {@link #addPropagationConfiguration(propagatorBuilder,
+     * Before this method is called, {@link #addPropagationConfiguration(NumericalPropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
+     * <p>
+     * In addition, the {@link #unscentedTransformProvider(UnscentedTransformProvider)
+     * unscentedTransformProvider()} must be called to configure the unscented transform
+     * provider use during the estimation process, otherwise configuration is
+     * incomplete and an exception will be raised.
      * </p>
      * @return a new {@link UnscentedKalmanEstimator}.
      */
@@ -77,31 +77,12 @@ public class UnscentedKalmanEstimatorBuilder {
         if (propagatorBuilder == null) {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
-        // Number of estimated parameters
-        int columns = 0;
-        for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                columns++;
-            }
+        if (utProvider == null) {
+            throw new OrekitException(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED);
         }
-        for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                columns++;
-            }
-        }
-
-        columns = columns + estimatedMeasurementsParameters.getNbParams();
-
-        // Check if the number of the selected parameters for the estimation (Orbital + Propagation + Measurement)
-        // is equal to the dimension of the state initialized in the unscented transform provider.
-        // If not, re-initialize the unscented transform with the appropriate dimension.
-        if (columns != (utProvider.getWc().getDimension() - 1) / 2) {
-            this.utProvider = new MerweUnscentedTransform(columns);
-        }
-
-
         return new UnscentedKalmanEstimator(decomposer, propagatorBuilder, processNoiseMatrixProvider,
-                                                 estimatedMeasurementsParameters, measurementProcessNoiseMatrix, utProvider);
+                                            estimatedMeasurementsParameters, measurementProcessNoiseMatrix,
+                                            utProvider);
 
     }
 
@@ -123,18 +104,24 @@ public class UnscentedKalmanEstimatorBuilder {
         return this;
     }
 
-
     /** Add a propagation configuration.
      * <p>
-     * This method must be called once initialize the propagator builder
-     * used by the Unscented Kalman Filter.
+     * The {@code provider} should return a matrix with dimensions and ordering
+     * consistent with the {@code builder} configuration. The first 6 rows/columns
+     * correspond to the 6 orbital parameters which must all be present, regardless
+     * of the fact they are estimated or not. The remaining elements correspond
+     * to the subset of propagation parameters that are estimated, in the
+     * same order as propagatorBuilder.{@link
+     * org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
+     * getPropagationParametersDrivers()}.{@link org.orekit.utils.ParameterDriversList#getDrivers()
+     * getDrivers()} (but filtering out the non selected drivers).
      * </p>
      * @param builder The propagator builder to use in the Kalman filter.
      * @param provider The process noise matrices provider to use, consistent with the builder.
      * @return this object.
      */
     public UnscentedKalmanEstimatorBuilder addPropagationConfiguration(final NumericalPropagatorBuilder builder,
-                                                                            final CovarianceMatrixProvider provider) {
+                                                                       final CovarianceMatrixProvider provider) {
         propagatorBuilder          = builder;
         processNoiseMatrixProvider = provider;
         return this;

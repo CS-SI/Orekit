@@ -5,6 +5,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -16,7 +17,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -27,7 +28,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class UnscentedKalmanEstimatorTest {
 
-
     @Test
     public void testMissingPropagatorBuilder() {
         try {
@@ -36,6 +36,28 @@ public class UnscentedKalmanEstimatorTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMissingUnscentedTransform() {
+        try {
+            Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+            final OrbitType     orbitType     = OrbitType.CARTESIAN;
+            final PositionAngle positionAngle = PositionAngle.TRUE;
+            final boolean       perfectStart  = true;
+            final double        minStep       = 1.e-6;
+            final double        maxStep       = 60.;
+            final double        dP            = 1.;
+            final NumericalPropagatorBuilder propagatorBuilder =
+                            context.createBuilder(orbitType, positionAngle, perfectStart,
+                                                  minStep, maxStep, dP);
+            new UnscentedKalmanEstimatorBuilder().
+            addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6))).
+            build();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -60,7 +82,6 @@ public class UnscentedKalmanEstimatorTest {
                                               minStep, maxStep, dP);
 
         // Create perfect PV measurements
-        System.out.println(context.initialOrbit);
         final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
@@ -76,7 +97,6 @@ public class UnscentedKalmanEstimatorTest {
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
         
         // Covariance matrix initialization
-        // final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[] {0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001}); 
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6, 6);
         // Process noise matrix
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
@@ -85,17 +105,18 @@ public class UnscentedKalmanEstimatorTest {
         // Build the Kalman filter
         final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        unscentedTransformProvider(new MerweUnscentedTransform(6)).
                         build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4e-6;
+        final double   posEps            = 5.08e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.28e-9;
-        final double[] expectedsigmasPos = {0., 0., 0.};
-        final double   sigmaPosEps       = 1.1e-6;
-        final double[] expectedSigmasVel = {0., 0., 0.};
-        final double   sigmaVelEps       = 1e-8;
+        final double   velEps            = 1.98e-9;
+        final double[] expectedsigmasPos = {3.179E-7, 2.995E-7, 10.276E-7};
+        final double   sigmaPosEps       = 1.0e-10;
+        final double[] expectedSigmasVel = {1.05689E-10, 3.89731E-10, 0.51126E-10};
+        final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -103,7 +124,6 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
     }
-
     
     /**
      * Shifted PV measurements.
@@ -122,9 +142,8 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final double        sigmaPos      = 10.;
-        final double        sigmaVel      = 0.1;
-        
-        
+        final double        sigmaVel      = 0.01;
+
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(orbitType, positionAngle, perfectStart,
                                               minStep, maxStep, dP);
@@ -135,14 +154,10 @@ public class UnscentedKalmanEstimatorTest {
 
         final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(context.initialOrbit.getDate(), initialPosShifted, initialVelShifted);
         
-        final KeplerianOrbit shiftedOrbit = new KeplerianOrbit(pv, context.initialOrbit.getFrame(), context.initialOrbit.getMu());
+        final CartesianOrbit shiftedOrbit = new CartesianOrbit(pv, context.initialOrbit.getFrame(), context.initialOrbit.getMu());
         
-
         // Create perfect PV measurements
-        System.out.println(context.initialOrbit);
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-
+        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         
         final List<ObservedMeasurement<?>> measurements =
                 UnscentedEstimationTestUtils.createMeasurements(propagator,
@@ -156,19 +171,10 @@ public class UnscentedKalmanEstimatorTest {
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
 
-        // Covariance matrix initialization
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        // Initial covariance matrix
+        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[] {sigmaPos*sigmaPos, sigmaPos*sigmaPos, sigmaPos*sigmaPos, sigmaVel*sigmaVel, sigmaVel*sigmaVel, sigmaVel*sigmaVel}); 
 
-        final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double[] {sigmaPos*sigmaPos, sigmaPos*sigmaPos, sigmaPos*sigmaPos, sigmaVel*sigmaVel, sigmaVel*sigmaVel, sigmaVel*sigmaVel}); 
-        final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
-        final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        
-        // Keplerian initial covariance matrix
-        final RealMatrix initialP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
-        // final RealMatrix initialP = MatrixUtils.createRealMatrix(6, 6);
         // Process noise matrix
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
         
@@ -176,17 +182,18 @@ public class UnscentedKalmanEstimatorTest {
         // Build the Kalman filter
         final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        unscentedTransformProvider(new MerweUnscentedTransform(6)).
                         build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.6e-2;
+        final double   posEps            = 4.59e-3;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 8e-6;
-        final double[] expectedsigmasPos = {0., 0., 0.};
-        final double   sigmaPosEps       = 0.32;
-        final double[] expectedSigmasVel = {0., 0., 0.};
-        final double   sigmaVelEps       = 2e-4;
+        final double   velEps            = 1.67e-6;
+        final double[] expectedsigmasPos = {0.196283, 0.177933, 0.317294};
+        final double   sigmaPosEps       = 1.0e-6;
+        final double[] expectedSigmasVel = {7.34904E-5, 13.28603E-5, 4.28682E-5};
+        final double   sigmaVelEps       = 1.0e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -221,7 +228,7 @@ public class UnscentedKalmanEstimatorTest {
         final List<ObservedMeasurement<?>> measurements =
                 UnscentedEstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
-                                                               0.0, 1.0, 300.0);
+                                                               0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
         final NumericalPropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
@@ -240,17 +247,18 @@ public class UnscentedKalmanEstimatorTest {
         // Build the Kalman filter
         final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        unscentedTransformProvider(new MerweUnscentedTransform(6)).
                         build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.7e-7;
+        final double   posEps            = 6.39e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7e-11;
-        final double[] expectedsigmasPos = {0., 0., 0.};
-        final double   sigmaPosEps       = 7.3e-7;
-        final double[] expectedSigmasVel = {0., 0., 0.};
-        final double   sigmaVelEps       = 3.1e-11;
+        final double   velEps            = 2.53e-10;
+        final double[] expectedsigmasPos = {0.4401258E-8, 8.6348156E-8, 13.6186622E-8};
+        final double   sigmaPosEps       = 1.0e-15;
+        final double[] expectedSigmasVel = {2.3262E-11, 0.9883E-11, 5.7841E-11};
+        final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -285,7 +293,7 @@ public class UnscentedKalmanEstimatorTest {
         final List<ObservedMeasurement<?>> measurements =
                 UnscentedEstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
-                                                               0.0, 1.0, 300.0);
+                                                               0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
         final NumericalPropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
@@ -293,7 +301,7 @@ public class UnscentedKalmanEstimatorTest {
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6, 6); 
 
@@ -304,17 +312,18 @@ public class UnscentedKalmanEstimatorTest {
         // Build the Kalman filter
         final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        unscentedTransformProvider(new MerweUnscentedTransform(6)).
                         build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.7e-7;
+        final double   posEps            = 1.33e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.7e-10;
-        final double[] expectedsigmasPos = {0., 0., 0.};
-        final double   sigmaPosEps       = 1.3e-7;
-        final double[] expectedSigmasVel = {0., 0., 0.};
-        final double   sigmaVelEps       = 4.3e-11;
+        final double   velEps            = 4.62e-10;
+        final double[] expectedsigmasPos = {1.12928E-10, 15.00645E-10, 5.45261E-10};
+        final double   sigmaPosEps       = 1.0e-15;
+        final double[] expectedSigmasVel = {2.96E-13, 1.84E-13, 7.66E-13};
+        final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -386,17 +395,18 @@ public class UnscentedKalmanEstimatorTest {
         // Build the Kalman filter
         final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        unscentedTransformProvider(new MerweUnscentedTransform(6)).
                         build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 7.5e-6;
+        final double   posEps            = 7.44e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.8e-9;
+        final double   velEps            = 2.74e-9;
         final double[] expectedSigmasPos = {0.324407, 1.347014, 1.743326};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
-        final double   sigmaVelEps       = 1e-9;
+        final double   sigmaVelEps       = 1e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -431,7 +441,7 @@ public class UnscentedKalmanEstimatorTest {
         final List<ObservedMeasurement<?>> measurements =
                 UnscentedEstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
-                                                               1.0, 4.0, 60.0);
+                                                               0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
         final NumericalPropagator referencePropagator = propagatorBuilder.
@@ -466,17 +476,18 @@ public class UnscentedKalmanEstimatorTest {
         // Build the Kalman filter
         final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        unscentedTransformProvider(new MerweUnscentedTransform(6)).
                         build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 2.7e-5;
+        final double   posEps            = 6.07e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 8.8e-9;
-        final double[] expectedSigmasPos = {0.356902, 1.297507, 1.798551};
-        final double   sigmaPosEps       = 1.4e-2;
-        final double[] expectedSigmasVel = {2.468745e-4, 5.810027e-4, 3.887394e-4};
-        final double   sigmaVelEps       = 9e-6;
+        final double   velEps            = 1.50e-10;
+        final double[] expectedSigmasPos = {0.043885, 0.600764, 0.279020};
+        final double   sigmaPosEps       = 1.0e-6;
+        final double[] expectedSigmasVel = {7.17260E-5, 3.037315E-5, 19.49046e-5};
+        final double   sigmaVelEps       = 1.0e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
@@ -511,7 +522,7 @@ public class UnscentedKalmanEstimatorTest {
         final List<ObservedMeasurement<?>> measurements =
                 UnscentedEstimationTestUtils.createMeasurements(propagator,
                                                                new AngularAzElMeasurementCreator(context),
-                                                               1.0, 4.0, 60.0);
+                                                               0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
         final NumericalPropagator referencePropagator = propagatorBuilder.
@@ -546,17 +557,18 @@ public class UnscentedKalmanEstimatorTest {
         // Build the Kalman filter
         final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        unscentedTransformProvider(new MerweUnscentedTransform(6)).
                         build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 2.7e-5;
+        final double   posEps            = 5.93e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 8.8e-9;
-        final double[] expectedSigmasPos = {0.356902, 1.297507, 1.798551};
-        final double   sigmaPosEps       = 3.5e-1;
-        final double[] expectedSigmasVel = {2.468745e-4, 5.810027e-4, 3.887394e-4};
-        final double   sigmaVelEps       = 1.2e-4;
+        final double   velEps            = 2.02e-10;
+        final double[] expectedSigmasPos = {0.012134, 0.511243, 0.264925};
+        final double   sigmaPosEps       = 1e-6;
+        final double[] expectedSigmasVel = {5.72891E-5, 1.58811E-5, 15.98658E-5};
+        final double   sigmaVelEps       = 1e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
                                            expectedDeltaPos, posEps,
