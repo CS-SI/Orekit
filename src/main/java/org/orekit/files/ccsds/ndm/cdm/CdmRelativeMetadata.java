@@ -98,6 +98,8 @@ public class CdmRelativeMetadata {
     /** The method that was used to calculate the collision probability. */
     private PocMethodFacade collisionProbabilityMethod;
 
+	private String conjunctionId;
+
     /** Simple constructor.
      */
     public CdmRelativeMetadata() {
@@ -123,6 +125,22 @@ public class CdmRelativeMetadata {
     public void validate() {
         checkNotNull(tca,            CdmRelativeMetadataKey.TCA);
         checkNotNull(missDistance,   CdmRelativeMetadataKey.MISS_DISTANCE);
+    }
+
+    /**
+     * Get the Originator’s ID that uniquely identifies the conjunction to which the message refers.
+     * @return the conjunction id
+     */
+    public String getConjunctionId() {
+        return conjunctionId;
+    }
+
+    /**
+     * Set the Originator’s ID that uniquely identifies the conjunction to which the message refers.
+     * @param conjunctionId the conjunction id to be set
+     */
+    public void setConjunctionId(final String conjunctionId) {
+        this.conjunctionId = conjunctionId;
     }
 
     /**

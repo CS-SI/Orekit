@@ -29,6 +29,9 @@ import org.orekit.files.ccsds.definitions.Units;
  */
 public enum CdmRelativeMetadataKey {
 
+	/** Date and time in UTC of the closest approach. */
+    CONJUNCTION_ID((token, context, container) -> token.processAsUppercaseString(container::setConjunctionId)),
+    
     /** Date and time in UTC of the closest approach. */
     TCA((token, context, container) -> token.processAsDate(container::setTca, context)),
 
