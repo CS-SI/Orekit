@@ -98,7 +98,8 @@ public class CdmRelativeMetadata {
     /** The method that was used to calculate the collision probability. */
     private PocMethodFacade collisionProbabilityMethod;
 
-	private String conjunctionId;
+    /** the Originator’s ID that uniquely identifies the conjunction to which the message refers. */
+    private String conjunctionId;
 
     /** Simple constructor.
      */
