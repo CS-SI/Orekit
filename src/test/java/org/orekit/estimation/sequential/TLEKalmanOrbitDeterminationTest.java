@@ -241,7 +241,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
                                                cartesianOrbitalP, cartesianOrbitalQ,
                                                null, null,
-                                               measurementP, measurementQ);
+                                               measurementP, measurementQ, false);
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 3997m
@@ -355,7 +355,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         ResultKalman kalmanGNSS = runKalman(input, orbitType, print,
                                             cartesianOrbitalP, cartesianOrbitalQ,
                                             null, null,
-                                            measurementP, measurementQ);
+                                            measurementP, measurementQ, false);
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 1053.6m
