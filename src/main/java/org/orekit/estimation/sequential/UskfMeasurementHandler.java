@@ -126,7 +126,7 @@ public class UskfMeasurementHandler implements MultiSatStepHandler {
                         model.updateNominalSpacecraftState(s, builders.get(i), i);
                     }
                     // Process the current observation
-                    ProcessEstimate estimate = filter.predictionAndCorrectionStep(decorate(observedMeasurements.get(index)), sigmaPoints);
+                    ProcessEstimate estimate = filter.predictionAndCorrectionSteps(decorate(observedMeasurements.get(index)), sigmaPoints);
                     // Finalize the estimation
                     model.finalizeEstimation(observedMeasurements.get(index), estimate);
                     // Call the observer if the user add one
@@ -144,7 +144,8 @@ public class UskfMeasurementHandler implements MultiSatStepHandler {
 
 
         // Update the sigmaPoints
-        sigmaPoints = filter.unscentedTransform();
+        final ProcessEstimate estimate = filter.getCorrected();
+        sigmaPoints = filter.getUnscentedTransformProvider().unscentedTransform(estimate.getState(), estimate.getCovariance());
 
 
         // Reset the initial state of the propagators with sigma points

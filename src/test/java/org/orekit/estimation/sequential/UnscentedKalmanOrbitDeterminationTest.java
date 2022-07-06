@@ -152,15 +152,15 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assert.assertEquals(0.0, statX.getMean(), 8.04e-3);
-        Assert.assertEquals(0.0, statY.getMean(), 3.03e-4);
-        Assert.assertEquals(0.0, statZ.getMean(), 4.69e-3);
-        Assert.assertEquals(0.0, statX.getMin(),  0.144); // Value is negative
-        Assert.assertEquals(0.0, statY.getMin(),  0.264); // Value is negative
-        Assert.assertEquals(0.0, statZ.getMin(),  0.045); // Value is negative
-        Assert.assertEquals(0.0, statX.getMax(),  0.224);
-        Assert.assertEquals(0.0, statY.getMax(),  0.103);
-        Assert.assertEquals(0.0, statZ.getMax(),  0.109);
+        Assert.assertEquals(0.0, statX.getMean(), 1.38e-3);
+        Assert.assertEquals(0.0, statY.getMean(), 1.87e-4);
+        Assert.assertEquals(0.0, statZ.getMean(), 2.85e-4);
+        Assert.assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
+        Assert.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
+        Assert.assertEquals(0.0, statZ.getMin(),  0.029); // Value is negative
+        Assert.assertEquals(0.0, statX.getMax(),  0.026);
+        Assert.assertEquals(0.0, statY.getMax(),  0.032);
+        Assert.assertEquals(0.0, statZ.getMax(),  0.027);
 
         // Verify the last estimated position
         final RealVector estimatedState = estimation.getPhysicalEstimatedState();

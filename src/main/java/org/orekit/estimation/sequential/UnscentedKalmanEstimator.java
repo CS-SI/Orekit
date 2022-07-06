@@ -181,6 +181,7 @@ public class UnscentedKalmanEstimator {
     public ParameterDriversList getEstimatedMeasurementsParameters() {
         return processModel.getEstimatedMeasurementsParameters();
     }
+
     /** Process a single measurement.
      * <p>
      * Update the filter with the new measurement by calling the estimate method.
@@ -212,6 +213,7 @@ public class UnscentedKalmanEstimator {
         }
         return propagator;
     }
+
     /** Decorate an observed measurement.
      * <p>
      * The "physical" measurement noise matrix is the covariance matrix of the measurement.
@@ -246,4 +248,5 @@ public class UnscentedKalmanEstimator {
         return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
 
     }
+
 }
