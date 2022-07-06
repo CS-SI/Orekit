@@ -35,7 +35,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -271,10 +270,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         }
 
         // Verify dimension
-        checkDimension(noiseK.getRowDimension(),
-                       builder.getOrbitalParametersDrivers(),
-                       builder.getPropagationParametersDrivers(),
-                       estimatedMeasurementsParameters);
+        KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                           builder.getOrbitalParametersDrivers(),
+                                           builder.getPropagationParametersDrivers(),
+                                           estimatedMeasurementsParameters);
 
         final RealMatrix correctedCovariance = normalizeCovarianceMatrix(noiseK);
 
@@ -404,10 +403,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         }
 
         // Verify dimension
-        checkDimension(noiseK.getRowDimension(),
-                       builder.getOrbitalParametersDrivers(),
-                       builder.getPropagationParametersDrivers(),
-                       estimatedMeasurementsParameters);
+        KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                           builder.getOrbitalParametersDrivers(),
+                                           builder.getPropagationParametersDrivers(),
+                                           estimatedMeasurementsParameters);
 
         final RealMatrix normalizedProcessNoise = normalizeCovarianceMatrix(noiseK);
 
@@ -1019,56 +1018,6 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             }
         }
         return normalizedCovarianceMatrix;
-    }
-
-    /** Check dimension.
-     * @param dimension dimension to check
-     * @param orbitalParameters orbital parameters
-     * @param propagationParameters propagation parameters
-     * @param measurementParameters measurements parameters
-     */
-    private void checkDimension(final int dimension,
-                                final ParameterDriversList orbitalParameters,
-                                final ParameterDriversList propagationParameters,
-                                final ParameterDriversList measurementParameters) {
-
-        // count parameters, taking care of counting all orbital parameters
-        // regardless of them being estimated or not
-        int requiredDimension = orbitalParameters.getNbParams();
-        for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-        for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-
-        if (dimension != requiredDimension) {
-            // there is a problem, set up an explicit error message
-            final StringBuilder strBuilder = new StringBuilder();
-            for (final ParameterDriver driver : orbitalParameters.getDrivers()) {
-                if (strBuilder.length() > 0) {
-                    strBuilder.append(", ");
-                }
-                strBuilder.append(driver.getName());
-            }
-            for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    strBuilder.append(driver.getName());
-                }
-            }
-            for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    strBuilder.append(driver.getName());
-                }
-            }
-            throw new OrekitException(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS,
-                                      dimension, strBuilder.toString());
-        }
-
     }
 
     /** Set and apply a dynamic outlier filter on a measurement.<p>

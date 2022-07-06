@@ -293,8 +293,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                               final UnscentedKalmanFilter<MeasurementDecorator> filter) {
         try {
             // Compute sigma points
-            
-            final RealVector[] sigmaPoints = filter.unscentedTransform();
+            final ProcessEstimate estimate = filter.getCorrected();
+            final RealVector[] sigmaPoints = filter.getUnscentedTransformProvider().unscentedTransform(estimate.getState(), estimate.getCovariance());
 
             // Create builders using the sigma points
             propagatorBuilders = getEstimatedBuilders(sigmaPoints);

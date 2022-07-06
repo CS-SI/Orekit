@@ -32,8 +32,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -338,10 +336,10 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
             }
 
-            checkDimension(noiseK.getRowDimension(),
-                           builders.get(k).getOrbitalParametersDrivers(),
-                           builders.get(k).getPropagationParametersDrivers(),
-                           estimatedMeasurementsParameters);
+            KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                               builders.get(k).getOrbitalParametersDrivers(),
+                                               builders.get(k).getPropagationParametersDrivers(),
+                                               estimatedMeasurementsParameters);
 
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
@@ -379,55 +377,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // nothing by default
     }
 
-    /** Check dimension.
-     * @param dimension dimension to check
-     * @param orbitalParameters orbital parameters
-     * @param propagationParameters propagation parameters
-     * @param measurementParameters measurements parameters
-     */
-    private void checkDimension(final int dimension,
-                                final ParameterDriversList orbitalParameters,
-                                final ParameterDriversList propagationParameters,
-                                final ParameterDriversList measurementParameters) {
-
-        // count parameters, taking care of counting all orbital parameters
-        // regardless of them being estimated or not
-        int requiredDimension = orbitalParameters.getNbParams();
-        for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-        for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-
-        if (dimension != requiredDimension) {
-            // there is a problem, set up an explicit error message
-            final StringBuilder builder = new StringBuilder();
-            for (final ParameterDriver driver : orbitalParameters.getDrivers()) {
-                if (builder.length() > 0) {
-                    builder.append(", ");
-                }
-                builder.append(driver.getName());
-            }
-            for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    builder.append(driver.getName());
-                }
-            }
-            for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    builder.append(driver.getName());
-                }
-            }
-            throw new OrekitException(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS,
-                                      dimension, builder.toString());
-        }
-
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -996,10 +945,10 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
             }
 
-            checkDimension(noiseK.getRowDimension(),
-                           builders.get(k).getOrbitalParametersDrivers(),
-                           builders.get(k).getPropagationParametersDrivers(),
-                           estimatedMeasurementsParameters);
+            KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                               builders.get(k).getOrbitalParametersDrivers(),
+                                               builders.get(k).getPropagationParametersDrivers(),
+                                               estimatedMeasurementsParameters);
 
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {

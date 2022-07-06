@@ -30,9 +30,6 @@ import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -41,8 +38,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /**
  * Implementation of an Unscented Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
- * or {@link DSSTPropagator} .
+ * The filter uses a {@link NumericalPropagatorBuilder} to initialize its reference trajectory.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
@@ -58,8 +54,6 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * </p>
  * <p>
  * The Kalman filter implementation used is provided by the underlying mathematical library Hipparchus.
- * All the variables seen by Hipparchus (states, covariances...) are normalized
- * using a specific scale for each estimated parameters or standard deviation noise for each measurement components.
  * </p>
  *
  * <p>An {@link UnscentedKalmanEstimator} object is built using the {@link UnscentedKalmanEstimatorBuilder#build() build}
@@ -71,7 +65,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class UnscentedKalmanEstimator {
 
     /** Builders for orbit propagators. */
-    private OrbitDeterminationPropagatorBuilder propagatorBuilder;
+    private NumericalPropagatorBuilder propagatorBuilder;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -93,23 +87,25 @@ public class UnscentedKalmanEstimator {
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      * @param utProvider provider for the unscented transform.
      */
-
     UnscentedKalmanEstimator(final MatrixDecomposer decomposer,
-            final NumericalPropagatorBuilder propagatorBuilder,
-            final CovarianceMatrixProvider processNoiseMatricesProvider,
-            final ParameterDriversList estimatedMeasurementParameters,
-            final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-            final UnscentedTransformProvider utProvider) {
+                             final NumericalPropagatorBuilder propagatorBuilder,
+                             final CovarianceMatrixProvider processNoiseMatricesProvider,
+                             final ParameterDriversList estimatedMeasurementParameters,
+                             final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                             final UnscentedTransformProvider utProvider) {
 
         this.propagatorBuilder = propagatorBuilder;
         this.referenceDate     = propagatorBuilder.getInitialOrbitDate();
         this.observer          = null;
-        this.processModel      = new UnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
-                                                          estimatedMeasurementParameters, measurementProcessNoiseMatrix);
+
+        // Build the process model and measurement model
+        this.processModel = new UnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
+                                                     estimatedMeasurementParameters, measurementProcessNoiseMatrix);
+
         this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate(), utProvider);
 
-
     }
+
     /** Set the observer.
      * @param observer the observer
      */
@@ -185,6 +181,7 @@ public class UnscentedKalmanEstimator {
     public ParameterDriversList getEstimatedMeasurementsParameters() {
         return processModel.getEstimatedMeasurementsParameters();
     }
+
     /** Process a single measurement.
      * <p>
      * Update the filter with the new measurement by calling the estimate method.
@@ -199,9 +196,7 @@ public class UnscentedKalmanEstimator {
             if (observer != null) {
                 observer.evaluationPerformed(processModel);
             }
-            final double[] stateArray = estimate.getState().toArray();
-            final NumericalPropagatorBuilder builder = processModel.getEstimatedBuilder(stateArray);
-            return builder.buildPropagator(stateArray);
+            return processModel.getEstimatedPropagator();
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
         }
@@ -218,6 +213,7 @@ public class UnscentedKalmanEstimator {
         }
         return propagator;
     }
+
     /** Decorate an observed measurement.
      * <p>
      * The "physical" measurement noise matrix is the covariance matrix of the measurement.
@@ -252,4 +248,5 @@ public class UnscentedKalmanEstimator {
         return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
 
     }
+
 }
