@@ -1035,4 +1035,44 @@ public class CdmParserTest {
         }
     }
 
+	@Test
+	public void test_issue_942_KVN() {
+
+		// File
+	    final String ex = "/ccsds/cdm/CDMExample_issue942.txt";
+	
+	    // Initialize the parser
+	    final CdmParser parser = new ParserBuilder().buildCdmParser();
+	
+	    final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+	
+	    // Generated CDM file
+	    final Cdm file = parser.parseMessage(source);
+	
+	   // OBJECT1
+	    Assert.assertEquals(Maneuvrable.N_A,              file.getMetadataObject1().getManeuverable());    
+	    // OBJECT2
+	    Assert.assertEquals(Maneuvrable.NO,               file.getMetadataObject2().getManeuverable());
+	}
+	
+	@Test
+	public void test_issue_942_XML() {
+	    
+	    // File
+	    final String ex = "/ccsds/cdm/CDMExample_issue942.xml";
+	
+	    // Initialize the parser
+	    final CdmParser parser = new ParserBuilder().buildCdmParser();
+	
+	    final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+	
+	    // Generated CDM file
+	    final Cdm file = parser.parseMessage(source);
+	
+	   // OBJECT1
+	    Assert.assertEquals(Maneuvrable.N_A,              file.getMetadataObject1().getManeuverable());    
+	    // OBJECT2
+	    Assert.assertEquals(Maneuvrable.NO,               file.getMetadataObject2().getManeuverable());
+	}
+
 }
