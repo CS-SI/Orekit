@@ -1,3 +1,19 @@
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.estimation.sequential;
 
 import java.io.File;
@@ -47,8 +63,6 @@ import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
     /** Gravity field. */
@@ -190,7 +204,7 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
 
     @Test
     // Orbit determination for Lageos2 based on SLR (range) measurements
-    public void testLageos2() throws URISyntaxException, IOException {
+    public void testLageos2Slr() throws URISyntaxException, IOException {
 
         // Print results on console
         final boolean print = false;
@@ -283,120 +297,12 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
         final long nbRange = 258;
         // Batch LS values
         //final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        System.out.println(kalmanLageos2.getRangeStat().getMean());
         Assert.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], kalmanLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
-    }
-
-    @Test
-    // Orbit determination for range, azimuth elevation measurements
-    public void testW3B() throws URISyntaxException, IOException {
-
-        // Print results on console
-        final boolean print = false;
-        
-        // input in resources directory
-        final String inputPath = UnscentedKalmanOrbitDeterminationTest2.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3B_unscented.in").toURI().getPath();
-        final File input  = new File(inputPath);
-
-        // Configure Orekit data access
-        Utils.setDataRoot("orbit-determination/W3B:potential/icgem-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        // Choice of an orbit type to use
-        // Default for test is Cartesian
-        final OrbitType orbitType = OrbitType.CARTESIAN;
-        
-        // Initial orbital Cartesian covariance matrix
-        // These covariances are derived from the deltas between initial and reference orbits
-        // So in a way they are "perfect"...
-        // Cartesian covariance matrix initialization
-        final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            FastMath.pow(2.4e4, 2), FastMath.pow(1.e5, 2), FastMath.pow(4.e4, 2),
-            FastMath.pow(3.5, 2), FastMath.pow(2., 2), FastMath.pow(0.6, 2)
-        });
-        
-        // Orbital Cartesian process noise matrix (Q)
-        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
-        });
-         
-        ResultKalman kalmanW3B = runKalman(input, orbitType, print,
-                cartesianOrbitalP, cartesianOrbitalQ,
-                null, null,
-                null, null, true);
-
-        // Tests
-        // -----
-
-        // Number of measurements processed
-        final int numberOfMeas  = 521;
-        Assert.assertEquals(numberOfMeas, kalmanW3B.getNumberOfMeasurements());
-
-        
-        // Test on orbital parameters
-        // Done at the end to avoid changing the estimated propagation parameters
-        // ----------------------------------------------------------------------
-        
-        // Estimated position and velocity
-        final Vector3D estimatedPos = kalmanW3B.getEstimatedPV().getPosition();
-        final Vector3D estimatedVel = kalmanW3B.getEstimatedPV().getVelocity();
-
-        // Reference position and velocity at initial date (same as in batch LS test)
-        final Vector3D refPos0 = new Vector3D(-40541446.255, -9905357.41, 206777.413);
-        final Vector3D refVel0 = new Vector3D(759.0685, -1476.5156, 54.793);
-        
-        // Gather the selected propagation parameters and initialize them to the values found
-        // with the batch LS method
-        final ParameterDriversList refPropagationParameters = kalmanW3B.getPropagatorParameters();
-        final double dragCoefRef = -0.215433133145843;
-        final double[] leakXRef = {+5.69040439901955E-06, 1.09710906802403E-11};
-        final double[] leakYRef = {-7.66440256777678E-07, 1.25467464335066E-10};
-        final double[] leakZRef = {-5.574055079952E-06  , 2.78703463746911E-10};
-        
-        for (DelegatingDriver driver : refPropagationParameters.getDrivers()) {
-            switch (driver.getName()) {
-                case "drag coefficient" : driver.setValue(dragCoefRef); break;
-                case "leak-X[0]"        : driver.setValue(leakXRef[0]); break;
-                case "leak-X[1]"        : driver.setValue(leakXRef[1]); break;
-                case "leak-Y[0]"        : driver.setValue(leakYRef[0]); break;
-                case "leak-Y[1]"        : driver.setValue(leakYRef[1]); break;
-                case "leak-Z[0]"        : driver.setValue(leakZRef[0]); break;
-                case "leak-Z[1]"        : driver.setValue(leakZRef[1]); break;
-            }
-        }
-        
-        // Run the reference until Kalman last date
-        final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, refPropagationParameters,
-                                            kalmanW3B.getEstimatedPV().getDate());
-        
-        // Test on last orbit
-        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
-        final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
-        
-        // Check distances
-        final double dP = Vector3D.distance(refPos, estimatedPos);
-        final double dV = Vector3D.distance(refVel, estimatedVel);
-        
-        final double debugDistanceAccuracy = 17710.87;
-        final double debugVelocityAccuracy = 5.020;
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), debugDistanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), debugVelocityAccuracy);
-        
-        // Print orbit deltas
-        if (print) {
-            System.out.println("Test performances:");
-            System.out.format("\t%-30s\n",
-                            "ΔEstimated / Reference");
-            System.out.format(Locale.US, "\t%-10s %20.6f\n",
-                              "ΔP [m]", dP);
-            System.out.format(Locale.US, "\t%-10s %20.6f\n",
-                              "ΔV [m/s]", dV);
-        }
     }
 
 }
