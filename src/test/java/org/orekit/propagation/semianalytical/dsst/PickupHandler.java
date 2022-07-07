@@ -106,7 +106,7 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
     }
 
     private void checkState(final SpacecraftState state) {
-        stmGenerator.derivatives(state); // just for the side effect of calling partialsComputed
+        stmGenerator.combinedDerivatives(state); // just for the side effect of calling partialsComputed
         Assert.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
         dYdY0 = harvester.getStateTransitionMatrix(state);
         dYdP  = harvester.getParametersJacobian(state); // may be null
@@ -118,7 +118,7 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
         // Mean orbit
         final SpacecraftState initial = propagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(propagator.getInitialState(), propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
-                    	   propagator.getInitialState();
+                           propagator.getInitialState();
         ((DSSTHarvester) harvester).initializeFieldShortPeriodTerms(initial); // Initial state is MEAN
     }
 

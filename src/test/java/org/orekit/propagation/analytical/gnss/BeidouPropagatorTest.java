@@ -203,7 +203,7 @@ public class BeidouPropagatorTest {
         // Verify that an infinite loop did not occur
         Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
-        
+
     }
 
 }

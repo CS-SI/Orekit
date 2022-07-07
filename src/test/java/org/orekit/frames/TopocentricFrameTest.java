@@ -343,7 +343,7 @@ public class TopocentricFrameTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldAzimuthPole(final Field<T> field)
         {
 
-        // zero 
+        // zero
         final T zero = field.getZero();
 
         // Surface point at latitude 0

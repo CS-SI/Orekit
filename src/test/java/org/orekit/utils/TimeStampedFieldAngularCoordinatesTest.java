@@ -287,7 +287,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
                                                          new FieldRotation<>(createVector(1, 0, 0, 4),
                                                                              factory.variable(3, FastMath.toRadians(179.999)),
                                                                              RotationConvention.VECTOR_OPERATOR),
-                                                         createVector(FastMath.toRadians(0), 0, 0, 4), 
+                                                         createVector(FastMath.toRadians(0), 0, 0, 4),
                                                          createVector(0, 0, 0, 4));
         sample.add(ac0);
 

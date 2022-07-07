@@ -46,15 +46,15 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
 public class DSSTThirdBodyTest {
-    
+
     private static final double eps  = 3.5e-25;
 
     @Test
     public void testGetMeanElementRate() throws IllegalArgumentException {
-        
+
         final Frame earthFrame = FramesFactory.getEME2000();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
-        
+
         final double mu = 3.986004415E14;
         // a    = 42163393.0 m
         // ex =  -0.25925449177598586
@@ -72,11 +72,11 @@ public class DSSTThirdBodyTest {
                                                  earthFrame,
                                                  initDate,
                                                  mu);
-        
+
         final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
-        
+
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
-        
+
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
 
         // Force model parameters
@@ -87,12 +87,12 @@ public class DSSTThirdBodyTest {
 
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
-        
+
         final double[] daidt = moon.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-        
+
         Assert.assertEquals(0.0,                    elements[0], eps);
         Assert.assertEquals(4.346622384804537E-10,  elements[1], eps);
         Assert.assertEquals(7.293879548440941E-10,  elements[2], eps);
@@ -130,7 +130,7 @@ public class DSSTThirdBodyTest {
                 y[i] += shortPeriodic[i];
             }
         }
-        
+
         Assert.assertEquals(-413.20633326933154,    y[0], 1.e-14);
         Assert.assertEquals(-1.8060137920197483E-5, y[1], 1.e-20);
         Assert.assertEquals(-2.8416367511811057E-5, y[2], 1.e-20);

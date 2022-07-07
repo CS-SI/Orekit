@@ -150,7 +150,7 @@ public class OrekitAttitudeEphemerisFileTest {
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFrom =
                         new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAem));
         Files.delete(Paths.get(tempAem));
-        
+
         segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());

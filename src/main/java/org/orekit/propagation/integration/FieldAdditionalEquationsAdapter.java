@@ -80,9 +80,15 @@ public class FieldAdditionalEquationsAdapter<T extends CalculusFieldElement<T>> 
     /** {@inheritDoc} */
     @Override
     public T[] derivatives(final FieldSpacecraftState<T> state) {
-        final T[] pDot = MathArrays.buildArray(state.getDate().getField(), getDimension());
-        equations.computeDerivatives(state, pDot);
-        return pDot;
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCombinedDerivatives<T> combinedDerivatives(final FieldSpacecraftState<T> state) {
+        final T[] pDot    = MathArrays.buildArray(state.getDate().getField(), getDimension());
+        final T[] mainDot = equations.computeDerivatives(state, pDot);
+        return new FieldCombinedDerivatives<>(pDot, mainDot);
     }
 
 }

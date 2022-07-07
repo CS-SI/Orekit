@@ -42,7 +42,7 @@ public class GlobalMappingFunctionModelTest {
 
     @Test
     public void testMappingFactors() {
-        
+
         // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
         //                              longitude: -1.393397187 radians
         //                              height:    844.715 m
@@ -56,7 +56,7 @@ public class GlobalMappingFunctionModelTest {
         //                                    wet -> 3.449589 (Ref)
 
         final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
-        
+
         final double latitude    = 0.6708665767;
         final double longitude   = -1.393397187;
         final double height      = 844.715;
@@ -67,9 +67,9 @@ public class GlobalMappingFunctionModelTest {
         final double expectedWet   = 3.449589;
 
         final MappingFunction model = new GlobalMappingFunctionModel();
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
+
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
     }

@@ -183,11 +183,11 @@ public class SaastamoinenModelTest {
     public void testIssue654LowElevation() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
-        
+
         // Test model new setter/getter
         model.setLowElevationThreshold(1e-3);
         Assert.assertEquals(1.e-3, model.getLowElevationThreshold(), 0.);
-        
+
         // Reset to default value
         model.setLowElevationThreshold(SaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
         double lowElevationPathDelay = model.pathDelay(0.001, new GeodeticPoint(0.0, 0.0, 0.0), null, AbsoluteDate.J2000_EPOCH);
@@ -216,7 +216,7 @@ public class SaastamoinenModelTest {
     public void compareExpectedValues() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
- 
+
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
                 double height = heights[h];
@@ -239,7 +239,7 @@ public class SaastamoinenModelTest {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
- 
+
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
                 T height = zero.add(heights[h]);

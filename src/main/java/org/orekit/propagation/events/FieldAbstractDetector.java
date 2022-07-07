@@ -18,6 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -61,11 +63,24 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      */
     protected FieldAbstractDetector(final T maxCheck, final T threshold, final int maxIter,
                                     final FieldEventHandler<? super D, T> handler) {
+        checkStrictlyPositive(maxCheck.getReal());
+        checkStrictlyPositive(threshold.getReal());
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
         this.handler   = handler;
         this.forward   = true;
+    }
+
+    /** Check value is strictly positive.
+     * @param value value to check
+     * @exception OrekitException if value is not strictly positive
+     * @since 11.2
+     */
+    private void checkStrictlyPositive(final double value) throws OrekitException {
+        if (value <= 0.0) {
+            throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, value);
+        }
     }
 
     /** {@inheritDoc} */

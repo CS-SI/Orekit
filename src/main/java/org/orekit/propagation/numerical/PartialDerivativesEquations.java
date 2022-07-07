@@ -27,6 +27,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -274,7 +275,14 @@ public class PartialDerivativesEquations
     }
 
     /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState s) {
+    @Override
+    @Deprecated
+    public double[] derivatives(final SpacecraftState state) {
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
         final int paramDim = selected.getNbParams();
@@ -398,7 +406,7 @@ public class PartialDerivativesEquations
 
         }
 
-        return pDot;
+        return new CombinedDerivatives(pDot, null);
 
     }
 

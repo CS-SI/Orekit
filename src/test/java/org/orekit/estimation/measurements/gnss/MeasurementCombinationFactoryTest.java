@@ -112,7 +112,7 @@ public class MeasurementCombinationFactoryTest {
     }
 
     /**
-     * Test code stability if an empty observation data set is used. 
+     * Test code stability if an empty observation data set is used.
      */
     private void doTestEmptyDataSet(final MeasurementCombination combination) {
         // Build empty observation data set
@@ -175,7 +175,7 @@ public class MeasurementCombinationFactoryTest {
     }
 
     /**
-     * Test exceptions. 
+     * Test exceptions.
      */
     private void doTestExceptionsDualFrequency(final AbstractDualFrequencyCombination combination) {
         // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception

@@ -128,12 +128,12 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
     /**
      * Check against prediction in
-     * 
+     *
      * "C IUFOLINI, Ignazio, MATZNER, Richard, GURZADYAN, Vahe, et al.
      * A new laser-ranged satellite for General Relativityand space geodesy:
      * III. De Sitter effect and the LARES 2 space experiment.
      * The European Physical Journal C, 2017, vol. 77, no 12, p. 819"
-     * 
+     *
      * They predict a precession of the orbital plane at a rate of the order
      * of -19.2 milliarcsecs per year.
      *
@@ -271,7 +271,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(relativity);
         NP.addForceModel(relativity);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 1.4e-3,

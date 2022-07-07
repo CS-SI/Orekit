@@ -74,7 +74,7 @@ public class GlobalIonosphereMapModelTest {
     @Test
     public void testTEC() {
         final double latitude  = FastMath.toRadians(30.0);
-        final double longitude = FastMath.toRadians(-130.0); 
+        final double longitude = FastMath.toRadians(-130.0);
         final double tec = model.getTEC(new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
                                         new GeodeticPoint(latitude, longitude, 0.0));
         Assert.assertEquals(9.592, tec, epsilonDelay);
@@ -125,7 +125,7 @@ public class GlobalIonosphereMapModelTest {
         // Commons parameters
         AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC());
         final double latitude = FastMath.toRadians(45.0);
-        
+
         double longitude1;
         double longitude2;
 
@@ -154,13 +154,13 @@ public class GlobalIonosphereMapModelTest {
         final String fileName = "corrupted-bad-data-gpsg0150.19i";
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
-          
+
         try {
             GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
             corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
                          new GeodeticPoint(latitude, longitude, 0.0));
             Assert.fail("An exception should have been thrown");
-            
+
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
@@ -254,7 +254,7 @@ public class GlobalIonosphereMapModelTest {
             corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
                          new GeodeticPoint(latitude, longitude, 0.0));
             Assert.fail("An exception should have been thrown");
-            
+
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
         }
@@ -271,7 +271,7 @@ public class GlobalIonosphereMapModelTest {
             corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
                          new GeodeticPoint(latitude, longitude, 0.0));
             Assert.fail("An exception should have been thrown");
-            
+
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, oe.getSpecifier());
         }

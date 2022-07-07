@@ -79,10 +79,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class ExtendedSemiAnalyticalKalmanFilterTest {
 
-	/** Print. */
-	private static boolean print;
+    /** Print. */
+    private static boolean print;
 
-	/** Header. */
+    /** Header. */
     private static final String HEADER = "%-25s\t%16s\t%16s\t%16s";
 
     /** Data line. */
@@ -91,8 +91,8 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
     @Test
     public void testLageos() throws URISyntaxException, IOException {
 
-    	// Print
-    	print = false;
+        // Print
+        print = false;
 
         // Configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
@@ -124,8 +124,8 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final boolean useMoon = true;
         final boolean useSun  = true;
         final OrbitDeterminationPropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField, step,
-        		                                                                    mass, surface, useDrag, useSrp, useSun, useMoon,
-        		                                                                    initialStateType);
+                                                                                    mass, surface, useDrag, useSrp, useSun, useMoon,
+                                                                                    initialStateType);
 
         // Measurements
         final double sigma = 2.0;
@@ -296,19 +296,19 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
 
         // Convert initial orbit in equinoctial elements
         final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
-        
+
         // Initialize the numerical builder
         final DSSTPropagatorBuilder propagator = new DSSTPropagatorBuilder(equinoctial, integrator, 1.0, PropagationType.MEAN, initialStateType);
-        
+
         // Add the force models to the DSST propagator
         addDSSTForceModels(propagator, centralBody, gravityField, surface, useDrag, useSrp, useSun, useMoon);
-        
+
         // Mass
         propagator.setMass(mass);
-        
+
         // Set
         builder = propagator;
-        
+
         // Reset the orbit
         builder.resetOrbit(equinoctial);
 
@@ -516,11 +516,11 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
             // Check
             if (estimatedMeasurement.getObservedMeasurement() instanceof Position) {
 
-            	if (estimatedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED) {
-            		if (print) {
-            			System.out.println("REJECTED");
-            		}
-            	} else {
+                if (estimatedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED) {
+                    if (print) {
+                        System.out.println("REJECTED");
+                    }
+                } else {
                     final double[] estimated = estimatedMeasurement.getEstimatedValue();
                     final double[] observed  = estimatedMeasurement.getObservedValue();
 
@@ -538,7 +538,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
                         System.out.println(line);
                     }
 
-            	}
+                }
 
             }
 
@@ -551,10 +551,10 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
          * @return the statistics on the X coordinate residuals
          */
         public StreamingStatistics getXStatistics() {
-        	if (print) {
-        		System.out.println("Min X res (m): " + statX.getMin() + " Max X res (m): " + statX.getMax() + " Mean X res (m): " + statX.getMean() + " STD: " + statX.getStandardDeviation());
-        	}
-        	return statX;
+            if (print) {
+                System.out.println("Min X res (m): " + statX.getMin() + " Max X res (m): " + statX.getMax() + " Mean X res (m): " + statX.getMean() + " STD: " + statX.getStandardDeviation());
+            }
+            return statX;
         }
 
         /**
@@ -562,10 +562,10 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
          * @return the statistics on the Y coordinate residuals
          */
         public StreamingStatistics getYStatistics() {
-        	if (print) {
-        		System.out.println("Min Y res (m): " + statY.getMin() + " Max Y res (m): " + statY.getMax() + " Mean Y res (m): " + statY.getMean() + " STD: " + statY.getStandardDeviation());
-        	}
-        	return statY;
+            if (print) {
+                System.out.println("Min Y res (m): " + statY.getMin() + " Max Y res (m): " + statY.getMax() + " Mean Y res (m): " + statY.getMean() + " STD: " + statY.getStandardDeviation());
+            }
+            return statY;
         }
 
         /**
@@ -573,10 +573,10 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
          * @return the statistics on the Z coordinate residuals
          */
         public StreamingStatistics getZStatistics() {
-        	if (print) {
-        		System.out.println("Min Z res (m): " + statZ.getMin() + " Max Z res (m): " + statZ.getMax() + " Mean Z res (m): " + statZ.getMean() + " STD: " + statZ.getStandardDeviation());
-        	}
-        	return statZ;
+            if (print) {
+                System.out.println("Min Z res (m): " + statZ.getMin() + " Max Z res (m): " + statZ.getMax() + " Mean Z res (m): " + statZ.getMean() + " STD: " + statZ.getStandardDeviation());
+            }
+            return statZ;
         }
 
         /**

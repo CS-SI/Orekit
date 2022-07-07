@@ -28,7 +28,7 @@ public class SignalInSpaceAccuracyTest {
     @Test
     public void testAccuracy() {
         AccuracyProvider ura;
-        
+
         // Index = 0
         ura = new SignalInSpaceAccuracy(0);
         Assert.assertEquals(0.0, ura.getAccuracy(), eps);

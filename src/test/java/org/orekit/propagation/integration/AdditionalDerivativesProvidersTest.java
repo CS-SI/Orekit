@@ -162,6 +162,33 @@ public class AdditionalDerivativesProvidersTest {
 
     }
 
+    @Test
+    public void testCoupling() {
+
+        // setup
+        final double   dt       = 600.0;
+        final Coupling coupling = new Coupling("coupling", 3.5, -2.0, 1.0);
+
+        // action
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
+        propagatorNumerical.setInitialState(initialState.
+                                            addAdditionalState(coupling.getName(),
+                                                               coupling.secondaryInit));
+        propagatorNumerical.addAdditionalDerivativesProvider(coupling);
+        SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
+
+        // verify
+        Assert.assertEquals(coupling.secondaryInit + dt * coupling.secondaryRate,
+                            finalState.getAdditionalState(coupling.getName())[0],
+                            1.0e-10);
+        Assert.assertEquals(initialState.getA() + dt * coupling.smaRate,
+                            finalState.getA(),
+                            1.0e-10);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
@@ -204,8 +231,14 @@ public class AdditionalDerivativesProvidersTest {
         }
 
         @Override
-        public double[] derivatives(SpacecraftState s) {
-            return new double[] { rate };
+        @Deprecated
+        public double[] derivatives(final SpacecraftState state) {
+            return combinedDerivatives(state).getAdditionalDerivatives();
+        }
+
+        @Override
+        public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+            return new CombinedDerivatives(new double[] { rate }, null);
         }
 
         @Override
@@ -237,13 +270,62 @@ public class AdditionalDerivativesProvidersTest {
         }
 
         @Override
-        public double[] derivatives(final SpacecraftState s) {
-            return dependency == null ? new double[] { rate } : s.getAdditionalStateDerivative(dependency);
+        @Deprecated
+        public double[] derivatives(final SpacecraftState state) {
+            return combinedDerivatives(state).getAdditionalDerivatives();
+        }
+
+        @Override
+        public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+            return new CombinedDerivatives(dependency == null ?
+                                           new double[] { rate } :
+                                           s.getAdditionalStateDerivative(dependency),
+                                           null);
         }
 
         @Override
         public boolean yield(final SpacecraftState state) {
             return dependency != null && !state.hasAdditionalStateDerivative(dependency);
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+    }
+
+    private static class Coupling implements AdditionalDerivativesProvider {
+
+        private final String  name;
+        private final double  secondaryInit;
+        private final double  secondaryRate;
+        private final double  smaRate;
+
+        public Coupling(final String name,
+                        final double secondaryInit, final double secondaryRate,
+                        final double smaRate) {
+            this.name          = name;
+            this.secondaryInit = secondaryInit;
+            this.secondaryRate = secondaryRate;
+            this.smaRate       = smaRate;
+        }
+
+        @Override
+        @Deprecated
+        public double[] derivatives(final SpacecraftState state) {
+            return combinedDerivatives(state).getAdditionalDerivatives();
+        }
+
+        @Override
+        public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+            return new CombinedDerivatives(new double[] { secondaryRate },
+                                           new double[] { smaRate, 0.0, 0.0, 0.0, 0.0, 0.0 });
         }
 
         @Override

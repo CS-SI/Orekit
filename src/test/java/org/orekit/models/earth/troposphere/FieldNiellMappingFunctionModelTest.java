@@ -72,7 +72,7 @@ public class FieldNiellMappingFunctionModelTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
-        
+
         final T zero = field.getZero();
 
         // Site (Le Mans, France):      latitude:  48.0°
@@ -87,11 +87,11 @@ public class FieldNiellMappingFunctionModelTest {
         //                                    wet -> 10.75 (Ref)
 
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 1994, 1, 1, TimeScalesFactory.getUTC());
-        
+
         final double latitude    = FastMath.toRadians(48.0);
         final double longitude   = FastMath.toRadians(0.20);
         final double height      = 68.0;
-        
+
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
         final double elevation     = FastMath.toRadians(5.0);
@@ -99,9 +99,9 @@ public class FieldNiellMappingFunctionModelTest {
         final double expectedWet   = 10.75;
 
         final MappingFunction model = new NiellMappingFunctionModel();
-        
+
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
-        
+
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-2);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-2);
     }
@@ -147,7 +147,7 @@ public class FieldNiellMappingFunctionModelTest {
 
         // Station
         final GroundStation station = new GroundStation(baseFrame);
-        
+
         // Mapping Function model
         final MappingFunction model = new NiellMappingFunctionModel();
 
@@ -198,42 +198,42 @@ public class FieldNiellMappingFunctionModelTest {
             final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
             final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
             double[]  delayM4 = model.mappingFactors(elevationM4, point, stateM4.getDate());
-            
+
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
             final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
             final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
             double[]  delayM3 = model.mappingFactors(elevationM3, point, stateM3.getDate());
-            
+
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
             final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
             final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
             double[]  delayM2 = model.mappingFactors(elevationM2, point, stateM2.getDate());
- 
+
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
             final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
             final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
             double[]  delayM1 = model.mappingFactors(elevationM1, point, stateM1.getDate());
-           
+
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
             final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
             final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
             double[]  delayP1 = model.mappingFactors(elevationP1, point, stateP1.getDate());
-            
+
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
             final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
             final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
             double[]  delayP2 = model.mappingFactors(elevationP2, point, stateP2.getDate());
-            
+
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
             final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
             final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
             double[]  delayP3 = model.mappingFactors(elevationP3, point, stateP3.getDate());
-            
+
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
             final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
             final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
             double[]  delayP4 = model.mappingFactors(elevationP4, point, stateP4.getDate());
-            
+
             fillJacobianColumn(refMF, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);

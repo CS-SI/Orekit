@@ -42,7 +42,7 @@ public class NiellMappingFunctionModelTest {
 
     @Test
     public void testMappingFactors() {
-        
+
         // Site (Le Mans, France):      latitude:  48.0°
         //                              longitude: 0.20°
         //                              height:    68 m
@@ -55,7 +55,7 @@ public class NiellMappingFunctionModelTest {
         //                                    wet -> 10.75 (Ref)
 
         final AbsoluteDate date = new AbsoluteDate(1994, 1, 1, TimeScalesFactory.getUTC());
-        
+
         final double latitude    = FastMath.toRadians(48.0);
         final double longitude   = FastMath.toRadians(0.20);
         final double height      = 68.0;
@@ -66,9 +66,9 @@ public class NiellMappingFunctionModelTest {
         final double expectedWet   = 10.75;
 
         final MappingFunction model = new NiellMappingFunctionModel();
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
+
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
     }

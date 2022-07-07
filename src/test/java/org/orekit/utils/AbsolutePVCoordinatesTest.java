@@ -434,7 +434,7 @@ public class AbsolutePVCoordinatesTest {
 
     }
 
-  
+
     @Test
     public void testInterpolatePolynomialPositionOnly() {
         Random random = new Random(0x88740a12e4299003l);

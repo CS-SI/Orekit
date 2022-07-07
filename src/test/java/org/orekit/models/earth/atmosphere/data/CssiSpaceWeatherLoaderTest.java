@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2020 Clément Jonglez
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -108,7 +108,7 @@ public class CssiSpaceWeatherLoaderTest {
     @Test
     /**
      * Testing first day of data
-     * Because the Ap up to 57 hours prior to the date are asked, 
+     * Because the Ap up to 57 hours prior to the date are asked,
      * this should return an exception
      */
     public void testThreeHourlyApObservedFirstDay() {
@@ -125,7 +125,7 @@ public class CssiSpaceWeatherLoaderTest {
     @Test
     /**
      * Testing second day of data
-     * Because the Ap up to 57 hours prior to the date are asked, 
+     * Because the Ap up to 57 hours prior to the date are asked,
      * this should return an exception
      */
     public void testThreeHourlyApObservedSecondDay() {
@@ -142,7 +142,7 @@ public class CssiSpaceWeatherLoaderTest {
     @Test
     /**
      * Testing third day of data
-     * Because the Ap up to 57 hours prior to the date are asked, 
+     * Because the Ap up to 57 hours prior to the date are asked,
      * this should return an exception
      */
     public void testThreeHourlyApObservedThirdDay() {
@@ -172,7 +172,7 @@ public class CssiSpaceWeatherLoaderTest {
 
     @Test
     /**
-     * This test is very approximate, at least to check that the two proper months were used for the interpolation 
+     * This test is very approximate, at least to check that the two proper months were used for the interpolation
      * But the manual interpolation of all 7 coefficients would have been a pain
      */
     public void testThreeHourlyApMonthlyPredicted() {

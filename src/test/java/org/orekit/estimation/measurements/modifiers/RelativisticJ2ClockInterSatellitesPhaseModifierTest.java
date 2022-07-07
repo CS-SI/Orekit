@@ -36,15 +36,15 @@ import org.orekit.utils.Constants;
 
 /**
  * Check against prediction in
- * 
+ *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- * 
+ *
  * An approximate value is given in terms of delay for Galileo satellites.
- * As these satellites are close to GPS satellites, we consider the delays to be 
+ * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
  *
  * The values produced by the modifiers are translated in terms of delay and checked against
- * the approximate value. 
+ * the approximate value.
  */
 
 public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
@@ -70,13 +70,13 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
         final EstimatedMeasurement<InterSatellitesPhase> estimatedBefore = phase.estimate(0, 0, states);
 
         // Inter-satellites phase after applying the modifier
-        final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier(Constants.WGS84_EARTH_MU, 
+        final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier(Constants.WGS84_EARTH_MU,
                 Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         phase.addModifier(modifier);
         final EstimatedMeasurement<InterSatellitesPhase> estimatedAfter = phase.estimate(0, 0, states);
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 62 ps for Galileo.
-        //          The computed value is equal to 67.284 ps, therefore lying in the supposed range. 
+        //          The computed value is equal to 67.284 ps, therefore lying in the supposed range.
         Assert.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
         Assert.assertEquals(0, modifier.getParametersDrivers().size());
 

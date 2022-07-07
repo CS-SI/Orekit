@@ -214,6 +214,49 @@ public class IntegratedEphemerisTest {
 
     }
 
+    @Test
+    public void testAdditionalDerivatives() {
+
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(10.0);
+        double[][] tolerances = NumericalPropagator.tolerances(1.0e-3, initialOrbit, OrbitType.CARTESIAN);
+        DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-6, 10.0, tolerances[0], tolerances[1]);
+        integrator.setInitialStepSize(1.0e-3);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        final DerivativesProvider provider1 = new DerivativesProvider("provider-1", 3);
+        propagator.addAdditionalDerivativesProvider(provider1);
+        final DerivativesProvider provider2 = new DerivativesProvider("provider-2", 1);
+        propagator.addAdditionalDerivativesProvider(provider2);
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.setInitialState(new SpacecraftState(initialOrbit).
+                                   addAdditionalState(provider1.getName(), new double[provider1.getDimension()]).
+                                   addAdditionalState(provider2.getName(), new double[provider2.getDimension()]));
+        propagator.propagate(finalDate);
+        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+
+        for (double dt = 0; dt < ephemeris.getMaxDate().durationFrom(ephemeris.getMinDate()); dt += 0.1) {
+            SpacecraftState state = ephemeris.propagate(ephemeris.getMinDate().shiftedBy(dt));
+            checkState(dt, state, provider1);
+            checkState(dt, state, provider2);
+        }
+
+    }
+
+    private void checkState(final double dt, final SpacecraftState state, final DerivativesProvider provider) {
+
+        Assert.assertTrue(state.hasAdditionalState(provider.getName()));
+        Assert.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
+        for (int i = 0; i < provider.getDimension(); ++i) {
+            Assert.assertEquals(i * dt, state.getAdditionalState(provider.getName())[i], 4.0e-15 * i * dt);
+        }
+
+        Assert.assertTrue(state.hasAdditionalStateDerivative(provider.getName()));
+        Assert.assertEquals(provider.getDimension(), state.getAdditionalStateDerivative(provider.getName()).length);
+        for (int i = 0; i < provider.getDimension(); ++i) {
+            Assert.assertEquals(i, state.getAdditionalStateDerivative(provider.getName())[i], 2.0e-14 * i);
+        }
+
+    }
+
     @Before
     public void setUp() {
 
@@ -246,5 +289,26 @@ public class IntegratedEphemerisTest {
 
     private Orbit initialOrbit;
     private NumericalPropagator numericalPropagator;
+
+    private static class DerivativesProvider implements AdditionalDerivativesProvider {
+        private final String name;
+        private final double[] derivatives;
+        DerivativesProvider(final String name, final int dimension) {
+            this.name        = name;
+            this.derivatives = new double[dimension];
+            for (int i = 0; i < dimension; ++i) {
+                derivatives[i] = i;
+            }
+        }
+        public String getName() {
+            return name;
+        }
+        public int getDimension() {
+            return derivatives.length;
+        }
+        public double[] derivatives(final SpacecraftState s) {
+            return derivatives;
+        }
+    }
 
 }

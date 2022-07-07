@@ -122,18 +122,18 @@ public class EphemerisTest {
         }
 
     }
-    
+
     @Test
     public void testAttitudeSequenceTransition() {
-    	        
+
         // Initialize the orbit
-    	final AbsoluteDate initialDate = new AbsoluteDate(2003, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(2003, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
         final Vector3D velocity  = new Vector3D(1151.00321021175, -2851.14864755189, -2.02133248357321);
         final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                                       FramesFactory.getGCRF(), initialDate,
                                                       Constants.WGS84_EARTH_MU);
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit);        
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
         // Define attitude laws
         AttitudeProvider before = new CelestialBodyPointed(FramesFactory.getICRF(), CelestialBodyFactory.getSun(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
@@ -150,7 +150,7 @@ public class EphemerisTest {
 
         NumericalPropagator propagator = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 1e-9, 1e-9));
         propagator.setInitialState(initialState);
-        
+
         // Propagate and build ephemeris
         final List<SpacecraftState> propagatedStates = new ArrayList<>();
 
@@ -167,34 +167,34 @@ public class EphemerisTest {
         SpacecraftState stateBefore = ephemeris.getInitialState();
         ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
         SpacecraftState stateAfter = ephemeris.propagate(endDate);
-        
-        
+
+
         // Check that the attitudes are correct
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ0(),
-        		stateBefore.getAttitude().getRotation().getQ0(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ0(),
+                1.0E-16);
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ1(),
-        		stateBefore.getAttitude().getRotation().getQ1(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ1(),
+                1.0E-16);
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ2(),
-        		stateBefore.getAttitude().getRotation().getQ2(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ2(),
+                1.0E-16);
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ3(),
-        		stateBefore.getAttitude().getRotation().getQ3(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ3(),
+                1.0E-16);
 
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ0(),
-        		stateAfter.getAttitude().getRotation().getQ0(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ0(),
+                1.0E-16);
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ1(),
-        		stateAfter.getAttitude().getRotation().getQ1(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ1(),
+                1.0E-16);
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ2(),
-        		stateAfter.getAttitude().getRotation().getQ2(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ2(),
+                1.0E-16);
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
-        		stateAfter.getAttitude().getRotation().getQ3(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ3(),
+                1.0E-16);
     }
 
     @Test

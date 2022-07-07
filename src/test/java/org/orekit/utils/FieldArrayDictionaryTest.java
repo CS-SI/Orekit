@@ -332,7 +332,7 @@ public class FieldArrayDictionaryTest {
         map.put("z", MathArrays.buildArray(field, 0));
         Assert.assertEquals(4, map.size());
         Assert.assertEquals(0, dictionary.size());
-       
+
     }
 
     private <T extends CalculusFieldElement<T>> void doTestView(Field<T> field) {

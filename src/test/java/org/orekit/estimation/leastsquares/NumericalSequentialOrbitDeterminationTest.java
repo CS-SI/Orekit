@@ -210,12 +210,12 @@ public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDete
         // input in resources directory
         final String inputPathModel = NumericalSequentialOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/sequential_od_test_Lageos.in").toURI().getPath();
         final File inputModel  = new File(inputPathModel);
-        
+
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
-        
+
         //orbit determination run.
         final boolean print = false;
         ResultSequentialBatchLeastSquares odLageos2 = runSequentialBLS(inputModel, print);
@@ -231,7 +231,7 @@ public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDete
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
-        
+
         //test on the convergence SBLS
         final int numberOfIteS  = 5;
         final int numberOfEvalS = 5;
@@ -242,11 +242,11 @@ public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDete
         //test on the estimated position
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
         final Vector3D estimatedPosSequential = odLageos2.getEstimatedPVSequential().getPosition();
-        
+
         // Ref position from "sequential_least_squares_lageos2_cpf_160213_5441.sgf"
         // Position in the file is given in ITRF. It is converted in EME2000 here
         final Vector3D refPos = new Vector3D(-8470598.591629019, -656367.1112940479, 8683152.425956512);
-        
+
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracyBLS);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPosSequential), distanceAccuracySBLS);
 

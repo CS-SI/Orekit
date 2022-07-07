@@ -26,6 +26,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
@@ -267,7 +268,14 @@ public class DSSTPartialDerivativesEquations
     }
 
     /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState s) {
+    @Override
+    @Deprecated
+    public double[] derivatives(final SpacecraftState state) {
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
 
         // initialize Jacobians to zero
         final int paramDim = selected.getNbParams();
@@ -361,7 +369,7 @@ public class DSSTPartialDerivativesEquations
             }
         }
 
-        return pDot;
+        return new CombinedDerivatives(pDot, null);
 
     }
 

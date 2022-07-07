@@ -959,7 +959,7 @@ public class DSSTPropagatorTest {
 
         // Body frame
         final Frame itrf = FramesFactory .getITRF(IERSConventions.IERS_2010, true);
-        
+
         // Earth
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -1168,7 +1168,7 @@ public class DSSTPropagatorTest {
             tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
             return tab;
         }
-        
+
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
@@ -1224,7 +1224,7 @@ public class DSSTPropagatorTest {
         public List<ParameterDriver> getParametersDrivers() {
             return Collections.emptyList();
         }
-        
+
     }
 
     @Before

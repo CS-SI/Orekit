@@ -44,7 +44,7 @@ public class ViennaThreeModelTest {
 
     @Test
     public void testMappingFactors() {
-        
+
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
         //           height:    824 m
@@ -66,7 +66,7 @@ public class ViennaThreeModelTest {
         //
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);
         final double height       = 824.0;
@@ -75,21 +75,21 @@ public class ViennaThreeModelTest {
         final double elevation     = FastMath.toRadians(38.0);
         final double expectedHydro = 1.621024;
         final double expectedWet   = 1.623023;
-        
+
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        
+
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
+
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
     public void testLowElevation() {
-        
+
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
         //           height:    824 m
@@ -111,7 +111,7 @@ public class ViennaThreeModelTest {
         //
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);
         final double height       = 824.0;
@@ -120,21 +120,21 @@ public class ViennaThreeModelTest {
         final double elevation     = FastMath.toRadians(5.0);
         final double expectedHydro = 10.132802;
         final double expectedWet   = 10.879154;
-        
+
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        
+
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
+
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
     public void testHightElevation() {
-        
+
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
         //           height:    824 m
@@ -156,7 +156,7 @@ public class ViennaThreeModelTest {
         //
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);
         final double height       = 824.0;
@@ -165,14 +165,14 @@ public class ViennaThreeModelTest {
         final double elevation     = FastMath.toRadians(85.0);
         final double expectedHydro = 1.003810;
         final double expectedWet   = 1.003816;
-        
+
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        
+
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
+
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
     }

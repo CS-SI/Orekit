@@ -169,7 +169,7 @@ public class FieldSpacecraftStateTest {
     public void testResetOnEventNumerical() {
         doTestAdditionalTestResetOnEventNumerical(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testIssue775() {
         doTestIssue775(Decimal64Field.getInstance());

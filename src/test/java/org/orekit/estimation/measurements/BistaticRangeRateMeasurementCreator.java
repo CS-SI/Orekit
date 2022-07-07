@@ -49,7 +49,7 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
         this.receiver  = context.BRRstations.getValue();
         this.satellite = new ObservableSatellite(0);
     }
-    
+
     public ObservableSatellite getSatellite() {
         return satellite;
     }

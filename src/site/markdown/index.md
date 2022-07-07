@@ -34,7 +34,7 @@
 
     * frames hierarchy supporting fixed and time-dependent
       (or telemetry-dependent) frames
-    * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014
+    * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2020
       and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, TEME and PZ-90.11 frames,
       tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
@@ -224,6 +224,8 @@
         * inter-satellites GNSS phase
         * GNSS code
         * GNSS phase with integer ambiguity resolution and wind-up effect
+        * Time Difference of Arrival (TDOA)
+        * Bi-static range and range rate
         * multiplexed
     * possibility to add custom measurements
     * loading of ILRS CRD laser ranging measurements file
@@ -231,7 +233,7 @@
     * several predefined modifiers
         * tropospheric effects
         * ionospheric effects
-        * clock relativistic effects
+        * clock relativistic effects (including J2 correction)
         * station offsets
         * biases
         * delays
@@ -259,10 +261,11 @@
     * loading of RINEX observation files (version 2 and version 3)
     * loading of RINEX navigation files (version 3)
     * support for Hatanaka compact RINEX format
-    * loading of SINEX station file
+    * loading of SINEX file (can load station positions, eccentricities and EOPs)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
     * parsing of RTCM messages
+    * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
 
   * Orbit file handling
@@ -277,6 +280,7 @@
   
     * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
     * support for CSSI space weather data
+    * support for SOLFSMY and DTC data for JB2008 atmospheric model
     * tropospheric delay (modified Saastamoinen, estimated, fixed)
     * tropospheric mapping functions (Vienna 1, Vienna 3, Global, Niell)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
@@ -291,6 +295,10 @@
     * displacement of ground points due to tides
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
+
+  * Collisions
+
+    * loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)
     
   * Customizable data loading
 

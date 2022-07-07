@@ -754,7 +754,7 @@ public class FieldPVCoordinatesTest {
                                                                            OrbitFunction<T> picker) {
         try {
             FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-            final T step = orbit.getDate().getField().getZero().add(0.01); 
+            final T step = orbit.getDate().getField().getZero().add(0.01);
             for (int i = -4; i < 4; ++i) {
                 T dt = step.multiply(i);
                 interpolator.addSamplePoint(dt, picker.apply(orbit.shiftedBy(dt)).toArray());

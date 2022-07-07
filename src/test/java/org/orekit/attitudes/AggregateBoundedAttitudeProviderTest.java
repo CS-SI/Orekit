@@ -118,7 +118,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
-        
+
         // before bound of first attitude provider
         try {
             provider.getAttitude(null, provider.getMinDate().shiftedBy(-60.0), null);
@@ -148,7 +148,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
-        
+
         // before bound of first attitude provider
         try {
             provider.getAttitude(null, new FieldAbsoluteDate<>(provider.getMinDate(), field.getZero().subtract(60.0)), null);
@@ -165,5 +165,5 @@ public class AggregateBoundedAttitudeProviderTest {
 
     }
 
-    
+
 }

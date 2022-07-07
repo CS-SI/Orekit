@@ -42,7 +42,7 @@ public class UnitsConverterTest {
 
     @Test
     public void testRotationRate() {
-        
+
     }
 
     @Test

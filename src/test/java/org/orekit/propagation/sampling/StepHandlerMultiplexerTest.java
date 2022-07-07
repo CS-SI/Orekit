@@ -168,7 +168,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals( 1,    counter10.finishCount);
         Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
         Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
-        
+
         // removing the handler with variable stepsize
         multiplexer.remove(counterVar);
         Assert.assertEquals(1, multiplexer.getHandlers().size());
@@ -208,7 +208,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals( 1,    counter10.finishCount);
         Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
         Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
-        
+
         // removing everything
         multiplexer.clear();
         Assert.assertEquals(0, multiplexer.getHandlers().size());
@@ -228,7 +228,7 @@ public class StepHandlerMultiplexerTest {
         Assert.assertEquals( 1,    counter10.finishCount);
         Assert.assertEquals(  0.0, counter10.start, 1.0e-15);
         Assert.assertEquals( 90.0, counter10.stop, 1.0e-15);
-        
+
     }
 
     @Test

@@ -189,7 +189,7 @@ public class PVCoordinatesTest {
         Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
         Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
         Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
-        
+
     }
 
     @Test
@@ -228,7 +228,7 @@ public class PVCoordinatesTest {
         Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
         Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
         Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
-        
+
     }
 
     @Test

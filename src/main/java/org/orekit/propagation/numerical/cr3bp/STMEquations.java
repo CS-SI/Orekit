@@ -24,6 +24,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 
 /** Class calculating the state transition matrix coefficient for CR3BP Computation.
@@ -94,7 +95,14 @@ public class STMEquations
     }
 
     /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState s) {
+    @Override
+    @Deprecated
+    public double[] derivatives(final SpacecraftState state) {
+        return combinedDerivatives(state).getAdditionalDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
 
         // State Transition Matrix
         final double[] phi = s.getAdditionalState(getName());
@@ -135,7 +143,7 @@ public class STMEquations
             }
         }
 
-        return dPhi;
+        return new CombinedDerivatives(dPhi, null);
 
     }
 

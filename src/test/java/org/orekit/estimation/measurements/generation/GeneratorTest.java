@@ -60,7 +60,7 @@ public class GeneratorTest {
         double rangeBW = 1;
         ObservableSatellite obs = new ObservableSatellite(0);
         RangeBuilder rB = new RangeBuilder(null, context.stations.get(0), false, rangeSigma, rangeBW,obs);
-        AngularAzElBuilder aAEB = new AngularAzElBuilder(null, context.stations.get(0), azElError, baseweight, obs);  
+        AngularAzElBuilder aAEB = new AngularAzElBuilder(null, context.stations.get(0), azElError, baseweight, obs);
         double  timeToEnd = Constants.JULIAN_DAY;
 
         AbsoluteDate initialDate = context.initialOrbit.getDate();
@@ -69,7 +69,7 @@ public class GeneratorTest {
         FixedStepSelector fssAE = new FixedStepSelector(10., TimeScalesFactory.getUTC());
         EventBasedScheduler<Range> eBS = new EventBasedScheduler<>(rB, fssAE, numProp, detector, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_NEGATIVE);
         FixedStepSelector fssR = new FixedStepSelector(10., TimeScalesFactory.getUTC());
-        EventBasedScheduler<AngularAzEl> aeBS = new EventBasedScheduler<>(aAEB, fssR, numProp, detector, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_NEGATIVE);      
+        EventBasedScheduler<AngularAzEl> aeBS = new EventBasedScheduler<>(aAEB, fssR, numProp, detector, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_NEGATIVE);
         Generator genR = new Generator();
         genR.addPropagator(numProp);
         genR.addScheduler(aeBS);

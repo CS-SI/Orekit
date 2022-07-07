@@ -86,8 +86,8 @@
       }
 
       enum FilterType {
-	    TRIGGER_ONLY_DECREASING_EVENTS
-	    TRIGGER_ONLY_INCREASING_EVENTS
+        TRIGGER_ONLY_DECREASING_EVENTS
+        TRIGGER_ONLY_INCREASING_EVENTS
       }
 
       interface EnablingPredicate {

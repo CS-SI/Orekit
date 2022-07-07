@@ -101,7 +101,28 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
      * additional states this equations depend on (according to the
      * {@link #yield(FieldSpacecraftState) yield} method)
      * @return computed derivatives
+     * @deprecated as of 11.2, replaced by {@link #combinedDerivatives(FieldSpacecraftState)}
      */
+    @Deprecated
     T[] derivatives(FieldSpacecraftState<T> s);
+
+    /** Compute the derivatives related to the additional state (and optionally main state increments).
+     * <p>
+     * As of 11.2, there is a default implementation that calls the deprecated
+     * {@link #derivatives(FieldSpacecraftState)} method. This has been done for
+     * backward compatibility only and will be removed in 12.0.
+     * </p>
+     * @param s current state information: date, kinematics, attitude, and
+     * additional states this equations depend on (according to the
+     * {@link #yield(FieldSpacecraftState) yield} method)
+     * @return computed combined derivatives, which may include some incremental
+     * coupling effect to add to main state derivatives
+     * @since 11.2
+     */
+    default FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
+        // this default implementation will be removed
+        // when the deprecated derivatives method above is removed
+        return new FieldCombinedDerivatives<>(derivatives(s), null);
+    }
 
 }

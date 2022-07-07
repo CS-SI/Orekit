@@ -59,13 +59,13 @@ import org.orekit.utils.IERSConventions;
 
 
 public class PropagatorsParallelizerEphemerisTest {
-    
+
     private double mass;
     private Orbit orbit;
     private AttitudeProvider attitudeLaw;
     private UnnormalizedSphericalHarmonicsProvider unnormalizedGravityField;
     private NormalizedSphericalHarmonicsProvider normalizedGravityField;
-    
+
     @Before
     public void setUp() {
         try {
@@ -86,7 +86,7 @@ public class PropagatorsParallelizerEphemerisTest {
                     TimeScalesFactory.getUTC());
             orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                     FramesFactory.getEME2000(), date, normalizedGravityField.getMu());
-            
+
             OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                     Constants.WGS84_EARTH_FLATTENING,
                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -113,16 +113,16 @@ public class PropagatorsParallelizerEphemerisTest {
      * in the case of NuericalPropagators.
      * Check existence of all ephemeris.
      * Check end time of all ephemeris for varying step times.
-     * 
+     *
      * Should validate the modification, except for the retrieveNextParameters added check.
-     * 
+     *
      * Tests are based on Anne-Laure LUGAN's proposed test, and on PropagatorsParallelizerTest.
      */
 
     @Test
     public void testSeveralEphemeris() {
         /*
-         * The closing behaviour is checked by verifying the presence of generated ephemeris as a result of the 
+         * The closing behaviour is checked by verifying the presence of generated ephemeris as a result of the
          * following process, using PropagatorsParallelizer.
          */
         final AbsoluteDate startDate = orbit.getDate();
@@ -146,13 +146,13 @@ public class PropagatorsParallelizerEphemerisTest {
     public void testSeveralEphemerisDateDetector() {
         /*
          * The closing behaviour is checked for a stop event occuring during the propagation.
-         * The test isn't applied to analytical propagators as their behaviour differs. 
+         * The test isn't applied to analytical propagators as their behaviour differs.
          * (Analytical propagator's ephemerides are the analytical propagators.)
          */
         final AbsoluteDate startDate = orbit.getDate();
         final AbsoluteDate endDate = startDate.shiftedBy(3600.015);
         List<Propagator> propagators = Arrays.asList(buildNumerical(1,300), buildNumerical(0.001,300), buildDSST());
-        
+
         // Add new instance of event with same date. DateDetector behaviour at event is stop.
         AbsoluteDate detectorDate = startDate.shiftedBy(1800);
         propagators.stream().forEach(propagator -> propagator.addEventDetector(new DateDetector(detectorDate)));

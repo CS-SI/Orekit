@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -373,6 +374,17 @@ public class EventDetectorTest {
         SpacecraftState finalState = propagator.propagate(finalTime);
         Assert.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
 
+    }
+
+    @Test
+    public void testWrongConfiguration() {
+        try {
+            new DateDetector(-1.0, 1.0e-6, AbsoluteDate.ARBITRARY_EPOCH);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
+            Assert.assertEquals(-1.0, ((Double) oe.getParts()[0]).doubleValue(), 1.0e-15);
+        }
     }
 
     @Test

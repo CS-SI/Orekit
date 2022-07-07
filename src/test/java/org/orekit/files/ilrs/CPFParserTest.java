@@ -124,7 +124,7 @@ public class CPFParserTest {
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58283, 56640.000000, file.getTimeScale());
         final Vector3D position = new Vector3D(-1578630.043, -2922293.651, -6964482.056);
         Assert.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.4e-10);
-        
+
     }
 
     @Test
@@ -205,7 +205,7 @@ public class CPFParserTest {
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58282, 78000.00000, file.getTimeScale());
         final Vector3D position = new Vector3D(-5843276.537, 1074212.914, -10696380.103);
         Assert.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.0e-9);
-        
+
     }
 
     @Test
@@ -283,7 +283,7 @@ public class CPFParserTest {
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58282, 78282.000000, file.getTimeScale());
         final Vector3D position = new Vector3D(22173889.124, -19259262.865, 3650461.090);
         Assert.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 4.7e-10);
-        
+
     }
 
     @Test
@@ -320,7 +320,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0,          header.getTranspUtcOffset(), 0.0);
         Assert.assertEquals(0.0,          header.getTranspOscDrift(), 0.0);
         Assert.assertEquals(0.0,          header.getTranspClkRef(), 0.0);
-        
+
     }
 
     @Test

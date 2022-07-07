@@ -539,7 +539,7 @@ public class CRDParserTest {
         Assert.assertEquals(0.92374, measurement.getPressure(),    0.00001);
         Assert.assertEquals(289.42,  measurement.getTemperature(), 0.01);
         Assert.assertEquals(28.1,    measurement.getHumidity(),    0.01);
-        
+
     }
 
     @Test
@@ -563,14 +563,14 @@ public class CRDParserTest {
     public void testIssue886() throws IOException {
         final String ex = "/ilrs/glonass125_trunc.frd";
         final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
-        
+
         final CRDDataBlock block = file.getDataBlocks().get(0);
         final List<RangeMeasurement> rangeBlock = block.getRangeData();
         final RangeMeasurement rangeFirst = rangeBlock.get(0);
         final RangeMeasurement rangeLast = rangeBlock.get(rangeBlock.size() - 1);
-        
-        DateComponents startEpoch = new DateComponents(2019, 04, 21);
-        DateComponents lastEpoch = new DateComponents(2019, 04, 22);
+
+        DateComponents startEpoch = new DateComponents(2019, 04, 19);
+        DateComponents lastEpoch = new DateComponents(2019, 04, 20);
         double firstSecOfDay = 77387.019063653420;
         double lastSecOfDay = 694.119563650340;
         final AbsoluteDate firstDate = new AbsoluteDate(startEpoch, new TimeComponents(firstSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
@@ -580,8 +580,64 @@ public class CRDParserTest {
         Assert.assertEquals(firstDate, rangeFirst.getDate());
         Assert.assertEquals(lastDate, rangeLast.getDate());
     }
-    
-    
+
+    @Test
+    public void testIssue886Bis() throws IOException {
+        final String ex = "/ilrs/Rollover.frd";
+        final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify each block
+
+        // Block 1
+        CRDDataBlock block = file.getDataBlocks().get(0);
+        List<RangeMeasurement> rangeBlock = block.getRangeData();
+        RangeMeasurement rangeFirst = rangeBlock.get(0);
+        RangeMeasurement rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+
+        DateComponents startEpoch = new DateComponents(2022, 6, 6);
+        DateComponents lastEpoch = new DateComponents(2022, 6, 6);
+        double firstSecOfDay = 43410.8898329;
+        double lastSecOfDay = 43444.1690476;
+        AbsoluteDate firstDate = new AbsoluteDate(startEpoch, new TimeComponents(firstSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+        AbsoluteDate lastDate = new AbsoluteDate(lastEpoch, new TimeComponents(lastSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+
+        Assert.assertEquals(firstDate, rangeFirst.getDate());
+        Assert.assertEquals(lastDate, rangeLast.getDate());
+
+        // Block 2
+        block = file.getDataBlocks().get(1);
+        rangeBlock = block.getRangeData();
+        rangeFirst = rangeBlock.get(0);
+        rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+
+        startEpoch = new DateComponents(2022, 6, 6);
+        lastEpoch = new DateComponents(2022, 6, 6);
+        firstSecOfDay = 26579.400543200001;
+        lastSecOfDay = 26618.200540700000;
+        firstDate = new AbsoluteDate(startEpoch, new TimeComponents(firstSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+        lastDate = new AbsoluteDate(lastEpoch, new TimeComponents(lastSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+
+        Assert.assertEquals(firstDate, rangeFirst.getDate());
+        Assert.assertEquals(lastDate, rangeLast.getDate());
+
+        // Block 3
+        block = file.getDataBlocks().get(2);
+        rangeBlock = block.getRangeData();
+        rangeFirst = rangeBlock.get(0);
+        rangeLast = rangeBlock.get(rangeBlock.size() - 1);
+
+        startEpoch = new DateComponents(2021, 1, 26);
+        lastEpoch = new DateComponents(2021, 1, 27);
+        firstSecOfDay = 86181.271863631440;
+        lastSecOfDay = 1007.946763625370;
+        firstDate = new AbsoluteDate(startEpoch, new TimeComponents(firstSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+        lastDate = new AbsoluteDate(lastEpoch, new TimeComponents(lastSecOfDay), DataContext.getDefault().getTimeScales().getUTC());
+
+        Assert.assertEquals(firstDate, rangeFirst.getDate());
+        Assert.assertEquals(lastDate, rangeLast.getDate());
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

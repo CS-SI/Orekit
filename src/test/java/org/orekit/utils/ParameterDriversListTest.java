@@ -72,7 +72,7 @@ public class ParameterDriversListTest {
         Assert.assertEquals("q2", p2B.getName());
         Assert.assertEquals("q2", delegating21.getName());
         Assert.assertEquals("q2", delegating22.getName());
-        
+
         // Reference value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setReferenceValue(0.5);
         Assert.assertEquals(0.5, p1A.getReferenceValue(),          1.0e-15);
@@ -84,7 +84,7 @@ public class ParameterDriversListTest {
         Assert.assertEquals(-0.5, p2B.getReferenceValue(),          1.0e-15);
         Assert.assertEquals(-0.5, delegating21.getReferenceValue(), 1.0e-15);
         Assert.assertEquals(-0.5, delegating22.getReferenceValue(), 1.0e-15);
-        
+
         // Scale: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setScale(2.);
         Assert.assertEquals(2., p1A.getScale(),          1.0e-15);
@@ -96,13 +96,13 @@ public class ParameterDriversListTest {
         Assert.assertEquals(3., p2B.getScale(),          1.0e-15);
         Assert.assertEquals(3., delegating21.getScale(), 1.0e-15);
         Assert.assertEquals(3., delegating22.getScale(), 1.0e-15);
-        
+
         // Min value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setMinValue(-2.);
         Assert.assertEquals(-2., p1A.getMinValue(),          1.0e-15);
         Assert.assertEquals(-2., p1B.getMinValue(),          1.0e-15);
         Assert.assertEquals(-2., delegating12.getMinValue(), 1.0e-15);
-        
+
         // Min value: upward settings, starting from raw drivers
         p2A.setMinValue(-0.25);
         Assert.assertEquals(-0.25, p2B.getMinValue(),          1.0e-15);
@@ -112,7 +112,7 @@ public class ParameterDriversListTest {
         Assert.assertEquals(-0.25, p2B.getValue(),          1.0e-15);
         Assert.assertEquals(-0.25, delegating21.getValue(), 1.0e-15);
         Assert.assertEquals(-0.25, delegating22.getValue(), 1.0e-15);
-        
+
         // Max value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setMaxValue(0.25);
         Assert.assertEquals(0.25, p1A.getMaxValue(),          1.0e-15);
@@ -122,7 +122,7 @@ public class ParameterDriversListTest {
         Assert.assertEquals(0.25, p1A.getValue(),          1.0e-15);
         Assert.assertEquals(0.25, p1B.getValue(),          1.0e-15);
         Assert.assertEquals(0.25, delegating12.getValue(), 1.0e-15);
-        
+
         // Max value: upward settings, starting from raw drivers
         p2A.setMaxValue(2.);
         Assert.assertEquals(2., p2B.getMaxValue(),          1.0e-15);

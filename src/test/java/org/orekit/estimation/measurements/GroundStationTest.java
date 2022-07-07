@@ -1284,7 +1284,7 @@ public class GroundStationTest {
             Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
             Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
         }
-        
+
         try {
             int freeParameters = 9;
             Map<String, Integer> indices = new HashMap<>();
@@ -1306,7 +1306,7 @@ public class GroundStationTest {
             Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
             Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
         }
-        
+
     }
 
     private void doTestCartesianDerivatives(double latitude, double longitude, double altitude, double stepFactor,

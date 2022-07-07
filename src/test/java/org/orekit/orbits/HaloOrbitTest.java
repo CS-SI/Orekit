@@ -39,52 +39,52 @@ import org.orekit.utils.PVCoordinates;
 
 public class HaloOrbitTest {
 
-    
+
     @Test
     public void testHaloOrbit() {
-	    CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-	    final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
-	    final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
-	    final HaloOrbit h2 = new HaloOrbit(syst, firstGuess, 2.0);
-	    final HaloOrbit h3 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L2), 8E6, LibrationOrbitFamily.SOUTHERN);
+        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+        final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
+        final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
+        final HaloOrbit h2 = new HaloOrbit(syst, firstGuess, 2.0);
+        final HaloOrbit h3 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L2), 8E6, LibrationOrbitFamily.SOUTHERN);
 
-	    final double orbitalPeriod1 = h1.getOrbitalPeriod();
-	    final double orbitalPeriod2 = h2.getOrbitalPeriod();
-	    final double orbitalPeriod3 = h3.getOrbitalPeriod();
+        final double orbitalPeriod1 = h1.getOrbitalPeriod();
+        final double orbitalPeriod2 = h2.getOrbitalPeriod();
+        final double orbitalPeriod3 = h3.getOrbitalPeriod();
 
-	    final PVCoordinates firstGuess1 = h1.getInitialPV();
-	    final PVCoordinates firstGuess2 = h2.getInitialPV();
-	    final PVCoordinates firstGuess3 = h3.getInitialPV();
+        final PVCoordinates firstGuess1 = h1.getInitialPV();
+        final PVCoordinates firstGuess2 = h2.getInitialPV();
+        final PVCoordinates firstGuess3 = h3.getInitialPV();
 
-	    Assert.assertNotEquals(0.0, orbitalPeriod1, 0.5);
-	    Assert.assertNotEquals(0.0, orbitalPeriod3, 0.5);
-	    Assert.assertEquals(2.0, orbitalPeriod2, 1E-15);
+        Assert.assertNotEquals(0.0, orbitalPeriod1, 0.5);
+        Assert.assertNotEquals(0.0, orbitalPeriod3, 0.5);
+        Assert.assertEquals(2.0, orbitalPeriod2, 1E-15);
 
-	    Assert.assertNotEquals(0.0, firstGuess1.getPosition().getX(), 0.6);
-	    Assert.assertEquals(0.0, firstGuess1.getPosition().getY(), 1E-15);
-	    Assert.assertEquals(0.0, firstGuess1.getVelocity().getX(), 1E-15);
-	    Assert.assertNotEquals(0.0, firstGuess1.getVelocity().getY(), 0.01);
-	    Assert.assertEquals(0.0, firstGuess1.getVelocity().getZ(), 1E-15);
-    
-	    Assert.assertNotEquals(0.0, firstGuess3.getPosition().getX(), 1);
-	    Assert.assertEquals(0.0, firstGuess3.getPosition().getY(), 1E-15);
-	    Assert.assertEquals(0.0, firstGuess3.getVelocity().getX(), 1E-15);
-	    Assert.assertNotEquals(0.0, firstGuess3.getVelocity().getY(), 0.01);
-	    Assert.assertEquals(0.0, firstGuess3.getVelocity().getZ(), 1E-15);
-    
-	    Assert.assertEquals(firstGuess.getPosition().getX(), firstGuess2.getPosition().getX(), 1E-15);
-	    Assert.assertEquals(firstGuess.getPosition().getY(), firstGuess2.getPosition().getY(), 1E-15);
-	    Assert.assertEquals(firstGuess.getPosition().getZ(), firstGuess2.getPosition().getZ(), 1E-15);
-	    Assert.assertEquals(firstGuess.getVelocity().getX(), firstGuess2.getVelocity().getX(), 1E-15);
-	    Assert.assertEquals(firstGuess.getVelocity().getY(), firstGuess2.getVelocity().getY(), 1E-15);
-	    Assert.assertEquals(firstGuess.getVelocity().getZ(), firstGuess2.getVelocity().getZ(), 1E-15);
+        Assert.assertNotEquals(0.0, firstGuess1.getPosition().getX(), 0.6);
+        Assert.assertEquals(0.0, firstGuess1.getPosition().getY(), 1E-15);
+        Assert.assertEquals(0.0, firstGuess1.getVelocity().getX(), 1E-15);
+        Assert.assertNotEquals(0.0, firstGuess1.getVelocity().getY(), 0.01);
+        Assert.assertEquals(0.0, firstGuess1.getVelocity().getZ(), 1E-15);
+
+        Assert.assertNotEquals(0.0, firstGuess3.getPosition().getX(), 1);
+        Assert.assertEquals(0.0, firstGuess3.getPosition().getY(), 1E-15);
+        Assert.assertEquals(0.0, firstGuess3.getVelocity().getX(), 1E-15);
+        Assert.assertNotEquals(0.0, firstGuess3.getVelocity().getY(), 0.01);
+        Assert.assertEquals(0.0, firstGuess3.getVelocity().getZ(), 1E-15);
+
+        Assert.assertEquals(firstGuess.getPosition().getX(), firstGuess2.getPosition().getX(), 1E-15);
+        Assert.assertEquals(firstGuess.getPosition().getY(), firstGuess2.getPosition().getY(), 1E-15);
+        Assert.assertEquals(firstGuess.getPosition().getZ(), firstGuess2.getPosition().getZ(), 1E-15);
+        Assert.assertEquals(firstGuess.getVelocity().getX(), firstGuess2.getVelocity().getX(), 1E-15);
+        Assert.assertEquals(firstGuess.getVelocity().getY(), firstGuess2.getVelocity().getY(), 1E-15);
+        Assert.assertEquals(firstGuess.getVelocity().getZ(), firstGuess2.getVelocity().getZ(), 1E-15);
     }
 
     @Test(expected=OrekitException.class)
-    	public void testLagrangianError() {
-    	CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-    	final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
-    	h.getClass();
+        public void testLagrangianError() {
+        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+        final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
+        h.getClass();
     }
 
     @Test
@@ -95,7 +95,7 @@ public class HaloOrbitTest {
             new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
                              TimeScalesFactory.getUTC());
         CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-        
+
         syst.getPrimary().getPVCoordinates(initialDate, syst.getSecondary().getInertiallyOrientedFrame());
 
         final Frame Frame = syst.getRotatingFrame();
@@ -119,7 +119,7 @@ public class HaloOrbitTest {
         // Creating the initial spacecraftstate that will be given to the
         // propagator
         final SpacecraftState initialState = new SpacecraftState(initialAbsPV);
-        
+
         // Integration parameters
         // These parameters are used for the Dormand-Prince integrator, a
         // variable step integrator,
@@ -152,14 +152,14 @@ public class HaloOrbitTest {
         propagator.addAdditionalDerivativesProvider(stm);
         propagator.setInitialState(augmentedInitialState);
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
-        
+
         final PVCoordinates initialUnstableManifold = h.getManifolds(finalState, false);
         final PVCoordinates initialStableManifold = h.getManifolds(finalState, true);
-        
+
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getZ(), initialUnstableManifold.getPosition().getZ(), 1E-7);
-        
+
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
         Assert.assertNotEquals(finalState.getPVCoordinates().getPosition().getZ(), initialStableManifold.getPosition().getZ(), 1E-7);
@@ -201,7 +201,7 @@ public class HaloOrbitTest {
         // Creating the initial spacecraftstate that will be given to the
         // propagator
         final SpacecraftState s = new SpacecraftState(initialAbsPV);
-        
+
 
         final PVCoordinates manifold = h.getManifolds(s, true);
         manifold.getMomentum();

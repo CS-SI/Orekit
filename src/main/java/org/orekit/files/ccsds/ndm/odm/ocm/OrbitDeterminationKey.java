@@ -87,8 +87,8 @@ public enum OrbitDeterminationKey {
                                                                          container::setEpochEigenMaj)),
 
     /** Positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD. */
-    OD_EPOCH_EIGMED((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
-                                                                         container::setEpochEigenMed)),
+    OD_EPOCH_EIGINT((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
+                                                                         container::setEpochEigenInt)),
 
     /** Positional error ellipsoid 1σ minor eigenvalue at the epoch of OD. */
     OD_EPOCH_EIGMIN((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),

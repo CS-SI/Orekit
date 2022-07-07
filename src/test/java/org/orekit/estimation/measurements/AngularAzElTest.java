@@ -70,10 +70,10 @@ public class AngularAzElTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the AZEL value
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
             elDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[1] - measurement.getObservedValue()[1]));
@@ -82,11 +82,11 @@ public class AngularAzElTest {
         // Mean and std errors check
         Assert.assertEquals(0.0, azDiffStat.getMean(), 6.9e-9);
         Assert.assertEquals(0.0, azDiffStat.getStandardDeviation(), 7.2e-9);
-        
+
         Assert.assertEquals(0.0, elDiffStat.getMean(), 5.4e-9);
         Assert.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
     }
-    
+
     /** Test the values of the state derivatives using a numerical.
      * finite differences calculation as a reference
      */

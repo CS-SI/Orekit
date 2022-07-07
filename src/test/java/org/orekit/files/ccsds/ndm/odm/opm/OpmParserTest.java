@@ -944,19 +944,19 @@ public class OpmParserTest {
     @Test
     public void testIssue619() {
         // test for issue 619 - moon centered transformation
-    	// Verify that moon is at the center of the new frame
+        // Verify that moon is at the center of the new frame
         CelestialBody moon = CelestialBodyFactory.getMoon();
-		AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 00, TimeScalesFactory.getUTC());
-		final String ex = "/ccsds/odm/opm/OPM-dummy-moon-EME2000.txt";
+        AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 00, TimeScalesFactory.getUTC());
+        final String ex = "/ccsds/odm/opm/OPM-dummy-moon-EME2000.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-		final OpmParser parser = new ParserBuilder().
-		                         withMu(CelestialBodyFactory.getEarth().getGM()).
-		                         withDefaultMass(1000.0).
-		                         buildOpmParser();
-		final Opm file = parser.parseMessage(source);
+        final OpmParser parser = new ParserBuilder().
+                                 withMu(CelestialBodyFactory.getEarth().getGM()).
+                                 withDefaultMass(1000.0).
+                                 buildOpmParser();
+        final Opm file = parser.parseMessage(source);
         final Frame actualFrame = file.getMetadata().getFrame();
         MatcherAssert.assertThat(moon.getPVCoordinates(date, actualFrame),
-                                 OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));     
+                                 OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
     }
 
 }
