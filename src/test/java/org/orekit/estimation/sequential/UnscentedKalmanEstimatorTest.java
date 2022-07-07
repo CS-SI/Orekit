@@ -1,3 +1,19 @@
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.estimation.sequential;
 
 import java.util.List;
@@ -110,12 +126,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.08e-6;
+        final double   posEps            = 3.63e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.98e-9;
-        final double[] expectedsigmasPos = {3.179E-7, 2.995E-7, 10.276E-7};
+        final double   velEps            = 1.42e-9;
+        final double[] expectedsigmasPos = {1.762E-7, 1.899E-7, 7.398E-7};
         final double   sigmaPosEps       = 1.0e-10;
-        final double[] expectedSigmasVel = {1.05689E-10, 3.89731E-10, 0.51126E-10};
+        final double[] expectedSigmasVel = {0.90962E-10, 2.61847E-10, 0.37545E-10};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -187,9 +203,9 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.59e-3;
+        final double   posEps            = 4.05e-3;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.67e-6;
+        final double   velEps            = 1.47e-6;
         final double[] expectedsigmasPos = {0.196283, 0.177933, 0.317294};
         final double   sigmaPosEps       = 1.0e-6;
         final double[] expectedSigmasVel = {7.34904E-5, 13.28603E-5, 4.28682E-5};
@@ -252,12 +268,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 6.39e-7;
+        final double   posEps            = 8.17e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.53e-10;
-        final double[] expectedsigmasPos = {0.4401258E-8, 8.6348156E-8, 13.6186622E-8};
+        final double   velEps            = 3.37e-10;
+        final double[] expectedsigmasPos = {0.2011887E-8, 13.7470082E-8, 16.8912923E-8};
         final double   sigmaPosEps       = 1.0e-15;
-        final double[] expectedSigmasVel = {2.3262E-11, 0.9883E-11, 5.7841E-11};
+        final double[] expectedSigmasVel = {3.2012E-11, 0.6991E-11, 7.5811E-11};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -317,12 +333,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.33e-6;
+        final double   posEps            = 1.74e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 4.62e-10;
-        final double[] expectedsigmasPos = {1.12928E-10, 15.00645E-10, 5.45261E-10};
+        final double   velEps            = 6.06e-10;
+        final double[] expectedsigmasPos = {8.869538E-9, 1.18524507E-7, 4.32132152E-8};
         final double   sigmaPosEps       = 1.0e-15;
-        final double[] expectedSigmasVel = {2.96E-13, 1.84E-13, 7.66E-13};
+        final double[] expectedSigmasVel = {1.5213E-11, 7.738E-12, 4.0380E-11};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -400,9 +416,9 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 7.44e-6;
+        final double   posEps            = 3.05e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.74e-9;
+        final double   velEps            = 1.16e-9;
         final double[] expectedSigmasPos = {0.324407, 1.347014, 1.743326};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
@@ -481,9 +497,9 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 6.07e-7;
+        final double   posEps            = 5.56e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.50e-10;
+        final double   velEps            = 1.76e-10;
         final double[] expectedSigmasPos = {0.043885, 0.600764, 0.279020};
         final double   sigmaPosEps       = 1.0e-6;
         final double[] expectedSigmasVel = {7.17260E-5, 3.037315E-5, 19.49046e-5};
@@ -562,9 +578,9 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.93e-7;
+        final double   posEps            = 6.05e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.02e-10;
+        final double   velEps            = 2.07e-10;
         final double[] expectedSigmasPos = {0.012134, 0.511243, 0.264925};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {5.72891E-5, 1.58811E-5, 15.98658E-5};
