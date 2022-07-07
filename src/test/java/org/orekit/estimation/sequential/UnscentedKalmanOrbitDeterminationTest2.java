@@ -54,9 +54,6 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
     
-    /** Flag for unscented estimation. */
-    private static final Boolean IS_UNSCENTED = true;
-    
     /** {@inheritDoc} */
     @Override
     protected void createGravityField(final KeyValueFileParser<ParameterKey> parser)
@@ -196,10 +193,10 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
     public void testLageos2() throws URISyntaxException, IOException {
 
         // Print results on console
-        final boolean print = true;
+        final boolean print = false;
         
         // input in resources directory
-        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/unscented_kalman_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = UnscentedKalmanOrbitDeterminationTest2.class.getClassLoader().getResource("orbit-determination/Lageos2/unscented_kalman_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -217,21 +214,10 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
         final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
         });
-        final double qPos;
-        final double qVel;
-        
-        if (IS_UNSCENTED) {
-            qPos = 3e-4;
-            qVel = 3e-7;
-        } else {
-            qPos = 1e-4;
-            qVel = 1e-10;
-        }
-        
         // Orbital Cartesian process noise matrix (Q)
         final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-                qPos, qPos, qPos, qVel, qVel, qVel
-            });
+               3e-4, 3e-4, 3e-4, 3e-7, 3e-7, 3e-7
+        });
         
         // Initial measurement covariance matrix and process noise matrix
         final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -239,19 +225,19 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
         });
         final RealMatrix measurementQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-6, 1e-6, 1e-6, 1e-6
-         });
+        });
 
         // Kalman orbit determination run.
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
                                                cartesianOrbitalP, cartesianOrbitalQ,
                                                null, null,
-                                               measurementP, measurementQ, IS_UNSCENTED);
+                                               measurementP, measurementQ, true);
 
         // Definition of the reference parameters for the tests
         
         final double distanceAccuracy = 1.68;
         final double velocityAccuracy = 2.71e-3;
-        final double[] RefStatRange = { -1.698412, 1.529126, 0.964164, 0.338275 };
+        final double[] RefStatRange = { -1.698412, 1.529126, 0.029547, 0.338275 };
 
         // Tests
         // Note: The reference initial orbit is the same as in the batch LS tests
@@ -297,7 +283,7 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
         final long nbRange = 258;
         // Batch LS values
         //final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        
+        System.out.println(kalmanLageos2.getRangeStat().getMean());
         Assert.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
@@ -311,10 +297,10 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
     public void testW3B() throws URISyntaxException, IOException {
 
         // Print results on console
-        final boolean print = true;
+        final boolean print = false;
         
         // input in resources directory
-        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3B_unscented.in").toURI().getPath();
+        final String inputPath = UnscentedKalmanOrbitDeterminationTest2.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3B_unscented.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // Configure Orekit data access
@@ -342,7 +328,7 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
         ResultKalman kalmanW3B = runKalman(input, orbitType, print,
                 cartesianOrbitalP, cartesianOrbitalQ,
                 null, null,
-                null, null, IS_UNSCENTED);
+                null, null, true);
 
         // Tests
         // -----
