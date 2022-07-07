@@ -824,7 +824,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         } else {
             // Extended 
             final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
-                    addPropagationConfiguration((NumericalPropagatorBuilder) propagatorBuilder, new ConstantProcessNoise(initialP, Q));
+                    addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
             if (measurementP != null) {
                 // Measurement part
                 kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
