@@ -233,7 +233,7 @@ public class DSSTBatchLSEstimatorTest {
     }
 
     /**
-     * Perfect range measurements with a biased start and an on-board antenna range offset 
+     * Perfect range measurements with a biased start and an on-board antenna range offset
      */
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() {
@@ -485,11 +485,11 @@ public class DSSTBatchLSEstimatorTest {
 
     @Test
     public void testIssue359() {
-    	DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
                         context.createBuilder(true, 60.0, 600.0, 1.0);
-        
+
         // Select the central attraction coefficient (here there is only the central attraction coefficient)
         // as estimated parameter
         propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
@@ -497,7 +497,7 @@ public class DSSTBatchLSEstimatorTest {
         final DSSTPropagator propagator = (DSSTPropagator) DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-        		DSSTEstimationTestUtils.createMeasurements(propagator,
+                DSSTEstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
 

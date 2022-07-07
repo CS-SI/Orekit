@@ -466,7 +466,7 @@ public class ConfigurableLowThrustManeuverTest {
         final double f = 0.1;
         final double isp = 2000;
         final double duration = 3000.0;
- 
+
         final Orbit orbit =
             new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
                                FastMath.toRadians(180), FastMath.toRadians(261),
@@ -511,7 +511,7 @@ public class ConfigurableLowThrustManeuverTest {
         final double f = 0.1;
         final double isp = 2000;
         final double duration = 3000.0;
- 
+
         final Orbit orbit =
             new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
                                FastMath.toRadians(180), FastMath.toRadians(261),
@@ -613,7 +613,7 @@ public class ConfigurableLowThrustManeuverTest {
 
         // call init again, to check nothing weir happens (and improving test coverage)
         maneuver.init(initialState, finalDate);
-         
+
     }
 
     @Test

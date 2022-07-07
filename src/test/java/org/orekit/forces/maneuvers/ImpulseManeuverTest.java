@@ -382,7 +382,7 @@ public class ImpulseManeuverTest {
                                                 EventHandler<? super InitializationDetector> newHandler) {
             return new InitializationDetector();
         }
-        
+
     }
 
 }

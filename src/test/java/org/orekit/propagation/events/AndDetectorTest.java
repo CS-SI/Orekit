@@ -120,7 +120,11 @@ public class AndDetectorTest {
     public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventDetector b = Mockito.mock(EventDetector.class);
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         @SuppressWarnings("unchecked")
         EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
         BooleanDetector and = BooleanDetector.andCombine(a, b).withHandler(c);
@@ -168,12 +172,12 @@ public class AndDetectorTest {
 
         @Override
         public double getThreshold() {
-            return 0;
+            return AbstractDetector.DEFAULT_THRESHOLD;
         }
 
         @Override
         public double getMaxCheckInterval() {
-            return 0;
+            return AbstractDetector.DEFAULT_MAXCHECK;
         }
 
         @Override

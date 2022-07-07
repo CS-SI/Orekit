@@ -151,11 +151,11 @@ public class DSSTPartialDerivativesEquationsTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        
+
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        
+
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
                                                       new IsotropicDrag(2.5, 1.2),
                                                       provider.getMu());
@@ -288,24 +288,24 @@ public class DSSTPartialDerivativesEquationsTest {
     public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
         doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
     }
-    
+
     private void doTestPropagation(PropagationType type,
                                   double tolerance)
         throws FileNotFoundException, UnsupportedEncodingException {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        
+
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
-        
+
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
 
         Orbit initialOrbit =
@@ -382,7 +382,7 @@ public class DSSTPartialDerivativesEquationsTest {
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
         new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
      }
-    
+
     @Test(expected=OrekitException.class)
     public void testTooSmallDimension() {
         Orbit initialOrbit =
@@ -414,7 +414,7 @@ public class DSSTPartialDerivativesEquationsTest {
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[8][6], new double[6][2]);
      }
-    
+
     @Test(expected=OrekitException.class)
     public void testMismatchedDimensions() {
         Orbit initialOrbit =
@@ -430,7 +430,7 @@ public class DSSTPartialDerivativesEquationsTest {
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[6][6], new double[7][2]);
      }
-    
+
     @Test
     public void testWrongParametersDimension() {
         Orbit initialOrbit =
@@ -510,7 +510,7 @@ public class DSSTPartialDerivativesEquationsTest {
 
         final double minStep = 6000.0;
         final double maxStep = 86400.0;
-        
+
         double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         DSSTPropagator propagator =
             new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
@@ -560,7 +560,7 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
     }
-    
+
     /** Test to ensure correct Jacobian values.
      * In MEAN case, Jacobian should be a 6x6 identity matrix.
      * In OSCULATING cas, first and last lines are compared to reference values.
@@ -568,18 +568,18 @@ public class DSSTPartialDerivativesEquationsTest {
     @Test
     public void testIssue713() {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        
+
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
-        
+
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
 
         Orbit initialOrbit =
@@ -590,7 +590,7 @@ public class DSSTPartialDerivativesEquationsTest {
 
         double dP = 0.001;
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        
+
         // Test MEAN case
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorMEAN.setMu(provider.getMu());
@@ -601,7 +601,7 @@ public class DSSTPartialDerivativesEquationsTest {
         mapperMEAN.setReferenceState(initialStateMEAN);
         RealMatrix dYdY0MEAN = mapperMEAN.getStateTransitionMatrix(initialStateMEAN);
         for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) { 
+            for (int j = 0; j < 6; ++j) {
                 Assert.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
             }
         }
@@ -621,7 +621,7 @@ public class DSSTPartialDerivativesEquationsTest {
             Assert.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);
             Assert.assertEquals(refLine6[i], dYdY0OSC.getEntry(5, i), 1e-4);
         }
-        
+
     }
 
     /**
@@ -652,16 +652,16 @@ public class DSSTPartialDerivativesEquationsTest {
 
         /**  first component of the eccentricity vector. */
         public Gradient ex;
-        
+
         /** second component of the eccentricity vector. */
         public Gradient ey;
-        
+
         /** first component of the inclination vector. */
         public Gradient hx;
-        
+
         /** second component of the inclination vector. */
         public Gradient hy;
-        
+
         /** true latitude argument. */
         public Gradient l;
 
@@ -678,7 +678,7 @@ public class DSSTPartialDerivativesEquationsTest {
                                                                                          T[] parameters) {
             return new ArrayList<FieldShortPeriodTerms<T>>();
         }
-        
+
         @Override
         public double[] getMeanElementRate(SpacecraftState state,
                                            AuxiliaryElements auxiliaryElements,
@@ -695,16 +695,16 @@ public class DSSTPartialDerivativesEquationsTest {
         public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                                       FieldAuxiliaryElements<T> auxiliaryElements,
                                                                       T[] parameters) {
-            
+
             final Field<T> field = state.getDate().getField();
-            
+
             this.sma = (Gradient) state.getA();
             this.ex  = (Gradient) state.getEquinoctialEx();
             this.ey  = (Gradient) state.getEquinoctialEy();
             this.hx  = (Gradient) state.getHx();
             this.hy  = (Gradient) state.getHy();
             this.l   = (Gradient) state.getLv();
-            
+
             final T[] elements = MathArrays.buildArray(field, 6);
             elements[0] = state.getA();
             elements[1] = state.getEquinoctialEx();
@@ -728,13 +728,13 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public void registerAttitudeProvider(AttitudeProvider provider) {    
+        public void registerAttitudeProvider(AttitudeProvider provider) {
         }
 
         @Override
-        public void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates) {           
+        public void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates) {
         }
-        
+
         @Override
         @SuppressWarnings("unchecked")
         public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(T[] parameters,

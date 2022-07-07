@@ -286,7 +286,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
      *    min residual  = -83.945 meters
      *    max residual  = 59.365 meters
      *    mean residual = 0.23 meters
-     *    RMS = 20.857 meters 
+     *    RMS = 20.857 meters
      */
     @Test
     public void testGNSS()

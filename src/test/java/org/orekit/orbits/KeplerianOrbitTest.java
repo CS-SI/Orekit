@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -1590,10 +1589,10 @@ public class KeplerianOrbitTest {
         // In order to test the issue, we volontary set the anomaly at Double.NaN.
         double e = 0.7311;
         double anomaly = Double.NaN;
-        // Computes the elliptic eccentric anomaly 
+        // Computes the elliptic eccentric anomaly
         double E = KeplerianOrbit.meanToEllipticEccentric(anomaly, e);
         // Verify that an infinite loop did not occur
-        Assert.assertTrue(Double.isNaN(E));  
+        Assert.assertTrue(Double.isNaN(E));
     }
 
     @Test
@@ -1662,7 +1661,7 @@ public class KeplerianOrbitTest {
         Assert.assertEquals(0.0, normalized2.getTrueAnomalyDot()                   - withDerivatives.getTrueAnomalyDot(),                   1.0e-10);
 
     }
-    
+
     @Test
     public void testKeplerianToPvToKeplerian() {
         // setup

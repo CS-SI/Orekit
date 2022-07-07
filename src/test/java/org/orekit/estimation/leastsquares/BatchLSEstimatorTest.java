@@ -18,6 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -110,7 +111,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
-    
+
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
     public void testKeplerPVBackward() {
@@ -250,7 +251,7 @@ public class BatchLSEstimatorTest {
     }
 
     /**
-     * Perfect range measurements with a biased start and an on-board antenna range offset 
+     * Perfect range measurements with a biased start and an on-board antenna range offset
      */
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() {
@@ -373,7 +374,7 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
-        
+
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> r12 =
@@ -515,7 +516,7 @@ public class BatchLSEstimatorTest {
     /** A modified version of the previous test with a selection of propagation drivers to estimate and more measurements
      *  One common (µ)
      *  Some specifics for each satellite (Cr and Ca)
-     * 
+     *
      */
     @Test
     public void testMultiSatWithParameters() {
@@ -526,7 +527,7 @@ public class BatchLSEstimatorTest {
         final boolean caEstimated1 = true;
         final boolean crEstimated2 = true;
         final boolean caEstimated2 = false;
-        
+
 
         // Builder sat 1
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -571,7 +572,7 @@ public class BatchLSEstimatorTest {
                 driver.setSelected(caEstimated2);
             }
         }
-        
+
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
         final Orbit closeOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
@@ -749,7 +750,7 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
-        
+
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris, 0., 0.),
@@ -774,7 +775,7 @@ public class BatchLSEstimatorTest {
 
         // List of measurements
         // The threshold is fixed to 60s in order to build multiplexed measurements
-        // If it is less than 60s we cannot have mutliplexed measurement and we would not be able to 
+        // If it is less than 60s we cannot have mutliplexed measurement and we would not be able to
         // test the issue.
         final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 60.0);
 
@@ -1049,7 +1050,7 @@ public class BatchLSEstimatorTest {
                                      0.0, 5.8e-7,
                                      0.0, 2.7e-10);
     }
-    
+
     /**
      * Test if the parameter µ is taken into account by the builder even if no attraction force has been added yet.
      */
@@ -1061,7 +1062,7 @@ public class BatchLSEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        
+
         // Select the central attraction coefficient (here there is only the central attraction coefficient)
         // as estimated parameter
         propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
@@ -1087,6 +1088,71 @@ public class BatchLSEstimatorTest {
         Assert.assertNotNull(estimatedParameters.findByName(driverName));
         Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
         Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
+    }
+
+    @Test
+    public void testEstimateOnlyOneOrbitalParameter() {
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ true,  false, false, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false,  true, false, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false,  true, false, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false, false,  true, false });
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false, false, false, false,  true });
+    }
+
+    @Test
+    public void testEstimateOnlyFewOrbitalParameters() {
+        doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, true, false, false });
+    }
+
+    private void doTestEstimateOnlySomeOrbitalParameters(boolean[] orbitalParametersEstimated) {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                      1.0e-6, 60.0, 1.0e-3);
+
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                EstimationTestUtils.createMeasurements(propagator,
+                                                       new PVMeasurementCreator(),
+                                                       0.0, 1.0, 300.0);
+
+        List<ParameterDriversList.DelegatingDriver> orbitalElementsDrivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
+            final ParameterDriver driver = orbitalElementsDrivers.get(i);
+            if (orbitalParametersEstimated[i]) {
+                driver.setSelected(true);
+                driver.setValue(1.0001 * driver.getReferenceValue());
+            } else {
+                driver.setSelected(false);
+            }
+        });
+
+        // create the estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        // perform estimation
+        estimator.estimate();
+
+        // check the selected parameters have been estimated properly
+        IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
+            if (orbitalParametersEstimated[i]) {
+                final ParameterDriver driver = orbitalElementsDrivers.get(i);
+                Assert.assertEquals(driver.getReferenceValue(), driver.getValue(), driver.getReferenceValue() * 1.0e-3);
+            }
+        });
+
     }
 
     /** Multiplex measurements.

@@ -1899,10 +1899,10 @@ public class FieldKeplerianOrbitTest {
         // In order to test the issue, we volontary set the anomaly at Double.NaN.
         T e=        field.getZero().add(0.7311);
         T anomaly=  field.getZero().add(Double.NaN);
-        // Computes the elliptic eccentric anomaly 
+        // Computes the elliptic eccentric anomaly
         T E = FieldKeplerianOrbit.meanToEllipticEccentric(anomaly, e);
         // Verify that an infinite loop did not occur
-        Assert.assertTrue(Double.isNaN(E.getReal()));  
+        Assert.assertTrue(Double.isNaN(E.getReal()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue674(Field<T> field) {

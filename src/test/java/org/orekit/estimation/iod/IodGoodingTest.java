@@ -160,7 +160,7 @@ public class IodGoodingTest {
         final IodGooding iod = new IodGooding(mu);
 
         // TODO convert angular to line of sight and compare both computations
-        
+
         final KeplerianOrbit orbit1 = iod.estimate(frame, raDec1, raDec2, raDec3, rhoInit1, rhoInit3);
         final KeplerianOrbit orbit2 = iod.estimate(frame,
                                                    stationPosition(frame, raDec1),

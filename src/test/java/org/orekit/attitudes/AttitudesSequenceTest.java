@@ -257,7 +257,7 @@ public class AttitudesSequenceTest {
         // Propagator : consider the analytical Eckstein-Hechler model
         final FieldPropagator<T> propagator = new FieldEcksteinHechlerPropagator<T>(initialOrbit, attitudesSequence,
                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                                                                    field.getZero().add(Constants.EIGEN5C_EARTH_MU), 
+                                                                                    field.getZero().add(Constants.EIGEN5C_EARTH_MU),
                                                                                     Constants.EIGEN5C_EARTH_C20,
                                                                                     Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                                     Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
@@ -501,27 +501,27 @@ public class AttitudesSequenceTest {
         Assert.assertEquals(0.5 * reorientationAngle,
                             Rotation.distance(state.getAttitude().getRotation(), nadirR),
                             0.03 * reorientationAngle);
-        
+
         // check that if we restart a forward propagation from an intermediate state
         // we properly get the "after" attitude law despite we missed the event trigger
         // This check have been added to the test after the issue #552 fix
-        
+
         final AbsoluteDate afterTransition = midTransition.shiftedBy(transitionTime);
         state = propagator.propagate(midTransition, afterTransition);
         targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
 
         Assert.assertEquals(targetR.getQ0(),
-        					state.getAttitude().getRotation().getQ0(),
-        					1.0e-16);
+                            state.getAttitude().getRotation().getQ0(),
+                            1.0e-16);
         Assert.assertEquals(targetR.getQ1(),
-							state.getAttitude().getRotation().getQ1(),
-							1.0e-16);
+                            state.getAttitude().getRotation().getQ1(),
+                            1.0e-16);
         Assert.assertEquals(targetR.getQ2(),
-							state.getAttitude().getRotation().getQ2(),
-							1.0e-16);
+                            state.getAttitude().getRotation().getQ2(),
+                            1.0e-16);
         Assert.assertEquals(targetR.getQ3(),
-							state.getAttitude().getRotation().getQ3(),
-							1.0e-16);
+                            state.getAttitude().getRotation().getQ3(),
+                            1.0e-16);
     }
 
     @Test
@@ -577,23 +577,23 @@ public class AttitudesSequenceTest {
         Assert.assertEquals(0.5 * reorientationAngle,
                             Rotation.distance(state.getAttitude().getRotation(), targetR),
                             0.03 * reorientationAngle);
-        
+
 
     }
-    
+
     /**
      * Test for the issue 551 fix
      */
-    @Test 
+    @Test
     public void testAnalyticalPropagatorTransition() {
-    	// Define initial state
+        // Define initial state
         final AbsoluteDate initialDate = new AbsoluteDate(2017, 03, 27, 0, 0, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
         final Vector3D velocity  = new Vector3D(1151.00321021175, -2851.14864755189, -2.02133248357321);
         final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                                       FramesFactory.getGCRF(), initialDate,
-                                                      Constants.WGS84_EARTH_MU);    
-        
+                                                      Constants.WGS84_EARTH_MU);
+
         // Define attitude laws
         final AttitudeProvider before = new InertialProvider(new Rotation(0, 0, 0, 1, false));
         final AttitudeProvider current = new InertialProvider(Rotation.IDENTITY);
@@ -604,51 +604,51 @@ public class AttitudesSequenceTest {
         final AbsoluteDate backwardSwitchDate = initialDate.shiftedBy(-600);
         final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
         final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
-        
+
         // Initialize the attitude sequence
         final AttitudesSequence attitudeSequence = new AttitudesSequence();
         attitudeSequence.resetActiveProvider(current);
         attitudeSequence.addSwitchingCondition(before, current, backwardSwitchDetector, true, true, 60, AngularDerivativesFilter.USE_RR, null);
         attitudeSequence.addSwitchingCondition(current, after, forwardSwitchDetector, true, true, 60, AngularDerivativesFilter.USE_RR, null);
-        
+
         // Initialize analytical propagator
         Propagator propagator = new KeplerianPropagator(initialOrbit);
         propagator.setAttitudeProvider(attitudeSequence);
         attitudeSequence.registerSwitchEvents(propagator);
-        
+
         SpacecraftState stateAfter = propagator.propagate(initialDate, initialDate.shiftedBy(1200));
         SpacecraftState stateBefore = propagator.propagate(initialDate, initialDate.shiftedBy(-1200));
-        
+
         // Check that the dates are correct
         Assert.assertEquals(1200, stateAfter.getDate().durationFrom(initialDate), 1.0E-3);
         Assert.assertEquals(-1200, stateBefore.getDate().durationFrom(initialDate), 1.0E-3);
-        
+
         // Check that the attitudes are correct
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ0(),
-        		stateBefore.getAttitude().getRotation().getQ0(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ0(),
+                1.0E-16);
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ1(),
-        		stateBefore.getAttitude().getRotation().getQ1(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ1(),
+                1.0E-16);
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ2(),
-        		stateBefore.getAttitude().getRotation().getQ2(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ2(),
+                1.0E-16);
         Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ3(),
-        		stateBefore.getAttitude().getRotation().getQ3(),
-        		1.0E-16);
+                stateBefore.getAttitude().getRotation().getQ3(),
+                1.0E-16);
 
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ0(),
-        		stateAfter.getAttitude().getRotation().getQ0(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ0(),
+                1.0E-16);
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ1(),
-        		stateAfter.getAttitude().getRotation().getQ1(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ1(),
+                1.0E-16);
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ2(),
-        		stateAfter.getAttitude().getRotation().getQ2(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ2(),
+                1.0E-16);
         Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
-        		stateAfter.getAttitude().getRotation().getQ3(),
-        		1.0E-16);
+                stateAfter.getAttitude().getRotation().getQ3(),
+                1.0E-16);
     }
 
     private static class Handler implements AttitudesSequence.SwitchHandler {

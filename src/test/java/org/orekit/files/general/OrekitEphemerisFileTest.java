@@ -159,7 +159,7 @@ public class OrekitEphemerisFileTest {
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
         EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
         Files.delete(Paths.get(tempOem));
-        
+
         EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
@@ -219,7 +219,7 @@ public class OrekitEphemerisFileTest {
             assertEquals(0.0,
                          FastMath.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
                          dateEpsilon);
-                 
+
         }
 
         final List<SpacecraftState> readInStates = new ArrayList<SpacecraftState>();
@@ -230,7 +230,7 @@ public class OrekitEphemerisFileTest {
                 fail(e.getLocalizedMessage());
             }
         });
-        
+
         final int interpolationPoints = 5;
         Ephemeris directEphemProp = new Ephemeris(readInStates, interpolationPoints);
         final EventsLogger directEphemPropLogger = new EventsLogger();

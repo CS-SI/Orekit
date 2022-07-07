@@ -51,16 +51,34 @@ public class CPFWriter implements EphemerisFileWriter {
     /** Time scale for dates. */
     private final TimeScale timescale;
 
+    /** Flag for optional velocity record. */
+    private final boolean velocityFlag;
+
+    /**
+     * Constructor.
+     * <p>
+     * Using this constructor, velocity data are not written.
+     * </p>
+     * @param header container for header data
+     * @param timescale time scale for dates
+     * @see #CPFWriter(CPFHeader, TimeScale, boolean)
+     */
+    public CPFWriter(final CPFHeader header, final TimeScale timescale) {
+        this(header, timescale, false);
+    }
+
     /**
      * Constructor.
      * @param header container for header data
      * @param timescale time scale for dates
+     * @param velocityFlag true if velocity must be written
+     * @since 11.2
      */
-    public CPFWriter(final CPFHeader header, final TimeScale timescale) {
+    public CPFWriter(final CPFHeader header, final TimeScale timescale, final boolean velocityFlag) {
         this.header    = header;
         this.timescale = timescale;
+        this.velocityFlag = velocityFlag;
     }
-
 
     /** {@inheritDoc} */
     @Override
@@ -84,7 +102,7 @@ public class CPFWriter implements EphemerisFileWriter {
 
         // Writer
         final StreamingCpfWriter cpfWriter =
-                        new StreamingCpfWriter(writer, timescale, header);
+                        new StreamingCpfWriter(writer, timescale, header, velocityFlag);
         // Write header
         cpfWriter.writeHeader();
 

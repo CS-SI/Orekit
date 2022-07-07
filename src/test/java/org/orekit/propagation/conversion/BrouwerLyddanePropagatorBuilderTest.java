@@ -42,18 +42,18 @@ public class BrouwerLyddanePropagatorBuilderTest {
 
     @Test
     public void doTestBuildPropagator() {
-    	
-    	final double eps  = 2.0e-10;
-        
-    	// Define initial state and BrouwerLyddane Propagator
-    	AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(583.);
-    	BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(orbit, provider, BrouwerLyddanePropagator.M2);
+
+        final double eps  = 2.0e-10;
+
+        // Define initial state and BrouwerLyddane Propagator
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(583.);
+        BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(orbit, provider, BrouwerLyddanePropagator.M2);
         // We propagate using directly the propagator of the set up
         final Orbit orbitWithPropagator = propagator.propagate(initDate.shiftedBy(60000)).getOrbit();
-        
+
         // Convert povider to normalized provider to be able to build a Brouwer Lyddane propagator
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(orbit.getDate());
-        
+
         // We propagate using a build version of the propagator
         // We shall have the same results than before
         BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit,
@@ -68,10 +68,10 @@ public class BrouwerLyddanePropagatorBuilderTest {
                                                                                       PositionAngle.TRUE,
                                                                                       1.0,
                                                                                       BrouwerLyddanePropagator.M2);
-        
+
         final BrouwerLyddanePropagator prop = builder.buildPropagator(builder.getSelectedNormalizedParameters());
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(60000)).getOrbit();
-        
+
         // Verify
         Assert.assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
         Assert.assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
@@ -90,7 +90,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
 
         // Convert provider to normalized provider to be able to build a Brouwer Lyddane propagator
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(orbit.getDate());
-        
+
         // Initialize propagator builder
         BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit,
                                                                                       provider.getAe(),
@@ -111,7 +111,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
                 driver.setSelected(true);
             }
         }
-        
+
         // Build the propagator
         final BrouwerLyddanePropagator prop = builder.buildPropagator(builder.getSelectedNormalizedParameters());
 

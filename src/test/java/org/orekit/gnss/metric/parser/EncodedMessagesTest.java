@@ -41,7 +41,7 @@ public class EncodedMessagesTest {
         public long extractBits(int n) {
             return n;
         }
-        
+
     }
 
 }

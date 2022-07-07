@@ -28,7 +28,7 @@ public class UserRangeAccuracyTest {
     @Test
     public void testAccuracy() {
         AccuracyProvider ura;
-        
+
         // Index = 0
         ura = new UserRangeAccuracy(0);
         Assert.assertEquals(2.0, ura.getAccuracy(), eps);

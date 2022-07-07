@@ -66,7 +66,7 @@ public class PositionTest {
         // Prepare statistics for position values difference
         final StreamingStatistics[] pvDiffStat = new StreamingStatistics[3];
         for (int i = 0; i < 3; i++) {
-            pvDiffStat[i] = new StreamingStatistics();  
+            pvDiffStat[i] = new StreamingStatistics();
         }
 
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -74,13 +74,13 @@ public class PositionTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the position value
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+
             // Store the difference between estimated and observed values in the stats
             for (int i = 0; i < 3; i++) {
-                pvDiffStat[i].addValue(FastMath.abs(estimated.getEstimatedValue()[i] - measurement.getObservedValue()[i]));    
+                pvDiffStat[i].addValue(FastMath.abs(estimated.getEstimatedValue()[i] - measurement.getObservedValue()[i]));
             }
         }
 
@@ -91,7 +91,7 @@ public class PositionTest {
             Assert.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.3e-7);
         }
     }
-    
+
     /** Test the values of the state derivatives using a numerical.
      * finite differences calculation as a reference
      */
@@ -147,51 +147,51 @@ public class PositionTest {
         Assert.assertEquals(0.0, new Median().evaluate(errorsP), 2.1e-100);
 
     }
-    
-    /** Test the position constructor with standard deviations for position given as one double. 
+
+    /** Test the position constructor with standard deviations for position given as one double.
      */
     @Test
     public void testPositionWithSingleStandardDeviations() {
-        
+
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
-        
+
         // Initialize standard deviations and weight
         final double sigmaP     = 10.;
         final double baseWeight = 0.5;
-        
+
         // Reference covariance matrix and correlation coefficients
         final double[][] Pref = new double[3][3];
         for (int i = 0; i < 3; i++) {
             Pref[i][i]     = FastMath.pow(sigmaP, 2);
         }
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(3).getData();
-        
+
         // Reference propagator numbers
         final ObservableSatellite[] sats = {
             new ObservableSatellite(0),
             new ObservableSatellite(2)
         };
-        
+
         // Create PV measurements
         final Position[] ps = new Position[2];
         ps[0] = new Position(date, position, sigmaP, baseWeight, sats[0]);
         ps[1] = new Position(date, position, sigmaP, baseWeight, sats[1]);
-        
+
         // Tolerance
         final double eps = 1e-20; // tolerance
-        
+
         // Check data
         for (int k = 0; k < ps.length; k++) {
             final Position p = ps[k];
 
             // Propagator numbers
             assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
-            
+
             // Weights
             for (int i = 0; i < 3; i++) {
                 assertEquals(baseWeight, p.getBaseWeight()[i], eps);
@@ -205,7 +205,7 @@ public class PositionTest {
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
-            
+
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
@@ -213,51 +213,51 @@ public class PositionTest {
             assertEquals(0., normCorrCoef, eps);
         }
     }
-    
-    /** Test the Position constructor with standard deviations for position given as a 3-sized vector. 
+
+    /** Test the Position constructor with standard deviations for position given as a 3-sized vector.
      */
     @Test
     public void testPositionWithVectorStandardDeviations() {
-        
+
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
-        
+
         // Initialize standard deviations and weight
         final double[] sigmaP  = {10., 20., 30.};
         final double baseWeight = 0.5;
-        
+
         // Reference covariance matrix and correlation coefficients
         final double[][] Pref = new double[3][3];
         for (int i = 0; i < 3; i++) {
             Pref[i][i]     = FastMath.pow(sigmaP[i], 2);
         }
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(3).getData();
-        
+
         // Reference propagator numbers
         final ObservableSatellite[] sats = {
             new ObservableSatellite(0),
             new ObservableSatellite(2)
         };
-        
+
         // Create PV measurements
         final Position[] ps = new Position[2];
         ps[0] = new Position(date, position, sigmaP, baseWeight, sats[0]);
         ps[1] = new Position(date, position, sigmaP, baseWeight, sats[1]);
-        
+
         // Tolerance
         final double eps = 1e-20; // tolerance
-        
+
         // Check data
         for (int k = 0; k < ps.length; k++) {
             final Position p = ps[k];
 
             // Propagator numbers
             assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
-            
+
             // Weights
             for (int i = 0; i < 3; i++) {
                 assertEquals(baseWeight, p.getBaseWeight()[i], eps);
@@ -271,7 +271,7 @@ public class PositionTest {
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
-            
+
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
@@ -279,22 +279,22 @@ public class PositionTest {
             assertEquals(0., normCorrCoef, eps);
         }
     }
-    
-    /** Test the Position constructor with 3x3 covariance matrix as input. 
+
+    /** Test the Position constructor with 3x3 covariance matrix as input.
      */
     @Test
     public void testPositionWithCovarianceMatrix() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
-        
+
         // Initialize standard deviations and weight
         final double[][] positionP = {{100., 400., 1200.}, {400., 400., 1800.}, {1200., 1800., 900.}};
         final double baseWeight = 0.5;
-        
+
         // Reference covariance matrix and correlation coefficients
         final double[][] Pref = new double[3][3];
         for (int i = 0; i < 3; i++) {
@@ -311,31 +311,31 @@ public class PositionTest {
                 corrCoefRef[j][i]     = corrCoefRef3[i][j];
             }
         }
-        
+
         // Reference propagator numbers
         final ObservableSatellite[] sats = {
             new ObservableSatellite(0),
             new ObservableSatellite(2)
         };
-        
+
         // Reference standard deviations
         final double[] sigmaP = {10., 20., 30.};
-        
+
         // Create Position measurements
         final Position[] ps = new Position[2];
         ps[0] = new Position(date, position, positionP, baseWeight, sats[0]);
         ps[1] = new Position(date, position, positionP, baseWeight, sats[1]);
-        
+
         // Tolerance
         final double eps = 6.7e-16; // tolerance
-        
+
         // Check data
         for (int k = 0; k < ps.length; k++) {
             final Position p = ps[k];
 
             // Propagator numbers
             assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
-            
+
             // Weights
             for (int i = 0; i < 3; i++) {
                 assertEquals(baseWeight, p.getBaseWeight()[i], eps);
@@ -349,27 +349,27 @@ public class PositionTest {
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
-            
+
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
-        
+
     }
-    
+
     /** Test exceptions raised if the covariance matrix does not have the proper size. */
     @Test
     public void testExceptions() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
         final double       weight   = 1.;
-        
+
         // Build with one 3-sized vectors
         try {
             new Position(date, position, new double[] {1.}, weight, new ObservableSatellite(0));
@@ -377,7 +377,7 @@ public class PositionTest {
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }
-        
+
         // Build with one 3x3 matrix
         try {
             new Position(date, position, new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));

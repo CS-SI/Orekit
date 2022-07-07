@@ -74,10 +74,10 @@ public class RangeRateTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the AZEL value
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
         }
@@ -86,7 +86,7 @@ public class RangeRateTest {
         Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
         Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
     }
-    
+
     /** Compare observed values and estimated values.
      *  Both are calculated with a different algorithm.
      *  Two-ways measurements.
@@ -119,10 +119,10 @@ public class RangeRateTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the AZEL value
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
         }
@@ -131,7 +131,7 @@ public class RangeRateTest {
         Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
         Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
     }
-    
+
     /** Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference.
      * One way measurements.
@@ -290,7 +290,7 @@ public class RangeRateTest {
                                                                            propagatorBuilder);
 
 
-        
+
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                creator,
@@ -371,7 +371,7 @@ public class RangeRateTest {
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        
+
 
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -677,7 +677,7 @@ public class RangeRateTest {
             // Add modifiers if test implies it
             final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 10.0);
-            
+
             final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
             for (ParameterDriver driver : parameters) {
                 driver.setSelected(true);

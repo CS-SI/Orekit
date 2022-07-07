@@ -567,7 +567,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
      * expansion of dX to the result.*/
     @Test
     public void RealFieldTest() {
-        
+
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
         DSFactory factory = new DSFactory(6, 4);
@@ -583,7 +583,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
         // Initial date = J2000 epoch
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
-        
+
         // J2000 frame
         Frame EME = FramesFactory.getEME2000();
 
@@ -593,7 +593,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
-        
+
         // Initial field and classical S/Cs
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
         SpacecraftState iSR = initialState.toSpacecraftState();
@@ -604,7 +604,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        
+
         // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
@@ -624,7 +624,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                      Vector3D.PLUS_J, 1.2, 0.7, 0.2));
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1000., NP, FNP,
                                   1.0e-30, 9.0e-9, 9.0e-11, 9.0e-11,
@@ -638,7 +638,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
      * expansion of dX to the result.*/
     @Test
     public void RealFieldGradientTest() {
-        
+
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
         final int freeParameters = 6;
@@ -654,7 +654,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
         // Initial date = J2000 epoch
         FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
-        
+
         // J2000 frame
         Frame EME = FramesFactory.getEME2000();
 
@@ -664,7 +664,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
-        
+
         // Initial field and classical S/Cs
         FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
         SpacecraftState iSR = initialState.toSpacecraftState();
@@ -675,7 +675,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        
+
         // Field and classical numerical propagators
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
@@ -695,7 +695,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                      Vector3D.PLUS_J, 1.2, 0.7, 0.2));
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1000., NP, FNP,
                                   1.0e-30, 3.2e-2, 7.7e-5, 2.8e-4,
@@ -706,7 +706,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     * it is a test to validate the previous test.
     * (to test if the ForceModel it's actually
     * doing something in the Propagator and the FieldPropagator).
-    */ 
+    */
     @Test
     public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 5);

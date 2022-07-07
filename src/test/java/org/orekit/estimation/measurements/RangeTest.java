@@ -638,7 +638,7 @@ public class RangeTest {
                     // Add modifiers if test implies it
                     final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-                    
+
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
                     for (ParameterDriver driver : parameters) {
                         driver.setSelected(true);

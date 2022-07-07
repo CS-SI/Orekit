@@ -37,7 +37,7 @@ public abstract class AbstractLambdaMethodTest {
 
     protected abstract AbstractLambdaMethod buildReducer();
     protected abstract RealMatrix buildCovariance(AbstractLambdaMethod reducer);
-    
+
    @Test
     public void testSimpleFullDecomposition() {
         final RealMatrix refLow = MatrixUtils.createRealMatrix(new double[][] {
@@ -131,7 +131,7 @@ public abstract class AbstractLambdaMethodTest {
                             2.5e-13 * extracted.getNorm1());
 
     }
-    
+
 
     private void doTestILS(final RandomGenerator random,
                            final int[] indirection, final RealMatrix covariance) {
@@ -169,7 +169,7 @@ public abstract class AbstractLambdaMethodTest {
             for (int k = 0; k < a.getRowDimension(); ++k) {
                 long close = FastMath.round(floatAmbiguities[k]);
                 a.setEntry(k, 0, close + random.nextInt(11) - 5);
-            }            
+            }
             final double squaredNorm = a.subtract(aHat).transposeMultiply(invCov).multiply(a.subtract(aHat)).getEntry(0, 0);
             min = FastMath.min(min, (squaredNorm - solutions[0].getSquaredDistance()) / solutions[0].getSquaredDistance());
         }
@@ -247,7 +247,7 @@ public abstract class AbstractLambdaMethodTest {
             return null;
         }
     }
-  
+
     protected double[] getDecorrelated(final AbstractLambdaMethod reducer) {
         try {
             final Field decorrelatedField = AbstractLambdaMethod.class.getDeclaredField("decorrelated");
@@ -261,7 +261,7 @@ public abstract class AbstractLambdaMethodTest {
 
     protected RealMatrix createRandomSymmetricPositiveDefiniteMatrix(final int n, final RandomGenerator random) {
         final RealMatrix matrix = MatrixUtils.createRealMatrix(n, n);
-        for (int i = 0; i < n; ++i) {                
+        for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
                 matrix.setEntry(i, j, 20 * random.nextDouble() - 10);
             }
@@ -291,7 +291,7 @@ public abstract class AbstractLambdaMethodTest {
             i = j;
             j = tmp;
         }
-        return new IntegerGaussTransformation(n, i, j, (int) FastMath.rint(low.getEntry(i, j))); 
+        return new IntegerGaussTransformation(n, i, j, (int) FastMath.rint(low.getEntry(i, j)));
     }
 
     protected static class IntegerGaussTransformation {
@@ -314,7 +314,7 @@ public abstract class AbstractLambdaMethodTest {
         final double dk0   = diag.getEntry(i, i);
         final double dk1   = diag.getEntry(i + 1, i + 1);
         final double lk1k0 = low.getEntry(i + 1, i);
-        return new Permutation(n, i, dk0 + lk1k0 * lk1k0 * dk1); 
+        return new Permutation(n, i, dk0 + lk1k0 * lk1k0 * dk1);
     }
 
     protected void initializeProblem(final AbstractLambdaMethod method,

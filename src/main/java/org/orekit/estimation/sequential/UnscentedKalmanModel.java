@@ -38,6 +38,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -51,9 +52,6 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Bryan Cazabonne
  */
 public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator> {
-
-    /** State dimension (6). */
-    private static final int STATE_SIZE = 6;
 
     /** Builder for propagator. */
     private final NumericalPropagatorBuilder builder;
@@ -91,6 +89,9 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
     /** Current date. */
     private AbsoluteDate currentDate;
 
+    /** Previous date. */
+    private AbsoluteDate previousDate;
+
     /** Predicted spacecraft states. */
     private SpacecraftState predictedSpacecraftState;
 
@@ -121,6 +122,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         this.currentMeasurementNumber        = 0;
         this.referenceDate                   = propagatorBuilder.getInitialOrbitDate();
         this.currentDate                     = referenceDate;
+        this.previousDate                    = referenceDate;
         this.covarianceMatrixProvider        = covarianceMatrixProvider;
         this.measurementProcessNoiseMatrix   = measurementProcessNoiseMatrix;
 
@@ -251,23 +253,21 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         final RealVector[] predictedStates       = new RealVector[sigmaPoints.length];
         final RealVector[] predictedMeasurements = new RealVector[sigmaPoints.length];
 
-        // Loop on sigma points
+        // Predict states
+        final List<SpacecraftState> states = predictStates(sigmaPoints);
+
+        // Estimate the measurement for each predicted state
         for (int k = 0; k < sigmaPoints.length; ++k) {
 
-            // Current sigma point
-            final double[] currentPoint = sigmaPoints[k].copy().toArray();
+            // Current predicted state
+            final SpacecraftState predicted = states.get(k);
 
-            // Predict spacecraft state for the current sigma point
-            final SpacecraftState predicted      = predictState(currentPoint);
-            final double[]        predictedArray = new double[currentPoint.length];
+            // First, convert the predicted state to an array
+            final double[] predictedArray = new double[sigmaPoints[k].getDimension()];
             orbitType.mapOrbitToArray(predicted.getOrbit(), angleType, predictedArray, null);
-            // Add the propagation and measurement parameters
-            for (int index = STATE_SIZE; index < currentPoint.length; index++)  {
-                predictedArray[index] = currentPoint[index];
-            }
             predictedStates[k] = new ArrayRealVector(predictedArray);
 
-            // Estimate measurement for the current predicted state
+            // Then, estimate the measurement
             final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber,
                                                                                    currentMeasurementNumber,
                                                                                    new SpacecraftState[] {
@@ -291,6 +291,9 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
             final RealMatrix noiseM = measurementProcessNoiseMatrix.getProcessNoiseMatrix(correctedSpacecraftState, predictedSpacecraftState);
             noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
         }
+
+        // Update epoch
+        previousDate = currentDate;
 
         // Verify dimension
         KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
@@ -338,25 +341,48 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
     }
 
     /**
-     * Predict the predicted state for the given sigma point.
-     * @param currentPoint current sigma point
+     * Predict the predicted states for the given sigma points.
+     * @param sigmaPoints current sigma points
      * @return predicted state for the given sigma point
      */
-    private SpacecraftState predictState(final double[] currentPoint) {
+    private List<SpacecraftState> predictStates(final RealVector[] sigmaPoints) {
 
-        // Build the propagator for the current point
-        final NumericalPropagatorBuilder copy = builder.copy();
-        final Orbit currentOrbit = orbitType.mapArrayToOrbit(currentPoint, null, angleType, copy.getInitialOrbitDate(),
-                                                             copy.getMu(), copy.getFrame());
-        copy.resetOrbit(currentOrbit);
-        final NumericalPropagator currentPropagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
+        // Loop on sigma points to create the propagator parallelizer
+        final List<Propagator> propagators = new ArrayList<>(sigmaPoints.length);
+        for (int k = 0; k < sigmaPoints.length; ++k) {
+            // Current sigma point
+            final double[] currentPoint = sigmaPoints[k].copy().toArray();
+            // Create the corresponding orbit propagator
+            final Propagator currentPropagator = createPropagator(currentPoint);
+            // Add it to the list of propagators
+            propagators.add(currentPropagator);
+        }
 
-        // Propagate
-        final SpacecraftState predictedState = currentPropagator.propagate(currentDate);
+        // Create the propagator parallelizer and predict states
+        // (the shift is done to start a little bit before the previous measurement epoch)
+        final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, interpolators -> { });
+        final List<SpacecraftState>   states       = parallelizer.propagate(previousDate.shiftedBy(-1.0e-3), currentDate);
 
         // Return
-        return predictedState;
+        return states;
 
+    }
+
+    /**
+     * Create a propagator for the given sigma point.
+     * @param point input sigma point
+     * @return the corresponding orbit propagator
+     */
+    private Propagator createPropagator(final double[] point) {
+        // Create a new instance of the current propagator builder
+        final NumericalPropagatorBuilder copy = builder.copy();
+        // Convert the given sigma point to an orbit
+        final Orbit orbit = orbitType.mapArrayToOrbit(point, null, angleType, copy.getInitialOrbitDate(),
+                                                      copy.getMu(), copy.getFrame());
+        copy.resetOrbit(orbit);
+        // Create the propagator
+        final NumericalPropagator propagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
+        return propagator;
     }
 
     /** Finalize estimation.

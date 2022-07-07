@@ -58,29 +58,29 @@ public class FieldTLEPropagatorTest {
     public void testsecondaryMode() {
         doTestsecondaryMode(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testEphemerisMode() {
         doTestEphemerisMode(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testBodyCenterInPointingDirection() {
         doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testComparisonWithNonField() {
         doTestComparisonWithNonField(Decimal64Field.getInstance());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestsecondaryMode(Field<T> field) {
-        
+
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-        
+
         final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         FieldAbsoluteDate<T> initDate = tle.getDate();
@@ -101,12 +101,12 @@ public class FieldTLEPropagatorTest {
     }
 
     public <T extends CalculusFieldElement<T>> void doTestEphemerisMode(Field<T> field) {
-        
+
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-        
+
         final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
@@ -152,12 +152,12 @@ public class FieldTLEPropagatorTest {
 
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
-        String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";       
+        String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-        
+
         // setup a 0 T element.
         T T_zero = field.getZero();
-        
+
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -237,68 +237,68 @@ public class FieldTLEPropagatorTest {
     }
 
     public <T extends CalculusFieldElement<T>> void doTestComparisonWithNonField(Field<T> field) {
-        
+
         // propagation time.
         final double propagtime = 10 * 60;
-        
+
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
-        
+
         // build FieldTLE and TLE instances for GPS
         FieldTLE<T> fieldtleGPS = new FieldTLE<>(field, line1, line2);
         TLE tleGPS = new TLE(line1, line2);
-        
+
         // setup a TLE for ISS
         String line3 = "1 25544U 98067A   20162.14487814  .00001100  00000-0  27734-4 0  9997";
         String line4 = "2 25544  51.6445  23.3222 0002345  38.1770 106.6280 15.49436440230920";
-        
+
         // build FieldTLE and TLE instances for ISS
         FieldTLE<T> fieldtleISS = new FieldTLE<>(field, line3, line4);
         TLE tleISS = new TLE(line3, line4);
-        
+
         // propagate Field GPS orbit
         final T[] parametersGPS = fieldtleGPS.getParameters(field);
         FieldTLEPropagator<T> fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleGPS, parametersGPS);
         FieldAbsoluteDate<T> fieldinitDate = fieldtleGPS.getDate();
-        FieldAbsoluteDate<T> fieldendDate = fieldinitDate.shiftedBy(propagtime);        
+        FieldAbsoluteDate<T> fieldendDate = fieldinitDate.shiftedBy(propagtime);
         FieldPVCoordinates<T> fieldfinalGPS = fieldpropagator.getPVCoordinates(fieldendDate, parametersGPS);
-        
+
         // propagate GPS orbit
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleGPS);
         AbsoluteDate initDate = tleGPS.getDate();
-        AbsoluteDate endDate = initDate.shiftedBy(propagtime);        
+        AbsoluteDate endDate = initDate.shiftedBy(propagtime);
         PVCoordinates finalGPS = propagator.getPVCoordinates(endDate);
-        
+
         // propagate Field ISS orbit
         final T[] parametersISS = fieldtleISS.getParameters(field);
         fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleISS, parametersISS);
         fieldinitDate = fieldtleISS.getDate();
-        fieldendDate = fieldinitDate.shiftedBy(propagtime);        
+        fieldendDate = fieldinitDate.shiftedBy(propagtime);
         FieldSpacecraftState<T> fieldfinalISS = fieldpropagator.propagate(fieldendDate);
-        
+
         // propagate ISS orbit
         propagator = TLEPropagator.selectExtrapolator(tleISS);
         initDate = tleISS.getDate();
-        endDate = initDate.shiftedBy(propagtime);        
+        endDate = initDate.shiftedBy(propagtime);
         SpacecraftState finalISS = propagator.propagate(endDate);
 
         // check
         Assert.assertEquals(0, Vector3D.distance(finalGPS.getPosition(), fieldfinalGPS.getPosition().toVector3D()), 3.8e-9);
         Assert.assertEquals(0, Vector3D.distance(finalGPS.getVelocity(), fieldfinalGPS.getVelocity().toVector3D()), 0.);
-        
+
         Assert.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
         Assert.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getVelocity(), fieldfinalISS.getPVCoordinates().getVelocity().toVector3D()), 0.);
-        
+
     }
-    
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        
+
      // the period of the GPS satellite
         period = 717.97 * 60.0;
     }
-    
+
 }
 

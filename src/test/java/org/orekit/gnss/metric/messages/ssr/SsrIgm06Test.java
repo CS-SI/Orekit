@@ -52,7 +52,7 @@ public class SsrIgm06Test {
                          "000001" +                           // Satellite ID
                          "00001" +                            // No. of Biases Processed
                          "001100010" +                        // Yaw Angle
-                         "01001010"+                          // Yaw Rate 
+                         "01001010"+                          // Yaw Rate
                          "00001" +                            // GNSS Signal and Tracking Mode Identifier
                          "1" +                                // Signal Integer Indicator
                          "10" +                               // Signals Wide-Lane Integer Indicator
@@ -116,7 +116,7 @@ public class SsrIgm06Test {
                          "000001" +                           // Satellite ID
                          "00001" +                            // No. of Biases Processed
                          "001100010" +                        // Yaw Angle
-                         "01001010"+                          // Yaw Rate 
+                         "01001010"+                          // Yaw Rate
                          "00001" +                            // GNSS Signal and Tracking Mode Identifier
                          "0" +                                // Signal Integer Indicator
                          "10" +                               // Signals Wide-Lane Integer Indicator
@@ -180,7 +180,7 @@ public class SsrIgm06Test {
                         "000001" +                           // Satellite ID
                         "00001" +                            // No. of Biases Processed
                         "001100010" +                        // Yaw Angle
-                        "01001010"+                          // Yaw Rate 
+                        "01001010"+                          // Yaw Rate
                         "00001" +                            // GNSS Signal and Tracking Mode Identifier
                         "1" +                                // Signal Integer Indicator
                         "10" +                               // Signals Wide-Lane Integer Indicator

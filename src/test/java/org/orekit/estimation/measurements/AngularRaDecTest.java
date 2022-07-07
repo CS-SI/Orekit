@@ -70,10 +70,10 @@ public class AngularRaDecTest {
             // Propagate to measurement date
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            
+
             // Estimate the RADEC value
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            
+
             // Store the difference between estimated and observed values in the stats
             raDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
             decDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[1] - measurement.getObservedValue()[1]));
@@ -82,11 +82,11 @@ public class AngularRaDecTest {
         // Mean and std errors check
         Assert.assertEquals(0.0, raDiffStat.getMean(), 6.9e-11);
         Assert.assertEquals(0.0, raDiffStat.getStandardDeviation(), 8.5e-11);
-        
+
         Assert.assertEquals(0.0, decDiffStat.getMean(), 4.5e-11);
         Assert.assertEquals(0.0, decDiffStat.getStandardDeviation(), 3e-11);
     }
-    
+
     /** Test the values of the state derivatives using a numerical.
      * finite differences calculation as a reference
      */

@@ -90,7 +90,7 @@ public class BatchLSModelTest {
         final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
-        
+
         // Test forward propagation flag to true
         assertEquals(true, model.isForwardPropagation());
 
@@ -113,7 +113,7 @@ public class BatchLSModelTest {
         Assert.assertEquals(index, value.getFirst().getDimension());
 
     }
-    
+
     @Test
     public void testBackwardPropagation() {
 
@@ -146,7 +146,7 @@ public class BatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                // Do nothing here 
+                // Do nothing here
             }
         };
         final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);

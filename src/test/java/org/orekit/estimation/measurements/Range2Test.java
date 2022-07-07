@@ -54,7 +54,7 @@ public class Range2Test {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:rinex");
     }
-    
+
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
@@ -193,7 +193,7 @@ public class Range2Test {
         // Use a lambda function to implement "handleStep" function
         propagator.setStepHandler(interpolator -> {
 
-            for (final ObservedMeasurement<?> measurement : measurements) {                
+            for (final ObservedMeasurement<?> measurement : measurements) {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
@@ -245,7 +245,7 @@ public class Range2Test {
                 } // End if measurement date between previous and current interpolator step
             } // End for loop on the measurements
         }); // End lambda function handlestep
-        
+
 
 
         // Print results on console ? Header
@@ -431,7 +431,7 @@ public class Range2Test {
             System.out.format(Locale.US, "Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsVMedian, errorsVMean, errorsVMax);
         }
-        
+
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
         Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);

@@ -57,7 +57,7 @@ public class ShapiroInterSatelliteRangeModifierTest {
 
     private void doTestShapiro(final boolean twoWay,
                                final double expectedMin, final double expectedMean, final double expectedMax) {
- 
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =

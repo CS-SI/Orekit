@@ -239,7 +239,7 @@ public class DoubleArrayDictionaryTest {
         map.put("z", new double[] {});
         Assert.assertEquals(4, map.size());
         Assert.assertEquals(0, dictionary.size());
-       
+
     }
 
     @Test

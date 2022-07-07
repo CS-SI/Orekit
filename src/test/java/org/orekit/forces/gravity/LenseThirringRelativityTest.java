@@ -223,7 +223,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(relativity);
         NP.addForceModel(relativity);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 1.4e-3,

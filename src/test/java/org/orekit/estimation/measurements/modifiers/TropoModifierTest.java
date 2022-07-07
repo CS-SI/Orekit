@@ -30,6 +30,8 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.BistaticRange;
+import org.orekit.estimation.measurements.BistaticRangeMeasurementCreator;
 import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.BistaticRangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -121,13 +123,13 @@ public class TropoModifierTest {
 
     @Test
     public void testRangeEstimatedTropoModifier() {
-    
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-    
+
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-    
+
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
@@ -135,12 +137,12 @@ public class TropoModifierTest {
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
-    
+
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
-    
+
             final SpacecraftState refState = propagator.propagate(date);
-    
+
             Range range = (Range) measurement;
             EstimatedMeasurement<Range> evalNoMod = range.estimate(0, 0, new SpacecraftState[] { refState });
 
@@ -150,15 +152,15 @@ public class TropoModifierTest {
             final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
-            
+
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
             parameterDriver.setName(baseFrame.getName() + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
             range.addModifier(modifier);
             EstimatedMeasurement<Range> eval = range.estimate(0, 0, new SpacecraftState[] { refState });
-    
+
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
-    
+
             final double epsilon = 1e-6;
             Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
             Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
@@ -260,7 +262,7 @@ public class TropoModifierTest {
             final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
-            
+
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
             parameterDriver.setName(baseFrame.getName() + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
@@ -329,7 +331,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testBistaticRangeRateTropoModifier() {
+    public void testBistaticRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -339,6 +341,56 @@ public class TropoModifierTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         // create perfect range measurements
+        final GroundStation emitter = context.BRRstations.getKey();
+        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getEastOffsetDriver().setSelected(true);
+        emitter.getNorthOffsetDriver().setSelected(true);
+        emitter.getZenithOffsetDriver().setSelected(true);
+        final GroundStation receiver = context.BRRstations.getValue();
+        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getEastOffsetDriver().setSelected(true);
+        receiver.getNorthOffsetDriver().setSelected(true);
+        receiver.getZenithOffsetDriver().setSelected(true);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new BistaticRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+        final BistaticRangeTroposphericDelayModifier modifier =
+                        new BistaticRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            BistaticRange biRange = (BistaticRange) measurement;
+            final SpacecraftState refState = propagator.propagate(biRange.getDate());
+
+            // Estimate without modifier
+            EstimatedMeasurement<BistaticRange> evalNoMod = biRange.estimate(0, 0, new SpacecraftState[] { refState });
+
+            // add modifier
+            biRange.addModifier(modifier);
+
+            // Estimate with modifier
+            EstimatedMeasurement<BistaticRange> eval = biRange.estimate(0, 0, new SpacecraftState[] { refState });
+
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+
+            Assert.assertTrue(diffMeters < 9.0);
+            Assert.assertTrue(diffMeters > 5.0);
+        }
+    }
+
+    @Test
+    public void testBistaticRangeRateTropoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        // create perfect range-rate measurements
         final GroundStation emitter = context.BRRstations.getKey();
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
@@ -388,7 +440,7 @@ public class TropoModifierTest {
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        // create perfect range measurements
+        // create perfect range-rate measurements
         final GroundStation emitter = context.BRRstations.getKey();
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);

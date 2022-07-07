@@ -97,7 +97,7 @@ public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadat
             Assert.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
             Assert.assertEquals(HeaderKey.MESSAGE_ID.name(), oe.getParts()[0]);
         }
-        
+
     }
 
 }

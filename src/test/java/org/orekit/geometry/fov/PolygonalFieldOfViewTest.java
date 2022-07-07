@@ -292,5 +292,5 @@ public class PolygonalFieldOfViewTest {
 
     private OneAxisEllipsoid earth;
     private Orbit            orbit;
-    
+
 }

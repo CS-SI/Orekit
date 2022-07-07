@@ -45,7 +45,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         this.satellite = new ObservableSatellite(0);
         this.satellite.getClockDriftDriver().setValue(satClockDrift);
     }
-    
+
     public ObservableSatellite getSatellite() {
         return satellite;
     }

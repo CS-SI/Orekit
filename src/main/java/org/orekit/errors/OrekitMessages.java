@@ -334,7 +334,9 @@ public enum OrekitMessages implements Localizable {
     BACKWARD_PROPAGATION_NOT_ALLOWED("backward propagation not allowed here"),
     NO_STATION_ECCENTRICITY_FOR_EPOCH("no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}"),
     INCONSISTENT_SELECTION("inconsistent parameters selection between pairs {0}/{1} and {2}/{3}"),
-    NO_UNSCENTED_TRANSFORM_CONFIGURED("no unscented transform configured");
+    NO_UNSCENTED_TRANSFORM_CONFIGURED("no unscented transform configured"),
+    NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}");
+
 
     // CHECKSTYLE: resume JavadocVariable check
 

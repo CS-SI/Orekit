@@ -103,7 +103,7 @@ public class VersionedITRFFrameTest {
         FieldVector3D<Decimal64> p2014Field        = itrf2014.getTransformTo(eme2000, dateField).transformPosition(p);
         Assert.assertEquals(expectedDistance2008, FieldVector3D.distance(pUnspecifiedField, p2008Field).getReal(), tolerance);
         Assert.assertEquals(expectedDistance2014, FieldVector3D.distance(pUnspecifiedField, p2014Field).getReal(), tolerance);
-        
+
     }
 
     @Test

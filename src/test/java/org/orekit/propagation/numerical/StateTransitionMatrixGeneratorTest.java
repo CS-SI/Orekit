@@ -74,6 +74,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -141,7 +142,10 @@ public class StateTransitionMatrixGeneratorTest {
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
-            public double[] derivatives(SpacecraftState s) { return new double[1]; }
+            public double[] derivatives(SpacecraftState s) { return null; }
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[1], null);
+                }
         });
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
         propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
@@ -167,7 +171,7 @@ public class StateTransitionMatrixGeneratorTest {
 
         // after completing the two-stage propagation, we get the same matrices
         Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.3e-13 * stm1.getNorm1());
-        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 3.0e-14 * jacobian1.getNorm1());
+        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-11 * jacobian1.getNorm1());
 
     }
 
@@ -200,7 +204,7 @@ public class StateTransitionMatrixGeneratorTest {
                                                                              propagator.getPositionAngleType());
 
         //action
-        stmGenerator.derivatives(state);
+        stmGenerator.combinedDerivatives(state);
 
         //verify
         MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));

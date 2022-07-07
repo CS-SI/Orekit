@@ -40,7 +40,7 @@ import org.orekit.time.TimeScalesFactory;
 
 
 public class PhaseMinusCodeCycleSlipDetectorTest {
-    
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
@@ -48,7 +48,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
 
     @Test
     public void testTheNumberOFCycleFind() throws URISyntaxException, IOException {
-        
+
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/seat0440.16d.Z").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "seat0440.16d.Z";
@@ -62,27 +62,27 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final RinexObservationLoader loader = new RinexObservationLoader(nd);
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
-            new PhaseMinusCodeCycleSlipDetector(90, 10, 20, 3); 
+            new PhaseMinusCodeCycleSlipDetector(90, 10, 20, 3);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
         for(CycleSlipDetectorResults d: results) {
             switch(getPrn(d)) {
-                case 1: 
+                case 1:
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,33 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,40 ,00.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
-                    
-                case 5: 
+
+                case 5:
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
-                    
-                case 6: 
+
+                case 6:
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 28, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
@@ -90,7 +90,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 31, 0.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
-                case 7: 
+                case 7:
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 13,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
@@ -98,7 +98,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
-                case 9: 
+                case 9:
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 32,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
@@ -106,7 +106,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
-                case 11: 
+                case 11:
                     Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
                     Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
@@ -115,14 +115,14 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                     break;
 
                 default:   break;
-            }   
-        }  
+            }
+        }
     }
 
     //Test to verify that the cycle-slips because of data gap are computed
     @Test
     public void testTimeCycleSlip() throws URISyntaxException, IOException {
-        
+
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
@@ -140,7 +140,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
         for(CycleSlipDetectorResults d: results) {
             switch(getPrn(d)) {
-                case 1: 
+                case 1:
                     //The date have been created  manually within the file
                     AbsoluteDate[] dateCycleSlipL1 = new AbsoluteDate[] {
                         new AbsoluteDate(2016,02,13,04,37,43.000 , TimeScalesFactory.getUTC()),
@@ -163,8 +163,8 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                         i2++;
                     }
                 default:    break;
-                                
-                   
+
+
             }
         }
     }
@@ -194,7 +194,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final AbsoluteDate[] dateL2 = new AbsoluteDate[] {
           new AbsoluteDate(2016, 2, 13 ,1, 43, 13.000, TimeScalesFactory.getUTC()),
         };
-        
+
         for(int i = 0; i<thresholdL2.length; i++) {
             PhaseMinusCodeCycleSlipDetector slipDetectorsL2 =
                             new PhaseMinusCodeCycleSlipDetector(dt, thresholdL2[i], N, m);
@@ -244,10 +244,10 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             }
         }
     }
-    
+
     /** Getter on the PRN of the satellite. */
     private int getPrn(final CycleSlipDetectorResults d) {
-        
+
         if(d.getSatelliteName().substring(6).compareTo("1")==0) {return 1;};
         if(d.getSatelliteName().substring(6).compareTo("2")==0) {return 2;};
         if(d.getSatelliteName().substring(6).compareTo("3")==0) {return 3;};
@@ -279,6 +279,6 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         if(d.getSatelliteName().substring(6).compareTo("29")==0) {return 29;};
         if(d.getSatelliteName().substring(6).compareTo("30")==0) {return 30;};
         if(d.getSatelliteName().substring(6).compareTo("31")==0) {return 31;} else {return 32;}
-              
+
     }
 }

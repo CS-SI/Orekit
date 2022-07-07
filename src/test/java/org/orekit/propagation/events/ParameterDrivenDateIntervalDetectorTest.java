@@ -160,7 +160,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         checkSelection(detector, detector.getMedianDriver(),   false, true,  false, false, true,  true);
         checkSelection(detector, detector.getDurationDriver(), false, true,  false, false, false, false);
         checkSelection(detector, detector.getStartDriver(),    false, false, false, false, false, false);
-        
+
     }
 
     @Test

@@ -402,10 +402,10 @@ public class TideTest {
             final IERSConventions conventions = (IERSConventions) conventionsField.get(fna);
             final Field fCoeffField = FundamentalNutationArguments.class.getDeclaredField("fCoefficients");
             fCoeffField.setAccessible(true);
-            final double[] fCoefficients = (double[]) fCoeffField.get(fna); 
+            final double[] fCoefficients = (double[]) fCoeffField.get(fna);
             final Field dCoeffField = FundamentalNutationArguments.class.getDeclaredField("dCoefficients");
             dCoeffField.setAccessible(true);
-            final double[] dCoefficients = (double[]) dCoeffField.get(fna); 
+            final double[] dCoefficients = (double[]) dCoeffField.get(fna);
             final Field oCoeffField = FundamentalNutationArguments.class.getDeclaredField("omegaCoefficients");
             oCoeffField.setAccessible(true);
             final double[] oCoefficients = (double[]) oCoeffField.get(fna);
@@ -441,7 +441,7 @@ public class TideTest {
                 public <T extends CalculusFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return null;
                 }
-                
+
             });
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException |
                  NoSuchMethodException | SecurityException e) {

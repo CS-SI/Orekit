@@ -257,7 +257,7 @@ public class SP3ParserTest {
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
-        // PR23  24552.470459   -242.899447   6925.437998     86.875825                    
+        // PR23  24552.470459   -242.899447   6925.437998     86.875825
         checkPVEntry(new PVCoordinates(new Vector3D(24552470.459, -242899.447, 6925437.998),
                                        Vector3D.ZERO),
                      coord);
@@ -327,7 +327,7 @@ public class SP3ParserTest {
 
         final SP3Coordinate coord = coords.get(228);
 
-        
+
         Assert.assertEquals(new AbsoluteDate(2015, 5, 5, 19, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
@@ -728,6 +728,36 @@ public class SP3ParserTest {
         // 2016  7  3  0  0  0.1234
         Assert.assertEquals(new AbsoluteDate(2016, 7, 3, 0, 0, 0.1234,
                 TimeScalesFactory.getUTC()), coord.getDate());
+
+    }
+
+    @Test
+    public void testIssue895NoEOF() {
+
+        // Test issue 895
+        final String    ex     = "/sp3/issue895-no-eof.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assert.assertEquals(1, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
+        Assert.assertEquals(1, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        // 2021 12 26  0  0  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2021, 12, 26, 0, 0, 0,
+                TimeScalesFactory.getUTC()), coord.getDate());
+
+        // PL51   5029.867893   1304.362160 -11075.527276 999999.999999
+        // VL51 -17720.521773 -55720.482742 -14441.695083 999999.999999
+        checkPVEntry(new PVCoordinates(new Vector3D(5029867.893, 1304362.160, -11075527.276),
+                                       new Vector3D(-1772.0521773, -5572.0482742, -1444.1695083)),
+                     coord);
 
     }
 

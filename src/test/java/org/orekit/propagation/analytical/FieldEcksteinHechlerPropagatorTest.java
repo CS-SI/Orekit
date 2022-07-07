@@ -17,16 +17,22 @@
 package org.orekit.propagation.analytical;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
+import org.hipparchus.stat.descriptive.rank.Max;
+import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -43,9 +49,11 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -65,6 +73,7 @@ import org.orekit.propagation.events.FieldElevationDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldNodeDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.FieldDSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -75,6 +84,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
@@ -598,7 +608,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> hyperbolic =
             new FieldKeplerianOrbit<>(zero.add(-1.0e10), zero.add(2), zero, zero, zero, zero, PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         try {
             FieldEcksteinHechlerPropagator<T> propagator =
                             new FieldEcksteinHechlerPropagator<>(hyperbolic, provider);
@@ -619,7 +629,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         final DummyLocalizable gasp = new DummyLocalizable("gasp");
         AttitudeProvider wrongLaw = new AttitudeProvider() {
 
@@ -754,7 +764,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -798,7 +808,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final FieldAbsoluteDate<T> stopDate = date.shiftedBy(500.0);
@@ -821,7 +831,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final T step = zero.add(100.0);
@@ -851,7 +861,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final OneAxisEllipsoid earthShape =
@@ -890,7 +900,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         final FieldSpacecraftState<T> initialState =  new FieldSpacecraftState<>(new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                                                                              FramesFactory.getEME2000(),
                                                                                                              initDate,
-                                                                                                             zero.add(3.986004415E14)));
+                                                                                                             zero.add(provider.getMu())));
 
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
@@ -931,7 +941,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         final FieldSpacecraftState<T> initialState =  new FieldSpacecraftState<>(new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                                                                              FramesFactory.getEME2000(),
                                                                                                              initDate,
-                                                                                                             zero.add(3.986004415E14)));
+                                                                                                             zero.add(provider.getMu())));
 
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
@@ -956,6 +966,51 @@ public class FieldEcksteinHechlerPropagatorTest {
                             FieldVector3D.distance(initialState.getPVCoordinates().getVelocity(),
                                                    finalState.getPVCoordinates().getVelocity()).getReal(),
                             4.2e-2);
+    }
+
+    @Test
+    public void testMeanOrbit() throws IOException {
+        doTestMeanOrbit(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestMeanOrbit(Field<T> field) {
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        final FieldKeplerianOrbit<T> initialOsculating =
+            new FieldKeplerianOrbit<>(zero.newInstance(7.8e6), zero.newInstance(0.032), zero.newInstance(0.4),
+                                      zero.newInstance(0.1), zero.newInstance(0.2), zero.newInstance(0.3),
+                                      PositionAngle.TRUE,
+                                      FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
+        final UnnormalizedSphericalHarmonics ush = provider.onDate(initialOsculating.getDate().toAbsoluteDate());
+
+        // set up a reference numerical propagator starting for the specified start orbit
+        // using the same force models (i.e. the first few zonal terms)
+        double[][] tol = FieldNumericalPropagator.tolerances(zero.newInstance(0.1), initialOsculating, OrbitType.CIRCULAR);
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
+        integrator.setInitialStepSize(60);
+        FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(field, integrator);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
+        num.setInitialState(new FieldSpacecraftState<>(initialOsculating));
+        num.setOrbitType(OrbitType.CIRCULAR);
+        final StorelessUnivariateStatistic oscMin  = new Min();
+        final StorelessUnivariateStatistic oscMax  = new Max();
+        final StorelessUnivariateStatistic meanMin = new Min();
+        final StorelessUnivariateStatistic meanMax = new Max();
+        num.getMultiplexer().add(zero.newInstance(60), state -> {
+            final FieldOrbit<T> osc = state.getOrbit();
+            oscMin.increment(osc.getA().getReal());
+            oscMax.increment(osc.getA().getReal());
+            // compute mean orbit at current date (this is what we test)
+            final FieldOrbit<T> mean = FieldEcksteinHechlerPropagator.computeMeanOrbit(state.getOrbit(), provider, ush);
+            meanMin.increment(mean.getA().getReal());
+            meanMax.increment(mean.getA().getReal());
+        });
+        num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
+
+        Assert.assertEquals(3190.029, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
+        Assert.assertEquals(  49.638, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+
     }
 
     private <T extends CalculusFieldElement<T>> T tangLEmLv(T Lv, T ex, T ey) {

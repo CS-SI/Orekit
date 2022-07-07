@@ -99,11 +99,11 @@ class PhysicalPropertiesWriter extends AbstractWriter {
         generator.writeEntry(PhysicalPropertiesKey.SOLAR_RAD_UNCERTAINTY.name(), phys.getSrpUncertainty(), Unit.PERCENT, false);
 
         // visual magnitude
-        generator.writeEntry(PhysicalPropertiesKey.VM_ABSOLUTE.name(),     phys.getVmAbsolute(), Unit.ONE,    false);
+        generator.writeEntry(PhysicalPropertiesKey.VM_ABSOLUTE.name(),     phys.getVmAbsolute(),    Unit.ONE, false);
         generator.writeEntry(PhysicalPropertiesKey.VM_APPARENT_MIN.name(), phys.getVmApparentMin(), Unit.ONE, false);
-        generator.writeEntry(PhysicalPropertiesKey.VM_APPARENT.name(),     phys.getVmApparent(), Unit.ONE,    false);
+        generator.writeEntry(PhysicalPropertiesKey.VM_APPARENT.name(),     phys.getVmApparent(),    Unit.ONE, false);
         generator.writeEntry(PhysicalPropertiesKey.VM_APPARENT_MAX.name(), phys.getVmApparentMax(), Unit.ONE, false);
-        generator.writeEntry(PhysicalPropertiesKey.REFLECTIVITY.name(),    phys.getReflectivity(), Unit.ONE,  false);
+        generator.writeEntry(PhysicalPropertiesKey.REFLECTANCE.name(),     phys.getReflectance(),   Unit.ONE, false);
 
         // attitude
         generator.writeEntry(PhysicalPropertiesKey.ATT_CONTROL_MODE.name(),  phys.getAttitudeControlMode(),       null,        false);
