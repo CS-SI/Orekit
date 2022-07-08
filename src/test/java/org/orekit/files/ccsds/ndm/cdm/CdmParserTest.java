@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -1056,6 +1057,11 @@ public class CdmParserTest {
 	    // Check CONJUNCTION_ID is correctly read
 	    Assert.assertEquals("CONJUNCTION ID", "20220708T10hz SATELLITEA SATELLITEB", file.getRelativeMetadata().getConjunctionId());
 
+	    // Check APPROACH_ANGLE is correctly read
+	    Assert.assertEquals(180.0, FastMath.toDegrees(file.getRelativeMetadata().getApproachAngle()), 0.0);
+	    
+	    
+	    
 	    // Check the rest of the file against any regressions.
 	   
 	    // Verify general data
@@ -1228,6 +1234,11 @@ public class CdmParserTest {
 	    // Check CONJUNCTION_ID is correctly read
 	    Assert.assertEquals("CONJUNCTION ID", "20220708T10hz SATELLITEA SATELLITEB", file.getRelativeMetadata().getConjunctionId());
 
+	    // Check APPROACH_ANGLE is correctly read
+	    Assert.assertEquals(180.0, FastMath.toDegrees(file.getRelativeMetadata().getApproachAngle()), 0.0);
+	    
+
+	    
 	    // Check the rest of the file against any regressions.
 	    
 	    Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());

@@ -101,6 +101,9 @@ public class CdmRelativeMetadata {
     /** the Originator’s ID that uniquely identifies the conjunction to which the message refers. */
     private String conjunctionId;
 
+    /** The approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1. */
+    private double approachAngle;
+
     /** Simple constructor.
      */
     public CdmRelativeMetadata() {
@@ -114,6 +117,8 @@ public class CdmRelativeMetadata {
         this.relativeVelocityR    = Double.NaN;
         this.relativeVelocityT    = Double.NaN;
         this.relativeVelocityN    = Double.NaN;
+
+        this.approachAngle        = Double.NaN;
 
         this.screenVolumeX        = Double.NaN;
         this.screenVolumeY        = Double.NaN;
@@ -472,6 +477,20 @@ public class CdmRelativeMetadata {
      */
     public List<String> getComment() {
         return comment;
+    }
+
+    /** Get the approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1.
+     * @return the approachAngle
+     */
+    public double getApproachAngle() {
+        return approachAngle;
+    }
+
+    /** Set the approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1.
+     * @param approachAngle the approachAngle to set
+     */
+    public void setApproachAngle(final double approachAngle) {
+        this.approachAngle = approachAngle;
     }
 
 }

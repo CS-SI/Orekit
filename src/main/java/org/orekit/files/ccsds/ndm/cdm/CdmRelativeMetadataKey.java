@@ -67,6 +67,10 @@ public enum CdmRelativeMetadataKey {
     RELATIVE_VELOCITY_N((token, context, container) -> token.processAsDouble(Units.M_PER_S, context.getParsedUnitsBehavior(),
                                                                              container::setRelativeVelocityN)),
 
+    /** The approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1. */
+    APPROACH_ANGLE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                         container::setApproachAngle)),
+
     /** The start time in UTC of the screening period for the conjunction assessment. */
     START_SCREEN_PERIOD((token, context, container) -> token.processAsDate(container::setStartScreenPeriod, context)),
 

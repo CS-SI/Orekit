@@ -6,6 +6,7 @@ CLASSIFICATION                = "Operator-proprietary data; secondary distributi
 CONJUNCTION_ID                = 20220708T10hz SATELLITEA SATELLITEB
 TCA                           = 2010-03-13T22:37:52.618
 MISS_DISTANCE                 = 715                                  [m]
+APPROACH_ANGLE                = 180.0                                [deg]
 OBJECT                        = OBJECT1
 OBJECT_DESIGNATOR             = 12345
 CATALOG_NAME                  = SATCAT
