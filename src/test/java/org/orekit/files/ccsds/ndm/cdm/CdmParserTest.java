@@ -1039,7 +1039,7 @@ public class CdmParserTest {
 	public void test_issue_940_KVN() {
 
 		// File
-	    final String ex = "/ccsds/cdm/CDMExample6.txt";
+	    final String ex = "/ccsds/cdm/CDMExample_issue_940.txt";
 	
 	    // Initialize the parser
 	    final CdmParser parser = new ParserBuilder().buildCdmParser();
@@ -1049,6 +1049,10 @@ public class CdmParserTest {
 	    // Generated CDM file
 	    final Cdm file = parser.parseMessage(source);
 
+	    // Check CLASSIFICATION is correctly read
+	    Assert.assertEquals("CLASSIFICATION", "\"Operator-proprietary data; secondary distribution not permitted.\"", 
+	    		file.getHeader().getClassification());
+	    
 	    // Check CONJUNCTION_ID is correctly read
 	    Assert.assertEquals("CONJUNCTION ID", "CJID SATELLITE A", file.getRelativeMetadata().getConjunctionId());
 
@@ -1207,7 +1211,7 @@ public class CdmParserTest {
 	public void test_issue_940_XML() {
 
 		// File
-	    final String ex = "/ccsds/cdm/CDMExample6.xml";
+	    final String ex = "/ccsds/cdm/CDMExample_issue_940.xml";
 	
 	    // Initialize the parser
 	    final CdmParser parser = new ParserBuilder().buildCdmParser();
@@ -1216,6 +1220,10 @@ public class CdmParserTest {
 	
 	    // Generated CDM file
 	    final Cdm file = parser.parseMessage(source);
+	    
+	    // Check CLASSIFICATION is correctly read
+	    Assert.assertEquals("CLASSIFICATION", "\"Operator-proprietary data; secondary distribution not permitted.\"", 
+	    		file.getHeader().getClassification());
 	    
 	    // Check CONJUNCTION_ID is correctly read
 	    Assert.assertEquals("CONJUNCTION ID", "CJID SATELLITE A XML", file.getRelativeMetadata().getConjunctionId());
