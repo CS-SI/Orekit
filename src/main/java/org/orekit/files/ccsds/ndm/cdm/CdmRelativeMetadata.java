@@ -104,6 +104,9 @@ public class CdmRelativeMetadata {
     /** The approach angle computed between Objects 1 and 2 in the RTN coordinate frame relative to object 1. */
     private double approachAngle;
 
+    /** The type of screening to be used. */
+    private ScreenType screenType;
+
     /** Simple constructor.
      */
     public CdmRelativeMetadata() {
@@ -493,4 +496,17 @@ public class CdmRelativeMetadata {
         this.approachAngle = approachAngle;
     }
 
+    /** Get the type of screening to be used.
+     * @return the screenType
+     */
+    public ScreenType getScreenType() {
+        return screenType;
+    }
+
+    /** Set the type of screening to be used.
+     * @param screenType the screenType to set
+     */
+    public void setScreenType(final ScreenType screenType) {
+        this.screenType = screenType;
+    }
 }

@@ -1060,7 +1060,9 @@ public class CdmParserTest {
 	    // Check APPROACH_ANGLE is correctly read
 	    Assert.assertEquals(180.0, FastMath.toDegrees(file.getRelativeMetadata().getApproachAngle()), 0.0);
 	    
-	    
+	    // Check SCREEN_TYPE is correctly read
+	    Assert.assertEquals("SCREEN_TYPE", ScreenType.PC_MAX, file.getRelativeMetadata().getScreenType());
+
 	    
 	    // Check the rest of the file against any regressions.
 	   
@@ -1236,7 +1238,10 @@ public class CdmParserTest {
 
 	    // Check APPROACH_ANGLE is correctly read
 	    Assert.assertEquals(180.0, FastMath.toDegrees(file.getRelativeMetadata().getApproachAngle()), 0.0);
-	    
+
+	    // Check SCREEN_TYPE is correctly read
+	    Assert.assertEquals("SCREEN_TYPE", ScreenType.PC_MAX, file.getRelativeMetadata().getScreenType());
+
 
 	    
 	    // Check the rest of the file against any regressions.

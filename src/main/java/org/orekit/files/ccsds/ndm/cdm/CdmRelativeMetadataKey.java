@@ -77,6 +77,9 @@ public enum CdmRelativeMetadataKey {
     /** The stop time in UTC of the screening period for the conjunction assessment. */
     STOP_SCREEN_PERIOD((token, context, container) -> token.processAsDate(container::setStopScreenPeriod, context)),
 
+    /** The type of screening to be used. */
+    SCREEN_TYPE((token, context, container) -> token.processAsEnum(ScreenType.class, container::setScreenType)),
+
     /** Name of the Object1 centered reference frame in which the screening volume data are given. */
     SCREEN_VOLUME_FRAME((token, context, container) -> token.processAsEnum(ScreenVolumeFrame.class, container::setScreenVolumeFrame)),
 
