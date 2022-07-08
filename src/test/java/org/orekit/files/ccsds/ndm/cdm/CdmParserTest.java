@@ -1054,7 +1054,7 @@ public class CdmParserTest {
 	    		file.getHeader().getClassification());
 	    
 	    // Check CONJUNCTION_ID is correctly read
-	    Assert.assertEquals("CONJUNCTION ID", "CJID SATELLITE A", file.getRelativeMetadata().getConjunctionId());
+	    Assert.assertEquals("CONJUNCTION ID", "20220708T10hz SATELLITEA SATELLITEB", file.getRelativeMetadata().getConjunctionId());
 
 	    // Check the rest of the file against any regressions.
 	   
@@ -1226,7 +1226,7 @@ public class CdmParserTest {
 	    		file.getHeader().getClassification());
 	    
 	    // Check CONJUNCTION_ID is correctly read
-	    Assert.assertEquals("CONJUNCTION ID", "CJID SATELLITE A XML", file.getRelativeMetadata().getConjunctionId());
+	    Assert.assertEquals("CONJUNCTION ID", "20220708T10hz SATELLITEA SATELLITEB", file.getRelativeMetadata().getConjunctionId());
 
 	    // Check the rest of the file against any regressions.
 	    
