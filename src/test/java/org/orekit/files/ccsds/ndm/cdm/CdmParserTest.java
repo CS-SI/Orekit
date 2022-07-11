@@ -29,6 +29,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.PocMethodFacade;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
@@ -1063,6 +1064,32 @@ public class CdmParserTest {
 	    // Check SCREEN_TYPE is correctly read
 	    Assert.assertEquals("SCREEN_TYPE", ScreenType.PC_MAX, file.getRelativeMetadata().getScreenType());
 
+	    // COLLISION_PROBABILITY
+	    Assert.assertEquals(4.835E-05, file.getRelativeMetadata().getCollisionProbability(), 0.0);
+
+	    // Check COLLISION_PROBABILITY_METHOD is correctly read
+	    Assert.assertEquals("COLLISION_PROBABILITY_METHOD", "FOSTER-1992", file.getRelativeMetadata().getCollisionProbaMethod().getName());
+	    
+	    // COLLISION_MAX_PROBABILITY
+	    Assert.assertEquals(1.234E-05, file.getRelativeMetadata().getMaxCollisionProbability(), 0.0);
+	    
+	    // Check COLLISION_MAX_PC_METHOD is correctly read
+	    Assert.assertEquals("COLLISION_MAX_PC_METHOD", "SCALE_COMBINED_COVAR", file.getRelativeMetadata().getMaxCollisionProbabilityMethod().getName());
+	    
+	    // SEFI_COLLISION_PROBABILITY
+	    Assert.assertEquals(1.234E-05, file.getRelativeMetadata().getSefiCollisionProbability(), 0.0);
+	            		 
+	    // Check SEFI_COLLISION_PROBABILITY_METHOD is correctly read
+	    Assert.assertEquals("SEFI_COLLISION_PROBABILITY_METHOD", "SEFI_PC_METHOD", file.getRelativeMetadata().getSefiCollisionProbabilityMethod().getName());
+	   
+	    // Check SEFI_FRAGMENTATION_MODEL is correctly read
+	    Assert.assertEquals("SEFI_FRAGMENTATION_MODEL", "NASA STD BREAKUP MODEL", file.getRelativeMetadata().getSefiFragmentationModel());
+
+	    // Check COVARIANCE_SOURCE is correctly read
+	    Assert.assertEquals("COVARIANCE_SOURCE", "HAC Covariance", file.getMetadataObject1().getCovarianceSource());
+
+	    
+	    
 	    
 	    // Check the rest of the file against any regressions.
 	   
@@ -1242,7 +1269,32 @@ public class CdmParserTest {
 	    // Check SCREEN_TYPE is correctly read
 	    Assert.assertEquals("SCREEN_TYPE", ScreenType.PC_MAX, file.getRelativeMetadata().getScreenType());
 
+	    // COLLISION_PROBABILITY
+	    Assert.assertEquals(4.835E-05, file.getRelativeMetadata().getCollisionProbability(), 0.0);
 
+	    // Check COLLISION_PROBABILITY_METHOD is correctly read
+	    Assert.assertEquals("COLLISION_PROBABILITY_METHOD", "FOSTER-1992", file.getRelativeMetadata().getCollisionProbaMethod().getName());
+	    
+	    // COLLISION_MAX_PROBABILITY
+	    Assert.assertEquals(1.234E-05, file.getRelativeMetadata().getMaxCollisionProbability(), 0.0);
+	    
+	    // Check COLLISION_MAX_PC_METHOD is correctly read
+	    Assert.assertEquals("COLLISION_MAX_PC_METHOD", "SCALE_COMBINED_COVAR", file.getRelativeMetadata().getMaxCollisionProbabilityMethod().getName());
+	    
+	    // SEFI_COLLISION_PROBABILITY
+	    Assert.assertEquals(1.234E-05, file.getRelativeMetadata().getSefiCollisionProbability(), 0.0);
+	            		 
+	    // Check SEFI_COLLISION_PROBABILITY_METHOD is correctly read
+	    Assert.assertEquals("SEFI_COLLISION_PROBABILITY_METHOD", "SEFI_PC_METHOD", file.getRelativeMetadata().getSefiCollisionProbabilityMethod().getName());
+	   
+	    // Check SEFI_FRAGMENTATION_MODEL is correctly read
+	    Assert.assertEquals("SEFI_FRAGMENTATION_MODEL", "NASA STD BREAKUP MODEL", file.getRelativeMetadata().getSefiFragmentationModel());
+
+	    // Check COVARIANCE_SOURCE is correctly read
+	    Assert.assertEquals("COVARIANCE_SOURCE", "HAC Covariance", file.getMetadataObject1().getCovarianceSource());
+
+
+	    
 	    
 	    // Check the rest of the file against any regressions.
 	    

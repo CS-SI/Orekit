@@ -107,6 +107,22 @@ public class CdmRelativeMetadata {
     /** The type of screening to be used. */
     private ScreenType screenType;
 
+    /** The maximum collision probability that Object1 and Object2 will collide. */
+    private double maxCollisionProbability;
+
+    /** The method that was used to calculate the maximum collision probability. */
+    private PocMethodFacade maxCollisionProbabilityMethod;
+
+   /**  The space environment fragmentation impact (SEFI) adjusted estimate of collision probability that Object1 and Object2 will collide. */
+    private double sefiCollisionProbability;
+
+    /** The method that was used to calculate the space environment fragmentation impact collision probability. */
+    private PocMethodFacade sefiCollisionProbabilityMethod;
+
+    /** The Space environment fragmentation model used. */
+    private String sefiFragmentationModel;
+
+
     /** Simple constructor.
      */
     public CdmRelativeMetadata() {
@@ -508,5 +524,75 @@ public class CdmRelativeMetadata {
      */
     public void setScreenType(final ScreenType screenType) {
         this.screenType = screenType;
+    }
+
+    /**
+     * @return the maxCollisionProbability
+     */
+    public double getMaxCollisionProbability() {
+        return maxCollisionProbability;
+    }
+
+    /**
+     * @param maxCollisionProbability the maxCollisionProbability to set
+     */
+    public void setMaxCollisionProbability(final double maxCollisionProbability) {
+        this.maxCollisionProbability = maxCollisionProbability;
+    }
+
+    /**
+     * @return the maxCollisionProbabilityMethod
+     */
+    public PocMethodFacade getMaxCollisionProbabilityMethod() {
+        return maxCollisionProbabilityMethod;
+    }
+
+    /**
+     * @param pocMethodFacade the maxCollisionProbabilityMethod to set
+     */
+    public void setMaxCollisionProbabilityMethod(final PocMethodFacade pocMethodFacade) {
+        this.maxCollisionProbabilityMethod = pocMethodFacade;
+    }
+
+    /**
+     * @return the sefiCollisionProbability
+     */
+    public double getSefiCollisionProbability() {
+        return sefiCollisionProbability;
+    }
+
+    /**
+     * @param sefiCollisionProbability the sefiCollisionProbability to set
+     */
+    public void setSefiCollisionProbability(final double sefiCollisionProbability) {
+        this.sefiCollisionProbability = sefiCollisionProbability;
+    }
+
+    /**
+     * @return the sefiCollisionProbabilityMethod
+     */
+    public PocMethodFacade getSefiCollisionProbabilityMethod() {
+        return sefiCollisionProbabilityMethod;
+    }
+
+    /**
+     * @param pocMethodFacade the sefiCollisionProbabilityMethod to set
+     */
+    public void setSefiCollisionProbabilityMethod(final PocMethodFacade pocMethodFacade) {
+        this.sefiCollisionProbabilityMethod = pocMethodFacade;
+    }
+
+    /**
+     * @return the sefiFragmentationModel
+     */
+    public String getSefiFragmentationModel() {
+        return sefiFragmentationModel;
+    }
+
+    /**
+     * @param sefiFragmentationModel the sefiFragmentationModel to set
+     */
+    public void setSefiFragmentationModel(final String sefiFragmentationModel) {
+        this.sefiFragmentationModel = sefiFragmentationModel;
     }
 }

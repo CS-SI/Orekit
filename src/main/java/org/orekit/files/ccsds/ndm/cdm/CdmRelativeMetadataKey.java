@@ -114,7 +114,34 @@ public enum CdmRelativeMetadataKey {
             container.setCollisionProbaMethod(PocMethodFacade.parse(token.getContentAsNormalizedString()));
         }
         return true;
-    });
+    }),
+
+    /** The maximum collision probability that Object1 and Object2 will collide. */
+    COLLISION_MAX_PROBABILITY((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                               container::setMaxCollisionProbability)),
+
+    /** The method that was used to calculate the maximum collision probability. */
+    COLLISION_MAX_PC_METHOD((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            container.setMaxCollisionProbabilityMethod(PocMethodFacade.parse(token.getRawContent()));
+        }
+        return true;
+    }),
+
+    /**  The space environment fragmentation impact (SEFI) adjusted estimate of collision probability that Object1 and Object2 will collide. */
+    SEFI_COLLISION_PROBABILITY((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                               container::setSefiCollisionProbability)),
+
+    /** The method that was used to calculate the space environment fragmentation impact collision probability. */
+    SEFI_COLLISION_PROBABILITY_METHOD((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            container.setSefiCollisionProbabilityMethod(PocMethodFacade.parse(token.getRawContent()));
+        }
+        return true;
+    }),
+
+    /** The Space environment fragmentation model used. */
+    SEFI_FRAGMENTATION_MODEL((token, context, container) -> token.processAsNormalizedString(container::setSefiFragmentationModel));
 
     /** Processing method. */
     private final TokenProcessor processor;

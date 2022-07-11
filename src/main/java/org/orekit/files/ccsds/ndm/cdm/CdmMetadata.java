@@ -110,6 +110,9 @@ public class CdmMetadata extends Metadata {
     /** Is in-track thrust modelling used or not ? */
     private boolean isIntrackThrustModeled;
 
+    /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
+    private String covarianceSource;
+
     /** Simple constructor.
      */
     public CdmMetadata() {
@@ -547,6 +550,20 @@ public class CdmMetadata extends Metadata {
     public void setIntrackThrust(final boolean IntrackThrustModeled) {
         refuseFurtherComments();
         this.isIntrackThrustModeled = IntrackThrustModeled;
+    }
+
+    /** Get the source of the covariance data.
+     * @return the covarianceSource
+     */
+    public String getCovarianceSource() {
+        return covarianceSource;
+    }
+
+    /** Set the source of the covariance data.
+     * @param covarianceSource the covarianceSource to set
+     */
+    public void setCovarianceSource(final String covarianceSource) {
+        this.covarianceSource = covarianceSource;
     }
 
 }

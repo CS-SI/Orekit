@@ -66,6 +66,9 @@ public enum CdmMetadataKey {
     /** Method used to calculate the covariance. */
     COVARIANCE_METHOD((token, context, container) -> token.processAsEnum(CovarianceMethod.class, container::setCovarianceMethod)),
 
+    /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
+    COVARIANCE_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setCovarianceSource)),
+
     /** Manoeuver capacity. */
     MANEUVERABLE((token, context, container) -> token.processAsEnum(Maneuvrable.class, container::setManeuverable)),
 
