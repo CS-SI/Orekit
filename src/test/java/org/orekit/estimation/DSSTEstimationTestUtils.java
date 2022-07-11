@@ -477,16 +477,6 @@ public class DSSTEstimationTestUtils {
             for (int i = 0; i < 6; i++) {
                 sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
             }
-            System.out.println("Reference orbit position: " + refOrbit[k].getPVCoordinates().getPosition());
-            System.out.println("Reference orbit velocity: " + refOrbit[k].getPVCoordinates().getVelocity());
-            System.out.println("Reference end date: " + refOrbit[k].getDate().toString());
-            System.out.println("Estimated orbit position: " + estimatedPosition);
-            System.out.println("Estimated orbit velocity: " + estimatedVelocity);
-            System.out.println("Estimated orbit covariance: " + estimatedCartesianP);
-
-            System.out.println("Estimation end date: " + estimated.getInitialState().getDate().toString());
-            
-            System.out.println("Last measurement date: " + measurements.get(measurements.size()-1).getDate());
 
             // Check the final orbit estimation & PV sigmas
             final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);

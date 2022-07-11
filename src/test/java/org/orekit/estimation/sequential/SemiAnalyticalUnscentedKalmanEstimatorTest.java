@@ -81,7 +81,6 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                 // Calculate residual
                 final double res = observed[0] - estimated[0];
                 stats.addValue(res);
-                System.out.println(((Range)estimatedMeasurement.getObservedMeasurement()).getStation().getBaseFrame().getName());
                 if (((Range)estimatedMeasurement.getObservedMeasurement()).getStation().getBaseFrame().getName().equals("Isla Desolación")) {
                     residualsID.add(res);
                     timeID.add(estimatedMeasurement.getDate().durationFrom(initialDate)/86400);
@@ -160,10 +159,8 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                 context.createBuilder(PropagationType.OSCULATING, PropagationType.MEAN, perfectStart,
                                       minStep, maxStep, dP);
         // Create perfect PV measurements
-        System.out.println("Initial orbit: " + context.initialOrbit);
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        System.out.println("Initial orbit in the builder: " + propagator.getInitialState());
         final List<ObservedMeasurement<?>> measurements =
                 DSSTEstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
@@ -413,7 +410,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assert.assertEquals(0.0, observer.getMeanResidual(), 5.38e-8);
+        Assert.assertEquals(0.0, observer.getMeanResidual(), 5.41e-8);
         Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
         Assert.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
@@ -422,7 +419,6 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
         Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
         Assert.assertNotNull(kalman.getPhysicalEstimatedState());
-        observer.printResults("../../python-workspace/residuals_USKF_case_1_ID.txt", "../../python-workspace/residuals_USKF_case_1_S.txt");
 
     }
 
@@ -520,7 +516,6 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         Assert.assertNotNull(kalman.getPhysicalEstimatedState());
 
 
-        observer.printResults("../../python-workspace/residuals_USKF_case_2_ID.txt", "../../python-workspace/residuals_USKF_case_2_S.txt");
     }
 
     /**
@@ -627,8 +622,6 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
         Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
         Assert.assertNotNull(kalman.getPhysicalEstimatedState());
-        
-        observer.printResults("../../python-workspace/residuals_USKF_case_3_ID.txt", "../../python-workspace/residuals_USKF_case_3_S.txt");
 
     }
 }
