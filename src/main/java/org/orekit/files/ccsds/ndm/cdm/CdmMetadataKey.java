@@ -96,7 +96,13 @@ public enum CdmMetadataKey {
     EARTH_TIDES((token, context, container) -> token.processAsBoolean(container::setEarthTides)),
 
     /** Indication of whether in-track thrust modeling used for the object. */
-    INTRACK_THRUST((token, context, container) -> token.processAsBoolean(container::setIntrackThrust));
+    INTRACK_THRUST((token, context, container) -> token.processAsBoolean(container::setIntrackThrust)),
+
+    /** Flag indicating the type of alternate covariance information provided. */
+    ALT_COV_TYPE((token, context, container) -> token.processAsEnum(AltCovarianceType.class, container::setAltCovType)),
+
+    /** Name of the reference frame in which the alternate covariance data are given. */
+    ALT_COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setAltCovRefFrame, context, true, false, false));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -1087,8 +1087,12 @@ public class CdmParserTest {
 
 	    // Check COVARIANCE_SOURCE is correctly read
 	    Assert.assertEquals("COVARIANCE_SOURCE", "HAC Covariance", file.getMetadataObject1().getCovarianceSource());
-
 	    
+	    // Check ALT_COV_TYPE is correctly read
+	    Assert.assertEquals("ALT_COV_TYPE", AltCovarianceType.XYZ, file.getMetadataObject1().getAltCovType());
+
+	    // Check ALT_COV_REF_FRAME is correctly read
+	    Assert.assertEquals("ALT_COV_REF_FRAME", "EME2000", file.getMetadataObject1().getAltCovRefFrame().getName());
 	    
 	    
 	    // Check the rest of the file against any regressions.

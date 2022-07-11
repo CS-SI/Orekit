@@ -113,6 +113,12 @@ public class CdmMetadata extends Metadata {
     /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
     private String covarianceSource;
 
+    /** Flag indicating the type of alternate covariance information provided. */
+    private AltCovarianceType altCovType;
+
+    /** Reference frame in which the alternate covariance data are given. */
+    private FrameFacade altCovRefFrame;
+
     /** Simple constructor.
      */
     public CdmMetadata() {
@@ -566,4 +572,50 @@ public class CdmMetadata extends Metadata {
         this.covarianceSource = covarianceSource;
     }
 
+    /** Get the flag indicating the type of alternate covariance information provided.
+     * @return the altCovType
+     */
+    public AltCovarianceType getAltCovType() {
+        return altCovType;
+    }
+
+    /** Set the flag indicating the type of alternate covariance information provided.
+     * @param altCovType the altCovType to set
+     */
+    public void setAltCovType(final AltCovarianceType altCovType) {
+        this.altCovType = altCovType;
+    }
+
+     /**
+     * Get the value of {@code ALT_COV_REF_FRAME} as an Orekit {@link Frame}.
+     * @return the reference frame
+     */
+    public FrameFacade getAltCovRefFrame() {
+        return altCovRefFrame;
+    }
+
+    /**
+     * Set the name of the reference frame in which the alternate covariance data are given.
+     * @param altCovRefFrame alternate covariance reference frame
+     */
+    public void setAltCovRefFrame(final FrameFacade altCovRefFrame) {
+        refuseFurtherComments();
+
+        if (getAltCovType() == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmMetadataKey.ALT_COV_TYPE);
+        }
+
+        if (altCovRefFrame.asFrame() == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
+        }
+
+        // Only set the frame if within the allowed options: GCRF, EME2000, ITRF
+        if ( altCovRefFrame.asCelestialBodyFrame() == CelestialBodyFrame.GCRF ||
+                 altCovRefFrame.asCelestialBodyFrame() == CelestialBodyFrame.EME2000 ||
+                     altCovRefFrame.asCelestialBodyFrame().name().contains("ITRF") ) {
+            this.altCovRefFrame = altCovRefFrame;
+        } else {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
+        }
+    }
 }
