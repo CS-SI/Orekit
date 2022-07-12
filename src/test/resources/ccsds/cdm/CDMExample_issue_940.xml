@@ -85,6 +85,7 @@ id="CCSDS_CDM_VERS" version="1.0">
 <TRACKS_USED>119</TRACKS_USED>
 <RESIDUALS_ACCEPTED units="%" >97.8</RESIDUALS_ACCEPTED>
 <WEIGHTED_RMS>0.864</WEIGHTED_RMS>
+<OD_EPOCH>2010-03-12T22:31:12.000</OD_EPOCH>
 </odParameters>
 <additionalParameters>
 <COMMENT>Object 1 Additional Parameters</COMMENT>

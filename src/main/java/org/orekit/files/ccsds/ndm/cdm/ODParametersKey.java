@@ -63,7 +63,14 @@ public enum ODParametersKey {
 
     /** The weighted Root Mean Square (RMS) of the residuals from a batch least squares OD. */
     WEIGHTED_RMS((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                             container::setWeightedRMS));
+                                                                             container::setWeightedRMS)),
+
+    /** The epoch of the orbit determination used for this message (UTC). */
+    OD_EPOCH((token, context, container) -> token.processAsDate(container::setOdEpoch, context));
+
+//     /** For a collection of recent catalogues, the minimum, median and maximum time between epoch updates for the object in question for successive catalogues. */
+//    MIN_MEDIAN_MAX_UPDATE_INTERVAL((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+//                                                                             container::setWeightedRMS)),
 
     /** Processing method. */
     private final TokenProcessor processor;
