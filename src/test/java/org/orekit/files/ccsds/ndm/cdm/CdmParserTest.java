@@ -1038,10 +1038,18 @@ public class CdmParserTest {
     }
 
 	@Test
-	public void test_issue_940_KVN() {
-
-		// File
-	    final String ex = "/ccsds/cdm/CDMExample_issue_940.txt";
+	public void test_issue_940() {
+	
+		// Files
+	    final String cdm_xml = "/ccsds/cdm/CDMExample_issue_940.xml";
+	    final String cdm_kvn = "/ccsds/cdm/CDMExample_issue_940.txt";
+	    
+	    test_issue_940_data(cdm_kvn);
+	    test_issue_940_data(cdm_xml);
+	    
+	}
+	    
+	public void test_issue_940_data(String ex) {
 	
 	    // Initialize the parser
 	    final CdmParser parser = new ParserBuilder().buildCdmParser();
@@ -1051,9 +1059,18 @@ public class CdmParserTest {
 	    // Generated CDM file
 	    final Cdm file = parser.parseMessage(source);
 
+	    
+	    // Tests additional CDM Header keys
+
+	    
 	    // Check CLASSIFICATION is correctly read
 	    Assert.assertEquals("CLASSIFICATION", "\"Operator-proprietary data; secondary distribution not permitted.\"", 
 	    		file.getHeader().getClassification());
+	    
+	    
+	    
+	    // Test additional CDM Relative Metadata Keys
+	    
 	    
 	    // Check CONJUNCTION_ID is correctly read
 	    Assert.assertEquals("CONJUNCTION ID", "20220708T10hz SATELLITEA SATELLITEB", file.getRelativeMetadata().getConjunctionId());
@@ -1062,8 +1079,35 @@ public class CdmParserTest {
 	    Assert.assertEquals(180.0, FastMath.toDegrees(file.getRelativeMetadata().getApproachAngle()), 0.0);
 	    
 	    // Check SCREEN_TYPE is correctly read
-	    Assert.assertEquals("SCREEN_TYPE", ScreenType.PC_MAX, file.getRelativeMetadata().getScreenType());
+	    Assert.assertEquals("SCREEN_TYPE", ScreenType.SHAPE, file.getRelativeMetadata().getScreenType());
+	    
+	    // Check SCREEN_VOLUME_SHAPE is correctly read
+	    Assert.assertEquals("SCREEN_VOLUME_SHAPE", ScreenVolumeShape.ELLIPSOID, file.getRelativeMetadata().getScreenVolumeShape());
+	    
+	    // Check SCREEN_VOLUME_X is correctly read
+	    Assert.assertEquals(200, file.getRelativeMetadata().getScreenVolumeX(), 0.0);
+	    
+	    // Check SCREEN_VOLUME_Y is correctly read
+	    Assert.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeY(), 0.0);
+	    
+	    // Check SCREEN_VOLUME_Z is correctly read
+	    Assert.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeZ(), 0.0);
+	    
+	    // Check SCREEN_ENTRY_TIME is correctly read
+	    Assert.assertEquals("SCREEN_ENTRY_TIME", new AbsoluteDate(2010, 3, 13, 20, 25, 43.222, TimeScalesFactory.getUTC()), 
+	    		file.getRelativeMetadata().getScreenEntryTime());
 
+	    // Check SCREEN_EXIT_TIME is correctly read
+	    Assert.assertEquals("SCREEN_EXIT_TIME", new AbsoluteDate(2010, 3, 13, 23, 44, 29.324, TimeScalesFactory.getUTC()), 
+	    		file.getRelativeMetadata().getScreenExitTime());
+
+	    // SCREEN_PC_THRESHOLD
+	    Assert.assertEquals(1.000E-03, file.getRelativeMetadata().getScreenPcThreshold(), 0.0);
+
+	    // COLLISION_PERCENTILE
+	    int[] collisionPercentile = {50, 51, 52};
+	    Assert.assertArrayEquals(collisionPercentile, file.getRelativeMetadata().getCollisionPercentile());
+	    
 	    // COLLISION_PROBABILITY
 	    Assert.assertEquals(4.835E-05, file.getRelativeMetadata().getCollisionProbability(), 0.0);
 
@@ -1085,6 +1129,21 @@ public class CdmParserTest {
 	    // Check SEFI_FRAGMENTATION_MODEL is correctly read
 	    Assert.assertEquals("SEFI_FRAGMENTATION_MODEL", "NASA STD BREAKUP MODEL", file.getRelativeMetadata().getSefiFragmentationModel());
 
+	    // Check PREVIOUS_MESSAGE_ID is correctly read
+	    Assert.assertEquals("PREVIOUS_MESSAGE_ID", "201113719185-0", file.getRelativeMetadata().getPreviousMessageId());
+	    
+	    // Check PREVIOUS_MESSAGE_EPOCH is correctly read
+	    Assert.assertEquals("OD_EPOCH", new AbsoluteDate(2010, 3, 12, 10, 31, 12, TimeScalesFactory.getUTC()), 
+	    		file.getRelativeMetadata().getPreviousMessageEpoch());
+	    
+	    // Check NEXT_MESSAGE_EPOCH is correctly read
+	    Assert.assertEquals("OD_EPOCH", new AbsoluteDate(2010, 3, 13, 10, 31, 12, TimeScalesFactory.getUTC()), 
+	    		file.getRelativeMetadata().getNextMessageEpoch());
+
+	    
+	    // Tests additional CDM Metadata keys
+	    
+	    
 	    // Check COVARIANCE_SOURCE is correctly read
 	    Assert.assertEquals("COVARIANCE_SOURCE", "HAC Covariance", file.getMetadataObject1().getCovarianceSource());
 	    
@@ -1098,6 +1157,10 @@ public class CdmParserTest {
 	    Assert.assertEquals("OD_EPOCH", new AbsoluteDate(2010, 3, 12, 22, 31, 12, TimeScalesFactory.getUTC()), 
 	    		file.getDataObject1().getODParametersBlock().getOdEpoch());
 	    
+	    
+	    
+	    
+	    
 	    // Check the rest of the file against any regressions.
 	   
 	    // Verify general data
@@ -1110,7 +1173,7 @@ public class CdmParserTest {
                                              TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assert.assertEquals("JSPOC", file.getHeader().getOriginator());
-        Assert.assertEquals("201113719185", file.getHeader().getMessageId());
+        Assert.assertEquals("201113719185-1", file.getHeader().getMessageId());
 
         // OBJECT1
         // Check Relative Metadata Block
@@ -1124,7 +1187,7 @@ public class CdmParserTest {
         Assert.assertEquals("12345",                      file.getMetadataObject1().getObjectDesignator());
         Assert.assertEquals("SATCAT",                     file.getMetadataObject1().getCatalogName());
         Assert.assertEquals("SATELLITE A",                file.getMetadataObject1().getObjectName());
-        Assert.assertEquals("1997−030E",                  file.getMetadataObject1().getInternationalDes());
+        Assert.assertEquals("1997-030E",                  file.getMetadataObject1().getInternationalDes());
         Assert.assertEquals("EPHEMERIS SATELLITE A",      file.getMetadataObject1().getEphemName());
         Assert.assertEquals(CovarianceMethod.CALCULATED,  file.getMetadataObject1().getCovarianceMethod());
         Assert.assertEquals(Maneuvrable.YES,              file.getMetadataObject1().getManeuverable());
@@ -1246,261 +1309,7 @@ public class CdmParserTest {
         Assert.assertEquals(-1.903e-6, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 3), COVARIANCE_PRECISION);
         Assert.assertEquals(-4.594e-6, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 4), COVARIANCE_PRECISION);
         Assert.assertEquals(5.178e-5,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 5), COVARIANCE_PRECISION);
-	    
-	}
-
-	@Test
-	public void test_issue_940_XML() {
-
-		// File
-	    final String ex = "/ccsds/cdm/CDMExample_issue_940.xml";
-	
-	    // Initialize the parser
-	    final CdmParser parser = new ParserBuilder().buildCdmParser();
-	
-	    final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-	
-	    // Generated CDM file
-	    final Cdm file = parser.parseMessage(source);
-	    
-	    // Check CLASSIFICATION is correctly read
-	    Assert.assertEquals("CLASSIFICATION", "\"Operator-proprietary data; secondary distribution not permitted.\"", 
-	    		file.getHeader().getClassification());
-	    
-	    // Check CONJUNCTION_ID is correctly read
-	    Assert.assertEquals("CONJUNCTION ID", "20220708T10hz SATELLITEA SATELLITEB", file.getRelativeMetadata().getConjunctionId());
-
-	    // Check APPROACH_ANGLE is correctly read
-	    Assert.assertEquals(180.0, FastMath.toDegrees(file.getRelativeMetadata().getApproachAngle()), 0.0);
-
-	    // Check SCREEN_TYPE is correctly read
-	    Assert.assertEquals("SCREEN_TYPE", ScreenType.PC_MAX, file.getRelativeMetadata().getScreenType());
-
-	    // COLLISION_PROBABILITY
-	    Assert.assertEquals(4.835E-05, file.getRelativeMetadata().getCollisionProbability(), 0.0);
-
-	    // Check COLLISION_PROBABILITY_METHOD is correctly read
-	    Assert.assertEquals("COLLISION_PROBABILITY_METHOD", "FOSTER-1992", file.getRelativeMetadata().getCollisionProbaMethod().getName());
-	    
-	    // COLLISION_MAX_PROBABILITY
-	    Assert.assertEquals(1.234E-05, file.getRelativeMetadata().getMaxCollisionProbability(), 0.0);
-	    
-	    // Check COLLISION_MAX_PC_METHOD is correctly read
-	    Assert.assertEquals("COLLISION_MAX_PC_METHOD", "SCALE_COMBINED_COVAR", file.getRelativeMetadata().getMaxCollisionProbabilityMethod().getName());
-	    
-	    // SEFI_COLLISION_PROBABILITY
-	    Assert.assertEquals(1.234E-05, file.getRelativeMetadata().getSefiCollisionProbability(), 0.0);
-	            		 
-	    // Check SEFI_COLLISION_PROBABILITY_METHOD is correctly read
-	    Assert.assertEquals("SEFI_COLLISION_PROBABILITY_METHOD", "SEFI_PC_METHOD", file.getRelativeMetadata().getSefiCollisionProbabilityMethod().getName());
-	   
-	    // Check SEFI_FRAGMENTATION_MODEL is correctly read
-	    Assert.assertEquals("SEFI_FRAGMENTATION_MODEL", "NASA STD BREAKUP MODEL", file.getRelativeMetadata().getSefiFragmentationModel());
-
-	    // Check COVARIANCE_SOURCE is correctly read
-	    Assert.assertEquals("COVARIANCE_SOURCE", "HAC Covariance", file.getMetadataObject1().getCovarianceSource());
-
-	    // Check ALT_COV_TYPE is correctly read
-	    Assert.assertEquals("ALT_COV_TYPE", AltCovarianceType.XYZ, file.getMetadataObject1().getAltCovType());
-
-	    // Check ALT_COV_REF_FRAME is correctly read
-	    Assert.assertEquals("ALT_COV_REF_FRAME", "EME2000", file.getMetadataObject1().getAltCovRefFrame().getName());
-	    
-	    // Check OD_EPOCH is correctly read
-	    Assert.assertEquals("OD_EPOCH", new AbsoluteDate(2010, 3, 12, 22, 31, 12, TimeScalesFactory.getUTC()), 
-	    		file.getDataObject1().getODParametersBlock().getOdEpoch());
-	    
-	    
-	    // Check the rest of the file against any regressions.
-	    
-	    Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
-	    Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
-	
-	    // Check Header Block
-	    Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
-	    Assert.assertEquals(new AbsoluteDate(2010, 3, 12, 22, 31, 12.000,
-	                        TimeScalesFactory.getUTC()),
-	                        file.getHeader().getCreationDate());
-	    Assert.assertEquals("JSPOC", file.getHeader().getOriginator());
-	    Assert.assertEquals("SATELLITE A", file.getHeader().getMessageFor());
-	    Assert.assertEquals("20111371985", file.getHeader().getMessageId());
-	
-	    // OBJECT1
-	    // Check Relative Metadata Block
-	     Assert.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.618,
-	                         TimeScalesFactory.getUTC()),
-	                         file.getRelativeMetadata().getTca());
-	     Assert.assertEquals(715.0,     file.getRelativeMetadata().getMissDistance(),     DISTANCE_PRECISION);
-	     Assert.assertEquals(14762.0,   file.getRelativeMetadata().getRelativeSpeed(),    DERIVATION_PRECISION);
-	     Assert.assertEquals(27.4,      file.getRelativeMetadata().getRelativePosition().getX(),DISTANCE_PRECISION);
-	     Assert.assertEquals(-70.2,     file.getRelativeMetadata().getRelativePosition().getY(),DISTANCE_PRECISION);
-	     Assert.assertEquals(711.8,     file.getRelativeMetadata().getRelativePosition().getZ(),DISTANCE_PRECISION);
-	     Assert.assertEquals(-7.2,      file.getRelativeMetadata().getRelativeVelocity().getX(),DERIVATION_PRECISION);
-	     Assert.assertEquals(-14692.0,  file.getRelativeMetadata().getRelativeVelocity().getY(),DERIVATION_PRECISION);
-	     Assert.assertEquals(-1437.2,   file.getRelativeMetadata().getRelativeVelocity().getZ(),DERIVATION_PRECISION);
-	     Assert.assertEquals(new AbsoluteDate(2010, 3, 12, 18, 29, 32.212,
-	                         TimeScalesFactory.getUTC()),
-	                         file.getRelativeMetadata().getStartScreenPeriod());
-	     Assert.assertEquals(new AbsoluteDate(2010, 3, 15, 18, 29, 32.212,
-	                         TimeScalesFactory.getUTC()),
-	                         file.getRelativeMetadata().getStopScreenPeriod());
-	     Assert.assertEquals(ScreenVolumeFrame.RTN,        file.getRelativeMetadata().getScreenVolumeFrame());
-	     Assert.assertEquals(ScreenVolumeShape.ELLIPSOID,  file.getRelativeMetadata().getScreenVolumeShape());
-	     Assert.assertEquals(200,   file.getRelativeMetadata().getScreenVolumeX(), 0);
-	     Assert.assertEquals(1000,  file.getRelativeMetadata().getScreenVolumeY(), 0);
-	     Assert.assertEquals(1000,  file.getRelativeMetadata().getScreenVolumeZ(), 0);
-	     Assert.assertEquals(new AbsoluteDate(2010, 3, 13, 20, 25, 43.222,
-	                         TimeScalesFactory.getUTC()),
-	                         file.getRelativeMetadata().getScreenEntryTime());
-	     Assert.assertEquals(new AbsoluteDate(2010, 3, 13, 23, 44, 29.324,
-	                         TimeScalesFactory.getUTC()),
-	                         file.getRelativeMetadata().getScreenExitTime());
-	     Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
-	     Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
-	     Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
-	
-	     // Check Metadata Block
-	     Assert.assertEquals("OBJECT1",                    file.getMetadataObject1().getObject());
-	     Assert.assertEquals("12345",                      file.getMetadataObject1().getObjectDesignator());
-	     Assert.assertEquals("SATCAT",                     file.getMetadataObject1().getCatalogName());
-	     Assert.assertEquals("SATELLITE A",                file.getMetadataObject1().getObjectName());
-	     Assert.assertEquals("1997-030E",                  file.getMetadataObject1().getInternationalDes());
-	     Assert.assertEquals("EPHEMERIS SATELLITE A",      file.getMetadataObject1().getEphemName());
-	     Assert.assertEquals(CovarianceMethod.CALCULATED,  file.getMetadataObject1().getCovarianceMethod());
-	     Assert.assertEquals(Maneuvrable.YES,              file.getMetadataObject1().getManeuverable());
-	     Assert.assertEquals(CelestialBodyFrame.EME2000,   file.getMetadataObject1().getRefFrame().asCelestialBodyFrame());
-	     Assert.assertEquals("UTC",                        file.getMetadataObject1().getTimeSystem().name());
-	     
-	     
-	     // Check data block
-	     // State vector block
-	     Assert.assertEquals(2570.097065e3,  file.getDataObject1().getStateVectorBlock().getPositionVector().getX(), DISTANCE_PRECISION);
-	     Assert.assertEquals(2244.654904e3,  file.getDataObject1().getStateVectorBlock().getPositionVector().getY(), DISTANCE_PRECISION);
-	     Assert.assertEquals(6281.497978e3,  file.getDataObject1().getStateVectorBlock().getPositionVector().getZ(), DISTANCE_PRECISION);
-	     Assert.assertEquals(4.418769571e3,  file.getDataObject1().getStateVectorBlock().getVelocityVector().getX(), DERIVATION_PRECISION);
-	     Assert.assertEquals(4.833547743e3,  file.getDataObject1().getStateVectorBlock().getVelocityVector().getY(), DERIVATION_PRECISION);
-	     Assert.assertEquals(-3.526774282e3, file.getDataObject1().getStateVectorBlock().getVelocityVector().getZ(), DERIVATION_PRECISION);
-	     // Covariance Matrix block
-	     Assert.assertEquals(4.142e1,  file.getDataObject1().getRTNCovarianceBlock().getCrr(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(-8.579,   file.getDataObject1().getRTNCovarianceBlock().getCtr(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(2.533e3,  file.getDataObject1().getRTNCovarianceBlock().getCtt(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(-2.313e1, file.getDataObject1().getRTNCovarianceBlock().getCnr(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(1.336e1,  file.getDataObject1().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(7.098e1,  file.getDataObject1().getRTNCovarianceBlock().getCnn(), COVARIANCE_DIAG_PRECISION);
-	     
-	     Assert.assertEquals(2.520e-3, file.getDataObject1().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-5.476,   file.getDataObject1().getRTNCovarianceBlock().getCrdott(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(8.626e-4, file.getDataObject1().getRTNCovarianceBlock().getCrdotn(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(5.744e-3, file.getDataObject1().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-	     
-	     Assert.assertEquals(-1.006e-2, file.getDataObject1().getRTNCovarianceBlock().getCtdotr(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(4.041e-3,  file.getDataObject1().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-1.359e-3, file.getDataObject1().getRTNCovarianceBlock().getCtdotn(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-1.502e-5, file.getDataObject1().getRTNCovarianceBlock().getCtdotrdot(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(1.049e-5,  file.getDataObject1().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-	     
-	     Assert.assertEquals(1.053e-3,  file.getDataObject1().getRTNCovarianceBlock().getCndotr(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-3.412e-3, file.getDataObject1().getRTNCovarianceBlock().getCndott(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(1.213e-2,  file.getDataObject1().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-3.004e-6, file.getDataObject1().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-1.091e-6, file.getDataObject1().getRTNCovarianceBlock().getCndottdot(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(5.529e-5,  file.getDataObject1().getRTNCovarianceBlock().getCndotndot(), COVARIANCE_PRECISION);
-	     
-	     // OBJECT2
-	     // Check Relative Metadata Block
-	     Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getScreenVolumeX(),
-	                         file.getRelativeMetadata().getScreenVolumeX(), DISTANCE_PRECISION);
-	     Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativePosition().getZ(),
-	                         file.getRelativeMetadata().getRelativePosition().getZ(), DISTANCE_PRECISION);
-	     Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
-	                         file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-	     Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
-	                         file.getRelativeMetadata().getCollisionProbability(),1e-30);
-	     Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
-	                         file.getRelativeMetadata().getCollisionProbaMethod());
-	     
-	     // Check Metadata Block
-	     Assert.assertEquals("OBJECT2",                    file.getMetadataObject2().getObject());
-	     Assert.assertEquals("30337",                      file.getMetadataObject2().getObjectDesignator());
-	     Assert.assertEquals("SATCAT",                     file.getMetadataObject2().getCatalogName());
-	     Assert.assertEquals("FENGYUN 1C DEB",             file.getMetadataObject2().getObjectName());
-	     Assert.assertEquals("1999-025AA",                 file.getMetadataObject2().getInternationalDes());
-	     Assert.assertEquals("NONE",                       file.getMetadataObject2().getEphemName());
-	     Assert.assertEquals(CovarianceMethod.CALCULATED,  file.getMetadataObject2().getCovarianceMethod());
-	     Assert.assertEquals(Maneuvrable.NO,               file.getMetadataObject2().getManeuverable());
-	     Assert.assertEquals(CelestialBodyFrame.EME2000,   file.getMetadataObject2().getRefFrame().asCelestialBodyFrame());
-	     Assert.assertEquals("UTC",                        file.getMetadataObject2().getTimeSystem().name());
-	
-	     // Check data block
-	     Assert.assertEquals(2569.540800e3,  file.getDataObject2().getStateVectorBlock().getPositionVector().getX(), DISTANCE_PRECISION);
-	     Assert.assertEquals(2245.093614e3,  file.getDataObject2().getStateVectorBlock().getPositionVector().getY(), DISTANCE_PRECISION);
-	     Assert.assertEquals(6281.599946e3,  file.getDataObject2().getStateVectorBlock().getPositionVector().getZ(), DISTANCE_PRECISION);
-	     Assert.assertEquals(-2.888612500e3, file.getDataObject2().getStateVectorBlock().getVelocityVector().getX(), DERIVATION_PRECISION);
-	     Assert.assertEquals(-6.007247516e3, file.getDataObject2().getStateVectorBlock().getVelocityVector().getY(), DERIVATION_PRECISION);
-	     Assert.assertEquals(3.328770172e3,  file.getDataObject2().getStateVectorBlock().getVelocityVector().getZ(), DERIVATION_PRECISION);
-	     // Covariance Matrix block
-	     Assert.assertEquals(1.337e3,   file.getDataObject2().getRTNCovarianceBlock().getCrr(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(-4.806e4,  file.getDataObject2().getRTNCovarianceBlock().getCtr(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(2.492e6,   file.getDataObject2().getRTNCovarianceBlock().getCtt(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(-3.298e1,  file.getDataObject2().getRTNCovarianceBlock().getCnr(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(-7.5888e2, file.getDataObject2().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
-	     Assert.assertEquals(7.105e1,   file.getDataObject2().getRTNCovarianceBlock().getCnn(), COVARIANCE_DIAG_PRECISION);
-	
-	     Assert.assertEquals(2.591e-3,  file.getDataObject2().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-4.152e-2, file.getDataObject2().getRTNCovarianceBlock().getCrdott(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-1.784e-6, file.getDataObject2().getRTNCovarianceBlock().getCrdotn(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(6.886e-5,  file.getDataObject2().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-	     
-	     Assert.assertEquals(-1.016e-2, file.getDataObject2().getRTNCovarianceBlock().getCtdotr(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-1.506e-4, file.getDataObject2().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(1.637e-3,  file.getDataObject2().getRTNCovarianceBlock().getCtdotn(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-2.987e-6, file.getDataObject2().getRTNCovarianceBlock().getCtdotrdot(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(1.059e-5,  file.getDataObject2().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-	     
-	     Assert.assertEquals(4.400e-3,  file.getDataObject2().getRTNCovarianceBlock().getCndotr(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(8.482e-3,  file.getDataObject2().getRTNCovarianceBlock().getCndott(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(8.633e-5,  file.getDataObject2().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-1.903e-6, file.getDataObject2().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(-4.594e-6, file.getDataObject2().getRTNCovarianceBlock().getCndottdot(), COVARIANCE_PRECISION);
-	     Assert.assertEquals(5.178e-5,  file.getDataObject2().getRTNCovarianceBlock().getCndotndot(), COVARIANCE_PRECISION);
-	
-	     // Check relative metadata comments for Object1
-	     ArrayList<String> relativeMetadataComment = new ArrayList<String>();
-	     relativeMetadataComment.add("Relative Metadata/Data");
-	     Assert.assertEquals(relativeMetadataComment, file.getRelativeMetadata().getComment());
-	
-	     // Check metadata comments for Object1
-	     ArrayList<String> MetadataComment = new ArrayList<String>();
-	     MetadataComment.add("Object1 Metadata");
-	     Assert.assertEquals(MetadataComment, file.getMetadataObject1().getComments());
-	
-	     // Check data general comments and OD parameters comments for Object1
-	     ArrayList<String> generalComment = new ArrayList<String>();
-	     generalComment.add("Object1 Data");
-	     Assert.assertEquals(generalComment, file.getDataObject1().getComments());
-	
-	     // Check additional parameters comments Object1
-	     ArrayList<String> addParametersComment = new ArrayList<String>();
-	     addParametersComment.add("Object 1 Additional Parameters");
-	     Assert.assertEquals(addParametersComment, file.getDataObject1().getAdditionalParametersBlock().getComments());
-	
-	     // Check state vector comments Object1
-	     ArrayList<String> stateVectorComment = new ArrayList<String>();
-	     stateVectorComment.add("Object1 State Vector");
-	     Assert.assertEquals(stateVectorComment, file.getDataObject1().getStateVectorBlock().getComments());
-	
-	     // Check RTN covariance comments Object1
-	     ArrayList<String> RTNComment = new ArrayList<String>();
-	     RTNComment.add("Object1 Covariance in the RTN Coordinate Frame");
-	     Assert.assertEquals(RTNComment, file.getDataObject1().getRTNCovarianceBlock().getComments());
-	     
-	     
-	     // Check general comments Object2
-	     ArrayList<String> generalCommentObj2AddParam = new ArrayList<String>();
-	     generalCommentObj2AddParam.add("Object2 Additional Parameters");
-	     generalCommentObj2AddParam.add("Apogee Altitude=768 km, Perigee Altitude=414 km, Inclination=98.8 deg");
-	     Assert.assertEquals(generalCommentObj2AddParam.toString(), file.getDataObject2().getAdditionalParametersBlock().getComments().toString());
-	
+        
 	}
 
 }

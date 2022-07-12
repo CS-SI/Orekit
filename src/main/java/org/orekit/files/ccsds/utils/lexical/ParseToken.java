@@ -407,7 +407,19 @@ public class ParseToken {
             }
             return true;
         } catch (NumberFormatException nfe) {
-            throw generateException(nfe);
+            try {
+                if (type == TokenType.ENTRY) {
+                    final String[] fields = SPACE.split(getRawContent());
+                    final int[] integers = new int[fields.length];
+                    for (int i = 0; i < fields.length; ++i) {
+                        integers[i] = Integer.parseInt(fields[i]);
+                    }
+                    consumer.accept(integers);
+                }
+                return true;
+            } catch (NumberFormatException nfe1) {
+                throw generateException(nfe);
+            }
         }
     }
 

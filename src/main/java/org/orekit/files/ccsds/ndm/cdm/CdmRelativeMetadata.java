@@ -47,6 +47,10 @@ public class CdmRelativeMetadata {
     /** Norm of relative velocity vector at TCA. */
     private double relativeSpeed;
 
+    /** The length of the relative position vector, normalized to one-sigma dispersions of the combined error covariance
+     * in the direction of the relative position vector. */
+    private double mahalanobisDistance;
+
     /** The R component of Object2’s position relative to Object1’s position in the Radial/Transverse/Normal coordinate frame. */
     private double relativePositionR;
 
@@ -71,11 +75,14 @@ public class CdmRelativeMetadata {
     /** The stop time in UTC of the screening period for the conjunction assessment. */
     private AbsoluteDate stopScreenPeriod;
 
-    /** Name of the Object1 centered reference frame in which the screening volume data are given. */
-    private ScreenVolumeFrame screenVolumeFrame;
-
     /** Shape of the screening volume. */
     private ScreenVolumeShape screenVolumeShape;
+
+    /** Shape of the screening volume. */
+    private double screenVolumeRadius;
+
+    /** Name of the Object1 centered reference frame in which the screening volume data are given. */
+    private ScreenVolumeFrame screenVolumeFrame;
 
     /** The R or T (depending on if RTN or TVN is selected) component size of the screening volume in the SCREEN_VOLUME_FRAME. */
     private double screenVolumeX;
@@ -122,6 +129,21 @@ public class CdmRelativeMetadata {
     /** The Space environment fragmentation model used. */
     private String sefiFragmentationModel;
 
+    /** The collision probability screening threshold used to identify this conjunction. */
+    private double screenPcThreshold;
+
+    /** An array of 1 to n elements indicating the percentile(s) for which estimates of the collision probability are provided in the
+     * COLLISION_PROBABILITY variable. */
+    private int[] collisionPercentile;
+
+    /** ID of previous CDM issued for event identified by CONJUNCTION_ID. */
+    private String previousMessageId;
+
+    /** UTC epoch of the previous CDM issued for the event identified by CONJUNCTION_ID. */
+    private AbsoluteDate previousMessageEpoch;
+
+    /** Scheduled UTC epoch of the next CDM associated with the event identified by CONJUNCTION_ID. */
+    private AbsoluteDate nextMessageEpoch;
 
     /** Simple constructor.
      */
@@ -138,11 +160,18 @@ public class CdmRelativeMetadata {
         this.relativeVelocityN    = Double.NaN;
 
         this.approachAngle        = Double.NaN;
+        this.screenVolumeRadius   = Double.NaN;
+        this.screenPcThreshold    = Double.NaN;
+        this.mahalanobisDistance  = Double.NaN;
+
 
         this.screenVolumeX        = Double.NaN;
         this.screenVolumeY        = Double.NaN;
         this.screenVolumeZ        = Double.NaN;
         this.collisionProbability = Double.NaN;
+        this.maxCollisionProbability  = Double.NaN;
+        this.sefiCollisionProbability = Double.NaN;
+
     }
 
     /** Check is all mandatory entries have been initialized.
@@ -150,6 +179,7 @@ public class CdmRelativeMetadata {
     public void validate() {
         checkNotNull(tca,            CdmRelativeMetadataKey.TCA);
         checkNotNull(missDistance,   CdmRelativeMetadataKey.MISS_DISTANCE);
+        checkScreenVolumeConditions();
     }
 
     /**
@@ -594,5 +624,154 @@ public class CdmRelativeMetadata {
      */
     public void setSefiFragmentationModel(final String sefiFragmentationModel) {
         this.sefiFragmentationModel = sefiFragmentationModel;
+    }
+
+    /** Get the Mahalanobis Distance. The length of the relative position vector, normalized to one-sigma dispersions of the combined error covariance
+     * in the direction of the relative position vector.
+     * @return the mahalanobisDistance
+     */
+    public double getMahalanobisDistance() {
+        return mahalanobisDistance;
+    }
+
+    /** Set the Mahalanobis Distance. The length of the relative position vector, normalized to one-sigma dispersions of the combined error covariance
+     * in the direction of the relative position vector.
+     * @param mahalanobisDistance the mahalanobisDistance to set
+     */
+    public void setMahalanobisDistance(final double mahalanobisDistance) {
+        this.mahalanobisDistance = mahalanobisDistance;
+    }
+
+    /**
+     * @return the screenVolumeRadius
+     */
+    public double getScreenVolumeRadius() {
+        return screenVolumeRadius;
+    }
+
+    /**
+     * @param screenVolumeRadius the screenVolumeRadius to set
+     */
+    public void setScreenVolumeRadius(final double screenVolumeRadius) {
+        this.screenVolumeRadius = screenVolumeRadius;
+    }
+
+    /** Get the collision probability screening threshold used to identify this conjunction.
+    * @return the screenPcThreshold
+    */
+    public double getScreenPcThreshold() {
+        return screenPcThreshold;
+    }
+
+    /** Set the collision probability screening threshold used to identify this conjunction.
+    * @param screenPcThreshold the screenPcThreshold to set
+    */
+    public void setScreenPcThreshold(final double screenPcThreshold) {
+        this.screenPcThreshold = screenPcThreshold;
+    }
+
+    public void checkScreenVolumeConditions() {
+
+        if (this.getScreenType() == ScreenType.SHAPE) {
+
+            if (this.getScreenEntryTime() == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_ENTRY_TIME);
+            }
+
+            if (this.getScreenExitTime() == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_EXIT_TIME);
+            }
+
+            if (this.getScreenVolumeShape() == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE);
+            }
+
+            if (this.getScreenVolumeShape() == ScreenVolumeShape.SPHERE) {
+
+                if (this.getScreenVolumeRadius() == Double.NaN) {
+                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS);
+                }
+
+            } else if (this.getScreenVolumeShape() == ScreenVolumeShape.ELLIPSOID || this.getScreenVolumeShape() == ScreenVolumeShape.BOX) {
+
+                if (this.getScreenVolumeFrame() == null) {
+                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME);
+                }
+                if (this.getScreenVolumeX() == Double.NaN) {
+                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_X);
+                }
+                if (this.getScreenVolumeY() == Double.NaN) {
+                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Y);
+                }
+                if (this.getScreenVolumeZ() == Double.NaN) {
+                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Z);
+                }
+            }
+
+        } else if (this.getScreenType() == ScreenType.PC || this.getScreenType() == ScreenType.PC_MAX) {
+
+            if (this.getScreenPcThreshold() == Double.NaN) {
+                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD);
+            }
+        }
+
+    }
+
+    /** Get the array of 1 to n elements indicating the percentile(s) for which estimates of the collision probability are provided in the
+     * COLLISION_PROBABILITY variable.
+     * @return the collisionPercentile
+     */
+    public int[] getCollisionPercentile() {
+        return collisionPercentile;
+    }
+
+    /** Set the array of 1 to n elements indicating the percentile(s) for which estimates of the collision probability are provided in the
+     * COLLISION_PROBABILITY variable.
+     * @param collisionPercentile the collisionPercentile to set
+     */
+    public void setCollisionPercentile(final int[] collisionPercentile) {
+        this.collisionPercentile = collisionPercentile;
+    }
+
+    /** Get the ID of previous CDM issued for event identified by CONJUNCTION_ID.
+     * @return the previousMessageId
+     */
+    public String getPreviousMessageId() {
+        return previousMessageId;
+    }
+
+    /** Set the ID of previous CDM issued for event identified by CONJUNCTION_ID.
+     * @param previousMessageId the previousMessageId to set
+     */
+    public void setPreviousMessageId(final String previousMessageId) {
+        this.previousMessageId = previousMessageId;
+    }
+
+    /** Get the UTC epoch of the previous CDM issued for the event identified by CONJUNCTION_ID.
+     * @return the previousMessageEpoch
+     */
+    public AbsoluteDate getPreviousMessageEpoch() {
+        return previousMessageEpoch;
+    }
+
+    /** Set the UTC epoch of the previous CDM issued for the event identified by CONJUNCTION_ID.
+     * @param previousMessageEpoch the previousMessageEpoch to set
+     */
+    public void setPreviousMessageEpoch(final AbsoluteDate previousMessageEpoch) {
+        this.previousMessageEpoch = previousMessageEpoch;
+    }
+
+    /** Get Scheduled UTC epoch of the next CDM associated with the event identified by CONJUNCTION_ID.
+     * @return the nextMessageEpoch
+     */
+    public AbsoluteDate getNextMessageEpoch() {
+        return nextMessageEpoch;
+    }
+
+    /** Set Scheduled UTC epoch of the next CDM associated with the event identified by CONJUNCTION_ID.
+     * @param nextMessageEpoch the nextMessageEpoch to set
+     */
+    public void setNextMessageEpoch(final AbsoluteDate nextMessageEpoch) {
+        this.nextMessageEpoch = nextMessageEpoch;
     }
 }
