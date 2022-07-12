@@ -128,7 +128,6 @@ public class CdmMetadata extends Metadata {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        super.validate(version);
         // We only check values that are mandatory in a cdm file
         checkNotNull(object,                  CdmMetadataKey.OBJECT);
         checkNotNull(objectDesignator,        CdmMetadataKey.OBJECT_DESIGNATOR);
