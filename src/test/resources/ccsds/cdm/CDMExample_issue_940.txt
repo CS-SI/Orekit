@@ -37,6 +37,9 @@ OBJECT_NAME                   = SATELLITE A
 INTERNATIONAL_DESIGNATOR      = 1997-030E
 EPHEMERIS_NAME                = EPHEMERIS SATELLITE A
 COVARIANCE_METHOD             = CALCULATED
+ODM_MSG_LINK                  = ODM_MSG_35132.txt
+ADM_MSG_LINK                  = ATT_MSG_35132.txt
+OBS_BEFORE_NEXT_MESSAGE       = YES
 COVARIANCE_SOURCE             = HAC Covariance
 MANEUVERABLE                  = YES
 REF_FRAME                     = EME2000
@@ -47,7 +50,7 @@ COMMENT Object1 OD Parameters
 TIME_LASTOB_START             = 2010-03-12T02:14:12.746
 TIME_LASTOB_END               = 2010-03-12T02:14:12.746
 OD_EPOCH                      = 2010-03-12T22:31:12.000
-COMMENT Object1 State Vector                                                                            
+COMMENT Object1 State Vector                                                                         
 X                             = 2570.097065                          [km]
 Y                             = 2244.654904                          [km]
 Z                             = 6281.497978                          [km]

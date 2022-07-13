@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.PocMethodFacade;
 import org.orekit.files.ccsds.definitions.PocMethodType;
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.frames.FramesFactory;
@@ -1133,17 +1134,27 @@ public class CdmParserTest {
 	    Assert.assertEquals("PREVIOUS_MESSAGE_ID", "201113719185-0", file.getRelativeMetadata().getPreviousMessageId());
 	    
 	    // Check PREVIOUS_MESSAGE_EPOCH is correctly read
-	    Assert.assertEquals("OD_EPOCH", new AbsoluteDate(2010, 3, 12, 10, 31, 12, TimeScalesFactory.getUTC()), 
+	    Assert.assertEquals("PREVIOUS_MESSAGE_EPOCH", new AbsoluteDate(2010, 3, 12, 10, 31, 12, TimeScalesFactory.getUTC()), 
 	    		file.getRelativeMetadata().getPreviousMessageEpoch());
 	    
 	    // Check NEXT_MESSAGE_EPOCH is correctly read
-	    Assert.assertEquals("OD_EPOCH", new AbsoluteDate(2010, 3, 13, 10, 31, 12, TimeScalesFactory.getUTC()), 
+	    Assert.assertEquals("NEXT_MESSAGE_EPOCH", new AbsoluteDate(2010, 3, 13, 10, 31, 12, TimeScalesFactory.getUTC()), 
 	    		file.getRelativeMetadata().getNextMessageEpoch());
 
 	    
 	    // Tests additional CDM Metadata keys
 	    
 	    
+	    
+	    // Check ODM_MSG_LINK is correctly read
+	    Assert.assertEquals("ODM_MSG_LINK", "ODM_MSG_35132.txt", file.getMetadataObject1().getOdmMsgLink());
+	    
+	 	// Check ADM_MSG_LINK is correctly read
+	    Assert.assertEquals("ADM_MSG_LINK", "ATT_MSG_35132.txt", file.getMetadataObject1().getAdmMsgLink());   
+	    
+	 	// Check OBS_BEFORE_NEXT_MESSAGE is correctly read
+	    Assert.assertEquals("OBS_BEFORE_NEXT_MESSAGE", YesNoUnknown.YES, file.getMetadataObject1().getObsBeforeNextMessage());  
+
 	    // Check COVARIANCE_SOURCE is correctly read
 	    Assert.assertEquals("COVARIANCE_SOURCE", "HAC Covariance", file.getMetadataObject1().getCovarianceSource());
 	    

@@ -26,6 +26,7 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
@@ -71,8 +72,18 @@ public class CdmMetadata extends Metadata {
     /** Operator email for the space object. */
     private String operatorEmail;
 
+    /** Unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    private String odmMsgLink;
+
+    /** Unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    private String admMsgLink;
+
     /** Unique name of the external ephemeris file used for the object or NONE. */
     private String ephemName;
+
+    /** Flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
+     * specified by CONJUNCTION_ID. */
+    private YesNoUnknown obsBeforeNextMessage;
 
     /** Operator email for the space object. */
     private CovarianceMethod covarianceMethod;
@@ -616,5 +627,49 @@ public class CdmMetadata extends Metadata {
         } else {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
         }
+    }
+
+    /** Get the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @return the odmMsgLink
+     */
+    public String getOdmMsgLink() {
+        return odmMsgLink;
+    }
+
+    /** Set the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @param odmMsgLink the odmMsgLink to set
+     */
+    public void setOdmMsgLink(final String odmMsgLink) {
+        this.odmMsgLink = odmMsgLink;
+    }
+
+    /** Get the unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @return the admMsgLink
+     */
+    public String getAdmMsgLink() {
+        return admMsgLink;
+    }
+
+    /** Set the unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @param admMsgLink the admMsgLink to set
+     */
+    public void setAdmMsgLink(final String admMsgLink) {
+        this.admMsgLink = admMsgLink;
+    }
+
+    /** Get the flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
+     * specified by CONJUNCTION_ID.
+     * @return the obsBeforeNextMessage
+     */
+    public YesNoUnknown getObsBeforeNextMessage() {
+        return obsBeforeNextMessage;
+    }
+
+    /** Set the flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
+     * specified by CONJUNCTION_ID.
+     * @param obsBeforeNextMessage the obsBeforeNextMessage to set
+     */
+    public void setObsBeforeNextMessage(final YesNoUnknown obsBeforeNextMessage) {
+        this.obsBeforeNextMessage = obsBeforeNextMessage;
     }
 }

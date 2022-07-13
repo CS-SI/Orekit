@@ -614,6 +614,17 @@ public class ParseToken {
         return true;
     }
 
+     /** Process the content as free text string.
+     * @param consumer consumer of the string
+     * @return always returns {@code true}
+     */
+    public boolean processAsFreeTextString(final StringConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getRawContent());
+        }
+        return true;
+    }
+
     /** Generate a parse exception for this entry.
      * @param cause underlying cause exception (may be null)
      * @return exception for this entry
