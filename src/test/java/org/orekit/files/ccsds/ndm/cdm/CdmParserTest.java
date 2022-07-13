@@ -1061,8 +1061,10 @@ public class CdmParserTest {
 	    final Cdm file = parser.parseMessage(source);
 
 	    
+	    
 	    // Tests additional CDM Header keys
 
+	    
 	    
 	    // Check CLASSIFICATION is correctly read
 	    Assert.assertEquals("CLASSIFICATION", "\"Operator-proprietary data; secondary distribution not permitted.\"", 
@@ -1071,6 +1073,7 @@ public class CdmParserTest {
 	    
 	    
 	    // Test additional CDM Relative Metadata Keys
+	    
 	    
 	    
 	    // Check CONJUNCTION_ID is correctly read
@@ -1142,6 +1145,7 @@ public class CdmParserTest {
 	    		file.getRelativeMetadata().getNextMessageEpoch());
 
 	    
+	    
 	    // Tests additional CDM Metadata keys
 	    
 	    
@@ -1164,10 +1168,87 @@ public class CdmParserTest {
 	    // Check ALT_COV_REF_FRAME is correctly read
 	    Assert.assertEquals("ALT_COV_REF_FRAME", "EME2000", file.getMetadataObject1().getAltCovRefFrame().getName());
 	    
+	    
+	    
+	    // CDM OD Parameters
+	    
+	    
+	    
 	    // Check OD_EPOCH is correctly read
 	    Assert.assertEquals("OD_EPOCH", new AbsoluteDate(2010, 3, 12, 22, 31, 12, TimeScalesFactory.getUTC()), 
 	    		file.getDataObject1().getODParametersBlock().getOdEpoch());
 	    
+	    
+	    
+	    // CDM Additional Parameters
+	    
+	    
+	    
+	    // Check AREA_PC_MIN is correctly read
+	    Assert.assertEquals(5.0, file.getDataObject1().getAdditionalParametersBlock().getAreaPCMin(), 0.0);
+	    
+	    // Check AREA_PC_MAX is correctly read
+	    Assert.assertEquals(5.4, file.getDataObject1().getAdditionalParametersBlock().getAreaPCMax(), 0.0);
+	    
+	    // Check OEB_PARENT_FRAME is correctly read
+	    Assert.assertEquals("OEB_PARENT_FRAME", "OEB_YAW", file.getDataObject1().getAdditionalParametersBlock().getOebParentFrame().getName());
+	    
+		// Check OEB_PARENT_FRAME_EPOCH is correctly read
+	    Assert.assertEquals("OEB_PARENT_FRAME_EPOCH", new AbsoluteDate(2010, 3, 12, 22, 31, 12, TimeScalesFactory.getUTC()), 
+	    		file.getDataObject1().getAdditionalParametersBlock().getOebParentFrameEpoch());
+	    
+	    // Check OEB_Q1 is correctly read
+	    Assert.assertEquals(0.03123, file.getDataObject1().getAdditionalParametersBlock().getOebQ().getQ1(), 0.0);  
+	    
+	    // Check OEB_Q2 is correctly read
+	    Assert.assertEquals(0.78543, file.getDataObject1().getAdditionalParametersBlock().getOebQ().getQ2(), 0.0);  	    
+	    
+	    // Check OEB_Q3 is correctly read
+	    Assert.assertEquals(0.39158, file.getDataObject1().getAdditionalParametersBlock().getOebQ().getQ3(), 0.0);  	    
+
+	    // Check OEB_QC is correctly read
+	    Assert.assertEquals(0.47832, file.getDataObject1().getAdditionalParametersBlock().getOebQ().getQ0(), 0.0); 
+	    
+	    // Check OEB_MAX is correctly read
+	    Assert.assertEquals(2.0, file.getDataObject1().getAdditionalParametersBlock().getOebMax(), 0.0); 
+	    
+	    // Check OEB_MED is correctly read
+	    Assert.assertEquals(1.0, file.getDataObject1().getAdditionalParametersBlock().getOebInt(), 0.0); 
+	    
+	    // Check OEB_MIN is correctly read
+	    Assert.assertEquals(0.5, file.getDataObject1().getAdditionalParametersBlock().getOebMin(), 0.0); 
+	    
+	    // Check AREA_ALONG_OEB_MAX is correctly read
+	    Assert.assertEquals(0.15, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongMax(), 0.0); 	    
+	    
+	    // Check AREA_ALONG_OEB_MED is correctly read
+	    Assert.assertEquals(0.3, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongInt(), 0.0); 
+	    
+	    // Check AREA_ALONG_OEB_MIN is correctly read
+	    Assert.assertEquals(0.5, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongMin(), 0.0); 
+
+	    
+	    
+	    
+	    
+	    
+	    // Check HBR is correctly read
+	    Assert.assertEquals(2.5, file.getDataObject1().getAdditionalParametersBlock().getHbr(), 0.0); 	    
+
+	    // Check APOAPSIS_HEIGHT is correctly read
+	    Assert.assertEquals(800000, file.getDataObject1().getAdditionalParametersBlock().getApoapsisAltitude(), 0.0); 	
+	  
+	    // Check PERIAPSIS_HEIGHT is correctly read
+	    Assert.assertEquals(750000, file.getDataObject1().getAdditionalParametersBlock().getPeriapsissAltitude(), 0.0); 
+	    
+	    // Check INCLINATION is correctly read
+	    Assert.assertEquals(FastMath.toRadians(89.0), file.getDataObject1().getAdditionalParametersBlock().getInclination(), 0.0);    
+	    
+	    // Check COV_CONFIDENCE is correctly read
+	    Assert.assertEquals(1.0, file.getDataObject1().getAdditionalParametersBlock().getCovConfidence(), 0.0);
+
+	    // Check COV_CONFIDENCE_METHOD is correctly read
+	    Assert.assertEquals("COV_CONFIDENCE_METHOD", "Wald test", file.getDataObject1().getAdditionalParametersBlock().getCovConfidenceMethod());
 	    
 	    
 	    

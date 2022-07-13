@@ -579,6 +579,7 @@ public class CdmMetadata extends Metadata {
      * @param covarianceSource the covarianceSource to set
      */
     public void setCovarianceSource(final String covarianceSource) {
+        refuseFurtherComments();
         this.covarianceSource = covarianceSource;
     }
 
@@ -593,6 +594,7 @@ public class CdmMetadata extends Metadata {
      * @param altCovType the altCovType to set
      */
     public void setAltCovType(final AltCovarianceType altCovType) {
+        refuseFurtherComments();
         this.altCovType = altCovType;
     }
 
@@ -640,6 +642,7 @@ public class CdmMetadata extends Metadata {
      * @param odmMsgLink the odmMsgLink to set
      */
     public void setOdmMsgLink(final String odmMsgLink) {
+        refuseFurtherComments();
         this.odmMsgLink = odmMsgLink;
     }
 
@@ -654,6 +657,7 @@ public class CdmMetadata extends Metadata {
      * @param admMsgLink the admMsgLink to set
      */
     public void setAdmMsgLink(final String admMsgLink) {
+        refuseFurtherComments();
         this.admMsgLink = admMsgLink;
     }
 
@@ -670,6 +674,7 @@ public class CdmMetadata extends Metadata {
      * @param obsBeforeNextMessage the obsBeforeNextMessage to set
      */
     public void setObsBeforeNextMessage(final YesNoUnknown obsBeforeNextMessage) {
+        refuseFurtherComments();
         this.obsBeforeNextMessage = obsBeforeNextMessage;
     }
 }

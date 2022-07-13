@@ -50,6 +50,28 @@ COMMENT Object1 OD Parameters
 TIME_LASTOB_START             = 2010-03-12T02:14:12.746
 TIME_LASTOB_END               = 2010-03-12T02:14:12.746
 OD_EPOCH                      = 2010-03-12T22:31:12.000
+COMMENT Object1 Additional Parameters
+AREA_PC                       = 5.2                                  [m**2]
+AREA_PC_MIN                   = 5.0                                  [m**2]
+AREA_PC_MAX                   = 5.4                                  [m**2]
+OEB_PARENT_FRAME              = OEB_YAW
+OEB_PARENT_FRAME_EPOCH        = 2010-03-12T22:31:12.000
+OEB_Q1                        = 0.03123
+OEB_Q2                        = 0.78543
+OEB_Q3                        = 0.39158
+OEB_QC                        = 0.47832
+OEB_MAX                       = 2.0                                  [m]
+OEB_INT                       = 1.0                                  [m]
+OEB_MIN                       = 0.5                                  [m]
+AREA_ALONG_OEB_MAX            = 0.15                                 [m**2]
+AREA_ALONG_OEB_INT            = 0.3                                  [m**2]
+AREA_ALONG_OEB_MIN            = 0.5                                  [m**2]
+HBR                           = 2.5                                  [m]
+APOAPSIS_ALTITUDE             = 800                                  [km]
+PERIAPSIS_ALTITUDE            = 750                                  [km]
+INCLINATION                   = 89.0                                 [deg]
+COV_CONFIDENCE                = 1.0
+COV_CONFIDENCE_METHOD         = Wald test
 COMMENT Object1 State Vector                                                                         
 X                             = 2570.097065                          [km]
 Y                             = 2244.654904                          [km]
