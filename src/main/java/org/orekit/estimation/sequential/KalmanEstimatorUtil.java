@@ -16,8 +16,14 @@
  */
 package org.orekit.estimation.sequential;
 
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -32,6 +38,43 @@ public class KalmanEstimatorUtil {
      * the compiler from generating one automatically.</p>
      */
     private KalmanEstimatorUtil() {
+    }
+
+    /** Decorate an observed measurement.
+     * <p>
+     * The "physical" measurement noise matrix is the covariance matrix of the measurement.
+     * Normalizing it consists in applying the following equation: Rn[i,j] =  R[i,j]/σ[i]/σ[j]
+     * Thus the normalized measurement noise matrix is the matrix of the correlation coefficients
+     * between the different components of the measurement.
+     * </p>
+     * @param observedMeasurement the measurement
+     * @param referenceDate reference date
+     * @return decorated measurements
+     */
+    public static MeasurementDecorator decorate(final ObservedMeasurement<?> observedMeasurement,
+                                                final AbsoluteDate referenceDate) {
+
+        // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
+        // of the measurement on its non-diagonal elements.
+        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
+        // Normalizing it leaves us with the matrix of the correlation coefficients
+        final RealMatrix covariance;
+        if (observedMeasurement instanceof PV) {
+            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final PV pv = (PV) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
+        } else if (observedMeasurement instanceof Position) {
+            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final Position position = (Position) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());
+        } else {
+            // For other measurements we do not have a covariance matrix.
+            // Thus the correlation coefficients matrix is an identity matrix.
+            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
+        }
+
+        return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
+
     }
 
     /** Check dimension.
