@@ -37,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
  */
 public class EskfMeasurementHandler implements OrekitStepHandler {
 
-    /** Least squares model. */
+    /** ESKF model. */
     private final SemiAnalyticalKalmanModel model;
 
     /** Extended Kalman Filter. */

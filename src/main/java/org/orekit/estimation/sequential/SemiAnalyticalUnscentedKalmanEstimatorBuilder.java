@@ -18,19 +18,16 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
-import org.hipparchus.util.MerweUnscentedTransform;
 import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for an Unscented Semi-analytical Kalman filter estimator.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
  */
-
 public class SemiAnalyticalUnscentedKalmanEstimatorBuilder {
 
     /** Decomposer to use for the correction phase. */
@@ -53,24 +50,26 @@ public class SemiAnalyticalUnscentedKalmanEstimatorBuilder {
 
     /** Default constructor.
      *  Set an Unscented Semi-analytical Kalman filter.
-     *  By default, a {@link MerweUnscentedTransform} provider is used. It considers that only the orbital parameters are estimated.
-     *  It is possible to override the default configuration by using {@link #unscentedTransformProvider(UnscentedTransformProvider)}.
      */
-
     public SemiAnalyticalUnscentedKalmanEstimatorBuilder() {
         this.decomposer                      = new QRDecomposer(1.0e-15);
         this.propagatorBuilder               = null;
         this.estimatedMeasurementsParameters = new ParameterDriversList();
         this.processNoiseMatrixProvider      = null;
         this.measurementProcessNoiseMatrix   = null;
-        this.utProvider                      = new MerweUnscentedTransform(6);
+        this.utProvider                      = null;
     }
 
     /** Construct a {@link SemiAnalyticalUnscentedKalmanEstimator} from the data in this builder.
      * <p>
-     * Before this method is called, {@link #addPropagationConfiguration(propagatorBuilder,
+     * Before this method is called, {@link #addPropagationConfiguration(DSSTPropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
+     * <p>
+     * In addition, the {@link #unscentedTransformProvider(UnscentedTransformProvider)
+     * unscentedTransformProvider()} must be called to configure the unscented transform
+     * provider use during the estimation process, otherwise configuration is
+     * incomplete and an exception will be raised.
      * </p>
      * @return a new {@link SemiAnalyticalUnscentedKalmanEstimator}.
      */
@@ -78,30 +77,12 @@ public class SemiAnalyticalUnscentedKalmanEstimatorBuilder {
         if (propagatorBuilder == null) {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
-     // Number of estimated parameters
-        int columns = 0;
-        for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                columns++;
-            }
+        if (utProvider == null) {
+            throw new OrekitException(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED);
         }
-        for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                columns++;
-            }
-        }
-
-        columns = columns + estimatedMeasurementsParameters.getNbParams();
-
-        // Check if the number of the selected parameters for the estimation (Orbital + Propagation + Measurement)
-        // is equal to the dimension of the state initialized in the unscented transform provider.
-        // If not, re-initialize the unscented transform with the appropriate dimension.
-        if (columns != (utProvider.getWc().getDimension() - 1) / 2) {
-            this.utProvider = new MerweUnscentedTransform(columns);
-        }
-
         return new SemiAnalyticalUnscentedKalmanEstimator(decomposer, propagatorBuilder, processNoiseMatrixProvider,
-                                                 estimatedMeasurementsParameters, measurementProcessNoiseMatrix, utProvider);
+                                                          estimatedMeasurementsParameters, measurementProcessNoiseMatrix,
+                                                          utProvider);
     }
 
     /** Configure the matrix decomposer.
@@ -132,8 +113,8 @@ public class SemiAnalyticalUnscentedKalmanEstimatorBuilder {
      * @return this object.
      */
     public SemiAnalyticalUnscentedKalmanEstimatorBuilder addPropagationConfiguration(final DSSTPropagatorBuilder builder,
-                                                                            final CovarianceMatrixProvider provider) {
-        propagatorBuilder      = builder;
+                                                                                     final CovarianceMatrixProvider provider) {
+        propagatorBuilder          = builder;
         processNoiseMatrixProvider = provider;
         return this;
     }
@@ -147,10 +128,10 @@ public class SemiAnalyticalUnscentedKalmanEstimatorBuilder {
      * @return this object.
      */
     public SemiAnalyticalUnscentedKalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams,
-                                                                                final CovarianceMatrixProvider provider) {
+                                                                                         final CovarianceMatrixProvider provider) {
         estimatedMeasurementsParameters = estimatedMeasurementsParams;
         measurementProcessNoiseMatrix   = provider;
         return this;
     }
-}
 
+}

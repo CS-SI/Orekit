@@ -27,8 +27,6 @@ import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -38,21 +36,17 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /**
  * Implementation of an Unscented Semi-analytical Kalman filter (USKF) to perform orbit determination.
  * <p>
- * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
- * or {@link DSSTPropagator} .
+ * The filter uses a {@link DSSTPropagatorBuilder}.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
  *   <li><b>Orbital parameters</b>:The position and velocity of the spacecraft, or, more generally, its orbit.<br>
  *       These parameters are retrieved from the reference trajectory propagator builder when the filter is initialized.</li>
- *   <li><b>Propagation parameters</b>: Some parameters modelling physical processes (SRP or drag coefficients etc...).<br>
+ *   <li><b>Propagation parameters</b>: Some parameters modeling physical processes (SRP or drag coefficients etc...).<br>
  *       They are also retrieved from the propagator builder during the initialization phase.</li>
  *   <li><b>Measurements parameters</b>: Parameters related to measurements (station biases, positions etc...).<br>
  *       They are passed down to the filter in its constructor.</li>
  * </ol>
- * <p>
- * The total number of estimated parameters is m, the size of the state vector.
- * </p>
  * <p>
  * The Kalman filter implementation used is provided by the underlying mathematical library Hipparchus.
  * All the variables seen by Hipparchus (states, covariances...) are normalized
@@ -68,7 +62,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class SemiAnalyticalUnscentedKalmanEstimator {
 
     /** Builders for orbit propagators. */
-    private OrbitDeterminationPropagatorBuilder propagatorBuilder;
+    private DSSTPropagatorBuilder propagatorBuilder;
 
     /** Unscented Kalman filter process model. */
     private final SemiAnalyticalUnscentedKalmanModel processModel;
@@ -87,22 +81,25 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      * @param utProvider provider for the unscented transform
      */
-
     SemiAnalyticalUnscentedKalmanEstimator(final MatrixDecomposer decomposer,
-            final DSSTPropagatorBuilder propagatorBuilder,
-            final CovarianceMatrixProvider processNoiseMatricesProvider,
-            final ParameterDriversList estimatedMeasurementParameters,
-            final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-            final UnscentedTransformProvider utProvider) {
+                                           final DSSTPropagatorBuilder propagatorBuilder,
+                                           final CovarianceMatrixProvider processNoiseMatricesProvider,
+                                           final ParameterDriversList estimatedMeasurementParameters,
+                                           final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                                           final UnscentedTransformProvider utProvider) {
 
         this.propagatorBuilder = propagatorBuilder;
         this.observer          = null;
-        this.processModel      = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
-                                                          estimatedMeasurementParameters, measurementProcessNoiseMatrix);
+
+        // Build the process model and measurement model
+        this.processModel = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
+                                                                   estimatedMeasurementParameters, measurementProcessNoiseMatrix);
+
+        // Unscented Kalman Filter of Hipparchus
         this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate(), utProvider);
 
-
     }
+
     /** Set the observer.
      * @param observer the observer
      */
@@ -178,6 +175,7 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
     public ParameterDriversList getEstimatedMeasurementsParameters() {
         return processModel.getEstimatedMeasurementsParameters();
     }
+
     /** Process a single measurement.
      * <p>
      * Update the filter with the new measurement by calling the estimate method.
@@ -193,5 +191,6 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
             throw new OrekitException(mrte);
         }
     }
+
 }
 
