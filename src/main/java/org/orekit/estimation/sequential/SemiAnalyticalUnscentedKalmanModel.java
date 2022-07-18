@@ -120,6 +120,9 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     /** Propagators for the reference trajectories, up to current date. */
     private DSSTPropagator dsstPropagator;
 
+    /** Short period terms for the nominal mean spacecraft state. */
+    private RealVector shortPeriodicTerms;
+
     /** Unscented Kalman process model constructor (package private).
      * @param propagatorBuilder propagators builders used to evaluate the orbits.
      * @param covarianceMatrixProvider provider for covariance matrix
@@ -317,7 +320,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         for (int k = 0; k < sigmaPoints.length; ++k) {
 
             // Calculate the predicted osculating elements for the current mean state
-            final RealVector osculating = computeOsculatingElements(sigmaPoints[k], nominalMeanSpacecraftState);
+            final RealVector osculating = computeOsculatingElements(sigmaPoints[k], nominalMeanSpacecraftState, shortPeriodicTerms);
             final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                     currentDate, builder.getMu(), builder.getFrame());
 
@@ -365,7 +368,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         predictedFilterCorrection = predictedState;
 
         // Predicted measurement
-        final RealVector osculating = computeOsculatingElements(predictedFilterCorrection, nominalMeanSpacecraftState);
+        final RealVector osculating = computeOsculatingElements(predictedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
         final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                 currentDate, builder.getMu(), builder.getFrame());
         predictedSpacecraftState = new SpacecraftState(osculatingOrbit);
@@ -407,7 +410,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Update the previous nominal mean spacecraft state
         // Calculate the corrected osculating elements
-        final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState);
+        final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
         final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, builder.getPositionAngle(),
                                                                 currentDate, builder.getMu(), builder.getFrame());
 
@@ -543,6 +546,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
      */
     public void updateNominalSpacecraftState(final SpacecraftState nominal) {
         this.nominalMeanSpacecraftState = nominal;
+        // Short period terms
+        shortPeriodicTerms = new ArrayRealVector(dsstPropagator.getShortPeriodTermsValue(nominalMeanSpacecraftState));
         // Update the builder with the nominal mean elements orbit
         builder.resetOrbit(nominal.getOrbit(), PropagationType.MEAN);
     }
@@ -615,15 +620,15 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     /** Compute the predicted osculating elements.
      * @param filterCorrection physical kalman filter correction
      * @param meanState mean spacecraft state
+     * @param shortPeriodTerms short period terms for the given mean state
      * @return the predicted osculating element
      */
-    private RealVector computeOsculatingElements(final RealVector filterCorrection, final SpacecraftState meanState) {
+    private RealVector computeOsculatingElements(final RealVector filterCorrection,
+                                                 final SpacecraftState meanState,
+                                                 final RealVector shortPeriodTerms) {
 
         // Convert the input predicted mean state to a SpacecraftState
         final RealVector stateVector = toRealVector(meanState);
-
-        // Short periodic terms
-        final RealVector shortPeriodTerms = new ArrayRealVector(dsstPropagator.getShortPeriodTermsValue(meanState));
 
         // Return
         return stateVector.add(filterCorrection).add(shortPeriodTerms);
