@@ -122,6 +122,11 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
     }
 
     /** Get the "physical" estimated state (i.e. not normalized)
+     * <p>
+     * For the Unscented Semi-analytical Kalman Filter
+     * it corresponds to the corrected filter correction.
+     * In other words, it doesn't represent an orbital state.
+     * </p>
      * @return the "physical" estimated state
      */
     public RealVector getPhysicalEstimatedState() {

@@ -252,21 +252,12 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         this.observer = observer;
     }
 
-    /** Get the orbit type used during the estimation process.
-     * @return the orbit type
-     */
-    public OrbitType getOrbitType() {
-        return orbitType;
-    }
-
-    /** Get the position angle type used during the estimation process.
-     * @return the position angle type
-     */
-    public PositionAngle getAngleType() {
-        return angleType;
-    }
-
     /** Get the current corrected estimate.
+     * <p>
+     * For the Unscented Semi-analytical Kalman Filter
+     * it corresponds to the corrected filter correction.
+     * In other words, it doesn't represent an orbital state.
+     * </p>
      * @return current corrected estimate
      */
     public ProcessEstimate getEstimate() {
@@ -452,13 +443,21 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         return estimatedMeasurementsParameters;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Predicted state is osculating.
+     * </p>
+     */
     @Override
     public SpacecraftState[] getPredictedSpacecraftStates() {
         return new SpacecraftState[] {predictedSpacecraftState};
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Corrected state is osculating.
+     * </p>
+     */
     @Override
     public SpacecraftState[] getCorrectedSpacecraftStates() {
         return new SpacecraftState[] {correctedSpacecraftState};
