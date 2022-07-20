@@ -177,6 +177,11 @@ distribution of the state. Therefore, the Unscented Kalman Filter is an interest
 
 ![unscented kalman filter overview class diagram](../images/design/unscented-kalman-filter-diagram.png)
 
+Like for the Extended Kalman Filter, Orekit implements a semi-analytical version of the Unscented Kalman Filter
+named Unscented Semi-analytical Kalman Filter
+
+![unscented semi-analytical kalman filter overview class diagram](../images/design/unscented-semi-analytical-kalman-filter-diagram.png)
+
 ### Estimated parameters
 
 Users can decide what they want to estimate. The 6 orbital parameters are typically always estimated and are selected
