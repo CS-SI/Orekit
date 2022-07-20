@@ -47,7 +47,7 @@ public enum XmlSubStructureKey {
     stateVector((token, parser) -> parser.manageStateVectorSection(token.getType() == TokenType.START)),
 
     /** Covariance Matrix section. */
-    covarianceMatrix((token, parser) -> parser.manageCovMatrixSection(token.getType() == TokenType.START));
+    covarianceMatrix((token, parser) -> parser.manageXmlGeneralCovarianceSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -157,6 +157,30 @@ id="CCSDS_CDM_VERS" version="1.0">
 <CNDOT_TDOT units="m**2/s**2">-1.091E-06</CNDOT_TDOT>
 <CNDOT_NDOT units="m**2/s**2">5.529E-05</CNDOT_NDOT>
 </covarianceMatrix>
+<covarianceMatrix>
+<COMMENT>Object1 Covariance in the XYZ EME2000 Coordinate Frame </COMMENT>
+<CX_X units="m**2">0.1</CX_X>
+<CY_X units="m**2">0.2</CY_X>
+<CY_Y units="m**2">0.3</CY_Y>
+<CZ_X units="m**2">0.4</CZ_X>
+<CZ_Y units="m**2">0.5</CZ_Y>
+<CZ_Z units="m**2">0.6</CZ_Z>
+<CXDOT_X units="m**2/s">0.7</CXDOT_X>
+<CXDOT_Y units="m**2/s">0.8</CXDOT_Y>
+<CXDOT_Z units="m**2/s">0.9</CXDOT_Z>
+<CXDOT_XDOT units="m**2/s**2">0.01</CXDOT_XDOT>
+<CYDOT_X units="m**2/s">0.02</CYDOT_X>
+<CYDOT_Y units="m**2/s">0.03</CYDOT_Y>
+<CYDOT_Z units="m**2/s">0.04</CYDOT_Z>
+<CYDOT_XDOT units="m**2/s**2">0.05</CYDOT_XDOT>
+<CYDOT_YDOT units="m**2/s**2">0.06</CYDOT_YDOT>
+<CZDOT_X units="m**2/s">0.07</CZDOT_X>
+<CZDOT_Y units="m**2/s">0.08</CZDOT_Y>
+<CZDOT_Z units="m**2/s">0.09</CZDOT_Z>
+<CZDOT_XDOT units="m**2/s**2">0.001</CZDOT_XDOT>
+<CZDOT_YDOT units="m**2/s**2">0.002</CZDOT_YDOT>
+<CZDOT_ZDOT units="m**2/s**2">0.003</CZDOT_ZDOT>
+</covarianceMatrix>
 </data>
 </segment>
 <segment>
@@ -172,6 +196,7 @@ id="CCSDS_CDM_VERS" version="1.0">
 <COVARIANCE_METHOD>CALCULATED</COVARIANCE_METHOD>
 <MANEUVERABLE>NO</MANEUVERABLE>
 <REF_FRAME>EME2000</REF_FRAME>
+<ALT_COV_TYPE>CSIG3EIGVEC3</ALT_COV_TYPE>
 <GRAVITY_MODEL>EGM-96: 36D 36O</GRAVITY_MODEL>
 <ATMOSPHERIC_MODEL>JACCHIA 70 DCA</ATMOSPHERIC_MODEL>
 <N_BODY_PERTURBATIONS>MOON,SUN</N_BODY_PERTURBATIONS>
@@ -237,6 +262,10 @@ id="CCSDS_CDM_VERS" version="1.0">
 <CNDOT_RDOT units="m**2/s**2">-1.903E-06</CNDOT_RDOT>
 <CNDOT_TDOT units="m**2/s**2">-4.594E-06</CNDOT_TDOT>
 <CNDOT_NDOT units="m**2/s**2">5.178E-05</CNDOT_NDOT>
+</covarianceMatrix>
+<covarianceMatrix>
+<COMMENT>Object2 Covariance in the Sigma / eigenvector format</COMMENT>
+<CSIG3EIGVEC3>1 2 3 4 5 6 7 8 9 10 11 12</CSIG3EIGVEC3>
 </covarianceMatrix>
 </data>
 </segment>

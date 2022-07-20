@@ -1226,11 +1226,6 @@ public class CdmParserTest {
 	    
 	    // Check AREA_ALONG_OEB_MIN is correctly read
 	    Assert.assertEquals(0.5, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongMin(), 0.0); 
-
-	    
-	    
-	    
-	    
 	    
 	    // Check HBR is correctly read
 	    Assert.assertEquals(2.5, file.getDataObject1().getAdditionalParametersBlock().getHbr(), 0.0); 	    
@@ -1251,7 +1246,41 @@ public class CdmParserTest {
 	    Assert.assertEquals("COV_CONFIDENCE_METHOD", "Wald test", file.getDataObject1().getAdditionalParametersBlock().getCovConfidenceMethod());
 	    
 	    
-	    
+	    // XYZ Covariance Matrix block	    
+        Assert.assertEquals(0.1,  file.getDataObject1().getXYZCovarianceBlock().getCxx(), COVARIANCE_DIAG_PRECISION);
+        Assert.assertEquals(0.2,   file.getDataObject1().getXYZCovarianceBlock().getCyx(), COVARIANCE_DIAG_PRECISION);
+        Assert.assertEquals(0.3,  file.getDataObject1().getXYZCovarianceBlock().getCyy(), COVARIANCE_DIAG_PRECISION);
+        Assert.assertEquals(0.4, file.getDataObject1().getXYZCovarianceBlock().getCzx(), COVARIANCE_DIAG_PRECISION);
+        Assert.assertEquals(0.5,  file.getDataObject1().getXYZCovarianceBlock().getCzy(), COVARIANCE_DIAG_PRECISION);
+        Assert.assertEquals(0.6,  file.getDataObject1().getXYZCovarianceBlock().getCzz(), COVARIANCE_DIAG_PRECISION);
+        
+        Assert.assertEquals(0.7, file.getDataObject1().getXYZCovarianceBlock().getCxdotx(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.8,   file.getDataObject1().getXYZCovarianceBlock().getCxdoty(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.9, file.getDataObject1().getXYZCovarianceBlock().getCxdotz(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.01, file.getDataObject1().getXYZCovarianceBlock().getCxdotxdot(), COVARIANCE_PRECISION);
+        
+        Assert.assertEquals(0.02, file.getDataObject1().getXYZCovarianceBlock().getCydotx(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.03,  file.getDataObject1().getXYZCovarianceBlock().getCydoty(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.04, file.getDataObject1().getXYZCovarianceBlock().getCydotz(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.05, file.getDataObject1().getXYZCovarianceBlock().getCydotxdot(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.06,  file.getDataObject1().getXYZCovarianceBlock().getCydotydot(), COVARIANCE_PRECISION);
+        
+        Assert.assertEquals(0.07,  file.getDataObject1().getXYZCovarianceBlock().getCzdotx(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.08, file.getDataObject1().getXYZCovarianceBlock().getCzdoty(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.09,  file.getDataObject1().getXYZCovarianceBlock().getCzdotz(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.001, file.getDataObject1().getXYZCovarianceBlock().getCzdotxdot(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.002, file.getDataObject1().getXYZCovarianceBlock().getCzdotydot(), COVARIANCE_PRECISION);
+        Assert.assertEquals(0.003,  file.getDataObject1().getXYZCovarianceBlock().getCzdotzdot(), COVARIANCE_PRECISION);
+        
+   
+        // OBJECT 2 - Eigenvector covariance block
+        Assert.assertEquals("ALT_COV_TYPE", AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType());       
+        Assert.assertEquals(12,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3().length);
+        for (int i=0; i<12; i++) {
+            Assert.assertEquals(i+1,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3()[i], COVARIANCE_DIAG_PRECISION);
+        }
+        
+        
 	    
 	    // Check the rest of the file against any regressions.
 	   

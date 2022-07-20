@@ -398,7 +398,7 @@ public class ParseToken {
     public boolean processAsIntegerArray(final IntegerArrayConsumer consumer) {
         try {
             if (type == TokenType.ENTRY) {
-                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent());
+                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
                 final int[] integers = new int[fields.length];
                 for (int i = 0; i < fields.length; ++i) {
                     integers[i] = Integer.parseInt(fields[i]);
@@ -407,19 +407,7 @@ public class ParseToken {
             }
             return true;
         } catch (NumberFormatException nfe) {
-            try {
-                if (type == TokenType.ENTRY) {
-                    final String[] fields = SPACE.split(getRawContent());
-                    final int[] integers = new int[fields.length];
-                    for (int i = 0; i < fields.length; ++i) {
-                        integers[i] = Integer.parseInt(fields[i]);
-                    }
-                    consumer.accept(integers);
-                }
-                return true;
-            } catch (NumberFormatException nfe1) {
-                throw generateException(nfe);
-            }
+            throw generateException(nfe);
         }
     }
 
@@ -623,6 +611,26 @@ public class ParseToken {
             consumer.accept(getRawContent());
         }
         return true;
+    }
+
+    /** Process the content as an array of doubles.
+     * @param consumer consumer of the array
+     * @return always returns {@code true}
+     */
+    public boolean processAsDoubleArray(final DoubleArrayConsumer consumer) {
+        try {
+            if (type == TokenType.ENTRY) {
+                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
+                final double[] doubles = new double[fields.length];
+                for (int i = 0; i < fields.length; ++i) {
+                    doubles[i] = Double.parseDouble(fields[i]);
+                }
+                consumer.accept(doubles);
+            }
+            return true;
+        } catch (NumberFormatException nfe) {
+            throw generateException(nfe);
+        }
     }
 
     /** Generate a parse exception for this entry.
@@ -853,4 +861,11 @@ public class ParseToken {
         void accept(List<Unit> value);
     }
 
+        /** Interface representing instance methods that consume double array. */
+    public interface DoubleArrayConsumer {
+        /** Consume an array of doubles.
+         * @param doubles array of doubles
+         */
+        void accept(double[] doubles);
+    }
 }

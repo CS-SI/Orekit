@@ -89,6 +89,12 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** CDM covariance matrix logical block being read. */
     private RTNCovariance covMatrix;
 
+    /** CDM XYZ covariance matrix logical block being read. */
+    private XYZCovariance xyzCovMatrix;
+
+    /** CDM Sigma/Eigenvectors covariance logical block being read. */
+    private SigmaEigenvectorsCovariance sig3eigvec3;
+
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
 
@@ -134,6 +140,8 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         addParameters             = null;
         stateVector               = null;
         covMatrix                 = null;
+        xyzCovMatrix              = null;
+        sig3eigvec3               = null;
         commentsBlock             = null;
         if (fileFormat == FileFormat.XML) {
             structureProcessor = new XmlStructureProcessingState(Cdm.ROOT, this);
@@ -215,6 +223,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         // stateVector and RTNCovariance blocks are 2 mandatory data blocks
         stateVector = new StateVector();
         covMatrix = new RTNCovariance();
+
         // initialize comments block for general data comments
         commentsBlock = new CommentsContainer();
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
@@ -232,8 +241,18 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     public boolean finalizeData() {
         // call at the and of data block for object 1 or 2
         if (metadata != null) {
-            final CdmData data = new CdmData(commentsBlock, odParameters, addParameters,
+
+            CdmData data = new CdmData(commentsBlock, odParameters, addParameters,
                                              stateVector, covMatrix);
+
+            if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.XYZ) {
+                data = new CdmData(commentsBlock, odParameters, addParameters,
+                                             stateVector, covMatrix, xyzCovMatrix);
+            } else if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3) {
+                data = new CdmData(commentsBlock, odParameters, addParameters,
+                                             stateVector, covMatrix, sig3eigvec3);
+            }
+
             data.validate(header.getFormatVersion());
             segments.add(new CdmSegment(metadata, data));
         }
@@ -243,6 +262,8 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         addParameters             = null;
         stateVector               = null;
         covMatrix                 = null;
+        xyzCovMatrix              = null;
+        sig3eigvec3               = null;
         commentsBlock             = null;
         return true;
     }
@@ -319,7 +340,34 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         return true;
     }
 
-    /** Manage covariance matrix section.
+    /** Manage general covariance section in XML file.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageXmlGeneralCovarianceSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
+
+        if (starting) {
+            if (metadata.getAltCovType() == null) {
+                anticipateNext(this::processCovMatrixToken);
+            } else {
+                if (Double.isNaN(covMatrix.getCrr())) {
+                    // First, handle mandatory RTN covariance section
+                    anticipateNext(this::processCovMatrixToken);
+                } else if (metadata.getAltCovType() != null) {
+                    // Second, add the alternate covariance if provided
+                    anticipateNext(this::processAltCovarianceToken);
+                }
+            }
+        } else {
+            anticipateNext(structureProcessor);
+        }
+
+        return true;
+    }
+
+     /** Manage RTN covariance matrix section.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
      * @return always return true
@@ -327,6 +375,17 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     boolean manageCovMatrixSection(final boolean starting) {
         commentsBlock.refuseFurtherComments();
         anticipateNext(starting ? this::processCovMatrixToken : structureProcessor);
+        return true;
+    }
+
+     /** Manage alternate covariance section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageAltCovarianceSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
+        anticipateNext(starting ? this::processAltCovarianceToken : structureProcessor);
         return true;
     }
 
@@ -546,11 +605,58 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      */
     private boolean processCovMatrixToken(final ParseToken token) {
 
-        isDatafinished = true;
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        if (metadata.getAltCovType() == null) {
+            isDatafinished = true;
+            anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        } else {
+            anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processAltCovarianceToken);
+        }
+
         try {
             return token.getName() != null &&
                    RTNCovarianceKey.valueOf(token.getName()).process(token, context, covMatrix);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process alternate covariance data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processAltCovarianceToken(final ParseToken token) {
+
+        // Covariance is provided in XYZ
+        if (metadata.getAltCovType() == AltCovarianceType.XYZ && xyzCovMatrix == null) {
+            xyzCovMatrix = new XYZCovariance(true);
+        }
+        // Covariance is provided in CSIG3EIGVEC3 format
+        if (metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null) {
+            sig3eigvec3 = new SigmaEigenvectorsCovariance(true);
+        }
+
+        isDatafinished = true;
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        try {
+
+            if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.XYZ) {
+
+                return token.getName() != null &&
+                           XYZCovarianceKey.valueOf(token.getName()).process(token, context, xyzCovMatrix);
+
+            } else if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3) {
+
+                return token.getName() != null &&
+                           SigmaEigenvectorsCovarianceKey.valueOf(token.getName()).process(token, context, sig3eigvec3);
+
+            } else {
+
+                // token has not been recognized
+                return false;
+
+            }
+
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
