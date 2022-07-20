@@ -169,6 +169,14 @@ DSST theory within a recursive filter orbit determination, Orekit implements the
 
 ![semi-analytical kalman filter overview class diagram](../images/design/extended-semi-analytical-kalman-filter-diagram.png)
 
+It is also possible to perform orbit determination using an Unscented Kalman Filter.
+The Unscented Kalman Filter should generate a better description of the state-error and measurement-error
+distribution functions relative to the Extended Kalman Filter when those error-distributions
+are non-Gaussian. It uses a set of sample points, also called sigma points, to represent the uncertainty
+distribution of the state. Therefore, the Unscented Kalman Filter is an interesting algorithm to solve nonlinear systems.
+
+![unscented kalman filter overview class diagram](../images/design/unscented-kalman-filter-diagram.png)
+
 ### Estimated parameters
 
 Users can decide what they want to estimate. The 6 orbital parameters are typically always estimated and are selected
