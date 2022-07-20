@@ -16,10 +16,11 @@
  */
 package org.orekit.utils;
 
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.CholeskyDecomposition;
-import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.attitudes.Attitude;
@@ -259,9 +260,13 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             // (i.e. minimize difference between solutions from successive iterations,
             //  in other word try to stay close to initial guess. This is *not* a least-squares solution)
             // see equation 3.12 in Pavlak's thesis
-            final RealMatrix MMt             = M.multiplyTransposed(M);
-            final DecompositionSolver solver = new CholeskyDecomposition(MMt).getSolver();
-            final RealVector dx              = M.transpose().operate(solver.solve(fx));
+            final RealMatrix MMt = M.multiplyTransposed(M);
+            RealVector dx;
+            try {
+                dx = M.transpose().operate(new LUDecomposition(MMt, 0.0).getSolver().solve(fx));
+            } catch (MathIllegalArgumentException e) {
+                dx = M.transpose().operate(new QRDecomposition(MMt, 0.0).getSolver().solve(fx));
+            }
 
             // trajectory update
             updateTrajectory(dx);
