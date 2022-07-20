@@ -1042,9 +1042,10 @@ public class CdmParserTest {
 	public void test_issue_940() {
 	
 		// Files
-	    final String cdm_xml = "/ccsds/cdm/CDMExample_issue_940.xml";
 	    final String cdm_kvn = "/ccsds/cdm/CDMExample_issue_940.txt";
-	    
+	    final String cdm_xml = "/ccsds/cdm/CDMExample_issue_940.xml";
+
+	           
 	    test_issue_940_data(cdm_kvn);
 	    test_issue_940_data(cdm_xml);
 	    
@@ -1281,6 +1282,23 @@ public class CdmParserTest {
         }
         
         
+        
+        // Additional covariance metadata
+        Assert.assertEquals(2.5,  file.getDataObject1().getAdditionalCovMetadataBlock().getDensityForecastUncertainty(), 0.0);
+        Assert.assertEquals(0.5,  file.getDataObject1().getAdditionalCovMetadataBlock().getcScaleFactorMin(), 0.0);
+        Assert.assertEquals(1.0,  file.getDataObject1().getAdditionalCovMetadataBlock().getcScaleFactor(), 0.0);
+        Assert.assertEquals(1.5,  file.getDataObject1().getAdditionalCovMetadataBlock().getcScaleFactorMax(), 0.0);
+        Assert.assertEquals("SCREENING_DATA_SOURCE", "Data source of additional covariance metadata", 
+                file.getDataObject1().getAdditionalCovMetadataBlock().getScreeningDataSource());
+        Assert.assertEquals(3,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition().length);
+        Assert.assertEquals(1.0,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition()[0], 0.0);
+        Assert.assertEquals(2.0,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition()[1], 0.0);
+        Assert.assertEquals(3.0,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition()[2], 0.0);
+        Assert.assertEquals(3,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity().length);
+        Assert.assertEquals(0.1,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[0], 0.0);
+        Assert.assertEquals(0.2,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[1], 0.0);
+        Assert.assertEquals(0.3,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[2], 0.0);
+
 	    
 	    // Check the rest of the file against any regressions.
 	   
