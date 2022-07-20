@@ -24,6 +24,9 @@
       <action dev="bryan" type="add" issue="901">
         Added additional state provider for covariance matrix propagation.
       </action>
+      <action dev="greyskyy" type="add">
+        Added waypoint interpolation of PVCoordinatesProvider.
+      </action>
     </release>
     <release version="11.2" date="2022-06-20"
              description="Version 11.2 is a minor release of Orekit.
