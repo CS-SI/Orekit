@@ -31,10 +31,13 @@ import org.orekit.time.AbsoluteDate;
  * this class when no shifting should be performed (e.g. representing a fixed point on the ground).
  *
  * @author Joe Reed
+ * @since 11.3
  */
 public class ConstantPVCoordinatesProvider implements PVCoordinatesProvider {
+
     /** The position/velocity/acceleration point. */
     private final PVCoordinates pva;
+
     /** The frame in which pva is defined. */
     private final Frame sourceFrame;
 

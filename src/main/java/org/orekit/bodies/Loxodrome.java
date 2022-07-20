@@ -21,12 +21,14 @@ import org.hipparchus.util.MathUtils;
 
 /** Perform calculations on a loxodrome (commonly, a rhumb line) on an ellipsoid.
  * <p>
- * A <a href="https://en.wikipedia.org/wiki/Rhumb_line">loxodrome or rhumb line</a> is an arc on an
- * ellipsoid's surfance that intersects every meridian at the same angle.
+ * A <a href="https://en.wikipedia.org/wiki/Rhumb_line">loxodrome or rhumb line</a>
+ * is an arc on an ellipsoid's surface that intersects every meridian at the same angle.
  *
  * @author Joe Reed
+ * @since 11.3
  */
 public class Loxodrome {
+
     /** Threshold for cos angles being equal. */
     private static final double COS_ANGLE_THRESHOLD = 1e-6;
 
@@ -35,10 +37,13 @@ public class Loxodrome {
 
     /** Reference point for the loxodrome. */
     private final GeodeticPoint point;
+
     /** Azimuth-off-north angle of the loxodrome. */
     private final double azimuth;
+
     /** Reference body. */
     private final OneAxisEllipsoid body;
+
     /** Altitude above the body. */
     private final double altitude;
 
@@ -47,7 +52,7 @@ public class Loxodrome {
      * This method is an equivalent to {@code new Loxodrome(point, azimuth, body, point.getAltitude())}
      *
      * @param point the initial loxodrome point
-     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2pi)})
+     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2pi]})
      * @param body ellipsoid body on which the loxodrome is defined
      */
     public Loxodrome(final GeodeticPoint point, final double azimuth, final OneAxisEllipsoid body) {
@@ -57,40 +62,40 @@ public class Loxodrome {
     /** Constructor building a loxodrome from an initial point and an azimuth-off-local-north heading.
      *
      * @param point the initial loxodrome point
-     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2pi)})
+     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2pi]})
      * @param body ellipsoid body on which the loxodrome is defined
      * @param altitude altitude above the reference body
      */
     public Loxodrome(final GeodeticPoint point, final double azimuth, final OneAxisEllipsoid body,
-            final double altitude) {
-        this.point = point;
-        this.azimuth = azimuth;
-        this.body = body;
+                     final double altitude) {
+        this.point    = point;
+        this.azimuth  = azimuth;
+        this.body     = body;
         this.altitude = altitude;
     }
 
-    /**
+    /** Get the geodetic point defining the loxodrome.
      * @return the geodetic point defining the loxodrome
      */
     public GeodeticPoint getPoint() {
         return this.point;
     }
 
-    /**
+    /** Get the azimuth.
      * @return the azimuth
      */
     public double getAzimuth() {
         return this.azimuth;
     }
 
-    /**
+    /** Get the body on which the loxodrome is defined.
      * @return the body on which the loxodrome is defined
      */
     public OneAxisEllipsoid getBody() {
         return this.body;
     }
 
-    /**
+    /** Get the altitude above the reference body.
      * @return the altitude above the reference body
      */
     public double getAltitude() {
@@ -100,7 +105,7 @@ public class Loxodrome {
     /** Calculate the point at the specified distance from the origin point along the loxodrome.
      *
      * A positive distance follows the line in the azumuth direction (i.e. northward for arcs with azimuth
-     * angles {@code (3pi/2, 2pi)} or {@code [0, pi/2)}). Negative distances travel in the opposite direction along
+     * angles {@code [3pi/2, 2pi]} or {@code [0, pi/2]}). Negative distances travel in the opposite direction along
      * the rhumb line.
      *
      * Distance is computed at the altitude of the origin point.
@@ -114,11 +119,11 @@ public class Loxodrome {
         }
 
         // compute the e sin(lat)^2
-        final double sinLat = FastMath.sin(getPoint().getLatitude());
-        final double eccSinLatSq = getBody().getEccentricitySquared() * sinLat * sinLat;
+        final double sinLat = FastMath.sin(point.getLatitude());
+        final double eccSinLatSq = body.getEccentricitySquared() * sinLat * sinLat;
 
         // compute intermediate values
-        final double t1 = 1. - getBody().getEccentricitySquared();
+        final double t1 = 1. - body.getEccentricitySquared();
         final double t2 = 1. - eccSinLatSq;
         final double t3 = FastMath.sqrt(t2);
 

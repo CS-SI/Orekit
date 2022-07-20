@@ -20,17 +20,24 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 
 /** Loxodrome defined by a start and ending point.
+ *
+ * @author Joe Reed
+ * @since 11.3
  */
 public class LoxodromeArc extends Loxodrome {
+
     /** Threshold for considering latitudes equal, in radians. */
     private static final double LATITUDE_THRESHOLD = 1e-6;
+
     /** Maximum number of iterations used when computing distance between points. */
     private static final int MAX_ITER = 50;
 
     /** Ending point of the arc. */
     private final GeodeticPoint endPoint;
+
     /** Delta longitude, cached, radians. */
     private final double deltaLon;
+
     /** Cached arc distance, meters. */
     private double distance = -1;
 
@@ -49,14 +56,16 @@ public class LoxodromeArc extends Loxodrome {
      * @param body the body on which the loxodrome is defined
      * @param altitude the altitude above the reference body (meters)
      */
-    public LoxodromeArc(final GeodeticPoint point, final GeodeticPoint endPoint, final OneAxisEllipsoid body, final double altitude) {
+    public LoxodromeArc(final GeodeticPoint point, final GeodeticPoint endPoint, final OneAxisEllipsoid body,
+                        final double altitude) {
         super(point, body.azimuthBetweenPoints(point, endPoint), body, altitude);
         this.endPoint = endPoint;
-
-        deltaLon = MathUtils.normalizeAngle(endPoint.getLongitude(), point.getLongitude()) - point.getLongitude();
+        this.deltaLon = MathUtils.normalizeAngle(endPoint.getLongitude(), point.getLongitude()) -
+                        point.getLongitude();
     }
 
-    /** The final point of the arc.
+    /** Get the final point of the arc.
+     *
      * @return the ending point of the arc
      */
     public GeodeticPoint getFinalPoint() {
@@ -73,7 +82,8 @@ public class LoxodromeArc extends Loxodrome {
         }
 
         // compute the e sin(lat)^2
-        final double sinLat = FastMath.sin(getPoint().getLatitude());
+        final double ptLat  = getPoint().getLatitude();
+        final double sinLat = FastMath.sin(ptLat);
         final double eccSinLatSq = getBody().getEccentricitySquared() * sinLat * sinLat;
 
         // compute intermediate values
@@ -85,8 +95,8 @@ public class LoxodromeArc extends Loxodrome {
 
         final double meridianCurve = (semiMajorAxis * t1) / (t2 * t3);
 
-        if (FastMath.abs(endPoint.getLatitude() - getPoint().getLatitude()) < LATITUDE_THRESHOLD) {
-            distance = (semiMajorAxis / t3) * FastMath.abs(FastMath.cos(getPoint().getLatitude()) * deltaLon);
+        if (FastMath.abs(endPoint.getLatitude() - ptLat) < LATITUDE_THRESHOLD) {
+            distance = (semiMajorAxis / t3) * FastMath.abs(FastMath.cos(ptLat) * deltaLon);
         }
         else {
             final double eccSq34 = 0.75 * getBody().getEccentricitySquared();
@@ -94,8 +104,8 @@ public class LoxodromeArc extends Loxodrome {
             final double t6 = 1. / (1. - eccSq34);
             final double t7 = t1 * semiMajorAxis / meridianCurve;
 
-            final double t8 = getPoint().getLatitude() + t6 *
-                (t7 * (endPoint.getLatitude() - getPoint().getLatitude()) + halfEccSq34 * FastMath.sin(getPoint().getLatitude() * 2.));
+            final double t8 = ptLat + t6 *
+                (t7 * (endPoint.getLatitude() - ptLat) + halfEccSq34 * FastMath.sin(ptLat * 2.));
             final double t9 = halfEccSq34 * t6;
 
             double guess = 0;
@@ -110,8 +120,8 @@ public class LoxodromeArc extends Loxodrome {
             }
 
             final double azimuth = FastMath.atan2(deltaLon,
-                getBody().geodeticToIsometricLatitude(lat) - getBody().geodeticToIsometricLatitude(getPoint().getLatitude()));
-            distance = meridianCurve * FastMath.abs((lat - getPoint().getLatitude()) / FastMath.cos(azimuth));
+                getBody().geodeticToIsometricLatitude(lat) - getBody().geodeticToIsometricLatitude(ptLat));
+            distance = meridianCurve * FastMath.abs((lat - ptLat) / FastMath.cos(azimuth));
         }
 
         return distance;

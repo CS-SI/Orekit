@@ -28,19 +28,23 @@ import org.orekit.time.AbsoluteDate;
  * This can be used to describe an aircraft or surface vehicle.
  *
  * @author Joe Reed
+ * @since 11.3
  */
 public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
+
     /** Map of provider instances by transition time. */
     private final TimeSpanMap<PVCoordinatesProvider> pvProvMap;
+
     /** Earliest date at which {@link #getPVCoordinates(AbsoluteDate, Frame)} will return a valid result. */
     private final AbsoluteDate minDate;
+
     /** Latest date at which {@link #getPVCoordinates(AbsoluteDate, Frame)} will return a valid result. */
     private final AbsoluteDate maxDate;
 
     /** Class constructor.
      *
-     * Note the provided {@code map} is used directly. Modification of the map after calling this constructor
-     * may result in undefined behavior.
+     * Note the provided {@code map} is used directly. Modification of the
+     * map after calling this constructor may result in undefined behavior.
      *
      * @param map the map of {@link PVCoordinatesProvider} instances by time.
      */
@@ -50,8 +54,8 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
 
     /** Class constructor.
      *
-     * Note the provided {@code map} is used directly. Modification of the map after calling this constructor
-     * may result in undefined behavior.
+     * Note the provided {@code map} is used directly. Modification of the
+     * map after calling this constructor may result in undefined behavior.
      *
      * @param map the map of {@link PVCoordinatesProvider} instances by time.
      * @param minDate the earliest valid date, {@code null} if always valid
@@ -86,17 +90,23 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
         return pvProvMap.get(date).getPVCoordinates(date, frame);
     }
 
+    /**
+     * Builder class for {@link AggregatedPVCoordinatesProvider}.
+     */
     public static class Builder {
+
         /** Time span map holding the incremental values. */
         private TimeSpanMap<PVCoordinatesProvider> pvProvMap = null;
 
-        /** Create a builder using the {@link InvalidPVProvider} as the initial provider.
+        /**
+         * Create a builder using the {@link InvalidPVProvider} as the initial provider.
          */
         public Builder() {
             this(new InvalidPVProvider());
         }
 
-        /** Create a builder using the provided initial provider.
+        /**
+         * Create a builder using the provided initial provider.
          *
          * @param initialProvider the inital provider
          */
@@ -104,8 +114,9 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
             pvProvMap = new TimeSpanMap<PVCoordinatesProvider>(initialProvider);
         }
 
-        /** Add a {@link PVCoordinatesProvider} to the collection. The provided data is the transition
-         * time, at which this provider will be used.
+        /** Add a {@link PVCoordinatesProvider} to the collection.
+         *
+         * The provided date is the transition time, at which this provider will be used.
          *
          * @param date the transition date
          * @param pvProv the provider
@@ -113,13 +124,16 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
          * @return this builder instance
          * @see TimeSpanMap#addValidAfter(Object, AbsoluteDate, boolean)
          */
-        public Builder addPVProviderAfter(final AbsoluteDate date, final PVCoordinatesProvider pvProv, final boolean erasesLater) {
+        public Builder addPVProviderAfter(final AbsoluteDate date,
+                                          final PVCoordinatesProvider pvProv,
+                                          final boolean erasesLater) {
             pvProvMap.addValidAfter(pvProv, date, erasesLater);
             return this;
         }
 
-        /** Add a {@link PVCoordinatesProvider} to the collection. The provided data is the final transition
-         * time, before which this provider will be used.
+        /** Add a {@link PVCoordinatesProvider} to the collection.
+         *
+         * The provided date is the final transition time, before which this provider will be used.
          *
          * @param date the transition date
          * @param pvProv the provider

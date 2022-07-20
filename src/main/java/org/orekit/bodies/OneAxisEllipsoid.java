@@ -74,13 +74,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** Eccentricity. */
     private final double e;
 
-    /** Eccentricity power 2. */
+    /** Eccentricity squared. */
     private final double e2;
 
     /** 1 minus flatness. */
     private final double g;
 
-    /** g * g. */
+    /** g squared. */
     private final double g2;
 
     /** Convergence limit. */
@@ -118,7 +118,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         this.f    = f;
         this.ae2  = ae * ae;
         this.e2   = f * (2.0 - f);
-        this.e = FastMath.sqrt(this.e2);
+        this.e    = FastMath.sqrt(e2);
         this.g    = 1.0 - f;
         this.g2   = g * g;
         this.ap2  = ae2 * g2;
@@ -706,11 +706,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Compute the azimuth angle from local north between the two points.
      *
-     * The angle is calculated clockwise from local north at the origin point and follows the rhumb line to the
-     * destination point.
+     * The angle is calculated clockwise from local north at the origin point
+     * and follows the rhumb line to the destination point.
+     *
      * @param origin the origin point, at which the azimuth angle will be computed (non-{@code null})
      * @param destination the destination point, to which the angle is defined (non-{@code null})
      * @return the resulting azimuth angle (radians, {@code [0-2pi)})
+     * @since 11.3
      */
     public double azimuthBetweenPoints(final GeodeticPoint origin, final GeodeticPoint destination) {
         final double dLon = MathUtils.normalizeAngle(destination.getLongitude(), origin.getLongitude()) - origin.getLongitude();
@@ -726,12 +728,14 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Compute the azimuth angle from local north between the two points.
      *
-     * The angle is calculated clockwise from local north at the origin point and follows the rhumb line to the
-     * destination point.
+     * The angle is calculated clockwise from local north at the origin point
+     * and follows the rhumb line to the destination point.
+     *
      * @param origin the origin point, at which the azimuth angle will be computed (non-{@code null})
      * @param destination the destination point, to which the angle is defined (non-{@code null})
      * @param <T> the type of field elements
      * @return the resulting azimuth angle (radians, {@code [0-2pi)})
+     * @since 11.3
      */
     public <T extends CalculusFieldElement<T>> T azimuthBetweenPoints(final FieldGeodeticPoint<T> origin, final FieldGeodeticPoint<T> destination) {
         final T dLon = MathUtils.normalizeAngle(destination.getLongitude().subtract(origin.getLongitude()), origin.getLongitude().getField().getZero());
@@ -745,11 +749,12 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return az;
     }
 
-    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a> corresponding
-     * to the provided latitude.
+    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a>
+     *  corresponding to the provided latitude.
      *
      * @param geodeticLatitude the latitude (radians, within interval {@code [-pi/2, +pi/2]})
      * @return the isometric latitude (radians)
+     * @since 11.3
      */
     public double geodeticToIsometricLatitude(final double geodeticLatitude) {
         if (FastMath.abs(geodeticLatitude) <= angularThreshold) {
@@ -766,12 +771,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return a + b;
     }
 
-    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a> corresponding
-     * to the provided latitude.
+    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a>
+     *  corresponding to the provided latitude.
      *
      * @param geodeticLatitude the latitude (radians, within interval {@code [-pi/2, +pi/2]})
      * @param <T> the type of field elements
      * @return the isometric latitude (radians)
+     * @since 11.3
      */
     public <T extends CalculusFieldElement<T>> T geodeticToIsometricLatitude(final T geodeticLatitude) {
         if (geodeticLatitude.abs().getReal() <= angularThreshold) {
