@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 
@@ -55,6 +56,9 @@ public class CdmData implements Data {
     /** Additional Covariance Metadata block. */
     private AdditionalCovarianceMetadata additionalCovMetadata;
 
+    /** The block containing the user defined parameters. */
+    private UserDefined userDefinedBlock;
+
 
 
 
@@ -88,6 +92,7 @@ public class CdmData implements Data {
         this.sig3eigvec3CovarianceBlock     = sig3eigvec3CovarianceBlock;
         this.altCovarianceType              = altCovarianceType;
         this.additionalCovMetadata          = additionalCovMetadata;
+        this.userDefinedBlock               = null;
     }
 
      /**  Constructor with RTN covariance.
@@ -225,7 +230,7 @@ public class CdmData implements Data {
 
     /** Get the Covariance Matrix in the XYZ Coordinate Frame (defined by value of {@link CdmMetadataKey#ALT_COV_REF_FRAME}).
      * <p> This block is not mandatory and on condition that {@link CdmMetadataKey#ALT_COV_TYPE} = {@link AltCovarianceType#XYZ}.
-     * This method will return null if the block is not defined in the CDM. </p>
+     * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return XYZ covariance matrix block
      */
     public XYZCovariance getXYZCovarianceBlock() {
@@ -234,7 +239,7 @@ public class CdmData implements Data {
 
     /** Get the Sigma / Eigenvector covariance logical block.
      * <p> This block is not mandatory and on condition that {@link CdmMetadataKey#ALT_COV_TYPE} = {@link AltCovarianceType#CSIG3EIGVEC3}.
-     * This method will return null if the block is not defined in the CDM.</p>
+     * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the Sigma / Eigenvector covariance block
      */
     public SigmaEigenvectorsCovariance getSig3Eigvec3CovarianceBlock() {
@@ -242,11 +247,27 @@ public class CdmData implements Data {
     }
 
     /** Get the additional covariance metadata logical block.
-     * <p> This block is not mandatory and will return null if not defined in the CDM. </p>
+     * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the additional covariance metadata logical block
      */
     public AdditionalCovarianceMetadata getAdditionalCovMetadataBlock() {
         return additionalCovMetadata;
+    }
+
+     /** Get the user defined logical block.
+     * <p> This method will return null if the block is not defined in the CDM. </p>
+     * @return the additional covariance metadata logical block
+     */
+    public UserDefined getUserDefinedBlock() {
+        return userDefinedBlock;
+    }
+
+     /** Set the user defined logical block.
+     * <p> This block is added at the end of the CDM parsing as common to both Object 1 and 2. </p>
+     * @param userDefinedBlock the user defined block to set
+     */
+    public void setUserDefinedBlock(final UserDefined userDefinedBlock) {
+        this.userDefinedBlock = userDefinedBlock;
     }
 }
 

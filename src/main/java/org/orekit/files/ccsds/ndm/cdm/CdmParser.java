@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -107,6 +108,9 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** Flag to indicate that data block parsing is finished. */
     private boolean isDatafinished;
 
+    /** CDM user defined logical block being read. */
+    private UserDefined userDefinedBlock;
+
 
     /** Complete constructor.
      * <p>
@@ -147,6 +151,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         xyzCovMatrix              = null;
         sig3eigvec3               = null;
         additionalCovMetadata     = null;
+        userDefinedBlock          = null;
         commentsBlock             = null;
         if (fileFormat == FileFormat.XML) {
             structureProcessor = new XmlStructureProcessingState(Cdm.ROOT, this);
@@ -260,6 +265,13 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
 
             data.validate(header.getFormatVersion());
             segments.add(new CdmSegment(metadata, data));
+
+            // Add the user defined block to both Objects data sections
+            if (userDefinedBlock != null && !userDefinedBlock.getParameters().isEmpty()) {
+                for (int i = 0; i < segments.size(); i++) {
+                    segments.get(i).getData().setUserDefinedBlock(userDefinedBlock);
+                }
+            }
         }
         metadata                  = null;
         context                   = null;
@@ -270,6 +282,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         xyzCovMatrix              = null;
         sig3eigvec3               = null;
         additionalCovMetadata     = null;
+        userDefinedBlock          = null;
         commentsBlock             = null;
         return true;
     }
@@ -280,6 +293,9 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         // CDM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
+        if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
+            userDefinedBlock = null;
+        }
         final Cdm file = new Cdm(header, segments, getConventions(), getDataContext());
         return file;
     }
@@ -404,9 +420,28 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * otherwise it is leaving the section
      * @return always return true
      */
-    boolean manageAadditionalCovMetadataSection(final boolean starting) {
+    boolean manageAdditionalCovMetadataSection(final boolean starting) {
         commentsBlock.refuseFurtherComments();
         anticipateNext(starting ? this::processAdditionalCovMetadataToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage user-defined parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageUserDefinedParametersSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
+        if (starting) {
+            if (userDefinedBlock == null) {
+                // this is the first (and unique) user-defined parameters block, we need to allocate the container
+                userDefinedBlock = new UserDefined();
+            }
+            anticipateNext(this::processUserDefinedToken);
+        } else {
+            anticipateNext(structureProcessor);
+        }
         return true;
     }
 
@@ -626,13 +661,13 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      */
     private boolean processCovMatrixToken(final ParseToken token) {
 
-        isDatafinished = true;
         if (metadata.getAltCovType() == null) {
             anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         } else {
             anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processAltCovarianceToken);
         }
 
+        isDatafinished = true;
         try {
             return token.getName() != null &&
                    RTNCovarianceKey.valueOf(token.getName()).process(token, context, covMatrix);
@@ -689,12 +724,12 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      */
     private boolean processAdditionalCovMetadataToken(final ParseToken token) {
 
-        // Covariance is provided in XYZ
+        // Addiotnal covariance metadata
         if ( additionalCovMetadata == null) {
             additionalCovMetadata = new AdditionalCovarianceMetadata();
         }
 
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
         try {
             return token.getName() != null &&
                            AdditionalCovarianceMetadataKey.valueOf(token.getName()).process(token, context, additionalCovMetadata);
@@ -703,6 +738,32 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
             return false;
         }
     }
+
+    /** Process one user-defined parameter data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processUserDefinedToken(final ParseToken token) {
+        if (userDefinedBlock == null) {
+            userDefinedBlock = new UserDefined();
+        }
+
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+
+        if (COMMENT.equals(token.getName())) {
+            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
+        } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
+            if (token.getType() == TokenType.ENTRY) {
+                userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
+                                          token.getContentAsNormalizedString());
+            }
+            return true;
+        } else {
+            // the token was not processed
+            return false;
+        }
+    }
+
 
     /** Move comments from one empty logical block to another logical block.
      * @param origin origin block

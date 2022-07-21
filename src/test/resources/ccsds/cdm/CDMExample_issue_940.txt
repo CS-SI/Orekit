@@ -123,6 +123,7 @@ CZDOT_Z                       = 0.09                               [m**2/s]
 CZDOT_XDOT                    = 0.001                              [m**2/s**2]
 CZDOT_YDOT                    = 0.002                              [m**2/s**2]
 CZDOT_ZDOT                    = 0.003                              [m**2/s**2]
+COMMENT Object 1 additional covariance metadata
 DENSITY_FORECAST_UNCERTAINTY  = 2.5
 CSCALE_FACTOR_MIN             = 0.5
 CSCALE_FACTOR                 = 1.0
@@ -140,12 +141,14 @@ COVARIANCE_METHOD             = CALCULATED
 MANEUVERABLE                  = NO
 REF_FRAME                     = EME2000
 ALT_COV_TYPE                  = CSIG3EIGVEC3
+COMMENT State Vector
 X                             = 2569.540800                          [km]
 Y                             = 2245.093614                          [km]
 Z                             = 6281.599946                          [km]
 X_DOT                         = -2.888612500                         [km/s]
 Y_DOT                         = -6.007247516                         [km/s]
 Z_DOT                         = 3.328770172                          [km/s]
+COMMENT RTN covariance matrix
 CR_R                          = 1.337E+03                            [m**2]
 CT_R                          = -4.806E+04                           [m**2]
 CT_T                          = 2.492E+06                            [m**2]
@@ -167,4 +170,15 @@ CNDOT_N                       = 8.633E-05                            [m**2/s]
 CNDOT_RDOT                    = -1.903E-06                           [m**2/s**2]
 CNDOT_TDOT                    = -4.594E-06                           [m**2/s**2]
 CNDOT_NDOT                    = 5.178E-05                            [m**2/s**2]
+COMMENT Object 2 Sigma / Eigenvector covariance
 CSIG3EIGVEC3                  = 1 2 3 4 5 6 7 8 9 10 11 12
+COMMENT Object 2 additional covariance metadata
+DENSITY_FORECAST_UNCERTAINTY  = 3.5
+CSCALE_FACTOR_MIN             = 1.5
+CSCALE_FACTOR                 = 2.0
+CSCALE_FACTOR_MAX             = 2.5
+SCREENING_DATA_SOURCE         = Data source of additional covariance metadata
+DCP_SENSITIVITY_VECTOR_POSITION = 3.0 2.0 1.0
+DCP_SENSITIVITY_VECTOR_VELOCITY = 0.3 0.2 0.1
+COMMENT User Parameters
+USER_DEFINED_OBJ1_TIME_LASTOB_START=2020-01-29T13:30:00
