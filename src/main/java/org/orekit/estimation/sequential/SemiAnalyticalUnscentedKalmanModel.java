@@ -679,7 +679,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final double[] stateArray = new double[6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, stateArray, null);
 
-        // Return the SpacecraftState
+        // Return the RealVector
         return new ArrayRealVector(stateArray);
 
     }
