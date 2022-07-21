@@ -315,12 +315,20 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Update the current date
         currentDate = measurement.getObservedMeasurement().getDate();
 
+        // STM for the prediction of the filter correction
+        final RealMatrix stm = getStm();
+
         // Estimate the measurement for each predicted state
+        final RealVector[] predictedStates       = new RealVector[sigmaPoints.length];
         final RealVector[] predictedMeasurements = new RealVector[sigmaPoints.length];
         for (int k = 0; k < sigmaPoints.length; ++k) {
 
+            // Predict filter correction for the current sigma point
+            final RealVector predicted = stm.operate(sigmaPoints[k]);
+            predictedStates[k] = predicted;
+
             // Calculate the predicted osculating elements for the current mean state
-            final RealVector osculating = computeOsculatingElements(sigmaPoints[k], nominalMeanSpacecraftState, shortPeriodicTerms);
+            final RealVector osculating = computeOsculatingElements(predicted, nominalMeanSpacecraftState, shortPeriodicTerms);
             final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                     currentDate, builder.getMu(), builder.getFrame());
 
@@ -355,7 +363,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                            estimatedMeasurementsParameters);
 
         // Return
-        return new UnscentedEvolution(measurement.getTime(), sigmaPoints, predictedMeasurements, noiseK);
+        return new UnscentedEvolution(measurement.getTime(), predictedStates, predictedMeasurements, noiseK);
 
     }
 
@@ -419,6 +427,32 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
                                                             getCorrectedSpacecraftStates());
+
+    }
+
+    /** Get the state transition matrix used to predict the filter correction.
+     * <p>
+     * The state transition matrix is not computed by the DSST propagator.
+     * It is analytically calculated considering Keplerian contribution only
+     * </p>
+     * @return the state transition matrix used to predict the filter correction
+     */
+    private RealMatrix getStm() {
+
+        // initialize the STM
+        final int nbDym  = getNumberSelectedOrbitalDrivers() + getNumberSelectedPropagationDrivers();
+        final int nbMeas = getNumberSelectedMeasurementDrivers();
+        final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(nbDym + nbMeas);
+
+        // State transition matrix using Keplerian contribution only
+        final double mu  = builder.getMu();
+        final double sma = previousNominalMeanSpacecraftState.getA();
+        final double dt  = currentDate.durationFrom(previousNominalMeanSpacecraftState.getDate());
+        final double contribution = -1.5 * dt * FastMath.sqrt(mu / FastMath.pow(sma, 5));
+        stm.setEntry(5, 0, contribution);
+
+        // Return
+        return stm;
 
     }
 
