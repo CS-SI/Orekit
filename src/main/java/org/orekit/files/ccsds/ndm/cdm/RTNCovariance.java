@@ -25,6 +25,8 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  * attribute which can be acces with getRTNCovariaxMatrix method. Beware that
  * there are thus 2 ways to modify the RTN covariance : setC... ( setCrr,
  * setCtr ...) which should be prioritized and getRTNCovariaxMatrix.setEntry(row, col, value).
+ * <p> The RTN Covariance Matrix is provided in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
+ * are mandatory. The remaining elements will return NaN if not provided. </p>
  * @author Melina Vanel
  * @since 11.2
  */
@@ -90,6 +92,8 @@ public class RTNCovariance extends CommentsContainer {
 
     /**
      * Get the RTN covariance matrix.
+     * <p> The RTN Covariance Matrix is provided in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
+     * are mandatory. The remaining elements will return NaN if not provided. </p>
      * @return the RTN covariance matrix
      */
     public RealMatrix getRTNCovarianceMatrix() {
