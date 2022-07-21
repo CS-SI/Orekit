@@ -661,6 +661,11 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      */
     private boolean processCovMatrixToken(final ParseToken token) {
 
+        if (moveCommentsIfEmpty(stateVector, covMatrix)) {
+            // get rid of the empty logical block
+            stateVector = null;
+        }
+
         if (metadata.getAltCovType() == null) {
             anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         } else {
@@ -686,11 +691,22 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         // Covariance is provided in XYZ
         if (metadata.getAltCovType() == AltCovarianceType.XYZ && xyzCovMatrix == null) {
             xyzCovMatrix = new XYZCovariance(true);
+
+            if (moveCommentsIfEmpty(covMatrix, xyzCovMatrix)) {
+                // get rid of the empty logical block
+                covMatrix = null;
+            }
         }
         // Covariance is provided in CSIG3EIGVEC3 format
         if (metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null) {
             sig3eigvec3 = new SigmaEigenvectorsCovariance(true);
+
+            if (moveCommentsIfEmpty(covMatrix, sig3eigvec3)) {
+                // get rid of the empty logical block
+                covMatrix = null;
+            }
         }
+
 
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processAdditionalCovMetadataToken);
         try {
@@ -724,9 +740,17 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      */
     private boolean processAdditionalCovMetadataToken(final ParseToken token) {
 
-        // Addiotnal covariance metadata
+        // Additional covariance metadata
         if ( additionalCovMetadata == null) {
             additionalCovMetadata = new AdditionalCovarianceMetadata();
+        }
+
+        if (moveCommentsIfEmpty(xyzCovMatrix, additionalCovMetadata)) {
+            // get rid of the empty logical block
+            xyzCovMatrix = null;
+        } else if (moveCommentsIfEmpty(sig3eigvec3, additionalCovMetadata)) {
+            // get rid of the empty logical block
+            sig3eigvec3 = null;
         }
 
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
@@ -744,8 +768,14 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processUserDefinedToken(final ParseToken token) {
+
         if (userDefinedBlock == null) {
             userDefinedBlock = new UserDefined();
+        }
+
+        if (moveCommentsIfEmpty(additionalCovMetadata, userDefinedBlock)) {
+            // get rid of the empty logical block
+            additionalCovMetadata = null;
         }
 
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);

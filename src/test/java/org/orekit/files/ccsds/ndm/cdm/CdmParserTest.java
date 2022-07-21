@@ -1046,8 +1046,8 @@ public class CdmParserTest {
 	    final String cdm_xml = "/ccsds/cdm/CDMExample_issue_940.xml";
 
 	           
-	    //test_issue_940_data(cdm_kvn);
-	    test_issue_940_data(cdm_xml);
+	    test_issue_940_data(cdm_kvn);
+	    //test_issue_940_data(cdm_xml);
 	    
 	}
 	    
@@ -1300,24 +1300,6 @@ public class CdmParserTest {
         Assert.assertEquals(0.2,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[1], 0.0);
         Assert.assertEquals(0.3,  file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[2], 0.0);
 
-
-        // Additional covariance metadata OBJ 2
-        
-        Assert.assertEquals(3.5,  file.getDataObject2().getAdditionalCovMetadataBlock().getDensityForecastUncertainty(), 0.0);
-        Assert.assertEquals(1.5,  file.getDataObject2().getAdditionalCovMetadataBlock().getcScaleFactorMin(), 0.0);
-        Assert.assertEquals(2.0,  file.getDataObject2().getAdditionalCovMetadataBlock().getcScaleFactor(), 0.0);
-        Assert.assertEquals(2.5,  file.getDataObject2().getAdditionalCovMetadataBlock().getcScaleFactorMax(), 0.0);
-        Assert.assertEquals("SCREENING_DATA_SOURCE", "Data source of additional covariance metadata", 
-                file.getDataObject2().getAdditionalCovMetadataBlock().getScreeningDataSource());
-        Assert.assertEquals(3,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition().length);
-        Assert.assertEquals(3.0,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition()[0], 0.0);
-        Assert.assertEquals(2.0,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition()[1], 0.0);
-        Assert.assertEquals(1.0,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition()[2], 0.0);
-        Assert.assertEquals(3,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity().length);
-        Assert.assertEquals(0.3,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[0], 0.0);
-        Assert.assertEquals(0.2,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[1], 0.0);
-        Assert.assertEquals(0.1,  file.getDataObject2().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity()[2], 0.0);
-        
         
         // User defined parameters
         
