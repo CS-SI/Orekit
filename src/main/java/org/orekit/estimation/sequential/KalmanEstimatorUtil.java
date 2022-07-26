@@ -16,13 +16,17 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -125,6 +129,22 @@ public class KalmanEstimatorUtil {
                                       dimension, sBuilder.toString());
         }
 
+    }
+
+    /** Filter relevant states for a measurement.
+     * @param observedMeasurement measurement to consider
+     * @param allStates all states
+     * @return array containing only the states relevant to the measurement
+     * @since 10.1
+     */
+    public static SpacecraftState[] filterRelevant(final ObservedMeasurement<?> observedMeasurement,
+                                                   final SpacecraftState[] allStates) {
+        final List<ObservableSatellite> satellites = observedMeasurement.getSatellites();
+        final SpacecraftState[] relevantStates = new SpacecraftState[satellites.size()];
+        for (int i = 0; i < relevantStates.length; ++i) {
+            relevantStates[i] = allStates[satellites.get(i).getPropagatorIndex()];
+        }
+        return relevantStates;
     }
 
 }

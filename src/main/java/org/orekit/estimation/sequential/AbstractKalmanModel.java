@@ -34,7 +34,6 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
@@ -915,7 +914,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // so far. We use this to be able to apply the OutlierFilter modifiers on the predicted measurement.
         predictedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            filterRelevant(observedMeasurement, predictedSpacecraftStates));
+                                                            KalmanEstimatorUtil.filterRelevant(observedMeasurement, predictedSpacecraftStates));
 
         // Normalized measurement matrix (nxm)
         final RealMatrix measurementMatrix = getMeasurementMatrix();
@@ -1015,26 +1014,11 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // Compute the estimated measurement using estimated spacecraft state
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            filterRelevant(observedMeasurement, correctedSpacecraftStates));
+                                                            KalmanEstimatorUtil.filterRelevant(observedMeasurement, correctedSpacecraftStates));
         // Update the trajectory
         // ---------------------
         updateReferenceTrajectories(estimatedPropagators, propagationType, stateType);
 
-    }
-
-    /** Filter relevant states for a measurement.
-     * @param observedMeasurement measurement to consider
-     * @param allStates all states
-     * @return array containing only the states relevant to the measurement
-     * @since 10.1
-     */
-    private SpacecraftState[] filterRelevant(final ObservedMeasurement<?> observedMeasurement, final SpacecraftState[] allStates) {
-        final List<ObservableSatellite> satellites = observedMeasurement.getSatellites();
-        final SpacecraftState[] relevantStates = new SpacecraftState[satellites.size()];
-        for (int i = 0; i < relevantStates.length; ++i) {
-            relevantStates[i] = allStates[satellites.get(i).getPropagatorIndex()];
-        }
-        return relevantStates;
     }
 
     /** Set the predicted normalized state vector.

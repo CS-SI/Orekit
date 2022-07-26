@@ -376,7 +376,7 @@ public class UnscentedEstimationTestUtils {
                                                       {
 
         // Add the measurements to the Kalman filter
-        Propagator estimated = kalman.processMeasurements(measurements);
+        Propagator estimated = kalman.processMeasurements(measurements)[0];
         
         // Check the number of measurements processed by the filter
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
