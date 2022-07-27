@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
@@ -27,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -62,7 +65,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class UnscentedKalmanEstimator {
 
     /** Builders for orbit propagators. */
-    private NumericalPropagatorBuilder propagatorBuilder;
+    private List<NumericalPropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -78,25 +81,25 @@ public class UnscentedKalmanEstimator {
 
     /** Unscented Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
-     * @param propagatorBuilder propagator builder used to evaluate the orbit.
-     * @param processNoiseMatricesProvider provider for process noise matrix
+     * @param propagatorBuilders propagators builders used to evaluate the orbit.
+     * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      * @param utProvider provider for the unscented transform.
      */
     UnscentedKalmanEstimator(final MatrixDecomposer decomposer,
-                             final NumericalPropagatorBuilder propagatorBuilder,
-                             final CovarianceMatrixProvider processNoiseMatricesProvider,
+                             final List<NumericalPropagatorBuilder> propagatorBuilders,
+                             final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                              final ParameterDriversList estimatedMeasurementParameters,
                              final CovarianceMatrixProvider measurementProcessNoiseMatrix,
                              final UnscentedTransformProvider utProvider) {
 
-        this.propagatorBuilder = propagatorBuilder;
-        this.referenceDate     = propagatorBuilder.getInitialOrbitDate();
-        this.observer          = null;
+        this.propagatorBuilders = propagatorBuilders;
+        this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
+        this.observer           = null;
 
         // Build the process model and measurement model
-        this.processModel = new UnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
+        this.processModel = new UnscentedKalmanModel(propagatorBuilders, processNoiseMatricesProviders,
                                                      estimatedMeasurementParameters, measurementProcessNoiseMatrix);
 
         this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate(), utProvider);
@@ -140,16 +143,30 @@ public class UnscentedKalmanEstimator {
 
     /** Get the orbital parameters supported by this estimator.
      * <p>
+     * If there are more than one propagator builder, then the names
+     * of the drivers have an index marker in square brackets appended
+     * to them in order to distinguish the various orbits. So for example
+     * with one builder generating equinoctial orbits the names would be
+     * simply "a", "ex", "ey"... but if there are several builders the
+     * names would be "a[0]", "ex[0]", "ey[0]"..."a[1]", "ex[1]", "ey[1]"...
+     * </p>
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return orbital parameters supported by this estimator
      */
     public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
-        for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-            if (driver.isSelected() || !estimatedOnly) {
-                driver.setName(driver.getName());
-                estimated.add(driver);
+        for (int i = 0; i < propagatorBuilders.size(); ++i) {
+            final String suffix = propagatorBuilders.size() > 1 ? "[" + i + "]" : null;
+            for (final ParameterDriver driver : propagatorBuilders.get(i).getOrbitalParametersDrivers().getDrivers()) {
+                if (driver.isSelected() || !estimatedOnly) {
+                    if (suffix != null && !driver.getName().endsWith(suffix)) {
+                        // we add suffix only conditionally because the method may already have been called
+                        // and suffixes may have already been appended
+                        driver.setName(driver.getName() + suffix);
+                    }
+                    estimated.add(driver);
+                }
             }
         }
         return estimated;
@@ -162,10 +179,12 @@ public class UnscentedKalmanEstimator {
     public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
-        for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (delegating.isSelected() || !estimatedOnly) {
-                for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                    estimated.add(driver);
+        for (PropagatorBuilder builder : propagatorBuilders) {
+            for (final DelegatingDriver delegating : builder.getPropagationParametersDrivers().getDrivers()) {
+                if (delegating.isSelected() || !estimatedOnly) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        estimated.add(driver);
+                    }
                 }
             }
         }
@@ -186,14 +205,14 @@ public class UnscentedKalmanEstimator {
      * @param observedMeasurement the measurement to process
      * @return estimated propagator
      */
-    public Propagator estimationStep(final ObservedMeasurement<?> observedMeasurement) {
+    public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
             final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
             processModel.finalizeEstimation(observedMeasurement, estimate);
             if (observer != null) {
                 observer.evaluationPerformed(processModel);
             }
-            return processModel.getEstimatedPropagator();
+            return processModel.getEstimatedPropagators();
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
         }
@@ -203,12 +222,12 @@ public class UnscentedKalmanEstimator {
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
      * @return estimated propagator
      */
-    public Propagator processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
-        Propagator propagator = null;
+    public Propagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
+        Propagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
-            propagator = estimationStep(observedMeasurement);
+            propagators = estimationStep(observedMeasurement);
         }
-        return propagator;
+        return propagators;
     }
 
 }

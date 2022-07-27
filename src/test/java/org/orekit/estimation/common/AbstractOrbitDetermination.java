@@ -768,7 +768,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             // Add an observer
             kalman.setObserver(observer);
             // Process the list measurements 
-            final Orbit estimated = kalman.processMeasurements(multiplexed).getInitialState().getOrbit();
+            final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
 
 
             // Process the list measurements 

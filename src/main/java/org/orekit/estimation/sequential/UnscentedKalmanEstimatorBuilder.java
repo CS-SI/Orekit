@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.util.UnscentedTransformProvider;
@@ -33,14 +36,14 @@ public class UnscentedKalmanEstimatorBuilder {
     /** Decomposer to use for the correction phase. */
     private MatrixDecomposer decomposer;
 
-    /** Builders for propagator. */
-    private NumericalPropagatorBuilder propagatorBuilder;
+    /** Builders for propagators. */
+    private List<NumericalPropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
 
-    /** Process noise matrix provider. */
-    private CovarianceMatrixProvider processNoiseMatrixProvider;
+    /** Process noise matrix providers. */
+    private List<CovarianceMatrixProvider> processNoiseMatrixProviders;
 
     /** Process noise matrix provider for measurement parameters. */
     private CovarianceMatrixProvider measurementProcessNoiseMatrix;
@@ -53,9 +56,9 @@ public class UnscentedKalmanEstimatorBuilder {
      */
     public UnscentedKalmanEstimatorBuilder() {
         this.decomposer                      = new QRDecomposer(1.0e-15);
-        this.propagatorBuilder               = null;
+        this.propagatorBuilders              = new ArrayList<>();
         this.estimatedMeasurementsParameters = new ParameterDriversList();
-        this.processNoiseMatrixProvider      = null;
+        this.processNoiseMatrixProviders     = new ArrayList<>();
         this.measurementProcessNoiseMatrix   = null;
         this.utProvider                      = null;
     }
@@ -74,13 +77,13 @@ public class UnscentedKalmanEstimatorBuilder {
      * @return a new {@link UnscentedKalmanEstimator}.
      */
     public UnscentedKalmanEstimator build() {
-        if (propagatorBuilder == null) {
+        if (propagatorBuilders.size() == 0) {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
         if (utProvider == null) {
             throw new OrekitException(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED);
         }
-        return new UnscentedKalmanEstimator(decomposer, propagatorBuilder, processNoiseMatrixProvider,
+        return new UnscentedKalmanEstimator(decomposer, propagatorBuilders, processNoiseMatrixProviders,
                                             estimatedMeasurementsParameters, measurementProcessNoiseMatrix,
                                             utProvider);
 
@@ -106,6 +109,11 @@ public class UnscentedKalmanEstimatorBuilder {
 
     /** Add a propagation configuration.
      * <p>
+     * This method must be called once for each propagator to managed with the
+     * {@link UnscentedKalmanEstimator unscented kalman estimatior}. The
+     * propagators order in the Kalman filter will be the call order.
+     * </p>
+     * <p>
      * The {@code provider} should return a matrix with dimensions and ordering
      * consistent with the {@code builder} configuration. The first 6 rows/columns
      * correspond to the 6 orbital parameters which must all be present, regardless
@@ -118,12 +126,14 @@ public class UnscentedKalmanEstimatorBuilder {
      * </p>
      * @param builder The propagator builder to use in the Kalman filter.
      * @param provider The process noise matrices provider to use, consistent with the builder.
+     * @see CovarianceMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
+     * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      * @return this object.
      */
     public UnscentedKalmanEstimatorBuilder addPropagationConfiguration(final NumericalPropagatorBuilder builder,
                                                                        final CovarianceMatrixProvider provider) {
-        propagatorBuilder          = builder;
-        processNoiseMatrixProvider = provider;
+        propagatorBuilders.add(builder);
+        processNoiseMatrixProviders.add(provider);
         return this;
     }
 
@@ -136,7 +146,7 @@ public class UnscentedKalmanEstimatorBuilder {
      * @return this object.
      */
     public UnscentedKalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams,
-                                                                                final CovarianceMatrixProvider provider) {
+                                                                           final CovarianceMatrixProvider provider) {
         estimatedMeasurementsParameters = estimatedMeasurementsParams;
         measurementProcessNoiseMatrix   = provider;
         return this;
