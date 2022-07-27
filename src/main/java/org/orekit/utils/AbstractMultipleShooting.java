@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -248,7 +247,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
             // convergence check
             fxNorm = fx.getNorm();
-            System.out.printf(Locale.US, "Iter: %3d Error: %.16e%n", iter, fxNorm);
+            // System.out.printf(Locale.US, "Iter: %3d Error: %.16e%n", iter, fxNorm);
             if (fxNorm < tolerance) {
                 break;
             }
@@ -279,7 +278,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      *  @param propagatedSP List of propagated SpacecraftStates (patch points)
      *  @return jacobianMatrix Jacobian matrix
      */
-    @SuppressWarnings("checkstyle:UnnecessaryParentheses")
     private RealMatrix computeJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         // The Jacobian matrix has the following form:
@@ -380,7 +378,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
             // the sign in front of the partials of the states with respect to epochs should be plus
             if (!isAutonomous) {
                 if (freeEpochMap[i]) { // If this component is free
-                    final double[] derivatives = finalState.getAdditionalState("derivatives");
+                    final double[] derivatives = finalState.getAdditionalState(additionalName);
                     final double[][] subC = new double[6][1];
                     for (int j = 0; j < 3; j++) {
                         subC[j][0] = derivatives[derivatives.length - 6 + j] / scaleVel;

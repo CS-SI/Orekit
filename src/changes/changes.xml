@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="afossa" type="add" issue="876">
+        Added scaling of linear system and allowed different arc duration in multiple shooting.
+      </action>
+      <action dev="afossa" type="fix" issue="876">
+        Avoided computation of inverse of Jacobian, allowed under-determined
+        linear systems and fixed sign of epoch partials in multiple shooting.
+      </action>
       <action dev="bryan" type="add" issue="901">
         Added additional state provider for covariance matrix propagation.
       </action>
