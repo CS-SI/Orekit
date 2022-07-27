@@ -19,8 +19,8 @@ package org.orekit.estimation.sequential;
 import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.filtering.kalman.KalmanFilter;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
-import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
@@ -29,23 +29,11 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 /** {@link org.orekit.propagation.sampling.OrekitStepHandler Step handler} picking up
- * {@link ObservedMeasurement measurements} for the {@link SemiAnalyticalKalmanEstimator}.
- * @author Julie Bayard
+ * {@link ObservedMeasurement measurements} for both {@link SemiAnalyticalUnscentedKalmanEstimator} and {@link SemiAnalytical(rKalmanEstimator}.
+ * @author Gaëtan Pierre
  * @author Bryan Cazabonne
- * @author Maxime Journot
- * @since 11.1
  */
-@Deprecated
-public class EskfMeasurementHandler implements OrekitStepHandler {
-
-    /** ESKF model. */
-    private final SemiAnalyticalKalmanModel model;
-
-    /** Extended Kalman Filter. */
-    private final ExtendedKalmanFilter<MeasurementDecorator> filter;
-
-    /** Underlying measurements. */
-    private final List<ObservedMeasurement<?>> observedMeasurements;
+public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
 
     /** Index of the next measurement component in the model. */
     private int index;
@@ -53,8 +41,14 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
     /** Reference date. */
     private AbsoluteDate referenceDate;
 
-    /** Observer to retrieve current estimation info. */
-    private KalmanObserver observer;
+    /** Kalman model. */
+    private final SemiAnalyticalModel model;
+
+    /** Kalman Filter. */
+    private final KalmanFilter<MeasurementDecorator> filter;
+
+    /** Underlying measurements. */
+    private final List<ObservedMeasurement<?>> observedMeasurements;
 
     /** Simple constructor.
      * @param model semi-analytical kalman model
@@ -62,13 +56,12 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
      * @param observedMeasurements list of observed measurements
      * @param referenceDate reference date
      */
-    public EskfMeasurementHandler(final SemiAnalyticalKalmanModel model,
-                                  final ExtendedKalmanFilter<MeasurementDecorator> filter,
+    public SemiAnalyticalMeasurementHandler(final SemiAnalyticalModel model,
+                                  final KalmanFilter<MeasurementDecorator> filter,
                                   final List<ObservedMeasurement<?>> observedMeasurements,
                                   final AbsoluteDate referenceDate) {
         this.model                = model;
         this.filter               = filter;
-        this.observer             = model.getObserver();
         this.observedMeasurements = observedMeasurements;
         this.referenceDate        = referenceDate;
     }
@@ -97,7 +90,7 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 
             try {
 
-                // Update the norminal state with the interpolated parameters
+                // Update predicted spacecraft state
                 model.updateNominalSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
 
                 // Process the current observation
@@ -105,11 +98,6 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 
                 // Finalize the estimation
                 model.finalizeEstimation(observedMeasurements.get(index), estimate);
-
-                // Call the observer if the user add one
-                if (observer != null) {
-                    observer.evaluationPerformed(model);
-                }
 
             } catch (MathRuntimeException mrte) {
                 throw new OrekitException(mrte);

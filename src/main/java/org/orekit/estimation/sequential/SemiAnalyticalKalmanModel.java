@@ -69,7 +69,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 11.1
  */
-public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
+public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator>, SemiAnalyticalModel {
 
     /** Builders for DSST propagator. */
     private final DSSTPropagatorBuilder builder;
@@ -282,9 +282,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     }
 
-    /** Get the observer for Kalman Filter estimations.
-     * @return the observer for Kalman Filter estimations
-     */
+    /** {@inheritDoc} */
+    @Override
     public KalmanObserver getObserver() {
         return observer;
     }
@@ -319,7 +318,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             observedMeasurements.sort(new ChronologicalComparator());
 
             // Initialize step handler and set it to the propagator
-            final EskfMeasurementHandler stepHandler = new EskfMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
+            final SemiAnalyticalMeasurementHandler stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
             dsstPropagator.getMultiplexer().add(stepHandler);
             dsstPropagator.propagate(observedMeasurements.get(0).getDate(), observedMeasurements.get(observedMeasurements.size() - 1).getDate());
 
@@ -440,10 +439,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     }
 
-    /** Finalize estimation.
-     * @param observedMeasurement measurement that has just been processed
-     * @param estimate corrected estimate
-     */
+    /** {@inheritDoc} */
+    @Override
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
                                    final ProcessEstimate estimate) {
         // Update the process estimate
@@ -468,9 +465,14 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesValues(),
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
                                                             });
+        // Call the observer if the user add one
+        if (observer != null) {
+            observer.evaluationPerformed(this);
+        }
     }
 
-    /** Finalize estimation operations on the observation grid. */
+    /** {@inheritDoc} */
+    @Override
     public void finalizeOperationsObservationGrid() {
         // Update parameters
         updateParameters();
@@ -704,9 +706,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         return correctedMeasurement;
     }
 
-    /** Update the nominal spacecraft state.
-     * @param nominal nominal spacecraft state
-     */
+    /** {@inheritDoc} */
+    @Override
     public void updateNominalSpacecraftState(final SpacecraftState nominal) {
         this.nominalMeanSpacecraftState = nominal;
         // Update the builder with the nominal mean elements orbit
@@ -734,9 +735,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     }
 
-    /** Update the DSST short periodic terms.
-     * @param state current mean state
-     */
+    /** {@inheritDoc} */
+    @Override
     public void updateShortPeriods(final SpacecraftState state) {
         // Loop on DSST force models
         for (final DSSTForceModel model : builder.getAllForceModels()) {
@@ -745,9 +745,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         harvester.updateFieldShortPeriodTerms(state);
     }
 
-    /** Initialize the short periodic terms for the Kalman Filter.
-     * @param meanState mean state for auxiliary elements
-     */
+    /** {@inheritDoc} */
+    @Override
     public void initializeShortPeriodicTerms(final SpacecraftState meanState) {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force :  builder.getAllForceModels()) {

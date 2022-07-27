@@ -55,7 +55,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
  */
-public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator> {
+public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator>, SemiAnalyticalModel {
 
     /** Initial builder for propagator. */
     private final DSSTPropagatorBuilder builder;
@@ -241,9 +241,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
     }
 
-    /** Get the observer for Kalman Filter estimations.
-     * @return the observer for Kalman Filter estimations
-     */
+    /** {@inheritDoc} */
+    @Override
     public KalmanObserver getObserver() {
         return observer;
     }
@@ -279,7 +278,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         observedMeasurements.sort(new ChronologicalComparator());
 
         // Initialize step handler and set it to a parallelized propagator
-        final UskfMeasurementHandler  stepHandler = new UskfMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
+        final SemiAnalyticalMeasurementHandler  stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
         dsstPropagator.getMultiplexer().add(stepHandler);
         dsstPropagator.propagate(observedMeasurements.get(0).getDate(), observedMeasurements.get(observedMeasurements.size() - 1).getDate());
 
@@ -402,10 +401,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     }
 
 
-    /** Finalize estimation.
-     * @param observedMeasurement measurement that has just been processed
-     * @param estimate corrected estimate
-     */
+    /** {@inheritDoc} */
+    @Override
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
                                    final ProcessEstimate estimate) {
         // Update the process estimate
@@ -427,7 +424,10 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
                                                             getCorrectedSpacecraftStates());
-
+        // Call the observer if the user add one
+        if (observer != null) {
+            observer.evaluationPerformed(this);
+        }
     }
 
     /** Get the state transition matrix used to predict the filter correction.
@@ -456,7 +456,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
     }
 
-    /** Finalize estimation operations on the observation grid. */
+    /** {@inheritDoc} */
+    @Override
     public void finalizeOperationsObservationGrid() {
         // Update parameters
         updateParameters();
@@ -575,9 +576,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         return correctedMeasurement;
     }
 
-    /** Update the nominal spacecraft state.
-     * @param nominal nominal spacecraft state
-     */
+    /** {@inheritDoc} */
+    @Override
     public void updateNominalSpacecraftState(final SpacecraftState nominal) {
         this.nominalMeanSpacecraftState = nominal;
         // Short period terms
@@ -586,9 +586,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         builder.resetOrbit(nominal.getOrbit(), PropagationType.MEAN);
     }
 
-    /** Update the DSST short periodic terms.
-     * @param state current mean state
-     */
+    /** {@inheritDoc} */
+    @Override
     public void updateShortPeriods(final SpacecraftState state) {
         // Loop on DSST force models
         for (final DSSTForceModel model : dsstPropagator.getAllForceModels()) {
@@ -596,9 +595,8 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         }
     }
 
-    /** Initialize the short periodic terms for the Kalman Filter.
-     * @param meanState mean state for auxiliary elements
-     */
+    /** {@inheritDoc} */
+    @Override
     public void initializeShortPeriodicTerms(final SpacecraftState meanState) {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force :  builder.getAllForceModels()) {
