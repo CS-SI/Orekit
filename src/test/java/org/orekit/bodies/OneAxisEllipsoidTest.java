@@ -806,6 +806,103 @@ public class OneAxisEllipsoidTest {
         Assert.assertEquals(5.603878, FastMath.toDegrees(sunGP.getLatitude()), 1.0e-6);
     }
 
+    @Test
+    public void testIsometricLatitude() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        Assert.assertEquals(0., earth.geodeticToIsometricLatitude(0), 1.0e-9);
+        Assert.assertEquals(0., earth.geodeticToIsometricLatitude(2.0e-13), 1.0e-9);
+
+        for (final double lat: new double[] {
+                FastMath.toRadians(10),
+                FastMath.toRadians(-45),
+                FastMath.toRadians(80),
+                FastMath.toRadians(-90)}) {
+            final double eSinLat = earth.getEccentricity() * FastMath.sin(lat);
+            final double term1 = FastMath.log(FastMath.tan(FastMath.PI / 4. + lat / 2.));
+            final double term2 = (earth.getEccentricity() / 2.) * FastMath.log((1. - eSinLat) / (1 + eSinLat));
+
+            Assert.assertEquals(term1 + term2, earth.geodeticToIsometricLatitude(lat), 1.0e-12);
+        }
+    }
+
+    @Test
+    public void testFieldIsometricLatitude() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        final Decimal64Field field = Decimal64Field.getInstance();
+        Assert.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(0.)));
+        Assert.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(2.0e-13)));
+
+        final Decimal64 ecc = field.getZero().newInstance(earth.getEccentricity());
+        for (final Decimal64 lat: new Decimal64[] {
+                    field.getOne().newInstance(FastMath.toRadians(10)),
+                    field.getOne().newInstance(FastMath.toRadians(-45)),
+                    field.getOne().newInstance(FastMath.toRadians(80)),
+                    field.getOne().newInstance(FastMath.toRadians(-90))}) {
+            final Decimal64 eSinLat = ecc.multiply(FastMath.sin(lat));
+            final Decimal64 term1 = FastMath.log(FastMath.tan(lat.getPi().divide(4.).add(lat.divide(2.))));
+            final Decimal64 term2 = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
+
+            Assert.assertEquals(term1.add(term2), earth.geodeticToIsometricLatitude(lat));
+        }
+    }
+
+    @Test
+    public void testAzimuthBetweenPoints() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        // values from https://distance.to
+        final GeodeticPoint newYork = new GeodeticPoint(FastMath.toRadians(40.71427), FastMath.toRadians(-74.00597), 0);
+        final GeodeticPoint chicago = new GeodeticPoint(FastMath.toRadians(41.85003), FastMath.toRadians(-87.65005), 0);
+        final GeodeticPoint london = new GeodeticPoint(FastMath.toRadians(51.5), FastMath.toRadians(-0.16667), 0);
+        final GeodeticPoint berlin = new GeodeticPoint(FastMath.toRadians(52.523403), FastMath.toRadians(13.4114), 0);
+        final GeodeticPoint perth = new GeodeticPoint(FastMath.toRadians(-31.952712), FastMath.toRadians(115.8604796), 0);
+
+        // answers verified against RhumbSolve lib https://geographiclib.sourceforge.io/cgi-bin/RhumbSolve
+        Assert.assertEquals(276.297499, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, chicago)), 1.0e-6);
+        Assert.assertEquals(78.0854898, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, london)), 1.0e-6);
+        Assert.assertEquals(83.0357553, FastMath.toDegrees(earth.azimuthBetweenPoints(london, berlin)), 1.0e-6);
+        Assert.assertEquals(132.894864, FastMath.toDegrees(earth.azimuthBetweenPoints(berlin, perth)), 1.0e-6);
+        Assert.assertEquals(65.3853195, FastMath.toDegrees(earth.azimuthBetweenPoints(perth, newYork)), 1.0e-6);
+    }
+
+    @Test
+    public void testAzimuthBetweenFieldPoints() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        final Decimal64Field field = Decimal64Field.getInstance();
+
+        // values from https://distance.to
+        final FieldGeodeticPoint<Decimal64> newYork = new FieldGeodeticPoint<>(
+                FastMath.toRadians(field.getZero().add(40.71427)),
+                FastMath.toRadians(field.getZero().add(-74.00597)), field.getZero());
+        final FieldGeodeticPoint<Decimal64> chicago = new FieldGeodeticPoint<>(
+                FastMath.toRadians(field.getZero().add(41.85003)),
+                FastMath.toRadians(field.getZero().add(-87.65005)), field.getZero());
+
+        final FieldGeodeticPoint<Decimal64> london = new FieldGeodeticPoint<>(
+            FastMath.toRadians(field.getZero().add(51.5)),
+            FastMath.toRadians(field.getZero().add(-0.16667)), field.getZero());
+        final FieldGeodeticPoint<Decimal64> berlin = new FieldGeodeticPoint<>(
+            FastMath.toRadians(field.getZero().add(52.523403)),
+            FastMath.toRadians(field.getZero().add(13.4114)), field.getZero());
+        final FieldGeodeticPoint<Decimal64> perth = new FieldGeodeticPoint<>(
+            FastMath.toRadians(field.getZero().add(-31.952712)),
+            FastMath.toRadians(field.getZero().add(115.8604796)), field.getZero());
+
+        // answers verified against RhumbSolve lib https://geographiclib.sourceforge.io/cgi-bin/RhumbSolve
+        Assert.assertEquals(276.297499, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, chicago)).getReal(), 1.0e-6);
+        Assert.assertEquals(78.0854898, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, london)).getReal(), 1.0e-6);
+        Assert.assertEquals(83.0357553, FastMath.toDegrees(earth.azimuthBetweenPoints(london, berlin)).getReal(), 1.0e-6);
+        Assert.assertEquals(132.894864, FastMath.toDegrees(earth.azimuthBetweenPoints(berlin, perth)).getReal(), 1.0e-6);
+        Assert.assertEquals(65.3853195, FastMath.toDegrees(earth.azimuthBetweenPoints(perth, newYork)).getReal(), 1.0e-6);
+    }
+
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
                                                Stream<Vector3D> points,
                                                double latitudeTolerance, double longitudeTolerance,
