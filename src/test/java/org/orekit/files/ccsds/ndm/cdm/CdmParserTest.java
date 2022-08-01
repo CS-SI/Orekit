@@ -1075,4 +1075,24 @@ public class CdmParserTest {
 	    Assert.assertEquals(Maneuvrable.NO,               file.getMetadataObject2().getManeuverable());
 	}
 
+    @Test
+    public void test_issue_944() {
+
+        // File
+        final String ex = "/ccsds/cdm/CDMExample_issue_944.xml";
+    
+        // Initialize the parser
+        final CdmParser parser = new ParserBuilder().buildCdmParser();
+    
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+    
+        // Generated CDM file
+        final Cdm file = parser.parseMessage(source);
+
+        // Check AREA_DRG
+        Assert.assertEquals(3, file.getDataObject1().getAdditionalParametersBlock().getAreaDRG(), 0.0);
+        
+        // Check AREA_SRP
+        Assert.assertEquals(10, file.getDataObject1().getAdditionalParametersBlock().getAreaSRP(), 0.0);
+    }
 }
