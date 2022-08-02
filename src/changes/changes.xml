@@ -20,7 +20,6 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-<<<<<<< HEAD
     <release version="11.3" date="TBD" description="TBD">
       <action dev="bryan" type="add" issue="901">
         Added additional state provider for covariance matrix propagation.
