@@ -58,6 +58,16 @@ public class CdmWriterTest extends AbstractWriterTest<CdmHeader, CdmSegment, Cdm
     public void testWriteExample4() {
         doTest("/ccsds/cdm/CDMExample4.txt");
     }
+    
+    @Test
+    public void testWrite_issue_942_KVN() {
+        doTest("/ccsds/cdm/CDMExample_issue942.txt");
+    }
+    
+    @Test
+    public void testWrite_issue_942_XML() {
+        doTest("/ccsds/cdm/CDMExample_issue942.xml");
+    }
 
 }
 

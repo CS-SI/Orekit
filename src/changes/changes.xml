@@ -20,6 +20,27 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.2.1" date="2022-08-01"
+             description="Version 11.2.1 is a patch release of Orekit.
+             It fixes issues related to the parsing and writing of CCSDS CDM files.
+             It also fixes issues related to date management.
+             Finally it includes some improvements in the class documentation">
+      <action dev="gc" type="fix" issue="945">
+        Fixed documentation issue, RTNCovariance constructor initializes the covariance matrix with NaN.
+      </action>
+      <action dev="gc" type="fix" issue="944">
+        Fixed wrong parsing of Area_DRG and Area_SRP from CDM.
+      </action>
+      <action dev="gc" type="fix" issue="942">
+        Fixed N/A value not recognized for field MANEUVERABLE when parsing CDMs.
+      </action>
+      <action dev="luc" type="fix" issue="939">
+        Fixed negative offset when shifting an AbsoluteDate.
+      </action>
+      <action dev="luc" type="fix" issue="935">
+        Fixed internal error on DateEvent capture events in v11.1.2.
+      </action>
+    </release>
     <release version="11.2" date="2022-06-20"
              description="Version 11.2 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced
