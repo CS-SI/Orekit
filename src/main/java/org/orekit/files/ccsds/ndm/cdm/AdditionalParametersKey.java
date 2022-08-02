@@ -42,7 +42,7 @@ public enum AdditionalParametersKey {
 
     /** The effective area of the object exposed to solar radiation pressure. */
     AREA_SRP((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
-                                                                 container::setAreaDRG)),
+                                                                 container::setAreaSRP)),
 
     /** The mass of the object. */
     MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, context.getParsedUnitsBehavior(),

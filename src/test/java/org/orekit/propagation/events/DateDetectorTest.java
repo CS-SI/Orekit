@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.events;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -30,9 +34,13 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -176,6 +184,49 @@ public class DateDetectorTest {
 
         //verify
         Assert.assertEquals(dt, finalState.getDate().durationFrom(iniDate), threshold);
+    }
+
+    @Test
+    public void testIssue935() {
+
+        // startTime, endTime
+        long start = 1570802400000L;
+        long end = 1570838399000L;
+
+        // Build propagator
+        TLE tle = new TLE("1 43197U 18015F   19284.07336221  .00000533  00000-0  24811-4 0  9998",
+            "2 43197  97.4059  50.1428 0017543 265.5429 181.0400 15.24136761 93779");
+        Propagator propagator = TLEPropagator.selectExtrapolator(tle);
+
+        // Max check to seconds
+        int maxCheck = (int) ((end - start) / 2000);
+        DateDetector dateDetector = new DateDetector(maxCheck, 1.0e-6,
+                                                     getAbsoluteDateFromTimestamp(start)).
+                                    withHandler(new StopOnEvent<>());
+        dateDetector.addEventDate(getAbsoluteDateFromTimestamp(end));
+
+        // Add event detectors to orbit
+        propagator.addEventDetector(dateDetector);
+
+        // Propagate
+        final AbsoluteDate startDate = getAbsoluteDateFromTimestamp(start);
+        final AbsoluteDate endDate   = getAbsoluteDateFromTimestamp(end);
+        SpacecraftState lastState = propagator.propagate(startDate, endDate.shiftedBy(1));
+        Assert.assertEquals(0.0, lastState.getDate().durationFrom(endDate), 1.0e-15);
+
+    }
+
+    public static AbsoluteDate getAbsoluteDateFromTimestamp(final long timestamp) {
+        LocalDateTime utcDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                                                        ZoneId.of("UTC"));
+        int year = utcDate.getYear();
+        int month = utcDate.getMonthValue();
+        int day = utcDate.getDayOfMonth();
+        int hour = utcDate.getHour();
+        int minute = utcDate.getMinute();
+        double second = utcDate.getSecond();
+        double millis = utcDate.getNano() / 1e9;
+        return new AbsoluteDate(year, month, day, hour, minute, second, TimeScalesFactory.getUTC()).shiftedBy(millis);
     }
 
     @Before

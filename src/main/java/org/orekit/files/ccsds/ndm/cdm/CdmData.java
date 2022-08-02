@@ -104,6 +104,8 @@ public class CdmData implements Data {
     }
 
     /** Get the covariance matrix logical block.
+     * <p> The RTN Covariance Matrix is provided in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
+     * are mandatory. The remaining elements will return NaN if not provided. </p>
      * @return covariance matrix block
      */
     public RTNCovariance getRTNCovarianceBlock() {
