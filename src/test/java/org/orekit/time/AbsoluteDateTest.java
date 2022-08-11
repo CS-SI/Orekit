@@ -1373,6 +1373,32 @@ public class AbsoluteDateTest {
                 CoreMatchers.is("(-9223372036854775779 + 3.0E300) seconds past epoch"));
     }
 
+    @Test
+    public void test_issue_943() {
+
+        // Run issue test
+        final AbsoluteDate date1 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        Assert.assertEquals(date1, date2);
+        
+        // Check equality is as expected for PAST INFINITY
+        final AbsoluteDate date3 = AbsoluteDate.PAST_INFINITY;
+        final AbsoluteDate date4 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        Assert.assertEquals(date3, date4);
+
+        // Check equality is as expected for FUTURE INFINITY
+        final AbsoluteDate date5 = AbsoluteDate.FUTURE_INFINITY;
+        final AbsoluteDate date6 = new AbsoluteDate(AbsoluteDate.FUTURE_INFINITY, 0);
+        Assert.assertEquals(date5, date6); 
+
+        // Check inequality is as expected
+        final AbsoluteDate date7 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        final AbsoluteDate date8 = new AbsoluteDate(AbsoluteDate.FUTURE_INFINITY, 0);
+        Assert.assertNotEquals(date7, date8); 
+
+    }
+    
+    
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

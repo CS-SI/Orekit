@@ -1193,11 +1193,17 @@ public class AbsoluteDate
         }
 
         if (date instanceof AbsoluteDate) {
-            return durationFrom((AbsoluteDate) date) == 0;
+
+            // Improve robustness against plus/minus infinity dates
+            if ( checkMinusInifinityDate(this) && checkMinusInifinityDate( (AbsoluteDate) date) ||
+                    checkPlusInifinityDate(this) && checkPlusInifinityDate( (AbsoluteDate) date) ) {
+                return true;
+            } else {
+                return durationFrom((AbsoluteDate) date) == 0;
+            }
         }
 
         return false;
-
     }
 
     /** Check if the instance represents the same time as another.
@@ -1482,4 +1488,29 @@ public class AbsoluteDate
                 .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
     }
 
+    /** Returns true if the instance represents a minus infinity date.
+     *  <p> The check verifies the logic implemented in the
+     *  {@link #AbsoluteDate(AbsoluteDate, double)} constructor.</p>
+     * @param date date to check
+     * @return true if the instance is a minus infinity AbsoluteDate.
+     */
+    public boolean checkMinusInifinityDate(final AbsoluteDate date) {
+        if (date.epoch == Long.MIN_VALUE && date.offset == Double.NEGATIVE_INFINITY) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Returns true if the instance represents a minus infinity date.
+     *  <p> The check verifies the logic implemented in the
+     *  {@link #AbsoluteDate(AbsoluteDate, double)} constructor.</p>
+     * @param date date to check
+     * @return true if the instance is a plus infinity AbsoluteDate.
+     */
+    public boolean checkPlusInifinityDate(final AbsoluteDate date) {
+        if (date.epoch == Long.MAX_VALUE && date.offset == Double.POSITIVE_INFINITY) {
+            return true;
+        }
+        return false;
+    }
 }
