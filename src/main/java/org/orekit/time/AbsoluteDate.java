@@ -314,10 +314,21 @@ public class AbsoluteDate
         // Use 2Sum for high precision.
         final SumAndResidual sumAndResidual = MathUtils.twoSum(seconds, tsOffset);
         final long dl = (long) FastMath.floor(sumAndResidual.getSum());
+        final double regularOffset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
 
-        offset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
-        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                        time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
+        if (regularOffset >= 0) {
+            // regular case, the offset is between 0.0 and 1.0
+            offset = regularOffset;
+            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
+                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
+        } else {
+            // very rare case, the offset is just before a whole second
+            // we will loose some bits of accuracy when adding 1 second
+            // but this will ensure the offset remains in the [0.0; 1.0] interval
+            offset = 1.0 + regularOffset;
+            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
+                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl - 1;
+        }
 
     }
 
@@ -429,8 +440,18 @@ public class AbsoluteDate
             epoch  = (sumAndResidual.getSum() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
             final long dl = (long) FastMath.floor(sumAndResidual.getSum());
-            offset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
-            epoch  = since.epoch + dl;
+            final double regularOffset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
+            if (regularOffset >= 0) {
+                // regular case, the offset is between 0.0 and 1.0
+                offset = regularOffset;
+                epoch  = since.epoch + dl;
+            } else {
+                // very rare case, the offset is just before a whole second
+                // we will loose some bits of accuracy when adding 1 second
+                // but this will ensure the offset remains in the [0.0; 1.0] interval
+                offset = 1.0 + regularOffset;
+                epoch  = since.epoch + dl - 1;
+            }
         }
     }
 

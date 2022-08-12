@@ -86,7 +86,7 @@ public class CdmMetadataWriter extends AbstractWriter {
         generator.writeEntry(CdmMetadataKey.COVARIANCE_METHOD.name(),
                              metadata.getCovarianceMethod(), true);
         generator.writeEntry(CdmMetadataKey.MANEUVERABLE.name(),
-                             metadata.getManeuverable(), true);
+                             metadata.getManeuverable().getValue(), null, true);
         if (metadata.getOrbitCenter() != null) {
             generator.writeEntry(CdmMetadataKey.ORBIT_CENTER.name(),
                                  metadata.getOrbitCenter().getName(), null, false);

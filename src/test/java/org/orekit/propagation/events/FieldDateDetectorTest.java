@@ -17,6 +17,9 @@
 package org.orekit.propagation.events;
 
 import java.lang.reflect.Array;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -34,9 +37,13 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
@@ -59,21 +66,30 @@ public class FieldDateDetectorTest {
     public void testSimpleTimer() {
         doTestSimpleTimer(Decimal64Field.getInstance());
     }
+
     @Test
     public void testEmbeddedTimer() {
         doTestEmbeddedTimer(Decimal64Field.getInstance());
     }
+
     @Test
     public void testAutoEmbeddedTimer() {
         doTestAutoEmbeddedTimer(Decimal64Field.getInstance());
     }
+
     @Test(expected=IllegalArgumentException.class)
     public void testExceptionTimer() {
         doTestExceptionTimer(Decimal64Field.getInstance());
     }
+
     @Test
     public void testGenericHandler() {
         doTestGenericHandler(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue935() {
+        doTestIssue935(Decimal64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimpleTimer(final Field<T> field) {
@@ -299,6 +315,51 @@ public class FieldDateDetectorTest {
 
         //verify
         Assert.assertEquals(dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue935(Field<T> field) {
+
+        // startTime, endTime
+        long start = 1570802400000L;
+        long end = 1570838399000L;
+
+        // Build propagator
+        FieldTLE<T> tle = new FieldTLE<>(field,
+                                         "1 43197U 18015F   19284.07336221  .00000533  00000-0  24811-4 0  9998",
+                                         "2 43197  97.4059  50.1428 0017543 265.5429 181.0400 15.24136761 93779");
+        FieldPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
+
+       // Max check to seconds
+        int maxCheck = (int) ((end - start) / 2000);
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field.getZero().newInstance(maxCheck),
+                                                                    field.getZero().newInstance(1.0e-6),
+                                                                    getAbsoluteDateFromTimestamp(field, start)).
+                                    withHandler(new FieldStopOnEvent<>());
+        dateDetector.addEventDate(getAbsoluteDateFromTimestamp(field, end));
+
+        // Add event detectors to orbit
+        propagator.addEventDetector(dateDetector);
+
+        // Propagate
+        final FieldAbsoluteDate<T> startDate = getAbsoluteDateFromTimestamp(field, start);
+        final FieldAbsoluteDate<T> endDate   = getAbsoluteDateFromTimestamp(field, end);
+        FieldSpacecraftState<T> lastState = propagator.propagate(startDate, endDate.shiftedBy(1));
+        Assert.assertEquals(0.0, lastState.getDate().durationFrom(endDate).getReal(), 1.0e-15);
+
+    }
+
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getAbsoluteDateFromTimestamp(final Field<T> field,
+                                                                                                        final long timestamp) {
+        LocalDateTime utcDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                                                        ZoneId.of("UTC"));
+        int year = utcDate.getYear();
+        int month = utcDate.getMonthValue();
+        int day = utcDate.getDayOfMonth();
+        int hour = utcDate.getHour();
+        int minute = utcDate.getMinute();
+        double second = utcDate.getSecond();
+        double millis = utcDate.getNano() / 1e9;
+        return new FieldAbsoluteDate<>(field, year, month, day, hour, minute, second, TimeScalesFactory.getUTC()).shiftedBy(millis);
     }
 
     private <T extends CalculusFieldElement<T>> FieldTimeStamped<T>[] toArray(final FieldAbsoluteDate<T> date) {

@@ -322,4 +322,5 @@ public class NdmTestUtils {
         Assert.assertTrue(Precision.equalsIncludingNaN(original.doubleValue(), rebuilt.doubleValue(), ULPS));
     }
 
+
 }
