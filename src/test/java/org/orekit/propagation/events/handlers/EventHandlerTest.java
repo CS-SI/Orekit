@@ -59,7 +59,7 @@ public class EventHandlerTest {
         public Detector() {
             this.initialized = false;
         }
- 
+
         public boolean isInitialized() {
             return initialized;
         }

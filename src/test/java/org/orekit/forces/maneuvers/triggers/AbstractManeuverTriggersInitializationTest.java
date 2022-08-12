@@ -105,7 +105,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
             public SpacecraftState resetState(SpacecraftState state) {
                 return state;
             }
-            
+
         });
         return trigger;
     }

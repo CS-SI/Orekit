@@ -29,7 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 public class ViennaOneModelTest {
- 
+
     private static double epsilon = 1e-6;
 
     @BeforeClass
@@ -44,7 +44,7 @@ public class ViennaOneModelTest {
 
     @Test
     public void testMappingFactors() {
-        
+
         // Site (NRAO, Green Bank, WV): latitude:  38°
         //                              longitude: 280°
         //                              height:    824.17 m
@@ -69,7 +69,7 @@ public class ViennaOneModelTest {
         //
 
         final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(38.0);
         final double longitude    = FastMath.toRadians(280.0);
         final double height       = 824.17;
@@ -78,14 +78,14 @@ public class ViennaOneModelTest {
         final double elevation     = 0.5 * FastMath.PI - 1.278564131;
         final double expectedHydro = 3.425088;
         final double expectedWet   = 3.448300;
-        
+
         final double[] a = { 0.00127683, 0.00060955 };
         final double[] z = {2.0966, 0.2140};
-        
+
         final ViennaOneModel model = new ViennaOneModel(a, z);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
+
         Assert.assertEquals(expectedHydro, computedMapping[0], 4.1e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
     }

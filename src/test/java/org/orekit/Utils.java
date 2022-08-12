@@ -97,7 +97,7 @@ public class Utils {
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
-        
+
     }
 
     public static DataContext setDataRoot(String root) {

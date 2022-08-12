@@ -300,13 +300,13 @@ public class CPFWriterTest {
         assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
 
     }
-    
-    /** Test for issue #790 (https://gitlab.orekit.org/orekit/orekit/-/issues/790). 
+
+    /** Test for issue #790 (https://gitlab.orekit.org/orekit/orekit/-/issues/790).
      * @throws URISyntaxException */
     @Test
     public void testIssue790() throws IOException, URISyntaxException {
 
-    	 final TimeScale utc = TimeScalesFactory.getUTC();
+         final TimeScale utc = TimeScalesFactory.getUTC();
          final AbsoluteDate date = new AbsoluteDate(2022, 05, 10, 00, 00, 00.000, utc);
 
          // General orbit
@@ -318,12 +318,12 @@ public class CPFWriterTest {
          double lM = 0;                           // mean anomaly
 
          Orbit orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
-         									   FramesFactory.getEME2000(), date, 
-         									   Constants.WGS84_EARTH_MU);
-         
+                                                FramesFactory.getEME2000(), date,
+                                                Constants.WGS84_EARTH_MU);
+
          // First, configure a propagation with the default event handler (expected to stop on event)
          Propagator propagator = new KeplerianPropagator(orbit);
-         
+
          final double propagationDurationSeconds = 86400.0;
          final double stepSizeSeconds = 60.0;
          List<SpacecraftState> states = new ArrayList<SpacecraftState>();
@@ -354,16 +354,16 @@ public class CPFWriterTest {
 
         // First launch the test with velocity flag enabled
         boolean velocityFlag = true;
-        
+
         // Write the CPF file from the generated ephemeris
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(headerV1, TimeScalesFactory.getUTC(), velocityFlag);
         writer.write(tempCPFFilePath, ephemerisFile);
-        
+
         // Parse the generated CPF file
         final CPF generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
-        
-        
+
+
         // Extract the coordinates from the generated CPF file
         final CPFEphemeris ephemeris    = generatedCpfFile.getSatellites().get("070595");
         final List<CPFCoordinate> coord = ephemeris.getCoordinates();
@@ -376,19 +376,19 @@ public class CPFWriterTest {
         Assert.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
         Assert.assertEquals(0.0, firstVel.distance(coord.get(0).getVelocity()), 1.0e-15);
         Assert.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
-        
-        
+
+
         // Repeat without velocity components for regression testing
-        
+
         // Write the CPF file from the generated ephemeris
         String tempCPFFilePathReg = tempFolder.newFile("TestWriteCPFReg.cpf").toString();
         CPFWriter writerReg = new CPFWriter(headerV1, TimeScalesFactory.getUTC());
         writerReg.write(tempCPFFilePathReg, ephemerisFile);
-        
+
         // Parse the generated CPF file
         final CPF generatedCpfFileReg = new CPFParser().parse(new DataSource(tempCPFFilePathReg));
-        
-        
+
+
         // Extract the coordinates from the generated CPF file
         final CPFEphemeris ephemerisReg    = generatedCpfFileReg.getSatellites().get("070595");
         final List<CPFCoordinate> coordReg = ephemerisReg.getCoordinates();
@@ -398,7 +398,7 @@ public class CPFWriterTest {
         Assert.assertEquals(0.0, firstPos.distance(coordReg.get(0).getPosition()), 1.0e-15);
         Assert.assertEquals(0.0, coordReg.get(0).getVelocity().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, firstEpoch.durationFrom(coordReg.get(0).getDate()), 1.0e-15);
-        
+
     }
 
     @Test

@@ -161,8 +161,18 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
             epoch = (sumAndResidual.getSum().getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
             final long dl = (long) FastMath.floor(sumAndResidual.getSum().getReal());
-            offset = sumAndResidual.getSum().subtract(dl).add(sumAndResidual.getResidual());
-            epoch = since.epoch + dl;
+            final T regularOffset = sumAndResidual.getSum().subtract(dl).add(sumAndResidual.getResidual());
+            if (regularOffset.getReal() >= 0) {
+                // regular case, the offset is between 0.0 and 1.0
+                offset = regularOffset;
+                epoch = since.epoch + dl;
+            } else {
+                // very rare case, the offset is just before a whole second
+                // we will loose some bits of accuracy when adding 1 second
+                // but this will ensure the offset remains in the [0.0; 1.0] interval
+                offset = regularOffset.add(1.0);
+                epoch  = since.epoch + dl - 1;
+            }
         }
     }
 
@@ -208,11 +218,20 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         // Use 2Sum for high precision.
         final SumAndResidual sumAndResidual = MathUtils.twoSum(seconds, tsOffset);
         final long dl = (long) FastMath.floor(sumAndResidual.getSum());
-
-        offset = field.getZero().add((sumAndResidual.getSum() - dl) + sumAndResidual.getResidual());
-
-        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                        time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
+        final T regularOffset = field.getZero().add((sumAndResidual.getSum() - dl) + sumAndResidual.getResidual());
+        if (regularOffset.getReal() >= 0) {
+            // regular case, the offset is between 0.0 and 1.0
+            offset = regularOffset;
+            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
+                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
+        } else {
+            // very rare case, the offset is just before a whole second
+            // we will loose some bits of accuracy when adding 1 second
+            // but this will ensure the offset remains in the [0.0; 1.0] interval
+            offset = regularOffset.add(1.0);
+            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
+                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl - 1;
+        }
         this.field = field;
 
     }
@@ -366,11 +385,21 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         final FieldSumAndResidual<T> sumAndResidual = MathUtils.twoSum(field.getZero().add(tA), tB);
         if (Double.isInfinite(sumAndResidual.getSum().getReal())) {
             this.offset = sumAndResidual.getSum();
-            this.epoch = (sumAndResidual.getSum().getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+            this.epoch  = (sumAndResidual.getSum().getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
             final long dl = (long) FastMath.floor(sumAndResidual.getSum().getReal());
-            this.offset = sumAndResidual.getSum().subtract(dl).add(sumAndResidual.getResidual());
-            this.epoch = epoch + dl;
+            final T regularOffset = sumAndResidual.getSum().subtract(dl).add(sumAndResidual.getResidual());
+            if (regularOffset.getReal() >= 0) {
+                // regular case, the offset is between 0.0 and 1.0
+                this.offset = regularOffset;
+                this.epoch  = epoch + dl;
+            } else {
+                // very rare case, the offset is just before a whole second
+                // we will loose some bits of accuracy when adding 1 second
+                // but this will ensure the offset remains in the [0.0; 1.0) interval
+                this.offset = regularOffset.add(1.0);
+                this.epoch  = epoch + dl - 1;
+            }
         }
     }
 

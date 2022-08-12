@@ -20,7 +20,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class RinexFrequencyTest {
-        
+
     @Test
     public void testMeasurementType() {
         for (final ObservationType rf : ObservationType.values()) {

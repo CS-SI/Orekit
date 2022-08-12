@@ -53,7 +53,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
- 
+
 /*
  * Test code based on the CssiSpaceWeatherDataTest class
  * by Clément Jonglez.
@@ -62,9 +62,9 @@ import org.orekit.utils.IERSConventions;
  */
 
 public class DtcDataLoaderTest {
-    
+
     private TimeScale utc;
-    
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
@@ -75,15 +75,15 @@ public class DtcDataLoaderTest {
     private JB2008SpaceEnvironmentData loadJB() {
         return loadJB("DTCFILE_trunc.TXT");
     }
-    
+
     // DataLoader with DTCFILE filename to be defined
     private JB2008SpaceEnvironmentData loadJB(final String filename) {
         JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData("SOLFSMY_trunc.txt", filename);
         return JBData;
     }
-    
 
-    
+
+
     @Test
     public void testNoDataException() {
         try {
@@ -93,7 +93,7 @@ public class DtcDataLoaderTest {
             Assert.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
         }
     }
-    
+
     @Test
     public void testUnableParse() {
         try {
@@ -110,39 +110,39 @@ public class DtcDataLoaderTest {
         final AbsoluteDate date = new AbsoluteDate(2004, 1, 1, 0, 0, 0.0, utc);
         assertThat(135.0, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
-    
-    
+
+
     @Test
     public void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 26, 12, 0, 0.0, utc);
         Assert.assertEquals(startDate, JBData.getMinDate());
     }
-    
 
-    
+
+
     @Test
     public void testMaxDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate lastDate = new AbsoluteDate(2007, 1, 1, 12, 0, 0.0, utc);
         Assert.assertEquals(lastDate, JBData.getMaxDate());
     }
-    
+
     @Test
     public void testDTC() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate date = new AbsoluteDate(2004, 1, 1, 0, 0, 0.0, utc);
         assertThat(135.0, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
-    
+
     @Test
     public void testDTCInterp() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate date = new AbsoluteDate(2004, 1, 3, 0, 30, 0.0, utc);
         assertThat((85.0 + 94.0)/2, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
-    
-    
+
+
     @Test
     public void testBracketDateDTC_lastDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
@@ -154,7 +154,7 @@ public class DtcDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
         }
     }
-    
+
     @Test
     public void testBracketDateDTC_firstDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
@@ -166,7 +166,7 @@ public class DtcDataLoaderTest {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
-    
+
     /**
      * Check integration error is small when integrating the same equations over the same
      * interval.
@@ -211,7 +211,7 @@ public class DtcDataLoaderTest {
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));
 
     }
-    
+
     /**
      * Configure a numerical propagator with DTM2000 atmosphere.
      *
@@ -236,4 +236,4 @@ public class DtcDataLoaderTest {
         return propagator;
     }
 }
-    
+

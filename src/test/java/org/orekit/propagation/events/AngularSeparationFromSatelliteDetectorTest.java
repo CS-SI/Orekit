@@ -53,7 +53,7 @@ public class AngularSeparationFromSatelliteDetectorTest {
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(3600 * 2));
         Assert.assertEquals(4587.6472, finalState.getDate().durationFrom(iniDate), 1.0e-3);
-        
+
         final PVCoordinates sPV = finalState.getPVCoordinates();
         final PVCoordinates primaryPV   = sun       .getPVCoordinates(finalState.getDate(), finalState.getFrame());
         final PVCoordinates secondaryPV = acatenango.getPVCoordinates(finalState.getDate(), finalState.getFrame());

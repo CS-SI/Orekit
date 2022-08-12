@@ -49,7 +49,7 @@ public class SsrIgm05Test {
                          "000001" +                           // Satellite ID
                          "00010" +                            // No. of Biases Processed
                          "00001" +                            // GNSS Signal and Tracking Mode Identifier
-                         "00111010111111"+                    // Code Bias 
+                         "00111010111111"+                    // Code Bias
                          "00010" +                            // GNSS Signal and Tracking Mode Identifier
                          "001110101110100";                   // Code Bias
 
@@ -103,7 +103,7 @@ public class SsrIgm05Test {
                          "001100" +                           // Satellite ID
                          "00010" +                            // No. of Biases Processed
                          "00001" +                            // GNSS Signal and Tracking Mode Identifier
-                         "00111010111111"+                    // Code Bias 
+                         "00111010111111"+                    // Code Bias
                          "00010" +                            // GNSS Signal and Tracking Mode Identifier
                          "001110101110100";                   // Code Bias
 
@@ -157,7 +157,7 @@ public class SsrIgm05Test {
                         "000001" +                           // Satellite ID
                         "00010" +                            // No. of Biases Processed
                         "00001" +                            // GNSS Signal and Tracking Mode Identifier
-                        "00111010111111"+                    // Code Bias 
+                        "00111010111111"+                    // Code Bias
                         "00010" +                            // GNSS Signal and Tracking Mode Identifier
                         "00111010111010";                    // Code Bias
 

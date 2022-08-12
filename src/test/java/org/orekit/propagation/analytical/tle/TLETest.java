@@ -665,7 +665,7 @@ public class TLETest {
                                    "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
         String filename = tempFolder.newFile("file.ser").toString();
 
-        // Serialization 
+        // Serialization
         FileOutputStream fileSer = new FileOutputStream(filename);
         ObjectOutputStream outSer = new ObjectOutputStream(fileSer);
         outSer.writeObject(tleISS);

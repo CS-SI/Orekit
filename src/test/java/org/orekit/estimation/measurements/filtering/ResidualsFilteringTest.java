@@ -65,7 +65,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class ResidualsFilteringTest {
-    
+
 
     @Before
     public void setUp() {
@@ -79,7 +79,7 @@ public class ResidualsFilteringTest {
         propa.resetInitialState(new SpacecraftState(orbit));
         return propa;
     }
-    
+
     private MeasurementBuilder<Range> getBuilder(final RandomGenerator random,
                                                    final GroundStation groundStation,
                                                    final ObservableSatellite satellite, final double noise) {
@@ -89,14 +89,14 @@ public class ResidualsFilteringTest {
                                          groundStation, false, 1.0, 1.0, satellite);
         return rb;
     }
-    
+
     private ElevationDetector getElvetaionDetector(final TopocentricFrame topo, final double minElevation) {
         ElevationDetector detector =
                         new ElevationDetector(topo).
                         withConstantElevation(FastMath.toRadians(5.0));
         return detector;
     }
-    
+
     private Generator getGenerator(final Orbit orbit, final GroundStation station, final ObservableSatellite satellite, final TopocentricFrame topo, final double noise) {
         Generator generator = new Generator();
         Propagator propagator = buildPropagator(orbit);
@@ -109,11 +109,11 @@ public class ResidualsFilteringTest {
         generator.addScheduler(scheduler);
         return generator;
     }
-    
-    
+
+
     @Test
     public void testFilterWithoutRejection() {
-        
+
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
         final Vector3D pos = new Vector3D(17427070, -1841865, 20201040);
@@ -121,7 +121,7 @@ public class ResidualsFilteringTest {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel),
                                   FramesFactory.getEME2000(), date,
                                   Constants.EGM96_EARTH_MU);
-        
+
         //Create the measurements generator.
         final Frame bodyFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final double equatorialRadius = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
@@ -131,7 +131,7 @@ public class ResidualsFilteringTest {
         final TopocentricFrame topo = new TopocentricFrame(body, position, "SBCH");
         final ObservableSatellite satellite = new ObservableSatellite(0);
         final GroundStation station = new GroundStation(topo);
-        
+
         final double noise      = 1;
         final double threshold  = 2.7;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
@@ -150,10 +150,10 @@ public class ResidualsFilteringTest {
         }
         Assert.assertEquals(processMeasurements.size(), measurements.size());
     }
-    
+
     @Test
     public void testFilterWithRejection() {
-        
+
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
         final Vector3D pos = new Vector3D(17427070, -1841865, 20201040);
@@ -161,7 +161,7 @@ public class ResidualsFilteringTest {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel),
                                   FramesFactory.getEME2000(), date,
                                   Constants.EGM96_EARTH_MU);
-        
+
         //Create the measurements generator.
         final Frame bodyFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final double equatorialRadius = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
@@ -171,7 +171,7 @@ public class ResidualsFilteringTest {
         final TopocentricFrame topo = new TopocentricFrame(body, position, "SBCH");
         final ObservableSatellite satellite = new ObservableSatellite(0);
         final GroundStation station = new GroundStation(topo);
-        
+
         final double noise = 20;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
         SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
@@ -179,7 +179,7 @@ public class ResidualsFilteringTest {
 
         final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
         for (ObservedMeasurement<?> meas : measurements) {
-        	final Range range = (Range) meas;
+            final Range range = (Range) meas;
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
             filter.filter(range, currentSC);

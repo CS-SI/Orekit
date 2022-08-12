@@ -44,20 +44,20 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Check against prediction in
- * 
+ *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- * 
+ *
  * An approximate value is given in terms of delay for Galileo satellites.
- * As these satellites are close to GPS satellites, we consider the delays to be 
+ * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
  *
  * The values produced by the modifiers are translated in terms of delay and checked against
- * the approximate value. 
+ * the approximate value.
  */
 
 public class RelativisticJ2ClockPhaseModifierTest {
 
-    
+
     @Test
     public void testRelativisticClockCorrection() {
 
@@ -104,7 +104,7 @@ public class RelativisticJ2ClockPhaseModifierTest {
         Assert.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
-        final RelativisticJ2ClockPhaseModifier modifier = new RelativisticJ2ClockPhaseModifier(Constants.WGS84_EARTH_MU, 
+        final RelativisticJ2ClockPhaseModifier modifier = new RelativisticJ2ClockPhaseModifier(Constants.WGS84_EARTH_MU,
                 Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         modifier.modify(estimated);
         Assert.assertEquals(0, modifier.getParametersDrivers().size());

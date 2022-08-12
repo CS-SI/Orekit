@@ -191,7 +191,7 @@ public class EphemerisWriterTest {
 
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(),
-                                                     oem.getSegments().get(0).getMetadata(), 
+                                                     oem.getSegments().get(0).getMetadata(),
                                                      FileFormat.KVN, "TestOEMIssue723.aem", 0);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, oem);
@@ -285,14 +285,14 @@ public class EphemerisWriterTest {
         }
         assertEquals(block1.getCovarianceMatrices().size(), block2.getCovarianceMatrices().size());
         for (int j = 0; j < block1.getCovarianceMatrices().size(); j++) {
-        	CartesianCovariance covMat1 = block1.getCovarianceMatrices().get(j);
-        	CartesianCovariance covMat2 = block2.getCovarianceMatrices().get(j);
-        	assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
+            CartesianCovariance covMat1 = block1.getCovarianceMatrices().get(j);
+            CartesianCovariance covMat2 = block2.getCovarianceMatrices().get(j);
+            assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
             assertEquals(covMat1.getReferenceFrame().asFrame(),               covMat2.getReferenceFrame().asFrame());
             assertEquals(covMat1.getReferenceFrame().asCelestialBodyFrame(),  covMat2.getReferenceFrame().asCelestialBodyFrame());
             assertEquals(covMat1.getReferenceFrame().asOrbitRelativeFrame(),  covMat2.getReferenceFrame().asOrbitRelativeFrame());
             assertEquals(covMat1.getReferenceFrame().asSpacecraftBodyFrame(), covMat2.getReferenceFrame().asSpacecraftBodyFrame());
-        	assertEquals(covMat1.getCovarianceMatrix(),covMat2.getCovarianceMatrix());       	
+            assertEquals(covMat1.getCovarianceMatrix(),covMat2.getCovarianceMatrix());
         }
     }
 

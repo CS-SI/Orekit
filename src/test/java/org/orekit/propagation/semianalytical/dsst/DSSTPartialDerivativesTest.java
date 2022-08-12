@@ -89,11 +89,11 @@ public class DSSTPartialDerivativesTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        
+
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        
+
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
                                                       new IsotropicDrag(2.5, 1.2),
                                                       provider.getMu());
@@ -227,24 +227,24 @@ public class DSSTPartialDerivativesTest {
     public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
         doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
     }
-    
+
     private void doTestPropagation(PropagationType type,
                                   double tolerance)
         throws FileNotFoundException, UnsupportedEncodingException {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        
+
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
-        
+
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
 
         Orbit initialOrbit =
@@ -322,7 +322,7 @@ public class DSSTPartialDerivativesTest {
                 setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
         new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
      }
-    
+
     @Test(expected=OrekitException.class)
     public void testTooSmallDimension() {
         Orbit initialOrbit =
@@ -354,7 +354,7 @@ public class DSSTPartialDerivativesTest {
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[8][6], new double[6][2]);
      }
-    
+
     @Test(expected=OrekitException.class)
     public void testMismatchedDimensions() {
         Orbit initialOrbit =
@@ -370,7 +370,7 @@ public class DSSTPartialDerivativesTest {
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[6][6], new double[7][2]);
      }
-    
+
     @Test
     public void testWrongParametersDimension() {
         Orbit initialOrbit =
@@ -450,7 +450,7 @@ public class DSSTPartialDerivativesTest {
 
         final double minStep = 6000.0;
         final double maxStep = 86400.0;
-        
+
         double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         DSSTPropagator propagator =
             new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
@@ -510,7 +510,7 @@ public class DSSTPartialDerivativesTest {
         }
 
     }
-    
+
     /** Test to ensure correct Jacobian values.
      * In MEAN case, Jacobian should be a 6x6 identity matrix.
      * In OSCULATING cas, first and last lines are compared to reference values.
@@ -518,18 +518,18 @@ public class DSSTPartialDerivativesTest {
     @Test
     public void testIssue713() {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        
+
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
-        
+
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
 
         Orbit initialOrbit =
@@ -540,7 +540,7 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        
+
         // Test MEAN case
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagatorMEAN.setMu(provider.getMu());
@@ -552,7 +552,7 @@ public class DSSTPartialDerivativesTest {
         double[][] dYdY0MEAN =  new double[DSSTJacobiansMapper.STATE_DIMENSION][DSSTJacobiansMapper.STATE_DIMENSION];
         mapperMEAN.getStateJacobian(initialStateMEAN, dYdY0MEAN);
         for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) { 
+            for (int j = 0; j < 6; ++j) {
                 if (i == j) {
                     Assert.assertEquals(1.0, dYdY0MEAN[i][j], 1e-9);
                 }
@@ -578,7 +578,7 @@ public class DSSTPartialDerivativesTest {
             Assert.assertEquals(refLine1[i], dYdY0OSC[0][i], 1e-4);
             Assert.assertEquals(refLine6[i], dYdY0OSC[5][i], 1e-4);
         }
-        
+
     }
 
     @Before

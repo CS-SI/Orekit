@@ -246,9 +246,9 @@ public class NumericalConverterTest {
 
         builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
-    	    public String getName() {
-    	        return "linear";
-    	    }
+            public String getName() {
+                return "linear";
+            }
 
             public int getDimension() {
                 return 1;
@@ -272,7 +272,7 @@ public class NumericalConverterTest {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
     }
-    
+
     @Test
     public void testDeselectOrbitals() {
         // Integrator builder

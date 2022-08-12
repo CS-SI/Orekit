@@ -52,7 +52,7 @@ public class NtripClientTest {
             Assert.assertEquals(nonExistant, me.getParts()[0]);
         }
     }
-    
+
     @Test
     public void testUnknownCaster() {
         final String nonExistant = "caster.invalid";

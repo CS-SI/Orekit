@@ -46,7 +46,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         for (int k = 0; k < 1000; ++k) {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
-   
+
             final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
 
@@ -76,7 +76,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         // Using this comparator, only one solution can be added to the list
         // In reality, two solutions are found with these inputs (see testJoostenTiberiusFAQ())
         reducer.setComparator(new Comparator<IntegerLeastSquareSolution>() {
-            
+
             @Override
             public int compare(final IntegerLeastSquareSolution o1,
                                final IntegerLeastSquareSolution o2) {
@@ -153,7 +153,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         for (int k = 0; k < 1000; ++k) {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
-   
+
             final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
 

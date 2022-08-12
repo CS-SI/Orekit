@@ -70,7 +70,7 @@ public class GalileoPropagatorTest {
         goe.setCis(-1.862645149230957E-8);
         goe.setDate(new GNSSDate(goe.getWeek(), 1000. * goe.getTime(), SatelliteSystem.GALILEO).getDate());
     }
-    
+
     @BeforeClass
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
@@ -213,7 +213,7 @@ public class GalileoPropagatorTest {
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
         Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
-        Assert.assertEquals(Vector3D.NaN, pv0.getVelocity()); 
+        Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
     }
 
 }

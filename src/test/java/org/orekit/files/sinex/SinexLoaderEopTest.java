@@ -171,7 +171,7 @@ public class SinexLoaderEopTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         loader.fillHistory(converter, history);
-        
+
         // Setting up the date
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43185);
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
@@ -188,7 +188,7 @@ public class SinexLoaderEopTest {
 
         DataContext.getDefault().getFrames().addEOPHistoryLoader(IERSConventions.IERS_2010, loader);
         EOPHistory eopHistory =DataContext.getDefault().getFrames().getEOPHistory(IERSConventions.IERS_2010, true);
-        
+
         Assert.assertEquals(unitConvRad.convert(7.68783442726072E+01), eopHistory.getPoleCorrection(date.shiftedBy(10)).getXp(), 1e-15);
         Assert.assertEquals(unitConvRad.convert(3.47286203337827E+02), eopHistory.getPoleCorrection(date.shiftedBy(10)).getYp(), 1e-15);
         Assert.assertEquals(-3.17284190690589E+04, eopHistory.getUT1MinusUTC(date.shiftedBy(10)) * 1000, 1e-15);
@@ -202,7 +202,7 @@ public class SinexLoaderEopTest {
     @Test
     // Case NUT_X, NUT_OB != null, NUT_LN, NUT_Y == null
     public void testSmallSinexEopSynth3File() {
-        
+
         // Setting up the Sinex loader
         SinexLoader loader = new SinexLoader("cod20842-small-synthEOP3.snx");
         loader.setITRFVersion(2014);
@@ -320,7 +320,7 @@ public class SinexLoaderEopTest {
         AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351 + 43185.0);
         AbsoluteDate date3 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 352 + 43185.0);
 
-        // Intermediate shared date between two files 
+        // Intermediate shared date between two files
         AbsoluteDate dateI12 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1)).shiftedBy(0);
         AbsoluteDate dateI23 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1)).shiftedBy(0);
 

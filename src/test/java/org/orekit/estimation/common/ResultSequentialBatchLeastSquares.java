@@ -26,12 +26,12 @@ public class ResultSequentialBatchLeastSquares {
 
     ParameterDriversList propagatorParameters  ;
     ParameterDriversList measurementsParameters;
-    
+
     private int numberOfIteration;
     private int numberOfEvaluation;
     private TimeStampedPVCoordinates estimatedPV;
     private RealMatrix covariances;
-    
+
     private int numberOfIterationSequential;
     private int numberOfEvaluationSequential;
     private TimeStampedPVCoordinates estimatedPVSequential;
@@ -48,21 +48,21 @@ public class ResultSequentialBatchLeastSquares {
         // Common objects
         this.propagatorParameters   = propagatorParameters;
         this.measurementsParameters = measurementsParameters;
-        
+
         // Only BLS
         this.numberOfIteration      = numberOfIteration;
         this.numberOfEvaluation     = numberOfEvaluation;
         this.estimatedPV            = estimatedPV;
         this.covariances            = covariances;
-        
+
         // Only SBLS
         this.numberOfIterationSequential      = numberOfIterationSequential;
         this.numberOfEvaluationSequential     = numberOfEvaluationSequential;
         this.estimatedPVSequential            = estimatedPVSequential;
         this.covariancesSequential            = covariancesSequential;
-        
-        
-        
+
+
+
     }
 
     public int getNumberOfIteration() {
@@ -88,7 +88,7 @@ public class ResultSequentialBatchLeastSquares {
     public ParameterDriversList getMeasurementsParameters() {
         return measurementsParameters;
     }
-    
+
     public int getNumberOfIterationSequential() {
         return numberOfIterationSequential;
     }

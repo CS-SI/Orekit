@@ -87,11 +87,11 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        
+
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        
+
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
                                                       new IsotropicDrag(2.5, 1.2),
                                                       provider.getMu());
@@ -254,7 +254,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
 
         final double minStep = 6000.0;
         final double maxStep = 86400.0;
-        
+
         double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         DSSTPropagator propagator =
             new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);

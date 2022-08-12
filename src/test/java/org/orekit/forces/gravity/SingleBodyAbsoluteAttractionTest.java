@@ -177,7 +177,7 @@ public class SingleBodyAbsoluteAttractionTest extends AbstractLegacyForceModelTe
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-16, 5.0e-09, 3.0e-10, 7.0e-10,
@@ -233,7 +233,7 @@ public class SingleBodyAbsoluteAttractionTest extends AbstractLegacyForceModelTe
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-16, 1.3e-02, 2.9e-4, 1.3e-3,

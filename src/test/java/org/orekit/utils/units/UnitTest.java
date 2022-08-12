@@ -52,7 +52,7 @@ public class UnitTest {
         Assert.assertEquals("1", Unit.PERCENT.sameDimensionSI().getName());
         Assert.assertEquals("m³.s⁻²", Unit.parse("km**3/s**2").sameDimensionSI().getName());
         Assert.assertEquals("m⁻³.s⁻⁶.rad^(2/5)", Unit.parse("µas^(2/5)/(h**(2)×m)³").sameDimensionSI().getName());
-        
+
     }
 
     @Test
@@ -69,7 +69,7 @@ public class UnitTest {
     }
 
     @Test
-    public void testReference() {                                
+    public void testReference() {
         checkReference(Unit.NONE,                        "n/a",                     1.0,  0,  0,  0,  0, 0);
         checkReference(Unit.ONE,                           "1",                     1.0,  0,  0,  0,  0, 0);
         checkReference(Unit.PERCENT,                       "%",                    0.01,  0,  0,  0,  0, 0);

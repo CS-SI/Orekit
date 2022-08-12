@@ -355,13 +355,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
-        
-        
+
+
 
         // read sinex files
         final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
         final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
-        
+
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
@@ -465,7 +465,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         final PositionOnlyLog positionOnlyLog    = new PositionOnlyLog();
         final PositionLog     positionLog        = new PositionLog();
         final VelocityLog     velocityLog        = new VelocityLog();
-        
+
         // gravity field
         createGravityField(parser);
 
@@ -561,12 +561,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         if (print) {
             final String headerSBLS = "\nSequentiel Batch Least Square Estimator :\n"
                             + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
-            
+
             estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerSBLS, print));
         }
-        
+
         final Orbit estimatedSequentialBLS = estimator.estimate()[0].getInitialState().getOrbit();
-        
+
         // compute some statistics
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
             logEvaluation(entry.getValue(),
@@ -575,11 +575,11 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
-        
+
         return new ResultSequentialBatchLeastSquares(propagatorParameters, measurementsParameters,
                                            iterationCount, evalutionCount, estimatedBLS.getPVCoordinates(),
                                            positionLog.createStatisticsSummary(),
-                                           covariance, 
+                                           covariance,
                                            estimator.getIterationsCount(), estimator.getEvaluationsCount(),
                                            estimatedSequentialBLS.getPVCoordinates(), positionLog.createStatisticsSummary(),
                                            estimator.getPhysicalCovariances(1.0e-10));
@@ -644,7 +644,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         // read sinex files
         final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
         final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
-        
+
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
@@ -719,18 +719,18 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         }
         // Sort the list lexicographically
         estimatedMeasurementsParameters.sort();
-        
+
         // Orbital covariance matrix initialization
         // Jacobian of the orbital parameters w/r to Cartesian
         final double[][] dYdC = new double[6][6];
         initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngle(), dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
-        RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));  
+        RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));
 
         // Orbital process noise matrix
         RealMatrix orbitalQ = Jac.multiply(cartesianOrbitalQ.multiply(Jac.transpose()));
 
-        
+
         // Build the full covariance matrix and process noise matrix
         final int nbPropag = (propagationP != null)?propagationP.getRowDimension():0;
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6 + nbPropag,
@@ -740,7 +740,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         // Orbital part
         initialP.setSubMatrix(orbitalP.getData(), 0, 0);
         Q.setSubMatrix(orbitalQ.getData(), 0, 0);
-        
+
         // Propagation part
         if (propagationP != null) {
             initialP.setSubMatrix(propagationP.getData(), 6, 6);
@@ -775,7 +775,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
                 // Current estimated measurement
                 final ObservedMeasurement<?>  observedMeasurement  = estimatedMeasurement.getObservedMeasurement();
-                
+
                 // Measurement type & Station name
                 String measType    = "";
                 String stationName = "";
@@ -800,7 +800,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 } else if (observedMeasurement instanceof Position) {
                     measType    = "POSITION";
                 }
-                
+
 
                 // Print data on terminal
                 // ----------------------
@@ -852,12 +852,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                     final double DVcorr       = Vector3D.distance(predictedV, estimatedV);
 
                     line = String.format(Locale.US, lineFormat,
-                                         currentNumber, currentDate.toString(), 
+                                         currentNumber, currentDate.toString(),
                                          currentDate.durationFrom(t0), currentStatus.toString(),
                                          measType, stationName,
                                          DPcorr, DVcorr);
 
-                    // Handle parameters printing (value and error) 
+                    // Handle parameters printing (value and error)
                     int jPar = 0;
                     final RealMatrix Pest = estimation.getPhysicalEstimatedCovarianceMatrix();
                     // Orbital drivers
@@ -885,7 +885,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             }
         });
 
-        // Process the list measurements 
+        // Process the list measurements
         final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
 
         // Get the last estimated physical covariances
@@ -897,7 +897,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         // Eventually, print parameter changes, statistics and covariances
         if (print) {
-            
+
             // Display parameter change for non orbital drivers
             int length = 0;
             for (final ParameterDriver parameterDriver : propagationParameters.getDrivers()) {
@@ -914,7 +914,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
                                          true, length, measurementsParameters);
             }
-            
+
             // Measurements statistics summary
             System.out.println("");
             rangeLog.displaySummary(System.out);
@@ -924,7 +924,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             positionOnlyLog.displaySummary(System.out);
             positionLog.displaySummary(System.out);
             velocityLog.displaySummary(System.out);
-            
+
             // Covariances and sigmas
             displayFinalCovariances(System.out, kalman);
         }
@@ -1003,7 +1003,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
          final Propagator propagator =
                          propagatorBuilder.buildPropagator(propagatorBuilder.
                                                            getSelectedNormalizedParameters());
-         
+
          // Propagate until last date and return the orbit
          return propagator.propagate(finalDate).getOrbit();
 
@@ -1658,30 +1658,30 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                         // Initial model used to initialize the time span tropospheric model
                         final EstimatedTroposphericModel initialModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
                                                                                                        stationTroposphericZenithDelay[i]);
-    
+
                         // Initialize the time span tropospheric model
                         final TimeSpanEstimatedTroposphericModel timeSpanModel = new TimeSpanEstimatedTroposphericModel(initialModel);
-    
+
                         // Median date
                         final AbsoluteDate epoch = parser.getDate(ParameterKey.TROPOSPHERIC_CORRECTION_DATE, TimeScalesFactory.getUTC());
-    
+
                         // Station name
                         final String subName = stationNames[i].substring(0, 5);
-    
+
                         // Estimated tropospheric model BEFORE the median date
                         final EstimatedTroposphericModel modelBefore = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
                                                                                                       stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
                         totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayBefore.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
-    
+
                         // Estimated tropospheric model AFTER the median date
                         final EstimatedTroposphericModel modelAfter = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
                                                                                                      stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayAfter.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
-    
+
                         // Add models to the time span tropospheric model
                         // A very ugly trick is used when no measurements are available for a specific time span.
                         // Indeed, the tropospheric parameter will not be estimated for the time span with no measurements.
@@ -1699,19 +1699,19 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                         } else {
                             timeSpanModel.addTroposphericModelValidAfter(modelAfter, epoch);
                         }
-    
+
                         troposphericModel = timeSpanModel;
-                        
+
                     } else {
-                        
+
                         troposphericModel = new EstimatedTroposphericModel(temperature, pressure,
                                                                            mappingModel, stationTroposphericZenithDelay[i]);
                         final ParameterDriver driver = troposphericModel.getParametersDrivers().get(0);
                         driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
                         driver.setSelected(stationZenithDelayEstimated[i]);
-                        
+
                     }
-                    
+
                 } else {
                     // Empirical tropospheric model
                     troposphericModel = SaastamoinenModel.getStandardModel();
@@ -1943,7 +1943,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                                        final OrbitDeterminationPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
-        
+
         final double convergenceThreshold;
         if (!parser.containsKey(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD)) {
             convergenceThreshold = 1.0e-3;
@@ -2508,30 +2508,30 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         }
 
     }
-    
-    /** Display covariances and sigmas as predicted by a Kalman filter at date t. 
+
+    /** Display covariances and sigmas as predicted by a Kalman filter at date t.
      */
     private void displayFinalCovariances(final PrintStream logStream, final KalmanEstimator kalman) {
-        
+
 //        // Get kalman estimated propagator
 //        final NumericalPropagator kalmanProp = kalman.getProcessModel().getEstimatedPropagator();
-//        
+//
 //        // Link the partial derivatives to this propagator
 //        final String equationName = "kalman-derivatives";
 //        PartialDerivativesEquations kalmanDerivatives = new PartialDerivativesEquations(equationName, kalmanProp);
-//        
+//
 //        // Initialize the derivatives
 //        final SpacecraftState rawState = kalmanProp.getInitialState();
 //        final SpacecraftState stateWithDerivatives =
 //                        kalmanDerivatives.setInitialJacobians(rawState);
 //        kalmanProp.resetInitialState(stateWithDerivatives);
-//        
+//
 //        // Propagate to target date
 //        final SpacecraftState kalmanState = kalmanProp.propagate(targetDate);
-//        
+//
 //        // Compute STM
 //        RealMatrix STM = kalman.getProcessModel().getErrorStateTransitionMatrix(kalmanState, kalmanDerivatives);
-//        
+//
 //        // Compute covariance matrix
 //        RealMatrix P = kalman.getProcessModel().unNormalizeCovarianceMatrix(kalman.predictCovariance(STM,
 //                                                                              kalman.getProcessModel().getProcessNoiseMatrix()));
@@ -2554,14 +2554,14 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         if (paramSize < 20) {
             paramSize = 20;
         }
-        
+
         // Header
         logStream.format("\n%s\n", "Kalman Final Covariances:");
 //        logStream.format(Locale.US, "\tDate: %-23s UTC\n",
 //                         targetDate.toString(TimeScalesFactory.getUTC()));
         logStream.format(Locale.US, "\tDate: %-23s UTC\n",
                          kalman.getCurrentDate().toString(TimeScalesFactory.getUTC()));
-        
+
         // Covariances
         String strFormat = String.format("%%%2ds  ", paramSize);
         logStream.format(strFormat, "Covariances:");
@@ -2577,13 +2577,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             }
             logStream.println("");
         }
-        
+
         // Correlation coeff
         final double[] sigmas = new double[P.getRowDimension()];
         for (int i = 0; i < P.getRowDimension(); i++) {
             sigmas[i] = FastMath.sqrt(P.getEntry(i, i));
         }
-        
+
         logStream.format("\n" + strFormat, "Corr coef:");
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
@@ -2596,7 +2596,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             }
             logStream.println("");
         }
-        
+
         // Sigmas
         logStream.format("\n" + strFormat + "\n", "Sigmas: ");
         for (int i = 0; i < P.getRowDimension(); i++) {
@@ -2657,5 +2657,5 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             }
         }
     }
-    
+
 }

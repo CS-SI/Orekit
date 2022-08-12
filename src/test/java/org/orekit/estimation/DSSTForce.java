@@ -32,13 +32,13 @@ public enum DSSTForce {
             return new DSSTZonal(context.gravity, 4, 3, 9);
         }
     },
-    
+
     TESSERAL() {
         public DSSTForceModel getForceModel(DSSTContext context) {
             return new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, context.gravity, 4, 4, 4, 8, 4, 4, 2);
         }
     },
-    
+
     THIRD_BODY_SUN() {
         public DSSTForceModel getForceModel(DSSTContext context) {
             return new DSSTThirdBody(context.sun, context.gravity.getMu());

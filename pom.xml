@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.2</version>
+  <version>11.3-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -280,6 +280,9 @@
     </contributor>
     <contributor>
       <name>Steven Ports</name>
+    </contributor>
+    <contributor>
+      <name>Joseph Reed</name>
     </contributor>
     <contributor>
       <name>Silvia R&#237;os Berganti&#241;os</name>

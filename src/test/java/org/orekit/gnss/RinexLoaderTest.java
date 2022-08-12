@@ -364,7 +364,7 @@ public class RinexLoaderTest {
                          2001, 3, 24, 13, 14, 48, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GPS, 6, -.123456234,
                          typesobs2, ObservationType.L1, 267583.678, 1, 7);
-        
+
     }
 
     @Test
@@ -499,8 +499,8 @@ public class RinexLoaderTest {
                          typesobsE4, ObservationType.S8Q, 0.051, 0, 0);
 
     }
-    
-    
+
+
     @Test
     public void testWrongLabel() {
         try {
@@ -512,7 +512,7 @@ public class RinexLoaderTest {
             Assert.assertEquals("THIS IS NOT A RINEX LABEL", ((String) oe.getParts()[2]).substring(60).trim());
         }
     }
-    
+
     @Test
     public void testMissingHeaderLabel() {
         try {
@@ -678,7 +678,7 @@ public class RinexLoaderTest {
             Assert.assertEquals('Z', oe.getParts()[0]);
         }
     }
-    
+
     @Test
     public void testInconsistentNumSatellites() {
         try {
@@ -691,7 +691,7 @@ public class RinexLoaderTest {
             Assert.assertEquals(26, oe.getParts()[2]); //N. sats observation incoherent
         }
     }
-    
+
     @Test
     public void testInconsistentSatSystem() {
         try {
@@ -704,7 +704,7 @@ public class RinexLoaderTest {
             Assert.assertEquals(SatelliteSystem.GLONASS, oe.getParts()[3]); //First observation of a sat that is not GPS (GLONASS)
         }
     }
-    
+
     @Test
     public void testUnknownFrequency() {
         try {

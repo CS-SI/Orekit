@@ -41,11 +41,11 @@ import org.orekit.utils.IERSConventions;
 
 public class CdmParserTest {
 
-	private static final double DISTANCE_PRECISION = 1e-8;
-	private static final double DOUBLE_PRECISION = 1e-8;
-	private static final double DERIVATION_PRECISION = 1e-12;
-	private static final double COVARIANCE_DIAG_PRECISION = 1e-10;
-	private static final double COVARIANCE_PRECISION = 1e-8;
+    private static final double DISTANCE_PRECISION = 1e-8;
+    private static final double DOUBLE_PRECISION = 1e-8;
+    private static final double DERIVATION_PRECISION = 1e-12;
+    private static final double COVARIANCE_DIAG_PRECISION = 1e-10;
+    private static final double COVARIANCE_PRECISION = 1e-8;
 
     @Before
     public void setUp() {
@@ -54,8 +54,8 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM1() {
-    	/** Test for CdmExample1.txt, with only required data. */
-    	// File
+        /** Test for CdmExample1.txt, with only required data. */
+        // File
         final String ex = "/ccsds/cdm/CDMExample1.txt";
 
         // Initialize the parser
@@ -96,7 +96,7 @@ public class CdmParserTest {
         Assert.assertEquals(Maneuvrable.YES,              file.getMetadataObject1().getManeuverable());
         Assert.assertEquals(CelestialBodyFrame.EME2000,   file.getMetadataObject1().getRefFrame().asCelestialBodyFrame());
         Assert.assertEquals("UTC",                        file.getMetadataObject1().getTimeSystem().name());
-        
+
         // Check data block
         // State vector block
         Assert.assertEquals(2570.097065e3,  file.getDataObject1().getStateVectorBlock().getPositionVector().getX(), DISTANCE_PRECISION);
@@ -112,39 +112,39 @@ public class CdmParserTest {
         Assert.assertEquals(-2.313e1, file.getDataObject1().getRTNCovarianceBlock().getCnr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(1.336e1,  file.getDataObject1().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(7.098e1,  file.getDataObject1().getRTNCovarianceBlock().getCnn(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(2.520e-3, file.getDataObject1().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(-5.476,   file.getDataObject1().getRTNCovarianceBlock().getCrdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(8.626e-4, file.getDataObject1().getRTNCovarianceBlock().getCrdotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(5.744e-3, file.getDataObject1().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-1.006e-2, file.getDataObject1().getRTNCovarianceBlock().getCtdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(4.041e-3,  file.getDataObject1().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.359e-3, file.getDataObject1().getRTNCovarianceBlock().getCtdotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.502e-5, file.getDataObject1().getRTNCovarianceBlock().getCtdotrdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.049e-5,  file.getDataObject1().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(1.053e-3,  file.getDataObject1().getRTNCovarianceBlock().getCndotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(-3.412e-3, file.getDataObject1().getRTNCovarianceBlock().getCndott(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.213e-2,  file.getDataObject1().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-3.004e-6, file.getDataObject1().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.091e-6, file.getDataObject1().getRTNCovarianceBlock().getCndottdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(5.529e-5,  file.getDataObject1().getRTNCovarianceBlock().getCndotndot(), COVARIANCE_PRECISION);
-     
+
         Assert.assertEquals(2.520e-3,   file.getDataObject1().getRTNCovarianceBlock().
                             getRTNCovarianceMatrix().getEntry(3, 0), COVARIANCE_PRECISION);
         Assert.assertEquals(Double.NaN, file.getDataObject1().getRTNCovarianceBlock().
                             getRTNCovarianceMatrix().getEntry(7, 6), COVARIANCE_PRECISION);
-        
-        
-        
+
+
+
         // OBJECT2
         // Check Relative Metadata Block
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getTca(),
                 file.getRelativeMetadata().getTca());
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getMissDistance(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getMissDistance(),
                 file.getRelativeMetadata().getMissDistance(),DISTANCE_PRECISION);
-        
+
         // Check Metadata Block
         Assert.assertEquals("OBJECT2",                    file.getMetadataObject2().getObject());
         Assert.assertEquals("30337",                      file.getMetadataObject2().getObjectDesignator());
@@ -176,13 +176,13 @@ public class CdmParserTest {
         Assert.assertEquals(-4.152e-2, file.getDataObject2().getRTNCovarianceBlock().getCrdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.784e-6, file.getDataObject2().getRTNCovarianceBlock().getCrdotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(6.886e-5,  file.getDataObject2().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-1.016e-2, file.getDataObject2().getRTNCovarianceBlock().getCtdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.506e-4, file.getDataObject2().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.637e-3,  file.getDataObject2().getRTNCovarianceBlock().getCtdotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-2.987e-6, file.getDataObject2().getRTNCovarianceBlock().getCtdotrdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.059e-5,  file.getDataObject2().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(4.400e-3,  file.getDataObject2().getRTNCovarianceBlock().getCndotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(8.482e-3,  file.getDataObject2().getRTNCovarianceBlock().getCndott(), COVARIANCE_PRECISION);
         Assert.assertEquals(8.633e-5,  file.getDataObject2().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
@@ -201,13 +201,13 @@ public class CdmParserTest {
         Assert.assertEquals(-4.152e-2, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(3, 1), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.784e-6, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(3, 2), COVARIANCE_PRECISION);
         Assert.assertEquals(6.886e-5,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(3, 3), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-1.016e-2, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(4, 0), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.506e-4, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(4, 1), COVARIANCE_PRECISION);
         Assert.assertEquals(1.637e-3,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(4, 2), COVARIANCE_PRECISION);
         Assert.assertEquals(-2.987e-6, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(4, 3), COVARIANCE_PRECISION);
         Assert.assertEquals(1.059e-5,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(4, 4), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(4.400e-3,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 0), COVARIANCE_PRECISION);
         Assert.assertEquals(8.482e-3,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 1), COVARIANCE_PRECISION);
         Assert.assertEquals(8.633e-5,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 2), COVARIANCE_PRECISION);
@@ -216,11 +216,11 @@ public class CdmParserTest {
         Assert.assertEquals(5.178e-5,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 5), COVARIANCE_PRECISION);
 
     }
-    
+
     @Test
     public void testParseCDM2() {
-    	/** Test for CdmExample2.txt, with only required data. */
-    	// File
+        /** Test for CdmExample2.txt, with only required data. */
+        // File
         final String ex = "/ccsds/cdm/CDMExample2.txt";
 
         // Initialize the parser
@@ -230,7 +230,7 @@ public class CdmParserTest {
 
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
-        
+
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
 
@@ -275,7 +275,7 @@ public class CdmParserTest {
         Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
         Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
-        
+
         // Check Metadata Block
         Assert.assertEquals("OBJECT1" ,                 file.getMetadataObject1().getObject());
         Assert.assertEquals(ObjectType.PAYLOAD,         file.getMetadataObject1().getObjectType());
@@ -295,7 +295,7 @@ public class CdmParserTest {
         Assert.assertEquals(false,                      file.getMetadataObject1().getEarthTides());
         Assert.assertEquals(false,                      file.getMetadataObject1().getIntrackThrust());
         Assert.assertEquals("UTC",                      file.getMetadataObject1().getTimeSystem().name());
-        
+
         // Check data block
         // OD parameters block
         Assert.assertEquals(new AbsoluteDate(2010, 3, 12, 02, 14, 12.746,
@@ -329,7 +329,7 @@ public class CdmParserTest {
         Assert.assertEquals(-2.313e1, file.getDataObject1().getRTNCovarianceBlock().getCnr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(1.336e1,  file.getDataObject1().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(7.098e1,  file.getDataObject1().getRTNCovarianceBlock().getCnn(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(-1.862E+00, file.getDataObject1().getRTNCovarianceBlock().getCdrgr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(3.530E+00,  file.getDataObject1().getRTNCovarianceBlock().getCdrgt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-3.100E-01, file.getDataObject1().getRTNCovarianceBlock().getCdrgn(), COVARIANCE_DIAG_PRECISION);
@@ -337,7 +337,7 @@ public class CdmParserTest {
         Assert.assertEquals(2.580E-04,  file.getDataObject1().getRTNCovarianceBlock().getCdrgtdot(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-6.467E-05, file.getDataObject1().getRTNCovarianceBlock().getCdrgndot(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(3.483E-06,  file.getDataObject1().getRTNCovarianceBlock().getCdrgdrg(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(-1.492E+02, file.getDataObject1().getRTNCovarianceBlock().getCsrpr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(2.044E+02,  file.getDataObject1().getRTNCovarianceBlock().getCsrpt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-2.331E+01, file.getDataObject1().getRTNCovarianceBlock().getCsrpn(), COVARIANCE_DIAG_PRECISION);
@@ -346,21 +346,21 @@ public class CdmParserTest {
         Assert.assertEquals(-4.700E-03, file.getDataObject1().getRTNCovarianceBlock().getCsrpndot(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(2.210E-04,  file.getDataObject1().getRTNCovarianceBlock().getCsrpdrg(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(1.593E-02,  file.getDataObject1().getRTNCovarianceBlock().getCsrpsrp(), COVARIANCE_DIAG_PRECISION);
-        
-        
+
+
         // OBJECT2
         // Check Relative Metadata Block
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getScreenVolumeX(),
                             file.getRelativeMetadata().getScreenVolumeX(), DISTANCE_PRECISION);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativePosition().getY(),
                             file.getRelativeMetadata().getRelativePosition().getY(), DISTANCE_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),
                             file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),
                             file.getRelativeMetadata().getCollisionProbability(),1e-30);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),
                             file.getRelativeMetadata().getCollisionProbaMethod());
-        
+
         // Check Metadata Block
         Assert.assertEquals("OBJECT2" ,                   file.getMetadataObject2().getObject());
         Assert.assertEquals("30337",                      file.getMetadataObject2().getObjectDesignator());
@@ -379,16 +379,16 @@ public class CdmParserTest {
         // Covariance Matrix block
         Assert.assertEquals(1.337e3,   file.getDataObject2().getRTNCovarianceBlock().getCrr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-7.5888e2, file.getDataObject2().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(2.591e-3,  file.getDataObject2().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(6.886e-5,  file.getDataObject2().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-1.506e-4, file.getDataObject2().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.059e-5,  file.getDataObject2().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(8.633e-5,  file.getDataObject2().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.903e-6, file.getDataObject2().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-5.117E-01, file.getDataObject2().getRTNCovarianceBlock().getCdrgr(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.319E+00,  file.getDataObject2().getRTNCovarianceBlock().getCdrgt(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.903E-05, file.getDataObject2().getRTNCovarianceBlock().getCdrgndot(), COVARIANCE_PRECISION);
@@ -412,8 +412,8 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM3() {
-    	/** Test for CdmExample3.txt, with only required data. */
-    	// File
+        /** Test for CdmExample3.txt, with only required data. */
+        // File
         final String ex = "/ccsds/cdm/CDMExample3.txt";
 
         // Initialize the parser
@@ -424,7 +424,7 @@ public class CdmParserTest {
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
 
-        
+
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
 
@@ -470,7 +470,7 @@ public class CdmParserTest {
         Assert.assertEquals(2.355e-03,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assert.assertEquals("ALFANO-2005",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
         Assert.assertEquals(PocMethodType.ALFANO_2005,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
-        
+
         // Check Metadata Block
         Assert.assertEquals("OBJECT1" ,                        file.getMetadataObject1().getObject());
         Assert.assertEquals("28884",                           file.getMetadataObject1().getObjectDesignator());
@@ -485,7 +485,7 @@ public class CdmParserTest {
         Assert.assertEquals(Maneuvrable.YES,                   file.getMetadataObject1().getManeuverable());
         Assert.assertEquals(CelestialBodyFrame.EME2000,        file.getMetadataObject1().getRefFrame().asCelestialBodyFrame());
         Assert.assertEquals("UTC",                             file.getMetadataObject1().getTimeSystem().name());
-        
+
         // Check data block
         // OD parameters block
         Assert.assertEquals(new AbsoluteDate(2012, 9, 6, 20, 25, 43.222,
@@ -508,38 +508,38 @@ public class CdmParserTest {
         Assert.assertEquals(-2.313e1, file.getDataObject1().getRTNCovarianceBlock().getCnr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(1.336e1,  file.getDataObject1().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(7.098e1,  file.getDataObject1().getRTNCovarianceBlock().getCnn(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(2.520E-03,  file.getDataObject1().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(-5.476E+00, file.getDataObject1().getRTNCovarianceBlock().getCrdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(8.626E-04,  file.getDataObject1().getRTNCovarianceBlock().getCrdotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(5.744E-03,  file.getDataObject1().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-       
+
         Assert.assertEquals(-1.006E-02, file.getDataObject1().getRTNCovarianceBlock().getCtdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(4.041E-03,  file.getDataObject1().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.359E-03, file.getDataObject1().getRTNCovarianceBlock().getCtdotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.502E-05, file.getDataObject1().getRTNCovarianceBlock().getCtdotrdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.049E-05,  file.getDataObject1().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(1.053E-03,  file.getDataObject1().getRTNCovarianceBlock().getCndotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(-3.412E-03, file.getDataObject1().getRTNCovarianceBlock().getCndott(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.213E-02,  file.getDataObject1().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-3.004E-06, file.getDataObject1().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.091E-06, file.getDataObject1().getRTNCovarianceBlock().getCndottdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(5.529E-05,  file.getDataObject1().getRTNCovarianceBlock().getCndotndot(), COVARIANCE_PRECISION);
-                
+
         // OBJECT2
         // Check Relative Metadata Block
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getScreenVolumeX(),
                             file.getRelativeMetadata().getScreenVolumeX(), DISTANCE_PRECISION);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativePosition().getX(),
                             file.getRelativeMetadata().getRelativePosition().getX(), DISTANCE_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),
                             file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),
                             file.getRelativeMetadata().getCollisionProbability(),1e-30);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),
                             file.getRelativeMetadata().getCollisionProbaMethod());
-        
+
         // Check Metadata Block
         Assert.assertEquals("OBJECT2" ,                  file.getMetadataObject2().getObject());
         Assert.assertEquals("21139",                     file.getMetadataObject2().getObjectDesignator());
@@ -559,13 +559,13 @@ public class CdmParserTest {
         // Covariance Matrix block
         Assert.assertEquals(1.337e3,   file.getDataObject2().getRTNCovarianceBlock().getCrr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-7.5888e2, file.getDataObject2().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(2.591e-3,  file.getDataObject2().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(6.886e-5,  file.getDataObject2().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-1.506e-4, file.getDataObject2().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.059e-5,  file.getDataObject2().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(8.633e-5,  file.getDataObject2().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.903e-6, file.getDataObject2().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
 
@@ -584,8 +584,8 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM4() {
-    	/** Test for CdmExample2.txt, with only required data. */
-    	// File
+        /** Test for CdmExample2.txt, with only required data. */
+        // File
         final String ex = "/ccsds/cdm/CDMExample4.txt";
 
         // Initialize the parser
@@ -595,7 +595,7 @@ public class CdmParserTest {
 
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
-        
+
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
 
@@ -634,7 +634,7 @@ public class CdmParserTest {
         Assert.assertEquals(4.835E-05,      file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assert.assertEquals("FOSTER-1992",  file.getRelativeMetadata().getCollisionProbaMethod().getName());
         Assert.assertEquals(PocMethodType.FOSTER_1992,  file.getRelativeMetadata().getCollisionProbaMethod().getType());
-        
+
         // Check Metadata Block
         Assert.assertEquals("OBJECT1" ,                 file.getMetadataObject1().getObject());
         Assert.assertEquals(ObjectType.PAYLOAD,         file.getMetadataObject1().getObjectType());
@@ -648,7 +648,7 @@ public class CdmParserTest {
         Assert.assertEquals(-2.313e1, file.getDataObject1().getRTNCovarianceBlock().getCnr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(1.336e1,  file.getDataObject1().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(7.098e1,  file.getDataObject1().getRTNCovarianceBlock().getCnn(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(-1.862E+00, file.getDataObject1().getRTNCovarianceBlock().getCdrgr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(3.530E+00,  file.getDataObject1().getRTNCovarianceBlock().getCdrgt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-3.100E-01, file.getDataObject1().getRTNCovarianceBlock().getCdrgn(), COVARIANCE_DIAG_PRECISION);
@@ -656,7 +656,7 @@ public class CdmParserTest {
         Assert.assertEquals(2.580E-04,  file.getDataObject1().getRTNCovarianceBlock().getCdrgtdot(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-6.467E-05, file.getDataObject1().getRTNCovarianceBlock().getCdrgndot(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(3.483E-06,  file.getDataObject1().getRTNCovarianceBlock().getCdrgdrg(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(-1.492E+02, file.getDataObject1().getRTNCovarianceBlock().getCsrpr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(2.044E+02,  file.getDataObject1().getRTNCovarianceBlock().getCsrpt(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-2.331E+01, file.getDataObject1().getRTNCovarianceBlock().getCsrpn(), COVARIANCE_DIAG_PRECISION);
@@ -665,7 +665,7 @@ public class CdmParserTest {
         Assert.assertEquals(-4.700E-03, file.getDataObject1().getRTNCovarianceBlock().getCsrpndot(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(2.210E-04,  file.getDataObject1().getRTNCovarianceBlock().getCsrpdrg(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(1.593E-02,  file.getDataObject1().getRTNCovarianceBlock().getCsrpsrp(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(-1.803E-06, file.getDataObject1().getRTNCovarianceBlock().getCthrr(), COVARIANCE_PRECISION);
         Assert.assertEquals(3.803E-03 , file.getDataObject1().getRTNCovarianceBlock().getCthrt(), COVARIANCE_PRECISION);
         Assert.assertEquals(3.303E02  , file.getDataObject1().getRTNCovarianceBlock().getCthrn(), COVARIANCE_PRECISION);
@@ -673,22 +673,22 @@ public class CdmParserTest {
         Assert.assertEquals(-1.654E01 , file.getDataObject1().getRTNCovarianceBlock().getCthrtdot(), COVARIANCE_PRECISION);
         Assert.assertEquals(9.203E-01 , file.getDataObject1().getRTNCovarianceBlock().getCthrndot(), COVARIANCE_PRECISION);
         Assert.assertEquals(-3.876    , file.getDataObject1().getRTNCovarianceBlock().getCthrdrg(), COVARIANCE_PRECISION);
-        Assert.assertEquals(6.876E03  , file.getDataObject1().getRTNCovarianceBlock().getCthrsrp(), COVARIANCE_PRECISION);        
+        Assert.assertEquals(6.876E03  , file.getDataObject1().getRTNCovarianceBlock().getCthrsrp(), COVARIANCE_PRECISION);
         Assert.assertEquals(-2.986E-02, file.getDataObject1().getRTNCovarianceBlock().getCthrthr(), COVARIANCE_PRECISION);
-                
+
         // OBJECT2
         // Check Relative Metadata Block
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getScreenVolumeX(),
                             file.getRelativeMetadata().getScreenVolumeX(), DISTANCE_PRECISION);
         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativePosition().getY(),
                             file.getRelativeMetadata().getRelativePosition().getY(), DISTANCE_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),
                             file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),
                             file.getRelativeMetadata().getCollisionProbability(),1e-30);
-        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
+        Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),
                             file.getRelativeMetadata().getCollisionProbaMethod());
-        
+
         // Check Metadata Block
         Assert.assertEquals("OBJECT2" ,                   file.getMetadataObject2().getObject());
         Assert.assertEquals("30337",                      file.getMetadataObject2().getObjectDesignator());
@@ -707,16 +707,16 @@ public class CdmParserTest {
         // Covariance Matrix block
         Assert.assertEquals(1.337e3,   file.getDataObject2().getRTNCovarianceBlock().getCrr(), COVARIANCE_DIAG_PRECISION);
         Assert.assertEquals(-7.5888e2, file.getDataObject2().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
-        
+
         Assert.assertEquals(2.591e-3,  file.getDataObject2().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
         Assert.assertEquals(6.886e-5,  file.getDataObject2().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-1.506e-4, file.getDataObject2().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.059e-5,  file.getDataObject2().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(8.633e-5,  file.getDataObject2().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.903e-6, file.getDataObject2().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
-        
+
         Assert.assertEquals(-5.117E-01, file.getDataObject2().getRTNCovarianceBlock().getCdrgr(), COVARIANCE_PRECISION);
         Assert.assertEquals(1.319E+00,  file.getDataObject2().getRTNCovarianceBlock().getCdrgt(), COVARIANCE_PRECISION);
         Assert.assertEquals(-1.903E-05, file.getDataObject2().getRTNCovarianceBlock().getCdrgndot(), COVARIANCE_PRECISION);
@@ -737,12 +737,12 @@ public class CdmParserTest {
                             file.getDataObject2().getAdditionalParametersBlock().getComments().toString());
 
     }
-    
-    
+
+
     @Test
     public void testParseXML_CDM1() {
-    	/** Test for CdmExample1.xml, with only required data. */
-    	// File
+        /** Test for CdmExample1.xml, with only required data. */
+        // File
         final String ex = "/ccsds/cdm/CDMExample1.xml";
 
         // Initialize the parser
@@ -752,7 +752,7 @@ public class CdmParserTest {
 
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
-        
+
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
 
@@ -810,8 +810,8 @@ public class CdmParserTest {
          Assert.assertEquals(Maneuvrable.YES,              file.getMetadataObject1().getManeuverable());
          Assert.assertEquals(CelestialBodyFrame.EME2000,   file.getMetadataObject1().getRefFrame().asCelestialBodyFrame());
          Assert.assertEquals("UTC",                        file.getMetadataObject1().getTimeSystem().name());
-         
-         
+
+
          // Check data block
          // State vector block
          Assert.assertEquals(2570.097065e3,  file.getDataObject1().getStateVectorBlock().getPositionVector().getX(), DISTANCE_PRECISION);
@@ -827,38 +827,38 @@ public class CdmParserTest {
          Assert.assertEquals(-2.313e1, file.getDataObject1().getRTNCovarianceBlock().getCnr(), COVARIANCE_DIAG_PRECISION);
          Assert.assertEquals(1.336e1,  file.getDataObject1().getRTNCovarianceBlock().getCnt(), COVARIANCE_DIAG_PRECISION);
          Assert.assertEquals(7.098e1,  file.getDataObject1().getRTNCovarianceBlock().getCnn(), COVARIANCE_DIAG_PRECISION);
-         
+
          Assert.assertEquals(2.520e-3, file.getDataObject1().getRTNCovarianceBlock().getCrdotr(), COVARIANCE_PRECISION);
          Assert.assertEquals(-5.476,   file.getDataObject1().getRTNCovarianceBlock().getCrdott(), COVARIANCE_PRECISION);
          Assert.assertEquals(8.626e-4, file.getDataObject1().getRTNCovarianceBlock().getCrdotn(), COVARIANCE_PRECISION);
          Assert.assertEquals(5.744e-3, file.getDataObject1().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-         
+
          Assert.assertEquals(-1.006e-2, file.getDataObject1().getRTNCovarianceBlock().getCtdotr(), COVARIANCE_PRECISION);
          Assert.assertEquals(4.041e-3,  file.getDataObject1().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
          Assert.assertEquals(-1.359e-3, file.getDataObject1().getRTNCovarianceBlock().getCtdotn(), COVARIANCE_PRECISION);
          Assert.assertEquals(-1.502e-5, file.getDataObject1().getRTNCovarianceBlock().getCtdotrdot(), COVARIANCE_PRECISION);
          Assert.assertEquals(1.049e-5,  file.getDataObject1().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-         
+
          Assert.assertEquals(1.053e-3,  file.getDataObject1().getRTNCovarianceBlock().getCndotr(), COVARIANCE_PRECISION);
          Assert.assertEquals(-3.412e-3, file.getDataObject1().getRTNCovarianceBlock().getCndott(), COVARIANCE_PRECISION);
          Assert.assertEquals(1.213e-2,  file.getDataObject1().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
          Assert.assertEquals(-3.004e-6, file.getDataObject1().getRTNCovarianceBlock().getCndotrdot(), COVARIANCE_PRECISION);
          Assert.assertEquals(-1.091e-6, file.getDataObject1().getRTNCovarianceBlock().getCndottdot(), COVARIANCE_PRECISION);
          Assert.assertEquals(5.529e-5,  file.getDataObject1().getRTNCovarianceBlock().getCndotndot(), COVARIANCE_PRECISION);
-         
+
          // OBJECT2
          // Check Relative Metadata Block
          Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getScreenVolumeX(),
                              file.getRelativeMetadata().getScreenVolumeX(), DISTANCE_PRECISION);
          Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativePosition().getZ(),
                              file.getRelativeMetadata().getRelativePosition().getZ(), DISTANCE_PRECISION);
-         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),  
+         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getRelativeVelocity().getZ(),
                              file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),  
+         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbability(),
                              file.getRelativeMetadata().getCollisionProbability(),1e-30);
-         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),  
+         Assert.assertEquals(file.getSegments().get(1).getMetadata().getRelativeMetadata().getCollisionProbaMethod(),
                              file.getRelativeMetadata().getCollisionProbaMethod());
-         
+
          // Check Metadata Block
          Assert.assertEquals("OBJECT2",                    file.getMetadataObject2().getObject());
          Assert.assertEquals("30337",                      file.getMetadataObject2().getObjectDesignator());
@@ -890,13 +890,13 @@ public class CdmParserTest {
          Assert.assertEquals(-4.152e-2, file.getDataObject2().getRTNCovarianceBlock().getCrdott(), COVARIANCE_PRECISION);
          Assert.assertEquals(-1.784e-6, file.getDataObject2().getRTNCovarianceBlock().getCrdotn(), COVARIANCE_PRECISION);
          Assert.assertEquals(6.886e-5,  file.getDataObject2().getRTNCovarianceBlock().getCrdotrdot(), COVARIANCE_PRECISION);
-         
+
          Assert.assertEquals(-1.016e-2, file.getDataObject2().getRTNCovarianceBlock().getCtdotr(), COVARIANCE_PRECISION);
          Assert.assertEquals(-1.506e-4, file.getDataObject2().getRTNCovarianceBlock().getCtdott(), COVARIANCE_PRECISION);
          Assert.assertEquals(1.637e-3,  file.getDataObject2().getRTNCovarianceBlock().getCtdotn(), COVARIANCE_PRECISION);
          Assert.assertEquals(-2.987e-6, file.getDataObject2().getRTNCovarianceBlock().getCtdotrdot(), COVARIANCE_PRECISION);
          Assert.assertEquals(1.059e-5,  file.getDataObject2().getRTNCovarianceBlock().getCtdottdot(), COVARIANCE_PRECISION);
-         
+
          Assert.assertEquals(4.400e-3,  file.getDataObject2().getRTNCovarianceBlock().getCndotr(), COVARIANCE_PRECISION);
          Assert.assertEquals(8.482e-3,  file.getDataObject2().getRTNCovarianceBlock().getCndott(), COVARIANCE_PRECISION);
          Assert.assertEquals(8.633e-5,  file.getDataObject2().getRTNCovarianceBlock().getCndotn(), COVARIANCE_PRECISION);
@@ -933,16 +933,16 @@ public class CdmParserTest {
          ArrayList<String> RTNComment = new ArrayList<String>();
          RTNComment.add("Object1 Covariance in the RTN Coordinate Frame");
          Assert.assertEquals(RTNComment, file.getDataObject1().getRTNCovarianceBlock().getComments());
-         
-         
+
+
          // Check general comments Object2
          ArrayList<String> generalCommentObj2AddParam = new ArrayList<String>();
          generalCommentObj2AddParam.add("Object2 Additional Parameters");
          generalCommentObj2AddParam.add("Apogee Altitude=768 km, Perigee Altitude=414 km, Inclination=98.8 deg");
          Assert.assertEquals(generalCommentObj2AddParam.toString(), file.getDataObject2().getAdditionalParametersBlock().getComments().toString());
-    
-    } 
-    
+
+    }
+
     @Test
     public void testNonExistentFile() throws URISyntaxException {
         final String realName = getClass().getResource("/ccsds/cdm/CDMExample1.txt").toURI().getPath();
@@ -958,7 +958,7 @@ public class CdmParserTest {
             Assert.assertEquals(wrongName, oe.getParts()[0]);
         }
     }
-    
+
     @Test
     public void testMissingTCA() throws URISyntaxException {
         final String name = "/ccsds/cdm/CDM-missing-TCA.txt";
@@ -973,7 +973,7 @@ public class CdmParserTest {
             Assert.assertEquals("TCA", oe.getParts()[0]);
         }
     }
-    
+
     @Test
     public void testMissingObj2StateVectorX() throws URISyntaxException {
         final String name = "/ccsds/cdm/CDM-missing-object2-state-vector.txt";
@@ -1007,7 +1007,7 @@ public class CdmParserTest {
     @Test
     public void testMissingObj1OrbitCenterAsk_getFrame() throws URISyntaxException {
         final String ex = "/ccsds/cdm/CDM-no-orbit-center-defined-obj1.txt";
-        
+
         // Initialize the parser
         final CdmParser parser = new ParserBuilder().buildCdmParser();
 
@@ -1047,10 +1047,10 @@ public class CdmParserTest {
 
 	           
 	    test_issue_940_data(cdm_kvn);
-	    //test_issue_940_data(cdm_xml);
+	    test_issue_940_data(cdm_xml);
 	    
 	}
-	    
+
 	public void test_issue_940_data(String ex) {
 	
 	    // Initialize the parser
@@ -1460,4 +1460,64 @@ public class CdmParserTest {
         
 	}
 
+	@Test
+	public void test_issue_942_KVN() {
+
+		// File
+	    final String ex = "/ccsds/cdm/CDMExample_issue942.txt";
+	
+	    // Initialize the parser
+	    final CdmParser parser = new ParserBuilder().buildCdmParser();
+	
+	    final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+	
+	    // Generated CDM file
+	    final Cdm file = parser.parseMessage(source);
+	
+	   // OBJECT1
+	    Assert.assertEquals(Maneuvrable.N_A,              file.getMetadataObject1().getManeuverable());    
+	    // OBJECT2
+	    Assert.assertEquals(Maneuvrable.NO,               file.getMetadataObject2().getManeuverable());
+	}
+	
+	@Test
+	public void test_issue_942_XML() {
+	    
+	    // File
+	    final String ex = "/ccsds/cdm/CDMExample_issue942.xml";
+	
+	    // Initialize the parser
+	    final CdmParser parser = new ParserBuilder().buildCdmParser();
+	
+	    final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+	
+	    // Generated CDM file
+	    final Cdm file = parser.parseMessage(source);
+	
+	   // OBJECT1
+	    Assert.assertEquals(Maneuvrable.N_A,              file.getMetadataObject1().getManeuverable());    
+	    // OBJECT2
+	    Assert.assertEquals(Maneuvrable.NO,               file.getMetadataObject2().getManeuverable());
+	}
+
+    @Test
+    public void test_issue_944() {
+
+        // File
+        final String ex = "/ccsds/cdm/CDMExample_issue_944.xml";
+    
+        // Initialize the parser
+        final CdmParser parser = new ParserBuilder().buildCdmParser();
+    
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+    
+        // Generated CDM file
+        final Cdm file = parser.parseMessage(source);
+
+        // Check AREA_DRG
+        Assert.assertEquals(3, file.getDataObject1().getAdditionalParametersBlock().getAreaDRG(), 0.0);
+        
+        // Check AREA_SRP
+        Assert.assertEquals(10, file.getDataObject1().getAdditionalParametersBlock().getAreaSRP(), 0.0);
+    }
 }

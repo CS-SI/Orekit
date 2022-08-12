@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -28,6 +29,7 @@ import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -69,13 +71,16 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** Flattening. */
     private final double f;
 
-    /** Eccentricity power 2. */
+    /** Eccentricity. */
+    private final double e;
+
+    /** Eccentricity squared. */
     private final double e2;
 
     /** 1 minus flatness. */
     private final double g;
 
-    /** g * g. */
+    /** g squared. */
     private final double g2;
 
     /** Convergence limit. */
@@ -113,6 +118,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         this.f    = f;
         this.ae2  = ae * ae;
         this.e2   = f * (2.0 - f);
+        this.e    = FastMath.sqrt(e2);
         this.g    = 1.0 - f;
         this.g2   = g * g;
         this.ap2  = ae2 * g2;
@@ -145,6 +151,20 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      */
     public double getFlattening() {
         return f;
+    }
+
+    /** Get the first eccentricity squared of the ellipsoid: e^2 = f * (2.0 - f).
+     * @return the eccentricity squared
+     */
+    public double getEccentricitySquared() {
+        return e2;
+    }
+
+    /** Get the first eccentricity of the ellipsoid: e = sqrt(f * (2.0 - f)).
+     * @return the eccentricity
+     */
+    public double getEccentricity() {
+        return e;
     }
 
     /** {@inheritDoc} */
@@ -682,6 +702,97 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return new FieldGeodeticPoint<>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
                                                                   DerivativeStructure.atan2(p.getY(), p.getX()),
                                                                   DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
+    }
+
+    /** Compute the azimuth angle from local north between the two points.
+     *
+     * The angle is calculated clockwise from local north at the origin point
+     * and follows the rhumb line to the destination point.
+     *
+     * @param origin the origin point, at which the azimuth angle will be computed (non-{@code null})
+     * @param destination the destination point, to which the angle is defined (non-{@code null})
+     * @return the resulting azimuth angle (radians, {@code [0-2pi)})
+     * @since 11.3
+     */
+    public double azimuthBetweenPoints(final GeodeticPoint origin, final GeodeticPoint destination) {
+        final double dLon = MathUtils.normalizeAngle(destination.getLongitude(), origin.getLongitude()) - origin.getLongitude();
+        final double originIsoLat = geodeticToIsometricLatitude(origin.getLatitude());
+        final double destIsoLat = geodeticToIsometricLatitude(destination.getLatitude());
+
+        final double az = FastMath.atan2(dLon, destIsoLat - originIsoLat);
+        if (az < 0.) {
+            return az + MathUtils.TWO_PI;
+        }
+        return az;
+    }
+
+    /** Compute the azimuth angle from local north between the two points.
+     *
+     * The angle is calculated clockwise from local north at the origin point
+     * and follows the rhumb line to the destination point.
+     *
+     * @param origin the origin point, at which the azimuth angle will be computed (non-{@code null})
+     * @param destination the destination point, to which the angle is defined (non-{@code null})
+     * @param <T> the type of field elements
+     * @return the resulting azimuth angle (radians, {@code [0-2pi)})
+     * @since 11.3
+     */
+    public <T extends CalculusFieldElement<T>> T azimuthBetweenPoints(final FieldGeodeticPoint<T> origin, final FieldGeodeticPoint<T> destination) {
+        final T dLon = MathUtils.normalizeAngle(destination.getLongitude().subtract(origin.getLongitude()), origin.getLongitude().getField().getZero());
+        final T originIsoLat = geodeticToIsometricLatitude(origin.getLatitude());
+        final T destIsoLat = geodeticToIsometricLatitude(destination.getLatitude());
+
+        final T az = FastMath.atan2(dLon, destIsoLat.subtract(originIsoLat));
+        if (az.getReal() < 0.) {
+            return az.add(az.getPi().multiply(2));
+        }
+        return az;
+    }
+
+    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a>
+     *  corresponding to the provided latitude.
+     *
+     * @param geodeticLatitude the latitude (radians, within interval {@code [-pi/2, +pi/2]})
+     * @return the isometric latitude (radians)
+     * @since 11.3
+     */
+    public double geodeticToIsometricLatitude(final double geodeticLatitude) {
+        if (FastMath.abs(geodeticLatitude) <= angularThreshold) {
+            return 0.;
+        }
+
+        final double eSinLat = e * FastMath.sin(geodeticLatitude);
+
+        // first term: ln(tan(pi/4 + lat/2))
+        final double a = FastMath.log(FastMath.tan(FastMath.PI / 4. + geodeticLatitude / 2.));
+        // second term: (ecc / 2) * ln((1 - ecc*sin(lat)) / (1 + ecc * sin(lat)))
+        final double b = (e / 2.) * FastMath.log((1. - eSinLat) / (1. + eSinLat));
+
+        return a + b;
+    }
+
+    /** Compute the <a href="https://mathworld.wolfram.com/IsometricLatitude.html">isometric latitude</a>
+     *  corresponding to the provided latitude.
+     *
+     * @param geodeticLatitude the latitude (radians, within interval {@code [-pi/2, +pi/2]})
+     * @param <T> the type of field elements
+     * @return the isometric latitude (radians)
+     * @since 11.3
+     */
+    public <T extends CalculusFieldElement<T>> T geodeticToIsometricLatitude(final T geodeticLatitude) {
+        if (geodeticLatitude.abs().getReal() <= angularThreshold) {
+            return geodeticLatitude.getField().getZero();
+        }
+        final Field<T> field = geodeticLatitude.getField();
+        final T ecc = geodeticLatitude.newInstance(e);
+        final T eSinLat = ecc.multiply(geodeticLatitude.sin());
+
+        // first term: ln(tan(pi/4 + lat/2))
+        final T a = FastMath.log(FastMath.tan(geodeticLatitude.getPi().divide(4.).add(geodeticLatitude.divide(2.))));
+        // second term: (ecc / 2) * ln((1 - ecc*sin(lat)) / (1 + ecc * sin(lat)))
+        final T b = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
+
+        return a.add(b);
     }
 
     /** Replace the instance with a data transfer object for serialization.

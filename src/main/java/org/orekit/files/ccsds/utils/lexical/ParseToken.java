@@ -37,6 +37,7 @@ import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.cdm.Maneuvrable;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
@@ -633,6 +634,17 @@ public class ParseToken {
         }
     }
 
+    /** Process the content of the Maneuvrable enum.
+     * @param consumer consumer of the enum
+     * @return always returns {@code true}
+     */
+    public boolean processAsManeuvrableEnum(final ManeuvrableConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(Maneuvrable.getEnum(getRawContent()));
+        }
+        return true;
+    }
+
     /** Generate a parse exception for this entry.
      * @param cause underlying cause exception (may be null)
      * @return exception for this entry
@@ -861,11 +873,19 @@ public class ParseToken {
         void accept(List<Unit> value);
     }
 
-        /** Interface representing instance methods that consume double array. */
+    /** Interface representing instance methods that consume double array. */
     public interface DoubleArrayConsumer {
         /** Consume an array of doubles.
          * @param doubles array of doubles
          */
         void accept(double[] doubles);
+    }
+
+    /** Interface representing instance methods that consume Maneuvrable values. */
+    public interface ManeuvrableConsumer {
+        /** Consume a Maneuvrable.
+         * @param value value to consume
+         */
+        void accept(Maneuvrable value);
     }
 }

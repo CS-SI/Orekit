@@ -87,10 +87,10 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
                 final double[] angular = new double[2];
                 final double[] sigma = {1.0, 1.0};
                 final double[] baseweight = {10.0, 10.0};
-                
+
                 // Inertial frame used
                 final Frame inertialFrame = context.initialOrbit.getFrame();
-                
+
                 // Station position at signal arrival
                 // Set the reference date of offset drivers arbitrarily to avoid exception
                 station.getPrimeMeridianOffsetDriver().setReferenceDate(date);
@@ -98,7 +98,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
                 station.getPolarOffsetYDriver().setReferenceDate(date);
                 final Transform offsetToInertialArrival = station.getOffsetToInertial(inertialFrame, date);
                 final Vector3D  stationPArrival = offsetToInertialArrival.transformPosition(Vector3D.ZERO);
-                
+
                 // Vector station position at signal arrival - satellite at signal departure
                 // In inertial reference frame
                 final Vector3D staSat = satelliteAtDeparture.subtract(stationPArrival);

@@ -182,7 +182,7 @@ public class ReferenceEllipsoidTest {
                 iers96.getC2n0(1), Constants.IERS96_EARTH_C20 / c20factor, 3e-9);
         assertThat(iers96.getBodyFrame(), is(frame));
     }
-    
+
     /**
      * check {@link ReferenceEllipsoid#getIers2003(Frame)}
      */

@@ -50,7 +50,7 @@ public class ShapiroOneWayGNSSRangeModifierTest {
     }
 
     private void doTestShapiro(final double expectedMin, final double expectedMean, final double expectedMax) {
- 
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =

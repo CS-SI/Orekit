@@ -111,7 +111,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
-    
+
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
     public void testKeplerPVBackward() {
@@ -251,7 +251,7 @@ public class BatchLSEstimatorTest {
     }
 
     /**
-     * Perfect range measurements with a biased start and an on-board antenna range offset 
+     * Perfect range measurements with a biased start and an on-board antenna range offset
      */
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() {
@@ -374,7 +374,7 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
-        
+
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> r12 =
@@ -516,7 +516,7 @@ public class BatchLSEstimatorTest {
     /** A modified version of the previous test with a selection of propagation drivers to estimate and more measurements
      *  One common (µ)
      *  Some specifics for each satellite (Cr and Ca)
-     * 
+     *
      */
     @Test
     public void testMultiSatWithParameters() {
@@ -527,7 +527,7 @@ public class BatchLSEstimatorTest {
         final boolean caEstimated1 = true;
         final boolean crEstimated2 = true;
         final boolean caEstimated2 = false;
-        
+
 
         // Builder sat 1
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -572,7 +572,7 @@ public class BatchLSEstimatorTest {
                 driver.setSelected(caEstimated2);
             }
         }
-        
+
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
         final Orbit closeOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
@@ -750,7 +750,7 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
-        
+
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris, 0., 0.),
@@ -775,7 +775,7 @@ public class BatchLSEstimatorTest {
 
         // List of measurements
         // The threshold is fixed to 60s in order to build multiplexed measurements
-        // If it is less than 60s we cannot have mutliplexed measurement and we would not be able to 
+        // If it is less than 60s we cannot have mutliplexed measurement and we would not be able to
         // test the issue.
         final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 60.0);
 
@@ -1050,7 +1050,7 @@ public class BatchLSEstimatorTest {
                                      0.0, 5.8e-7,
                                      0.0, 2.7e-10);
     }
-    
+
     /**
      * Test if the parameter µ is taken into account by the builder even if no attraction force has been added yet.
      */
@@ -1062,7 +1062,7 @@ public class BatchLSEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        
+
         // Select the central attraction coefficient (here there is only the central attraction coefficient)
         // as estimated parameter
         propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
@@ -1128,7 +1128,7 @@ public class BatchLSEstimatorTest {
                 driver.setSelected(true);
                 driver.setValue(1.0001 * driver.getReferenceValue());
             } else {
-                driver.setSelected(false);                
+                driver.setSelected(false);
             }
         });
 

@@ -50,7 +50,7 @@ public enum AdditionalParametersKey {
 
     /** The effective area of the object exposed to solar radiation pressure. */
     AREA_SRP((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
-                                                                 container::setAreaDRG)),
+                                                                 container::setAreaSRP)),
 
     /** Optimally Enclosing Box parent reference frame. */
     OEB_PARENT_FRAME((token, context, container) -> token.processAsFrame(container::setOebParentFrame, context, true, true, false)),

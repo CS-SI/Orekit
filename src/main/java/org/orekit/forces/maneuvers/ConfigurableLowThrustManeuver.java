@@ -126,7 +126,7 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
      * @return thrust force (N).
      */
     public double getThrust() {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector().getNorm();
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector().getNorm();
     }
 
     /**
@@ -135,7 +135,7 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
      * @return specific impulse (s).
      */
     public double getISP() {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp();
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp();
     }
 
 }

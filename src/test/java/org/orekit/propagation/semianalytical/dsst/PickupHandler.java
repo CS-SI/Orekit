@@ -118,7 +118,7 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
         // Mean orbit
         final SpacecraftState initial = propagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(propagator.getInitialState(), propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
-                    	   propagator.getInitialState();
+                           propagator.getInitialState();
         ((DSSTHarvester) harvester).initializeFieldShortPeriodTerms(initial); // Initial state is MEAN
     }
 

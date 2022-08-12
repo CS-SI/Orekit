@@ -42,11 +42,11 @@ public class DSSTNewtonianAttractionTest {
 
     @Test
     public void testGetMeanElementRate() throws IllegalArgumentException {
-        
+
         final Frame earthFrame = FramesFactory.getEME2000();
-        
+
         final AbsoluteDate date = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
-        
+
         final double mu = 3.986004415E14;
         final EquinoctialOrbit orbit = new EquinoctialOrbit(2.655989E7,
                                                             2.719455286199036E-4,
@@ -58,21 +58,21 @@ public class DSSTNewtonianAttractionTest {
                                                             earthFrame,
                                                             date,
                                                             mu);
-        
+
         final SpacecraftState state = new SpacecraftState(orbit);
-        
+
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
-        
+
         final DSSTForceModel newton = new DSSTNewtonianAttraction(mu);
 
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
-        
+
         final double[] daidt = newton.getMeanElementRate(state, auxiliaryElements, newton.getParameters());
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-        
+
         Assert.assertEquals(0.0,                   elements[0], eps);
         Assert.assertEquals(0.0,                   elements[1], eps);
         Assert.assertEquals(0.0,                   elements[2], eps);

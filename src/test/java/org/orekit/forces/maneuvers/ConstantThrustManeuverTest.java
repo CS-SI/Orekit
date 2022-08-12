@@ -85,11 +85,11 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                          final DerivativeStructure mass) {
         try {
             final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
-            
+
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();
-            
+
             if (firing) {
                 return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
             } else {
@@ -111,11 +111,11 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                       final Gradient mass) {
         try {
             final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
-            
+
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();
-            
+
             if (firing) {
                 return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
             } else {
@@ -146,7 +146,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         final double duration = 3653.99;
         final double f = 420;
- 
+
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
@@ -187,7 +187,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         final double duration = 3653.99;
         final double f = 420;
- 
+
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
@@ -381,7 +381,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 5.0e-10, 3.0e-11, 3.0e-10,
@@ -443,7 +443,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-02, 2.9e-04, 2.4e-3,
@@ -792,7 +792,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assert.assertEquals(0.186340263,
                             maneuver.acceleration(middleState.shiftedBy(3 * duration), maneuver.getParameters()).getNorm(),
                             1.0e-9);
-        
+
 
     }
 

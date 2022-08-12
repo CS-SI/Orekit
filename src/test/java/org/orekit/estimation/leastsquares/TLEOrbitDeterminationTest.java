@@ -56,7 +56,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPropagatorBuilder> {
-    
+
     /** Initial TLE. */
     public TLE templateTLE;
 
@@ -140,7 +140,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "SRP not implemented in TLE Propagator");
     }
-    
+
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
@@ -178,7 +178,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     public void testGNSS()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
-        
+
         // input in resources directory
         final String inputPath = TLEOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
@@ -186,7 +186,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-        
+
         // initiate TLE (from Celestrak)
         final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
@@ -195,7 +195,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
-        
+
         //test
 
         //definition of the accuracy for the test
@@ -206,30 +206,30 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final int numberOfEval = 3;
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
-        
+
         //test on the estimated position (reference from file esa18836.sp3)
         TimeStampedPVCoordinates odPV = odGNSS.getEstimatedPV();
         final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), odPV.getDate());
         odPV = transform.transformPVCoordinates(odPV);
         final Vector3D estimatedPos = odPV.getPosition();
-        
+
         // Reference position from GPS ephemeris (esa18836.sp3)
-        final Vector3D refPos = new Vector3D(13848957.285213307, -22916266.10257542, -23458.8341713716);  
+        final Vector3D refPos = new Vector3D(13848957.285213307, -22916266.10257542, -23458.8341713716);
 
         //test on the estimated position
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        
+
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -14.448, 18.736, 0.132, 6.323 };        
+        final double[] RefStatRange = { -14.448, 18.736, 0.132, 6.323 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
         Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
-        
+
     }
-    
+
     @Test
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
@@ -242,13 +242,13 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-        
+
         // initiate TLE
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
         templateTLE.getParametersDrivers().get(0).setSelected(false);
-        
+
         //orbit determination run.
         ResultBatchLeastSquares odLageos2 = runBLS(input, false);
 

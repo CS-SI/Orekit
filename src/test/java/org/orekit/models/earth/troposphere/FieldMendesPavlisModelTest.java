@@ -86,7 +86,7 @@ public class FieldMendesPavlisModelTest {
         //
         // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
         //         IERS Technical Note No. 36, BKG (2010)
-        
+
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2010.344;
@@ -95,29 +95,29 @@ public class FieldMendesPavlisModelTest {
         final double humidity     = 0.4;
         final double lambda       = 0.532;
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
-        
+
         // Expected zenith hydrostatic delay: 1.932992 m (Ref)
         final double expectedHydroDelay = 1.932992;
         // Expected zenith wet delay: 0.223375*10-2 m (Ref)
         final double expectedWetDelay   = 0.223375e-2;
         // Expected total zenith delay: 1.935226 m (Ref)
         final double expectedDelay      = 1.935226;
-        
+
         final double precision = 4.0e-6;
-        
+
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2009, 8, 12, TimeScalesFactory.getUTC());
 
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, lambda);
-        
+
         final T[] computedDelay = model.computeZenithDelay(point, model.getParameters(field), date);
-        
+
         Assert.assertEquals(expectedHydroDelay, computedDelay[0].getReal(),                    precision);
         Assert.assertEquals(expectedWetDelay,   computedDelay[1].getReal(), precision);
         Assert.assertEquals(expectedDelay,      computedDelay[0].getReal() + computedDelay[1].getReal(), precision);
 
     }
-   
+
     @Test
     public void testMappingFactors() {
         doTestMappingFactors(Decimal64Field.getInstance());
@@ -140,7 +140,7 @@ public class FieldMendesPavlisModelTest {
         //         IERS Technical Note No. 36, BKG (2010)
 
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2009, 8, 12, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2075;
@@ -153,11 +153,11 @@ public class FieldMendesPavlisModelTest {
         final double elevation        = FastMath.toRadians(15.0);
         // Expected mapping factor: 3.80024367 (Ref)
         final double expectedMapping    = 3.80024367;
-        
+
         // Test for the second constructor
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                               humidity, lambda);
-        
+
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
 
         Assert.assertEquals(expectedMapping, computedMapping[0].getReal(), 5.0e-8);
@@ -217,7 +217,7 @@ public class FieldMendesPavlisModelTest {
 
         // Station
         final GroundStation station = new GroundStation(baseFrame);
-        
+
         // Tropospheric model
         final MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.65);
 
@@ -267,42 +267,42 @@ public class FieldMendesPavlisModelTest {
             final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
             final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
             double  delayM4 = model.pathDelay(elevationM4, point, model.getParameters(), stateM4.getDate());
-            
+
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
             final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
             final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
             double  delayM3 = model.pathDelay(elevationM3, point, model.getParameters(), stateM3.getDate());
-            
+
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
             final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
             final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
             double  delayM2 = model.pathDelay(elevationM2, point, model.getParameters(), stateM2.getDate());
- 
+
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
             final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
             final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
             double  delayM1 = model.pathDelay(elevationM1, point, model.getParameters(), stateM1.getDate());
-           
+
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
             final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
             final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
             double  delayP1 = model.pathDelay(elevationP1, point, model.getParameters(), stateP1.getDate());
-            
+
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
             final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
             final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
             double  delayP2 = model.pathDelay(elevationP2, point, model.getParameters(), stateP2.getDate());
-            
+
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
             final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
             final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
             double  delayP3 = model.pathDelay(elevationP3, point, model.getParameters(), stateP3.getDate());
-            
+
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
             final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
             final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
             double  delayP4 = model.pathDelay(elevationP4, point, model.getParameters(), stateP4.getDate());
-            
+
             fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);

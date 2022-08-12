@@ -67,12 +67,12 @@ public class GlobalPressureTemperature2ModelTest {
                         new GlobalPressureTemperature2Model("gpt2_5_extract.grd", latitude, longitude, geoid);
 
         model.weatherParameters(height, date);
-        
+
         final double a[]         = model.getA();
         final double temperature = model.getTemperature() - 273.15;
         final double pressure    = model.getPressure();
         final double e           = model.getWaterVaporPressure();
-        
+
         Assert.assertEquals(22.12,     temperature, 2.3e-1);
         Assert.assertEquals(1002.56,   pressure,    5.1e-1);
         Assert.assertEquals(0.0012647, a[0],        1.1e-7);
@@ -94,7 +94,7 @@ public class GlobalPressureTemperature2ModelTest {
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
         final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
-        
+
         double longitude1;
         GlobalPressureTemperature2Model model1;
 
@@ -153,7 +153,7 @@ public class GlobalPressureTemperature2ModelTest {
 
     @Test
     public void testCorruptedFileBadData() {
-        
+
         Utils.setDataRoot("regular-data:potential:gpt2-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
@@ -178,7 +178,7 @@ public class GlobalPressureTemperature2ModelTest {
 
     @Test
     public void testCorruptedIrregularGrid() {
-        
+
         Utils.setDataRoot("regular-data:potential:gpt2-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 

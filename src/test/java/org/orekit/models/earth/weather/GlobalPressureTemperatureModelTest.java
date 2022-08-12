@@ -79,7 +79,7 @@ public class GlobalPressureTemperatureModelTest {
         // Real weather conditions
         final double realTemperature = 7.3;
         final double realPressure    = 1027.5;
-        
+
         // We test the model accuracy (10°C and 20 hPa)
         Assert.assertEquals(realTemperature, computedTemperature,    10);
         Assert.assertEquals(realPressure,    computedPressure,       20);
@@ -127,7 +127,7 @@ public class GlobalPressureTemperatureModelTest {
         // Real weather conditions
         final double realTemperature = -8.3;
         final double realPressure    = 717.9;
-        
+
         // We test the model accuracy (10°C and 20 hPa)
         Assert.assertEquals(realTemperature, computedTemperature,    10);
         Assert.assertEquals(realPressure,    computedPressure,       20);

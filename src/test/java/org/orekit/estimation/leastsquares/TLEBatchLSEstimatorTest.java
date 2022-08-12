@@ -93,7 +93,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(0.03071, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
-    
+
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
     public void testPVBackward() {
@@ -340,7 +340,7 @@ public class TLEBatchLSEstimatorTest {
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         TLEEstimationTestUtils.checkFit(context, estimator, 4, 5,
                                      0.0, 5.2e-6,
-                                     0.0, 3.3e-5,
+                                     0.0, 3.4e-5,
                                      0.0, 6.1e-6,
                                      0.0, 2.5e-9);
     }

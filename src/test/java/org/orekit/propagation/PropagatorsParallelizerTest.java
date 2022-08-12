@@ -102,7 +102,7 @@ public class PropagatorsParallelizerTest {
 
         // Verify that the backward propagation worked properly
         Assert.assertNotNull(state);
-        
+
     }
 
     @Test

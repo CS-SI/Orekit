@@ -60,27 +60,27 @@ public class BrouwerLyddaneKalmanEstimatorTest {
         // Reference propagator for estimation performances
         final BrouwerLyddanePropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
-        });        
+        });
 
         // Process noise matrix
         RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
         });
-  
+
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 2.70e-8;

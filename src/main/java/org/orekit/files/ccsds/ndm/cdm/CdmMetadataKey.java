@@ -81,7 +81,7 @@ public enum CdmMetadataKey {
     COVARIANCE_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setCovarianceSource)),
 
     /** Manoeuver capacity. */
-    MANEUVERABLE((token, context, container) -> token.processAsEnum(Maneuvrable.class, container::setManeuverable)),
+    MANEUVERABLE((token, context, container) -> token.processAsManeuvrableEnum(container::setManeuverable)),
 
     /** Central body for Object 1 and 2. */
     ORBIT_CENTER((token, context, container) -> token.processAsCenter(container::setOrbitCenter,

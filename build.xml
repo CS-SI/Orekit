@@ -2,8 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"            value="11.2" />
-
+  <property name="project.version"            value="11.3-SNAPSHOT" />
   <property name="src.dir"                    location="src"                    />
   <property name="main.src.dir"               value="${src.dir}/main/java"      />
   <property name="main.resources.dir"         value="${src.dir}/main/resources" />
@@ -125,13 +124,13 @@
         <pathelement location="${main.classes.dir}"                   />
         <pathelement location="${test.classes.dir}"                   />
         <pathelement location="${lib.dir}/${hipparchus.core.jar}"     />
-      	<pathelement location="${lib.dir}/${hipparchus.geometry.jar}" />
-      	<pathelement location="${lib.dir}/${hipparchus.ode.jar}"      />
-      	<pathelement location="${lib.dir}/${hipparchus.fitting.jar}"  />
-      	<pathelement location="${lib.dir}/${hipparchus.optim.jar}"    />
-      	<pathelement location="${lib.dir}/${hipparchus.stat.jar}"     />
-      	<pathelement location="${lib.dir}/${junit.jar}"               />
-      	<pathelement location="${lib.dir}/${hamcrest.core.jar}"       />
+        <pathelement location="${lib.dir}/${hipparchus.geometry.jar}" />
+        <pathelement location="${lib.dir}/${hipparchus.ode.jar}"      />
+        <pathelement location="${lib.dir}/${hipparchus.fitting.jar}"  />
+        <pathelement location="${lib.dir}/${hipparchus.optim.jar}"    />
+        <pathelement location="${lib.dir}/${hipparchus.stat.jar}"     />
+        <pathelement location="${lib.dir}/${junit.jar}"               />
+        <pathelement location="${lib.dir}/${hamcrest.core.jar}"       />
         <pathelement location="${lib.dir}/${hipparchus.filtering.jar}"/>
         <pathelement location="${lib.dir}/${mockito.jar}"             />
         <pathelement location="${lib.dir}/${objenesis.jar}"           />

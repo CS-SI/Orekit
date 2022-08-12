@@ -111,7 +111,7 @@ public class GLONASSNumericalPropagatorTest {
     public void testFromITRF2008ToPZ90() {
         // Reference for the test
         // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
-        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 
+        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014"
 
         // Position in ITRF-2008
         final Vector3D itrf2008P = new Vector3D(2845455.9753, 2160954.3073, 5265993.2656);
@@ -138,7 +138,7 @@ public class GLONASSNumericalPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {
         // Reference for the test
         // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
-        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 
+        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014"
 
         // Position in ITRF-2008
         final FieldVector3D<T> itrf2008P = new FieldVector3D<>(field,

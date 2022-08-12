@@ -528,7 +528,7 @@ public class TimeStampedFieldPVCoordinatesTest {
         Assert.assertEquals(pv.getVelocity().getX().getValue(), shifted.getPosition().getX().getPartialDerivative(1), 1.0e-15);
         Assert.assertEquals(pv.getVelocity().getY().getValue(), shifted.getPosition().getY().getPartialDerivative(1), 1.0e-15);
         Assert.assertEquals(pv.getVelocity().getZ().getValue(), shifted.getPosition().getZ().getPartialDerivative(1), 1.0e-15);
-        
+
     }
 
     @Test

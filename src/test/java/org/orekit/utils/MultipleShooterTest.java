@@ -90,7 +90,7 @@ public class MultipleShooterTest {
                         new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
                                          TimeScalesFactory.getUTC());
         final double arcDuration = 10000;
-       
+
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(1.25E10, 1.450E11, -7.5E9),
                                                            new Vector3D(-30000.0, 2500.0, -3500.0));
 
@@ -146,7 +146,7 @@ public class MultipleShooterTest {
         final AttitudeProvider attPro = propagatorList.get(nP).getAttitudeProvider();
 
         // Small change of the a patch point
-        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP); 
+        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP);
         final Vector3D newVel = firstGuessSP.getAbsPVA().getVelocity().add(deltaV);
         final AbsoluteDate newDate = firstGuessSP.getDate().shiftedBy(deltaEpoch);
         AbsolutePVCoordinates absPva = new AbsolutePVCoordinates(firstGuessSP.getFrame(), newDate, newPos, newVel);
@@ -193,7 +193,7 @@ public class MultipleShooterTest {
                         new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
                                          TimeScalesFactory.getUTC());
         final double arcDuration = 10000;
-       
+
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(1.25E10, 1.450E11, -7.5E9),
                                                            new Vector3D(-30000.0, 2500.0, -3500.0));
 
@@ -249,7 +249,7 @@ public class MultipleShooterTest {
         final AttitudeProvider attPro = propagatorList.get(nP).getAttitudeProvider();
 
         // Small change of the a patch point
-        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP); 
+        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP);
         final Vector3D newVel = firstGuessSP.getAbsPVA().getVelocity().add(deltaV);
         final AbsoluteDate newDate = firstGuessSP.getDate().shiftedBy(deltaEpoch);
         AbsolutePVCoordinates absPva = new AbsolutePVCoordinates(firstGuessSP.getFrame(), newDate, newPos, newVel);
@@ -351,7 +351,7 @@ public class MultipleShooterTest {
 
             propagator.setOrbitType(null);
             propagatorList.add(propagator);
-        }        
+        }
         return propagatorList;
     }
 
@@ -371,7 +371,7 @@ public class MultipleShooterTest {
 
             propagator.setOrbitType(null);
             propagatorList.add(propagator);
-        }        
+        }
         return propagatorList;
     }
 

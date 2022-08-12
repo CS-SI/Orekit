@@ -148,7 +148,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
     public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
         doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
     }
-    
+
     private void doTestPropagation(PropagationType type, double tolerance)
         throws FileNotFoundException, UnsupportedEncodingException {
 
@@ -256,18 +256,18 @@ public class DSSTStateTransitionMatrixGeneratorTest {
 
         final double minStep = 6000.0;
         final double maxStep = 86400.0;
-        
+
         Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        
+
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
-        
+
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
 
         Orbit initialOrbit =
@@ -293,7 +293,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         // Mean orbit
         final SpacecraftState initial = propagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(propagator.getInitialState(), propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
-                    	   propagator.getInitialState();
+                           propagator.getInitialState();
         ((DSSTHarvester) harvester).initializeFieldShortPeriodTerms(initial); // Initial state is MEAN
     }
 
@@ -304,9 +304,9 @@ public class DSSTStateTransitionMatrixGeneratorTest {
     @Test
     public void testIssue713() {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         double dP = 0.001;
-        
+
         // Test MEAN case
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN,  dP, provider);
         propagatorMEAN.setMu(provider.getMu());
@@ -323,7 +323,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         SpacecraftState finalMEAN = propagatorMEAN.propagate(initialStateMEAN.getDate()); // dummy zero duration propagation, to ensure haverster initialization
         RealMatrix dYdY0MEAN = harvesterMEAN.getStateTransitionMatrix(finalMEAN);
         for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) { 
+            for (int j = 0; j < 6; ++j) {
                 Assert.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
             }
         }
@@ -365,7 +365,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
 //        for (int i = 0; i < 6; ++i) {
 //            Assert.assertEquals(refCol[i], dYdPOSC.getEntry(i, 0), 1e-12);
 //        }
-        
+
     }
 
 }

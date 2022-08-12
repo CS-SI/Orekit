@@ -137,7 +137,7 @@ public class EcksteinHechlerStateTransitionMatrixTest {
                             state.getMu(), state.getAttitude());
 
     }
-    
+
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
 
@@ -145,7 +145,7 @@ public class EcksteinHechlerStateTransitionMatrixTest {
           return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, 
+    private SpacecraftState arrayToState(double[][] array,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);

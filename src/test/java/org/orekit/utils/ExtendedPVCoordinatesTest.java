@@ -34,12 +34,12 @@ public class ExtendedPVCoordinatesTest {
     @Test
     public void testConversion() {
         final ExtendedPVCoordinatesProvider provider = new ExtendedPVCoordinatesProvider() {
-            
+
             @Override
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
                 return null;
             }
-            
+
             @Override
             public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
                 getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
