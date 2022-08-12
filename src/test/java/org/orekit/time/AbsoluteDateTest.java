@@ -1379,8 +1379,9 @@ public class AbsoluteDateTest {
         // Run issue test
         final AbsoluteDate date1 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
         final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        date1.durationFrom(date2);
         Assert.assertEquals(date1, date2);
-        
+
         // Check equality is as expected for PAST INFINITY
         final AbsoluteDate date3 = AbsoluteDate.PAST_INFINITY;
         final AbsoluteDate date4 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
@@ -1395,6 +1396,11 @@ public class AbsoluteDateTest {
         final AbsoluteDate date7 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
         final AbsoluteDate date8 = new AbsoluteDate(AbsoluteDate.FUTURE_INFINITY, 0);
         Assert.assertNotEquals(date7, date8); 
+
+        // Check inequality is as expected
+        final AbsoluteDate date9 = new AbsoluteDate(AbsoluteDate.ARBITRARY_EPOCH.getEpoch(), Double.POSITIVE_INFINITY);
+        final AbsoluteDate date10 = new AbsoluteDate(AbsoluteDate.ARBITRARY_EPOCH.getEpoch(), Double.POSITIVE_INFINITY);
+        Assert.assertEquals(date9, date10); 
 
     }
     
