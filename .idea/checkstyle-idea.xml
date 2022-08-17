@@ -4,11 +4,21 @@
     <checkstyleVersion>10.3.1</checkstyleVersion>
     <scanScope>JavaOnly</scanScope>
     <option name="thirdPartyClasspath" />
-    <option name="activeLocationIds" />
+    <option name="activeLocationIds">
+      <option value="4e9f3a99-9c8d-4ac4-9077-faf1fa2db5fe" />
+    </option>
     <option name="locations">
       <list>
         <ConfigurationLocation id="bundled-sun-checks" type="BUNDLED" scope="All" description="Sun Checks">(bundled)</ConfigurationLocation>
         <ConfigurationLocation id="bundled-google-checks" type="BUNDLED" scope="All" description="Google Checks">(bundled)</ConfigurationLocation>
+        <ConfigurationLocation id="4e9f3a99-9c8d-4ac4-9077-faf1fa2db5fe" type="LOCAL_FILE" scope="All" description="Orekit">
+          $PROJECT_DIR$/checkstyle.xml
+          <option name="properties">
+            <map>
+              <entry key="checkstyle.header.file" value="${basedir}/license-header.txt" />
+            </map>
+          </option>
+        </ConfigurationLocation>
       </list>
     </option>
   </component>

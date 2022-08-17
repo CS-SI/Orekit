@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="" />
+    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/orekit/frames/FrameTools.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameToolsTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/UTC-TAI.history" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/finals2000A.all" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/itrf-versions.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/lnxp1990.430" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/checkstyle-idea.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/checkstyle-idea.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,25 +40,36 @@
     </option>
   </component>
   <component name="ProjectId" id="2DRbQUCVMbd1iuZqTJY0573tPPo" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="false" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vcucchie/git/forks/orekit/src/main/java/org/orekit/compiler&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.projectsettings.compiler.excludes&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "/home/vcucchie/git/forks/orekit/checkstyle.xml",
+    "settings.editor.selected.configurable": "org.infernus.idea.checkstyle.CheckStyleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/test/resources/FrameTools-data" />
+      <recent name="$PROJECT_DIR$/src/test/resources/regular-data" />
       <recent name="$PROJECT_DIR$/src/test/java" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/test/resources/FrameTools-data" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="org.orekit.frames" />
+    </key>
   </component>
-  <component name="RunManager" selected="JUnit.Serra2015Test.Chan_test_case_01">
+  <component name="RunManager" selected="JUnit.FrameToolsTest">
     <configuration name="All in orekit" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="orekit" />
       <option name="PACKAGE_NAME" value="" />
@@ -56,17 +78,32 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="NumericalOrbitDeterminationTest.testGNSS" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="FrameToolsTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="orekit" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="org.orekit.estimation.leastsquares.*" />
+          <option name="PATTERN" value="org.orekit.frames.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="PACKAGE_NAME" value="org.orekit.estimation.leastsquares" />
-      <option name="MAIN_CLASS_NAME" value="org.orekit.estimation.leastsquares.NumericalOrbitDeterminationTest" />
-      <option name="METHOD_NAME" value="testGNSS" />
+      <option name="PACKAGE_NAME" value="org.orekit.frames" />
+      <option name="MAIN_CLASS_NAME" value="org.orekit.frames.FrameToolsTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FrameToolsTest.testGetTransform" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="orekit" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.orekit.frames.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.orekit.frames" />
+      <option name="MAIN_CLASS_NAME" value="org.orekit.frames.FrameToolsTest" />
+      <option name="METHOD_NAME" value="testGetTransform" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -104,27 +141,13 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="org.orekit.collision.probability in orekit" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="orekit" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.orekit.collision.probability.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.orekit.collision.probability" />
-      <option name="TEST_OBJECT" value="package" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.FrameToolsTest" />
+        <item itemvalue="JUnit.All in orekit" />
+        <item itemvalue="JUnit.FrameToolsTest.testGetTransform" />
         <item itemvalue="JUnit.Serra2015Test.Chan_test_case_01" />
         <item itemvalue="JUnit.ProbabilityOfCollisionTest.Should_create_expected_ProbabilityOfCollision_Instance" />
-        <item itemvalue="JUnit.org.orekit.collision.probability in orekit" />
-        <item itemvalue="JUnit.NumericalOrbitDeterminationTest.testGNSS" />
-        <item itemvalue="JUnit.All in orekit" />
       </list>
     </recent_temporary>
   </component>
@@ -149,5 +172,11 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/orekit$ExtremumApproachDetectorTest.ic" NAME="ExtremumApproachDetectorTest Coverage Results" MODIFIED="1660726451073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>org.orekit.propagation.events.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/orekit$All_in_orekit.ic" NAME="All in orekit Coverage Results" MODIFIED="1660738064597" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>
