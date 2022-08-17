@@ -1,0 +1,85 @@
+package org.orekit.propagation.events;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
+
+/**
+ * Finder for extremum approach events.
+ * <p>This class finds extremum approach events (i.e. closest or farthest approach).</p>
+ * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
+ * propagation at farthest approach and to {@link Action#STOP stop} propagation at closest approach. This can be changed
+ * by calling {@link #withHandler(EventHandler)} after construction.</p>
+ * <p>It is also possible to detect solely one type of event using an {@link EventSlopeFilter event slope filter}. For
+ * example in order to only detect closest approach, one should type the following :
+ * <pre>{@code
+ * ExtremumApproachDetector rawDetector = new ExtremumApproachDetector(otherPVProvider);
+ * EventDetector closeApproachDetector = new EventSlopeFilter<ExtremumApproachDetector>(rawDetector,FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
+ *  } </pre>
+ * </p>
+ *
+ * @author Vincent Cucchietti
+ * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+ * @see EventSlopeFilter
+ * @see FilterType
+ */
+public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachDetector> {
+
+    /**
+     * PVCoordinates provider of the other object with which we want to find out the extremum approach.
+     */
+    private final PVCoordinatesProvider otherPVProvider;
+
+    /**
+     * Constructor with default values.
+     *
+     * @param otherPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
+     *                        approach.
+     */
+    public ExtremumApproachDetector(final PVCoordinatesProvider otherPVProvider) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing<>(), otherPVProvider);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param maxCheck        maximum checking interval (s)
+     * @param threshold       convergence threshold (s)
+     * @param maxIter         maximum number of iterations in the event time search
+     * @param handler         event handler to call at event occurrences
+     * @param otherPVProvider PVCoordinates provider of the other object with which we want to find out the extremum *
+     *                        approach.
+     */
+    public ExtremumApproachDetector(
+        final double maxCheck, final double threshold, final int maxIter,
+        final EventHandler<? super ExtremumApproachDetector> handler, final PVCoordinatesProvider otherPVProvider) {
+        super(maxCheck, threshold, maxIter, handler);
+        this.otherPVProvider = otherPVProvider;
+    }
+
+    /** {@inheritDoc} */
+    public double g(final SpacecraftState s) {
+        final PVCoordinates deltaPV = deltaPV(s);
+        return Vector3D.dotProduct(deltaPV.getPosition().normalize(), deltaPV.getVelocity());
+    }
+
+    /**
+     * @param s Spacecraft state.
+     * @return Relative position between s and otherPVProvider.
+     */
+    protected PVCoordinates deltaPV(final SpacecraftState s) {
+        return new PVCoordinates(s.getPVCoordinates(),
+            otherPVProvider.getPVCoordinates(s.getDate(), s.getFrame()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ExtremumApproachDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+                                              final EventHandler<? super ExtremumApproachDetector> newHandler) {
+        return new ExtremumApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, otherPVProvider);
+    }
+}

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+    <option name="DEFAULT_COMPILER" value="Eclipse" />
+    <option name="USE_RELEASE_OPTION" value="false" />
     <excludeFromCompile>
       <file url="file://$PROJECT_DIR$/src/test/java/org/orekit/compiler/plugin/DefaultDataContextPluginTest.java" />
       <directory url="file://$PROJECT_DIR$/src/main/java/org/orekit/compiler" includeSubdirectories="true" />
