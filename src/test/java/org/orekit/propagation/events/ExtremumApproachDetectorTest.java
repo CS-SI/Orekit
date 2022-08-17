@@ -1,3 +1,19 @@
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.events;
 
 import org.assertj.core.api.Assertions;
@@ -42,7 +58,7 @@ public class ExtremumApproachDetectorTest {
         final double raan = 0; //rad
         final double anomaly = FastMath.toRadians(0); //rad
         final Orbit orbit =
-            new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
+                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
 
         final PVCoordinatesProvider earthPVProvider = CelestialBodyFactory.getEarth();
 
@@ -53,11 +69,11 @@ public class ExtremumApproachDetectorTest {
 
         // When
         final SpacecraftState stateAtEvent =
-            propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
+                propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
         Assertions.assertThat(stateAtEvent.getDate().durationFrom(initialDate))
-            .isEqualTo(orbit.getKeplerianPeriod(), withPrecision(2.0e-12));
+                .isEqualTo(orbit.getKeplerianPeriod(), withPrecision(2.0e-12));
 
     }
 
@@ -81,23 +97,23 @@ public class ExtremumApproachDetectorTest {
         final double raan = 0; //rad
         final double anomaly = FastMath.toRadians(0); //rad
         final Orbit orbit =
-            new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
+                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
 
         final PVCoordinatesProvider earthPVProvider = CelestialBodyFactory.getEarth();
 
         final ExtremumApproachDetector detector =
-            new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent<>());
+                new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent<>());
 
         final Propagator propagator = new KeplerianPropagator(orbit);
         propagator.addEventDetector(detector);
 
         // When
         final SpacecraftState stateAtEvent =
-            propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
+                propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
         Assertions.assertThat(stateAtEvent.getDate().durationFrom(initialDate))
-            .isEqualTo(orbit.getKeplerianPeriod() / 2, withPrecision(1.27798E-8));
+                .isEqualTo(orbit.getKeplerianPeriod() / 2, withPrecision(1.27798E-8));
 
     }
 }

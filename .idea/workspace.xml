@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="Reset develop branch">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/orekit/propagation/events/ExtremumApproachDetector.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ExtremumApproachDetectorTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/orekit/propagation/events/ExtremumApproachDetector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/orekit/propagation/events/ExtremumApproachDetector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ExtremumApproachDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ExtremumApproachDetectorTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,14 +42,14 @@
     <option name="showExcludedFiles" value="false" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/vcucchie/git/Backup forks/orekit",
-    "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/vcucchie/git/Backup forks/orekit&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.projectsettings.compiler.javacompiler&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/test/java" />
@@ -184,6 +183,10 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/orekit$ExtremumApproachDetectorTest.ic" NAME="ExtremumApproachDetectorTest Coverage Results" MODIFIED="1660726451073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
       <FILTER>org.orekit.propagation.events.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/orekit$All_in_orekit.ic" NAME="All in orekit Coverage Results" MODIFIED="1660738064597" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/orekit$FrameToolsTest.ic" NAME="FrameToolsTest Coverage Results" MODIFIED="1660738906745" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>org.orekit.frames.*</FILTER>
     </SUITE>
   </component>
 </project>
