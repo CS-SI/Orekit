@@ -63,10 +63,10 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
     /**
      * Constructor.
      *
-     * @param maxCheck        maximum checking interval (s)
-     * @param threshold       convergence threshold (s)
-     * @param maxIter         maximum number of iterations in the event time search
-     * @param handler         event handler to call at event occurrences
+     * @param maxCheck        Maximum checking interval (s).
+     * @param threshold       Convergence threshold (s).
+     * @param maxIter         Maximum number of iterations in the event time search.
+     * @param handler         Event handler to call at event occurrences.
      * @param otherPVProvider PVCoordinates provider of the other object with which we want to find out the extremum *
      *                        approach.
      */
