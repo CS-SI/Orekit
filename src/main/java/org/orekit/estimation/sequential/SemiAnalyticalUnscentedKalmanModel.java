@@ -55,7 +55,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
  */
-public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator>, SemiAnalyticalModel {
+public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator>, SemiAnalyticalProcess {
 
     /** Initial builder for propagator. */
     private final DSSTPropagatorBuilder builder;

@@ -32,6 +32,8 @@ import org.orekit.time.AbsoluteDate;
  * {@link ObservedMeasurement measurements} for both {@link SemiAnalyticalUnscentedKalmanEstimator} and {@link SemiAnalytical(rKalmanEstimator}.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
+ * @author Julie Bayard
+ * @author Maxime Journot
  */
 public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
 
@@ -42,7 +44,7 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
     private AbsoluteDate referenceDate;
 
     /** Kalman model. */
-    private final SemiAnalyticalModel model;
+    private final SemiAnalyticalProcess model;
 
     /** Kalman Filter. */
     private final KalmanFilter<MeasurementDecorator> filter;
@@ -56,7 +58,7 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
      * @param observedMeasurements list of observed measurements
      * @param referenceDate reference date
      */
-    public SemiAnalyticalMeasurementHandler(final SemiAnalyticalModel model,
+    public SemiAnalyticalMeasurementHandler(final SemiAnalyticalProcess model,
                                   final KalmanFilter<MeasurementDecorator> filter,
                                   final List<ObservedMeasurement<?>> observedMeasurements,
                                   final AbsoluteDate referenceDate) {

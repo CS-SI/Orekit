@@ -69,7 +69,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 11.1
  */
-public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator>, SemiAnalyticalModel {
+public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator>, SemiAnalyticalProcess {
 
     /** Builders for DSST propagator. */
     private final DSSTPropagatorBuilder builder;

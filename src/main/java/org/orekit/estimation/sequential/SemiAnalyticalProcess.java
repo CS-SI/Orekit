@@ -24,7 +24,7 @@ import org.orekit.propagation.SpacecraftState;
  * Interface for both {@link SemiAnalyticalUnscentedKalmanModel} and {@link SemiAnalyticalKalmanModel}.
  * @author Gaëtan Pierre
  */
-public interface SemiAnalyticalModel {
+public interface SemiAnalyticalProcess {
 
     /** Get the observer for Kalman Filter estimations.
      * @return the observer for Kalman Filter estimations
