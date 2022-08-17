@@ -27,7 +27,7 @@
       <action dev="greyskyy" type="add">
         Added waypoint interpolation of PVCoordinatesProvider.
       </action>
-            <action dev="vincent" type="add">
+      <action dev="vincent" type="add">
         Added ExtremumApproachDetector.
       </action>
     </release>
