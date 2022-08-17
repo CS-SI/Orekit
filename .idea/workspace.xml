@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="Reset develop branch">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/orekit/propagation/events/ExtremumApproachDetector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/orekit/propagation/events/ExtremumApproachDetector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ExtremumApproachDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ExtremumApproachDetectorTest.java" afterDir="false" />
-    </list>
+    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="Documentation&#10;&#10;docs: Fixed documentation and added license header for ExtremumApproachDetector and its test class." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -162,7 +157,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660723232697</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Documentation&#10;&#10;docs: Fixed documentation and added license header for ExtremumApproachDetector and its test class.">
+      <created>1660739285246</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1660739285246</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -178,7 +180,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Reset develop branch" />
-    <option name="LAST_COMMIT_MESSAGE" value="Reset develop branch" />
+    <MESSAGE value="Documentation&#10;&#10;docs: Fixed documentation and added license header for ExtremumApproachDetector and its test class." />
+    <option name="LAST_COMMIT_MESSAGE" value="Documentation&#10;&#10;docs: Fixed documentation and added license header for ExtremumApproachDetector and its test class." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/orekit$ExtremumApproachDetectorTest.ic" NAME="ExtremumApproachDetectorTest Coverage Results" MODIFIED="1660726451073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
