@@ -5,16 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/orekit/frames/FrameTools.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameToolsTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/UTC-TAI.history" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/finals2000A.all" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/itrf-versions.conf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/resources/FrameTools-data/lnxp1990.430" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/checkstyle-idea.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/checkstyle-idea.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameToolsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameToolsTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +45,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "last_opened_file_path": "/home/vcucchie/git/forks/orekit/checkstyle.xml",
-    "settings.editor.selected.configurable": "org.infernus.idea.checkstyle.CheckStyleConfigurable"
+    "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -69,7 +61,7 @@
       <recent name="org.orekit.frames" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.FrameToolsTest">
+  <component name="RunManager" selected="JUnit.All in orekit">
     <configuration name="All in orekit" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="orekit" />
       <option name="PACKAGE_NAME" value="" />
@@ -143,8 +135,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.FrameToolsTest" />
         <item itemvalue="JUnit.All in orekit" />
+        <item itemvalue="JUnit.FrameToolsTest" />
         <item itemvalue="JUnit.FrameToolsTest.testGetTransform" />
         <item itemvalue="JUnit.Serra2015Test.Chan_test_case_01" />
         <item itemvalue="JUnit.ProbabilityOfCollisionTest.Should_create_expected_ProbabilityOfCollision_Instance" />
@@ -177,6 +169,9 @@
     <SUITE FILE_PATH="coverage/orekit$ExtremumApproachDetectorTest.ic" NAME="ExtremumApproachDetectorTest Coverage Results" MODIFIED="1660726451073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
       <FILTER>org.orekit.propagation.events.*</FILTER>
     </SUITE>
-    <SUITE FILE_PATH="coverage/orekit$All_in_orekit.ic" NAME="All in orekit Coverage Results" MODIFIED="1660738064597" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/orekit$All_in_orekit.ic" NAME="All in orekit Coverage Results" MODIFIED="1660740362576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/orekit$FrameToolsTest.ic" NAME="FrameToolsTest Coverage Results" MODIFIED="1660738906745" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>org.orekit.frames.*</FILTER>
+    </SUITE>
   </component>
 </project>

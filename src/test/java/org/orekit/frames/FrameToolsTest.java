@@ -155,47 +155,35 @@ public class FrameToolsTest {
 
         final RealMatrix covMatrix = new DiagonalMatrix(new double[]{sig_sma, sig_ecc, sig_inc,
                 sig_pom, sig_gom, sig_anm});
-        //     System.out.println("Initial :");
-        //     printMatrix(covMatrix.getData());
-        //     System.out.println();
+
         CelestialBodyFrame in = CelestialBodyFrame.EME2000;
         FrameFacade from = new FrameFacade(in.getFrame(IERSConventions.IERS_2010, false, DataContext.getDefault()),
                 in, null, null, in.name());
+
         OrbitRelativeFrame out = OrbitRelativeFrame.TNW;
         FrameFacade to = new FrameFacade(null, null, out, null, out.name());
+
         final Transform t = FrameTools.getTransform(from, to, pv.getDate(), pv);
+
         final RealMatrix converted = FrameTools.convertCovFrame(covMatrix, t);
 
-        // Données de référence issues de CelestLab :
+        // Reference data from CelestLab :
         // https://sourceforge.isae.fr/svn/dcas-soft-espace/support/softs/CelestLab/trunk/help/en_US/scilab_en_US_help/jacobian%20matrices.html cas-3
-        // Attention : Les covariances CCSDS sont censées être exprimées en Cartésien.
-        //             Or, l'exemple Celestlab utilise des données kepleriennes.
-        //             Nous considérons doc ici que la covariance est cartésienne.
-        //             La variable celestlab dpv_dkep doit donc être surchargée pour être la matrice identité.
+        // Attention : CCSDS covariance matrix are supposed to be expressed in cartesian.
+        //             However,the Celestlab example uses keplerian data.
+        //             So here we consider that the covariance is cartesian.
+        //             The celestlab variable dpv_dkep must be overloaded so that it can be an identity matrix.
+
         double[][] expected = {{2.543E-08, 0., 5.027E-09, 0., 0., 0.},
                 {0., 1000000., 0., 0., 0., 0.},
                 {5.027E-09, 0., 2.543E-08, 0., 0., 0.},
                 {0., 0., 0., 0.0000015, 0., 0.0000015},
                 {0., 0., 0., 0., 3.046E-08, 0.},
                 {0., 0., 0., 0.0000015, 0., 0.0000015}};
-        //
-        //   System.out.println("Expected :");
-        //   printMatrix(expected);
-        //   System.out.println("Converted :");
-        //   printMatrix(converted.getData());
 
-        // Les deux matrices sont identiques si l'erreur absolue sur chaque terme n'excède pas 1E-7 USI
+        // Both matrices are identical if the absolute error on each term doesn't exceed 1E-7 USI
         validateMatrix(expected, converted.getData(), 4.e-8);
     }
-
-    //   private void printMatrix(double[][] data) {
-    //      for (int i = 0; i < data.length; i++) {
-    //         for (int j = 0; j < data[0].length; j++) {
-    //            System.out.print(data[i][j] + " ");
-    //         }
-    //         System.out.println();
-    //      }
-    //   }
 
     private void validateMatrix(double[][] data, double[][] expected, double threshold) {
         for (int i = 0; i < data.length; i++) {
