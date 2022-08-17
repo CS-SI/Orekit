@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="Documentation&#10;&#10;docs: Fixed documentation and added license header for ExtremumApproachDetector and its test class." />
+    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="Changed branch name to issue-952." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -164,7 +164,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660739285246</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Changed branch name to issue-952.">
+      <created>1660739843491</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1660739843491</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -181,7 +188,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Reset develop branch" />
     <MESSAGE value="Documentation&#10;&#10;docs: Fixed documentation and added license header for ExtremumApproachDetector and its test class." />
-    <option name="LAST_COMMIT_MESSAGE" value="Documentation&#10;&#10;docs: Fixed documentation and added license header for ExtremumApproachDetector and its test class." />
+    <MESSAGE value="Changed branch name to issue-952." />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed branch name to issue-952." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/orekit$ExtremumApproachDetectorTest.ic" NAME="ExtremumApproachDetectorTest Coverage Results" MODIFIED="1660726451073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
