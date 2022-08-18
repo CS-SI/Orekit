@@ -19,8 +19,9 @@ package org.orekit.frames;
 import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
@@ -35,18 +36,13 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 public class FrameToolsTest {
 
     /**
      * Configure access to Orekit data folder for simple unit tests.
      */
-    @BeforeAll
-    static void configureOrekitDataAccess() {
+    @BeforeClass
+    public static void configureOrekitDataAccess() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -64,7 +60,7 @@ public class FrameToolsTest {
     }
 
     @Test
-    void testGetTransform() {
+    public void testGetTransform() {
         final Orbit orbit = getOrbit();
         // From celestial to celestial
         for (CelestialBodyFrame in : CelestialBodyFrame.values()) {
@@ -76,11 +72,11 @@ public class FrameToolsTest {
                         out, null, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
-                    assertNotNull(t);
+                    Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    fail("Unexpected exception", e.getCause());
+                    Assert.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -92,11 +88,11 @@ public class FrameToolsTest {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
-                    assertNotNull(t);
+                    Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    fail("Unexpected exception", e.getCause());
+                    Assert.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -109,11 +105,11 @@ public class FrameToolsTest {
                         out, null, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
-                    assertNotNull(t);
+                    Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    fail("Unexpected exception", e.getCause());
+                    Assert.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -124,18 +120,18 @@ public class FrameToolsTest {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
-                    assertNotNull(t);
+                    Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    fail("Unexpected exception", e.getCause());
+                    Assert.fail(e.getCause().getMessage());
                 }
             }
         }
     }
 
     @Test
-    void testConvertCovFrame() {
+    public void testConvertCovFrame() {
 
         final Orbit pv = getOrbit();
 
@@ -188,7 +184,7 @@ public class FrameToolsTest {
     private void validateMatrix(double[][] data, double[][] expected, double threshold) {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {
-                assertEquals(expected[i][j], data[i][j], threshold, String.format("KO for i = %d and j = %d", i, j));
+                Assert.assertEquals(expected[i][j], data[i][j], threshold);
             }
         }
     }
