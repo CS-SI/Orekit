@@ -59,9 +59,45 @@ public class FrameToolsTest {
         return OrbitType.CARTESIAN.convertType(kOrb);
     }
 
+    /**
+     * Test that the getTransform method returns expected rotation matrix with theta = 90° when asked the transform
+     * between RTN and TNW local orbital frame.
+     */
+    @Test
+    public void testGetTransformLofToLofAtPeriapsis() {
+        // Given
+        final double threshold = 1e-15;
+
+        final Frame pivotFrame = FramesFactory.getGCRF();
+        final Orbit orbit = getOrbit();
+
+        final FrameFacade RTN = new FrameFacade(null, null, OrbitRelativeFrame.QSW, null, "RTN");
+        final FrameFacade TNW = new FrameFacade(null, null, OrbitRelativeFrame.TNW, null, "RTN");
+
+        // When
+        final Transform lofInToLofOut = FrameTools.getTransform(RTN, TNW, pivotFrame, orbit.getDate(), orbit);
+
+        // Then
+        final double[][] expectedRotationMatrix = new double[][]{
+                {0, 1, 0},
+                {-1, 0, 0},
+                {0, 0, 1}};
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                Assert.assertEquals(expectedRotationMatrix[i][j], lofInToLofOut.getRotation().getMatrix()[i][j], threshold);
+            }
+        }
+
+    }
+
     @Test
     public void testGetTransform() {
+
         final Orbit orbit = getOrbit();
+
+        final Frame pivotFrame = FramesFactory.getGCRF();
+
         // From celestial to celestial
         for (CelestialBodyFrame in : CelestialBodyFrame.values()) {
             FrameFacade from = new FrameFacade(in.getFrame(IERSConventions.IERS_2010, false, DataContext.getDefault()),
@@ -71,7 +107,7 @@ public class FrameToolsTest {
                         out.getFrame(IERSConventions.IERS_2010, false, DataContext.getDefault()),
                         out, null, null, out.name());
                 try {
-                    Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
+                    Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
                     Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
                     Assert.assertTrue(iae.getMessage().contains("is not implemented"));
@@ -87,7 +123,7 @@ public class FrameToolsTest {
             for (OrbitRelativeFrame out : OrbitRelativeFrame.values()) {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
-                    Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
+                    Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
                     Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
                     Assert.assertTrue(iae.getMessage().contains("is not implemented"));
@@ -104,7 +140,7 @@ public class FrameToolsTest {
                         out.getFrame(IERSConventions.IERS_2010, false, DataContext.getDefault()),
                         out, null, null, out.name());
                 try {
-                    Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
+                    Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
                     Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
                     Assert.assertTrue(iae.getMessage().contains("is not implemented"));
@@ -119,7 +155,7 @@ public class FrameToolsTest {
             for (OrbitRelativeFrame out : OrbitRelativeFrame.values()) {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
-                    Transform t = FrameTools.getTransform(from, to, orbit.getDate(), orbit);
+                    Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
                     Assert.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
                     Assert.assertTrue(iae.getMessage().contains("is not implemented"));
@@ -134,6 +170,8 @@ public class FrameToolsTest {
     public void testConvertCovFrame() {
 
         final Orbit pv = getOrbit();
+
+        final Frame pivotFrame = FramesFactory.getGCRF();
 
         double sig_sma = 1000;
         double sig_ecc = 1000 / pv.getA();
@@ -159,7 +197,7 @@ public class FrameToolsTest {
         OrbitRelativeFrame out = OrbitRelativeFrame.TNW;
         FrameFacade to = new FrameFacade(null, null, out, null, out.name());
 
-        final Transform t = FrameTools.getTransform(from, to, pv.getDate(), pv);
+        final Transform t = FrameTools.getTransform(from, to, pivotFrame, pv.getDate(), pv);
 
         final RealMatrix converted = FrameTools.convertCovFrame(covMatrix, t);
 
