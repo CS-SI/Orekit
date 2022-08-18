@@ -52,10 +52,12 @@ public class FrameToolsTest {
      * @return a Keplerian orbit defined in EME2000.
      */
     private Orbit getOrbit() {
+
         Orbit kOrb = new KeplerianOrbit(7.E6, 0.001, FastMath.toRadians(45.), 0., 0., 0.,
                 PositionAngle.TRUE, FramesFactory.getEME2000(),
                 new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC()),
                 Constants.GRIM5C1_EARTH_MU);
+
         return OrbitType.CARTESIAN.convertType(kOrb);
     }
 
@@ -67,6 +69,10 @@ public class FrameToolsTest {
     public void testGetTransformLofToLofAtPeriapsis() {
         // Given
         final double threshold = 1e-15;
+        final double[][] expectedRotationMatrix = new double[][]{
+                {0, 1, 0},
+                {-1, 0, 0},
+                {0, 0, 1}};
 
         final Frame pivotFrame = FramesFactory.getGCRF();
         final Orbit orbit = getOrbit();
@@ -78,19 +84,13 @@ public class FrameToolsTest {
         final Transform lofInToLofOut = FrameTools.getTransform(RTN, TNW, pivotFrame, orbit.getDate(), orbit);
 
         // Then
-        final double[][] expectedRotationMatrix = new double[][]{
-                {0, 1, 0},
-                {-1, 0, 0},
-                {0, 0, 1}};
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                Assert.assertEquals(expectedRotationMatrix[i][j], lofInToLofOut.getRotation().getMatrix()[i][j], threshold);
-            }
-        }
+        validateMatrix(lofInToLofOut.getRotation().getMatrix(), expectedRotationMatrix, threshold);
 
     }
 
+    /**
+     * Test getTransform with every combination of frames. It shouldn't throw an exception.
+     */
     @Test
     public void testGetTransform() {
 
@@ -166,9 +166,13 @@ public class FrameToolsTest {
         }
     }
 
+    /**
+     * Test transform obtained from getTransform to convert a covariance matrix.
+     */
     @Test
     public void testConvertCovFrame() {
 
+        // Given
         final Orbit pv = getOrbit();
 
         final Frame pivotFrame = FramesFactory.getGCRF();
@@ -199,8 +203,10 @@ public class FrameToolsTest {
 
         final Transform t = FrameTools.getTransform(from, to, pivotFrame, pv.getDate(), pv);
 
+        // When
         final RealMatrix converted = FrameTools.convertCovFrame(covMatrix, t);
 
+        // Then
         // Reference data from CelestLab :
         // https://sourceforge.isae.fr/svn/dcas-soft-espace/support/softs/CelestLab/trunk/help/en_US/scilab_en_US_help/jacobian%20matrices.html cas-3
         // Attention : CCSDS covariance matrix are supposed to be expressed in cartesian.
@@ -219,6 +225,13 @@ public class FrameToolsTest {
         validateMatrix(expected, converted.getData(), 4.e-8);
     }
 
+    /**
+     * Assert that data double array is equals to expected.
+     *
+     * @param data      input data to assert
+     * @param expected  expected data
+     * @param threshold threshold for precision
+     */
     private void validateMatrix(double[][] data, double[][] expected, double threshold) {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {
