@@ -7,3 +7,5 @@ target
 /build
 /lib
 *.class
+.idea/
+orekit.iml
