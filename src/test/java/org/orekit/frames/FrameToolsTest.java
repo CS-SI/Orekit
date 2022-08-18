@@ -47,7 +47,7 @@ public class FrameToolsTest {
      */
     @BeforeAll
     static void configureOrekitDataAccess() {
-        Utils.setDataRoot("FrameTools-data");
+        Utils.setDataRoot("regular-data");
     }
 
     /**
@@ -58,7 +58,7 @@ public class FrameToolsTest {
     private Orbit getOrbit() {
         Orbit kOrb = new KeplerianOrbit(7.E6, 0.001, FastMath.toRadians(45.), 0., 0., 0.,
                 PositionAngle.TRUE, FramesFactory.getEME2000(),
-                new AbsoluteDate(2015, 1, 1, TimeScalesFactory.getUTC()),
+                new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC()),
                 Constants.GRIM5C1_EARTH_MU);
         return OrbitType.CARTESIAN.convertType(kOrb);
     }

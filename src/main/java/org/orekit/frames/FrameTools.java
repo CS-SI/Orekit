@@ -18,6 +18,8 @@ package org.orekit.frames;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.time.AbsoluteDate;
@@ -31,9 +33,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Vincent Cucchietti
  */
 public class FrameTools {
-
-    /** Transform from %s to %s is not implemented. */
-    private static final String INVALID_TRANSFORM = "Transform from %s to %s is not implemented";
 
     /** Private constructor for this utility class. */
     private FrameTools() {
@@ -59,11 +58,11 @@ public class FrameTools {
                 return getTransform(fIn.asOrbitRelativeFrame(), fOut, date, pv);
             }
             // Transform cannot be get from these 2 frames
-            throw new IllegalArgumentException(String.format(INVALID_TRANSFORM, fIn.getName(), fOut.getName()));
+            throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM,fIn.getName(), fOut.getName());
 
-        } catch (IllegalArgumentException exception) {
+        } catch (OrekitIllegalArgumentException exception) {
             // Transform cannot be get from these 2 frames
-            throw new IllegalArgumentException(String.format(INVALID_TRANSFORM, fIn.getName(), fOut.getName()));
+            throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM,fIn.getName(), fOut.getName());
         }
     }
 
@@ -89,7 +88,7 @@ public class FrameTools {
             }
         }
         // Transform cannot be gotten from these 2 frames
-        throw new IllegalArgumentException(String.format(INVALID_TRANSFORM, fIn.getName(), fOut.getName()));
+        throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM,fIn.getName(), fOut.getName());
     }
 
     /**
@@ -127,8 +126,7 @@ public class FrameTools {
             }
         }
         // Transform cannot be gotten from these 2 frames
-        throw new IllegalArgumentException(
-                String.format(INVALID_TRANSFORM, "Undefined orbit relative frame", fOut.getName()));
+        throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM, "undefined relative orbit frame", fOut.getName());
     }
 
     /**
