@@ -16,10 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.assertj.core.api.Assertions;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
@@ -34,13 +32,13 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
-import static org.assertj.core.api.Assertions.withPrecision;
-
 public class ExtremumApproachDetectorTest {
 
+    /**
+    * Test the detector on a keplerian orbit and detect extremum approach with Earth.
+    */
     @Test
-    @DisplayName("Test the detector on a keplerian orbit and detect extremum approach with Earth.")
-    void Should_stop_propagation_at_closest_approach_by_default() {
+    public void testStopPropagationClosestApproachByDefault() {
         // Given
         Utils.setDataRoot("regular-data");
 
@@ -72,14 +70,16 @@ public class ExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
-        Assertions.assertThat(stateAtEvent.getDate().durationFrom(initialDate))
-                .isEqualTo(orbit.getKeplerianPeriod(), withPrecision(2.0e-12));
+        Assert.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod(),1e-9);
 
     }
 
+    /**
+    * Test the detector on a keplerian orbit and detect extremum approach with Earth.
+    */
     @Test
-    @DisplayName("Test the detector on a keplerian orbit and detect extremum approach with Earth.")
-    void Should_stop_propagation_at_farthest_approach_with_handler() {
+    public void testStopPropagationFarthestApproachWithHandler() {
+        
         // Given
         Utils.setDataRoot("regular-data");
 
@@ -112,8 +112,7 @@ public class ExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
-        Assertions.assertThat(stateAtEvent.getDate().durationFrom(initialDate))
-                .isEqualTo(orbit.getKeplerianPeriod() / 2, withPrecision(1.27798E-8));
+        Assert.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod() / 2,1e-7);
 
     }
 }
