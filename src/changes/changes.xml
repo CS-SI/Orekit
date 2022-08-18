@@ -30,6 +30,9 @@
       <action dev="vincent" type="add">
         Added ExtremumApproachDetector.
       </action>
+      <action dev="vincent" type="add">
+        Added FrameTools.
+      </action>
     </release>
     <release version="11.2.1" date="2022-08-01"
              description="Version 11.2.1 is a patch release of Orekit.

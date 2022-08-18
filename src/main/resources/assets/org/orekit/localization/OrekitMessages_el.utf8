@@ -756,5 +756,8 @@ NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = <MISSING TRANSLATION>
 
+# transform from {0} to {1} is not implemented
+INVALID_TRANSFORM = <MISSING TRANSLATION>
+
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
