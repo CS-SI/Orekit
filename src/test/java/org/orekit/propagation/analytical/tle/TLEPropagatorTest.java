@@ -16,15 +16,14 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
@@ -60,12 +59,12 @@ public class TLEPropagatorTest {
         SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(period));
 
         // Check results
-        Assert.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
-        Assert.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
-        Assert.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
-        Assert.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
+        Assertions.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
+        Assertions.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
+        Assertions.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
+        Assertions.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
 
     }
 
@@ -91,22 +90,22 @@ public class TLEPropagatorTest {
         SpacecraftState boundedState = boundedProp.propagate(initDate);
 
         // Check results
-        Assert.assertEquals(initialState.getA(), boundedState.getA(), 0.);
-        Assert.assertEquals(initialState.getEquinoctialEx(), boundedState.getEquinoctialEx(), 0.);
-        Assert.assertEquals(initialState.getEquinoctialEy(), boundedState.getEquinoctialEy(), 0.);
-        Assert.assertEquals(initialState.getHx(), boundedState.getHx(), 0.);
-        Assert.assertEquals(initialState.getHy(), boundedState.getHy(), 0.);
-        Assert.assertEquals(initialState.getLM(), boundedState.getLM(), 1e-14);
+        Assertions.assertEquals(initialState.getA(), boundedState.getA(), 0.);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), boundedState.getEquinoctialEx(), 0.);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), boundedState.getEquinoctialEy(), 0.);
+        Assertions.assertEquals(initialState.getHx(), boundedState.getHx(), 0.);
+        Assertions.assertEquals(initialState.getHy(), boundedState.getHy(), 0.);
+        Assertions.assertEquals(initialState.getLM(), boundedState.getLM(), 1e-14);
 
         SpacecraftState finalState = boundedProp.propagate(endDate);
 
         // Check results
-        Assert.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
-        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
-        Assert.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
-        Assert.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
-        Assert.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
+        Assertions.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
+        Assertions.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
+        Assertions.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
+        Assertions.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
 
     }
 
@@ -128,7 +127,7 @@ public class TLEPropagatorTest {
                                                  Propagator.DEFAULT_MASS);
         propagator.setStepHandler(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
+        Assertions.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
 
         // with default attitude mode, distance should be large
         propagator = TLEPropagator.selectExtrapolator(tle);
@@ -136,7 +135,7 @@ public class TLEPropagatorTest {
         propagator.propagate(tle.getDate().shiftedBy(period));
         MatcherAssert.assertThat(checker.getMinDistance(),
                 OrekitMatchers.greaterThan(1.5218e7));
-        Assert.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
+        Assertions.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
 
     }
 
@@ -190,7 +189,7 @@ public class TLEPropagatorTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 

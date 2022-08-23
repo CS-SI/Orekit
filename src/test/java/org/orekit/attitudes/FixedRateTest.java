@@ -16,18 +16,17 @@
  */
 package org.orekit.attitudes;
 
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -68,11 +67,11 @@ public class FixedRateTest {
                               new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, frame, date, 3.986004415e14);
         Rotation attitude0 = law.getAttitude(orbit, date, frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude0, law.getReferenceAttitude().getRotation()), 1.0e-10);
         Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0), date.shiftedBy(10.0), frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude1, law.getReferenceAttitude().getRotation()), 1.0e-10);
         Rotation attitude2 = law.getAttitude(orbit.shiftedBy(20.0), date.shiftedBy(20.0), frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude2, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
     }
 
@@ -93,14 +92,14 @@ public class FixedRateTest {
                               new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
         Rotation attitude0 = law.getAttitude(orbit, date, gcrf).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude0, ref), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude0, ref), 1.0e-10);
         Rotation attitude1 = law.getAttitude(orbit.shiftedBy(10.0), date.shiftedBy(10.0), gcrf).getRotation();
-        Assert.assertEquals(10 * rate, Rotation.distance(attitude1, ref), 1.0e-10);
+        Assertions.assertEquals(10 * rate, Rotation.distance(attitude1, ref), 1.0e-10);
         Rotation attitude2 = law.getAttitude(orbit.shiftedBy(-20.0), date.shiftedBy(-20.0), gcrf).getRotation();
-        Assert.assertEquals(20 * rate, Rotation.distance(attitude2, ref), 1.0e-10);
-        Assert.assertEquals(30 * rate, Rotation.distance(attitude2, attitude1), 1.0e-10);
+        Assertions.assertEquals(20 * rate, Rotation.distance(attitude2, ref), 1.0e-10);
+        Assertions.assertEquals(30 * rate, Rotation.distance(attitude2, attitude1), 1.0e-10);
         Rotation attitude3 = law.getAttitude(orbit.shiftedBy(0.0), date, frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude3, law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude3, law.getReferenceAttitude().getRotation()), 1.0e-10);
 
     }
 
@@ -136,18 +135,18 @@ public class FixedRateTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-14);
+        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-14);
 
     }
 
@@ -175,11 +174,11 @@ public class FixedRateTest {
                                                        new Vector3D(0, 0, 3680.853673522056)));
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, date, zero.add(3.986004415e14));
         FieldRotation<T> attitude0 = law.getAttitude(orbit, date, gcrf).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), ref), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude0.toRotation(), ref), 1.0e-10);
         FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), gcrf).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude1.toRotation(), ref), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude1.toRotation(), ref), 1.0e-10);
         FieldRotation<T> attitude2 = law.getAttitude(orbit.shiftedBy(zero.add(20.0)), date.shiftedBy(20.0), gcrf).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude2.toRotation(), ref), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude2.toRotation(), ref), 1.0e-10);
 
     }
 
@@ -205,14 +204,14 @@ public class FixedRateTest {
                                                                    new Vector3D(0, 0, 3680.853673522056)));
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
         FieldRotation<T> attitude0 = law.getAttitude(orbit, date, frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude0.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude0.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
         FieldRotation<T> attitude1 = law.getAttitude(orbit.shiftedBy(zero.add(10.0)), date.shiftedBy(10.0), frame).getRotation();
-        Assert.assertEquals(10 * rate.getReal(), Rotation.distance(attitude1.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(10 * rate.getReal(), Rotation.distance(attitude1.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
         FieldRotation<T> attitude2 = law.getAttitude(orbit.shiftedBy(zero.add(-20.0)), date.shiftedBy(-20.0), frame).getRotation();
-        Assert.assertEquals(20 * rate.getReal(), Rotation.distance(attitude2.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
-        Assert.assertEquals(30 * rate.getReal(), Rotation.distance(attitude2.toRotation(), attitude1.toRotation()), 1.0e-10);
+        Assertions.assertEquals(20 * rate.getReal(), Rotation.distance(attitude2.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(30 * rate.getReal(), Rotation.distance(attitude2.toRotation(), attitude1.toRotation()), 1.0e-10);
         FieldRotation<T> attitude3 = law.getAttitude(orbit.shiftedBy(zero.add(0.0)), date, frame).getRotation();
-        Assert.assertEquals(0, Rotation.distance(attitude3.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
+        Assertions.assertEquals(0, Rotation.distance(attitude3.toRotation(), law.getReferenceAttitude().getRotation()), 1.0e-10);
 
     }
 
@@ -257,22 +256,22 @@ public class FixedRateTest {
                                                             s0.getAttitude().getRotation()).getReal();
         double evolutionAngleMinus = FieldRotation.distance(sMinus.getAttitude().getRotation(),
                                                             s0.getAttitude().getRotation()).getReal();
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                             sPlus.shiftedBy(h.negate()).getAttitude().getRotation()).getReal();
         double evolutionAnglePlus  = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                             sPlus.getAttitude().getRotation()).getReal();
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         FieldVector3D<T> spin0 = s0.getAttitude().getSpin();
         FieldVector3D<T> reference = FieldAngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                                           sPlus.getAttitude().getRotation(),
                                                                           h.multiply(2));
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-14);
+        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-14);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -55,10 +52,13 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 /** Unit tests for {@link DSSTIntegrableJacobianColumnGenerator}. */
 public class DSSTIntegrableJacobianColumnGeneratorTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -205,7 +205,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
             for (int i = 0; i < 6; ++i) {
-                Assert.assertEquals(dYdPRef[i][0], pickUp.getdYdP().getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
+                Assertions.assertEquals(dYdPRef[i][0], pickUp.getdYdP().getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
             }
 
         }

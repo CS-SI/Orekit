@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -37,6 +34,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 /**
  * Tests for {@link AggregateBoundedPropagator}.
  *
@@ -47,7 +47,7 @@ public class AggregateBoundedPropagatorTest {
     public static final Frame frame = FramesFactory.getGCRF();
 
     /** Set Orekit data. */
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -237,7 +237,7 @@ public class AggregateBoundedPropagatorTest {
         // verify
         try {
             actual.resetInitialState(ic);
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
             // expected
         }
@@ -252,7 +252,7 @@ public class AggregateBoundedPropagatorTest {
         // action + verify
         try {
             new AggregateBoundedPropagator(Collections.emptyList());
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
             // expected
         }

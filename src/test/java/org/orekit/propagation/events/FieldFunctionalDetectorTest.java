@@ -16,17 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.function.Function;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -34,6 +32,8 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
+
+import java.util.function.Function;
 
 /**
  * Unit tests for {@link FieldFunctionalDetector}

@@ -26,9 +26,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -167,7 +167,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                 conventions, ut1,
                                                                 CelestialBodyFactory.getSun(),
                                                                 CelestialBodyFactory.getMoon()));
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(raw.getPVCoordinates().getPosition(),
                                               interpolated.getPVCoordinates().getPosition()),
                             2.0e-5); // threshold would be 1.2e-3 for 30 days propagation
@@ -255,7 +255,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                IERSConventions.IERS_2010, ut1,
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
-        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
@@ -284,7 +284,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                IERSConventions.IERS_2010, ut1,
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
-        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
@@ -482,11 +482,11 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                       conventions, ut1,
                                                                       CelestialBodyFactory.getSun(),
                                                                       CelestialBodyFactory.getMoon()));
-        Assert.assertEquals(delta1,
+        Assertions.assertEquals(delta1,
                             Vector3D.distance(noTides.getPVCoordinates().getPosition(),
                                               solidTidesNoPoleTide.getPVCoordinates().getPosition()),
                             0.01);
-        Assert.assertEquals(delta2,
+        Assertions.assertEquals(delta2,
                             Vector3D.distance(solidTidesNoPoleTide.getPVCoordinates().getPosition(),
                                               solidTidesPoleTide.getPVCoordinates().getPosition()),
                             0.01);
@@ -505,7 +505,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         return propagator.propagate(target);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
     }

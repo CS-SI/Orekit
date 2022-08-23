@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -34,6 +32,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+
+import java.util.List;
 
 public class OnBoardAntennaTurnAroundRangeModifierTest {
 
@@ -70,9 +70,9 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             TurnAroundRange sr = (TurnAroundRange) spacecraftCenteredMeasurements.get(i);
             TurnAroundRange ar = (TurnAroundRange) antennaCenteredMeasurements.get(i);
-            Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assert.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= 2.0 * xOffset);
-            Assert.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= 1.8 * xOffset);
+            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= 2.0 * xOffset);
+            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= 1.8 * xOffset);
         }
     }
 
@@ -112,8 +112,8 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
             sr.addModifier(modifier);
             EstimatedMeasurement<TurnAroundRange> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
             TurnAroundRange ar = (TurnAroundRange) antennaCenteredMeasurements.get(i);
-            Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assert.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 5.0e-7);
+            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 5.0e-7);
         }
 
     }

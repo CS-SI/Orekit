@@ -16,6 +16,16 @@
  */
 package org.orekit;
 
+import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,16 +36,6 @@ import java.util.GregorianCalendar;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
-
-import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeStamped;
-import org.orekit.utils.Constants;
 
 
 /** This class reads and provides solar activity data needed by the

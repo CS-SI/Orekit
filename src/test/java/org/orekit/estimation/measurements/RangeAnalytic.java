@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -36,6 +32,10 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Class modeling a range measurement from a ground station.
  * <p>

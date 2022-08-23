@@ -16,12 +16,10 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.List;
-
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
@@ -39,6 +37,8 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
+
+import java.util.List;
 
 public class RangeRateTest {
 
@@ -83,8 +83,8 @@ public class RangeRateTest {
         }
 
         // Mean and std errors check
-        Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
-        Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
     }
 
     /** Compare observed values and estimated values.
@@ -128,8 +128,8 @@ public class RangeRateTest {
         }
 
         // Mean and std errors check
-        Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
-        Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
+        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
     }
 
     /** Test the values of the state derivatives using a numerical
@@ -154,7 +154,7 @@ public class RangeRateTest {
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
-            Assert.assertFalse(((RangeRate) m).isTwoWay());
+            Assertions.assertFalse(((RangeRate) m).isTwoWay());
         }
         propagator.clearStepHandlers();
 
@@ -166,7 +166,7 @@ public class RangeRateTest {
             final SpacecraftState state = propagator.propagate(date);
 
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assert.assertEquals(2, estimated.getParticipants().length);
+            Assertions.assertEquals(2, estimated.getParticipants().length);
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
@@ -177,8 +177,8 @@ public class RangeRateTest {
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -190,7 +190,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.5e-8);
+        Assertions.assertEquals(0, maxRelativeError, 1.5e-8);
 
     }
 
@@ -216,7 +216,7 @@ public class RangeRateTest {
                                                                new RangeRateMeasurementCreator(context, true, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
-            Assert.assertTrue(((RangeRate) m).isTwoWay());
+            Assertions.assertTrue(((RangeRate) m).isTwoWay());
         }
         propagator.clearStepHandlers();
 
@@ -230,7 +230,7 @@ public class RangeRateTest {
             final SpacecraftState state     = propagator.propagate(date);
 
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assert.assertEquals(3, estimated.getParticipants().length);
+            Assertions.assertEquals(3, estimated.getParticipants().length);
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
@@ -241,8 +241,8 @@ public class RangeRateTest {
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -254,7 +254,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 2.1e-7);
+        Assertions.assertEquals(0, maxRelativeError, 2.1e-7);
 
     }
 
@@ -322,8 +322,8 @@ public class RangeRateTest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -338,7 +338,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -402,8 +402,8 @@ public class RangeRateTest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -418,7 +418,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -471,8 +471,8 @@ public class RangeRateTest {
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -484,7 +484,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.4e-7);
+        Assertions.assertEquals(0, maxRelativeError, 1.4e-7);
 
     }
 
@@ -542,8 +542,8 @@ public class RangeRateTest {
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -555,7 +555,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 3.1e-7);
+        Assertions.assertEquals(0, maxRelativeError, 3.1e-7);
 
     }
 
@@ -624,8 +624,8 @@ public class RangeRateTest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -640,7 +640,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -702,8 +702,8 @@ public class RangeRateTest {
             };
             for (int i = 0; i < 1; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -718,7 +718,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 2.2e-7);
+        Assertions.assertEquals(0, maxRelativeError, 2.2e-7);
 
     }
 

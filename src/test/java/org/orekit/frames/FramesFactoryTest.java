@@ -16,16 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -39,9 +29,9 @@ import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -66,11 +56,21 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 import org.orekit.utils.PVCoordinates;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 public class FramesFactoryTest {
 
     @Test
     public void testTreeRoot() {
-        Assert.assertNull(FramesFactory.getFrame(Predefined.GCRF).getParent());
+        Assertions.assertNull(FramesFactory.getFrame(Predefined.GCRF).getParent());
     }
 
     @Test
@@ -82,9 +82,9 @@ public class FramesFactoryTest {
                                                       "wrong-bulletinA-1980");
         try {
             FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getStartDate();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
         }
     }
 
@@ -97,9 +97,9 @@ public class FramesFactoryTest {
                                                       "wrong-bulletinA-2000");
         try {
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
         }
     }
 
@@ -110,9 +110,9 @@ public class FramesFactoryTest {
         try {
             // attempt to retrieve 2000 conventions
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
         }
     }
 
@@ -137,11 +137,11 @@ public class FramesFactoryTest {
                 }
             });
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertTrue(flags[0]);
-            Assert.assertTrue(flags[1]);
-            Assert.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
+            Assertions.assertTrue(flags[0]);
+            Assertions.assertTrue(flags[1]);
+            Assertions.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
         }
     }
 
@@ -161,7 +161,7 @@ public class FramesFactoryTest {
             }
         };
         Frame parent = FramesFactory.getGCRF();
-        Assert.assertEquals("GCRF", parent.getName());
+        Assertions.assertEquals("GCRF", parent.getName());
         Frame frame  = new Frame(parent,
                                  new InterpolatingTransformProvider(raw,
                                                                     CartesianDerivativesFilter.USE_P,
@@ -183,8 +183,8 @@ public class FramesFactoryTest {
                                                              interpolating.getTranslation());
             maxErrorInterpolating        = FastMath.max(maxErrorInterpolating, errorInterpolating);
         }
-        Assert.assertEquals(0.0, maxErrorNonInterpolating, 1.0e-15);
-        Assert.assertEquals(1.0, maxErrorInterpolating,    1.0e-15);
+        Assertions.assertEquals(0.0, maxErrorNonInterpolating, 1.0e-15);
+        Assertions.assertEquals(1.0, maxErrorInterpolating,    1.0e-15);
     }
 
     @Test
@@ -224,19 +224,19 @@ public class FramesFactoryTest {
                                                         shifting.getTranslation());
             maxErrorShifting        = FastMath.max(maxErrorShifting, errorShifting);
         }
-        Assert.assertEquals(0.0, maxErrorNonShifting, 1.0e-15);
-        Assert.assertEquals(1.0, maxErrorShifting,    1.0e-15);
+        Assertions.assertEquals(0.0, maxErrorNonShifting, 1.0e-15);
+        Assertions.assertEquals(1.0, maxErrorShifting,    1.0e-15);
     }
 
     @Test
     public void testTreeICRF() {
         Frame icrf = FramesFactory.getFrame(Predefined.ICRF);
-        Assert.assertEquals("ICRF", icrf.getName());
+        Assertions.assertEquals("ICRF", icrf.getName());
         Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
                                           new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
-        Assert.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
-        Assert.assertEquals(CelestialBodyFactory.EARTH_MOON + "/inertial", icrf.getParent().getName());
-        Assert.assertEquals(Predefined.GCRF.getName(), icrf.getParent().getParent().getName());
+        Assertions.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
+        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/inertial", icrf.getParent().getName());
+        Assertions.assertEquals(Predefined.GCRF.getName(), icrf.getParent().getParent().getName());
     }
 
     @Test
@@ -291,8 +291,7 @@ public class FramesFactoryTest {
         for (final Predefined[] pair : reference) {
             Frame child  = FramesFactory.getFrame(pair[0]);
             Frame parent = FramesFactory.getFrame(pair[1]);
-            Assert.assertEquals("wrong parent for " + child.getName(),
-                                parent.getName(), child.getParent().getName());
+            Assertions.assertEquals(parent.getName(), child.getParent().getName(), "wrong parent for " + child.getName());
         }
     }
 
@@ -302,26 +301,26 @@ public class FramesFactoryTest {
         for (Predefined predefined : Predefined.values()) {
 
             Frame original = FramesFactory.getFrame(predefined);
-            Assert.assertEquals(predefined.getName(), original.getName());
+            Assertions.assertEquals(predefined.getName(), original.getName());
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream    oos = new ObjectOutputStream(bos);
             oos.writeObject(original);
              if (predefined == Predefined.GCRF) {
-                Assert.assertTrue(bos.size() >  50);
-                Assert.assertTrue(bos.size() < 100);
+                Assertions.assertTrue(bos.size() >  50);
+                Assertions.assertTrue(bos.size() < 100);
             } else if (predefined == Predefined.ICRF) {
-                Assert.assertTrue(bos.size() > 430);
-                Assert.assertTrue(bos.size() < 480);
+                Assertions.assertTrue(bos.size() > 430);
+                Assertions.assertTrue(bos.size() < 480);
             } else {
-                Assert.assertTrue(bos.size() > 100);
-                Assert.assertTrue(bos.size() < 160);
+                Assertions.assertTrue(bos.size() > 100);
+                Assertions.assertTrue(bos.size() < 160);
             }
 
             ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
             ObjectInputStream     ois = new ObjectInputStream(bis);
             Frame deserialized  = (Frame) ois.readObject();
-            Assert.assertTrue(original == deserialized);
+            Assertions.assertTrue(original == deserialized);
         }
     }
 
@@ -335,12 +334,12 @@ public class FramesFactoryTest {
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc)
                 .fillHistory(converter, rawEquinox);
-        Assert.assertEquals(181, rawEquinox.size());
+        Assertions.assertEquals(181, rawEquinox.size());
         for (final EOPEntry entry : rawEquinox) {
             final double[] rebuiltEquinox = converter.toEquinox(entry.getDate(),
                                                                 entry.getDx(), entry.getDy());
-            Assert.assertEquals(entry.getDdPsi(), rebuiltEquinox[0], 2.0e-22);
-            Assert.assertEquals(entry.getDdEps(), rebuiltEquinox[1], 2.0e-23);
+            Assertions.assertEquals(entry.getDdPsi(), rebuiltEquinox[0], 2.0e-22);
+            Assertions.assertEquals(entry.getDdEps(), rebuiltEquinox[1], 2.0e-23);
         }
     }
 
@@ -354,12 +353,12 @@ public class FramesFactoryTest {
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc)
                 .fillHistory(converter, rawNRO);
-        Assert.assertEquals(181, rawNRO.size());
+        Assertions.assertEquals(181, rawNRO.size());
         for (final EOPEntry entry : rawNRO) {
             final double[] rebuiltNRO = converter.toNonRotating(entry.getDate(),
                                                                 entry.getDdPsi(), entry.getDdEps());
-            Assert.assertEquals(entry.getDx(), rebuiltNRO[0], 6.0e-23);
-            Assert.assertEquals(entry.getDy(), rebuiltNRO[1], 2.0e-23);
+            Assertions.assertEquals(entry.getDx(), rebuiltNRO[0], 6.0e-23);
+            Assertions.assertEquals(entry.getDy(), rebuiltNRO[1], 2.0e-23);
         }
     }
 
@@ -384,7 +383,7 @@ public class FramesFactoryTest {
             AbsoluteDate date = t0.shiftedBy(dt);
             Transform t = FramesFactory.getNonInterpolatingTransform(tod, cirf, date);
             Vector3D z = t.transformVector(Vector3D.PLUS_K);
-            Assert.assertEquals(0.0, Vector3D.angle(z, Vector3D.PLUS_K), threshold);
+            Assertions.assertEquals(0.0, Vector3D.angle(z, Vector3D.PLUS_K), threshold);
         }
     }
 
@@ -426,13 +425,13 @@ public class FramesFactoryTest {
             // when we forget the correction on TOD,
             // its Z axis is slightly offset from CIRF Z axis
             Vector3D zNoCorrection  = tNoCorrection.transformVector(Vector3D.PLUS_K);
-            Assert.assertTrue(Vector3D.angle(zNoCorrection, Vector3D.PLUS_K) > 7.2e-10);
+            Assertions.assertTrue(Vector3D.angle(zNoCorrection, Vector3D.PLUS_K) > 7.2e-10);
             Transform tConverted =
                     FramesFactory.getNonInterpolatingTransform(todConvertedCorrection, cirf, date);
             // when we convert the correction and apply it to TOD,
             // its Z axis is much better aligned with CIRF Z axis
             Vector3D zConverted  = tConverted.transformVector(Vector3D.PLUS_K);
-            Assert.assertTrue(Vector3D.angle(zConverted, Vector3D.PLUS_K) < 6e-12);
+            Assertions.assertTrue(Vector3D.angle(zConverted, Vector3D.PLUS_K) < 6e-12);
 
         }
 
@@ -479,14 +478,14 @@ public class FramesFactoryTest {
         // the following threshold had to be raised to 2e-11.
         // We still decided to stick with sin(epsilonA) in our implementation, in
         // order to remain consistent with IERS conventions
-        Assert.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.18810999708158463,
+        Assertions.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.18810999708158463,
                             equinox[0], 2.0e-11);
 
-        Assert.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.18906891450729962,
+        Assertions.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.18906891450729962,
                             equinox[1], 2.2e-14);
         double[] nro = converter.toNonRotating(date, equinox[0], equinox[1]);
-        Assert.assertEquals(dx, nro[0], 1.0e-20);
-        Assert.assertEquals(dy, nro[1], 1.0e-20);
+        Assertions.assertEquals(dx, nro[0], 1.0e-20);
+        Assertions.assertEquals(dy, nro[1], 1.0e-20);
 
     }
 
@@ -526,12 +525,12 @@ public class FramesFactoryTest {
                                                                Vector3D.distance(transformDouble.getRotationAcceleration(),
                                                                                  transformD64.getRotationAcceleration().toVector3D()));
                 }
-                Assert.assertEquals(0, maxPositionError,             1.0e-100);
-                Assert.assertEquals(0, maxVelocityError,             1.0e-100);
-                Assert.assertEquals(0, maxAccelerationError,         1.0e-100);
-                Assert.assertEquals(0, maxRotationError,             2.0e-14);
-                Assert.assertEquals(0, maxRotationRateError,         2.0e-18);
-                Assert.assertEquals(0, maxRotationAccelerationError, 8.0e-22);
+                Assertions.assertEquals(0, maxPositionError,             1.0e-100);
+                Assertions.assertEquals(0, maxVelocityError,             1.0e-100);
+                Assertions.assertEquals(0, maxAccelerationError,         1.0e-100);
+                Assertions.assertEquals(0, maxRotationError,             2.0e-14);
+                Assertions.assertEquals(0, maxRotationRateError,         2.0e-18);
+                Assertions.assertEquals(0, maxRotationAccelerationError, 8.0e-22);
             }
         }
     }
@@ -570,25 +569,25 @@ public class FramesFactoryTest {
 
     @Test
     public void testNoEOPHistoryFound() {
-        Assert.assertNull(FramesFactory.findEOP(null));
-        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getEcliptic(IERSConventions.IERS_2010)));
-        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getGCRF()));
-        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getTEME()));
-        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getICRF()));
-        Assert.assertNull(FramesFactory.findEOP(CelestialBodyFactory.getEarth().getBodyOrientedFrame()));
-        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getGTOD(false)));
+        Assertions.assertNull(FramesFactory.findEOP(null));
+        Assertions.assertNull(FramesFactory.findEOP(FramesFactory.getEcliptic(IERSConventions.IERS_2010)));
+        Assertions.assertNull(FramesFactory.findEOP(FramesFactory.getGCRF()));
+        Assertions.assertNull(FramesFactory.findEOP(FramesFactory.getTEME()));
+        Assertions.assertNull(FramesFactory.findEOP(FramesFactory.getICRF()));
+        Assertions.assertNull(FramesFactory.findEOP(CelestialBodyFactory.getEarth().getBodyOrientedFrame()));
+        Assertions.assertNull(FramesFactory.findEOP(FramesFactory.getGTOD(false)));
     }
 
     @Test
     public void testEOPHistoryFound() {
-        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, true)));
-        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, false)));
-        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getITRF(IERSConventions.IERS_2010, false)));
-        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getTOD(IERSConventions.IERS_2010, true)));
-        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getTOD(IERSConventions.IERS_2010, false)));
-        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getGTOD(true)));
-        Assert.assertNotNull(FramesFactory.findEOP(new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        Assertions.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, true)));
+        Assertions.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, false)));
+        Assertions.assertNotNull(FramesFactory.findEOP(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        Assertions.assertNotNull(FramesFactory.findEOP(FramesFactory.getITRF(IERSConventions.IERS_2010, false)));
+        Assertions.assertNotNull(FramesFactory.findEOP(FramesFactory.getTOD(IERSConventions.IERS_2010, true)));
+        Assertions.assertNotNull(FramesFactory.findEOP(FramesFactory.getTOD(IERSConventions.IERS_2010, false)));
+        Assertions.assertNotNull(FramesFactory.findEOP(FramesFactory.getGTOD(true)));
+        Assertions.assertNotNull(FramesFactory.findEOP(new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                                              Constants.WGS84_EARTH_FLATTENING,
                                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                                                         new GeodeticPoint(FastMath.toRadians(-22.27113),
@@ -672,17 +671,17 @@ public class FramesFactoryTest {
                     }
 
                 }
-                Assert.assertEquals(frame.getName(), 0, maxCartesianError,             cartesianTolerance);
-                Assert.assertEquals(frame.getName(), 0, maxCartesianDotError,          cartesianDotTolerance);
-                Assert.assertEquals(frame.getName(), 0, maxCartesianDotDotError,       cartesianDotDotTolerance);
-                Assert.assertEquals(frame.getName(), 0, maxRodriguesError,             rodriguesTolerance);
-                Assert.assertEquals(frame.getName(), 0, maxRodriguesDotError,          rodriguesDotTolerance);
-                Assert.assertEquals(frame.getName(), 0, maxRodriguesDotDotError,       rodriguesDotDotTolerance);
+                Assertions.assertEquals(0, maxCartesianError,             cartesianTolerance,frame.getName());
+                Assertions.assertEquals(0, maxCartesianDotError,          cartesianDotTolerance,frame.getName());
+                Assertions.assertEquals(0, maxCartesianDotDotError,       cartesianDotDotTolerance,frame.getName());
+                Assertions.assertEquals(0, maxRodriguesError,             rodriguesTolerance,frame.getName());
+                Assertions.assertEquals(0, maxRodriguesDotError,          rodriguesDotTolerance,frame.getName());
+                Assertions.assertEquals(0, maxRodriguesDotDotError,       rodriguesDotDotTolerance,frame.getName());
             }
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

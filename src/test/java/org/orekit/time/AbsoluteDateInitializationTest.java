@@ -16,8 +16,8 @@
  */
 package org.orekit.time;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 /**
@@ -36,7 +36,7 @@ public class AbsoluteDateInitializationTest {
         // just some code that makes an assertion using AbsoluteDate,
         // the real code under test is AbsoluteDate initialization.
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Assert.assertEquals(new AbsoluteDate(date, 10).durationFrom(date), 10.0, 0.0);
+        Assertions.assertEquals(new AbsoluteDate(date, 10).durationFrom(date), 10.0, 0.0);
     }
 
 }

@@ -16,13 +16,10 @@
  */
 package org.orekit.forces.gravity.potential;
 
-
-import java.lang.reflect.Field;
-
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider.RawSphericalHarmonics;
@@ -30,6 +27,8 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.TimeSpanMap;
+
+import java.lang.reflect.Field;
 
 @Deprecated
 public class PulsatingSphericalHarmonicsTest {
@@ -44,17 +43,17 @@ public class PulsatingSphericalHarmonicsTest {
         UnnormalizedSphericalHarmonics         parsed   = ush.onDate(AbsoluteDate.J2000_EPOCH);
         PulsatingSphericalHarmonics            psh      = toPulsatingSphericalHarmonics(ush, AbsoluteDate.J2000_EPOCH);
         RawSphericalHarmonics                  rebuilt  = psh.onDate(AbsoluteDate.J2000_EPOCH);
-        Assert.assertEquals(AbsoluteDate.J2000_EPOCH, rebuilt.getDate());
-        Assert.assertEquals(new AbsoluteDate(1950, 1, 1, 0, 0, 0.0, tt), psh.getReferenceDate());
-        Assert.assertEquals(ush.getMu(), psh.getMu(), 1.0e-20);
-        Assert.assertEquals(ush.getAe(), psh.getAe(), 1.0e-20);
-        Assert.assertEquals(ush.getMaxDegree(),   psh.getMaxDegree());
-        Assert.assertEquals(ush.getMaxOrder(),    psh.getMaxOrder());
-        Assert.assertEquals(ush.getTideSystem(),  psh.getTideSystem());
+        Assertions.assertEquals(AbsoluteDate.J2000_EPOCH, rebuilt.getDate());
+        Assertions.assertEquals(new AbsoluteDate(1950, 1, 1, 0, 0, 0.0, tt), psh.getReferenceDate());
+        Assertions.assertEquals(ush.getMu(), psh.getMu(), 1.0e-20);
+        Assertions.assertEquals(ush.getAe(), psh.getAe(), 1.0e-20);
+        Assertions.assertEquals(ush.getMaxDegree(),   psh.getMaxDegree());
+        Assertions.assertEquals(ush.getMaxOrder(),    psh.getMaxOrder());
+        Assertions.assertEquals(ush.getTideSystem(),  psh.getTideSystem());
         for (int n = 0; n <= ush.getMaxDegree(); ++n) {
             for (int m = 0; m <= FastMath.min(n, ush.getMaxOrder()); ++m) {
-                Assert.assertEquals(parsed.getUnnormalizedCnm(n, m), rebuilt.getRawCnm(n, m), 1.0e-15);
-                Assert.assertEquals(parsed.getUnnormalizedSnm(n, m), rebuilt.getRawSnm(n, m), 1.0e-15);
+                Assertions.assertEquals(parsed.getUnnormalizedCnm(n, m), rebuilt.getRawCnm(n, m), 1.0e-15);
+                Assertions.assertEquals(parsed.getUnnormalizedSnm(n, m), rebuilt.getRawSnm(n, m), 1.0e-15);
             }
         }
     }
@@ -132,7 +131,7 @@ public class PulsatingSphericalHarmonicsTest {
             field.setAccessible(true);
             return (T) field.get(o);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }

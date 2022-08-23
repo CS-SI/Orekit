@@ -21,9 +21,9 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -54,7 +54,7 @@ public class ThrustDirectionAndAttitudeProviderTest {
     /** */
     private final Vector3D thrusterAxisInSatelliteFrame = Vector3D.PLUS_J;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         frame = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
@@ -75,18 +75,21 @@ public class ThrustDirectionAndAttitudeProviderTest {
         return new LofOffset(frame, LOFType.TNW);
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void fixedDirectionCanNotProvideTheAttitude() {
-
-        final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
-                .buildFromFixedDirectionInSatelliteFrame(Vector3D.PLUS_I);
-        Assert.assertNull(provider.getManeuverAttitudeProvider());
-        provider.getAttitude(pvProv, date, frame); // raise an error
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
+                    .buildFromFixedDirectionInSatelliteFrame(Vector3D.PLUS_I);
+            Assertions.assertNull(provider.getManeuverAttitudeProvider());
+            provider.getAttitude(pvProv, date, frame); // raise an error
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void missingParameterTest() {
-        ThrustDirectionAndAttitudeProvider.buildFromDirectionInFrame(frame, null, thrusterAxisInSatelliteFrame);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            ThrustDirectionAndAttitudeProvider.buildFromDirectionInFrame(frame, null, thrusterAxisInSatelliteFrame);
+        });
     }
 
     @Test
@@ -99,14 +102,14 @@ public class ThrustDirectionAndAttitudeProviderTest {
         final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
                 .buildFromDirectionInFrame(frame, thrustDirectionInertial, thrusterAxisInSatelliteFrame);
 
-        Assert.assertNotNull(provider.getManeuverAttitudeProvider());
+        Assertions.assertNotNull(provider.getManeuverAttitudeProvider());
 
         // attitude from Frame: inertial => sat
         final Attitude inertialToSat = provider.getAttitude(pvProv, date, frame);
 
         final Vector3D thrustDirectionRecomputed = inertialToSat.getRotation().revert()
                 .applyTo(thrusterAxisInSatelliteFrame);
-        Assert.assertEquals(0, fixedThrustDirection.subtract(thrustDirectionRecomputed).getNorm(), EPSILON_ROTATION);
+        Assertions.assertEquals(0, fixedThrustDirection.subtract(thrustDirectionRecomputed).getNorm(), EPSILON_ROTATION);
 
     }
 
@@ -118,7 +121,7 @@ public class ThrustDirectionAndAttitudeProviderTest {
         final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
                 .buildFromDirectionInLOF(LOFType.TNW, thrustDirectionTNW, thrusterAxisInSatelliteFrame);
 
-        Assert.assertNotNull(provider.getManeuverAttitudeProvider());
+        Assertions.assertNotNull(provider.getManeuverAttitudeProvider());
 
         // attitude from Frame: inertial => sat
         final Attitude inertialToSat = provider.getAttitude(pvProv, date, frame);
@@ -130,26 +133,29 @@ public class ThrustDirectionAndAttitudeProviderTest {
                 RotationConvention.VECTOR_OPERATOR);
 
         final Vector3D thrustDirectionRecomputed = satToLof.applyTo(thrusterAxisInSatelliteFrame);
-        Assert.assertEquals(0., fixedThrustDirection.subtract(thrustDirectionRecomputed).getNorm(), EPSILON_ROTATION);
+        Assertions.assertEquals(0., fixedThrustDirection.subtract(thrustDirectionRecomputed).getNorm(), EPSILON_ROTATION);
     }
 
     @Test
     public void attitudeFromCustomProvider() {
         final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
                 .buildFromCustomAttitude(buildVelocityAttitudeProvider(), thrusterAxisInSatelliteFrame);
-        Assert.assertNotNull(provider.getManeuverAttitudeProvider());
-        Assert.assertEquals(
+        Assertions.assertNotNull(provider.getManeuverAttitudeProvider());
+        Assertions.assertEquals(
                 buildVelocityAttitudeProvider().getAttitude(pvProv, date, frame).getRotation()
                         .applyTo(thrusterAxisInSatelliteFrame),
                 provider.getAttitude(pvProv, date, frame).getRotation().applyTo(thrusterAxisInSatelliteFrame));
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void getAttitudeFieldError() {
+        Assertions.assertThrows(OrekitException.class, () -> {
 
-        final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
-                .buildFromCustomAttitude(buildVelocityAttitudeProvider(), Vector3D.PLUS_I);
-        Assert.assertNotNull(provider.getManeuverAttitudeProvider());
-        provider.getAttitude(null, new FieldAbsoluteDate<>(date, new Decimal64(0)), frame); // raise an error
-    }
+            final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
+                    .buildFromCustomAttitude(buildVelocityAttitudeProvider(), Vector3D.PLUS_I);
+            Assertions.assertNotNull(provider.getManeuverAttitudeProvider());
+            provider.getAttitude(null, new FieldAbsoluteDate<>(date, new Decimal64(0)), frame); // raise an error
+
+        });
+ }
 }

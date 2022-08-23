@@ -16,15 +16,11 @@
  */
 package org.orekit.utils;
 
-import java.util.PrimitiveIterator;
-import java.util.Random;
-import java.util.stream.DoubleStream;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -36,10 +32,14 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UTCScale;
 
+import java.util.PrimitiveIterator;
+import java.util.Random;
+import java.util.stream.DoubleStream;
+
 /** Unit tests for {@link ConstantPVCoordinatesProvider}. */
 public class ConstantPVCoordinatesProviderTest {
     /** Set up test data. */
-    @Before
+    @BeforeEach
     public void setup() {
         Utils.setDataRoot("regular-data");
     }
@@ -65,24 +65,24 @@ public class ConstantPVCoordinatesProviderTest {
 
         // verify at epoch
         final TimeStampedPVCoordinates tpvItrf = pvProv.getPVCoordinates(epoch, itrf);
-        Assert.assertEquals(epoch, tpvItrf.getDate());
-        Assert.assertEquals(tpvItrf.getPosition(), posItrf);
-        Assert.assertEquals(tpvItrf.getVelocity(), velItrf);
-        Assert.assertEquals(tpvItrf.getAcceleration(), Vector3D.ZERO);
+        Assertions.assertEquals(epoch, tpvItrf.getDate());
+        Assertions.assertEquals(tpvItrf.getPosition(), posItrf);
+        Assertions.assertEquals(tpvItrf.getVelocity(), velItrf);
+        Assertions.assertEquals(tpvItrf.getAcceleration(), Vector3D.ZERO);
 
         final PVCoordinates pvGcrf = itrf.getTransformTo(gcrf, epoch).transformPVCoordinates(pvItrf);
         final TimeStampedPVCoordinates tpvGcrf = pvProv.getPVCoordinates(epoch, gcrf);
-        Assert.assertEquals(epoch, tpvGcrf.getDate());
-        Assert.assertEquals(pvGcrf.getPosition(), tpvGcrf.getPosition());
-        Assert.assertEquals(pvGcrf.getVelocity(), tpvGcrf.getVelocity());
-        Assert.assertEquals(pvGcrf.getAcceleration(), tpvGcrf.getAcceleration());
+        Assertions.assertEquals(epoch, tpvGcrf.getDate());
+        Assertions.assertEquals(pvGcrf.getPosition(), tpvGcrf.getPosition());
+        Assertions.assertEquals(pvGcrf.getVelocity(), tpvGcrf.getVelocity());
+        Assertions.assertEquals(pvGcrf.getAcceleration(), tpvGcrf.getAcceleration());
 
         final PVCoordinates pvEme2000 = itrf.getTransformTo(eme2000, epoch).transformPVCoordinates(pvItrf);
         final TimeStampedPVCoordinates tpvEME2000 = pvProv.getPVCoordinates(epoch, eme2000);
-        Assert.assertEquals(epoch, tpvEME2000.getDate());
-        Assert.assertEquals(pvEme2000.getPosition(), tpvEME2000.getPosition());
-        Assert.assertEquals(pvEme2000.getVelocity(), tpvEME2000.getVelocity());
-        Assert.assertEquals(pvEme2000.getAcceleration(), tpvEME2000.getAcceleration());
+        Assertions.assertEquals(epoch, tpvEME2000.getDate());
+        Assertions.assertEquals(pvEme2000.getPosition(), tpvEME2000.getPosition());
+        Assertions.assertEquals(pvEme2000.getVelocity(), tpvEME2000.getVelocity());
+        Assertions.assertEquals(pvEme2000.getAcceleration(), tpvEME2000.getAcceleration());
 
         final Random rand = new Random();
         final DoubleStream stream = rand.doubles(1., 604800.); // stream of seconds within a week
@@ -92,26 +92,26 @@ public class ConstantPVCoordinatesProviderTest {
 
             // verify itrf
             final TimeStampedPVCoordinates actualItrf = pvProv.getPVCoordinates(date, itrf);
-            Assert.assertEquals(date, actualItrf.getDate());
-            Assert.assertEquals(posItrf, actualItrf.getPosition());
-            Assert.assertEquals(velItrf, actualItrf.getVelocity());
-            Assert.assertEquals(Vector3D.ZERO, actualItrf.getAcceleration());
+            Assertions.assertEquals(date, actualItrf.getDate());
+            Assertions.assertEquals(posItrf, actualItrf.getPosition());
+            Assertions.assertEquals(velItrf, actualItrf.getVelocity());
+            Assertions.assertEquals(Vector3D.ZERO, actualItrf.getAcceleration());
 
             // verify gcrf
             final PVCoordinates expectedGcrf = itrf.getTransformTo(gcrf, date).transformPVCoordinates(pvItrf);
             final TimeStampedPVCoordinates actualGcrf = pvProv.getPVCoordinates(date, gcrf);
-            Assert.assertEquals(date, actualGcrf.getDate());
-            Assert.assertEquals(expectedGcrf.getPosition(), actualGcrf.getPosition());
-            Assert.assertEquals(expectedGcrf.getVelocity(), actualGcrf.getVelocity());
-            Assert.assertEquals(expectedGcrf.getAcceleration(), actualGcrf.getAcceleration());
+            Assertions.assertEquals(date, actualGcrf.getDate());
+            Assertions.assertEquals(expectedGcrf.getPosition(), actualGcrf.getPosition());
+            Assertions.assertEquals(expectedGcrf.getVelocity(), actualGcrf.getVelocity());
+            Assertions.assertEquals(expectedGcrf.getAcceleration(), actualGcrf.getAcceleration());
 
             // verify eme2000
             final PVCoordinates expectedEme2000 = itrf.getTransformTo(eme2000, date).transformPVCoordinates(pvItrf);
             final TimeStampedPVCoordinates actualEme2000 = pvProv.getPVCoordinates(date, eme2000);
-            Assert.assertEquals(date, actualEme2000.getDate());
-            Assert.assertEquals(expectedEme2000.getPosition(), actualEme2000.getPosition());
-            Assert.assertEquals(expectedEme2000.getVelocity(), actualEme2000.getVelocity());
-            Assert.assertEquals(expectedEme2000.getAcceleration(), actualEme2000.getAcceleration());
+            Assertions.assertEquals(date, actualEme2000.getDate());
+            Assertions.assertEquals(expectedEme2000.getPosition(), actualEme2000.getPosition());
+            Assertions.assertEquals(expectedEme2000.getVelocity(), actualEme2000.getVelocity());
+            Assertions.assertEquals(expectedEme2000.getAcceleration(), actualEme2000.getAcceleration());
         }
     }
 }

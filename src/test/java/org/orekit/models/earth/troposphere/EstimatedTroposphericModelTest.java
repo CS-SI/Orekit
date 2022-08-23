@@ -16,8 +16,6 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.List;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -25,10 +23,10 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -55,14 +53,16 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.util.List;
+
 public class EstimatedTroposphericModelTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
@@ -77,7 +77,7 @@ public class EstimatedTroposphericModelTest {
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(), date);
-            Assert.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
+            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
         }
     }
@@ -91,8 +91,8 @@ public class EstimatedTroposphericModelTest {
         MappingFunction mapping = new NiellMappingFunctionModel();
         DiscreteTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
         final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
-        Assert.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
-        Assert.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
+        Assertions.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
+        Assertions.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
     }
 
     @Test
@@ -221,7 +221,7 @@ public class EstimatedTroposphericModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], tolerance);
+            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], tolerance);
         }
     }
 
@@ -361,7 +361,7 @@ public class EstimatedTroposphericModelTest {
                            delayM4, delayM3, delayM2, delayM1,
                            delayP1, delayP2, delayP3, delayP4);
 
-        Assert.assertEquals(compDeriv[7], refDeriv[0][0], tolerance);
+        Assertions.assertEquals(compDeriv[7], refDeriv[0][0], tolerance);
 
     }
 

@@ -17,8 +17,6 @@
 
 package org.orekit.estimation.common;
 
-import java.util.Map;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -28,6 +26,8 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+
+import java.util.Map;
 
 /** Measurements types. */
 abstract class MeasurementsParser<T extends ObservedMeasurement<T>> {

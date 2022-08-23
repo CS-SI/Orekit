@@ -16,18 +16,17 @@
  */
 package org.orekit.frames;
 
-
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
@@ -39,7 +38,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EOPC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
-        Assert.assertTrue(getMaxGap(history) > 5);
+        Assertions.assertTrue(getMaxGap(history) > 5);
     }
 
     @Test
@@ -49,7 +48,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EOPC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, history, true).getStartDate());
     }
 
@@ -60,7 +59,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EOPC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, history, true).getEndDate());
     }
 
@@ -73,11 +72,11 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
         new EOPC04FilesLoader(FramesFactory.EOPC04_2000_FILENAME, manager, () -> utc).fillHistory(converter, data);
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
         AbsoluteDate date = new AbsoluteDate(2003, 1, 7, 12, 0, 0, TimeScalesFactory.getUTC());
-        Assert.assertEquals(        (9 * ( 0.0007777 +  0.0008565) - ( 0.0005883 +  0.0008758)) / 16,  history.getLOD(date), 1.0e-10);
-        Assert.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);
-        Assert.assertEquals(asToRad((9 * (-0.105933  + -0.108553)  - (-0.103513  + -0.111054))  / 16), history.getPoleCorrection(date).getXp(), 1.0e-10);
-        Assert.assertEquals(asToRad((9 * ( 0.201451  +  0.203596)  - ( 0.199545  +  0.205660))  / 16), history.getPoleCorrection(date).getYp(), 1.0e-10);
-        Assert.assertEquals(ITRFVersion.ITRF_2008, history.getITRFVersion(date));
+        Assertions.assertEquals(        (9 * ( 0.0007777 +  0.0008565) - ( 0.0005883 +  0.0008758)) / 16,  history.getLOD(date), 1.0e-10);
+        Assertions.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assertions.assertEquals(asToRad((9 * (-0.105933  + -0.108553)  - (-0.103513  + -0.111054))  / 16), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assertions.assertEquals(asToRad((9 * ( 0.201451  +  0.203596)  - ( 0.199545  +  0.205660))  / 16), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assertions.assertEquals(ITRFVersion.ITRF_2008, history.getITRFVersion(date));
     }
 
     private double asToRad(double as) {

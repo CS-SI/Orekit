@@ -16,12 +16,10 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.SortedSet;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
@@ -39,6 +37,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+
+import java.util.SortedSet;
 
 public class GeneratorTest {
 
@@ -85,15 +85,15 @@ public class GeneratorTest {
             } else if (m instanceof Range) {
                 ++nbRange;
             } else {
-                Assert.fail("unexpected measurement type: " + m.getClass().getSimpleName());
+                Assertions.fail("unexpected measurement type: " + m.getClass().getSimpleName());
             }
         }
-        Assert.assertEquals(740, nbAzEl);
-        Assert.assertEquals(740, nbRange);
+        Assertions.assertEquals(740, nbAzEl);
+        Assertions.assertEquals(740, nbRange);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

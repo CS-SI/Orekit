@@ -19,9 +19,9 @@ package org.orekit.frames;
 import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
@@ -41,7 +41,7 @@ public class FrameToolsTest {
     /**
      * Configure access to Orekit data folder for simple unit tests.
      */
-    @BeforeClass
+    @BeforeAll
     public static void configureOrekitDataAccess() {
         Utils.setDataRoot("regular-data");
     }
@@ -108,11 +108,11 @@ public class FrameToolsTest {
                         out, null, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -124,11 +124,11 @@ public class FrameToolsTest {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -141,11 +141,11 @@ public class FrameToolsTest {
                         out, null, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -156,11 +156,11 @@ public class FrameToolsTest {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
                     Transform t = FrameTools.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -235,7 +235,7 @@ public class FrameToolsTest {
     private void validateMatrix(double[][] data, double[][] expected, double threshold) {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {
-                Assert.assertEquals(expected[i][j], data[i][j], threshold);
+                Assertions.assertEquals(expected[i][j], data[i][j], threshold);
             }
         }
     }

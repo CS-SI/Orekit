@@ -16,9 +16,6 @@
  */
 package org.orekit.forces.radiation;
 
-import java.io.FileNotFoundException;
-import java.text.ParseException;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -30,9 +27,9 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -72,11 +69,14 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import java.io.FileNotFoundException;
+import java.text.ParseException;
+
 public class ECOM2Test extends AbstractForceModelTest {
 
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("potential/shm-format:regular-data");
     }
@@ -237,11 +237,11 @@ public class ECOM2Test extends AbstractForceModelTest {
         //Compare state derivatives with finite-difference ones.
         for (int i = 0; i < 6; i++) {
             final double errorX = (accX[i + 1] - refDeriv[0][i]) / refDeriv[0][i];
-            Assert.assertEquals(0, errorX, 1.0e-10);
+            Assertions.assertEquals(0, errorX, 1.0e-10);
             final double errorY = (accY[i + 1] - refDeriv[1][i]) / refDeriv[1][i];
-            Assert.assertEquals(0, errorY, 1.5e-10);
+            Assertions.assertEquals(0, errorY, 1.5e-10);
             final double errorZ = (accZ[i + 1] - refDeriv[2][i]) / refDeriv[2][i];
-            Assert.assertEquals(0, errorZ, 1.0e-10);
+            Assertions.assertEquals(0, errorZ, 1.0e-10);
         }
 
     }
@@ -382,7 +382,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         //Build the forceModel
         final ECOM2 forceModel = new ECOM2(0, 0, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
 
-        Assert.assertFalse(forceModel.dependsOnPositionOnly());
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
 
         checkParameterDerivative(state, forceModel, ECOM2.ECOM_COEFFICIENT + " B0", 1.0e-4, 3.0e-12);
         checkParameterDerivative(state, forceModel, ECOM2.ECOM_COEFFICIENT + " D0", 1.0e-4, 3.0e-12);
@@ -403,7 +403,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         //Build the forceModel
         final ECOM2 forceModel = new ECOM2(0, 0, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
 
-        Assert.assertFalse(forceModel.dependsOnPositionOnly());
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
 
         checkParameterDerivativeGradient(state, forceModel, ECOM2.ECOM_COEFFICIENT + " B0", 1.0e-4, 3.0e-12);
         checkParameterDerivativeGradient(state, forceModel, ECOM2.ECOM_COEFFICIENT + " D0", 1.0e-4, 3.0e-12);
@@ -466,7 +466,7 @@ public class ECOM2Test extends AbstractForceModelTest {
                                            FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
                                            0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
         final double period = orbit.getKeplerianPeriod();
-        Assert.assertEquals(86164, period, 1);
+        Assertions.assertEquals(86164, period, 1);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
@@ -493,7 +493,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
-        Assert.assertTrue(calc.getCalls() < 7100);
+        Assertions.assertTrue(calc.getCalls() < 7100);
     }
 
     @Test
@@ -531,7 +531,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters());
 
         // Verify
-        Assert.assertEquals(0.0, accReal.distance(accField.toVector3D()), 1.0e-20);
+        Assertions.assertEquals(0.0, accReal.distance(accField.toVector3D()), 1.0e-20);
 
     }
 
@@ -541,16 +541,16 @@ public class ECOM2Test extends AbstractForceModelTest {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
-            Assert.assertTrue(alpha > 100.0);
-            Assert.assertTrue(alpha < 112.0);
+            Assertions.assertTrue(alpha > 100.0);
+            Assertions.assertTrue(alpha < 112.0);
             checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003525);
         }
 
     }
 
     public static void checkRadius(double radius , double min , double max) {
-        Assert.assertTrue(radius >= min);
-        Assert.assertTrue(radius <= max);
+        Assertions.assertTrue(radius >= min);
+        Assertions.assertTrue(radius <= max);
     }
 
 

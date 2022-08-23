@@ -16,13 +16,13 @@
  */
 package org.orekit.data;
 
-import java.util.SortedSet;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
+
+import java.util.SortedSet;
 
 public abstract class AbstractFilesLoaderTest {
 

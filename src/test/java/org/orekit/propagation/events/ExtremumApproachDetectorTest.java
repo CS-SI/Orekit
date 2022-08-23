@@ -17,7 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
@@ -70,7 +71,7 @@ public class ExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
-        Assert.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod(),1e-9);
+        Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod(),1e-9);
 
     }
 
@@ -112,7 +113,7 @@ public class ExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
-        Assert.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod() / 2,1e-7);
+        Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod() / 2,1e-7);
 
     }
 }

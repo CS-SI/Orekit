@@ -16,11 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import static org.junit.Assert.assertArrayEquals;
-
-import java.util.Arrays;
-import java.util.Locale;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -33,8 +28,8 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -49,6 +44,9 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.Arrays;
+import java.util.Locale;
 
 public class UnivariateprocessNoiseTest {
 
@@ -91,13 +89,13 @@ public class UnivariateprocessNoiseTest {
                                                                                propagationParametersEvolution,
                                                                                measurementsParametersEvolution);
 
-        Assert.assertEquals(LOFType.TNW, processNoise.getLofType());
-        Assert.assertEquals(PositionAngle.TRUE, processNoise.getPositionAngle());
-        Assert.assertEquals(initialCovarianceMatrix,
+        Assertions.assertEquals(LOFType.TNW, processNoise.getLofType());
+        Assertions.assertEquals(PositionAngle.TRUE, processNoise.getPositionAngle());
+        Assertions.assertEquals(initialCovarianceMatrix,
                             processNoise.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
-        Assert.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoise.getLofCartesianOrbitalParametersEvolution());
-        Assert.assertArrayEquals(propagationParametersEvolution, processNoise.getPropagationParametersEvolution());
-        Assert.assertArrayEquals(measurementsParametersEvolution, processNoise.getMeasurementsParametersEvolution());
+        Assertions.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoise.getLofCartesianOrbitalParametersEvolution());
+        Assertions.assertArrayEquals(propagationParametersEvolution, processNoise.getPropagationParametersEvolution());
+        Assertions.assertArrayEquals(measurementsParametersEvolution, processNoise.getMeasurementsParametersEvolution());
 
         final UnivariateProcessNoise processNoiseOld = new UnivariateProcessNoise(initialCovarianceMatrix,
                                                                                   lofType,
@@ -105,12 +103,12 @@ public class UnivariateprocessNoiseTest {
                                                                                   lofCartesianOrbitalParametersEvolution,
                                                                                   propagationParametersEvolution);
 
-        Assert.assertEquals(LOFType.TNW, processNoiseOld.getLofType());
-        Assert.assertEquals(PositionAngle.TRUE, processNoiseOld.getPositionAngle());
-        Assert.assertEquals(initialCovarianceMatrix,
+        Assertions.assertEquals(LOFType.TNW, processNoiseOld.getLofType());
+        Assertions.assertEquals(PositionAngle.TRUE, processNoiseOld.getPositionAngle());
+        Assertions.assertEquals(initialCovarianceMatrix,
                             processNoiseOld.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
-        Assert.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoiseOld.getLofCartesianOrbitalParametersEvolution());
-        Assert.assertArrayEquals(propagationParametersEvolution, processNoiseOld.getPropagationParametersEvolution());
+        Assertions.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoiseOld.getLofCartesianOrbitalParametersEvolution());
+        Assertions.assertArrayEquals(propagationParametersEvolution, processNoiseOld.getPropagationParametersEvolution());
     }
 
     /** Test UnivariateProcessNoise class.
@@ -566,13 +564,13 @@ public class UnivariateprocessNoiseTest {
         }
 
         // Test the values
-        assertArrayEquals(new double[6],
+        Assertions.assertArrayEquals(new double[6],
                           orbitalRelativeValues,
                           relativeTolerance);
-        assertArrayEquals(new double[propagationParametersSize],
+        Assertions.assertArrayEquals(new double[propagationParametersSize],
                           propagationRelativeValues,
                           relativeTolerance);
-        assertArrayEquals(new double[measurementsParametersSize],
+        Assertions.assertArrayEquals(new double[measurementsParametersSize],
                           measurementsRelativeValues,
                           relativeTolerance);
     }
@@ -738,7 +736,7 @@ public class UnivariateprocessNoiseTest {
             System.out.format(Locale.US, "\tΔDiagonal norm in Cartesian LOF     = %10.4e%n", dDiag);
             System.out.format(Locale.US, "\tΔNon-Diagonal norm in Cartesian LOF = %10.4e%n%n", dNonDiag);
         }
-        Assert.assertEquals(0.,  dDiag   , relativeTolerance);
-        Assert.assertEquals(0.,  dNonDiag, relativeTolerance);
+        Assertions.assertEquals(0.,  dDiag   , relativeTolerance);
+        Assertions.assertEquals(0.,  dNonDiag, relativeTolerance);
     }
 }

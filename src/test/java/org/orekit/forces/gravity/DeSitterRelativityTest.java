@@ -28,9 +28,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.forces.AbstractLegacyForceModelTest;
@@ -170,7 +170,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         double dpDeg = FastMath.toDegrees(dp);
         // change in right ascension of the ascending node in milliarcseconds per year
         double milliArcsecPerYear = 1.0e3 * dpDeg * 3600 / dtYears;
-        Assert.assertEquals(-19.2, milliArcsecPerYear, 1.0);
+        Assertions.assertEquals(-19.2, milliArcsecPerYear, 1.0);
     }
 
     @Test
@@ -215,7 +215,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         DeSitterRelativity relativity = new DeSitterRelativity();
-        Assert.assertFalse(relativity.dependsOnPositionOnly());
+        Assertions.assertFalse(relativity.dependsOnPositionOnly());
         final String name = relativity.getSun().getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
@@ -314,7 +314,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                              1.0e-50, false);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

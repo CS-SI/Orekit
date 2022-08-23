@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -30,10 +30,10 @@ public class XmlLexicalAnalyzerTest {
         XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource("empty", (DataSource.StreamOpener) () -> null));
         try {
             la.accept(new ParserBuilder().buildOcmParser());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals("empty", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals("empty", oe.getParts()[0]);
         }
     }
 
@@ -42,10 +42,10 @@ public class XmlLexicalAnalyzerTest {
         XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource("empty", (DataSource.ReaderOpener) () -> null));
         try {
             la.accept(new ParserBuilder().buildOcmParser());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals("empty", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals("empty", oe.getParts()[0]);
         }
     }
 

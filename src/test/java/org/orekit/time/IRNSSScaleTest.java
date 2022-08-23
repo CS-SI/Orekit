@@ -16,11 +16,9 @@
  */
 package org.orekit.time;
 
-
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.utils.Constants;
 
@@ -33,7 +31,7 @@ public class IRNSSScaleTest {
         AbsoluteDate tUTC =
             new AbsoluteDate(new DateComponents(1999, 3, 3), new TimeComponents(23, 59, 47),
                              TimeScalesFactory.getUTC());
-        Assert.assertEquals(tUTC, tIRNSS);
+        Assertions.assertEquals(tUTC, tIRNSS);
     }
 
     @Test
@@ -42,7 +40,7 @@ public class IRNSSScaleTest {
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assert.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
+            Assertions.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
         }
     }
 
@@ -54,7 +52,7 @@ public class IRNSSScaleTest {
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
-            Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
@@ -66,13 +64,13 @@ public class IRNSSScaleTest {
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assert.assertEquals(61, utc.minuteDuration(during));
-        Assert.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assert.assertEquals(60, scale.minuteDuration(during));
-        Assert.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(61, utc.minuteDuration(during));
+        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(60, scale.minuteDuration(during));
+        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

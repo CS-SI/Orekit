@@ -16,19 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-
 import org.hipparchus.geometry.euclidean.twod.PolygonsSet;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -50,6 +46,10 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * test class for MagneticFieldDetector
@@ -73,7 +73,7 @@ public class MagneticFieldDetectorTest {
     /**
      * Prepare the Orekit library.
      */
-    @Before
+    @BeforeEach
     public void setup()
     {
         // Prepare the Orekit library
@@ -98,7 +98,7 @@ public class MagneticFieldDetectorTest {
     /**
      * Remove the Orekit configuration
      */
-    @After
+    @AfterEach
     public void tearDown()
     {
         DataContext.getDefault().getDataProvidersManager().clearProviders();
@@ -434,7 +434,7 @@ public class MagneticFieldDetectorTest {
                 altitude = 0;
             }
             double meas = field.calculateField(geo.getLatitude(), geo.getLongitude(), altitude).getTotalIntensity();
-            Assert.assertEquals(threshold, meas, 1e-3);
+            Assertions.assertEquals(threshold, meas, 1e-3);
         }
     }
 
@@ -452,9 +452,9 @@ public class MagneticFieldDetectorTest {
             Vector2D point = new Vector2D(geo.getLongitude(), geo.getLatitude());
 
             //Check that the event is outside the "smaller than SAA" geographical zone
-            Assert.assertTrue(saaIn.checkPoint(point).equals(Location.OUTSIDE));
+            Assertions.assertTrue(saaIn.checkPoint(point).equals(Location.OUTSIDE));
             //Check that the event is inside the "bigger than SAA" geographical zone
-            Assert.assertTrue(saaOut.checkPoint(point).equals(Location.INSIDE));
+            Assertions.assertTrue(saaOut.checkPoint(point).equals(Location.INSIDE));
 
         }
     }

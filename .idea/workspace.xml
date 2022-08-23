@@ -1,19 +1,704 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SPLITTER_PROPORTION" value="0.6946903" />
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="" />
+    <list default="true" id="78e9cb33-e97b-4470-a453-e6f9605252c1" name="Changes" comment="Migrated tests from JUnit 4 to JUnit 5.&#10;&#10;Migrated all tests to JUnit 5.&#10;&#10;Changed pom to use JUnit 5.">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/orekit.iml" beforeDir="false" afterPath="$PROJECT_DIR$/orekit.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/KeyValueFileParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/KeyValueFileParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/OrekitMatchers.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/OrekitMatchers.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/SolarInputs97to05.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/SolarInputs97to05.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/AggregateBoundedAttitudeProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/AggregateBoundedAttitudeProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/AttitudeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/AttitudeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/AttitudesSequenceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/AttitudesSequenceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/BodyCenterPointingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/BodyCenterPointingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/CelestialBodyPointingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/CelestialBodyPointingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/FieldAttitudeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/FieldAttitudeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/FixedRateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/FixedRateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/InertialAttitudeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/InertialAttitudeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/LofOffsetPointingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/LofOffsetPointingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/LofOffsetTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/LofOffsetTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/NadirPointingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/NadirPointingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/SpinStabilizedTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/SpinStabilizedTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/TabulatedLofOffsetTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/TabulatedLofOffsetTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/TabulatedProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/TabulatedProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/TargetPointingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/TargetPointingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/YawCompensationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/YawCompensationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/YawSteeringTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/attitudes/YawSteeringTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/CR3BPFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/CR3BPFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/CR3BPSystemTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/CR3BPSystemTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/CelestialBodyFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/CelestialBodyFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/EllipseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/EllipseTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/EllipsoidTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/EllipsoidTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/FieldGeodeticPointTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/FieldGeodeticPointTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/GeodeticPointTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/GeodeticPointTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/IAUPoleFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/IAUPoleFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/JPLEphemeridesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/JPLEphemeridesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/LoxodromeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/LoxodromeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/OneAxisEllipsoidTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/OneAxisEllipsoidTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/PredefinedIAUPolesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/PredefinedIAUPolesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/SolarBodyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/bodies/SolarBodyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/compiler/plugin/DefaultDataContextPluginTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/compiler/plugin/DefaultDataContextPluginTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/AbstractFilesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/AbstractFilesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/AbstractListCrawlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/AbstractListCrawlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/AuthenticatorDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/AuthenticatorDialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/ClasspathCrawlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/ClasspathCrawlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/CompositeDataContextTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/CompositeDataContextTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/DataProvidersManagerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/DataProvidersManagerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/DataSourceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/DataSourceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/DirectoryCrawlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/DirectoryCrawlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/ExceptionalDataContextTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/ExceptionalDataContextTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/FilesListCrawlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/FilesListCrawlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/FundamentalNutationArgumentsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/FundamentalNutationArgumentsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/NetworkCrawlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/NetworkCrawlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/NutationCodecTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/NutationCodecTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/PoissonSeriesParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/PoissonSeriesParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/PolynomialParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/PolynomialParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/UnixCompressFilterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/UnixCompressFilterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/data/ZipJarCrawlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/data/ZipJarCrawlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitExceptionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitExceptionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitIllegalArgumentExceptionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitIllegalArgumentExceptionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitIllegalStateExceptionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitIllegalStateExceptionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitInternalErrorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitInternalErrorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitMessagesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitMessagesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitParseExceptionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/errors/OrekitParseExceptionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/errors/TimeStampedCacheExceptionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/errors/TimeStampedCacheExceptionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/BrouwerLyddaneContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/BrouwerLyddaneContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/BrouwerLyddaneEstimationTestUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/BrouwerLyddaneEstimationTestUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/Context.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/Context.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/DSSTContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/DSSTContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/DSSTEstimationTestUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/DSSTEstimationTestUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/EcksteinHechlerContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/EcksteinHechlerContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/EcksteinHechlerEstimationTestUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/EcksteinHechlerEstimationTestUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/EstimationTestUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/EstimationTestUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/KeplerianContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/KeplerianContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/KeplerianEstimationTestUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/KeplerianEstimationTestUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/StationDataProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/StationDataProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/TLEContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/TLEContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/TLEEstimationTestUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/TLEEstimationTestUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/AbstractOrbitDetermination.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/AbstractOrbitDetermination.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/AzElParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/AzElParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/BatchLeastSquaresObserver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/BatchLeastSquaresObserver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/Iono.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/Iono.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/MeasurementLog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/MeasurementLog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/MeasurementsParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/MeasurementsParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/PVParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/PVParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/RangeParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/RangeParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/RangeRateParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/common/RangeRateParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodGibbsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodGibbsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodGoodingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodGoodingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodLambertTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodLambertTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodLaplaceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/iod/IodLaplaceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/BatchLSEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/BatchLSEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/BatchLSModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/BatchLSModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/BrouwerLyddaneBatchLSEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/BrouwerLyddaneBatchLSEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/DSSTBatchLSEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/DSSTBatchLSEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/DSSTBatchLSModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/DSSTBatchLSModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/DSSTOrbitDeterminationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/DSSTOrbitDeterminationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/EcksteinHechlerBatchLSEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/EcksteinHechlerBatchLSEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/KeplerianBatchLSEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/KeplerianBatchLSEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/NumericalOrbitDeterminationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/NumericalOrbitDeterminationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/NumericalSequentialOrbitDeterminationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/NumericalSequentialOrbitDeterminationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/TLEBatchLSEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/TLEBatchLSEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/TLEOrbitDeterminationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/leastsquares/TLEOrbitDeterminationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularAzElMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularAzElMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularAzElTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularAzElTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularRaDecMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularRaDecMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularRaDecTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/AngularRaDecTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/BistaticRangeRateMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/BistaticRangeRateMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/BistaticRangeRateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/BistaticRangeRateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/BistaticRangeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/BistaticRangeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/ComparableMeasurementTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/ComparableMeasurementTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/DSSTPVTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/DSSTPVTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/GroundStationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/GroundStationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/InterSatellitesRangeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/InterSatellitesRangeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/MeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/MeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PVMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PVMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PVTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PVTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PositionMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PositionMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PositionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/PositionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/Range2Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/Range2Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeAnalytic.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeAnalytic.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeAnalyticTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeAnalyticTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeMeasurementCreator2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeMeasurementCreator2.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeRateMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeRateMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeRateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeRateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/RangeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TDOAMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TDOAMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TDOATest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TDOATest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TLEPVTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TLEPVTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeAnalytic.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeAnalytic.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeAnalyticTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeAnalyticTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/TurnAroundRangeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/filtering/ElevationFilteringTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/filtering/ElevationFilteringTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/filtering/PseudoRangeFilteringTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/filtering/PseudoRangeFilteringTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/filtering/ResidualsFilteringTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/filtering/ResidualsFilteringTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/AbstractGroundMeasurementBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/AbstractGroundMeasurementBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/AngularAzElBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/AngularAzElBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/AngularRaDecBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/AngularRaDecBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/BistaticRangeBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/BistaticRangeBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/BistaticRangeRateBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/BistaticRangeRateBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/GeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/GeneratorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/InterSatellitesPhaseBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/InterSatellitesPhaseBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/InterSatellitesRangeBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/InterSatellitesRangeBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/PVBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/PVBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/PositionBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/PositionBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/RangeBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/RangeBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/RangeRateBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/RangeRateBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/TDOABuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/TDOABuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/TurnAroundRangeBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/generation/TurnAroundRangeBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/AbstractLambdaMethodTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/AbstractLambdaMethodTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/AlternatingSamplerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/AlternatingSamplerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/AmbiguitySolverTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/AmbiguitySolverTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/GeometryFreeCycleSlipDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/GeometryFreeCycleSlipDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/IntegerBootstrappingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/IntegerBootstrappingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/IntegerLeastSquareComparatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/IntegerLeastSquareComparatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/InterSatellitesPhaseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/InterSatellitesPhaseTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/LambdaMethodTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/LambdaMethodTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/MeasurementCombinationFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/MeasurementCombinationFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/ModifiedLambdaMethodTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/ModifiedLambdaMethodTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/OneWayGNSSPhaseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/OneWayGNSSPhaseTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/OneWayGNSSRangeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/OneWayGNSSRangeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/PhaseMeasurementCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/PhaseMeasurementCreator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/PhaseMinusCodeCycleSlipDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/PhaseMinusCodeCycleSlipDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/PhaseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/PhaseTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/WindUpFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/WindUpFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/WindUpTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/gnss/WindUpTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/BiasTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/BiasTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/IonoModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/IonoModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaInterSatellitesPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaInterSatellitesPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaInterSatellitesRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaInterSatellitesRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaOneWayGNSSPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaOneWayGNSSPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaOneWayGNSSRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaOneWayGNSSRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaTurnAroundRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/OnBoardAntennaTurnAroundRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockInterSatellitesPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockInterSatellitesPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockInterSatellitesRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockInterSatellitesRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockOneWayGNSSPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockOneWayGNSSPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockOneWayGNSSRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockOneWayGNSSRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockRangeRateModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticClockRangeRateModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockInterSatellitesPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockInterSatellitesPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockInterSatellitesRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockInterSatellitesRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockOneWayGNSSPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockOneWayGNSSPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockOneWayGNSSRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockOneWayGNSSRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/RelativisticJ2ClockRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroInterSatellitePhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroInterSatellitePhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroInterSatelliteRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroInterSatelliteRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroOneWayGNSSPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroOneWayGNSSPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroOneWayGNSSRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroOneWayGNSSRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroPhaseModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroPhaseModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroRangeModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/ShapiroRangeModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/TropoModifierTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/measurements/modifiers/TropoModifierTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/BrouwerLyddaneKalmanEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/BrouwerLyddaneKalmanEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/DSSTKalmanModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/DSSTKalmanModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/ExtendedSemiAnalyticalKalmanFilterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/ExtendedSemiAnalyticalKalmanFilterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/KalmanEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/KalmanEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/KalmanModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/KalmanModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/KalmanNumericalOrbitDeterminationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/KalmanNumericalOrbitDeterminationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/SemiAnalyticalKalmanEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/SemiAnalyticalKalmanEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/SemiAnalyticalKalmanModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/SemiAnalyticalKalmanModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/TLEKalmanEstimatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/TLEKalmanEstimatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/TLEKalmanOrbitDeterminationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/TLEKalmanOrbitDeterminationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/UnivariateprocessNoiseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/estimation/sequential/UnivariateprocessNoiseTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/BodyFacadeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/BodyFacadeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/CelestialBodyFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/CelestialBodyFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/CenterNameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/CenterNameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/ElementsTypeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/ElementsTypeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/FacadeFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/definitions/FacadeFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/AbstractWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/AbstractWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/NdmParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/NdmParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/NdmTestUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/NdmTestUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/NdmWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/NdmWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AEMAttitudeTypeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AEMAttitudeTypeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AEMParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AEMParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AemWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AemWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AttitudeWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/AttitudeWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/StreamingAemWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/aem/StreamingAemWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/apm/APMParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/apm/APMParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/apm/ApmWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/adm/apm/ApmWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/cdm/CdmParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/cdm/CdmParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/cdm/CdmWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/cdm/CdmWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/ocm/OcmParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/ocm/OcmParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/ocm/OcmWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/ocm/OcmWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/ocm/OrderingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/ocm/OrderingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/EphemerisWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/EphemerisWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/OemParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/OemParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/OemWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/OemWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/StreamingOemWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/oem/StreamingOemWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/omm/OmmParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/omm/OmmParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/omm/OmmWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/omm/OmmWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/opm/OpmParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/opm/OpmParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/opm/OpmWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/odm/opm/OpmWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/tdm/TdmParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/tdm/TdmParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/tdm/TdmWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/ndm/tdm/TdmWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/generation/KvnGeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/generation/KvnGeneratorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/generation/XmlGeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/generation/XmlGeneratorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/lexical/LexicalAnalyzerSelectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/lexical/LexicalAnalyzerSelectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/lexical/XmlLexicalAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ccsds/utils/lexical/XmlLexicalAnalyzerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/general/EphemerisSegmentPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/general/EphemerisSegmentPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/general/OrekitAttitudeEphemerisFileTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/general/OrekitAttitudeEphemerisFileTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/general/OrekitEphemerisFileTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/general/OrekitEphemerisFileTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/CPFParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/CPFParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/CPFWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/CPFWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/CRDParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/CRDParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/StreamingCpfWriterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/ilrs/StreamingCpfWriterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/sinex/SinexLoaderEopTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/sinex/SinexLoaderEopTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/sinex/SinexLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/sinex/SinexLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/files/sp3/SP3ParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/files/sp3/SP3ParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/AbstractForceModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/AbstractForceModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/AbstractLegacyForceModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/AbstractLegacyForceModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/BoxAndSolarArraySpacecraftTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/BoxAndSolarArraySpacecraftTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/drag/DragForceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/drag/DragForceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/drag/TimeSpanDragForceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/drag/TimeSpanDragForceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/empirical/HarmonicAccelerationModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/empirical/HarmonicAccelerationModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/empirical/PolynomialAccelerationModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/empirical/PolynomialAccelerationModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/empirical/TimeSpanParametricAccelerationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/empirical/TimeSpanParametricAccelerationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/AssociatedLegendreFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/AssociatedLegendreFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/DeSitterRelativityTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/DeSitterRelativityTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/HolmesFeatherstoneAttractionModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/HolmesFeatherstoneAttractionModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/LenseThirringRelativityTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/LenseThirringRelativityTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/OceanTidesFieldTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/OceanTidesFieldTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/OceanTidesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/OceanTidesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/OceanTidesWaveTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/OceanTidesWaveTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/RelativityTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/RelativityTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SingleBodyAbsoluteAttractionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SingleBodyAbsoluteAttractionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SingleBodyRelativeAttractionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SingleBodyRelativeAttractionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SolidTidesFieldTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SolidTidesFieldTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SolidTidesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/SolidTidesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/ThirdBodyAttractionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/ThirdBodyAttractionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/AstronomicalAmplitudeReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/AstronomicalAmplitudeReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/CachedNormalizedSphericalHarmonicsProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/CachedNormalizedSphericalHarmonicsProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/EGMFormatReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/EGMFormatReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/FESCHatEpsilonReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/FESCHatEpsilonReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/FESCnmSnmReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/FESCnmSnmReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/FlattenerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/FlattenerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/GRGSFormatReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/GRGSFormatReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/GravityFieldFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/GravityFieldFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/ICGEMFormatReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/ICGEMFormatReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/OceanLoadDeformationCoefficientsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/OceanLoadDeformationCoefficientsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/PulsatingSphericalHarmonicsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/PulsatingSphericalHarmonicsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/SHMFormatReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/gravity/potential/SHMFormatReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/inertia/InertialForcesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/inertia/InertialForcesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/ConfigurableLowThrustManeuverTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/ConfigurableLowThrustManeuverTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/ConstantThrustManeuverTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/ConstantThrustManeuverTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/ImpulseManeuverTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/ImpulseManeuverTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/SmallManeuverAnalyticalModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/SmallManeuverAnalyticalModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/jacobians/TriggersDerivativesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/jacobians/TriggersDerivativesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/propulsion/AbstractConstantThrustTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/propulsion/AbstractConstantThrustTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/propulsion/ThrustDirectionAndAttitudeProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/propulsion/ThrustDirectionAndAttitudeProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/AbstractManeuverTriggersInitializationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/AbstractManeuverTriggersInitializationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/AbstractManeuverTriggersTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/AbstractManeuverTriggersTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/IntervalEventTriggerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/IntervalEventTriggerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/ManeuverTriggersTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/ManeuverTriggersTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/StartStopEventTriggerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/maneuvers/triggers/StartStopEventTriggerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/radiation/ECOM2Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/radiation/ECOM2Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/radiation/KnockeRediffusedForceModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/radiation/KnockeRediffusedForceModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/forces/radiation/SolarRadiationPressureTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/forces/radiation/SolarRadiationPressureTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/BulletinAFilesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/BulletinAFilesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/BulletinBFilesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/BulletinBFilesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/CIRFProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/CIRFProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/CR3BPRotatingTransformProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/CR3BPRotatingTransformProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EME2000ProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EME2000ProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EOPC04FilesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EOPC04FilesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EOPHistoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EOPHistoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EclipticProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/EclipticProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FieldTransformTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FieldTransformTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FixedTransformProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FixedTransformProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameToolsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FrameToolsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FramesFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FramesFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FramesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/FramesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/GTODProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/GTODProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/HelmertTransformationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/HelmertTransformationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFEquinoxProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFEquinoxProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFProviderWithoutTidalEffectsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFProviderWithoutTidalEffectsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFVersionLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFVersionLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFVersionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ITRFVersionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/InterpolatingTransformProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/InterpolatingTransformProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/L1TransformProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/L1TransformProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/L2TransformProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/L2TransformProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/LazyLoadedFramesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/LazyLoadedFramesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/LocalOrbitalFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/LocalOrbitalFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/MODProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/MODProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/OrphanFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/OrphanFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/RapidDataAndPredictionColumnsLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/RapidDataAndPredictionColumnsLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/RapidDataAndPredictionXMLLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/RapidDataAndPredictionXMLLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ShiftingTransformProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/ShiftingTransformProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/StaticTransformTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/StaticTransformTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TEMEProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TEMEProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TIRFProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TIRFProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TODProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TODProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TopocentricFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TopocentricFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TransformProviderUtilTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TransformProviderUtilTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TransformTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TransformTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TwoBodiesBaryFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/TwoBodiesBaryFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/UpdatableFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/UpdatableFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/VEISFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/VEISFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/frames/VersionedITRFFrameTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/frames/VersionedITRFFrameTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/AbstractSmoothFieldOfViewTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/AbstractSmoothFieldOfViewTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/CircularFieldOfViewTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/CircularFieldOfViewTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/DoubleDihedraFieldOfViewTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/DoubleDihedraFieldOfViewTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/EllipticalFieldOfViewTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/EllipticalFieldOfViewTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/PolygonalFieldOfViewTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/geometry/fov/PolygonalFieldOfViewTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/ClockFileParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/ClockFileParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/DOPComputerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/DOPComputerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/HatanakaCompressFilterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/HatanakaCompressFilterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/QZSSAlmanacTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/QZSSAlmanacTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/RinexFrequencyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/RinexFrequencyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/RinexLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/RinexLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/SEMParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/SEMParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/YUMAParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/YUMAParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/antenna/AntexLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/antenna/AntexLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/antenna/SatelliteTypeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/antenna/SatelliteTypeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/AbstractGNSSAttitudeProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/AbstractGNSSAttitudeProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/BeidouGeoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/BeidouGeoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/BeidouIGSOTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/BeidouIGSOTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/BeidouMeoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/BeidouMeoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GPSBlockIIATest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GPSBlockIIATest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GPSBlockIIFTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GPSBlockIIFTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GPSBlockIIRTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GPSBlockIIRTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GalileoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GalileoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GenericGNSSTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GenericGNSSTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GlonassTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/attitude/GlonassTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/GlonassUserRangeAccuracyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/GlonassUserRangeAccuracyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1019Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1019Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1020Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1020Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1042Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1042Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1044Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1044Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1045Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/Rtcm1045Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/SignalInSpaceAccuracyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/SignalInSpaceAccuracyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/UserRangeAccuracyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/rtcm/UserRangeAccuracyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm01Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm01Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm02Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm02Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm03Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm03Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm04Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm04Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm05Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm05Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm06Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm06Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm07Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIgm07Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIm201Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/messages/ssr/SsrIm201Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/CasterRecordTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/CasterRecordTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/CountingObserver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/CountingObserver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/DataStreamRecordTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/DataStreamRecordTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/GnssDataTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/GnssDataTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/LoggingObserver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/LoggingObserver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/NetworkRecordTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/NetworkRecordTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/NtripClientTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/ntrip/NtripClientTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/AbstractEncodedMessagesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/AbstractEncodedMessagesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/DataFieldTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/DataFieldTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/DataTypeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/DataTypeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/EncodedMessagesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/EncodedMessagesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/IgsSsrMessageTypeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/IgsSsrMessageTypeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/RtcmMessageTypeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/metric/parser/RtcmMessageTypeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/navigation/NavigationFileParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/gnss/navigation/NavigationFileParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/EarthITU453AtmosphereRefractionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/EarthITU453AtmosphereRefractionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/EarthStandardAtmosphereTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/EarthStandardAtmosphereTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/GeoMagneticFieldTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/GeoMagneticFieldTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/GeoidTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/GeoidTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ReferenceEllipsoidTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ReferenceEllipsoidTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/DTM2000Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/DTM2000Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/HarrisPriesterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/HarrisPriesterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/JB2008Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/JB2008Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/NRLMSISE00Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/NRLMSISE00Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/SimpleExponentialAtmosphereTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/SimpleExponentialAtmosphereTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/CommonLineReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/CommonLineReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/CssiSpaceWeatherLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/CssiSpaceWeatherLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/DtcDataLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/DtcDataLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/MarshallSolarActivityFutureEstimationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/MarshallSolarActivityFutureEstimationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/SOLFSMYDataLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/atmosphere/data/SOLFSMYDataLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/OceanLoadingCoefficientsBLQFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/OceanLoadingCoefficientsBLQFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/OceanLoadingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/OceanLoadingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/TidalDisplacementTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/TidalDisplacementTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/TideTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/displacement/TideTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/EstimatedIonosphericModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/EstimatedIonosphericModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/GlobalIonosphereMapModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/GlobalIonosphereMapModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/KlobucharIonoCoefficientsLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/KlobucharIonoCoefficientsLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/KlobucharModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/KlobucharModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/NeQuickModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/NeQuickModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/SingleLayerModelMappingFunctionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/SingleLayerModelMappingFunctionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/SsrVtecIonosphericModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/ionosphere/SsrVtecIonosphericModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/AlongTrackAimingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/AlongTrackAimingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/DivertedSingularityAimingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/DivertedSingularityAimingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/EllipsoidTessellatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/EllipsoidTessellatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/TileTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/tessellation/TileTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/EstimatedTroposphericModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/EstimatedTroposphericModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldGlobalMappingFunctionModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldGlobalMappingFunctionModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldMendesPavlisModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldMendesPavlisModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldNiellMappingFunctionModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldNiellMappingFunctionModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldViennaOneModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldViennaOneModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldViennaThreeModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FieldViennaThreeModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FixedTroposphericModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/FixedTroposphericModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/GlobalMappingFunctionModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/GlobalMappingFunctionModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/MariniMurrayModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/MariniMurrayModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/MendesPavlisModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/MendesPavlisModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/NiellMappingFunctionModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/NiellMappingFunctionModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/SaastamoinenModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/SaastamoinenModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/TimeSpanEstimatedTroposphericModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/TimeSpanEstimatedTroposphericModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/ViennaModelCoefficientsLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/ViennaModelCoefficientsLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/ViennaOneModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/ViennaOneModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/ViennaThreeModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/troposphere/ViennaThreeModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/weather/GlobalPressureTemperature2ModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/weather/GlobalPressureTemperature2ModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/weather/GlobalPressureTemperatureModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/models/earth/weather/GlobalPressureTemperatureModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/CartesianOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/CartesianOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/CircularOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/CircularOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/EquinoctialOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/EquinoctialOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldCartesianOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldCartesianOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldCircularOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldCircularOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldEquinoctialOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldEquinoctialOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldKeplerianOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/FieldKeplerianOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/HaloOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/HaloOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/KeplerianOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/KeplerianOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/LyapunovOrbitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/orbits/LyapunovOrbitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/AdditionalStateProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/AdditionalStateProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/FieldAdditionalStateProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/FieldAdditionalStateProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/FieldSpacecraftStateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/FieldSpacecraftStateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/PropagatorsParallelizerEphemerisTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/PropagatorsParallelizerEphemerisTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/PropagatorsParallelizerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/PropagatorsParallelizerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/SpacecraftStateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/SpacecraftStateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/StateCovarianceMatrixProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/StateCovarianceMatrixProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/AdapterPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/AdapterPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/AggregateBoundedPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/AggregateBoundedPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/BrouwerLyddaneParametersDerivativesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/BrouwerLyddaneParametersDerivativesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/BrouwerLyddanePropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/BrouwerLyddanePropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/BrouwerLyddaneStateTransitionMatrixTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/BrouwerLyddaneStateTransitionMatrixTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EcksteinHechlerPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EcksteinHechlerPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EcksteinHechlerStateTransitionMatrixTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EcksteinHechlerStateTransitionMatrixTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EphemerisEventsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EphemerisEventsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EphemerisTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/EphemerisTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/FieldBrouwerLyddanePropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/FieldBrouwerLyddanePropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/FieldEcksteinHechlerPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/FieldEcksteinHechlerPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/FieldKeplerianPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/FieldKeplerianPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/KeplerianPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/KeplerianPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/KeplerianStateTransitionMatrixTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/KeplerianStateTransitionMatrixTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/TabulatedEphemerisTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/TabulatedEphemerisTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/BeidouPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/BeidouPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GLONASSAnalyticalPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GLONASSAnalyticalPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GLONASSOrbitalElementsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GLONASSOrbitalElementsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GPSPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GPSPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GalileoPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/GalileoPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/IRNSSPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/IRNSSPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/QZSSAlmanacTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/QZSSAlmanacTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/QZSSPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/QZSSPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/SBASOrbitalElementsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/SBASOrbitalElementsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/SBASPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/gnss/SBASPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/FieldTLEPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/FieldTLEPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/FieldTLETest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/FieldTLETest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEParametersDerivativesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEParametersDerivativesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEPartialDerivativesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEPartialDerivativesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEStateTransitionMatrixTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLEStateTransitionMatrixTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLETest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/analytical/tle/TLETest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/AbstractPropagatorBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/AbstractPropagatorBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/BrouwerLyddanePropagatorBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/BrouwerLyddanePropagatorBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/DSSTPropagatorBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/DSSTPropagatorBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/EcksteinHechlerConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/EcksteinHechlerConverterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/FiniteDifferencePropagatorConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/FiniteDifferencePropagatorConverterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/JacobianPropagatorConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/JacobianPropagatorConverterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/KeplerianConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/KeplerianConverterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/NumericalConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/NumericalConverterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/OsculatingToMeanElementsConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/OsculatingToMeanElementsConverterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/TLEConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/conversion/TLEConverterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AdapterDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AdapterDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AlignmentDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AlignmentDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AltitudeDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AltitudeDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AndDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AndDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AngularSeparationDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AngularSeparationDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AngularSeparationFromSatelliteDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/AngularSeparationFromSatelliteDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ApsideDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ApsideDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/BackAndForthDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/BackAndForthDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/CloseEventsAbstractTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/CloseEventsAbstractTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/CloseEventsAnalyticalKeplerianTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/CloseEventsAnalyticalKeplerianTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/DateDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/DateDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EclipseDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EclipseDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ElevationDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ElevationDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ElevationExtremumDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ElevationExtremumDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventEnablingPredicateFilterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventEnablingPredicateFilterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventShifterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventShifterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventSlopeFilterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventSlopeFilterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventsLoggerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/EventsLoggerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ExtremumApproachDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ExtremumApproachDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldApsideDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldApsideDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldCloseEventsAbstractTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldCloseEventsAbstractTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldCloseEventsAnalyticalKeplerianTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldCloseEventsAnalyticalKeplerianTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldDateDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldDateDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldEclipseDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldEclipseDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldEventDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldEventDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldEventsLoggerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldEventsLoggerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldFunctionalDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldFunctionalDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldLatitudeCrossingDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldLatitudeCrossingDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldNodeDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldNodeDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldOfViewDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldOfViewDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldParameterDrivenDateIntervalDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FieldParameterDrivenDateIntervalDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FootprintOverlapDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FootprintOverlapDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FunctionalDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/FunctionalDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/GeographicZoneDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/GeographicZoneDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/GroundAtNightDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/GroundAtNightDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/GroundFieldOfViewDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/GroundFieldOfViewDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/InterSatDirectViewDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/InterSatDirectViewDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LatitudeCrossingDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LatitudeCrossingDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LatitudeExtremumDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LatitudeExtremumDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LongitudeCrossingDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LongitudeCrossingDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LongitudeExtremumDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/LongitudeExtremumDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/MagneticFieldDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/MagneticFieldDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/NegateDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/NegateDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/NodeDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/NodeDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/OrDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/OrDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ParameterDrivenDateIntervalDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/ParameterDrivenDateIntervalDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/PositionAngleDetectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/PositionAngleDetectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/ContinueOnEventTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/ContinueOnEventTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/EventHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/EventHandlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/EventMultipleHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/EventMultipleHandlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/FieldRecordAndContinueTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/FieldRecordAndContinueTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/FieldStopOnDecreasingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/FieldStopOnDecreasingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/FieldStopOnIncreasingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/FieldStopOnIncreasingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/RecordAndContinueTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/RecordAndContinueTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/StopOnDecreasingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/StopOnDecreasingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/StopOnEventTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/StopOnEventTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/StopOnIncreasingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/events/handlers/StopOnIncreasingTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/AdditionalDerivativesProvidersTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/AdditionalDerivativesProvidersTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/AdditionalEquationsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/AdditionalEquationsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/FieldAdditionalDerivativesProvidersTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/FieldAdditionalDerivativesProvidersTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/FieldAdditionalEquationsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/FieldAdditionalEquationsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/FieldIntegratedEphemerisTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/FieldIntegratedEphemerisTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/IntegratedEphemerisTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/integration/IntegratedEphemerisTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/AbsolutePartialDerivativesEquationsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/AbsolutePartialDerivativesEquationsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/FieldNumericalPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/FieldNumericalPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/GLONASSNumericalPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/GLONASSNumericalPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/IntegrableJacobianColumnGeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/IntegrableJacobianColumnGeneratorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/NumericalPropagationHarvesterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/NumericalPropagationHarvesterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/NumericalPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/NumericalPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/PartialDerivativesEquationsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/PartialDerivativesEquationsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/PartialDerivativesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/PartialDerivativesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/PickupHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/PickupHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/StateTransitionMatrixGeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/StateTransitionMatrixGeneratorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/cr3bp/CR3BPForceModelTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/cr3bp/CR3BPForceModelTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/cr3bp/CR3BPMultipleShooterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/numerical/cr3bp/CR3BPMultipleShooterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/sampling/FieldStepHandlerMultiplexerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/sampling/FieldStepHandlerMultiplexerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/sampling/OrekitStepHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/sampling/OrekitStepHandlerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/sampling/StepHandlerMultiplexerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/sampling/StepHandlerMultiplexerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTAtmosphericDragTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTAtmosphericDragTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTIntegrableJacobianColumnGeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTIntegrableJacobianColumnGeneratorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTNewtonianAttractionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTNewtonianAttractionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTPartialDerivativesEquationsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTPartialDerivativesEquationsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTPartialDerivativesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTPartialDerivativesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTSolarRadiationPressureTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTSolarRadiationPressureTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTStateTransitionMatrixGeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTStateTransitionMatrixGeneratorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTTesseralTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTTesseralTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTThirdBodyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTThirdBodyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTZonalTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/DSSTZonalTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTAtmosphericDragTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTAtmosphericDragTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTNewtonianAttractionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTNewtonianAttractionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTPropagatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTPropagatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTSolarRadiationPressureTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTSolarRadiationPressureTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTTesseralTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTTesseralTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTThirdBodyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTThirdBodyTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTZonalTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/FieldDSSTZonalTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/PickupHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/PickupHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/CoefficientFactoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/CoefficientFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/FieldGHmjTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/FieldGHmjTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/FieldGammaMnsFunctionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/FieldGammaMnsFunctionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/GHmsjTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/GHmsjTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/GammaMnsFunctionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/GammaMnsFunctionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/NewcombOperatorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/NewcombOperatorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/hansen/FieldHansenThirdBodyLinearTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/hansen/FieldHansenThirdBodyLinearTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/hansen/HansenThirdBodyLinearTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/hansen/HansenThirdBodyLinearTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/AGILeapSecondFilesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/AGILeapSecondFilesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/AbsoluteDateInitializationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/AbsoluteDateInitializationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/AbsoluteDateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/AbsoluteDateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/BDSScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/BDSScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/BurstSelectorStepTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/BurstSelectorStepTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/DateComponentsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/DateComponentsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/DateTimeComponentsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/DateTimeComponentsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/FieldAbsoluteDateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/FieldAbsoluteDateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/FixedStepSelectorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/FixedStepSelectorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/GLONASSDateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/GLONASSDateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/GLONASSScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/GLONASSScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/GMSTScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/GMSTScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/GNSSDateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/GNSSDateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/GPSScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/GPSScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/GalileoScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/GalileoScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/IRNSSScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/IRNSSScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/LazyLoadedTimeScalesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/LazyLoadedTimeScalesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/MonthTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/MonthTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/PreloadedTimeScalesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/PreloadedTimeScalesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/QZSSScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/QZSSScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/SatelliteClockScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/SatelliteClockScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/TAIScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/TAIScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/TAIUTCDatAFilesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/TAIUTCDatAFilesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/TCBScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/TCBScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/TCGScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/TCGScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/TDBScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/TDBScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/TTScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/TTScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/TimeComponentsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/TimeComponentsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/UT1ScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/UT1ScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCScaleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCScaleTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIBulletinAFilesLoaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIBulletinAFilesLoaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIHistoryFilesLoaderCompressedDataTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIHistoryFilesLoaderCompressedDataTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIHistoryFilesLoaderNoDataTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIHistoryFilesLoaderNoDataTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIHistoryFilesLoaderRegularDataTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/time/UTCTAIHistoryFilesLoaderRegularDataTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AbsolutePVCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AbsolutePVCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AccurateFormatterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AccurateFormatterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AggregatedPVCoordinatesProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AggregatedPVCoordinatesProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AngularCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AngularCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AngularDerivativesFilterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/AngularDerivativesFilterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/CartesianDerivativesFilterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/CartesianDerivativesFilterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ConstantPVCoordinatesProviderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ConstantPVCoordinatesProviderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/DateDriverTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/DateDriverTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/DifferentiationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/DifferentiationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/DoubleArrayDictionaryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/DoubleArrayDictionaryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ElevationMaskTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ElevationMaskTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ExtendedPVCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ExtendedPVCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldAbsolutePVCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldAbsolutePVCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldAngularCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldAngularCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldArrayDictionaryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldArrayDictionaryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldPVCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/FieldPVCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/GenericTimeStampedCacheTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/GenericTimeStampedCacheTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/IERSConventionsTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/IERSConventionsTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ImmutableTimeStampedCacheTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ImmutableTimeStampedCacheTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/MultipleShooterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/MultipleShooterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/OrekitConfigurationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/OrekitConfigurationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/PVCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/PVCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ParameterDriversListTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/ParameterDriversListTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/SecularAndHarmonicTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/SecularAndHarmonicTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeSpanMapTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeSpanMapTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedAngularCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedAngularCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedFieldAngularCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedFieldAngularCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedFieldPVCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedFieldPVCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedPVCoordinatesTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/TimeStampedPVCoordinatesTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/WaypointPVBuilderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/WaypointPVBuilderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/LexerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/LexerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/ParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/ParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/UnitTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/UnitTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/UnitsConverterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/org/orekit/utils/units/UnitsConverterTest.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Issue#949" />
+        <entry key="$PROJECT_DIR$" value="issue-collisionPackage" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -28,26 +713,67 @@
       </MavenGeneralSettings>
     </option>
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectId" id="2DRbQUCVMbd1iuZqTJY0573tPPo" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="false" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vcucchie/git/forks/orekit/src/main/java/org/orekit/compiler&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.projectsettings.compiler.excludes&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "/home/vcucchie/git/forks/orekit/src/main/java/org/orekit/compiler",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15753888",
+    "project.structure.side.proportion": "0.18699187",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "reference.projectsettings.compiler.excludes"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/test/java" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.Serra2015Test.Chan_test_case_01">
+  <component name="RunManager" selected="JUnit.AggregatedPVCoordinatesProviderTest">
+    <configuration name="AggregatedPVCoordinatesProviderTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="orekit" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.orekit.utils.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.orekit.utils" />
+      <option name="MAIN_CLASS_NAME" value="org.orekit.utils.AggregatedPVCoordinatesProviderTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AggregatedPVCoordinatesProviderTest.alwaysValid" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="orekit" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.orekit.utils.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.orekit.utils" />
+      <option name="MAIN_CLASS_NAME" value="org.orekit.utils.AggregatedPVCoordinatesProviderTest" />
+      <option name="METHOD_NAME" value="alwaysValid" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="All in orekit" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="orekit" />
       <option name="PACKAGE_NAME" value="" />
@@ -56,74 +782,44 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="NumericalOrbitDeterminationTest.testGNSS" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="ElevationDetectorTest.testPresTemp" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="orekit" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="org.orekit.estimation.leastsquares.*" />
+          <option name="PATTERN" value="org.orekit.propagation.events.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="PACKAGE_NAME" value="org.orekit.estimation.leastsquares" />
-      <option name="MAIN_CLASS_NAME" value="org.orekit.estimation.leastsquares.NumericalOrbitDeterminationTest" />
-      <option name="METHOD_NAME" value="testGNSS" />
+      <option name="PACKAGE_NAME" value="org.orekit.propagation.events" />
+      <option name="MAIN_CLASS_NAME" value="org.orekit.propagation.events.ElevationDetectorTest" />
+      <option name="METHOD_NAME" value="testPresTemp" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ProbabilityOfCollisionTest.Should_create_expected_ProbabilityOfCollision_Instance" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="NegateDetectorTest.testInit" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="orekit" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="org.orekit.collision.probability.*" />
+          <option name="PATTERN" value="org.orekit.propagation.events.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="PACKAGE_NAME" value="org.orekit.collision.probability" />
-      <option name="MAIN_CLASS_NAME" value="org.orekit.collision.probability.ProbabilityOfCollisionTest" />
-      <option name="METHOD_NAME" value="Should_create_expected_ProbabilityOfCollision_Instance" />
+      <option name="PACKAGE_NAME" value="org.orekit.propagation.events" />
+      <option name="MAIN_CLASS_NAME" value="org.orekit.propagation.events.NegateDetectorTest" />
+      <option name="METHOD_NAME" value="testInit" />
       <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Serra2015Test.Chan_test_case_01" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="orekit" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.orekit.collision.probability.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.orekit.collision.probability" />
-      <option name="MAIN_CLASS_NAME" value="org.orekit.collision.probability.Serra2015Test" />
-      <option name="METHOD_NAME" value="Chan_test_case_01" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="org.orekit.collision.probability in orekit" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="orekit" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="org.orekit.collision.probability.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="org.orekit.collision.probability" />
-      <option name="TEST_OBJECT" value="package" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.Serra2015Test.Chan_test_case_01" />
-        <item itemvalue="JUnit.ProbabilityOfCollisionTest.Should_create_expected_ProbabilityOfCollision_Instance" />
-        <item itemvalue="JUnit.org.orekit.collision.probability in orekit" />
-        <item itemvalue="JUnit.NumericalOrbitDeterminationTest.testGNSS" />
+        <item itemvalue="JUnit.AggregatedPVCoordinatesProviderTest" />
+        <item itemvalue="JUnit.AggregatedPVCoordinatesProviderTest.alwaysValid" />
+        <item itemvalue="JUnit.ElevationDetectorTest.testPresTemp" />
+        <item itemvalue="JUnit.NegateDetectorTest.testInit" />
         <item itemvalue="JUnit.All in orekit" />
       </list>
     </recent_temporary>
@@ -137,6 +833,14 @@
       <option name="presentableId" value="Default" />
       <updated>1660664828091</updated>
     </task>
+    <task id="LOCAL-00001" summary="Added collision package&#10;&#10;Added short encounter model with probability of collision computing methods and collision definition.&#10;&#10;To do : Refactor all collision related tests to use JUnit 4.">
+      <created>1661241152998</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1661241152998</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -149,5 +853,34 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added collision package" />
+    <MESSAGE value="Added collision package&#10;&#10;Added short encounter model with probability of collision computing methods and collision definition." />
+    <MESSAGE value="Added collision package&#10;&#10;Added short encounter model with probability of collision computing methods and collision definition.&#10;&#10;To do : Refactor all collision related tests to use JUnit 4." />
+    <MESSAGE value="Migrated tests from JUnit 4 to JUnit 5&#10;&#10;Migrated part of existing tests to JUnit 5.&#10;&#10;Changed pom to use JUnit 5." />
+    <MESSAGE value="Migrated tests from JUnit 4 to JUnit 5.&#10;&#10;Migrated all tests to JUnit 5.&#10;&#10;Changed pom to use JUnit 5." />
+    <option name="LAST_COMMIT_MESSAGE" value="Migrated tests from JUnit 4 to JUnit 5.&#10;&#10;Migrated all tests to JUnit 5.&#10;&#10;Changed pom to use JUnit 5." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/org/orekit/utils/AggregatedPVCoordinatesProvider.java</url>
+          <line>89</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/test/java/org/orekit/utils/AggregatedPVCoordinatesProviderTest.java</url>
+          <line>90</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/orekit$org_orekit_collision_in_orekit.ic" NAME="org.orekit.collision in orekit Coverage Results" MODIFIED="1661240187713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>org.orekit.collision.*</FILTER>
+    </SUITE>
   </component>
 </project>

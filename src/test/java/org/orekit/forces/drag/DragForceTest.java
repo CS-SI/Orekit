@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.drag;
 
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -34,9 +33,9 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -248,7 +247,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new IsotropicDrag(2.5, 1.2));
 
-        Assert.assertFalse(forceModel.dependsOnPositionOnly());
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
 
         checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
 
@@ -272,7 +271,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new IsotropicDrag(2.5, 1.2));
 
-        Assert.assertFalse(forceModel.dependsOnPositionOnly());
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
 
         checkParameterDerivativeGradient(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
 
@@ -555,7 +554,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         };
 
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(dPVdX[i], dYdY0.getEntry(i, 0), 6.2e-6 * FastMath.abs(dPVdX[i]));
+            Assertions.assertEquals(dPVdX[i], dYdY0.getEntry(i, 0), 6.2e-6 * FastMath.abs(dPVdX[i]));
         }
 
     }
@@ -768,12 +767,12 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

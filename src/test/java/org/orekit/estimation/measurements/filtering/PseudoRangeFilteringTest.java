@@ -1,22 +1,9 @@
 package org.orekit.estimation.measurements.filtering;
 
-import java.io.BufferedReader;
-import java.io.File;
-
-import java.io.IOException;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-
-import java.util.List;
-
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataSource;
@@ -28,10 +15,20 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.gnss.SatelliteSystem;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 public class PseudoRangeFilteringTest {
 
     private String baseName;
-    @Before
+    @BeforeEach
     public void setUp() {
         baseName = "src/test/resources/gnss/filtering/";
         Utils.setDataRoot("gnss/filtering");
@@ -86,14 +83,14 @@ public class PseudoRangeFilteringTest {
         List<SmoothedObservationDataSet> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType);
 
         double lastUpdatedValue = listObsDataSetUpdate.get(listObsDataSetUpdate.size() - 1).getSmoothedData().getValue();
-        Assert.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
+        Assertions.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
 
         // Tests for ObservationDataSetUpdate
         List<ObservationDataSet> listRinexObsDataSet = loader.getObservationDataSets();
         ObservationDataSet newObsDataSet = listObsDataSetUpdate.get(0).getDataSet();
         ObservationDataSet rinexObsDataSet = listRinexObsDataSet.get(0);
 
-        Assert.assertEquals(newObsDataSet, rinexObsDataSet);
+        Assertions.assertEquals(newObsDataSet, rinexObsDataSet);
     }
 
     @Test
@@ -196,8 +193,8 @@ public class PseudoRangeFilteringTest {
         // Non-Regression test : The value is above one due to a constant bias between the 2.
         // The reason of the bias is to be explored, but might be related the pre alignement process
         // performed by gLAB.
-        Assert.assertTrue(rmsSF < 1.0063);
-        Assert.assertTrue(rmsDF < 1.0060);
+        Assertions.assertTrue(rmsSF < 1.0063);
+        Assertions.assertTrue(rmsDF < 1.0060);
     }
 
     @Test
@@ -227,8 +224,8 @@ public class PseudoRangeFilteringTest {
         double lastValueCode = codeDFArray.get(codeDFArray.size()-1);
 
         // Regression test
-        Assert.assertEquals(2.4715822416833777E7, lastValueSmoothed, 1e-6);
-        Assert.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
+        Assertions.assertEquals(2.4715822416833777E7, lastValueSmoothed, 1e-6);
+        Assertions.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
 
         ///// Test CarrierHatchFilterSingleFrequency
 
@@ -244,21 +241,21 @@ public class PseudoRangeFilteringTest {
         lastValueCode = codeSFArray.get(codeSFArray.size()-1);
 
         // Regression test
-        Assert.assertEquals(2.4715820677129257E7, lastValueSmoothed, 1e-6);
-        Assert.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
+        Assertions.assertEquals(2.4715820677129257E7, lastValueSmoothed, 1e-6);
+        Assertions.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
 
         // Threshold test
-        Assert.assertEquals(100.0, filterDF.getThreshold(), 1e-12);
+        Assertions.assertEquals(100.0, filterDF.getThreshold(), 1e-12);
 
         // Test getFilteredDataMap
         List<SmoothedObservationDataSet> listObsDataSetUpdateDF = prs.getFilteredDataMap().get(rangeType);
         List<SmoothedObservationDataSet> listObsDataSetUpdateSF = prsSF.getFilteredDataMap().get(rangeType);
 
         double lastUpdatedValueDF = listObsDataSetUpdateDF.get(listObsDataSetUpdateDF.size() - 1).getSmoothedData().getValue();
-        Assert.assertEquals(2.4715822416833777E7, lastUpdatedValueDF, 1E-6);
+        Assertions.assertEquals(2.4715822416833777E7, lastUpdatedValueDF, 1E-6);
 
         double lastUpdatedValueSF = listObsDataSetUpdateSF.get(listObsDataSetUpdateSF.size() - 1).getSmoothedData().getValue();
-        Assert.assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
+        Assertions.assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
 
     }
 

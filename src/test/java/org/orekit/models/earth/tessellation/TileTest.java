@@ -16,13 +16,13 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.bodies.GeodeticPoint;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
-
-import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 
 public class TileTest {
 
@@ -69,7 +69,7 @@ public class TileTest {
         assertThat(tile.getInterpolatedPoint(1, 1), geodeticPointCloseTo(v2, 1.0e-9));
         assertThat(tile.getInterpolatedPoint(0, 1), geodeticPointCloseTo(v3, 1.0e-9));
 
-        Assert.assertEquals(0.5 * FastMath.PI, tile.getCenter().getLatitude(), 1.0e-9);
+        Assertions.assertEquals(0.5 * FastMath.PI, tile.getCenter().getLatitude(), 1.0e-9);
 
     }
 

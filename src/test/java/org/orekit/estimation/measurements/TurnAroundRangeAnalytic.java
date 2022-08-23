@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -37,6 +33,10 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Class modeling a turn-around range measurement using a primary ground station and a secondary ground station.
  * <p>
