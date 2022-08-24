@@ -52,6 +52,7 @@
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>2.1</orekit.hipparchus.version>
     <orekit.junit.version>5.9.0</orekit.junit.version>
+    <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
@@ -408,7 +409,9 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
-      <version>2.2</version>
+      <version>${orekit.hamcrest.version}</version>
+      <optional>false</optional>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
