@@ -331,9 +331,8 @@ public class ElevationDetectorTest {
 
     }
 
-
-    @Test 
     @Disabled
+    @Test
     public void testPresTemp() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();

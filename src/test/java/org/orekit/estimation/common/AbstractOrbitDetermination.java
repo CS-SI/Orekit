@@ -446,7 +446,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Run the sequential batch least squares.
-     * @param input input file
      * @param print if true, print logs
      * @throws IOException if input files cannot be read
      */
@@ -2465,7 +2464,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Display parameters changes.
-     * @param stream output stream
      * @param header header message
      * @param sort if true, parameters will be sorted lexicographically
      * @param parameters parameters list

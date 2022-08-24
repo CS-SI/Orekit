@@ -62,7 +62,7 @@ import java.util.Map;
 public class RangeAnalytic extends Range {
 
     /** Constructor from parent Range class
-     * @param Range parent class
+     * @param range parent class
      */
     public RangeAnalytic(final Range range) {
         super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
@@ -77,7 +77,6 @@ public class RangeAnalytic extends Range {
      * @param iteration current LS estimator iteration
      * @param evaluation current LS estimator evaluation
      * @param state spacecraft state. At measurement date on first iteration then close to emission date on further iterations
-     * @param interpolator Orekit step interpolator
      * @return
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,

@@ -66,7 +66,7 @@ import java.util.Map;
 public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
     /** Constructor from parent TurnAroundRange class
-     * @param Range parent class
+     * @param turnAroundRange parent class
      */
     public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange) {
         super(turnAroundRange.getPrimaryStation(), turnAroundRange.getSecondaryStation(),

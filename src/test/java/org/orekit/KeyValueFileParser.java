@@ -327,7 +327,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param xKey parameter key for abscissa
      * @param yKey parameter key for ordinate
      * @param zKey parameter key for height
-     * @param scale time scale in which the date is to be parsed
      * @return date value corresponding to the key
      * @exception NoSuchElementException if key is not in the map
      */
@@ -340,7 +339,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param xKey parameter key for abscissa
      * @param yKey parameter key for ordinate
      * @param zKey parameter key for height
-     * @param scale time scale in which the date is to be parsed
      * @return date value corresponding to the key
      * @exception NoSuchElementException if key is not in the map
      */
@@ -422,7 +420,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * We consider Earth frames are the frames with name starting with "ITRF".
      * </p>
      * @param key parameter key
-     * @param parameters key/value map containing the parameters
      * @return Earth frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
      */
