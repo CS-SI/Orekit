@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -33,6 +35,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -256,6 +259,40 @@ public class AggregateBoundedPropagatorTest {
         } catch (OrekitException e) {
             // expected
         }
+    }
+
+    /**
+     * Check
+     * {@link
+     * AggregateBoundedPropagator#AggregateBoundedPropagator(NavigableMap,
+     * AbsoluteDate, AbsoluteDate)}.
+     */
+    @Test
+    public void testAggregateBoundedPropagator() {
+        // setup
+        NavigableMap<AbsoluteDate, Propagator> map = new TreeMap<>();
+        AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        AbsoluteDate end = date.shiftedBy(20);
+        BoundedPropagator p1 = createPropagator(date, end, 0);
+        BoundedPropagator p2 = createPropagator(date.shiftedBy(10), end, 0);
+        map.put(date, p1);
+        map.put(date.shiftedBy(10), p2);
+        AbsoluteDate min = date.shiftedBy(-10);
+        AbsoluteDate max = end.shiftedBy(10);
+
+        // action
+        final BoundedPropagator actual =
+                new AggregateBoundedPropagator(map, min, max);
+
+        // verify
+        MatcherAssert.assertThat(actual.getMinDate(), CoreMatchers.is(min));
+        MatcherAssert.assertThat(actual.getMaxDate(), CoreMatchers.is(max));
+        MatcherAssert.assertThat(actual.propagate(date).getPVCoordinates(),
+                OrekitMatchers.pvCloseTo(p1.propagate(date).getPVCoordinates(), 0));
+        MatcherAssert.assertThat(actual.propagate(end).getPVCoordinates(),
+                OrekitMatchers.pvCloseTo(p2.propagate(end).getPVCoordinates(), 0));
+        MatcherAssert.assertThat(actual.propagate(min).getPVCoordinates(),
+                OrekitMatchers.pvCloseTo(p1.propagate(min).getPVCoordinates(), 0));
     }
 
     /**
