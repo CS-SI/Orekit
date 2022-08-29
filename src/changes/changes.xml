@@ -31,6 +31,9 @@
       <action dev="greyskyy" type="add">
         Added waypoint interpolation of PVCoordinatesProvider.
       </action>
+      <action dev="evan" type="add" issue="954">
+        Added method to round DateTimeComponents for custom formatting.
+      </action>
     </release>
     <release version="11.2.1" date="2022-08-01"
              description="Version 11.2.1 is a patch release of Orekit.
