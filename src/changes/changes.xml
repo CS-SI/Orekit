@@ -24,6 +24,10 @@
       <action dev="bryan" type="add" issue="901">
         Added additional state provider for covariance matrix propagation.
       </action>
+      <action dev="evan" type="add">
+        Added constructor to AggregateBoundedPropagator for more control over which
+        propagator is used.
+      </action>
       <action dev="greyskyy" type="add">
         Added waypoint interpolation of PVCoordinatesProvider.
       </action>
