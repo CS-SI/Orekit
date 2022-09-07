@@ -144,19 +144,21 @@ public class Maneuver extends AbstractForceModel {
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final double[] parameters = getParameters();
+        final double[] parameters = getParametersAllValues();
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(extractedParameters))) {
 
             // Compute thrust acceleration in inertial frame
             adder.addNonKeplerianAcceleration(acceleration(s, parameters));
 
             // Compute flow rate using the propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
-            adder.addMassDerivative(propulsionModel.getMassDerivatives(s, getPropulsionModelParameters(parameters)));
+            adder.addMassDerivative(propulsionModel.getMassDerivatives(s, getPropulsionModelParameters(extractedParameters)));
         }
     }
 
@@ -166,29 +168,35 @@ public class Maneuver extends AbstractForceModel {
                         final FieldTimeDerivativesEquations<T> adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final T[] parameters = getParameters(s.getDate().getField());
+        final T[] parameters = getParametersAllValues(s.getDate().getField());
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(extractedParameters))) {
 
             // Compute thrust acceleration in inertial frame
+            // the acceleration method extracts the parameter in its core, that is why we call it with
+            // parameters and not extracted parameters
             adder.addNonKeplerianAcceleration(acceleration(s, parameters));
 
             // Compute flow rate using the propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
-            adder.addMassDerivative(propulsionModel.getMassDerivatives(s, getPropulsionModelParameters(parameters)));
+            adder.addMassDerivative(propulsionModel.getMassDerivatives(s, getPropulsionModelParameters(extractedParameters)));
         }
     }
 
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, s.getDate());
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(extractedParameters))) {
 
             // Attitude during maneuver
             final Attitude maneuverAttitude =
@@ -200,7 +208,7 @@ public class Maneuver extends AbstractForceModel {
 
             // Compute acceleration from propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
-            return propulsionModel.getAcceleration(s, maneuverAttitude, getPropulsionModelParameters(parameters));
+            return propulsionModel.getAcceleration(s, maneuverAttitude, getPropulsionModelParameters(extractedParameters));
         } else {
             // Constant (and null) acceleration when not firing
             return Vector3D.ZERO;
@@ -210,10 +218,12 @@ public class Maneuver extends AbstractForceModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
 
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, s.getDate());
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
         // Specific drivers for the triggers are extracted from the array given by the ForceModel interface
-        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
+        if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(extractedParameters))) {
 
             // Attitude during maneuver
             final FieldAttitude<T> maneuverAttitude =
@@ -225,7 +235,7 @@ public class Maneuver extends AbstractForceModel {
 
             // Compute acceleration from propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
-            return propulsionModel.getAcceleration(s, maneuverAttitude, getPropulsionModelParameters(parameters));
+            return propulsionModel.getAcceleration(s, maneuverAttitude, getPropulsionModelParameters(extractedParameters));
         } else {
             // Constant (and null) acceleration when not firing
             return FieldVector3D.getZero(s.getMu().getField());

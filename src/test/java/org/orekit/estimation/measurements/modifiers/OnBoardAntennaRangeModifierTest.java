@@ -91,7 +91,7 @@ public class OnBoardAntennaRangeModifierTest {
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
 
         // create perfect range measurements without antenna offset

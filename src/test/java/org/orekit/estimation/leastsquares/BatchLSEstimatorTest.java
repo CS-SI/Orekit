@@ -226,7 +226,7 @@ public class BatchLSEstimatorTest {
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
         Assert.assertEquals("a", aDriver.getName());
-        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
@@ -324,7 +324,7 @@ public class BatchLSEstimatorTest {
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
         Assert.assertEquals("a", aDriver.getName());
-        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
@@ -447,20 +447,20 @@ public class BatchLSEstimatorTest {
         List<DelegatingDriver> parameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
         Assert.assertEquals("a[0]", a0Driver.getName());
-        a0Driver.setValue(a0Driver.getValue() + 1.2);
+        a0Driver.setValue(a0Driver.getValue(null) + 1.2, null);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
         Assert.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setValue(a1Driver.getValue(null) - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                    parameters.get( 7).getValue(null),
+                                                    parameters.get( 8).getValue(null),
+                                                    parameters.get( 9).getValue(null),
+                                                    parameters.get(10).getValue(null),
+                                                    parameters.get(11).getValue(null),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
@@ -479,12 +479,12 @@ public class BatchLSEstimatorTest {
                                      0.0, 8.3e-07,
                                      0.0, 3.7e-10);
 
-        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
+        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                    parameters.get( 7).getValue(null),
+                                                    parameters.get( 8).getValue(null),
+                                                    parameters.get( 9).getValue(null),
+                                                    parameters.get(10).getValue(null),
+                                                    parameters.get(11).getValue(null),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
@@ -654,20 +654,20 @@ public class BatchLSEstimatorTest {
         List<DelegatingDriver> parameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
         Assert.assertEquals("a[0]", a0Driver.getName());
-        a0Driver.setValue(a0Driver.getValue() + 1.2);
+        a0Driver.setValue(a0Driver.getValue(null) + 1.2, null);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
         Assert.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setValue(a1Driver.getValue(null) - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                parameters.get( 7).getValue(),
-                                                parameters.get( 8).getValue(),
-                                                parameters.get( 9).getValue(),
-                                                parameters.get(10).getValue(),
-                                                parameters.get(11).getValue(),
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                parameters.get( 7).getValue(null),
+                                                parameters.get( 8).getValue(null),
+                                                parameters.get( 9).getValue(null),
+                                                parameters.get(10).getValue(null),
+                                                parameters.get(11).getValue(null),
                                                 PositionAngle.TRUE,
                                                 closeOrbit.getFrame(),
                                                 closeOrbit.getDate(),
@@ -686,12 +686,12 @@ public class BatchLSEstimatorTest {
                                      0.0, 4.7e-07,
                                      0.0, 2.0e-10);
 
-        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
+        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                    parameters.get( 7).getValue(null),
+                                                    parameters.get( 8).getValue(null),
+                                                    parameters.get( 9).getValue(null),
+                                                    parameters.get(10).getValue(null),
+                                                    parameters.get(11).getValue(null),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
@@ -828,20 +828,20 @@ public class BatchLSEstimatorTest {
         List<DelegatingDriver> parameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
         Assert.assertEquals("a[0]", a0Driver.getName());
-        a0Driver.setValue(a0Driver.getValue() + 1.2);
+        a0Driver.setValue(a0Driver.getValue(null) + 1.2, null);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
         Assert.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setValue(a1Driver.getValue(null) - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                    parameters.get( 7).getValue(null),
+                                                    parameters.get( 8).getValue(null),
+                                                    parameters.get( 9).getValue(null),
+                                                    parameters.get(10).getValue(null),
+                                                    parameters.get(11).getValue(null),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
@@ -860,12 +860,12 @@ public class BatchLSEstimatorTest {
                                      0.0, 7.1e-07,
                                      0.0, 3.2e-10);
 
-        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
+        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                    parameters.get( 7).getValue(null),
+                                                    parameters.get( 8).getValue(null),
+                                                    parameters.get( 9).getValue(null),
+                                                    parameters.get(10).getValue(null),
+                                                    parameters.get(11).getValue(null),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
@@ -969,7 +969,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
@@ -1019,7 +1019,7 @@ public class BatchLSEstimatorTest {
                                                                1.0, 3.0, 300.0);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =

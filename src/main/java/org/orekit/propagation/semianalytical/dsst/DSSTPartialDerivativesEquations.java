@@ -31,6 +31,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** {@link AdditionalDerivativesProvider derivatives provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -82,7 +83,7 @@ public class DSSTPartialDerivativesEquations
     private ParameterDriversList selected;
 
     /** Parameters map. */
-    private Map<ParameterDriver, Integer> map;
+    private Map<String, Integer> map;
 
     /** Name. */
     private final String name;
@@ -149,17 +150,21 @@ public class DSSTPartialDerivativesEquations
             selected.sort();
 
             // fourth pass: set up a map between parameters drivers and matrices columns
-            map = new IdentityHashMap<ParameterDriver, Integer>();
+            map = new IdentityHashMap<String, Integer>();
             int parameterIndex = 0;
+            int previousParameterIndex = 0;
             for (final ParameterDriver selectedDriver : selected.getDrivers()) {
                 for (final DSSTForceModel provider : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : provider.getParametersDrivers()) {
                         if (driver.getName().equals(selectedDriver.getName())) {
-                            map.put(driver, parameterIndex);
+                            previousParameterIndex = parameterIndex;
+                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                map.put(span.getData(), previousParameterIndex++);
+                            }
                         }
                     }
                 }
-                ++parameterIndex;
+                parameterIndex = previousParameterIndex;
             }
 
         }
@@ -183,7 +188,7 @@ public class DSSTPartialDerivativesEquations
         freezeParametersSelection();
         final int stateDimension = 6;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
+        final double[][] dYdP  = new double[stateDimension][selected.getNbValuesToEstimate()];
         for (int i = 0; i < stateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
@@ -223,10 +228,10 @@ public class DSSTPartialDerivativesEquations
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
-        if (dY1dP == null && selected.getNbParams() != 0 ||
-            dY1dP != null && selected.getNbParams() != dY1dP[0].length) {
+        if (dY1dP == null && selected.getNbValuesToEstimate() != 0 ||
+            dY1dP != null && selected.getNbValuesToEstimate() != dY1dP[0].length) {
             throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
-                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
+                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.getNbValuesToEstimate()));
         }
 
         // store the matrices as a single dimension array
@@ -304,14 +309,17 @@ public class DSSTPartialDerivativesEquations
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    final int parameterIndex = map.get(driver);
-                    dMeanElementRatedParam[0][parameterIndex] += derivativesA[index];
-                    dMeanElementRatedParam[1][parameterIndex] += derivativesEx[index];
-                    dMeanElementRatedParam[2][parameterIndex] += derivativesEy[index];
-                    dMeanElementRatedParam[3][parameterIndex] += derivativesHx[index];
-                    dMeanElementRatedParam[4][parameterIndex] += derivativesHy[index];
-                    dMeanElementRatedParam[5][parameterIndex] += derivativesL[index];
-                    ++index;
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                        final int parameterIndex = map.get(span.getData());
+                        dMeanElementRatedParam[0][parameterIndex] += derivativesA[index];
+                        dMeanElementRatedParam[1][parameterIndex] += derivativesEx[index];
+                        dMeanElementRatedParam[2][parameterIndex] += derivativesEy[index];
+                        dMeanElementRatedParam[3][parameterIndex] += derivativesHx[index];
+                        dMeanElementRatedParam[4][parameterIndex] += derivativesHy[index];
+                        dMeanElementRatedParam[5][parameterIndex] += derivativesL[index];
+                        ++index;
+                    }
                 }
             }
 

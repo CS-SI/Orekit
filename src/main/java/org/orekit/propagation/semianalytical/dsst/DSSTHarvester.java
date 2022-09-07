@@ -32,6 +32,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Harvester between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -316,21 +318,25 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
 
-                    // get the partials derivatives for this driver
-                    DoubleArrayDictionary.Entry entry = shortPeriodDerivativesJacobianColumns.getEntry(driver.getName());
-                    if (entry == null) {
-                        // create an entry filled with zeroes
-                        shortPeriodDerivativesJacobianColumns.put(driver.getName(), new double[STATE_DIMENSION]);
-                        entry = shortPeriodDerivativesJacobianColumns.getEntry(driver.getName());
+                    final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+                    // for each span (for each estimated value) corresponding name is added
+
+                    for (Span<String> span = driverNameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+                        // get the partials derivatives for this driver
+                        DoubleArrayDictionary.Entry entry = shortPeriodDerivativesJacobianColumns.getEntry(span.getData());
+                        if (entry == null) {
+                            // create an entry filled with zeroes
+                            shortPeriodDerivativesJacobianColumns.put(span.getData(), new double[STATE_DIMENSION]);
+                            entry = shortPeriodDerivativesJacobianColumns.getEntry(span.getData());
+                        }
+
+                        // add the contribution of the current force model
+                        entry.increment(new double[] {
+                            derivativesASP[paramsIndex], derivativesExSP[paramsIndex], derivativesEySP[paramsIndex],
+                            derivativesHxSP[paramsIndex], derivativesHySP[paramsIndex], derivativesLSP[paramsIndex]
+                        });
+                        ++paramsIndex;
                     }
-
-                    // add the contribution of the current force model
-                    entry.increment(new double[] {
-                        derivativesASP[paramsIndex], derivativesExSP[paramsIndex], derivativesEySP[paramsIndex],
-                        derivativesHxSP[paramsIndex], derivativesHySP[paramsIndex], derivativesLSP[paramsIndex]
-                    });
-                    ++paramsIndex;
-
                 }
             }
         }

@@ -128,7 +128,7 @@ public class GroundStationTest {
                                      0.0, 1.8e-6,
                                      0.0, 1.3e-7,
                                      0.0, 5.9e-11);
-        Assert.assertEquals(deltaClock, changed.getClockOffsetDriver().getValue(), 8.2e-11);
+        Assert.assertEquals(deltaClock, changed.getClockOffsetDriver().getValue(null), 8.2e-11);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -207,9 +207,9 @@ public class GroundStationTest {
                                      0.0, 1.8e-6,
                                      0.0, 4.8e-7,
                                      0.0, 2.6e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
-        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(null),   4.5e-7);
+        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(null),  6.2e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(null), 2.6e-7);
 
         GeodeticPoint result = moved.getOffsetGeodeticPoint(null);
 
@@ -238,23 +238,23 @@ public class GroundStationTest {
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         EstimatedEarthFrameProvider deserialized  = (EstimatedEarthFrameProvider) ois.readObject();
-        Assert.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(),
-                            deserialized.getPrimeMeridianOffsetDriver().getValue(),
+        Assert.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(null),
+                            deserialized.getPrimeMeridianOffsetDriver().getValue(null),
                             1.0e-15);
-        Assert.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(),
-                            deserialized.getPrimeMeridianDriftDriver().getValue(),
+        Assert.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(null),
+                            deserialized.getPrimeMeridianDriftDriver().getValue(null),
                             1.0e-15);
-        Assert.assertEquals(moved.getPolarOffsetXDriver().getValue(),
-                            deserialized.getPolarOffsetXDriver().getValue(),
+        Assert.assertEquals(moved.getPolarOffsetXDriver().getValue(null),
+                            deserialized.getPolarOffsetXDriver().getValue(null),
                             1.0e-15);
-        Assert.assertEquals(moved.getPolarDriftXDriver().getValue(),
-                            deserialized.getPolarDriftXDriver().getValue(),
+        Assert.assertEquals(moved.getPolarDriftXDriver().getValue(null),
+                            deserialized.getPolarDriftXDriver().getValue(null),
                             1.0e-15);
-        Assert.assertEquals(moved.getPolarOffsetYDriver().getValue(),
-                            deserialized.getPolarOffsetYDriver().getValue(),
+        Assert.assertEquals(moved.getPolarOffsetYDriver().getValue(null),
+                            deserialized.getPolarOffsetYDriver().getValue(null),
                             1.0e-15);
-        Assert.assertEquals(moved.getPolarDriftYDriver().getValue(),
-                            deserialized.getPolarDriftYDriver().getValue(),
+        Assert.assertEquals(moved.getPolarDriftYDriver().getValue(null),
+                            deserialized.getPolarDriftYDriver().getValue(null),
                             1.0e-15);
 
     }
@@ -359,12 +359,12 @@ public class GroundStationTest {
 
         estimator.estimate();
 
-        final double computedDut1  = station.getPrimeMeridianOffsetDriver().getValue() / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY;
-        final double computedLOD   = station.getPrimeMeridianDriftDriver().getValue() * (-Constants.JULIAN_DAY / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY);
-        final double computedXp    = station.getPolarOffsetXDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
-        final double computedXpDot = station.getPolarDriftXDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
-        final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
-        final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+        final double computedDut1  = station.getPrimeMeridianOffsetDriver().getValue(null) / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY;
+        final double computedLOD   = station.getPrimeMeridianDriftDriver().getValue(null) * (-Constants.JULIAN_DAY / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY);
+        final double computedXp    = station.getPolarOffsetXDriver().getValue(null) / Constants.ARC_SECONDS_TO_RADIANS;
+        final double computedXpDot = station.getPolarDriftXDriver().getValue(null)  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+        final double computedYp    = station.getPolarOffsetYDriver().getValue(null) / Constants.ARC_SECONDS_TO_RADIANS;
+        final double computedYpDot = station.getPolarDriftYDriver().getValue(null)  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         Assert.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  4.3e-10);
         Assert.assertEquals(0.0, FastMath.abs(lod - computedLOD),     4.9e-10);
         Assert.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.7e-9);
@@ -1352,7 +1352,7 @@ public class GroundStationTest {
 
             // randomly change one parameter
             ParameterDriver changed = allDrivers[generator.nextInt(allDrivers.length)];
-            changed.setNormalizedValue(2 * generator.nextDouble() - 1);
+            changed.setNormalizedValue(2 * generator.nextDouble() - 1, new AbsoluteDate());
 
             // transform to check
             FieldTransform<Gradient> t = station.getOffsetToInertial(eme2000, date, parameterPattern.length, indices);
@@ -1360,7 +1360,7 @@ public class GroundStationTest {
             for (int k = 0; k < dFCartesian.length; ++k) {
 
                 // reference values and derivatives computed using finite differences
-                Gradient[] refCartesian = dFCartesian[k].value(Gradient.variable(1, 0, selectedDrivers[k].getValue()));
+                Gradient[] refCartesian = dFCartesian[k].value(Gradient.variable(1, 0, selectedDrivers[k].getValue(date)));
 
                 // position
                 final Vector3D refP = new Vector3D(refCartesian[0].getValue(),
@@ -1459,14 +1459,14 @@ public class GroundStationTest {
 
             // randomly change one parameter
             ParameterDriver changed = allDrivers[generator.nextInt(allDrivers.length)];
-            changed.setNormalizedValue(2 * generator.nextDouble() - 1);
+            changed.setNormalizedValue(2 * generator.nextDouble() - 1, new AbsoluteDate());
 
             // transform to check
             FieldTransform<Gradient> t = station.getOffsetToInertial(eme2000, date, parameterPattern.length, indices);
             for (int k = 0; k < dFAngular.length; ++k) {
 
                 // reference values and derivatives computed using finite differences
-                Gradient[] refAngular = dFAngular[k].value(Gradient.variable(1, 0, selectedDrivers[k].getValue()));
+                Gradient[] refAngular = dFAngular[k].value(Gradient.variable(1, 0, selectedDrivers[k].getValue(date)));
 
                 // rotation
                 final Rotation refQ = new Rotation(refAngular[0].getValue(),
@@ -1549,10 +1549,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[6];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
+                    final double previouspI = driver.getValue(null);
+                    driver.setValue(x, new AbsoluteDate());
                     Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    driver.setValue(previouspI, new AbsoluteDate());
                     PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
                     result[ 0] = stationPV.getPosition().getX();
                     result[ 1] = stationPV.getPosition().getY();
@@ -1586,10 +1586,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[7];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
+                    final double previouspI = driver.getValue(new AbsoluteDate());
+                    driver.setValue(x, new AbsoluteDate());
                     Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    driver.setValue(previouspI, new AbsoluteDate());
                     final double sign;
                     if (Double.isNaN(previous0)) {
                         sign = +1;

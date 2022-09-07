@@ -161,7 +161,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -291,7 +291,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -435,7 +435,7 @@ public class PhaseTest {
         // Create perfect range measurements
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -494,7 +494,7 @@ public class PhaseTest {
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNamesSpanMap().getFirstSpan().getData());
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
@@ -503,11 +503,11 @@ public class PhaseTest {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) {
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
+                        final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
@@ -589,7 +589,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -753,7 +753,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -910,20 +910,20 @@ public class PhaseTest {
         final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060, Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
 
         // First check
-        Assert.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertEquals(0.0, phase.getAmbiguityDriver().getValue(null), Double.MIN_VALUE);
         Assert.assertFalse(phase.getAmbiguityDriver().isSelected());
 
         // Perform some changes in ambiguity driver
-        phase.getAmbiguityDriver().setValue(1234.0);
+        phase.getAmbiguityDriver().setValue(1234.0, null);
         phase.getAmbiguityDriver().setSelected(true);
 
         // Second check
-        Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(null), Double.MIN_VALUE);
         Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
             if (driver.getName() == Phase.AMBIGUITY_NAME) {
-                Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+                Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(null), Double.MIN_VALUE);
                 Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
             }
         }

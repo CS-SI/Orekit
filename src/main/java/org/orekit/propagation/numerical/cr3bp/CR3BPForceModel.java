@@ -145,7 +145,9 @@ public class CR3BPForceModel extends AbstractForceModel {
         final DerivativeStructure zero = fpx.getField().getZero();
 
         // Get CR3BP System mass ratio
-        final DerivativeStructure mu = zero.add(muParameterDriver.getValue());
+        // By construction, mudriver has 1 value for the all time period that is why
+        // the getValue can be called with any date argument or null argument
+        final DerivativeStructure mu = zero.add(muParameterDriver.getValue(s.getDate()));
 
         // Normalized distances between primaries and barycenter in CR3BP
         final DerivativeStructure d1 = mu;
@@ -186,7 +188,9 @@ public class CR3BPForceModel extends AbstractForceModel {
         final FieldDerivativeStructure<T> zero = fpx.getField().getZero();
 
         // Get CR3BP System mass ratio
-        final FieldDerivativeStructure<T> mu = zero.add(muParameterDriver.getValue());
+        // By construction, mudriver has 1 value for the all time period that is why
+        // the getValue can be called with any date argument or null argument
+        final FieldDerivativeStructure<T> mu = zero.add(muParameterDriver.getValue(s.getDate().toAbsoluteDate()));
 
         // Normalized distances between primaries and barycenter in CR3BP
         final FieldDerivativeStructure<T> d1 = mu;

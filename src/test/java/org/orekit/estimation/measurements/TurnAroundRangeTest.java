@@ -489,7 +489,7 @@ public class TurnAroundRangeTest {
 
             // Loop on the parameters
             for (int i = 0; i < 6; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -498,11 +498,11 @@ public class TurnAroundRangeTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
 
                 // Deltas
                 double dGradient         = gradient[0] - ref;

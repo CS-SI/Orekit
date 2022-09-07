@@ -294,6 +294,7 @@ public abstract class AbstractPropagator implements Propagator {
             // copy the additional states present in initialState but otherwise not managed
             for (final DoubleArrayDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
+                	System.out.println(initial.getKey());
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
                     unmanagedStates.put(initial.getKey(), new TimeSpanMap<>(initial.getValue()));

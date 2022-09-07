@@ -37,6 +37,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -278,20 +280,24 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
 
-                    // get the partials derivatives for this driver
-                    DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(driver.getName());
-                    if (entry == null) {
-                        // create an entry filled with zeroes
-                        accelerationPartials.put(driver.getName(), new double[SPACE_DIMENSION]);
-                        entry = accelerationPartials.getEntry(driver.getName());
+                    final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+                    // for each span (for each estimated value) corresponding name is added
+                    for (Span<String> span = driverNameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+
+                        // get the partials derivatives for this driver
+                        DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(span.getData());
+                        if (entry == null) {
+                            // create an entry filled with zeroes
+                            accelerationPartials.put(span.getData(), new double[SPACE_DIMENSION]);
+                            entry = accelerationPartials.getEntry(span.getData());
+                        }
+
+                        // add the contribution of the current force model
+                        entry.increment(new double[] {
+                            gradX[paramsIndex], gradY[paramsIndex], gradZ[paramsIndex]
+                        });
+                        ++paramsIndex;
                     }
-
-                    // add the contribution of the current force model
-                    entry.increment(new double[] {
-                        gradX[paramsIndex], gradY[paramsIndex], gradZ[paramsIndex]
-                    });
-                    ++paramsIndex;
-
                 }
             }
 

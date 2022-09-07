@@ -33,6 +33,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** One-way GNSS phase measurement.
  * <p>
@@ -131,7 +132,9 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         final Map<String, Integer> parameterIndicesPhase = new HashMap<>();
         for (ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
             if (phaseMeasurementDriver.isSelected()) {
-                parameterIndicesPhase.put(phaseMeasurementDriver.getName(), nbEstimatedParamsPhase++);
+                for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parameterIndicesPhase.put(span.getData(), nbEstimatedParamsPhase++);
+                }
             }
         }
 
@@ -141,7 +144,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         final TimeStampedPVCoordinates                pvaRemote = remote.getPVCoordinates(getDate(), localState.getFrame());
 
         // Downlink delay
-        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParamsPhase, parameterIndicesPhase);
+        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParamsPhase, parameterIndicesPhase, localState.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
@@ -165,7 +168,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
         // Phase value
         final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity        = ambiguityDriver.getValue(nbEstimatedParamsPhase, parameterIndicesPhase);
+        final Gradient ambiguity        = ambiguityDriver.getValue(nbEstimatedParamsPhase, parameterIndicesPhase, localState.getDate());
         final Gradient phase            = tauD.add(dtLocal).subtract(dtRemote).multiply(cOverLambda).add(ambiguity);
         final double[] phaseDerivatives = phase.getGradient();
 
@@ -175,9 +178,12 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
-            final Integer index = parameterIndicesPhase.get(phaseMeasurementDriver.getName());
-            if (index != null) {
-                estimatedPhase.setParameterDerivatives(phaseMeasurementDriver, phaseDerivatives[index]);
+            for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = parameterIndicesPhase.get(span.getData());
+                if (index != null) {
+                    estimatedPhase.setParameterDerivatives(span.getData(), phaseDerivatives[index]);
+                }
             }
         }
 

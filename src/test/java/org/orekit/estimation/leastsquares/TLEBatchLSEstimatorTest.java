@@ -211,7 +211,7 @@ public class TLEBatchLSEstimatorTest {
 
         ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
         Assert.assertEquals(OrbitType.POS_X, xDriver.getName());
-        xDriver.setValue(xDriver.getValue() + 10.0);
+        xDriver.setValue(xDriver.getValue(null) + 10.0, null);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         TLEEstimationTestUtils.checkFit(context, estimator, 2, 3,
@@ -314,7 +314,7 @@ public class TLEBatchLSEstimatorTest {
                                                                1.0, 3.0, 300.0);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =

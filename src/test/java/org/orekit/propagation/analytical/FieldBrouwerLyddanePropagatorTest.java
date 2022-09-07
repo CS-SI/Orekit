@@ -382,7 +382,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
         Assert.assertTrue(deltaSmaAfter < deltaSmaBefore);
         Assert.assertTrue(deltaEccAfter < deltaEccBefore);
-        Assert.assertEquals(M2, BLextrapolator.getM2(), Double.MIN_VALUE);
+        Assert.assertEquals(M2, BLextrapolator.getM2(date), Double.MIN_VALUE);
 
     }
 

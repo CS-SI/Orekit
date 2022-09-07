@@ -52,7 +52,7 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockOffsetDriver().setValue(localClockOffset, null);
     }
 
     public ObservableSatellite getLocalSatellite() {
@@ -67,7 +67,7 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           localClk  = local.getClockOffsetDriver().getValue();
+            final double           localClk  = local.getClockOffsetDriver().getValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);

@@ -268,7 +268,7 @@ public class KalmanModelTest {
         final RealMatrix dMdCr = dMdY.multiply(MatrixUtils.createRealMatrix(dYdPpTransition));
         expH.setEntry(0, 6, dMdCr.getEntry(0, 0));
         // Sat range bias part
-        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver)[0]);
+        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver.getNameSpan(new AbsoluteDate()))[0]);
         
         // Add range measurement and check model afterwards
         checkModelAfterMeasurementAdded(2, range, Ppred, orbitPred, expPhi, expH);
@@ -349,8 +349,8 @@ public class KalmanModelTest {
         
         // Predicted value of SRP coef and sat range bias
         // (= value before adding measurement to the filter)
-        final double srpCoefPred = srpCoefDriver.getValue();
-        final double satRangeBiasPred = satRangeBiasDriver.getValue();
+        final double srpCoefPred = srpCoefDriver.getValue(expOrbitPred.getDate());
+        final double satRangeBiasPred = satRangeBiasDriver.getValue(expOrbitPred.getDate());
         
         // Expected predicted measurement
         final double[] expMeasPred = 

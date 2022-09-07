@@ -510,7 +510,7 @@ public class Range2Test {
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
@@ -519,11 +519,11 @@ public class Range2Test {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) {
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
+                        final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));

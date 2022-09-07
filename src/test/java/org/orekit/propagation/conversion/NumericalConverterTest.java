@@ -306,7 +306,7 @@ public class NumericalConverterTest {
                 guessedGravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                                        GravityFieldFactory.getNormalizedProvider(2, 0));
                 ParameterDriver driver = guessedGravity.getParameterDriver(param);
-                driver.setValue(driver.getReferenceValue() + driver.getScale());
+                driver.setValue(driver.getReferenceValue() + driver.getScale(), null);
             }
         }
         builder.addForceModel(guessedDrag);
@@ -326,9 +326,11 @@ public class NumericalConverterTest {
                 if (force.isSupported(param)) {
                     for (ForceModel model: prop.getAllForceModels()) {
                         if (model.isSupported(param)) {
-                            Assert.assertEquals(force.getParameterDriver(param).getValue(),
-                                                model.getParameterDriver(param).getValue(),
-                                                3.0e-4 * FastMath.abs(force.getParameterDriver(param).getValue()));
+                        	// the test was realized with parameterDriver estimated for 1 infinite interval on the parameter is valid
+                        	// all the time, that is why the getValue(null) is tolarated
+                            Assert.assertEquals(force.getParameterDriver(param).getValue(null),
+                                                model.getParameterDriver(param).getValue(null),
+                                                3.0e-4 * FastMath.abs(force.getParameterDriver(param).getValue(null)));
                         }
                     }
                 }
@@ -406,7 +408,7 @@ public class NumericalConverterTest {
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
-        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(null);
         minStep = 1.0;
         maxStep = 600.0;
         dP = 10.0;

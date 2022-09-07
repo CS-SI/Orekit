@@ -43,7 +43,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         this.context   = context;
         this.twoWay    = twoWay;
         this.satellite = new ObservableSatellite(0);
-        this.satellite.getClockDriftDriver().setValue(satClockDrift);
+        this.satellite.getClockDriftDriver().setValue(satClockDrift, null);
     }
     
     public ObservableSatellite getSatellite() {
@@ -75,13 +75,13 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         for (final GroundStation station : context.getStations()) {
-            final double           groundDft = station.getClockDriftDriver().getValue();
-            final double           satDft    = satellite.getClockDriftDriver().getValue();
-            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPVCoordinates().getPosition();
             final Vector3D         velocity  = currentState.getPVCoordinates().getVelocity();
+            final double           groundDft = station.getClockDriftDriver().getValue(date);
+            final double           satDft    = satellite.getClockDriftDriver().getValue(date);
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
 
             if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

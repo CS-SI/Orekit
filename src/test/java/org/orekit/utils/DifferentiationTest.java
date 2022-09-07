@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.time.AbsoluteDate;
 
 public class DifferentiationTest {
 
@@ -45,13 +46,13 @@ public class DifferentiationTest {
     private void doTestScale(final double scale, final double step, final double tolerance) {
         ParameterDriver   driver = new ParameterDriver("", -100.0, scale,
                                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        ParameterFunction f0     = d -> 3 * d.getValue() * d.getValue() - 2 * d.getValue();
+        ParameterFunction f0     = (d,t) -> 3 * d.getValue(t) * d.getValue(t) - 2 * d.getValue(t);
         ParameterFunction f1Diff = Differentiation.differentiate(f0, 4, step);
-        ParameterFunction f1Ref  = d -> 6 * d.getValue() - 2;
+        ParameterFunction f1Ref  = (d,t) -> 6 * d.getValue(t) - 2;
 
         for (double x = -3.0; x < 3.0; x += 0.125) {
-            driver.setValue(x);
-            Assert.assertEquals(f1Ref.value(driver), f1Diff.value(driver), tolerance);
+            driver.setValue(x, null);
+            Assert.assertEquals(f1Ref.value(driver, new AbsoluteDate()), f1Diff.value(driver, new AbsoluteDate()), tolerance);
         }
 
     }

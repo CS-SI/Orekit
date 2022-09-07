@@ -39,6 +39,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -100,7 +101,7 @@ public class BatchLSModelTest {
         System.arraycopy(normalizedProp, 0, normalized, 0, normalizedProp.length);
         int i = normalizedProp.length;
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            normalized[i++] = driver.getNormalizedValue();
+            normalized[i++] = driver.getNormalizedValue(new AbsoluteDate());
         }
         Pair<RealVector, RealMatrix> value = model.value(new ArrayRealVector(normalized));
         int index = 0;

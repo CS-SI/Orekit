@@ -112,7 +112,7 @@ public class FieldDSSTTesseralTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = tesseral.getParameters(field);
+        final T[] parameters = tesseral.getParametersAllValues(field);
         // Initialize force model
         tesseral.initializeShortPeriodTerms(auxiliaryElements,
                             PropagationType.MEAN, parameters);
@@ -175,8 +175,8 @@ public class FieldDSSTTesseralTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
-        force.updateShortPeriodTerms(force.getParameters(field), meanState);
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParametersAllValues(field)));
+        force.updateShortPeriodTerms(force.getParametersAllValues(field), meanState);
         
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
@@ -236,18 +236,18 @@ public class FieldDSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(field));
+        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParametersAllValues(field));
 
         // Tesseral force model with default constructor
         final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
                                                              Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(field));
+        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParametersAllValues(field));
 
         // Compute mean element rate for the tesseral force model
-        final T[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field));
+        final T[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParametersAllValues(field));
 
         // Compute mean element rate for the "default" tesseral force model
-        final T[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(field));
+        final T[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParametersAllValues(field));
 
         // Verify
         for (int i = 0; i < 6; i++) {
@@ -281,7 +281,7 @@ public class FieldDSSTTesseralTest {
 
         // Force model
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        final T[] parameters = tesseral.getParameters(field);
+        final T[] parameters = tesseral.getParametersAllValues(field);
 
         // Initialize force model
         tesseral.initializeShortPeriodTerms(new FieldAuxiliaryElements<>(orbit, 1), PropagationType.MEAN, parameters);
@@ -453,7 +453,7 @@ public class FieldDSSTTesseralTest {
                                          4, 4, 4, 8, 4, 4, 2);
       
         for (final ParameterDriver driver : tesseral.getParametersDrivers()) {
-            driver.setValue(driver.getReferenceValue());
+            driver.setValue(driver.getReferenceValue(), null);
             driver.setSelected(driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT));
         }
       
@@ -519,29 +519,30 @@ public class FieldDSSTTesseralTest {
         ParameterDriver selected = bound.getDrivers().get(0);
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
-      
-        selected.setValue(p0 - 4 * h);
+
+        AbsoluteDate date = new AbsoluteDate();
+        selected.setValue(p0 - 4 * h, date);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, tesseral);
   
-        selected.setValue(p0 - 3 * h);
+        selected.setValue(p0 - 3 * h, date);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, tesseral);
       
-        selected.setValue(p0 - 2 * h);
+        selected.setValue(p0 - 2 * h, date);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, tesseral);
       
-        selected.setValue(p0 - 1 * h);
+        selected.setValue(p0 - 1 * h, date);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, tesseral);
       
-        selected.setValue(p0 + 1 * h);
+        selected.setValue(p0 + 1 * h, date);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, tesseral);
       
-        selected.setValue(p0 + 2 * h);
+        selected.setValue(p0 + 2 * h, date);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, tesseral);
       
-        selected.setValue(p0 + 3 * h);
+        selected.setValue(p0 + 3 * h, date);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, tesseral);
       
-        selected.setValue(p0 + 4 * h);
+        selected.setValue(p0 + 4 * h, date);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, tesseral);
       
         fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
@@ -562,7 +563,7 @@ public class FieldDSSTTesseralTest {
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        double[] parameters = force.getParameters();
+        double[] parameters = force.getParametersAllValues();
         shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         

@@ -328,7 +328,9 @@ public class DSSTTesseral implements DSSTForceModel {
                                              final double[] parameters) {
 
         // Initializes specific parameters.
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, extractedParameters);
 
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged high order resonant central body
@@ -370,7 +372,9 @@ public class DSSTTesseral implements DSSTForceModel {
         final Field<T> field = auxiliaryElements.getDate().getField();
 
         // Initializes specific parameters.
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged high order resonant central body
@@ -434,7 +438,10 @@ public class DSSTTesseral implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
+     *  @param parameters values of the force model parameters (only 1 value for each parameter)
+     *  that is to say that the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     *  should have be called before or the parameters list given in argument must correspond
+     *  to the extraction of parameter for a precise date {@link #getParameters(AbsoluteDate)}.
      *  @return new force model context
      */
     private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
@@ -447,7 +454,8 @@ public class DSSTTesseral implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
+     *  @param parameters list of each estimated values for each driver of the force model parameters
+         *                (each span of each driver)
      *  @return new force model context
      */
     private <T extends CalculusFieldElement<T>> FieldDSSTTesseralContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
@@ -461,7 +469,9 @@ public class DSSTTesseral implements DSSTForceModel {
                                        final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container for attributes
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, extractedParameters);
 
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, hansen);
@@ -494,7 +504,9 @@ public class DSSTTesseral implements DSSTForceModel {
         final Field<T> field = auxiliaryElements.getDate().getField();
 
         // Container for attributes
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
         @SuppressWarnings("unchecked")
         final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
@@ -538,7 +550,9 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid at date from the input array
+            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final DSSTTesseralContext context = initializeStep(auxiliaryElements, extractedParameters);
 
             // Initialise the Hansen coefficients
             for (int s = -maxDegree; s <= maxDegree; s++) {
@@ -601,7 +615,9 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
-            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid at date from the input array
+            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
             final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
             // Initialise the Hansen coefficients

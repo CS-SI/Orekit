@@ -59,7 +59,7 @@ public class OnBoardAntennaPhaseModifierTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final int    ambiguity         = 0;
         final double satClockOffset    = 345.0e-6;
@@ -108,7 +108,7 @@ public class OnBoardAntennaPhaseModifierTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final int    ambiguity         = 0;
         final double satClockOffset    = 345.0e-6;

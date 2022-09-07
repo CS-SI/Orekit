@@ -118,7 +118,7 @@ public class DSSTPartialDerivativesTest {
             propagator.setMu(provider.getMu());
             for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
                 for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                    driver.setValue(driver.getReferenceValue());
+                    driver.setValue(driver.getReferenceValue(), null);
                     driver.setSelected(driver.getName().equals(parameterName));
                 }
             }
@@ -151,56 +151,56 @@ public class DSSTPartialDerivativesTest {
             ParameterDriver selected = bound.getDrivers().get(0);
             double p0 = selected.getReferenceValue();
             double h  = selected.getScale();
-            selected.setValue(p0 - 4 * h);
+            selected.setValue(p0 - 4 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),
                                                        propagator2.getMu(), // the mu may have been reset above
                                                        initialState.getAttitude()));
             SpacecraftState sM4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-            selected.setValue(p0 - 3 * h);
+            selected.setValue(p0 - 3 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),
                                                        propagator2.getMu(), // the mu may have been reset above
                                                        initialState.getAttitude()));
             SpacecraftState sM3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-            selected.setValue(p0 - 2 * h);
+            selected.setValue(p0 - 2 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),
                                                        propagator2.getMu(), // the mu may have been reset above
                                                        initialState.getAttitude()));
             SpacecraftState sM2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-            selected.setValue(p0 - 1 * h);
+            selected.setValue(p0 - 1 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),
                                                        propagator2.getMu(), // the mu may have been reset above
                                                        initialState.getAttitude()));
             SpacecraftState sM1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-            selected.setValue(p0 + 1 * h);
+            selected.setValue(p0 + 1 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),
                                                        propagator2.getMu(), // the mu may have been reset above
                                                        initialState.getAttitude()));
             SpacecraftState sP1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-            selected.setValue(p0 + 2 * h);
+            selected.setValue(p0 + 2 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),
                                                        propagator2.getMu(), // the mu may have been reset above
                                                        initialState.getAttitude()));
             SpacecraftState sP2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-            selected.setValue(p0 + 3 * h);
+            selected.setValue(p0 + 3 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),
                                                        propagator2.getMu(), // the mu may have been reset above
                                                        initialState.getAttitude()));
             SpacecraftState sP3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-            selected.setValue(p0 + 4 * h);
+            selected.setValue(p0 + 4 * h, null);
             propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
                                                        orbitType,
                                                        initialState.getFrame(), initialState.getDate(),

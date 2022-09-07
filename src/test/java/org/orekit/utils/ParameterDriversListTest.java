@@ -50,16 +50,16 @@ public class ParameterDriversListTest {
         ParameterDriversList.DelegatingDriver delegating22 = list2.findByName("p2");
 
         // Value: downward settings, from top delegating driver to raw drivers and back to other list top
-        delegating11.setValue(0.5);
-        Assert.assertEquals(0.5, p1A.getValue(),          1.0e-15);
-        Assert.assertEquals(0.5, p1B.getValue(),          1.0e-15);
-        Assert.assertEquals(0.5, delegating12.getValue(), 1.0e-15);
+        delegating11.setValue(0.5, null);
+        Assert.assertEquals(0.5, p1A.getValue(null),          1.0e-15);
+        Assert.assertEquals(0.5, p1B.getValue(null),          1.0e-15);
+        Assert.assertEquals(0.5, delegating12.getValue(null), 1.0e-15);
 
         // Value: upward settings, starting from raw drivers
-        p2A.setValue(-0.5);
-        Assert.assertEquals(-0.5, p2B.getValue(),          1.0e-15);
-        Assert.assertEquals(-0.5, delegating21.getValue(), 1.0e-15);
-        Assert.assertEquals(-0.5, delegating22.getValue(), 1.0e-15);
+        p2A.setValue(-0.5, null);
+        Assert.assertEquals(-0.5, p2B.getValue(null),          1.0e-15);
+        Assert.assertEquals(-0.5, delegating21.getValue(null), 1.0e-15);
+        Assert.assertEquals(-0.5, delegating22.getValue(null), 1.0e-15);
 
         // Name: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setName("q1");
@@ -109,9 +109,9 @@ public class ParameterDriversListTest {
         Assert.assertEquals(-0.25, delegating21.getMinValue(), 1.0e-15);
         Assert.assertEquals(-0.25, delegating22.getMinValue(), 1.0e-15);
         // Check that value is set to min as it was out of boundaries
-        Assert.assertEquals(-0.25, p2B.getValue(),          1.0e-15);
-        Assert.assertEquals(-0.25, delegating21.getValue(), 1.0e-15);
-        Assert.assertEquals(-0.25, delegating22.getValue(), 1.0e-15);
+        Assert.assertEquals(-0.25, p2B.getValue(null),          1.0e-15);
+        Assert.assertEquals(-0.25, delegating21.getValue(null), 1.0e-15);
+        Assert.assertEquals(-0.25, delegating22.getValue(null), 1.0e-15);
         
         // Max value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setMaxValue(0.25);
@@ -119,9 +119,9 @@ public class ParameterDriversListTest {
         Assert.assertEquals(0.25, p1B.getMaxValue(),          1.0e-15);
         Assert.assertEquals(0.25, delegating12.getMaxValue(), 1.0e-15);
         // Check that value is set to max as it was out of boundaries
-        Assert.assertEquals(0.25, p1A.getValue(),          1.0e-15);
-        Assert.assertEquals(0.25, p1B.getValue(),          1.0e-15);
-        Assert.assertEquals(0.25, delegating12.getValue(), 1.0e-15);
+        Assert.assertEquals(0.25, p1A.getValue(null),          1.0e-15);
+        Assert.assertEquals(0.25, p1B.getValue(null),          1.0e-15);
+        Assert.assertEquals(0.25, delegating12.getValue(null), 1.0e-15);
         
         // Max value: upward settings, starting from raw drivers
         p2A.setMaxValue(2.);
@@ -148,15 +148,15 @@ public class ParameterDriversListTest {
 
         listA.add(listB.getDrivers().get(0));
 
-        pA1.setValue(0.5);
+        pA1.setValue(0.5, null);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
-            Assert.assertEquals(0.5, pd.getValue(), 1.0e-15);
+            Assert.assertEquals(0.5, pd.getValue(null), 1.0e-15);
             Assert.assertTrue(pd.isSelected());
         }
 
-        pB2.setValue(-0.5);
+        pB2.setValue(-0.5, null);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
-            Assert.assertEquals(-0.5, pd.getValue(), 1.0e-15);
+            Assert.assertEquals(-0.5, pd.getValue(null), 1.0e-15);
         }
 
         for (final ParameterDriversList list : new ParameterDriversList[] { listA, listB }) {
@@ -182,9 +182,9 @@ public class ParameterDriversListTest {
             Assert.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
         }
 
-        listB.findByName("p").setValue(0.0);
+        listB.findByName("p").setValue(0.0, null);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
-            Assert.assertEquals(0.0, pd.getValue(), 1.0e-15);
+            Assert.assertEquals(0.0, pd.getValue(null), 1.0e-15);
         }
 
     }
@@ -201,7 +201,7 @@ public class ParameterDriversListTest {
         ParameterDriver qA2 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
         ParameterDriver qB1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
         final AtomicBoolean called = new AtomicBoolean(false);
-        qB1.addObserver((previous, driver) -> called.set(true));
+        qB1.addObserver((previous, driver, date) -> called.set(true));
         ParameterDriversList listA = new ParameterDriversList();
         listA.add(pA1);
         listA.add(pA2);
@@ -223,14 +223,14 @@ public class ParameterDriversListTest {
         listB.add(pC1);
         listA.sort();
 
-        pA1.setValue(0.5);
+        pA1.setValue(0.5, null);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2, pC1 }) {
-            Assert.assertEquals(0.5, pd.getValue(), 1.0e-15);
+            Assert.assertEquals(0.5, pd.getValue(null), 1.0e-15);
             Assert.assertTrue(pd.isSelected());
         }
-        qA2.setValue(0.25);
+        qA2.setValue(0.25, null);
         for (ParameterDriver pd : new ParameterDriver[] { qA1, qA2, qB1 }) {
-            Assert.assertEquals(0.25, pd.getValue(), 1.0e-15);
+            Assert.assertEquals(0.25, pd.getValue(null), 1.0e-15);
             Assert.assertFalse(pd.isSelected());
         }
         Assert.assertTrue(called.get());

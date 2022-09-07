@@ -742,8 +742,8 @@ public class ConfigurableLowThrustManeuverTest {
         final ThrustDirectionAndAttitudeProvider attitudeProvider = buildVelocityThrustDirectionProvider();
         final ConfigurableLowThrustManeuver maneuver = new ConfigurableLowThrustManeuver(attitudeProvider,
                 maneuverStartDetector, maneuverStopDetector, thrust, isp);
-        Assert.assertEquals(isp, maneuver.getISP(), 1e-9);
-        Assert.assertEquals(thrust, maneuver.getThrust(), 1e-9);
+        Assert.assertEquals(isp, maneuver.getISP(new AbsoluteDate()), 1e-9);
+        Assert.assertEquals(thrust, maneuver.getThrust(new AbsoluteDate()), 1e-9);
         Assert.assertEquals(attitudeProvider, maneuver.getThrustDirectionProvider());
 
     }

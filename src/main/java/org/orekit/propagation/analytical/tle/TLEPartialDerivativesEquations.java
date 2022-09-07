@@ -106,7 +106,7 @@ public class TLEPartialDerivativesEquations {
         freezeParametersSelection();
         final int stateDimension = 6;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
+        final double[][] dYdP  = new double[stateDimension][selected.getNbValuesToEstimate()];
         for (int i = 0; i < stateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
@@ -140,10 +140,10 @@ public class TLEPartialDerivativesEquations {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
-        if (dY1dP == null && selected.getNbParams() != 0 ||
-            dY1dP != null && selected.getNbParams() != dY1dP[0].length) {
+        if (dY1dP == null && selected.getNbValuesToEstimate() != 0 ||
+            dY1dP != null && selected.getNbValuesToEstimate() != dY1dP[0].length) {
             throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
-                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
+                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.getNbValuesToEstimate()));
         }
 
         // store the matrices as a single dimension array

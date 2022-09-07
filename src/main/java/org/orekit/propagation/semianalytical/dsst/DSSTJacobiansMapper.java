@@ -32,6 +32,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -75,7 +76,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     private final ParameterDriversList parameters;
 
     /** Parameters map. */
-    private Map<ParameterDriver, Integer> map;
+    private Map<String, Integer> map;
 
     /** Propagator computing state evolution. */
     private final DSSTPropagator propagator;
@@ -96,7 +97,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     DSSTJacobiansMapper(final String name,
                         final ParameterDriversList parameters,
                         final DSSTPropagator propagator,
-                        final Map<ParameterDriver, Integer> map,
+                        final Map<String, Integer> map,
                         final PropagationType propagationType) {
 
         super(name, parameters);
@@ -123,11 +124,11 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
             }
         }
 
-        if (parameters.getNbParams() != 0) {
+        if (parameters.getNbValuesToEstimate() != 0) {
 
             // map the converted parameters Jacobian to one-dimensional array
             for (int i = 0; i < STATE_DIMENSION; ++i) {
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
+                for (int j = 0; j < parameters.getNbValuesToEstimate(); ++j) {
                     p[index++] = dY1dP[i][j];
                 }
             }
@@ -161,9 +162,9 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
             for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] row = dYdP[i];
-                for (int j = 0; j < parameters.getNbParams(); j++) {
-                    row[j] = p[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)] +
-                             shortPeriodDerivatives[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
+                for (int j = 0; j < parameters.getNbValuesToEstimate(); j++) {
+                    row[j] = p[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbValuesToEstimate() * i)] +
+                             shortPeriodDerivatives[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbValuesToEstimate() * i)];
                 }
             }
 
@@ -195,7 +196,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                 break;
             case OSCULATING :
                 // initialize Jacobians to zero
-                final int paramDim = parameters.getNbParams();
+                final int paramDim = parameters.getNbValuesToEstimate();
                 final int dim = 6;
                 final double[][] dShortPerioddState = new double[dim][dim];
                 final double[][] dShortPerioddParam = new double[dim][paramDim];
@@ -205,6 +206,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                 for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
                     final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+                    // gradient for all parameter span value associated with this force model
                     final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
                     final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
@@ -239,14 +241,17 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                     int index = converter.getFreeStateParameters();
                     for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                         if (driver.isSelected()) {
-                            final int parameterIndex = map.get(driver);
-                            dShortPerioddParam[0][parameterIndex] += derivativesASP[index];
-                            dShortPerioddParam[1][parameterIndex] += derivativesExSP[index];
-                            dShortPerioddParam[2][parameterIndex] += derivativesEySP[index];
-                            dShortPerioddParam[3][parameterIndex] += derivativesHxSP[index];
-                            dShortPerioddParam[4][parameterIndex] += derivativesHySP[index];
-                            dShortPerioddParam[5][parameterIndex] += derivativesLSP[index];
-                            ++index;
+                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                                final int parameterIndex = map.get(span.getData());
+                                dShortPerioddParam[0][parameterIndex] += derivativesASP[index];
+                                dShortPerioddParam[1][parameterIndex] += derivativesExSP[index];
+                                dShortPerioddParam[2][parameterIndex] += derivativesEySP[index];
+                                dShortPerioddParam[3][parameterIndex] += derivativesHxSP[index];
+                                dShortPerioddParam[4][parameterIndex] += derivativesHySP[index];
+                                dShortPerioddParam[5][parameterIndex] += derivativesLSP[index];
+                                ++index;
+                            }
                         }
                     }
                 }

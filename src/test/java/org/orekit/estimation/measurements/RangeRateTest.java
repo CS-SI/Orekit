@@ -274,7 +274,7 @@ public class RangeRateTest {
         // create perfect range rate measurements
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
@@ -321,7 +321,7 @@ public class RangeRateTest {
                 measurement.getSatellites().get(0).getClockDriftDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -329,11 +329,11 @@ public class RangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
@@ -358,7 +358,7 @@ public class RangeRateTest {
         // create perfect range rate measurements
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
@@ -401,7 +401,7 @@ public class RangeRateTest {
                 stationParameter.getZenithOffsetDriver(),
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -409,11 +409,11 @@ public class RangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
@@ -440,7 +440,7 @@ public class RangeRateTest {
                                                                            propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
@@ -507,7 +507,7 @@ public class RangeRateTest {
 
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
@@ -575,7 +575,7 @@ public class RangeRateTest {
         // create perfect range rate measurements
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
@@ -623,7 +623,7 @@ public class RangeRateTest {
                 measurement.getSatellites().get(0).getClockDriftDriver()
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -631,11 +631,11 @@ public class RangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
@@ -662,7 +662,7 @@ public class RangeRateTest {
 
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
@@ -701,7 +701,7 @@ public class RangeRateTest {
                 parameters.get(0)
             };
             for (int i = 0; i < 1; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -709,11 +709,11 @@ public class RangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 0.1 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 

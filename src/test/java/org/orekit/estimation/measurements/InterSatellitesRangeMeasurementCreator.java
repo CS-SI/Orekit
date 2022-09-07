@@ -50,9 +50,9 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockOffsetDriver().setValue(localClockOffset, null);
         this.remote              = new ObservableSatellite(1);
-        this.remote.getClockOffsetDriver().setValue(remoteClockOffset);
+        this.remote.getClockOffsetDriver().setValue(remoteClockOffset, null);
     }
 
     public ObservableSatellite getLocalSatellite() {
@@ -75,11 +75,11 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           remoteClk = remote.getClockOffsetDriver().getValue();
-            final double           localClk  = local.getClockOffsetDriver().getValue();
-            final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);
+            final double           remoteClk = remote.getClockOffsetDriver().getValue(date);
+            final double           localClk  = local.getClockOffsetDriver().getValue(date);
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 

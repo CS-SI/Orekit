@@ -76,7 +76,7 @@ public class EstimatedTroposphericModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(), date);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(date), date);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
         }
@@ -90,7 +90,7 @@ public class EstimatedTroposphericModelTest {
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         MappingFunction mapping = new NiellMappingFunctionModel();
         DiscreteTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(date), date);
         Assert.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
     }
@@ -160,7 +160,7 @@ public class EstimatedTroposphericModelTest {
 
         // Compute Delay with state derivatives
         final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(point.getLatitude()), zero.add(point.getLongitude()), zero.add(point.getAltitude()));
-        final DerivativeStructure delay = model.pathDelay(dsElevation, dsPoint, model.getParameters(field), dsDate);
+        final DerivativeStructure delay = model.pathDelay(dsElevation, dsPoint, model.getParameters(field, dsDate), dsDate);
 
         final double[] compDeriv = delay.getAllDerivatives();
 
@@ -178,42 +178,42 @@ public class EstimatedTroposphericModelTest {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
             final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
             final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
-            double  delayM4 = model.pathDelay(elevationM4, point, model.getParameters(), stateM4.getDate());
+            double  delayM4 = model.pathDelay(elevationM4, point, model.getParameters(stateM4.getDate()), stateM4.getDate());
             
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
             final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
             final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
-            double  delayM3 = model.pathDelay(elevationM3, point, model.getParameters(), stateM3.getDate());
+            double  delayM3 = model.pathDelay(elevationM3, point, model.getParameters(stateM3.getDate()), stateM3.getDate());
             
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
             final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
             final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
-            double  delayM2 = model.pathDelay(elevationM2, point, model.getParameters(), stateM2.getDate());
+            double  delayM2 = model.pathDelay(elevationM2, point, model.getParameters(stateM2.getDate()), stateM2.getDate());
  
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
             final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
             final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
-            double  delayM1 = model.pathDelay(elevationM1, point, model.getParameters(), stateM1.getDate());
+            double  delayM1 = model.pathDelay(elevationM1, point, model.getParameters(stateM1.getDate()), stateM1.getDate());
            
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
             final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
             final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
-            double  delayP1 = model.pathDelay(elevationP1, point, model.getParameters(), stateP1.getDate());
+            double  delayP1 = model.pathDelay(elevationP1, point, model.getParameters(stateP1.getDate()), stateP1.getDate());
             
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
             final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
             final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
-            double  delayP2 = model.pathDelay(elevationP2, point, model.getParameters(), stateP2.getDate());
+            double  delayP2 = model.pathDelay(elevationP2, point, model.getParameters(stateP2.getDate()), stateP2.getDate());
             
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
             final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
             final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
-            double  delayP3 = model.pathDelay(elevationP3, point, model.getParameters(), stateP3.getDate());
+            double  delayP3 = model.pathDelay(elevationP3, point, model.getParameters(stateP3.getDate()), stateP3.getDate());
             
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
             final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
             final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
-            double  delayP4 = model.pathDelay(elevationP4, point, model.getParameters(), stateP4.getDate());
+            double  delayP4 = model.pathDelay(elevationP4, point, model.getParameters(stateP4.getDate()), stateP4.getDate());
             
             fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
@@ -250,7 +250,7 @@ public class EstimatedTroposphericModelTest {
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {
-            driver.setValue(driver.getReferenceValue());
+            driver.setValue(driver.getReferenceValue(), null);
             driver.setSelected(driver.getName().equals(parameterName));
         }
 
@@ -301,8 +301,8 @@ public class EstimatedTroposphericModelTest {
         int index = 6;
         for (int i = 0; i < drivers.size(); ++i) {
             parameters[i] = drivers.get(i).isSelected() ?
-                            factory.variable(index++, drivers.get(i).getValue()) :
-                            factory.constant(drivers.get(i).getValue());
+                            factory.variable(index++, drivers.get(i).getValue(null)) :
+                            factory.constant(drivers.get(i).getValue(null));
         }
 
         // Compute delay state derivatives
@@ -333,29 +333,29 @@ public class EstimatedTroposphericModelTest {
         final OrbitType orbitType = OrbitType.KEPLERIAN;
         final PositionAngle angleType = PositionAngle.MEAN;
 
-        selected.setValue(p0 - 4 * h);
-        double  delayM4 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 - 4 * h, state.getDate());
+        double  delayM4 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
         
-        selected.setValue(p0 - 3 * h);
-        double  delayM3 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 - 3 * h, state.getDate());
+        double  delayM3 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
         
-        selected.setValue(p0 - 2 * h);
-        double  delayM2 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 - 2 * h, state.getDate());
+        double  delayM2 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
 
-        selected.setValue(p0 - 1 * h);
-        double  delayM1 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 - 1 * h, state.getDate());
+        double  delayM1 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
 
-        selected.setValue(p0 + 1 * h);
-        double  delayP1 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 + 1 * h, state.getDate());
+        double  delayP1 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
 
-        selected.setValue(p0 + 2 * h);
-        double  delayP2 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 + 2 * h, state.getDate());
+        double  delayP2 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
 
-        selected.setValue(p0 + 3 * h);
-        double  delayP3 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 + 3 * h, state.getDate());
+        double  delayP3 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
 
-        selected.setValue(p0 + 4 * h);
-        double  delayP4 = model.pathDelay(elevation, point, model.getParameters(), state.getDate());
+        selected.setValue(p0 + 4 * h, state.getDate());
+        double  delayP4 = model.pathDelay(elevation, point, model.getParameters(state.getDate()), state.getDate());
             
         fillJacobianColumn(refDeriv, 0, orbitType, angleType, h,
                            delayM4, delayM3, delayM2, delayM1,

@@ -29,8 +29,17 @@ public interface ParameterObserver {
     /** Notify that a parameter value has been changed.
      * @param previousValue previous value
      * @param driver parameter driver that has been changed
+     * @param date date for which the parameter value have been updated
      */
-    void valueChanged(double previousValue, ParameterDriver driver);
+    void valueChanged(double previousValue, ParameterDriver driver, AbsoluteDate date);
+
+    /** Notify that a parameter value span map has been changed.
+     * @param previousValueSpanMap previous value
+     * @param driver parameter driver that has been changed
+     */
+    default void valueSpanMapChanged(TimeSpanMap<Double> previousValueSpanMap, ParameterDriver driver) {
+        // nothing by default
+    }
 
     /** Notify that a parameter reference date has been changed.
      * <p>

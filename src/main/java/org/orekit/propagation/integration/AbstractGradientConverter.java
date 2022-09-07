@@ -32,6 +32,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Converter for states and parameters arrays.
  *  @author Luc Maisonobe
@@ -116,7 +117,7 @@ public abstract class AbstractGradientConverter {
         int nbParams = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                ++nbParams;
+                nbParams += driver.getNbOfValues();
             }
         }
 
@@ -160,12 +161,40 @@ public abstract class AbstractGradientConverter {
 
     }
 
-    /** Get the parametric model parameters.
+    /** Get the parametric model parameters, for each span of each parameter.
+     * @param state state as returned by {@link #getState(ParametersDriversProvider) getState(parametricModel)}
+     * @param parametricModel parametric model associated with the parameters
+     * @return parametric model parameters (for all span of each driver)
+     */
+    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
+                                    final ParametersDriversProvider parametricModel) {
+        final int freeParameters = state.getMass().getFreeParameters();
+        final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
+        int sizeDrivers = 0;
+        for ( ParameterDriver driver : drivers) {
+            sizeDrivers += driver.getNbOfValues();
+        }
+        final Gradient[] parameters = new Gradient[sizeDrivers];
+        int index = freeStateParameters;
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            // Loop on the spans
+            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                parameters[i++] = driver.isSelected() ?
+                                  Gradient.variable(freeParameters, index++, span.getData()) :
+                                  Gradient.constant(freeParameters, span.getData());
+            }
+        }
+        return parameters;
+    }
+
+    /** Get the parametric model parameters at state date.
      * @param state state as returned by {@link #getState(ParametersDriversProvider) getState(parametricModel)}
      * @param parametricModel parametric model associated with the parameters
      * @return parametric model parameters
      */
-    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
+    public Gradient[] getParametersOLD(final FieldSpacecraftState<Gradient> state,
                                     final ParametersDriversProvider parametricModel) {
         final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();

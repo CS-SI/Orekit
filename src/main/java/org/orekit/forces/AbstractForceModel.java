@@ -17,9 +17,18 @@
 package org.orekit.forces;
 
 
+import java.util.List;
+
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Base class for force models.
  * @author Luc Maisonobe
@@ -85,4 +94,63 @@ public abstract class AbstractForceModel implements ForceModel {
 
     }
 
+    /** Extract the proper parameter drivers' values from the array in input of the
+     * {@link #acceleration(SpacecraftState, double[]) acceleration} method.
+     *  Parameters are filtered given an input date.
+     * @param parameters the input parameters array
+     * @param date the date
+     * @return the parameters given the date
+     */
+    public double[] extractParameters(final double[] parameters, final AbsoluteDate date) {
+
+        // Find out the indexes of the parameters in the whole array of parameters
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final double[] outParameters = new double[getNbParametersDriversValue()];
+        int index = 0;
+        int paramIndex = 0;
+        for (int i = 0; i < allParameters.size(); i++) {
+            final ParameterDriver driver = allParameters.get(i);
+            final String driverNameforDate = driver.getNameSpan(date);
+            // Loop on the spans
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                // Add all the parameter drivers of the span
+                if (span.getData().equals(driverNameforDate)) {
+                    outParameters[index++] = parameters[paramIndex];
+                }
+                paramIndex++;
+            }
+        }
+        return outParameters;
+    }
+
+    /** Extract the proper parameter drivers' values from the array in input of the
+     * {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[]) acceleration} method.
+     *  Parameters are filtered given an input date.
+     * @param parameters the input parameters array
+     * @param date the date
+     * @param <T> extends CalculusFieldElement
+     * @return the parameters given the date
+     */
+    public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
+                                                                 final FieldAbsoluteDate<T> date) {
+
+        // Find out the indexes of the parameters in the whole array of parameters
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final T[] outParameters = MathArrays.buildArray(date.getField(), allParameters.size());
+        int index = 0;
+        int paramIndex = 0;
+        for (int i = 0; i < allParameters.size(); i++) {
+            final ParameterDriver driver = allParameters.get(i);
+            final String driverNameforDate = driver.getNameSpan(date.toAbsoluteDate());
+            // Loop on the spans
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                // Add all the parameter drivers of the span
+                if (span.getData().equals(driverNameforDate)) {
+                    outParameters[index++] = parameters[paramIndex];
+                }
+                ++paramIndex;
+            }
+        }
+        return outParameters;
+    }
 }

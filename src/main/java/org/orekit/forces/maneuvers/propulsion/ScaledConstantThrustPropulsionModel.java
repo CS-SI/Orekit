@@ -25,6 +25,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Thrust propulsion model with parameters (for estimation) represented by scale factors
@@ -95,15 +96,15 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector() {
-        return getThrustVector(scaleFactorThrustXDriver.getValue(),
-                               scaleFactorThrustYDriver.getValue(),
-                               scaleFactorThrustZDriver.getValue());
+    public Vector3D getThrustVector(final AbsoluteDate date) {
+        return getThrustVector(scaleFactorThrustXDriver.getValue(date),
+                               scaleFactorThrustYDriver.getValue(date),
+                               scaleFactorThrustZDriver.getValue(date));
     }
 
     /** {@inheritDoc} */
     @Override
-    public double getFlowRate() {
+    public double getFlowRate(final AbsoluteDate date) {
         return getInitialFlowrate();
     }
 

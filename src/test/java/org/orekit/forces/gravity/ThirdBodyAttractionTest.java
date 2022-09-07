@@ -80,7 +80,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue(date);
 
             // compute bodies separation vectors and squared norm
             final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
@@ -113,7 +113,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue(date);
 
             // compute bodies separation vectors and squared norm
             final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();

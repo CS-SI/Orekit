@@ -167,6 +167,8 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * @param latestValidityDate date before which the entry is valid
      * (must be different from <b>all</b> dates already used for transitions)
      */
+    // A GARDER OU PAS ??? PB avec la validity period si on fait ça et il faudrait rajouter dans name span map mais
+    // problematique parce que pb sur les indices apres
     public void addAccelerationModelValidBefore(final AccelerationModel accelerationModel, final AbsoluteDate latestValidityDate) {
         accelerationModelTimeSpanMap.addValidBefore(accelerationModel, latestValidityDate, false);
     }
@@ -183,6 +185,8 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * @param earliestValidityDate date after which the entry is valid
      * (must be different from <b>all</b> dates already used for transitions)
      */
+    // A GARDER OU PAS ??? PB avec la validity period si on fait ça et il faudrait rajouter dans name span map mais
+    // problematique parce que pb sur les indices apres
     public void addAccelerationModelValidAfter(final AccelerationModel accelerationModel, final AbsoluteDate earliestValidityDate) {
         accelerationModelTimeSpanMap.addValidAfter(accelerationModel, earliestValidityDate, false);
     }

@@ -28,6 +28,7 @@ import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Utility class for TDOA measurements.
  * @author Pascal Parraud
@@ -78,12 +79,15 @@ class TDOAModifierUtil {
         int index = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += primeDerivatives[index + converter.getFreeStateParameters()];
-                parameterDerivative -= secondDerivatives[index + converter.getFreeStateParameters()];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index += 1;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    // update estimated derivatives with derivative of the modification wrt ionospheric parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    parameterDerivative += primeDerivatives[index + converter.getFreeStateParameters()];
+                    parameterDerivative -= secondDerivatives[index + converter.getFreeStateParameters()];
+                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    index += 1;
+                }
             }
 
         }
@@ -94,10 +98,13 @@ class TDOAModifierUtil {
                                                           primeStation.getNorthOffsetDriver(),
                                                           primeStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += Differentiation.differentiate(d -> modelEffect.evaluate(primeStation, state),
-                                                                     3, 10.0 * driver.getScale()).value(driver);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(primeStation, state),
+                                                                     3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                }
             }
         }
 
@@ -107,10 +114,13 @@ class TDOAModifierUtil {
                                                           secondStation.getNorthOffsetDriver(),
                                                           secondStation.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative -= Differentiation.differentiate(d -> modelEffect.evaluate(secondStation, state),
-                                                                     3, 10.0 * driver.getScale()).value(driver);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    parameterDerivative -= Differentiation.differentiate((d, t) -> modelEffect.evaluate(secondStation, state),
+                                                                     3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                }
             }
         }
 

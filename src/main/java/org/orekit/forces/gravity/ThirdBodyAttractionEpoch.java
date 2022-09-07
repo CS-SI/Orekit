@@ -53,7 +53,7 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
      */
     private FieldVector3D<Gradient> accelerationToEpoch(final SpacecraftState s, final double[] parameters) {
 
-        final double gm = parameters[0];
+        final double gm = this.extractParameters(parameters, s.getDate())[0];
 
         // compute bodies separation vectors and squared norm
         final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();

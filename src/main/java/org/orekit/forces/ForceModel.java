@@ -34,6 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -63,6 +64,7 @@ import org.orekit.utils.ParametersDriversProvider;
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Melina Vanel
  */
 public interface ForceModel extends ParametersDriversProvider {
 
@@ -106,7 +108,7 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param adder object where the contribution should be added
      */
     default void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
-        adder.addNonKeplerianAcceleration(acceleration(s, getParameters()));
+        adder.addNonKeplerianAcceleration(acceleration(s, getParametersAllValues()));
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -116,18 +118,62 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param <T> type of the elements
      */
     default <T extends CalculusFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
-        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
+        adder.addNonKeplerianAcceleration(acceleration(s, getParametersAllValues(s.getDate().getField())));
+    }
+
+
+    /** Get total number of spans for all the parameters driver.
+     * @return total number of span to be estimated
+     * @since 12.0
+     */
+    default int getNbParametersDriversValue() {
+        int totalSpan = 0;
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        for (ParameterDriver dragDriver : allParameters) {
+            totalSpan += dragDriver.getNbOfValues();
+        }
+        return totalSpan;
     }
 
     /** Get force model parameters.
+     * @param date date at which the parameters want to be known, can
+     * be new AbsoluteDate() if all the parameters have no validity period
+     * that is to say that they have only 1 estimated value over the all
+     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
+     * validity period = 0)
      * @return force model parameters
-     * @since 9.0
+     * @since 12.0
      */
-    default double[] getParameters() {
+    default double[] getParameters(AbsoluteDate date) {
+
         final List<ParameterDriver> drivers = getParametersDrivers();
         final double[] parameters = new double[drivers.size()];
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
+            parameters[i] = drivers.get(i).getValue(date);
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters, return a list a all span values
+     * of all force parameters. In order to select the right value of
+     * the span accordingly with the date the
+     * {@link AbstractForceModel#extractParameters}
+     * should be called (as in {@link #acceleration}
+     * method).
+     * @return force model parameters
+     * @since 12.0
+     */
+    default double[] getParametersAllValues() {
+
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final int nbParametersValues = getNbParametersDriversValue();
+        final double[] parameters = new double[nbParametersValues];
+        int paramIndex = 0;
+        for (int i = 0; i < drivers.size(); ++i) {
+            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                parameters[paramIndex++] = span.getData();
+            }
+
         }
         return parameters;
     }
@@ -138,11 +184,36 @@ public interface ForceModel extends ParametersDriversProvider {
      * @return force model parameters
      * @since 9.0
      */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
+    default <T extends CalculusFieldElement<T>> T[] getParametersAllValues(final Field<T> field) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final int nbParametersValues = getNbParametersDriversValue();
+        final T[] parameters = MathArrays.buildArray(field, nbParametersValues);
+        int paramIndex = 0;
+        for (int i = 0; i < drivers.size(); ++i) {
+            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                parameters[paramIndex++] = field.getZero().add(span.getData());
+            }
+        }
+        return parameters;
+    }
+
+
+    /** Get force model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @param date field date at which the parameters want to be known, can
+     * be new AbsoluteDate() if all the parameters have no validity period
+     * that is to say that they have only 1 estimated value over the all
+     * interval ( {@link org.orekit.utils.ParameterDriver#setPeriods} with
+     * validity period = 0)
+     * @return force model parameters
+     * @since 9.0
+     */
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, final FieldAbsoluteDate<T> date) {
         final List<ParameterDriver> drivers = getParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
+            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
         }
         return parameters;
     }
@@ -157,7 +228,9 @@ public interface ForceModel extends ParametersDriversProvider {
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters, warning this must
+     * contain all span value for each driver (within the function the parameter
+     * corresponding to the state date will be extracted
      * @return acceleration in same frame as state
      * @since 9.0
      */

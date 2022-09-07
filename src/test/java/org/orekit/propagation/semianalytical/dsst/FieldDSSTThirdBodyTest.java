@@ -104,7 +104,7 @@ public class FieldDSSTThirdBodyTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = moon.getParameters(field);
+        final T[] parameters = moon.getParametersAllValues(field);
         // Initialize force model
         moon.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
@@ -150,8 +150,8 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
-            force.updateShortPeriodTerms(force.getParameters(field), meanState);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParametersAllValues(field)));
+            force.updateShortPeriodTerms(force.getParametersAllValues(field), meanState);
         }
 
         T[] y = MathArrays.buildArray(field, 6);
@@ -323,7 +323,7 @@ public class FieldDSSTThirdBodyTest {
       
         for (final DSSTForceModel forceModel : forces) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                driver.setValue(driver.getReferenceValue());
+                driver.setValue(driver.getReferenceValue(), null);
                 driver.setSelected(driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT));
             }
         }
@@ -397,29 +397,29 @@ public class FieldDSSTThirdBodyTest {
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
       
-        selected.setValue(p0 - 4 * h);
+        selected.setValue(p0 - 4 * h, null);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, forces);
   
-        selected.setValue(p0 - 3 * h);
+        selected.setValue(p0 - 3 * h, null);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, forces);
       
-        selected.setValue(p0 - 2 * h);
+        selected.setValue(p0 - 2 * h, null);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, forces);
       
-        selected.setValue(p0 - 1 * h);
+        selected.setValue(p0 - 1 * h, null);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, forces);
       
-        selected.setValue(p0 + 1 * h);
+        selected.setValue(p0 + 1 * h, null);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, forces);
       
-        selected.setValue(p0 + 2 * h);
+        selected.setValue(p0 + 2 * h, null);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, forces);
       
-        selected.setValue(p0 + 3 * h);
-        parameters[0] = selected.getValue();
+        selected.setValue(p0 + 3 * h, null);
+        parameters[0] = selected.getValue(null);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, forces);
       
-        selected.setValue(p0 + 4 * h);
+        selected.setValue(p0 + 4 * h, null);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, forces);
       
         fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
@@ -460,7 +460,7 @@ public class FieldDSSTThirdBodyTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
-            double[] parameters = force.getParameters();
+            double[] parameters = force.getParametersAllValues();
             shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
             force.updateShortPeriodTerms(parameters, state);
         }

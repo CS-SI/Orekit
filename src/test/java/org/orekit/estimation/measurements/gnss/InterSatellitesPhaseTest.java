@@ -52,6 +52,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 public class InterSatellitesPhaseTest {
 
@@ -501,28 +502,30 @@ public class InterSatellitesPhaseTest {
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i]);
-                        Assert.assertEquals(1, measurement.getDimension());
-                        Assert.assertEquals(1, gradient.length);
-
-                        // Compute a reference value using finite differences
-                        final ParameterFunction dMkdP =
-                                        Differentiation.differentiate(new ParameterFunction() {
-                                            /** {@inheritDoc} */
-                                            @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, states).getEstimatedValue()[0];
-                                            }
-                                        }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
-
-                        if (printResults) {
-                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(span.getData());
+                            Assert.assertEquals(1, measurement.getDimension());
+                            Assert.assertEquals(1, gradient.length);
+                            
+                            // Compute a reference value using finite differences
+                            final ParameterFunction dMkdP =
+                                            Differentiation.differentiate(new ParameterFunction() {
+                                                /** {@inheritDoc} */
+                                                @Override
+                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                    return measurement.estimate(0, 0, states).getEstimatedValue()[0];
+                                                }
+                                            }, 3, 20.0 * drivers[i].getScale());
+                            final double ref = dMkdP.value(drivers[i], span.getStart());
+                            
+                            if (printResults) {
+                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                            }
+                            
+                            final double relError = FastMath.abs((ref-gradient[0])/ref);
+                            relErrorList.add(relError);
+//                            Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                         }
-
-                        final double relError = FastMath.abs((ref-gradient[0])/ref);
-                        relErrorList.add(relError);
-//                        Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");
@@ -585,20 +588,20 @@ public class InterSatellitesPhaseTest {
                                                                     0.02, 1.0);
 
         // First check
-        Assert.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertEquals(0.0, phase.getAmbiguityDriver().getValue(null), Double.MIN_VALUE);
         Assert.assertFalse(phase.getAmbiguityDriver().isSelected());
 
         // Perform some changes in ambiguity driver
-        phase.getAmbiguityDriver().setValue(1234.0);
+        phase.getAmbiguityDriver().setValue(1234.0, null);
         phase.getAmbiguityDriver().setSelected(true);
 
         // Second check
-        Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(null), Double.MIN_VALUE);
         Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
             if (driver.getName() == Phase.AMBIGUITY_NAME) {
-                Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+                Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(null), Double.MIN_VALUE);
                 Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
             }
         }

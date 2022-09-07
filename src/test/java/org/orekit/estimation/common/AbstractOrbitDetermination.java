@@ -161,6 +161,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
@@ -436,6 +437,14 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
+
+        final ParameterDriversList orParameters   = estimator.getOrbitalParametersDrivers(true);
+        System.out.println("\n\nEND");
+        for (ParameterDriver driver : orParameters.getDrivers()) {
+        	System.out.println(driver.getName());
+        	System.out.println(driver.getValue(new AbsoluteDate()));
+        }
+        //System.out.println(orParameters.getDrivers().get(0).getValue(null));
         return new ResultBatchLeastSquares(propagatorParameters, measurementsParameters,
                                            estimator.getIterationsCount(), estimator.getEvaluationsCount(), estimated.getPVCoordinates(),
                                            rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
@@ -575,6 +584,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
+
         
         return new ResultSequentialBatchLeastSquares(propagatorParameters, measurementsParameters,
                                            iterationCount, evalutionCount, estimatedBLS.getPVCoordinates(),
@@ -862,19 +872,19 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                     final RealMatrix Pest = estimation.getPhysicalEstimatedCovarianceMatrix();
                     // Orbital drivers
                     for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
-                        line += String.format(Locale.US, "\t%20.9f", driver.getValue());
+                        line += String.format(Locale.US, "\t%20.9f", driver.getValue(currentDate));
                         line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
                         jPar++;
                     }
                     // Propagation drivers
                     for (DelegatingDriver driver : estimation.getEstimatedPropagationParameters().getDrivers()) {
-                        line += String.format(Locale.US, "\t%20.9f", driver.getValue());
+                        line += String.format(Locale.US, "\t%20.9f", driver.getValue(currentDate));
                         line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
                         jPar++;
                     }
                     // Measurements drivers
                     for (DelegatingDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-                        line += String.format(Locale.US, "\t%20.9f", driver.getValue());
+                        line += String.format(Locale.US, "\t%20.9f", driver.getValue(currentDate));
                         line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
                         jPar++;
                     }
@@ -993,7 +1003,10 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
              for (DelegatingDriver refDriver : refPropagationParameters.getDrivers()) {
                  for (DelegatingDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                      if (driver.getName().equals(refDriver.getName())) {
-                         driver.setValue(refDriver.getValue());
+                         for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                             driver.setValue(refDriver.getValue(initialRefOrbit.getDate()), span.getStart());
+                         }
                      }
                  }
              }
@@ -1110,6 +1123,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final double  cd          = parser.getDouble(ParameterKey.DRAG_CD);
             final double  area        = parser.getDouble(ParameterKey.DRAG_AREA);
+            System.out.println("IIIIIIIII");
+            System.out.println(area);
             final boolean cdEstimated = parser.getBoolean(ParameterKey.DRAG_CD_ESTIMATED);
 
             final MarshallSolarActivityFutureEstimation msafe =
@@ -1183,7 +1198,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                     final String coefficientName = names[i] + "[" + k + "]";
                     for (final ParameterDriver driver : drivers) {
                         if (driver.getName().equals(coefficientName)) {
-                            driver.setValue(Double.parseDouble(coefficients[i].get(k)));
+                            driver.setValue(Double.parseDouble(coefficients[i].get(k)), null);
                             driver.setSelected(estimated[i]);
                         }
                     }
@@ -1198,6 +1213,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         } else {
             mode = AttitudeMode.DEFAULT_LAW;
         }
+        //System.out.println(propagatorBuilder.getPropagationParametersDrivers().getNbParams());
+        //System.out.println(propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(3).getValueSpanMap().getSpansNumber());
         setAttitudeProvider(propagatorBuilder, mode.getProvider(orbit.getFrame(), body));
 
         return propagatorBuilder;
@@ -1537,7 +1554,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
             station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
-            station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
+            station.getClockOffsetDriver().setValue(stationClockOffsets[i], null);
             station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
             station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
             station.getClockOffsetDriver().setSelected(stationClockOffsetEstimated[i]);
@@ -1548,11 +1565,11 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
                 final Station stationEcc = sinexEcc.getStation(stationNames[i]);
-                station.getZenithOffsetDriver().setValue(stationEcc.getEccentricities().getX());
+                station.getZenithOffsetDriver().setValue(stationEcc.getEccentricities().getX(), null);
                 station.getZenithOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getX());
-                station.getNorthOffsetDriver().setValue(stationEcc.getEccentricities().getY());
+                station.getNorthOffsetDriver().setValue(stationEcc.getEccentricities().getY(), null);
                 station.getNorthOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getY());
-                station.getEastOffsetDriver().setValue(stationEcc.getEccentricities().getZ());
+                station.getEastOffsetDriver().setValue(stationEcc.getEccentricities().getZ(), null);
                 station.getEastOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getZ());
             }
 
@@ -1856,8 +1873,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         final ObservableSatellite obsSat = new ObservableSatellite(0);
         final ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
+        	// date = null okay if validity period is infinite = only 1 estimation over the all period
             clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
-            clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET), null);
         }
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN)) {
             clockOffsetDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
@@ -2497,7 +2515,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                     factor = 1.0;
                 }
                 final double initial = parameter.getReferenceValue();
-                final double value   = parameter.getValue();
+                final double value   = parameter.getValue(null);
                 out.format(Locale.US, "  %2d %s", ++index, parameter.getName());
                 for (int i = parameter.getName().length(); i < length; ++i) {
                     out.format(Locale.US, " ");

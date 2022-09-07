@@ -67,7 +67,11 @@ public class DateDriver extends ParameterDriver implements TimeStamped {
      * @return shifted date
      */
     public AbsoluteDate getDate() {
-        return base.shiftedBy(getValue());
+        // date driver has no validity period, only 1 value is estimated
+        // over the all interval so there is no problem for calling getValue with null argument
+        // or any date, it would give the same result as there is only 1 span on the valueSpanMap
+        // of the driver
+        return base.shiftedBy(getValue(base));
     }
 
 }

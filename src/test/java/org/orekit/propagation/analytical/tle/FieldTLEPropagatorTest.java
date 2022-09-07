@@ -81,7 +81,7 @@ public class FieldTLEPropagatorTest {
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
         
-        final T[] parameters = tle.getParameters(field);
+        final T[] parameters = tle.getParameters(field, null);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         FieldAbsoluteDate<T> initDate = tle.getDate();
         FieldSpacecraftState<T> initialState = propagator.getInitialState();
@@ -107,7 +107,7 @@ public class FieldTLEPropagatorTest {
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
         
-        final T[] parameters = tle.getParameters(field);
+        final T[] parameters = tle.getParameters(field, null);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
 
@@ -165,7 +165,7 @@ public class FieldTLEPropagatorTest {
         FieldDistanceChecker<T> checker = new FieldDistanceChecker<T>(itrf);
 
         // with Earth pointing attitude, distance should be small
-        final T[] parameters = tle.getParameters(field);
+        final T[] parameters = tle.getParameters(field, null);
         FieldTLEPropagator<T> propagator =
                 FieldTLEPropagator.selectExtrapolator(tle,
                                                  new BodyCenterPointing(FramesFactory.getTEME(), earth),
@@ -258,7 +258,7 @@ public class FieldTLEPropagatorTest {
         TLE tleISS = new TLE(line3, line4);
         
         // propagate Field GPS orbit
-        final T[] parametersGPS = fieldtleGPS.getParameters(field);
+        final T[] parametersGPS = fieldtleGPS.getParameters(field, null);
         FieldTLEPropagator<T> fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleGPS, parametersGPS);
         FieldAbsoluteDate<T> fieldinitDate = fieldtleGPS.getDate();
         FieldAbsoluteDate<T> fieldendDate = fieldinitDate.shiftedBy(propagtime);        
@@ -271,7 +271,7 @@ public class FieldTLEPropagatorTest {
         PVCoordinates finalGPS = propagator.getPVCoordinates(endDate);
         
         // propagate Field ISS orbit
-        final T[] parametersISS = fieldtleISS.getParameters(field);
+        final T[] parametersISS = fieldtleISS.getParameters(field, null);
         fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleISS, parametersISS);
         fieldinitDate = fieldtleISS.getDate();
         fieldendDate = fieldinitDate.shiftedBy(propagtime);        

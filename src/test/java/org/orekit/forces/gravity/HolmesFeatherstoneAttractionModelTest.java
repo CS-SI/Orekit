@@ -435,7 +435,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         for (double theta = 0.01; theta < 3.14; theta += 0.1) {
             Vector3D position = new Vector3D(r * FastMath.sin(theta), 0.0, r * FastMath.cos(theta));
             Dfp refValue = refModel.nonCentralPart(null, position);
-            double value = model.nonCentralPart(null, position, model.getMu());
+            double value = model.nonCentralPart(null, position, model.getMu(provider.getReferenceDate()));
             double relativeError = error(refValue, value).divide(refValue).toDouble();
             Assert.assertEquals(0, relativeError, 7.0e-15);
         }
@@ -457,8 +457,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                  r * FastMath.sin(theta) * FastMath.sin(lambda),
                                                  r * FastMath.cos(theta));
                 double refValue = provider.getMu() / position.getNorm() +
-                                  model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position, model.getMu());
-                double  value   = model.value(AbsoluteDate.GPS_EPOCH, position, model.getMu());
+                                  model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position, model.getMu(provider.getReferenceDate()));
+                double  value   = model.value(AbsoluteDate.GPS_EPOCH, position, model.getMu(new AbsoluteDate()));
                 Assert.assertEquals(refValue, value, 1.0e-15 * FastMath.abs(refValue));
             }
         }
@@ -622,7 +622,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                 double norm  = FastMath.sqrt(refGradient[0] * refGradient[0] +
                                              refGradient[1] * refGradient[1] +
                                              refGradient[2] * refGradient[2]);
-                double[] gradient = model.gradient(null, position, model.getMu());
+                double[] gradient = model.gradient(null, position, model.getMu(provider.getReferenceDate()));
                 double errorX = refGradient[0] - gradient[0];
                 double errorY = refGradient[1] - gradient[1];
                 double errorZ = refGradient[2] - gradient[2];
@@ -673,32 +673,32 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                               final AbsoluteDate date, final Vector3D position, final double h)
         {
         return new double[] {
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu()),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu(date)),
                           h),
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu()),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu(date)),
                           h),
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu()),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu(date)),
                           h)
         };
     }
@@ -707,32 +707,32 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                final AbsoluteDate date, final Vector3D position, final double h)
         {
         return new double[][] {
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu()),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu(date)),
                           h),
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu()),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu(date)),
                           h),
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu()),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu()),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu(date)),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu(date)),
                           h)
         };
     }

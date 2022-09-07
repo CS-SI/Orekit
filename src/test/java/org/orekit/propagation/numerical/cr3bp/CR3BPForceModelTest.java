@@ -57,7 +57,7 @@ public class CR3BPForceModelTest {
     @Test
     public void testModel() {
                 
-        final double mu = new CR3BPForceModel(syst).getParameters()[0];
+        final double mu = new CR3BPForceModel(syst).getParameters(new AbsoluteDate())[0];
         Assert.assertEquals(0.0121, mu, 1E-3);
         
      // Time settings

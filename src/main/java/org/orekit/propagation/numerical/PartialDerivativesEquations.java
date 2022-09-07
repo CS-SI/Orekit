@@ -30,6 +30,7 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** {@link AdditionalDerivativesProvider derivatives provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -77,7 +78,7 @@ public class PartialDerivativesEquations
     private ParameterDriversList selected;
 
     /** Parameters map. */
-    private Map<ParameterDriver, Integer> map;
+    private Map<String, Integer> map;
 
     /** Name. */
     private final String name;
@@ -137,17 +138,21 @@ public class PartialDerivativesEquations
             selected.sort();
 
             // fourth pass: set up a map between parameters drivers and matrices columns
-            map = new IdentityHashMap<ParameterDriver, Integer>();
+            map = new IdentityHashMap<String, Integer>();
             int parameterIndex = 0;
+            int previousParameterIndex = 0;
             for (final ParameterDriver selectedDriver : selected.getDrivers()) {
                 for (final ForceModel provider : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : provider.getParametersDrivers()) {
                         if (driver.getName().equals(selectedDriver.getName())) {
-                            map.put(driver, parameterIndex);
+                            previousParameterIndex = parameterIndex;
+                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                map.put(span.getData(), previousParameterIndex++);
+                            }
                         }
                     }
                 }
-                ++parameterIndex;
+                parameterIndex = previousParameterIndex;
             }
 
         }
@@ -306,11 +311,13 @@ public class PartialDerivativesEquations
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    final int parameterIndex = map.get(driver);
-                    dAccdParam[0][parameterIndex] += derivativesX[index];
-                    dAccdParam[1][parameterIndex] += derivativesY[index];
-                    dAccdParam[2][parameterIndex] += derivativesZ[index];
-                    ++index;
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                        final int parameterIndex = map.get(span.getData());
+                        dAccdParam[0][parameterIndex] += derivativesX[index];
+                        dAccdParam[1][parameterIndex] += derivativesY[index];
+                        dAccdParam[2][parameterIndex] += derivativesZ[index];
+                        ++index;
+                    }
                 }
             }
 

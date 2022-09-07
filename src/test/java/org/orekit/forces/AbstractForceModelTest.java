@@ -59,6 +59,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 
 public abstract class AbstractForceModelTest {
@@ -71,12 +72,16 @@ public abstract class AbstractForceModelTest {
         final Field<DerivativeStructure> field = factory11.getDerivativeField();
         final FieldSpacecraftState<DerivativeStructure> stateF = new FieldSpacecraftState<DerivativeStructure>(field, state);
         final List<ParameterDriver> drivers = forceModel.getParametersDrivers();
-        final DerivativeStructure[] parametersDS = new DerivativeStructure[drivers.size()];
+        final DerivativeStructure[] parametersDS = new DerivativeStructure[forceModel.getNbParametersDriversValue()];
         for (int i = 0; i < parametersDS.length; ++i) {
             if (drivers.get(i).getName().equals(name)) {
-                parametersDS[i] = factory11.variable(0, drivers.get(i).getValue());
+                for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parametersDS[i] = factory11.variable(0, span.getData());
+                }
             } else {
-                parametersDS[i] = factory11.constant(drivers.get(i).getValue());
+                for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parametersDS[i] = factory11.constant(span.getData());
+                }
             }
         }
         FieldVector3D<DerivativeStructure> accDer = forceModel.acceleration(stateF, parametersDS);
@@ -87,22 +92,22 @@ public abstract class AbstractForceModelTest {
         int selected = -1;
         final double[] parameters = new double[drivers.size()];
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
+            parameters[i] = drivers.get(i).getValue(state.getDate());
             if (drivers.get(i).getName().equals(name)) {
                 selected = i;
             }
         }
         double p0 = parameters[selected];
         double hParam = hFactor * p0;
-        drivers.get(selected).setValue(p0 - 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 - 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assert.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaM1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0 + 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 + 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assert.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaP1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0);
+        drivers.get(selected).setValue(p0, state.getDate());
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
@@ -118,12 +123,16 @@ public abstract class AbstractForceModelTest {
         final Field<Gradient> field = GradientField.getField(freeParameters);
         final FieldSpacecraftState<Gradient> stateF = new FieldSpacecraftState<>(field, state);
         final List<ParameterDriver> drivers = forceModel.getParametersDrivers();
-        final Gradient[] parametersDS = new Gradient[drivers.size()];
+        final Gradient[] parametersDS = new Gradient[forceModel.getNbParametersDriversValue()];
         for (int i = 0; i < parametersDS.length; ++i) {
             if (drivers.get(i).getName().equals(name)) {
-                parametersDS[i] = Gradient.variable(freeParameters, 0, drivers.get(i).getValue());
+            	for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parametersDS[i] = Gradient.variable(freeParameters, 0, span.getData());
+            	}
             } else {
-                parametersDS[i] = Gradient.constant(freeParameters, drivers.get(i).getValue());
+            	for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parametersDS[i] = Gradient.constant(freeParameters, span.getData());
+            	}
             }
         }
         FieldVector3D<Gradient> accDer = forceModel.acceleration(stateF, parametersDS);
@@ -134,22 +143,22 @@ public abstract class AbstractForceModelTest {
         int selected = -1;
         final double[] parameters = new double[drivers.size()];
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
+            parameters[i] = drivers.get(i).getValue(state.getDate());
             if (drivers.get(i).getName().equals(name)) {
                 selected = i;
             }
         }
         double p0 = parameters[selected];
         double hParam = hFactor * p0;
-        drivers.get(selected).setValue(p0 - 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 - 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assert.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaM1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0 + 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 + 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assert.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaP1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0);
+        drivers.get(selected).setValue(p0, state.getDate());
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
@@ -220,7 +229,7 @@ public abstract class AbstractForceModelTest {
                                                          final double checkTolerance, final boolean print) {
 
         double[][] finiteDifferencesJacobian =
-                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters()).toArray(),
+                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParametersAllValues()).toArray(),
                                                       3, provider, OrbitType.CARTESIAN, PositionAngle.MEAN,
                                                       dP, 5).
                         value(state0);
@@ -252,7 +261,7 @@ public abstract class AbstractForceModelTest {
                                                    new FieldAttitude<>(state0.getFrame(), fAC),
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<DerivativeStructure> dsJacobian = forceModel.acceleration(fState,
-                                                                                forceModel.getParameters(fState.getDate().getField()));
+                                                                                forceModel.getParametersAllValues(fState.getDate().getField()));
 
         Vector3D dFdPXRef = new Vector3D(finiteDifferencesJacobian[0][0],
                                          finiteDifferencesJacobian[1][0],
@@ -317,7 +326,7 @@ public abstract class AbstractForceModelTest {
                                                                  final double checkTolerance, final boolean print) {
 
         double[][] finiteDifferencesJacobian =
-                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters()).toArray(),
+                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParametersAllValues()).toArray(),
                                                       3, provider, OrbitType.CARTESIAN, PositionAngle.MEAN,
                                                       dP, 5).
                         value(state0);
@@ -349,7 +358,7 @@ public abstract class AbstractForceModelTest {
                                                    new FieldAttitude<>(state0.getFrame(), fAC),
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<Gradient> gJacobian = forceModel.acceleration(fState,
-                                                                     forceModel.getParameters(fState.getDate().getField()));
+                                                                     forceModel.getParametersAllValues(fState.getDate().getField()));
 
         Vector3D dFdPXRef = new Vector3D(finiteDifferencesJacobian[0][0],
                                          finiteDifferencesJacobian[1][0],

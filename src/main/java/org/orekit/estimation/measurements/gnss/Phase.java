@@ -36,6 +36,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a phase measurement from a ground station.
  * <p>
@@ -141,7 +142,9 @@ public class Phase extends AbstractMeasurement<Phase> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -186,12 +189,12 @@ public class Phase extends AbstractMeasurement<Phase> {
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
-        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices);
-        final Gradient            dtg       = station.getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
+        final Gradient            dtg       = station.getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices);
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices, state.getDate());
         final Gradient phase       = tauD.add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
 
         estimated.setEstimatedValue(phase.getValue());
@@ -203,9 +206,12 @@ public class Phase extends AbstractMeasurement<Phase> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(span.getData(), derivatives[index]);
+                }
             }
         }
 

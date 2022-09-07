@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,9 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Base class for jacobian mapper.
  * @author Bryan Cazabonne
@@ -58,18 +62,18 @@ public abstract class AbstractJacobiansMapper implements MatricesHarvester {
         return name;
     }
 
-    /** Get the number of parameters.
+    /** Get the total number of value to estimate for the parameters.
      * @return number of parameters
      */
     public int getParameters() {
-        return parameters.getNbParams();
+        return parameters.getNbValuesToEstimate();
     }
 
     /** Compute the length of the one-dimensional additional state array needed.
      * @return length of the one-dimensional additional state array
      */
     public int getAdditionalStateDimension() {
-        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
+        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbValuesToEstimate());
     }
 
     /** Not used anymore.
@@ -110,7 +114,19 @@ public abstract class AbstractJacobiansMapper implements MatricesHarvester {
     /** {@inheritDoc} */
     @Override
     public List<String> getJacobiansColumnsNames() {
-        return parameters.getDrivers().stream().map(d -> d.getName()).collect(Collectors.toList());
+    	List<String> driversNames = new ArrayList<>();
+        for (DelegatingDriver driver : parameters.getDrivers()) {
+        	final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+            Span<String> currentNameSpan = driverNameSpanMap.getFirstSpan();
+            // Add the driver name if it has not been added yet and the number of estimated values for this param
+            driversNames.add(currentNameSpan.getData());
+            // For all values TO COMPLETE  
+            for (int spanNumber = 1; spanNumber < driverNameSpanMap.getSpansNumber(); ++spanNumber) {
+                currentNameSpan = driverNameSpanMap.getSpan(currentNameSpan.getEnd());
+                driversNames.add(currentNameSpan.getData());
+            }
+        }
+        return driversNames;
     }
 
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.

@@ -156,7 +156,7 @@ public class BistaticRangeRateTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
+            station.getClockOffsetDriver().setValue(clockOffset, null);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -219,7 +219,7 @@ public class BistaticRangeRateTest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.BRRstations.getKey(),
                                                          context.BRRstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
+            station.getClockOffsetDriver().setValue(clockOffset, null);
             station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -259,7 +259,7 @@ public class BistaticRangeRateTest {
                 receiverParameter.getZenithOffsetDriver(),
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -267,11 +267,11 @@ public class BistaticRangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }
@@ -303,7 +303,7 @@ public class BistaticRangeRateTest {
 
         final double clockOffset = 4.8e-9;
         final GroundStation receiver = context.BRRstations.getValue();
-        receiver.getClockOffsetDriver().setValue(clockOffset);
+        receiver.getClockOffsetDriver().setValue(clockOffset, null);
         receiver.getClockOffsetDriver().setSelected(true);
         receiver.getEastOffsetDriver().setSelected(true);
         receiver.getNorthOffsetDriver().setSelected(true);
@@ -346,7 +346,7 @@ public class BistaticRangeRateTest {
                 receiverParameter.getZenithOffsetDriver(),
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -354,11 +354,11 @@ public class BistaticRangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }

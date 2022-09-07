@@ -25,13 +25,14 @@ public class DateDriverTest {
 
     @Test
     public void testBase() {
+    	// Date driver has 1 value estimated on the all time range
         DateDriver driver = new DateDriver(AbsoluteDate.J2000_EPOCH, "start", true);
         Assert.assertEquals("start", driver.getName());
         Assert.assertTrue(driver.isStart());
         Assert.assertFalse(driver.isSelected());
         Assert.assertEquals(0.0,   driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
         Assert.assertNull(driver.getReferenceDate());
-        driver.setNormalizedValue(0.001);
+        driver.setNormalizedValue(0.001, null);
         Assert.assertEquals(0.001, driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
         Assert.assertEquals(Double.NEGATIVE_INFINITY, driver.getMinValue(), 1.0);
         Assert.assertEquals(Double.POSITIVE_INFINITY, driver.getMaxValue(), 1.0);

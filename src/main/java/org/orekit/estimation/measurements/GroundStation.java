@@ -494,7 +494,7 @@ public class GroundStation {
                                                         final int freeParameters,
                                                         final Map<String, Integer> indices) {
         // take clock offset into account
-        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices);
+        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices, clockDate);
         final FieldAbsoluteDate<Gradient> offsetCompensatedDate =
                         new FieldAbsoluteDate<>(clockDate, offset.negate());
 
@@ -530,9 +530,9 @@ public class GroundStation {
                         estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
 
         // take station offsets into account
-        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
+        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices, offsetCompensatedDate.toAbsoluteDate());
+        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices, offsetCompensatedDate.toAbsoluteDate());
+        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices, offsetCompensatedDate.toAbsoluteDate());
         final BodyShape            baseShape  = baseFrame.getParentShape();
         final StaticTransform      baseToBody = baseFrame
                 .getStaticTransformTo(baseShape.getBodyFrame(), null);

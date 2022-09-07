@@ -561,7 +561,7 @@ public class RangeAnalyticTest {
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
@@ -571,7 +571,7 @@ public class RangeAnalyticTest {
                         if (isModifier) {
                             modifier.modify(rangeAnalytic);
                         }
-                        final double ref = rangeAnalytic.getParameterDerivatives(drivers[i])[0];
+                        final double ref = rangeAnalytic.getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()))[0];
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));

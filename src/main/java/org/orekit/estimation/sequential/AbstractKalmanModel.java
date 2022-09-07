@@ -50,6 +50,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Abstract class defining the process model dynamics to use with a {@link KalmanEstimator}.
  * @author Romain Gerbaud
@@ -179,7 +180,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
-        this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
+        this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getNbValuesToEstimate());
         this.currentMeasurementNumber        = 0;
         this.referenceDate                   = propagatorBuilders.get(0).getInitialOrbitDate();
         this.currentDate                     = referenceDate;
@@ -208,6 +209,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 if (driver.isSelected()) {
                     allEstimatedOrbitalParameters.add(driver);
                     estimatedOrbitalParameters[k].add(driver);
+                    // orbital parameter have only 1 value estimated
+                    // so only one span that is why we can only add the driver name
+                    // and not the span names
                     orbitalParameterColumns.put(driver.getName(), columns++);
                 }
             }
@@ -217,8 +221,10 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // Gather all the propagation drivers names in a list
         allEstimatedPropagationParameters = new ParameterDriversList();
         estimatedPropagationParameters    = new ParameterDriversList[builders.size()];
+        final int[] nbEstimatedPropagationParameters = new int[builders.size()];
         final List<String> estimatedPropagationParametersNames = new ArrayList<>();
         for (int k = 0; k < builders.size(); ++k) {
+            int nbEstimated = 0;
             estimatedPropagationParameters[k] = new ParameterDriversList();
             for (final ParameterDriver driver : builders.get(k).getPropagationParametersDrivers().getDrivers()) {
                 if (driver.getReferenceDate() == null) {
@@ -227,30 +233,39 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 if (driver.isSelected()) {
                     allEstimatedPropagationParameters.add(driver);
                     estimatedPropagationParameters[k].add(driver);
-                    final String driverName = driver.getName();
+                    nbEstimated += driver.getNbOfValues();
                     // Add the driver name if it has not been added yet
-                    if (!estimatedPropagationParametersNames.contains(driverName)) {
-                        estimatedPropagationParametersNames.add(driverName);
+                    if (!estimatedPropagationParametersNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                        // For each span
+                        for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                            estimatedPropagationParametersNames.add(span.getData());
+                        }
                     }
                 }
             }
+            nbEstimatedPropagationParameters[k] = nbEstimated;
         }
         estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
 
         // Populate the map of propagation drivers' columns and update the total number of columns
         propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
-        for (final String driverName : estimatedPropagationParametersNames) {
-            propagationParameterColumns.put(driverName, columns);
+        for (final String spanDriverName : estimatedPropagationParametersNames) {
+            propagationParameterColumns.put(spanDriverName, columns);
             ++columns;
         }
 
         // Populate the map of measurement drivers' columns and update the total number of columns
+        int nbEstimatedMeasurementParameters = 0;
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
             if (parameter.getReferenceDate() == null) {
                 parameter.setReferenceDate(currentDate);
             }
-            measurementParameterColumns.put(parameter.getName(), columns);
-            ++columns;
+            nbEstimatedMeasurementParameters += parameter.getNbOfValues();
+            for (Span<String> span = parameter.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                measurementParameterColumns.put(span.getData(), columns);
+                ++columns;
+            }
+
         }
 
         // Store providers for process noise matrices
@@ -267,15 +282,19 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 covarianceIndirection[k][i++] = (c == null) ? -1 : c.intValue();
             }
             for (final ParameterDriver driver : parametersDrivers.getDrivers()) {
-                final Integer c = propagationParameterColumns.get(driver.getName());
-                if (c != null) {
-                    covarianceIndirection[k][i++] = c.intValue();
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    final Integer c = propagationParameterColumns.get(span.getData());
+                    if (c != null) {
+                        covarianceIndirection[k][i++] = c.intValue();
+                    }
                 }
             }
             for (final ParameterDriver driver : estimatedMeasurementParameters.getDrivers()) {
-                final Integer c = measurementParameterColumns.get(driver.getName());
-                if (c != null) {
-                    covarianceIndirection[k][i++] = c.intValue();
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    final Integer c = measurementParameterColumns.get(span.getData());
+                    if (c != null) {
+                        covarianceIndirection[k][i++] = c.intValue();
+                    }
                 }
             }
         }
@@ -287,10 +306,14 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             scale[index++] = driver.getScale();
         }
         for (final ParameterDriver driver : allEstimatedPropagationParameters.getDrivers()) {
-            scale[index++] = driver.getScale();
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                scale[index++] = driver.getScale();
+            }
         }
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            scale[index++] = driver.getScale();
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                scale[index++] = driver.getScale();
+            }
         }
 
         // Build the reference propagators and add their partial derivatives equations implementation
@@ -307,28 +330,31 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
         int p = 0;
         for (final ParameterDriver driver : allEstimatedOrbitalParameters.getDrivers()) {
-            correctedState.setEntry(p++, driver.getNormalizedValue());
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                correctedState.setEntry(p++, driver.getNormalizedValue(span.getStart()));
+            }
         }
         for (final ParameterDriver driver : allEstimatedPropagationParameters.getDrivers()) {
-            correctedState.setEntry(p++, driver.getNormalizedValue());
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                correctedState.setEntry(p++, driver.getNormalizedValue(span.getStart()));
+            }
         }
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            correctedState.setEntry(p++, driver.getNormalizedValue());
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                correctedState.setEntry(p++, driver.getNormalizedValue(span.getStart()));
+            }
         }
 
         // Set up initial covariance
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(columns, columns);
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
 
-            // Number of estimated measurement parameters
-            final int nbMeas = estimatedMeasurementParameters.getNbParams();
-
             // Number of estimated dynamic parameters (orbital + propagation)
             final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
-                               estimatedPropagationParameters[k].getNbParams();
+                               nbEstimatedPropagationParameters[k];
 
             // Covariance matrix
-            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
+            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbEstimatedMeasurementParameters, nbDyn + nbEstimatedMeasurementParameters);
             final RealMatrix noiseP = covarianceMatricesProviders.get(k).
                                       getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
             noiseK.setSubMatrix(noiseP.getData(), 0, 0);
@@ -395,12 +421,12 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         int requiredDimension = orbitalParameters.getNbParams();
         for (final ParameterDriver driver : propagationParameters.getDrivers()) {
             if (driver.isSelected()) {
-                ++requiredDimension;
+                requiredDimension += driver.getNbOfValues();
             }
         }
         for (final ParameterDriver driver : measurementParameters.getDrivers()) {
             if (driver.isSelected()) {
-                ++requiredDimension;
+                requiredDimension += driver.getNbOfValues();
             }
         }
 
@@ -602,13 +628,19 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         final RealVector physicalEstimatedState = new ArrayRealVector(scale.length);
         int i = 0;
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
-            physicalEstimatedState.setEntry(i++, driver.getValue());
+            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                physicalEstimatedState.setEntry(i++, span.getData());
+            }
         }
         for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
-            physicalEstimatedState.setEntry(i++, driver.getValue());
+            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                physicalEstimatedState.setEntry(i++, span.getData());
+            }
         }
         for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
-            physicalEstimatedState.setEntry(i++, driver.getValue());
+            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                physicalEstimatedState.setEntry(i++, span.getData());
+            }
         }
 
         return physicalEstimatedState;
@@ -719,7 +751,10 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             }
 
             // Derivatives of the state vector with respect to propagation parameters
-            final int nbParams = estimatedPropagationParameters[k].getNbParams();
+            int nbParams = 0;
+            for (ParameterDriver driver : estimatedPropagationParameters[k].getDrivers()) {
+                nbParams += driver.getNbOfValues();
+            }
             if (nbParams > 0) {
                 final RealMatrix dYdPp = harvesters[k].getParametersJacobian(predictedSpacecraftStates[k]);
 
@@ -807,11 +842,15 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             if (nbParams > 0) {
                 final RealMatrix dYdPp = harvesters[p].getParametersJacobian(evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
+
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
+                    int col = 0;
                     for (int j = 0; j < nbParams; ++j) {
                         final ParameterDriver delegating = estimatedPropagationParameters[p].getDrivers().get(j);
-                        measurementMatrix.setEntry(i, propagationParameterColumns.get(delegating.getName()),
-                                                   dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
+                        for (Span<String> span = delegating.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                            measurementMatrix.setEntry(i, propagationParameterColumns.get(span.getData()),
+                                                       dMdPp.getEntry(i, col++) / sigma[i] * delegating.getScale());
+                        }
                     }
                 }
             }
@@ -823,18 +862,20 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Gather the measurement parameters linked to current measurement
             for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    // Derivatives of current measurement w/r to selected measurement parameter
-                    final double[] aMPm = predictedMeasurement.getParameterDerivatives(driver);
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                        // Derivatives of current measurement w/r to selected measurement parameter
+                        final double[] aMPm = predictedMeasurement.getParameterDerivatives(span.getData());
 
-                    // Check that the measurement parameter is managed by the filter
-                    if (measurementParameterColumns.get(driver.getName()) != null) {
-                        // Column of the driver in the measurement matrix
-                        final int driverColumn = measurementParameterColumns.get(driver.getName());
+                        // Check that the measurement parameter is managed by the filter
+                        if (measurementParameterColumns.get(span.getData()) != null) {
+                            // Column of the driver in the measurement matrix
+                            final int driverColumn = measurementParameterColumns.get(span.getData());
 
-                        // Fill the corresponding indexes of the measurement matrix
-                        for (int i = 0; i < aMPm.length; ++i) {
-                            measurementMatrix.setEntry(i, driverColumn,
-                                                       aMPm[i] / sigma[i] * driver.getScale());
+                            // Fill the corresponding indexes of the measurement matrix
+                            for (int i = 0; i < aMPm.length; ++i) {
+                                measurementMatrix.setEntry(i, driverColumn,
+                                                           aMPm[i] / sigma[i] * driver.getScale());
+                            }
                         }
                     }
                 }
@@ -977,11 +1018,18 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
 
             // Number of estimated measurement parameters
-            final int nbMeas = estimatedMeasurementsParameters.getNbParams();
+            int nbMeas = 0;
+            for (ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+                nbMeas += driver.getNbOfValues();
+            }
 
             // Number of estimated dynamic parameters (orbital + propagation)
+            int nbProgParam = 0;
+            for (ParameterDriver driver : estimatedPropagationParameters[k].getDrivers()) {
+                nbProgParam += driver.getNbOfValues();
+            }
             final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
-                               estimatedPropagationParameters[k].getNbParams();
+                               nbProgParam;
 
             // Covariance matrix
             final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
@@ -1116,7 +1164,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // the selected orbital drivers are already up to date with the prediction
             for (DelegatingDriver orbitalDriver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
                 if (orbitalDriver.isSelected()) {
-                    predictedState.setEntry(jOrb++, orbitalDriver.getNormalizedValue());
+                    for (Span<Double> span = orbitalDriver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                        predictedState.setEntry(jOrb++, orbitalDriver.getNormalizedValue(span.getStart()));
+                    }
                 }
             }
 
@@ -1134,18 +1184,24 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         int i = 0;
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
             // let the parameter handle min/max clipping
-            driver.setNormalizedValue(correctedState.getEntry(i));
-            correctedState.setEntry(i++, driver.getNormalizedValue());
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                driver.setNormalizedValue(correctedState.getEntry(i), span.getStart());
+                correctedState.setEntry(i++, driver.getNormalizedValue(span.getStart()));
+            }
         }
         for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
             // let the parameter handle min/max clipping
-            driver.setNormalizedValue(correctedState.getEntry(i));
-            correctedState.setEntry(i++, driver.getNormalizedValue());
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                driver.setNormalizedValue(correctedState.getEntry(i), span.getStart());
+                correctedState.setEntry(i++, driver.getNormalizedValue(span.getStart()));
+            }
         }
         for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
             // let the parameter handle min/max clipping
-            driver.setNormalizedValue(correctedState.getEntry(i));
-            correctedState.setEntry(i++, driver.getNormalizedValue());
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                driver.setNormalizedValue(correctedState.getEntry(i), span.getStart());
+                correctedState.setEntry(i++, driver.getNormalizedValue(span.getStart()));
+            }
         }
     }
 

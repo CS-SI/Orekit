@@ -135,7 +135,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -168,7 +168,7 @@ public class IonoModifierTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -206,7 +206,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -239,7 +239,7 @@ public class IonoModifierTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockOffsetDriver().setValue(groundClockOffset, null);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -279,7 +279,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -349,7 +349,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -590,7 +590,7 @@ public class IonoModifierTest {
             final AbsoluteDate    date    = ((Range) measurement).getDate();
             final SpacecraftState state   = propagator.propagate(date);
 
-            double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters());
+            double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters(date));
 
             final double epsilon = 1e-6;
             Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);

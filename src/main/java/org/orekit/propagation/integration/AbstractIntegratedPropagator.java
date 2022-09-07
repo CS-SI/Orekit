@@ -215,6 +215,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param mu central attraction coefficient (m³/s²)
      */
     public void setMu(final double mu) {
+    	System.out.println("IN");
+    	System.out.println(mu);
         stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
                                    stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -458,8 +460,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
 
             if (Double.isNaN(getMu())) {
-                setMu(getInitialState().getMu());
+            	System.out.println("TO FIX ne passe par setMu");
+                //setMu(getInitialState().getMu());
+            	stateMapper = createMapper(getInitialState().getDate(), getInitialState().getMu(),
+                        stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
+
             }
+            
+            System.out.println(getMu());
+
 
             if (getInitialState().getMass() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
@@ -752,8 +762,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // update space dynamics view
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
-            currentState = updateAdditionalStates(currentState);
 
+            currentState = updateAdditionalStates(currentState);
             // compute main state differentials
             return main.computeDerivatives(currentState);
 

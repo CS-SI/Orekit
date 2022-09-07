@@ -243,7 +243,7 @@ public class AngularAzElTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(2, measurement.getDimension());
                 Assert.assertEquals(2, gradient.length);
 
@@ -252,11 +252,11 @@ public class AngularAzElTest {
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) {
+                                        public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());
-                    final double ref = dMkdP.value(drivers[i]);
+                    final double ref = dMkdP.value(drivers[i], date);
 
                     if (ref > 1.e-12) {
                         Assert.assertEquals(ref, gradient[k], 3e-10 * FastMath.abs(ref));

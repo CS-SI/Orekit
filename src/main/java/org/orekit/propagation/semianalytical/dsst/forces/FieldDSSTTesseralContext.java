@@ -24,6 +24,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * This class is a container for the common "field" parameters used in {@link DSSTTesseral}.
@@ -106,7 +107,10 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
      * @param provider provider for spherical harmonics
      * @param maxFrequencyShortPeriodics maximum value for j
      * @param bodyPeriod central body rotation period (seconds)
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters (only 1 values
+     * for each parameters corresponding to state date) obtained by calling
+     * the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     * to selected the right value for state date or by getting the parameters for a specific date
      */
     FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                     final Frame centralBodyFrame,

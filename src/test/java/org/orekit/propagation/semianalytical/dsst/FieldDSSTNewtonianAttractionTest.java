@@ -79,7 +79,7 @@ public class FieldDSSTNewtonianAttractionTest {
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         
-        final T[] daidt = newton.getMeanElementRate(state, auxiliaryElements, newton.getParameters(field));
+        final T[] daidt = newton.getMeanElementRate(state, auxiliaryElements, newton.getParametersAllValues(field));
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

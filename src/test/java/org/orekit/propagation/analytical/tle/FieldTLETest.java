@@ -689,7 +689,7 @@ public class FieldTLETest {
     private <T extends CalculusFieldElement<T>> void checkConversion(final FieldTLE<T> tle, final Field<T> field)
         {
 
-        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
+        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field, tle.getDate()));
         final FieldTLE<T> converted = FieldTLE.stateToTLE(p.getInitialState(), tle);
 
         Assert.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());

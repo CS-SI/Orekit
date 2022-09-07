@@ -32,6 +32,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
  * One-way range rate (or Doppler) measurements generally apply to specific satellites
@@ -118,7 +119,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -267,8 +270,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         if (!twoway) {
             // clock drifts, taken in account only in case of one way
             final ObservableSatellite satellite    = getSatellites().get(0);
-            final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices);
-            final Gradient            dtgDot       = station.getClockDriftDriver().getValue(nbParams, indices);
+            final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices, transitState.getDate());
+            final Gradient            dtgDot       = station.getClockDriftDriver().getValue(nbParams, indices, stationPV.getDate().toAbsoluteDate());
 
             final Gradient clockDriftBiais = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
 
@@ -284,9 +287,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(span.getData(), derivatives[index]);
+                }
             }
         }
 

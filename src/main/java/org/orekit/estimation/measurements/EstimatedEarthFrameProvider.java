@@ -305,15 +305,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final Gradient theta    = linearModel(freeParameters, date,
                                               primeMeridianOffsetDriver, primeMeridianDriftDriver,
                                               indices);
-        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices);
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
 
         // pole shift parameters
         final Gradient xpNeg    = linearModel(freeParameters, date,
                                                          polarOffsetXDriver, polarDriftXDriver, indices).negate();
         final Gradient ypNeg    = linearModel(freeParameters, date,
                                                          polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices).negate();
-        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -415,8 +415,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                       offsetDriver.getName());
         }
         final Gradient dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final Gradient offset = offsetDriver.getValue(freeParameters, indices);
-        final Gradient drift  = driftDriver.getValue(freeParameters, indices);
+        final Gradient offset = offsetDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient drift  = driftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
         return dt.multiply(drift).add(offset);
     }
 
@@ -526,12 +526,12 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         private Object readResolve() {
             try {
                 final EstimatedEarthFrameProvider provider = new EstimatedEarthFrameProvider(baseUT1);
-                provider.getPrimeMeridianOffsetDriver().setValue(primeMeridianOffset);
-                provider.getPrimeMeridianDriftDriver().setValue(primeMeridianDrift);
-                provider.getPolarOffsetXDriver().setValue(polarOffsetX);
-                provider.getPolarDriftXDriver().setValue(polarDriftX);
-                provider.getPolarOffsetYDriver().setValue(polarOffsetY);
-                provider.getPolarDriftYDriver().setValue(polarDriftY);
+                provider.getPrimeMeridianOffsetDriver().setValue(primeMeridianOffset, new AbsoluteDate());
+                provider.getPrimeMeridianDriftDriver().setValue(primeMeridianDrift, new AbsoluteDate());
+                provider.getPolarOffsetXDriver().setValue(polarOffsetX, new AbsoluteDate());
+                provider.getPolarDriftXDriver().setValue(polarDriftX, new AbsoluteDate());
+                provider.getPolarOffsetYDriver().setValue(polarOffsetY, new AbsoluteDate());
+                provider.getPolarDriftYDriver().setValue(polarDriftY, new AbsoluteDate());
                 return provider;
             } catch (OrekitException oe) {
                 // this should never happen as values already come from previous drivers

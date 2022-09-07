@@ -48,9 +48,9 @@ public class AmbiguitySolverTest {
                                                           new SimpleRatioAmbiguityAcceptance(0.8)).
                                       fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
         Assert.assertEquals(3, fixed.size());
-        Assert.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
-        Assert.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
-        Assert.assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
+        Assert.assertEquals(5, fixed.get(0).getValue(null), 1.0e-15);
+        Assert.assertEquals(3, fixed.get(1).getValue(null), 1.0e-15);
+        Assert.assertEquals(4, fixed.get(2).getValue(null), 1.0e-15);
     }
 
     private List<ParameterDriver> createAmbiguities(double...floatValues) {
@@ -59,7 +59,7 @@ public class AmbiguitySolverTest {
             final ParameterDriver driver = new ParameterDriver(Phase.AMBIGUITY_NAME + i, 0.0, 1.0,
                                                                Double.NEGATIVE_INFINITY,
                                                                Double.POSITIVE_INFINITY);
-            driver.setValue(floatValues[i]);
+            driver.setValue(floatValues[i], null);
             driver.setSelected(true);
             ambiguitiesDrivers.add(driver);
         }

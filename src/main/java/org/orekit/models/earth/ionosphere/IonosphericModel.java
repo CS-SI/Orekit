@@ -25,6 +25,8 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
 
@@ -90,6 +92,23 @@ public interface IonosphericModel extends ParametersDriversProvider, Serializabl
         return parameters;
     }
 
+    /** Get ionospheric model parameters at specific date.
+     * @param date date at which the parameters want to be known, can
+     * be new AbsoluteDate() if all the parameters have no validity period
+     * that is to say that they have only 1 estimated value over the all
+     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
+     * validity period = 0)
+     * @return ionospheric model parameters
+     */
+    default double[] getParameters(AbsoluteDate date) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue(date);
+        }
+        return parameters;
+    }
+
     /** Get ionospheric model parameters.
      * @param field field to which the elements belong
      * @param <T> type of the elements
@@ -100,6 +119,25 @@ public interface IonosphericModel extends ParametersDriversProvider, Serializabl
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
             parameters[i] = field.getZero().add(drivers.get(i).getValue());
+        }
+        return parameters;
+    }
+
+    /** Get ionospheric model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @param date field date at which the parameters want to be known, can
+     * be new AbsoluteDate() if all the parameters have no validity period
+     * that is to say that they have only 1 estimated value over the all
+     * interval ( {@link org.orekit.utils.ParameterDriver#setPeriods} with
+     * validity period = 0)
+     * @return ionospheric model parameters
+     */
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, final FieldAbsoluteDate<T> date) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
         }
         return parameters;
     }

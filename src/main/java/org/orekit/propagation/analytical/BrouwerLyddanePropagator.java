@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * This class propagates a {@link org.orekit.propagation.SpacecraftState}
@@ -609,7 +610,16 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
      * @return the value of the M2 drag parameter
      */
     public double getM2() {
-        return M2Driver.getValue();
+        return M2Driver.getValue(getStartDate());
+    }
+
+    /**
+     * Get the value of the M2 drag parameter at specific date.
+     * @param date date at which the M2 drag parameter wants to be known.
+     * @return the value of the M2 drag parameter
+     */
+    public double getM2(final AbsoluteDate date) {
+        return M2Driver.getValue(date);
     }
 
     /**
@@ -658,8 +668,10 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
-                columnsNames.add(driver.getName());
+            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    columnsNames.add(span.getData());
+                }
             }
         }
         Collections.sort(columnsNames);
@@ -1085,7 +1097,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
         public UnivariateDerivative2[] propagateParameters(final AbsoluteDate date) {
 
             // Empirical drag coefficient M2
-            final double m2 = M2Driver.getValue();
+            final double m2 = M2Driver.getValue(date);
 
             // Keplerian evolution
             final UnivariateDerivative2 dt = new UnivariateDerivative2(date.durationFrom(mean.getDate()), 1.0, 0.0);

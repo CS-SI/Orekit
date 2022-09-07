@@ -692,11 +692,19 @@ public class TLE implements TimeStamped, Serializable {
         return revolutionNumberAtEpoch;
     }
 
-    /** Get the ballistic coefficient.
+    /** Get the ballistic coefficient at tle date.
      * @return bStar
      */
     public double getBStar() {
-        return bStarParameterDriver.getValue();
+        return bStarParameterDriver.getValue(getDate());
+    }
+
+    /** Get the ballistic coefficient at a specific date.
+     * @param date at which the ballistic coefficient wants to be known.
+     * @return bStar
+     */
+    public double getBStar(final AbsoluteDate date) {
+        return bStarParameterDriver.getValue(date);
     }
 
     /** Get a string representation of this TLE set.
@@ -892,7 +900,7 @@ public class TLE implements TimeStamped, Serializable {
         final double dt = epoch.durationFrom(templateTLE.getDate());
         final int newRevolutionNumberAtEpoch = (int) (revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
         // Gets B*
-        final double bStar = templateTLE.getBStar();
+        final double bStar = templateTLE.getBStar(epoch);
         // Gets Mean Motion derivatives
         final double meanMotionFirstDerivative = templateTLE.getMeanMotionFirstDerivative();
         final double meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();

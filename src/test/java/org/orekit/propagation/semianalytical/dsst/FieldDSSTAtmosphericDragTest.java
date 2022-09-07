@@ -142,7 +142,7 @@ public class FieldDSSTAtmosphericDragTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
         
         // Force model parameters
-        final T[] parameters = drag.getParameters(field);
+        final T[] parameters = drag.getParametersAllValues(field);
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
@@ -214,8 +214,8 @@ public class FieldDSSTAtmosphericDragTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(field)));
-        drag.updateShortPeriodTerms(drag.getParameters(field), meanState);
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParametersAllValues(field)));
+        drag.updateShortPeriodTerms(drag.getParametersAllValues(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
@@ -408,7 +408,7 @@ public class FieldDSSTAtmosphericDragTest {
         drag.registerAttitudeProvider(attitudeProvider);
       
         for (final ParameterDriver driver : drag.getParametersDrivers()) {
-            driver.setValue(driver.getReferenceValue());
+            driver.setValue(driver.getReferenceValue(), null);
             driver.setSelected(driver.getName().equals(parameterName));
         }
       
@@ -475,28 +475,28 @@ public class FieldDSSTAtmosphericDragTest {
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
       
-        selected.setValue(p0 - 4 * h);
+        selected.setValue(p0 - 4 * h, null);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, drag);
   
-        selected.setValue(p0 - 3 * h);
+        selected.setValue(p0 - 3 * h, null);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, drag);
       
-        selected.setValue(p0 - 2 * h);
+        selected.setValue(p0 - 2 * h, null);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, drag);
       
-        selected.setValue(p0 - 1 * h);
+        selected.setValue(p0 - 1 * h, null);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, drag);
       
-        selected.setValue(p0 + 1 * h);
+        selected.setValue(p0 + 1 * h, null);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, drag);
       
-        selected.setValue(p0 + 2 * h);
+        selected.setValue(p0 + 2 * h, null);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, drag);
       
-        selected.setValue(p0 + 3 * h);
+        selected.setValue(p0 + 3 * h, null);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, drag);
       
-        selected.setValue(p0 + 4 * h);
+        selected.setValue(p0 + 4 * h, null);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, drag);
       
         fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
@@ -517,7 +517,7 @@ public class FieldDSSTAtmosphericDragTest {
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        double[] parameters = force.getParameters();
+        double[] parameters = force.getParametersAllValues();
         shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         

@@ -256,7 +256,7 @@ public class TriggerDate
 
         // get the acceleration near trigger time
         final SpacecraftState stateWhenFiring = state.shiftedBy((manageStart ? 2 : -2) * threshold);
-        final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters());
+        final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParametersAllValues());
 
         // initialize derivatives computation
         final double     sign = (forward == manageStart) ? -1 : +1;

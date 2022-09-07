@@ -32,6 +32,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** This class implements a parametric acceleration.
@@ -61,6 +62,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 10.3
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @author Melina Vanel
  */
 public class ParametricAcceleration extends AbstractForceModel {
 
@@ -155,6 +157,9 @@ public class ParametricAcceleration extends AbstractForceModel {
     public Vector3D acceleration(final SpacecraftState state,
                                  final double[] parameters) {
 
+        // Date
+        final AbsoluteDate date = state.getDate();
+
         final Vector3D inertialDirection;
         if (isInertial) {
             // the acceleration direction is already defined in the inertial frame
@@ -166,13 +171,16 @@ public class ParametricAcceleration extends AbstractForceModel {
                 attitude = state.getAttitude();
             } else {
                 // the acceleration direction is defined in a dedicated frame
-                attitude = attitudeOverride.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());
+                attitude = attitudeOverride.getAttitude(state.getOrbit(), date, state.getFrame());
             }
             inertialDirection = attitude.getRotation().applyInverseTo(direction);
         }
 
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, date);
+
         // Call the acceleration model to compute the acceleration
-        return new Vector3D(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
+        return new Vector3D(accelerationModel.signedAmplitude(state, extractedParameters), inertialDirection);
 
     }
 
@@ -181,10 +189,13 @@ public class ParametricAcceleration extends AbstractForceModel {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
                                                                          final T[] parameters) {
 
+        // Date
+        final FieldAbsoluteDate<T> date = state.getDate();
+
         final FieldVector3D<T> inertialDirection;
         if (isInertial) {
             // the acceleration direction is already defined in the inertial frame
-            inertialDirection = new FieldVector3D<>(state.getDate().getField(), direction);
+            inertialDirection = new FieldVector3D<>(date.getField(), direction);
         } else {
             final FieldAttitude<T> attitude;
             if (attitudeOverride == null) {
@@ -192,15 +203,19 @@ public class ParametricAcceleration extends AbstractForceModel {
                 attitude = state.getAttitude();
             } else {
                 // the acceleration direction is defined in a dedicated frame
-                attitude = attitudeOverride.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());
+                attitude = attitudeOverride.getAttitude(state.getOrbit(), date, state.getFrame());
             }
             inertialDirection = attitude.getRotation().applyInverseTo(direction);
         }
 
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, date);
+
         // Call the acceleration model to compute the acceleration
-        return new FieldVector3D<>(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
+        return new FieldVector3D<>(accelerationModel.signedAmplitude(state, extractedParameters), inertialDirection);
 
     }
+
 
     /** {@inheritDoc} */
     @Override

@@ -95,7 +95,7 @@ public class LenseThirringRelativity extends AbstractForceModel {
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
 
         // Earth's gravitational parameter
-        final double gm = parameters[0];
+        final double gm = this.extractParameters(parameters, s.getDate())[0];
 
         // Satellite position and velocity with respect to the Earth
         final PVCoordinates pv = s.getPVCoordinates();
@@ -128,7 +128,7 @@ public class LenseThirringRelativity extends AbstractForceModel {
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
 
         // Earth's gravitational parameter
-        final T gm = parameters[0];
+        final T gm = this.extractParameters(parameters, s.getDate())[0];
 
         // Satellite position and velocity with respect to the Earth
         final FieldPVCoordinates<T> pv = s.getPVCoordinates();

@@ -80,7 +80,7 @@ public class Relativity extends AbstractForceModel {
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
-        final double gm = parameters[0];
+        final double gm = this.extractParameters(parameters, s.getDate())[0];
 
         final PVCoordinates pv = s.getPVCoordinates();
         final Vector3D p = pv.getPosition();
@@ -106,7 +106,7 @@ public class Relativity extends AbstractForceModel {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
-        final T gm = parameters[0];
+        final T gm = this.extractParameters(parameters, s.getDate())[0];
 
         final FieldPVCoordinates<T> pv = s.getPVCoordinates();
         final FieldVector3D<T> p = pv.getPosition();

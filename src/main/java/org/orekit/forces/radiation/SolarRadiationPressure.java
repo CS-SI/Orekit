@@ -128,8 +128,11 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final double   rawP  = ratio  * kRef / r2;
         final Vector3D flux  = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, date);
+
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                        s.getMass(), flux, parameters);
+                                                        s.getMass(), flux, extractedParameters);
 
     }
 
@@ -149,8 +152,11 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final T                rawP  = ratio.multiply(kRef).divide(r2);
         final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, date);
+
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                        s.getMass(), flux, parameters);
+                                                        s.getMass(), flux, extractedParameters);
 
     }
 

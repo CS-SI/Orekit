@@ -640,7 +640,7 @@ public class StateTransitionMatrixGeneratorTest {
         propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalState(SpacecraftState state) {
-                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(), 0, propulsionModel.getParametersDrivers().size());
+                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                     propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
                 };

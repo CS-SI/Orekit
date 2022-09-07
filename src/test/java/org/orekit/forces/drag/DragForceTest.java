@@ -151,7 +151,8 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             // compute acceleration with all its partial derivatives
             return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(factory.getDerivativeField(), date),
                                                frame, position, rotation, mass, rho, relativeVelocity,
-                                               forceModel.getParameters(factory.getDerivativeField()));
+                                               forceModel.getParameters(factory.getDerivativeField(), new
+                                               FieldAbsoluteDate<>(factory.getDerivativeField(), date)));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -223,7 +224,8 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             // compute acceleration with all its partial derivatives
             return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(GradientField.getField(freeParameters), date),
                                                frame, position, rotation, mass, rho, relativeVelocity,
-                                               forceModel.getParameters(GradientField.getField(freeParameters)));
+                                               forceModel.getParameters(GradientField.getField(freeParameters), new
+                                               FieldAbsoluteDate<>(GradientField.getField(freeParameters), date)));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;

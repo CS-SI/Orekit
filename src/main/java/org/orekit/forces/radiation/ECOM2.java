@@ -166,20 +166,22 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Angular argument difference u_s - u
         final double delta_u = FastMath.atan2(satPos.dotProduct(Y), satPos.dotProduct(X));
 
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, s.getDate());
         // Compute B(u)
-        double b_u = parameters[0];
+        double b_u = extractedParameters[0];
         for (int i = 1; i < nB + 1; i++) {
             final SinCos sc = FastMath.sinCos((2 * i - 1) * delta_u);
-            b_u += parameters[i] * sc.cos() + parameters[i + nB] * sc.sin();
+            b_u += extractedParameters[i] * sc.cos() + extractedParameters[i + nB] * sc.sin();
         }
         // Compute D(u)
-        double d_u = parameters[2 * nB + 1];
+        double d_u = extractedParameters[2 * nB + 1];
         for (int i = 1; i < nD + 1; i++) {
             final SinCos sc = FastMath.sinCos(2 * i * delta_u);
-            d_u += parameters[2 * nB + 1 + i] * sc.cos() + parameters[2 * nB + 1 + i + nD] * sc.sin();
+            d_u += extractedParameters[2 * nB + 1 + i] * sc.cos() + extractedParameters[2 * nB + 1 + i + nD] * sc.sin();
         }
         // Return acceleration
-        return new Vector3D(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
+        return new Vector3D(d_u, eD, extractedParameters[2 * (nD + nB) + 2], eY, b_u, eB);
     }
 
     /** {@inheritDoc} */
@@ -203,21 +205,23 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Angular argument difference u_s - u
         final T  delta_u = FastMath.atan2(satPos.dotProduct(Y), satPos.dotProduct(X));
 
+        // Extract the proper parameters valid at date from the input array
+        final T[]  extractedParameters = this.extractParameters(parameters, s.getDate());
         // Compute B(u)
-        T b_u =  parameters[0];
+        T b_u =  extractedParameters[0];
         for (int i = 1; i < nB + 1; i++) {
             final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i - 1));
-            b_u = b_u.add(sc.cos().multiply(parameters[i])).add(sc.sin().multiply(parameters[i + nB]));
+            b_u = b_u.add(sc.cos().multiply(extractedParameters[i])).add(sc.sin().multiply(extractedParameters[i + nB]));
         }
         // Compute D(u)
-        T d_u = parameters[2 * nB + 1];
+        T d_u = extractedParameters[2 * nB + 1];
 
         for (int i = 1; i < nD + 1; i++) {
             final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i));
-            d_u =  d_u.add(sc.cos().multiply(parameters[2 * nB + 1 + i])).add(sc.sin().multiply(parameters[2 * nB + 1 + i + nD]));
+            d_u =  d_u.add(sc.cos().multiply(extractedParameters[2 * nB + 1 + i])).add(sc.sin().multiply(extractedParameters[2 * nB + 1 + i + nD]));
         }
         // Return the acceleration
-        return new FieldVector3D<>(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
+        return new FieldVector3D<>(d_u, eD, extractedParameters[2 * (nD + nB) + 2], eY, b_u, eB);
     }
 
     /** {@inheritDoc} */

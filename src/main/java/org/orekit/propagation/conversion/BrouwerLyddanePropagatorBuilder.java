@@ -249,7 +249,9 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
         boolean isSelected = false;
         for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
             if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
-                newM2      = driver.getValue();
+                // it is ok as m2 has only 1 value estimated over the all time period from -INF to +INF  
+            	// A DISCUTER AVEC MAXIME (si pas ok rajouter un constructeur
+            	newM2      = driver.getValue(null);
                 isSelected = driver.isSelected();
             }
         }

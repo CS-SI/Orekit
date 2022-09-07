@@ -35,6 +35,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a turn-around range measurement using a primary ground station and a secondary ground station.
  * <p>
@@ -140,8 +141,13 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
             // we have to check for duplicate keys because primary and secondary station share
             // pole and prime meridian parameters names that must be considered
             // as one set only (they are combined together by the estimation engine)
-            if (driver.isSelected() && !indices.containsKey(driver.getName())) {
-                indices.put(driver.getName(), nbParams++);
+            if (driver.isSelected()) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
         final Field<Gradient>         field   = GradientField.getField(nbParams);
@@ -305,9 +311,11 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(span.getData(), derivatives[index]);
+                }
             }
         }
 

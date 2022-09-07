@@ -46,6 +46,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
@@ -263,8 +264,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                        superSetMu(field.getZero().add(driver.getValue()));
+                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
+                        superSetMu(field.getZero().add(driver.getValue(date)));
                     }
                 });
             } catch (OrekitException oe) {

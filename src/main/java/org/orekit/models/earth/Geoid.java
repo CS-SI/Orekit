@@ -234,7 +234,7 @@ public class Geoid implements EarthShape {
                 .getNormalGravity(geodeticLatitude);
 
         // calculate disturbing potential, T, eq 30.
-        final double mu = this.harmonics.getMu();
+        final double mu = this.harmonics.getMu(date);
         final double T  = this.harmonics.nonCentralPart(date, position, mu);
         // calculate undulation, eq 30
         return T / normalGravity;

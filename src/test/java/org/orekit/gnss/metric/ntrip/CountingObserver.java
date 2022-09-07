@@ -38,7 +38,6 @@ public class CountingObserver implements MessageObserver {
 
     public void messageAvailable(String mountPoint, ParsedMessage message) {
         if (filter.apply(message)) {
-            final int i = received.incrementAndGet();
             phaser.arrive();
         }
     }

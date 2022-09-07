@@ -119,7 +119,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             // compute acceleration with all its partial derivatives
             return spacecraft.radiationPressureAcceleration(new FieldAbsoluteDate<>(field, date),
                                                             frame, position, rotation, mass, flux,
-                                                            forceModel.getParameters(field));
+                                                            forceModel.getParameters(field,  new FieldAbsoluteDate<>(field, date)));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
                  SecurityException | NoSuchMethodException | InvocationTargetException e) {
             return null;
@@ -162,7 +162,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             // compute acceleration with all its partial derivatives
             return spacecraft.radiationPressureAcceleration(new FieldAbsoluteDate<>(field, date),
                                                             frame, position, rotation, mass, flux,
-                                                            forceModel.getParameters(field));
+                                                            forceModel.getParameters(field, new FieldAbsoluteDate<>(field, date)));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
                  SecurityException | NoSuchMethodException | InvocationTargetException e) {
             return null;

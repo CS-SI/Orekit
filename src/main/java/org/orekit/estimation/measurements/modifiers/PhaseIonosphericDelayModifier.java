@@ -34,6 +34,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Class modifying theoretical phase measurement with ionospheric delay.
@@ -74,7 +75,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         final TopocentricFrame baseFrame = station.getBaseFrame();
         final double wavelength  = Constants.SPEED_OF_LIGHT / frequency;
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         return delay / wavelength;
     }
 
@@ -124,10 +125,10 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
     private double phaseErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state) {
-        final ParameterFunction phaseError = parameterDriver -> phaseErrorIonosphericModel(station, state);
+        final ParameterFunction phaseError = (parameterDriver, date) -> phaseErrorIonosphericModel(station, state);
         final ParameterFunction phaseErrorDerivative =
                         Differentiation.differentiate(phaseError, 3, 10.0 * driver.getScale());
-        return phaseErrorDerivative.value(driver);
+        return phaseErrorDerivative.value(driver, state.getDate());
 
     }
 
@@ -188,12 +189,14 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         int index = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
-                parameterDerivative -= dDelaydP[index];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index = index + 1;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    // update estimated derivatives with derivative of the modification wrt ionospheric parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
+                    parameterDerivative -= dDelaydP[index];
+                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    index = index + 1;
+                }
             }
 
         }
@@ -204,10 +207,12 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative -= phaseErrorParameterDerivative(station, driver, state);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    // update estimated derivatives with derivative of the modification wrt station parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    parameterDerivative -= phaseErrorParameterDerivative(station, driver, state);
+                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                }
             }
         }
 

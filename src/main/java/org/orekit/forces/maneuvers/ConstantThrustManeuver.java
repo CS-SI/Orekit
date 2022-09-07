@@ -191,39 +191,53 @@ public class ConstantThrustManeuver extends Maneuver {
     }
 
     /** Get the thrust vector (N) in S/C frame.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
      * @return thrust vector (N) in S/C frame.
      */
-    public Vector3D getThrustVector() {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector();
+    public Vector3D getThrustVector(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector(date);
     }
 
     /** Get the thrust.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
      * @return thrust force (N).
      */
-    public double getThrust() {
-        return getThrustVector().getNorm();
+    public double getThrust(final AbsoluteDate date) {
+        return getThrustVector(date).getNorm();
     }
 
     /** Get the specific impulse.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
      * @return specific impulse (s).
      */
-    public double getISP() {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp();
+    public double getISP(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp(date);
     }
 
     /** Get the flow rate.
+     * @param date at which the Thrust wants to be known
      * @return flow rate (negative, kg/s).
      */
-    public double getFlowRate() {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getFlowRate();
+    public double getFlowRate(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getFlowRate(date);
     }
 
     /** Get the direction.
+     * @param date at which the Thrust wants to be known
      * @return the direction
      * @since 9.2
      */
-    public Vector3D getDirection() {
-        return getThrustVector().normalize();
+    public Vector3D getDirection(final AbsoluteDate date) {
+        return getThrustVector(date).normalize();
     }
 
     /** Get the start date.

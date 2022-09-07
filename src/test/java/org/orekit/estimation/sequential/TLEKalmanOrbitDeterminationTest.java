@@ -291,10 +291,10 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         sortParametersChanges(list);
         final double[] stationOffSet = { 0.214786,  1.057400,  -0.54545 };
         final double rangeBias = 0.12005;
-        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
-        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(null), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(null), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(null), distanceAccuracy);
+        Assert.assertEquals(rangeBias,        list.get(3).getValue(null), distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 95;

@@ -193,7 +193,7 @@ public class OceanTidesTest {
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
         Assert.assertEquals(1, fm.getParametersDrivers().size());
         try {
-            fm.getParameterDriver("unknown").setValue(0.0);
+            fm.getParameterDriver("unknown").setValue(0.0, null);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException miae) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());

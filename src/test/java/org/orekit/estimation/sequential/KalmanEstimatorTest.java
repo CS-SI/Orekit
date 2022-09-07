@@ -183,7 +183,7 @@ public class KalmanEstimatorTest {
         
         // Change semi-major axis of 1.2m as in the batch test
         ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         // Cartesian covariance matrix initialization
@@ -275,7 +275,7 @@ public class KalmanEstimatorTest {
         
         // Change semi-major axis of 1.2m as in the batch test
         ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         // Cartesian covariance matrix initialization
@@ -809,20 +809,20 @@ public class KalmanEstimatorTest {
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
         Assert.assertEquals("a[0]", a0Driver.getName());
-        a0Driver.setValue(a0Driver.getValue() + 1.2);
+        a0Driver.setValue(a0Driver.getValue(null) + 1.2, null);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
         Assert.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setValue(a1Driver.getValue(null) - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                    parameters.get( 7).getValue(null),
+                                                    parameters.get( 8).getValue(null),
+                                                    parameters.get( 9).getValue(null),
+                                                    parameters.get(10).getValue(null),
+                                                    parameters.get(11).getValue(null),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
@@ -1053,20 +1053,20 @@ public class KalmanEstimatorTest {
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
         Assert.assertEquals("a[0]", a0Driver.getName());
-        a0Driver.setValue(a0Driver.getValue() + 1.2);
+        a0Driver.setValue(a0Driver.getValue(null) + 1.2, null);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
         Assert.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setValue(a1Driver.getValue(null) - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
-                                                    parameters.get( 7).getValue(),
-                                                    parameters.get( 8).getValue(),
-                                                    parameters.get( 9).getValue(),
-                                                    parameters.get(10).getValue(),
-                                                    parameters.get(11).getValue(),
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(null),
+                                                    parameters.get( 7).getValue(null),
+                                                    parameters.get( 8).getValue(null),
+                                                    parameters.get( 9).getValue(null),
+                                                    parameters.get(10).getValue(null),
+                                                    parameters.get(11).getValue(null),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),

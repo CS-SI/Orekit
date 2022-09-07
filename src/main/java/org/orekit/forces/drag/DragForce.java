@@ -49,6 +49,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
+ * @author Melina Vanel
  */
 
 public class DragForce extends AbstractDragForceModel {
@@ -81,8 +82,11 @@ public class DragForce extends AbstractDragForceModel {
         final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, date);
+
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, parameters);
+                                           s.getMass(), rho, relativeVelocity, extractedParameters);
 
     }
 
@@ -114,9 +118,12 @@ public class DragForce extends AbstractDragForceModel {
         final FieldVector3D<T> vAtm = atmosphere.getVelocity(date, position, frame);
         final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, date);
+
         // Drag acceleration along with its derivatives
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, parameters);
+                                           s.getMass(), rho, relativeVelocity, extractedParameters);
 
     }
 
@@ -151,4 +158,5 @@ public class DragForce extends AbstractDragForceModel {
     public DragSensitive getSpacecraft() {
         return spacecraft;
     }
+
 }

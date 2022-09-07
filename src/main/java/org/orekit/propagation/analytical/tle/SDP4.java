@@ -96,7 +96,7 @@ abstract class SDP4  extends TLEPropagator {
 
         final double tempa = 1 - c1 * tSince;
         a   = FastMath.pow(TLEConstants.XKE / xn, TLEConstants.TWO_THIRD) * tempa * tempa;
-        em -= tle.getBStar() * c4 * tSince;
+        em -= tle.getBStar(tle.getDate().shiftedBy(tSince)) * c4 * tSince;
 
         // Update for deep-space periodic effects
         xll += xn0dp * t2cof * tSinceSq;

@@ -173,7 +173,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
             Arrays.fill(m, zeroDerivative);
         }
 
-        final Map<ParameterDriver, double[]> parametersDerivatives = new IdentityHashMap<>();
+        final Map<String, double[]> parametersDerivatives = new IdentityHashMap<>();
         index = 0;
         for (int i = 0; i < observedMeasurements.size(); ++i) {
 
@@ -190,11 +190,11 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
 
             // parameters derivatives
             eI.getDerivativesDrivers().forEach(driver -> {
-                final ParameterDriversList.DelegatingDriver delegating = parametersDrivers.findByName(driver.getName());
-                double[] derivatives = parametersDerivatives.get(delegating);
+                final String delagatingSpanName = parametersDrivers.findDelegatingSpanNameBySpanName(driver);
+                double[] derivatives = parametersDerivatives.get(delagatingSpanName);
                 if (derivatives == null) {
                     derivatives = new double[dimension];
-                    parametersDerivatives.put(delegating, derivatives);
+                    parametersDerivatives.put(delagatingSpanName, derivatives);
                 }
                 System.arraycopy(eI.getParameterDerivatives(driver), 0, derivatives, idx, dimI);
             });

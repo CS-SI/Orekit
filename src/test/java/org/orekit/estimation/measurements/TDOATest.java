@@ -155,7 +155,7 @@ public class TDOATest {
         final double clockOffset = 4.8e-9;
         for (final GroundStation station : Arrays.asList(context.TDOAstations.getKey(),
                                                          context.TDOAstations.getValue())) {
-            station.getClockOffsetDriver().setValue(clockOffset);
+            station.getClockOffsetDriver().setValue(clockOffset, null);
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -223,7 +223,7 @@ public class TDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockOffsetDriver().setValue(clockOffset);
+        secondary.getClockOffsetDriver().setValue(clockOffset, null);
         secondary.getClockOffsetDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
@@ -263,7 +263,7 @@ public class TDOATest {
                 secondParameter.getZenithOffsetDriver(),
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -271,11 +271,11 @@ public class TDOATest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }
@@ -305,7 +305,7 @@ public class TDOATest {
         primary.getZenithOffsetDriver().setSelected(true);
         final double clockOffset = 4.8e-9;
         final GroundStation secondary = context.TDOAstations.getValue();
-        secondary.getClockOffsetDriver().setValue(clockOffset);
+        secondary.getClockOffsetDriver().setValue(clockOffset, null);
         secondary.getClockOffsetDriver().setSelected(true);
         secondary.getEastOffsetDriver().setSelected(true);
         secondary.getNorthOffsetDriver().setSelected(true);
@@ -350,7 +350,7 @@ public class TDOATest {
                 secondParameter.getZenithOffsetDriver(),
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -358,11 +358,11 @@ public class TDOATest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }

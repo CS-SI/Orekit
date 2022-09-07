@@ -60,7 +60,7 @@ public class AbstractPropagatorBuilderTest {
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             final double expectedValue = stateVector[i++];
-            Assert.assertEquals(expectedValue, driver.getValue(), 0.);
+            Assert.assertEquals(expectedValue, driver.getValue(null), 0.);
             Assert.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
         }
     }

@@ -73,7 +73,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
         // only consider measures above the horizon
         if (elevation > 0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
 
             return delay;
         }

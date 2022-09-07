@@ -78,7 +78,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
             java.lang.reflect.Field bodyField = SingleBodyRelativeAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue(date);
 
             final Field<DerivativeStructure> field = position.getX().getField();
             // compute bodies separation vectors and squared norm
@@ -110,7 +110,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
             java.lang.reflect.Field bodyField = SingleBodyRelativeAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue(date);
 
             final Field<Gradient> field = position.getX().getField();
             // compute bodies separation vectors and squared norm

@@ -122,8 +122,8 @@ public class NumericalPropagationHarvesterTest {
         propulsion.getParametersDrivers().get(0).setSelected(true);
         List<String> columnsNames = harvester.getJacobiansColumnsNames();
         Assert.assertEquals(2, columnsNames.size());
-        Assert.assertEquals("ABM-" + BasicConstantThrustPropulsionModel.THRUST, columnsNames.get(0));
-        Assert.assertEquals("apogee_boost_STOP", columnsNames.get(1));
+        Assert.assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + Integer.toString(0), columnsNames.get(0));
+        Assert.assertEquals("Spanapogee_boost_STOP" + Integer.toString(0), columnsNames.get(1));
 
     }
 

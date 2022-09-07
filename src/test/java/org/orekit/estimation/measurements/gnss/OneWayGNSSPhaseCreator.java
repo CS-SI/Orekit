@@ -62,7 +62,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
         this.wavelength          = frequency.getWavelength();
         this.ambiguity           = new OneWayGNSSPhaseAmbiguityModifier(0, ambiguity);
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset);
+        this.local.getClockOffsetDriver().setValue(localClockOffset, null);
     }
 
     public ObservableSatellite getLocalSatellite() {
@@ -77,8 +77,8 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           n         = ambiguity.getParametersDrivers().get(0).getValue();
-            final double           localClk  = local.getClockOffsetDriver().getValue();
+            final double           n         = ambiguity.getParametersDrivers().get(0).getValue(currentState.getDate());
+            final double           localClk  = local.getClockOffsetDriver().getValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);

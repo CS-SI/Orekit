@@ -241,8 +241,12 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
+
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, date);
+
         return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
-                                                        s.getMass(), rediffusedFlux, parameters);
+                                                        s.getMass(), rediffusedFlux, extractedParameters);
     }
 
 
@@ -316,8 +320,12 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
+
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, date);
+
         return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
-                                                        s.getMass(), rediffusedFlux, parameters);
+                                                        s.getMass(), rediffusedFlux, extractedParameters);
     }
 
 

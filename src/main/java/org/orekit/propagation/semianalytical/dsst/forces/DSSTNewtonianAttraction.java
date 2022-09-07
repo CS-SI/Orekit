@@ -36,6 +36,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Force model for Newtonian central body attraction for the {@link DSSTPropagator DSST propagator}.
@@ -68,11 +69,12 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY);
     }
 
-    /** Get the central attraction coefficient μ.
+    /** Get the central attraction coefficient μ at specific date.
+     * @param date date at which mu wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
-    public double getMu() {
-        return gmParameterDriver.getValue();
+    public double getMu(final AbsoluteDate date) {
+        return gmParameterDriver.getValue(date);
     }
 
     /** {@inheritDoc} */
@@ -124,7 +126,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
                                        final double[] parameters) {
 
         // Container for attributes
-        final DSSTNewtonianAttractionContext context = initializeStep(auxiliaryElements, parameters);
+        // Extract the proper parameters valid at date from the input array
+        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+        final DSSTNewtonianAttractionContext context = initializeStep(auxiliaryElements, extractedParameters);
 
         final double[] yDot = new double[7];
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
@@ -143,7 +147,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         // Field for array building
         final Field<T> field = state.getMu().getField();
         // Container for attributes
-        final FieldDSSTNewtonianAttractionContext<T> context = initializeStep(auxiliaryElements, parameters);
+        // Extract the proper parameters valid at date from the input array
+        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+        final FieldDSSTNewtonianAttractionContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
         final T[] yDot = MathArrays.buildArray(field, 7);
         final FieldEquinoctialOrbit<T> orbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());

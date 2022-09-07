@@ -209,7 +209,7 @@ public class DSSTBatchLSEstimatorTest {
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
         Assert.assertEquals("a", aDriver.getName());
-        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         DSSTEstimationTestUtils.checkFit(context, estimator, 2, 3,
@@ -306,7 +306,7 @@ public class DSSTBatchLSEstimatorTest {
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
         Assert.assertEquals("a", aDriver.getName());
-        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         DSSTEstimationTestUtils.checkFit(context, estimator, 2, 3,
@@ -403,7 +403,7 @@ public class DSSTBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
@@ -452,7 +452,7 @@ public class DSSTBatchLSEstimatorTest {
                                                                1.0, 3.0, 300.0);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockDriftDriver().setValue(groundClockDrift, null);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =

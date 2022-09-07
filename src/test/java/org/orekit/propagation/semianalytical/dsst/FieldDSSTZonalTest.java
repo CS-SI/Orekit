@@ -106,7 +106,7 @@ public class FieldDSSTZonalTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
         
         // Force model parameters
-        final T[] parameters = zonal.getParameters(field);
+        final T[] parameters = zonal.getParametersAllValues(field);
         // Initialize force model
         zonal.initializeShortPeriodTerms(auxiliaryElements,
                          PropagationType.MEAN, parameters);
@@ -134,40 +134,40 @@ public class FieldDSSTZonalTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
-        final T zero = field.getZero();
- 
-        final FieldSpacecraftState<T> meanState = getGEOState(field);
-        
-        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
-        final DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
-
-        //Create the auxiliary object
-        final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
-
-        // Set the force models
-        final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
-
-        zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
-        zonal.updateShortPeriodTerms(zonal.getParameters(field), meanState);
-
-        T[] y = MathArrays.buildArray(field, 6);
-        Arrays.fill(y, zero);
-        for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
-            final T[] shortPeriodic = spt.value(meanState.getOrbit());
-            for (int i = 0; i < shortPeriodic.length; i++) {
-                y[i] = y[i].add(shortPeriodic[i]);
-            }
-        }
-        
-        Assert.assertEquals(35.005618980090276,     y[0].getReal(), 1.e-15);
-        Assert.assertEquals(3.75891551882889E-5,    y[1].getReal(), 1.e-20);
-        Assert.assertEquals(3.929119925563796E-6,   y[2].getReal(), 1.e-21);
-        Assert.assertEquals(-1.1781951949124315E-8, y[3].getReal(), 1.e-24);
-        Assert.assertEquals(-3.2134924513679615E-8, y[4].getReal(), 1.e-24);
-        Assert.assertEquals(-1.1607392915997098E-6, y[5].getReal(), 1.e-21);
-    }
+	private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+	    final T zero = field.getZero();
+	
+	    final FieldSpacecraftState<T> meanState = getGEOState(field);
+	    
+	    final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
+	    final DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+	
+	    //Create the auxiliary object
+	    final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
+	
+	    // Set the force models
+	    final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
+	
+	    zonal.registerAttitudeProvider(null);
+	    shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParametersAllValues(field)));
+	    zonal.updateShortPeriodTerms(zonal.getParametersAllValues(field), meanState);
+	
+	    T[] y = MathArrays.buildArray(field, 6);
+	    Arrays.fill(y, zero);
+	    for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
+	        final T[] shortPeriodic = spt.value(meanState.getOrbit());
+	        for (int i = 0; i < shortPeriodic.length; i++) {
+	            y[i] = y[i].add(shortPeriodic[i]);
+	        }
+	    }
+	    
+	    Assert.assertEquals(35.005618980090276,     y[0].getReal(), 1.e-15);
+	    Assert.assertEquals(3.75891551882889E-5,    y[1].getReal(), 1.e-20);
+	    Assert.assertEquals(3.929119925563796E-6,   y[2].getReal(), 1.e-21);
+	    Assert.assertEquals(-1.1781951949124315E-8, y[3].getReal(), 1.e-24);
+	    Assert.assertEquals(-3.2134924513679615E-8, y[4].getReal(), 1.e-24);
+	    Assert.assertEquals(-1.1607392915997098E-6, y[5].getReal(), 1.e-21);
+	}
 
     @Test
     public void testIssue625() {
@@ -211,17 +211,17 @@ public class FieldDSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field));
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParametersAllValues(field));
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field));
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParametersAllValues(field));
 
         // Compute mean element rate for the zonal force model
-        final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field));
+        final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParametersAllValues(field));
 
         // Compute mean element rate for the "default" zonal force model
-        final T[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(field));
+        final T[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParametersAllValues(field));
 
         // Verify
         for (int i = 0; i < 6; i++) {
@@ -373,7 +373,7 @@ public class FieldDSSTZonalTest {
         final DSSTForceModel zonal   = new DSSTZonal(provider, 2, 1, 5);
       
         for (final ParameterDriver driver : zonal.getParametersDrivers()) {
-            driver.setValue(driver.getReferenceValue());
+            driver.setValue(driver.getReferenceValue(), null);
             driver.setSelected(driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT));
         }
       
@@ -440,28 +440,28 @@ public class FieldDSSTZonalTest {
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
       
-        selected.setValue(p0 - 4 * h);
+        selected.setValue(p0 - 4 * h, null);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, zonal);
   
-        selected.setValue(p0 - 3 * h);
+        selected.setValue(p0 - 3 * h, null);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 - 2 * h);
+        selected.setValue(p0 - 2 * h, null);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 - 1 * h);
+        selected.setValue(p0 - 1 * h, null);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 1 * h);
+        selected.setValue(p0 + 1 * h, null);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 2 * h);
+        selected.setValue(p0 + 2 * h, null);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 3 * h);
+        selected.setValue(p0 + 3 * h, null);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 4 * h);
+        selected.setValue(p0 + 4 * h, null);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, zonal);
       
         fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
@@ -500,7 +500,7 @@ public class FieldDSSTZonalTest {
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        double[] parameters = force.getParameters();
+        double[] parameters = force.getParametersAllValues();
         shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         

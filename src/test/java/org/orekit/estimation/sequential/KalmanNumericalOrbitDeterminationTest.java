@@ -61,6 +61,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -154,10 +155,25 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
     /** {@inheritDoc} */
     @Override
+    /**
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
                                             final Atmosphere atmosphere, final DragSensitive spacecraft) {
         final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
         propagatorBuilder.addForceModel(dragModel);
+        return dragModel.getParametersDrivers();
+    }*/
+    
+    protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
+                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
+        final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
+        AbsoluteDate dateeee = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
+        //AbsoluteDate dateeee = new AbsoluteDate(2014, 02, 14, 03, 0, 0, TimeScalesFactory.getUTC());
+        
+        dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).setPeriods(dateeee, dateeee.shiftedBy(15*3600), 8*3600);
+        System.out.println("drag model nbperiod");
+        System.out.println(dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).getValueSpanMap().getSpansNumber());
+        propagatorBuilder.addForceModel(dragModel);
+        System.out.println( propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(3).getValueSpanMap().getSpansNumber());
         return dragModel.getParametersDrivers();
     }
 
@@ -304,10 +320,10 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         //final double rangeBias = -0.286275;
         final double[] stationOffSet = { 0.298867,  -0.137456,  0.013315 };
         final double rangeBias = 0.002390;
-        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
-        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(null), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(null), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(null), distanceAccuracy);
+        Assert.assertEquals(rangeBias,        list.get(3).getValue(null), distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 258;
@@ -411,18 +427,18 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // final double dragCoef  = -0.2154;
         final double dragCoef  = 0.1931;
         final ParameterDriversList propagatorParameters = kalmanW3B.getPropagatorParameters();
-        Assert.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
+        Assert.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(new AbsoluteDate()), 1e-3);
         final Vector3D leakAcceleration0 =
-                        new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
-                                     propagatorParameters.getDrivers().get(3).getValue(),
-                                     propagatorParameters.getDrivers().get(5).getValue());
+                        new Vector3D(propagatorParameters.getDrivers().get(1).getValue(new AbsoluteDate()),
+                                     propagatorParameters.getDrivers().get(3).getValue(new AbsoluteDate()),
+                                     propagatorParameters.getDrivers().get(5).getValue(new AbsoluteDate()));
         // Batch LS results
         //Assert.assertEquals(8.002e-6, leakAcceleration0.getNorm(), 1.0e-8);
         Assert.assertEquals(5.994e-6, leakAcceleration0.getNorm(), 1.0e-8);
         final Vector3D leakAcceleration1 =
-                        new Vector3D(propagatorParameters.getDrivers().get(2).getValue(),
-                                     propagatorParameters.getDrivers().get(4).getValue(),
-                                     propagatorParameters.getDrivers().get(6).getValue());
+                        new Vector3D(propagatorParameters.getDrivers().get(2).getValue(new AbsoluteDate()),
+                                     propagatorParameters.getDrivers().get(4).getValue(new AbsoluteDate()),
+                                     propagatorParameters.getDrivers().get(6).getValue(new AbsoluteDate()));
         // Batch LS results
         //Assert.assertEquals(3.058e-10, leakAcceleration1.getNorm(), 1.0e-12);
         Assert.assertEquals(1.831e-10, leakAcceleration1.getNorm(), 1.0e-12);
@@ -440,9 +456,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double   CastleRangeBias = 11274.4677;
         final double[] CastleAzElBias  = { 0.062635, -0.003672};
         final double   CastleRangeBias = 11289.3678;
-        Assert.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
-        Assert.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
-        Assert.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
+        Assert.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue(null)), angleAccuracy);
+        Assert.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue(null)), angleAccuracy);
+        Assert.assertEquals(CastleRangeBias,   list.get(2).getValue(null),                     distanceAccuracy);
 
         // Station Fucino
         // Batch LS results
@@ -450,9 +466,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double   FucRangeBias = 13467.8256;
         final double[] FucAzElBias  = { -0.053298, 0.075589 };
         final double   FucRangeBias = 13482.0715;
-        Assert.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
-        Assert.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
-        Assert.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
+        Assert.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue(null)), angleAccuracy);
+        Assert.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue(null)), angleAccuracy);
+        Assert.assertEquals(FucRangeBias,   list.get(5).getValue(null),                     distanceAccuracy);
 
         // Station Kumsan
         // Batch LS results
@@ -460,9 +476,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double   KumRangeBias = 13512.57594;
         final double[] KumAzElBias  = { -0.022805, -0.055057 };
         final double   KumRangeBias = 13502.7459;
-        Assert.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
-        Assert.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
-        Assert.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
+        Assert.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue(null)), angleAccuracy);
+        Assert.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue(null)), angleAccuracy);
+        Assert.assertEquals(KumRangeBias,   list.get(8).getValue(null),                     distanceAccuracy);
 
         // Station Pretoria
         // Batch LS results
@@ -470,9 +486,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double PreRangeBias = 13594.11889;
         final double[] PreAzElBias = { 0.030353, 0.009658 };
         final double PreRangeBias = 13609.2516;
-        Assert.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
-        Assert.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
-        Assert.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
+        Assert.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue(null)), angleAccuracy);
+        Assert.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue(null)), angleAccuracy);
+        Assert.assertEquals(PreRangeBias,   list.get(11).getValue(null),                     distanceAccuracy);
 
         // Station Uralla
         // Batch LS results
@@ -480,9 +496,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double UraRangeBias = 13450.26738;
         final double[] UraAzElBias = { 0.167519, -0.122842 };
         final double UraRangeBias = 13441.7019;
-        Assert.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
-        Assert.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
-        Assert.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
+        Assert.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue(null)), angleAccuracy);
+        Assert.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue(null)), angleAccuracy);
+        Assert.assertEquals(UraRangeBias,   list.get(14).getValue(null),                     distanceAccuracy);
 
         // Test on statistic for the range residuals
         final long nbRange = 182;
@@ -552,13 +568,13 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         
         for (DelegatingDriver driver : refPropagationParameters.getDrivers()) {
             switch (driver.getName()) {
-                case "drag coefficient" : driver.setValue(dragCoefRef); break;
-                case "leak-X[0]"        : driver.setValue(leakXRef[0]); break;
-                case "leak-X[1]"        : driver.setValue(leakXRef[1]); break;
-                case "leak-Y[0]"        : driver.setValue(leakYRef[0]); break;
-                case "leak-Y[1]"        : driver.setValue(leakYRef[1]); break;
-                case "leak-Z[0]"        : driver.setValue(leakZRef[0]); break;
-                case "leak-Z[1]"        : driver.setValue(leakZRef[1]); break;
+                case "drag coefficient" : driver.setValue(dragCoefRef, new AbsoluteDate()); break;
+                case "leak-X[0]"        : driver.setValue(leakXRef[0], new AbsoluteDate()); break;
+                case "leak-X[1]"        : driver.setValue(leakXRef[1], new AbsoluteDate()); break;
+                case "leak-Y[0]"        : driver.setValue(leakYRef[0], new AbsoluteDate()); break;
+                case "leak-Y[1]"        : driver.setValue(leakYRef[1], new AbsoluteDate()); break;
+                case "leak-Z[0]"        : driver.setValue(leakZRef[0], new AbsoluteDate()); break;
+                case "leak-Z[1]"        : driver.setValue(leakZRef[1], new AbsoluteDate()); break;
             }
         }
         

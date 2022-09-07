@@ -32,6 +32,8 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Force model for Newtonian central body attraction.
@@ -69,26 +71,28 @@ public class NewtonianAttraction extends AbstractForceModel {
     }
 
     /** Get the central attraction coefficient μ.
+     * @param date date at which the mu value wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
-    public double getMu() {
-        return gmParameterDriver.getValue();
+    public double getMu(final AbsoluteDate date) {
+        return gmParameterDriver.getValue(date);
     }
 
     /** Get the central attraction coefficient μ.
      * @param <T> the type of the field element
      * @param field field to which the state belongs
+     * @param date date at which the mu value wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
-    public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field, final FieldAbsoluteDate<T> date) {
         final T zero = field.getZero();
-        return zero.add(gmParameterDriver.getValue());
+        return zero.add(gmParameterDriver.getValue(date.toAbsoluteDate()));
     }
 
     /** {@inheritDoc} */
     @Override
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
-        adder.addKeplerContribution(getMu());
+        adder.addKeplerContribution(getMu(s.getDate()));
     }
 
     /** {@inheritDoc} */
@@ -96,13 +100,13 @@ public class NewtonianAttraction extends AbstractForceModel {
     public <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
                                                                 final FieldTimeDerivativesEquations<T> adder) {
         final Field<T> field = s.getDate().getField();
-        adder.addKeplerContribution(getMu(field));
+        adder.addKeplerContribution(getMu(field, s.getDate()));
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
-        final double mu = parameters[0];
+        final double mu = this.extractParameters(parameters, s.getDate())[0];
         final double r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new Vector3D(-mu / (FastMath.sqrt(r2) * r2), s.getPVCoordinates().getPosition());
     }
@@ -111,7 +115,7 @@ public class NewtonianAttraction extends AbstractForceModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
-        final T mu = parameters[0];
+        final T mu = this.extractParameters(parameters, s.getDate())[0];
         final T r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(mu).negate(), s.getPVCoordinates().getPosition());
     }
