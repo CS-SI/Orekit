@@ -144,7 +144,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         ));
 
         //action
-        Vector3D acceleration = relativity.acceleration(s, relativity.getParametersAllValues());
+        Vector3D acceleration = relativity.acceleration(s, relativity.getParameters(s.getDate()));
 
         //verify
         //force is ~1e-8 so this give ~3 sig figs.
@@ -219,7 +219,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         SpacecraftState state = new SpacecraftState(orbit);
 
         //action
-        Vector3D acceleration = relativity.acceleration(state, relativity.getParametersAllValues());
+        Vector3D acceleration = relativity.acceleration(state, relativity.getParameters(state.getDate()));
 
         //verify
         //force is ~1e-8 so this give ~7 sig figs.

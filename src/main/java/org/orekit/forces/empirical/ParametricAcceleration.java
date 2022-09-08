@@ -176,11 +176,8 @@ public class ParametricAcceleration extends AbstractForceModel {
             inertialDirection = attitude.getRotation().applyInverseTo(direction);
         }
 
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, date);
-
         // Call the acceleration model to compute the acceleration
-        return new Vector3D(accelerationModel.signedAmplitude(state, extractedParameters), inertialDirection);
+        return new Vector3D(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
 
     }
 
@@ -208,11 +205,8 @@ public class ParametricAcceleration extends AbstractForceModel {
             inertialDirection = attitude.getRotation().applyInverseTo(direction);
         }
 
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, date);
-
         // Call the acceleration model to compute the acceleration
-        return new FieldVector3D<>(accelerationModel.signedAmplitude(state, extractedParameters), inertialDirection);
+        return new FieldVector3D<>(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
 
     }
 

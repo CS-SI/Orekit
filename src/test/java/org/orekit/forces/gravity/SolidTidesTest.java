@@ -92,7 +92,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                                                                zero,
                                                                                                                zero)),
                                                       mass);
-            return attractionModel.acceleration(dState, attractionModel.getParametersAllValues(field));
+            return attractionModel.acceleration(dState, attractionModel.getParameters(field, dState.getDate()));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -128,7 +128,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                                                                zero,
                                                                                                                zero)),
                                                       mass);
-            return attractionModel.acceleration(dState, attractionModel.getParametersAllValues(field));
+            return attractionModel.acceleration(dState, attractionModel.getParameters(field, dsDate));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;

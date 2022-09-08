@@ -113,7 +113,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
         final double r2Sat           = satToBody.getNormSq();
 
         // compute absolute acceleration
-        return new Vector3D(this.extractParameters(parameters, s.getDate())[0] / (r2Sat * FastMath.sqrt(r2Sat)), satToBody);
+        return new Vector3D(parameters[0] / (r2Sat * FastMath.sqrt(r2Sat)), satToBody);
 
     }
 
@@ -128,7 +128,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
         final T                r2Sat         = satToBody.getNormSq();
 
         // compute absolute acceleration
-        return new FieldVector3D<>(this.extractParameters(parameters, s.getDate())[0].divide(r2Sat.multiply(r2Sat.sqrt())), satToBody);
+        return new FieldVector3D<>(parameters[0].divide(r2Sat.multiply(r2Sat.sqrt())), satToBody);
 
     }
 

@@ -520,10 +520,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // Set the force models
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
         for (final DSSTForceModel force : forces) {
-            final T[] parameters = force.getParametersAllValues(mean.getDate().getField());
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, parameters));
-            force.updateShortPeriodTerms(parameters, mean);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(mean.getDate().getField(), mean.getDate())));
+            force.updateShortPeriodTerms(force.getParametersAllValues(mean.getDate().getField()), mean);
         }
 
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
@@ -642,7 +641,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // initialize all perturbing forces
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParametersAllValues(field)));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(field, initialState.getDate())));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -736,9 +735,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             // Set the force models
             final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
             for (final DSSTForceModel force : forceModel) {
-                final T[] parameters = force.getParametersAllValues(osculating.getDate().getField());
-                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, parameters));
-                force.updateShortPeriodTerms(parameters, meanState);
+                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING,
+                                 force.getParameters(osculating.getDate().getField(), osculating.getDate())));
+                force.updateShortPeriodTerms(force.getParametersAllValues(osculating.getDate().getField()), meanState);
             }
 
             // recompute the osculating parameters from the current mean parameters

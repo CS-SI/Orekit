@@ -326,7 +326,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         for (final DSSTForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                    // As driver with same name should have same NamesSpanMap TO COMPLETE 
+                    // As driver with same name should have same NamesSpanMap we only check if the first span is present,
+                    // if not we add all span names to columnsNames
                     for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                         columnsNames.add(span.getData());
                     }
@@ -618,7 +619,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParametersAllValues()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(mean.getDate())));
             force.updateShortPeriodTerms(force.getParametersAllValues(), mean);
         }
 
@@ -753,7 +754,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParametersAllValues()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(initialState.getDate())));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -845,7 +846,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // Set the force models
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
             for (final DSSTForceModel force : forceModels) {
-                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParametersAllValues()));
+                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
                 force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
             }
 
@@ -1155,7 +1156,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // compute the contributions of all perturbing forces
             for (final DSSTForceModel forceModel : forceModels) {
-                final double[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParametersAllValues());
+                final double[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParameters(state.getDate()));
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] += daidt[i];
                 }
@@ -1169,7 +1170,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit
-         *  @param parameters force model parameters
+         *  @param parameters force model parameters at state date (only 1 value for
+         *  each parameter
          *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
          */
         private double[] elementRates(final DSSTForceModel forceModel,
@@ -1274,7 +1276,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             }
 
             // Computate short periodic coefficients for this step
-            for (DSSTForceModel forceModel : forceModels) {    
+            for (DSSTForceModel forceModel : forceModels) {
                 forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(), meanStates);
             }
         }

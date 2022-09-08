@@ -39,9 +39,8 @@ import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultBatchLeastSquares;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.TimeSpanDragForce;
 import org.orekit.forces.empirical.AccelerationModel;
 import org.orekit.forces.empirical.ParametricAcceleration;
 import org.orekit.forces.empirical.PolynomialAccelerationModel;
@@ -155,7 +154,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
     
     /** {@inheritDoc} */
     @Override
-    /**
+    
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
                                             final Atmosphere atmosphere, final DragSensitive spacecraft) {
         final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
@@ -168,7 +167,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         propagatorBuilder.addForceModel(dragModel);
         System.out.println( propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(3).getValueSpanMap().getSpansNumber());
         return dragModel.getParametersDrivers();
-    }*/
+    }
     
 
 /**
@@ -177,9 +176,9 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
         propagatorBuilder.addForceModel(dragModel);
         return dragModel.getParametersDrivers();
-    }
-    */
+    }*/
     
+    /**
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
             final Atmosphere atmosphere, final DragSensitive spacecraft) {
         AbsoluteDate dateeee = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
@@ -194,7 +193,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         force.addDragSensitiveValidAfter(isotropicDrag1, dateeee.shiftedBy(8*3600));
         propagatorBuilder.addForceModel(force);
         return force.getParametersDrivers();
-    }
+    }*/
     
     /** {@inheritDoc} */
     @Override

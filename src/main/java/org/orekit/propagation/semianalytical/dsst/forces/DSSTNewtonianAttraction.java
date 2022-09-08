@@ -126,9 +126,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
                                        final double[] parameters) {
 
         // Container for attributes
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final DSSTNewtonianAttractionContext context = initializeStep(auxiliaryElements, extractedParameters);
+        final DSSTNewtonianAttractionContext context = initializeStep(auxiliaryElements, parameters);
 
         final double[] yDot = new double[7];
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
@@ -147,9 +145,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         // Field for array building
         final Field<T> field = state.getMu().getField();
         // Container for attributes
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final FieldDSSTNewtonianAttractionContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+        final FieldDSSTNewtonianAttractionContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         final T[] yDot = MathArrays.buildArray(field, 7);
         final FieldEquinoctialOrbit<T> orbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());

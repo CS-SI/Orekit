@@ -206,14 +206,13 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                 for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
                     final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-                    // gradient for all parameter span value associated with this force model
-                    final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
                     final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
                     final Gradient zero = dsState.getDate().getField().getZero();
                     final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-                    shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType, dsParameters));
-                    forceModel.updateShortPeriodTerms(dsParameters, dsState);
+                    shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType,
+                                            converter.getParametersAtStateDate(dsState, forceModel)));
+                    forceModel.updateShortPeriodTerms(converter.getParameters(dsState, forceModel), dsState);
                     final Gradient[] shortPeriod = new Gradient[6];
                     Arrays.fill(shortPeriod, zero);
                     for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {

@@ -37,11 +37,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
+ * @author Melina Vanel
  * @since 11.1
  */
 class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
@@ -241,11 +241,12 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         // evaluate contribution of all force models
         final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(state, STATE_DIMENSION, attitudeProvider);
         final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, attitudeProvider);
+
         for (final ForceModel forceModel : forceModels) {
 
             final NumericalGradientConverter     converter    = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
             final FieldSpacecraftState<Gradient> dsState      = converter.getState(forceModel);
-            final Gradient[]                     parameters   = converter.getParameters(dsState, forceModel);
+            final Gradient[]                     parameters   = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldVector3D<Gradient>        acceleration = forceModel.acceleration(dsState, parameters);
             final double[]                       gradX        = acceleration.getX().getGradient();
             final double[]                       gradY        = acceleration.getY().getGradient();
@@ -280,9 +281,8 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
 
-                    final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
                     // for each span (for each estimated value) corresponding name is added
-                    for (Span<String> span = driverNameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                         // get the partials derivatives for this driver
                         DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(span.getData());

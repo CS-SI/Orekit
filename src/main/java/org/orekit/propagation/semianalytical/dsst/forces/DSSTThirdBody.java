@@ -173,8 +173,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param type type of the elements used during the propagation
-     *  @param parameters values of the force model parameters (all span values for each parameters)
-     *  the extract parameter method is called in the method to select the right parameter.
+     *  @param parameters values of the force model parameters for state date (1 value for each parameters)
      */
     @Override
     public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements,
@@ -182,9 +181,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                                              final double[] parameters) {
 
         // Initializes specific parameters.
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, extractedParameters);
+        final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
 
         maxFreqF = context.getMaxFreqF();
 
@@ -211,9 +208,8 @@ public class DSSTThirdBody implements DSSTForceModel {
         final Field<T> field = auxiliaryElements.getDate().getField();
 
         // Initializes specific parameters.
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+
+        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         maxFieldFreqF = context.getMaxFreqF();
 
@@ -251,7 +247,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
+     *  @param parameters values of the force model parameters at state date (1 value per parameter driver)
      *  @return new force model context
      */
     private <T extends CalculusFieldElement<T>> FieldDSSTThirdBodyContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
@@ -265,9 +261,8 @@ public class DSSTThirdBody implements DSSTForceModel {
                                        final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container for attributes
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, extractedParameters);
+
+        final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(context, hansen);
 
@@ -302,9 +297,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         final T        zero  = field.getZero();
 
         // Container for attributes
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         @SuppressWarnings("unchecked")
         final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);

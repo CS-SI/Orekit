@@ -767,7 +767,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     public void initializeShortPeriodicTerms(final SpacecraftState meanState) {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force :  builder.getAllForceModels()) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(new AuxiliaryElements(meanState.getOrbit(), 1), PropagationType.OSCULATING, force.getParametersAllValues()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(new AuxiliaryElements(meanState.getOrbit(), 1), PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
         }
         dsstPropagator.setShortPeriodTerms(shortPeriodTerms);
     }

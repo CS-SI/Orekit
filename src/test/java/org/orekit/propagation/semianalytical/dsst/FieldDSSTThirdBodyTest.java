@@ -104,7 +104,7 @@ public class FieldDSSTThirdBodyTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = moon.getParametersAllValues(field);
+        final T[] parameters = moon.getParameters(field, state.getDate());
         // Initialize force model
         moon.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
@@ -150,7 +150,7 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParametersAllValues(field)));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field, meanState.getDate())));
             force.updateShortPeriodTerms(force.getParametersAllValues(field), meanState);
         }
 
@@ -210,7 +210,6 @@ public class FieldDSSTThirdBodyTest {
             
             // Field parameters
             final FieldSpacecraftState<Gradient> dsState = converter.getState(force);
-            final Gradient[] dsParameters                = converter.getParameters(dsState, force);
             
             final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
             
@@ -220,8 +219,9 @@ public class FieldDSSTThirdBodyTest {
             Arrays.fill(shortPeriod, zero);
             
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-            force.updateShortPeriodTerms(dsParameters, dsState);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                    converter.getParametersAtStateDate(dsState, force)));
+            force.updateShortPeriodTerms(converter.getParameters(dsState, force), dsState);
             
             for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
                 final Gradient[] spVariation = spt.value(dsState.getOrbit());
@@ -337,7 +337,6 @@ public class FieldDSSTThirdBodyTest {
             
             // Field parameters
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] dsParameters                = converter.getParameters(dsState, forceModel);
           
             final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
           
@@ -346,8 +345,9 @@ public class FieldDSSTThirdBodyTest {
           
             // Compute Jacobian using directly the method
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-            forceModel.updateShortPeriodTerms(dsParameters, dsState);
+            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                    converter.getParametersAtStateDate(dsState, forceModel)));
+            forceModel.updateShortPeriodTerms(converter.getParameters(dsState, forceModel), dsState);
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
             for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -460,9 +460,8 @@ public class FieldDSSTThirdBodyTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
-            double[] parameters = force.getParametersAllValues();
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
-            force.updateShortPeriodTerms(parameters, state);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
+            force.updateShortPeriodTerms(force.getParametersAllValues(), state);
         }
         
         double[] shortPeriod = new double[6];

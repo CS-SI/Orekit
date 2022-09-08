@@ -241,9 +241,7 @@ public class DSSTZonal implements DSSTForceModel {
                                              final PropagationType type,
                                              final double[] parameters) {
 
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        computeMeanElementsTruncations(auxiliaryElements, extractedParameters);
+        computeMeanElementsTruncations(auxiliaryElements, parameters);
 
         switch (type) {
             case MEAN:
@@ -286,10 +284,7 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
-
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        computeMeanElementsTruncations(auxiliaryElements, extractedParameters, field);
+        computeMeanElementsTruncations(auxiliaryElements, parameters, field);
 
         switch (type) {
             case MEAN:
@@ -318,8 +313,6 @@ public class DSSTZonal implements DSSTForceModel {
     /** Compute indices truncations for mean elements computations.
      * @param auxiliaryElements auxiliary elements
      * @param parameters values of the force model parameters for state date (only 1 value for each parameter)
-     *  that is to say that the extract parametr method should have be called before or the parameters list given
-     *  in argument must correspond to the extraction of parameter for a precise date.
      */
     private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
@@ -556,9 +549,8 @@ public class DSSTZonal implements DSSTForceModel {
                                        final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container of attributes
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final DSSTZonalContext context = initializeStep(auxiliaryElements, extractedParameters);
+
+        final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, auxiliaryElements, hansen);
 
@@ -575,9 +567,7 @@ public class DSSTZonal implements DSSTForceModel {
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
         // Container of attributes
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+        final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         @SuppressWarnings("unchecked")
         final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);

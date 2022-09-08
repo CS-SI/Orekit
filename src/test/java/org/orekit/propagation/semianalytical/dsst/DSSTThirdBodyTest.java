@@ -80,7 +80,7 @@ public class DSSTThirdBodyTest {
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
 
         // Force model parameters
-        final double[] parameters = moon.getParametersAllValues();
+        final double[] parameters = moon.getParameters(orbit.getDate());
 
         // Initialize force model
         moon.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
@@ -119,7 +119,7 @@ public class DSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParametersAllValues()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
             force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
         }
 

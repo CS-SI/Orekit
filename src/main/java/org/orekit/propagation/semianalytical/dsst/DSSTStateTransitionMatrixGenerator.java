@@ -189,7 +189,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
         for (final DSSTForceModel forceModel : forceModels) {
 
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);

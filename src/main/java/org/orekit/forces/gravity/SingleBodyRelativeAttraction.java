@@ -87,7 +87,7 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
         final double r2Sat           = satToBody.getNormSq();
 
         // compute relative acceleration
-        final double gm = this.extractParameters(parameters, s.getDate())[0];
+        final double gm = parameters[0];
         final double a = gm / r2Sat;
         return new Vector3D(a, satToBody.normalize()).add(bodyPV.getAcceleration());
 
@@ -103,7 +103,7 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
         final T                r2Sat       = satToBody.getNormSq();
 
         // compute relative acceleration
-        final T gm = this.extractParameters(parameters, s.getDate())[0];
+        final T gm = parameters[0];
         final T a  = gm.divide(r2Sat);
         return new FieldVector3D<>(a, satToBody.normalize()).add(bodyPV.getAcceleration());
 

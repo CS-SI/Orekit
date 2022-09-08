@@ -82,11 +82,8 @@ public class DragForce extends AbstractDragForceModel {
         final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, date);
-
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, extractedParameters);
+                                           s.getMass(), rho, relativeVelocity, parameters);
 
     }
 
@@ -118,12 +115,9 @@ public class DragForce extends AbstractDragForceModel {
         final FieldVector3D<T> vAtm = atmosphere.getVelocity(date, position, frame);
         final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, date);
-
         // Drag acceleration along with its derivatives
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, extractedParameters);
+                                           s.getMass(), rho, relativeVelocity, parameters);
 
     }
 

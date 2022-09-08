@@ -70,7 +70,6 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -410,7 +409,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                    // As driver with same name should have same NamesSpanMap TO COMPLETE 
+                    // As driver with same name should have same NamesSpanMap we only check if the first span is present,
+                    // if not we add all span names to columnsNames
                     for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                         columnsNames.add(span.getData());
                     }

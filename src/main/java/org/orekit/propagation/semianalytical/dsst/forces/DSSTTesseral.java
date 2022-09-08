@@ -328,9 +328,8 @@ public class DSSTTesseral implements DSSTForceModel {
                                              final double[] parameters) {
 
         // Initializes specific parameters.
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, extractedParameters);
+
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged high order resonant central body
@@ -372,9 +371,7 @@ public class DSSTTesseral implements DSSTForceModel {
         final Field<T> field = auxiliaryElements.getDate().getField();
 
         // Initializes specific parameters.
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged high order resonant central body
@@ -469,9 +466,8 @@ public class DSSTTesseral implements DSSTForceModel {
                                        final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container for attributes
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, extractedParameters);
+
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, hansen);
@@ -504,9 +500,8 @@ public class DSSTTesseral implements DSSTForceModel {
         final Field<T> field = auxiliaryElements.getDate().getField();
 
         // Container for attributes
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+
+        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         @SuppressWarnings("unchecked")
         final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);

@@ -1027,7 +1027,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
-        final double mu = this.extractParameters(parameters, s.getDate())[0];
+        final double mu = parameters[0];
 
         // get the position in body frame
         final AbsoluteDate date       = s.getDate();
@@ -1045,7 +1045,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
 
-        final T mu = this.extractParameters(parameters, s.getDate())[0];
+        final T mu = parameters[0];
 
         // check for faster computation dedicated to derivatives with respect to state
         if (isGradientStateDerivative(s)) {

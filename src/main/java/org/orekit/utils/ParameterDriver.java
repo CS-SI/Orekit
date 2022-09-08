@@ -214,7 +214,7 @@ public class ParameterDriver {
      * current driver
      */
     public void setValueSpanMap(final ParameterDriver driver) {
-    	TimeSpanMap<Double> previousValueSpanMap = driver.getValueSpanMap();
+        final TimeSpanMap<Double> previousValueSpanMap = driver.getValueSpanMap();
         valueSpanMap   = driver.getValueSpanMap();
         nameSpanMap    = driver.getNamesSpanMap();
         validityPeriod = driver.getValidityPeriod();

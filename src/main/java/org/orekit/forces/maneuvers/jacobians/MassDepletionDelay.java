@@ -88,7 +88,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
         if (forward == manageStart) {
 
             // current acceleration
-            final double[] parameters   = maneuver.getParametersAllValues();
+            final double[] parameters   = maneuver.getParameters(state.getDate());
             // for the acceleration method we need all the span values of all the parameters driver
             // as in the acceleration method an exctractParameter method is called
             final Vector3D acceleration = maneuver.acceleration(state, parameters);

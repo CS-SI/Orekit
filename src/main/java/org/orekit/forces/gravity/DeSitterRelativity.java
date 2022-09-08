@@ -124,7 +124,7 @@ public class DeSitterRelativity extends AbstractForceModel {
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
 
         // Sun's gravitational parameter
-        final double gm = this.extractParameters(parameters, s.getDate())[0];
+        final double gm = parameters[0];
 
         // Satellite velocity with respect to the Earth
         final PVCoordinates pvSat = s.getPVCoordinates();
@@ -152,7 +152,7 @@ public class DeSitterRelativity extends AbstractForceModel {
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
 
         // Sun's gravitational parameter
-        final T gm = this.extractParameters(parameters, s.getDate())[0];
+        final T gm = parameters[0];
 
         // Satellite velocity with respect to the Earth
         final FieldPVCoordinates<T> pvSat = s.getPVCoordinates();

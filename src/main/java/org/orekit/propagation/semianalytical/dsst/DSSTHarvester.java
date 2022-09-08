@@ -239,7 +239,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
 
             // Convert to Gradient
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] dsParameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             // Initialize the "Field" short periodic terms in OSCULATING mode

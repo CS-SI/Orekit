@@ -18,7 +18,6 @@ package org.orekit.propagation.integration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -114,13 +113,14 @@ public abstract class AbstractJacobiansMapper implements MatricesHarvester {
     /** {@inheritDoc} */
     @Override
     public List<String> getJacobiansColumnsNames() {
-    	List<String> driversNames = new ArrayList<>();
+        final List<String> driversNames = new ArrayList<>();
         for (DelegatingDriver driver : parameters.getDrivers()) {
-        	final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+            final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
             Span<String> currentNameSpan = driverNameSpanMap.getFirstSpan();
             // Add the driver name if it has not been added yet and the number of estimated values for this param
             driversNames.add(currentNameSpan.getData());
-            // For all values TO COMPLETE  
+            // jacobian columns names contains the name of each value to be estimated that is why
+            // each span name for each driver is added
             for (int spanNumber = 1; spanNumber < driverNameSpanMap.getSpansNumber(); ++spanNumber) {
                 currentNameSpan = driverNameSpanMap.getSpan(currentNameSpan.getEnd());
                 driversNames.add(currentNameSpan.getData());

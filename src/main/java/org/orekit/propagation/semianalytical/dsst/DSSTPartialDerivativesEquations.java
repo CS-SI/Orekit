@@ -285,7 +285,7 @@ public class DSSTPartialDerivativesEquations
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             // "field" initialization of the force model if it was not done before

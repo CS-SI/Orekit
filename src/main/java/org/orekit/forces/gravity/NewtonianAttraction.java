@@ -106,7 +106,7 @@ public class NewtonianAttraction extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
-        final double mu = this.extractParameters(parameters, s.getDate())[0];
+        final double mu = parameters[0];
         final double r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new Vector3D(-mu / (FastMath.sqrt(r2) * r2), s.getPVCoordinates().getPosition());
     }
@@ -115,7 +115,7 @@ public class NewtonianAttraction extends AbstractForceModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
-        final T mu = this.extractParameters(parameters, s.getDate())[0];
+        final T mu = parameters[0];
         final T r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(mu).negate(), s.getPVCoordinates().getPosition());
     }

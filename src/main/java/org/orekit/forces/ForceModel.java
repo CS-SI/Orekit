@@ -108,7 +108,7 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param adder object where the contribution should be added
      */
     default void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
-        adder.addNonKeplerianAcceleration(acceleration(s, getParametersAllValues()));
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate())));
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -118,7 +118,7 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param <T> type of the elements
      */
     default <T extends CalculusFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
-        adder.addNonKeplerianAcceleration(acceleration(s, getParametersAllValues(s.getDate().getField())));
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField(), s.getDate())));
     }
 
 
@@ -228,9 +228,8 @@ public interface ForceModel extends ParametersDriversProvider {
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
-     * @param parameters values of the force model parameters, warning this must
-     * contain all span value for each driver (within the function the parameter
-     * corresponding to the state date will be extracted
+     * @param parameters values of the force model parameters at state date,
+     * only 1 value for each parameterDriver
      * @return acceleration in same frame as state
      * @since 9.0
      */
@@ -238,7 +237,8 @@ public interface ForceModel extends ParametersDriversProvider {
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters at state date,
+     * only 1 value for each parameterDriver
      * @return acceleration in same frame as state
      * @param <T> type of the elements
      * @since 9.0

@@ -467,7 +467,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                         stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
             }
-            
+
             System.out.println(getMu());
 
 

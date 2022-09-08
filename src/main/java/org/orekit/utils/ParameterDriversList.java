@@ -270,7 +270,6 @@ public class ParameterDriversList {
          * in argument. In order to have no surprise, the driver in argument
          * must have same validityPeriod and estimation intervals as the other
          * parameters drivers delegated by the same delegating driver.
-         * 
          * @param driver driver to add
          */
         private void add(final ParameterDriver driver) {

@@ -92,7 +92,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         {
         try {
 
-            java.lang.reflect.Field atmosphereField = TimeSpanDragForce.class.getDeclaredField("atmosphere");
+            java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
             java.lang.reflect.Field spacecraftField = DragForce.class.getDeclaredField("spacecraft");

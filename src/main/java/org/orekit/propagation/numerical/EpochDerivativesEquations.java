@@ -291,7 +291,7 @@ public class EpochDerivativesEquations
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
             final NumericalGradientConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
 
             final FieldVector3D<Gradient> acceleration = forceModel.acceleration(dsState, parameters);
             final double[] derivativesX = acceleration.getX().getGradient();
