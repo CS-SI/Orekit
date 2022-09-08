@@ -74,7 +74,6 @@ import java.util.List;
 
 public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
-    private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
     /** UTC time scale. */
     private TimeScale utc;
 
@@ -1039,6 +1038,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                                             0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                             Constants.EIGEN5C_EARTH_MU);
         CelestialBody sun = CelestialBodyFactory.getSun();
+        AttitudeProvider defaultLaw = Utils.defaultLaw();
 
         // Atmosphere
         final Atmosphere atmosphere =
@@ -1077,7 +1077,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside 2nd box model
         orbit = refOrbit.shiftedBy(1.1 * dt);
         state = new SpacecraftState(orbit,
-                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80ImplementationGradient(state, forceModel,
                                              new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
@@ -1085,7 +1085,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside 3rd box model
         orbit = refOrbit.shiftedBy(-1.1 * dt);
         state = new SpacecraftState(orbit,
-                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80ImplementationGradient(state, forceModel,
                                              new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
@@ -1110,6 +1110,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                                             0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                             Constants.EIGEN5C_EARTH_MU);
         CelestialBody sun = CelestialBodyFactory.getSun();
+        AttitudeProvider defaultLaw = Utils.defaultLaw();
 
         // Atmosphere
         final Atmosphere atmosphere =
@@ -1141,20 +1142,20 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside first box model
         Orbit orbit = refOrbit.shiftedBy(0.);
         SpacecraftState state = new SpacecraftState(orbit,
-                                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, DEFAULT_LAW, 1.0, 5.0e-6, false);
+                                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, defaultLaw, 1.0, 5.0e-6, false);
 
         // Check state derivatives inside 2nd box model
         orbit = refOrbit.shiftedBy(1.1 * dt);
         state = new SpacecraftState(orbit,
-                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, DEFAULT_LAW, 1.0, 5.0e-6, false);
+                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, defaultLaw, 1.0, 5.0e-6, false);
 
         // Check state derivatives inside 3rd box model
         orbit = refOrbit.shiftedBy(-1.1 * dt);
         state = new SpacecraftState(orbit,
-                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, DEFAULT_LAW, 1.0, 6.0e-6, false);
+                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, defaultLaw, 1.0, 6.0e-6, false);
     }
 
     /** Test state Jacobian computation using finite differences once again.
@@ -1175,6 +1176,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                                             0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                             Constants.EIGEN5C_EARTH_MU);
         CelestialBody sun = CelestialBodyFactory.getSun();
+        AttitudeProvider defaultLaw = Utils.defaultLaw();
 
         // Atmosphere
         final Atmosphere atmosphere =
@@ -1206,20 +1208,20 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside first box model
         Orbit orbit = refOrbit.shiftedBy(0.);
         SpacecraftState state = new SpacecraftState(orbit,
-                                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, DEFAULT_LAW, 1.0, 5.0e-6, false);
+                                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, 1.0, 5.0e-6, false);
 
         // Check state derivatives inside 2nd box model
         orbit = refOrbit.shiftedBy(1.1 * dt);
         state = new SpacecraftState(orbit,
-                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, DEFAULT_LAW, 1.0, 5.0e-6, false);
+                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, 1.0, 5.0e-6, false);
 
         // Check state derivatives inside 3rd box model
         orbit = refOrbit.shiftedBy(-1.1 * dt);
         state = new SpacecraftState(orbit,
-                                    DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, DEFAULT_LAW, 1.0, 6.0e-6, false);
+                                    defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, 1.0, 6.0e-6, false);
     }
 
     /** Test state Jacobian computation. */
@@ -1611,5 +1613,3 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         utc = TimeScalesFactory.getUTC();
     }
 }
-
-
