@@ -34,6 +34,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @author Julie Bayard
  * @author Maxime Journot
+ * @since 11.3
  */
 public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
 

@@ -23,6 +23,7 @@ import org.orekit.propagation.SpacecraftState;
 /**
  * Interface for both {@link SemiAnalyticalUnscentedKalmanModel} and {@link SemiAnalyticalKalmanModel}.
  * @author Gaëtan Pierre
+ * @since 11.3
  */
 public interface SemiAnalyticalProcess {
 

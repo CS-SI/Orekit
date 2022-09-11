@@ -58,6 +58,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  *
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
+ * @since 11.3
  */
 public class SemiAnalyticalUnscentedKalmanEstimator {
 

@@ -51,6 +51,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /** Class defining the process model dynamics to use with a {@link UnscentedKalmanEstimator}.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
+ * @since 11.3
  */
 public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator> {
 

@@ -30,6 +30,7 @@ import org.orekit.utils.ParameterDriversList;
 /** Builder for an Unscented Kalman filter estimator.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
+ * @since 11.3
  */
 public class UnscentedKalmanEstimatorBuilder {
 

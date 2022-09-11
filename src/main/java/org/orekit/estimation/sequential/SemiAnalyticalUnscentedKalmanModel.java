@@ -54,6 +54,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /** Class defining the process model dynamics to use with a {@link SemiAnalyticalUnscentedKalmanEstimator}.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
+ * @since 11.3
  */
 public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator>, SemiAnalyticalProcess {
 

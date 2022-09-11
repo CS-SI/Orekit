@@ -27,6 +27,7 @@ import org.orekit.utils.ParameterDriversList;
 /** Builder for an Unscented Semi-analytical Kalman filter estimator.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
+ * @since 11.3
  */
 public class SemiAnalyticalUnscentedKalmanEstimatorBuilder {
 

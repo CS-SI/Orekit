@@ -33,6 +33,7 @@ import org.orekit.utils.ParameterDriversList;
 
 /**
  * Utility class for Kalman Filter.
+ * @since 11.3
  */
 public class KalmanEstimatorUtil {
 
