@@ -16,12 +16,17 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmParser;
+
+import java.net.MalformedURLException;
 
 public class XmlLexicalAnalyzerTest {
 
@@ -46,6 +51,31 @@ public class XmlLexicalAnalyzerTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
             Assert.assertEquals("empty", oe.getParts()[0]);
+        }
+    }
+
+    /**
+     * Check the XML parser is configured to ignore XML entities to avoid
+     * security risks.
+     */
+    @Test
+    public void testExternalResourcesAreIgnored() {
+        // setup
+        XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource(
+                "entity",
+                () -> this.getClass().getResourceAsStream("/ccsds/ndm/NDM-opm-entity.xml")));
+        OcmParser parser = new ParserBuilder().buildOcmParser();
+
+        // action
+        try {
+            la.accept(parser);
+            // verify
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e) {
+            // Malformed URL exception indicates external resource was disabled
+            // file not found exception indicates parser tried to load the resource
+            MatcherAssert.assertThat(e.getCause(),
+                    CoreMatchers.instanceOf(MalformedURLException.class));
         }
     }
 
