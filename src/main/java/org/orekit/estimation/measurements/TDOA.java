@@ -52,6 +52,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class TDOA extends AbstractMeasurement<TDOA> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "TDOA";
+
     /** Prime ground station, the one that gives the date of the measurement. */
     private final GroundStation primeStation;
 

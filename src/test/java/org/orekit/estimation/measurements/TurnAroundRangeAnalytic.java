@@ -65,6 +65,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "TurnAroundRangeAnalytic";
+
     /** Constructor from parent TurnAroundRange class
      * @param Range parent class
      */

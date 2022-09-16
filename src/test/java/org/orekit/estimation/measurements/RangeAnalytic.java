@@ -61,6 +61,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class RangeAnalytic extends Range {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "RangeAnalytic";
+
     /** Constructor from parent Range class
      * @param Range parent class
      */
