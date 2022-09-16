@@ -273,7 +273,8 @@ public class PhaseTest {
         Assert.assertEquals(0.0, relErrorsMedian, 9.1e-15);
         Assert.assertEquals(0.0, relErrorsMax,    2.8e-14);
 
-
+        // Test measurement type
+        Assert.assertEquals(Phase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults,

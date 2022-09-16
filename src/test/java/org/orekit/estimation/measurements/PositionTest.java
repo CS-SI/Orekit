@@ -90,6 +90,9 @@ public class PositionTest {
             Assert.assertEquals(0.0, pvDiffStat[i].getMean(), 3.8e-7);
             Assert.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.3e-7);
         }
+
+        // Test measurement type
+        Assert.assertEquals(Position.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.

@@ -307,6 +307,10 @@ public class TurnAroundRangeAnalyticTest {
         Assert.assertEquals(0.0, absErrorsMax,    2.0e-07);
         Assert.assertEquals(0.0, relErrorsMedian, 5.1e-15);
         Assert.assertEquals(0.0, relErrorsMax,    1.2e-14);
+        
+        // Test measurement type
+        final TurnAroundRangeAnalytic taRangeAnalytic = new TurnAroundRangeAnalytic((TurnAroundRange) measurements.get(0));
+        Assert.assertEquals(TurnAroundRangeAnalytic.MEASUREMENT_TYPE, taRangeAnalytic.getMeasurementType());
     }
 
     /**

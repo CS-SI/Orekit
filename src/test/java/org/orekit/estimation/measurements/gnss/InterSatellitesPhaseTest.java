@@ -277,6 +277,8 @@ public class InterSatellitesPhaseTest {
         Assert.assertEquals(0.0, relErrorsMedian, 5.2e-12);
         Assert.assertEquals(0.0, relErrorsMax,    2.9e-10);
 
+        // Test measurement type
+        Assert.assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,

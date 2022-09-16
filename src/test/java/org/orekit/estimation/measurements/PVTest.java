@@ -94,6 +94,9 @@ public class PVTest {
             Assert.assertEquals(0.0, pvDiffStat[i+3].getMean(), 1.29e-10);
             Assert.assertEquals(0.0, pvDiffStat[i+3].getStandardDeviation(), 7.82e-11);
         }
+
+        // Test measurement type
+        Assert.assertEquals(PV.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.

@@ -80,6 +80,9 @@ public class TDOATest {
         // Mean and std errors check
         Assert.assertEquals(0.0, diffStat.getMean(), 1.e-16);
         Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 1.e-16);
+
+        // Test measurement type
+        Assert.assertEquals(TDOA.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /**

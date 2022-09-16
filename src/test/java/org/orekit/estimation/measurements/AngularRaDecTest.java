@@ -189,7 +189,10 @@ public class AngularRaDecTest {
         // median errors on declination
         Assert.assertEquals(0.0, new Median().evaluate(DecerrorsP), 1.5e-11);
         Assert.assertEquals(0.0, new Median().evaluate(DecerrorsV), 5.4e-6);
-           }
+
+        // Test measurement type
+        Assert.assertEquals(AngularRaDec.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+    }
 
     /** Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference
