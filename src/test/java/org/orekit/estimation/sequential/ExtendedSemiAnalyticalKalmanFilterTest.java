@@ -514,7 +514,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
             final EstimatedMeasurement<?> estimatedMeasurement = estimation.getCorrectedMeasurement();
 
             // Check
-            if (estimatedMeasurement.getObservedMeasurement() instanceof Position) {
+            if (estimatedMeasurement.getObservedMeasurement().getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
 
                 if (estimatedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED) {
                     if (print) {

@@ -145,11 +145,11 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
         // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
         // Normalizing it leaves us with the matrix of the correlation coefficients
         final RealMatrix covariance;
-        if (observedMeasurement instanceof PV) {
+        if (observedMeasurement.getMeasurementType().equals(PV.MEASUREMENT_TYPE)) {
             // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
             final PV pv = (PV) observedMeasurement;
             covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
-        } else if (observedMeasurement instanceof Position) {
+        } else if (observedMeasurement.getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
             // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
             final Position position = (Position) observedMeasurement;
             covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());

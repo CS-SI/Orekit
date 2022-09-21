@@ -260,6 +260,9 @@ public class TurnAroundRangeTest {
         Assert.assertEquals(0.0, absErrorsMax, 4.9e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 8.9e-15);
         Assert.assertEquals(0.0, relErrorsMax , 2.9e-14);
+
+        // Test measurement type
+        Assert.assertEquals(TurnAroundRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,

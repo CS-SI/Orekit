@@ -114,19 +114,22 @@ public class BatchLeastSquaresObserver implements BatchLSObserver {
                                EvaluationLogger<Position> positionOnlyLog,
                                EvaluationLogger<PV> positionLog,
                                EvaluationLogger<PV> velocityLog) {
-        if (evaluation.getObservedMeasurement() instanceof Range) {
+
+        // Get measurement type and send measurement to proper logger.
+        final String measurementType = evaluation.getObservedMeasurement().getMeasurementType();
+        if (measurementType.equals(Range.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<Range> ev = (EstimatedMeasurement<Range>) evaluation;
             if (rangeLog != null) {
                 rangeLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof RangeRate) {
+        } else if (measurementType.equals(RangeRate.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<RangeRate> ev = (EstimatedMeasurement<RangeRate>) evaluation;
             if (rangeRateLog != null) {
                 rangeRateLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof AngularAzEl) {
+        } else if (measurementType.equals(AngularAzEl.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<AngularAzEl> ev = (EstimatedMeasurement<AngularAzEl>) evaluation;
             if (azimuthLog != null) {
@@ -135,13 +138,13 @@ public class BatchLeastSquaresObserver implements BatchLSObserver {
             if (elevationLog != null) {
                 elevationLog.log(ev);
             }
-        }  else if (evaluation.getObservedMeasurement() instanceof Position) {
+        }  else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
             if (positionOnlyLog != null) {
                 positionOnlyLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof PV) {
+        } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
             if (positionLog != null) {
@@ -150,11 +153,10 @@ public class BatchLeastSquaresObserver implements BatchLSObserver {
             if (velocityLog != null) {
                 velocityLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof MultiplexedMeasurement) {
+        } else if (measurementType.equals(MultiplexedMeasurement.MEASUREMENT_TYPE)) {
             for (final EstimatedMeasurement<?> em : ((MultiplexedMeasurement) evaluation.getObservedMeasurement()).getEstimatedMeasurements()) {
                 logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
             }
         }
     }
-
 }
