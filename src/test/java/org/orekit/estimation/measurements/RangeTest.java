@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
@@ -42,11 +47,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 
 public class RangeTest {
 
@@ -311,7 +311,8 @@ public class RangeTest {
         Assertions.assertEquals(0.0, relErrorsMedian, 1.0e-14);
         Assertions.assertEquals(0.0, relErrorsMax,    2.6e-14);
 
-
+        // Test measurement type
+        Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,

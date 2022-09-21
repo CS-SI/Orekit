@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -39,11 +44,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 public class TurnAroundRangeTest {
 
@@ -260,6 +260,9 @@ public class TurnAroundRangeTest {
         Assertions.assertEquals(0.0, absErrorsMax, 4.9e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 8.9e-15);
         Assertions.assertEquals(0.0, relErrorsMax , 2.9e-14);
+        
+        // Test measurement type
+        Assertions.assertEquals(TurnAroundRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,

@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -34,9 +37,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class BistaticRangeRateTest {
 
@@ -80,6 +80,8 @@ public class BistaticRangeRateTest {
         // Mean and std errors check
         Assertions.assertEquals(0.0, diffStat.getMean(), 1.3e-7);
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1.2e-7);
+        // Test measurement type
+        Assertions.assertEquals(BistaticRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /**

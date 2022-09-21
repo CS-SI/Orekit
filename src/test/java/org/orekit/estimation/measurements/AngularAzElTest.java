@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -34,8 +36,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
-
-import java.util.List;
 
 public class AngularAzElTest {
 
@@ -82,9 +82,11 @@ public class AngularAzElTest {
         // Mean and std errors check
         Assertions.assertEquals(0.0, azDiffStat.getMean(), 6.9e-9);
         Assertions.assertEquals(0.0, azDiffStat.getStandardDeviation(), 7.2e-9);
-
         Assertions.assertEquals(0.0, elDiffStat.getMean(), 5.4e-9);
         Assertions.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
+
+        // Test measurement type
+        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.

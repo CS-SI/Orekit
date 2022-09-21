@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -54,11 +59,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 
 public class PhaseTest {
 
@@ -273,7 +273,8 @@ public class PhaseTest {
         Assertions.assertEquals(0.0, relErrorsMedian, 9.1e-15);
         Assertions.assertEquals(0.0, relErrorsMax,    2.8e-14);
 
-
+        // Test measurement type
+        Assertions.assertEquals(Phase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults,
