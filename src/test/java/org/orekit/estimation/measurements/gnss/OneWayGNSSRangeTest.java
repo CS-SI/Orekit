@@ -239,6 +239,9 @@ public class OneWayGNSSRangeTest {
         Assert.assertEquals(0.0, absErrorsMax,    1.7e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 5.3e-12);
         Assert.assertEquals(0.0, relErrorsMax,    7.6e-11);
+
+        // Test measurement type
+        Assert.assertEquals(OneWayGNSSRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,

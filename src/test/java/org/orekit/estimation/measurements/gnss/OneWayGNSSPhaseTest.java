@@ -245,6 +245,9 @@ public class OneWayGNSSPhaseTest {
         Assert.assertEquals(0.0, absErrorsMax,    9.0e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 5.9e-12);
         Assert.assertEquals(0.0, relErrorsMax,    1.4e-10);
+
+        // Test measurement type
+        Assert.assertEquals(OneWayGNSSPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,

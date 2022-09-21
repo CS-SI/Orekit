@@ -256,6 +256,8 @@ public class InterSatellitesRangeTest {
         Assert.assertEquals(0.0, relErrorsMedian, 4.1e-12);
         Assert.assertEquals(0.0, relErrorsMax,    5.0e-11);
 
+        // Test measurement type
+        Assert.assertEquals(InterSatellitesRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,

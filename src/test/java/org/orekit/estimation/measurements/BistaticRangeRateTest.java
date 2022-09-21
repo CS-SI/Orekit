@@ -80,6 +80,9 @@ public class BistaticRangeRateTest {
         // Mean and std errors check
         Assert.assertEquals(0.0, diffStat.getMean(), 1.3e-7);
         Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 1.2e-7);
+
+        // Test measurement type
+        Assert.assertEquals(BistaticRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /**

@@ -311,7 +311,8 @@ public class RangeTest {
         Assert.assertEquals(0.0, relErrorsMedian, 1.0e-14);
         Assert.assertEquals(0.0, relErrorsMax,    2.6e-14);
 
-
+        // Test measurement type
+        Assert.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
