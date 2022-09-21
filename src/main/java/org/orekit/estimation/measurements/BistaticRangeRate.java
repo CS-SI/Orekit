@@ -56,6 +56,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class BistaticRangeRate extends AbstractMeasurement<BistaticRangeRate> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "BistaticRangeRate";
+
     /** Emitter ground station. */
     private final GroundStation emitter;
 

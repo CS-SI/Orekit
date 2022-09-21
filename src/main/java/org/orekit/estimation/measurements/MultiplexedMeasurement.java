@@ -38,6 +38,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasurement> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "MultiplexedMeasurement";
+
     /** Multiplexed measurements. */
     private final List<ObservedMeasurement<?>> observedMeasurements;
 

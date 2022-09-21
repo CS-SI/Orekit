@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
@@ -47,11 +52,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 
 public class OneWayGNSSPhaseTest {
 
@@ -245,6 +245,9 @@ public class OneWayGNSSPhaseTest {
         Assertions.assertEquals(0.0, absErrorsMax,    9.0e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.9e-12);
         Assertions.assertEquals(0.0, relErrorsMax,    1.4e-10);
+
+        // Test measurement type
+        Assertions.assertEquals(OneWayGNSSPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,

@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -38,11 +43,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 public class TurnAroundRangeAnalyticTest {
 
@@ -307,6 +307,11 @@ public class TurnAroundRangeAnalyticTest {
         Assertions.assertEquals(0.0, absErrorsMax,    2.0e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.1e-15);
         Assertions.assertEquals(0.0, relErrorsMax,    1.2e-14);
+ 
+        // Test measurement type
+        final TurnAroundRangeAnalytic taRangeAnalytic =
+                        new TurnAroundRangeAnalytic((TurnAroundRange) measurements.get(0));
+        Assertions.assertEquals(TurnAroundRangeAnalytic.MEASUREMENT_TYPE, taRangeAnalytic.getMeasurementType());
     }
 
     /**

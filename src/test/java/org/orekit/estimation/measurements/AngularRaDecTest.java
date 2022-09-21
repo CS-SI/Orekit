@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -34,8 +36,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
-
-import java.util.List;
 
 public class AngularRaDecTest {
 
@@ -189,7 +189,10 @@ public class AngularRaDecTest {
         // median errors on declination
         Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 1.5e-11);
         Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsV), 5.4e-6);
-           }
+
+        // Test measurement type
+        Assertions.assertEquals(AngularRaDec.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+    }
 
     /** Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference

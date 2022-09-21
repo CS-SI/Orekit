@@ -80,9 +80,9 @@ public class GeneratorTest {
         int nbAzEl  = 0;
         int nbRange = 0;
         for (final ObservedMeasurement<?> m : generated) {
-            if (m instanceof AngularAzEl) {
+            if (m.getMeasurementType().equals(AngularAzEl.MEASUREMENT_TYPE)) {
                 ++nbAzEl;
-            } else if (m instanceof Range) {
+            } else if (m.getMeasurementType().equals(Range.MEASUREMENT_TYPE)) {
                 ++nbRange;
             } else {
                 Assertions.fail("unexpected measurement type: " + m.getClass().getSimpleName());

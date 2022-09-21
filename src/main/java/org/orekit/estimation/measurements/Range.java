@@ -77,6 +77,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class Range extends AbstractMeasurement<Range> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "Range";
+
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 

@@ -429,7 +429,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
             final EstimatedMeasurement<?> estimatedMeasurement = estimation.getPredictedMeasurement();
 
             // Check
-            if (estimatedMeasurement.getObservedMeasurement() instanceof Range) {
+            if (estimatedMeasurement.getObservedMeasurement().getMeasurementType().equals(Range.MEASUREMENT_TYPE)) {
                 final double[] estimated = estimatedMeasurement.getEstimatedValue();
                 final double[] observed  = estimatedMeasurement.getObservedValue();
                 // Calculate residual

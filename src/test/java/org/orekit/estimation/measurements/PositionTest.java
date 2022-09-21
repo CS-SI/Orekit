@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
@@ -34,8 +36,6 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.StateFunction;
-
-import java.util.List;
 
 public class PositionTest {
 
@@ -88,6 +88,9 @@ public class PositionTest {
             Assertions.assertEquals(0.0, pvDiffStat[i].getMean(), 3.8e-7);
             Assertions.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.3e-7);
         }
+
+        // Test measurement type
+        Assertions.assertEquals(Position.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.

@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
@@ -34,8 +36,6 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.StateFunction;
-
-import java.util.List;
 
 public class PVTest {
 
@@ -92,6 +92,9 @@ public class PVTest {
             Assertions.assertEquals(0.0, pvDiffStat[i+3].getMean(), 1.29e-10);
             Assertions.assertEquals(0.0, pvDiffStat[i+3].getStandardDeviation(), 7.82e-11);
         }
+
+        // Test measurement type
+        Assertions.assertEquals(PV.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.

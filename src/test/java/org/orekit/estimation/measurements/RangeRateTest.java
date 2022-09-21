@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.List;
+
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -37,8 +39,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
-
-import java.util.List;
 
 public class RangeRateTest {
 
@@ -85,6 +85,9 @@ public class RangeRateTest {
         // Mean and std errors check
         Assertions.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+
+        // Test measurement type
+        Assertions.assertEquals(RangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Compare observed values and estimated values.
