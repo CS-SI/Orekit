@@ -38,8 +38,11 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
-	/** List of spacecraft states. */
-	private final List<SpacecraftState> states;
+    /** Default position scale (not used for ephemeris based estimation). */
+    private static final double DEFAULT_SCALE = 10.0;
+
+    /** List of spacecraft states. */
+    private final List<SpacecraftState> states;
 
     /** The extrapolation threshold beyond which the propagation will fail. **/
     private final double extrapolationThreshold;
@@ -50,30 +53,29 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implem
     /** Attitude provider. */
     private final AttitudeProvider provider;
 
-	/** Constructor.
-	 * @param states list of spacecraft states
-	 * @param interpolationPoints number of points to use in interpolation
-	 * @param extrapolationThreshold the extrapolation threshold beyond which the propagation will fail
-	 * @param attitudeProvider
-	 * @param angle attitude provider
-	 */
-	public EphemerisPropagatorBuilder(final List<SpacecraftState> states,
+    /** Constructor.
+     * @param states list of spacecraft states
+     * @param interpolationPoints number of points to use in interpolation
+     * @param extrapolationThreshold the extrapolation threshold beyond which the propagation will fail
+     * @param attitudeProvider attitude provider
+     */
+    public EphemerisPropagatorBuilder(final List<SpacecraftState> states,
                                       final int interpolationPoints,
                                       final double extrapolationThreshold,
                                       final AttitudeProvider attitudeProvider) {
-		super(states.get(0).getOrbit(), PositionAngle.TRUE, 1.0, false, attitudeProvider);
-		deselectDynamicParameters();
-		this.states                 = states;
-		this.interpolationPoints    = interpolationPoints;
-		this.extrapolationThreshold = extrapolationThreshold;
-		this.provider               = attitudeProvider;
-	}
+        super(states.get(0).getOrbit(), PositionAngle.TRUE, DEFAULT_SCALE, false, attitudeProvider);
+        deselectDynamicParameters();
+        this.states                 = states;
+        this.interpolationPoints    = interpolationPoints;
+        this.extrapolationThreshold = extrapolationThreshold;
+        this.provider               = attitudeProvider;
+    }
 
-	/** {@inheritDoc}. */
-	@Override
-	public Propagator buildPropagator(final double[] normalizedParameters) {
-		return new Ephemeris(states, interpolationPoints, extrapolationThreshold, provider);
-	}
+    /** {@inheritDoc}. */
+    @Override
+    public Propagator buildPropagator(final double[] normalizedParameters) {
+        return new Ephemeris(states, interpolationPoints, extrapolationThreshold, provider);
+    }
 
     /** {@inheritDoc} */
     @Override

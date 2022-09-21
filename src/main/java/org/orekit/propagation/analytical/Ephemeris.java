@@ -300,7 +300,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
         // In order to not throw an Orekit exception during ephemeris based orbit determination
-    	// The default behavior of the method is overrided to return a null parameter
+        // The default behavior of the method is overrided to return a null parameter
         return null;
     }
 
