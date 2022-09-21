@@ -85,6 +85,9 @@ public class RangeRateTest {
         // Mean and std errors check
         Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
         Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+
+        // Test measurement type
+        Assert.assertEquals(RangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Compare observed values and estimated values.

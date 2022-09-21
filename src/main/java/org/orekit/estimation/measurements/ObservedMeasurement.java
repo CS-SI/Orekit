@@ -136,4 +136,13 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      */
     EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states);
 
+    /**
+     * Get the type of measurement.
+     * <p>
+     * Default behavior is to return the class simple name as a String.
+     * @return type of measurement
+     */
+    default String getMeasurementType() {
+        return this.getClass().getSimpleName();
+    }
 }

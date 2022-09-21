@@ -313,6 +313,10 @@ public class RangeAnalyticTest {
         Assert.assertEquals(0.0, absErrorsMax,    2.3e-07);
         Assert.assertEquals(0.0, relErrorsMedian, 6.5e-15);
         Assert.assertEquals(0.0, relErrorsMax,    2.4e-14);
+
+        // Test measurement type
+        final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.get(0));
+        Assert.assertEquals(RangeAnalytic.MEASUREMENT_TYPE, rangeAnalytic.getMeasurementType());
     }
 
     /**

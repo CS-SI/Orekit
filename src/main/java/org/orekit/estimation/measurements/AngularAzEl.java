@@ -44,6 +44,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "AngularAzEl";
+
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
