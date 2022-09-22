@@ -129,7 +129,7 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assert.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 0.01);
+        Assert.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-7);
         Assert.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assert.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
         Assert.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
@@ -174,7 +174,7 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assert.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-17);
         Assert.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assert.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
         Assert.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
@@ -225,8 +225,8 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assert.assertEquals(refAzBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-6);
-        Assert.assertEquals(refElBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(1).getValue(), 1.0e-6);
+        Assert.assertEquals(refAzBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-8);
+        Assert.assertEquals(refElBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(1).getValue(), 1.0e-7);
         Assert.assertEquals(2, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assert.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
         Assert.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
