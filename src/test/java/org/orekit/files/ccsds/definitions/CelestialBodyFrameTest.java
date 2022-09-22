@@ -22,9 +22,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -112,7 +112,7 @@ public class CelestialBodyFrameTest {
         MatcherAssert.assertThat(CelestialBodyFrame.map(frame), CoreMatchers.is(CelestialBodyFrame.EME2000));
         Vector3D v = frame.getTransformProvider().getTransform(AbsoluteDate.J2000_EPOCH).getTranslation();
         FieldVector3D<Decimal64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance())).getTranslation();
-        Assert.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
 
         // check unknown frame
         try {
@@ -122,10 +122,10 @@ public class CelestialBodyFrameTest {
                                               new GeodeticPoint(1.2, 2.3, 45.6),
                             "dummy");
             CelestialBodyFrame.map(topo);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assert.assertEquals("dummy", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assertions.assertEquals("dummy", oe.getParts()[0]);
         }
 
         // check a fake ICRF
@@ -140,13 +140,13 @@ public class CelestialBodyFrameTest {
             if (cbf == CelestialBodyFrame.EME2000 || cbf == CelestialBodyFrame.J2000 ||
                 cbf == CelestialBodyFrame.GCRF    || cbf == CelestialBodyFrame.ICRF ||
                 cbf == CelestialBodyFrame.MCI     || cbf == CelestialBodyFrame.TEME) {
-                Assert.assertNotNull(cbf.getFrame(null, false, DataContext.getDefault()));
+                Assertions.assertNotNull(cbf.getFrame(null, false, DataContext.getDefault()));
             } else {
                 try {
                     cbf.getFrame(null, false, DataContext.getDefault());
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
+                    Assertions.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
                 }
             }
         }
@@ -154,20 +154,20 @@ public class CelestialBodyFrameTest {
 
     @Test
     public void testParse() {
-        Assert.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("EME2000"));
-        Assert.assertEquals(CelestialBodyFrame.ITRF2014, CelestialBodyFrame.parse("ITRF2014"));
-        Assert.assertEquals(CelestialBodyFrame.ITRF1997, CelestialBodyFrame.parse("ITRF97"));
+        Assertions.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("EME2000"));
+        Assertions.assertEquals(CelestialBodyFrame.ITRF2014, CelestialBodyFrame.parse("ITRF2014"));
+        Assertions.assertEquals(CelestialBodyFrame.ITRF1997, CelestialBodyFrame.parse("ITRF97"));
         try {
-            Assert.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("ITRF00"));
-            Assert.fail("an exception should have been thrown");
+            Assertions.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("ITRF00"));
+            Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
-            Assert.assertTrue(iae.getMessage().contains("ITRF00"));
+            Assertions.assertTrue(iae.getMessage().contains("ITRF00"));
         }
         try {
             CelestialBodyFrame.parse("ITRF");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
-            Assert.assertTrue(iae.getMessage().contains("ITRF"));
+            Assertions.assertTrue(iae.getMessage().contains("ITRF"));
         }
     }
 
@@ -178,17 +178,17 @@ public class CelestialBodyFrameTest {
     public void testGuessFrame() {
 
         Frame itrf89 = FramesFactory.getITRF(ITRFVersion.ITRF_1989, IERSConventions.IERS_1996, true);
-        Assert.assertEquals("ITRF1989", CelestialBodyFrame.guessFrame(itrf89));
+        Assertions.assertEquals("ITRF1989", CelestialBodyFrame.guessFrame(itrf89));
 
         Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                Constants.WGS84_EARTH_FLATTENING,
                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                           new GeodeticPoint(1.2, 2.3, 45.6),
                         "dummy");
-        Assert.assertEquals("dummy", CelestialBodyFrame.guessFrame(topo));
+        Assertions.assertEquals("dummy", CelestialBodyFrame.guessFrame(topo));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

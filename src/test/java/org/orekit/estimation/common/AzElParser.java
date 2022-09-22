@@ -17,13 +17,13 @@
 
 package org.orekit.estimation.common;
 
-import java.util.Map;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
+
+import java.util.Map;
 
 /** Parser for azimuth-elevation measurements.
  * @author Luc Maisonobe

@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.List;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.BrouwerLyddaneContext;
 import org.orekit.estimation.BrouwerLyddaneEstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -30,6 +28,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
+
+import java.util.List;
 
 public class BrouwerLyddaneKalmanEstimatorTest {
 

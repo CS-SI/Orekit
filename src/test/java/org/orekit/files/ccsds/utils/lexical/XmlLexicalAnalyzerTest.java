@@ -16,17 +16,17 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.net.MalformedURLException;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmParser;
-
-import java.net.MalformedURLException;
 
 public class XmlLexicalAnalyzerTest {
 
@@ -35,10 +35,10 @@ public class XmlLexicalAnalyzerTest {
         XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource("empty", (DataSource.StreamOpener) () -> null));
         try {
             la.accept(new ParserBuilder().buildOcmParser());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals("empty", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals("empty", oe.getParts()[0]);
         }
     }
 
@@ -47,10 +47,10 @@ public class XmlLexicalAnalyzerTest {
         XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource("empty", (DataSource.ReaderOpener) () -> null));
         try {
             la.accept(new ParserBuilder().buildOcmParser());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals("empty", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals("empty", oe.getParts()[0]);
         }
     }
 
@@ -70,7 +70,7 @@ public class XmlLexicalAnalyzerTest {
         try {
             la.accept(parser);
             // verify
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
             // Malformed URL exception indicates external resource was disabled
             // file not found exception indicates parser tried to load the resource

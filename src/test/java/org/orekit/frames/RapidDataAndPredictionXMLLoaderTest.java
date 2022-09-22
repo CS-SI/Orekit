@@ -16,16 +16,10 @@
  */
 package org.orekit.frames;
 
-
-import java.net.MalformedURLException;
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,6 +28,11 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.xml.sax.SAXException;
+
+import java.net.MalformedURLException;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest {
@@ -55,7 +54,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
             loader.fillHistory(converter, history);
 
             // verify
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
             // Malformed URL exception indicates external resource was disabled
             // file not found exception indicates parser tried to load the resource
@@ -64,7 +63,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
         }
 
         // problem if any EOP data is loaded
-        Assert.assertEquals(0, history.size());
+        Assertions.assertEquals(0, history.size());
     }
 
     @Test
@@ -75,9 +74,9 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         try {
             new RapidDataAndPredictionXMLLoader("^inconsistent-date\\.xml$", manager, () -> utc).fillHistory(converter, history);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
         }
     }
 
@@ -89,9 +88,9 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         try {
             new RapidDataAndPredictionXMLLoader("^malformed\\.xml$", manager, () -> utc).fillHistory(converter, history);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertTrue(oe.getCause() instanceof SAXException);
+            Assertions.assertTrue(oe.getCause() instanceof SAXException);
         }
     }
 
@@ -102,7 +101,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
     }
 
@@ -113,7 +112,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2010, 8, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2010, 8, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, history, true).getEndDate());
     }
 
@@ -124,7 +123,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2010, 5, 11, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2010, 5, 11, TimeScalesFactory.getUTC()),
                             Collections.min(history, COMP).getDate());
     }
 
@@ -135,7 +134,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2010, 7, 24, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2010, 7, 24, TimeScalesFactory.getUTC()),
                             Collections.max(history, COMP).getDate());
     }
 
@@ -146,7 +145,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(1999, 1, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1999, 1, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
     }
 
@@ -157,7 +156,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(1999, 12, 31, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1999, 12, 31, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, history, true).getEndDate());
     }
 
@@ -168,7 +167,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2002, 1, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2002, 1, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2003, history, true).getStartDate());
     }
 
@@ -179,7 +178,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2002, 12, 31, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2002, 12, 31, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2003, history, true).getEndDate());
     }
 
@@ -190,7 +189,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
     }
 

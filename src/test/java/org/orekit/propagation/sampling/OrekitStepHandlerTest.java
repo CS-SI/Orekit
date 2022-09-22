@@ -16,24 +16,11 @@
  */
 package org.orekit.propagation.sampling;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.TimeUnit;
-
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.FactoryManagedFrame;
@@ -51,6 +38,17 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class OrekitStepHandlerTest {
 
@@ -103,7 +101,7 @@ public class OrekitStepHandlerTest {
                 });
 
             SpacecraftState finalState = stateFuture.get(5, TimeUnit.SECONDS);
-            assertNotNull(finalState);
+            Assertions.assertNotNull(finalState);
         }
     }
 
@@ -132,14 +130,14 @@ public class OrekitStepHandlerTest {
         Queue<Boolean> expected =
                 new ArrayDeque<>(Arrays.asList(false, false, false, true, true, false));
         propagator.setStepHandler(interpolator -> {
-            assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
-            assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
+            Assertions.assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
+            Assertions.assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
         });
         final AbsoluteDate end = date.shiftedBy(120);
-        assertEquals(end, propagator.propagate(end).getDate());
+        Assertions.assertEquals(end, propagator.propagate(end).getDate());
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

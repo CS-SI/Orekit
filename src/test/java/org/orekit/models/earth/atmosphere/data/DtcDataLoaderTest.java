@@ -17,16 +17,12 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.pvCloseTo;
-
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -53,6 +49,10 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.pvCloseTo;
+
 
 /*
  * Test code based on the CssiSpaceWeatherDataTest class
@@ -65,7 +65,7 @@ public class DtcDataLoaderTest {
 
     private TimeScale utc;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
@@ -88,9 +88,9 @@ public class DtcDataLoaderTest {
     public void testNoDataException() {
         try {
             loadJB("DTCFILE_empty.TXT");
-            Assert.fail("No Data In File exception should have been raised");
+            Assertions.fail("No Data In File exception should have been raised");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
         }
     }
 
@@ -98,9 +98,9 @@ public class DtcDataLoaderTest {
     public void testUnableParse() {
         try {
             loadJB("DTCFILE_badparse.TXT");
-            Assert.fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
+            Assertions.fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
 
@@ -116,7 +116,7 @@ public class DtcDataLoaderTest {
     public void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 26, 12, 0, 0.0, utc);
-        Assert.assertEquals(startDate, JBData.getMinDate());
+        Assertions.assertEquals(startDate, JBData.getMinDate());
     }
 
 
@@ -125,7 +125,7 @@ public class DtcDataLoaderTest {
     public void testMaxDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate lastDate = new AbsoluteDate(2007, 1, 1, 12, 0, 0.0, utc);
-        Assert.assertEquals(lastDate, JBData.getMaxDate());
+        Assertions.assertEquals(lastDate, JBData.getMaxDate());
     }
 
     @Test
@@ -149,9 +149,9 @@ public class DtcDataLoaderTest {
         AbsoluteDate date = new AbsoluteDate(2050, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getDSTDTC(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
         }
     }
 
@@ -161,9 +161,9 @@ public class DtcDataLoaderTest {
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getDSTDTC(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 

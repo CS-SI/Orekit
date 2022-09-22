@@ -16,18 +16,15 @@
  */
 package org.orekit.attitudes;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -38,6 +35,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FieldAttitudeTest {
 
@@ -63,21 +63,21 @@ public class FieldAttitudeTest {
         FieldAttitude<T> attitude = new FieldAttitude<>(new FieldAbsoluteDate<>(field), FramesFactory.getEME2000(),
                         new FieldRotation<>(one, zero, zero, zero, false),
                                             new FieldVector3D<>(rate, new FieldVector3D<>(zero, zero, one)), new FieldVector3D<>(zero, zero, zero));
-        Assert.assertEquals(rate.getReal(), attitude.getSpin().getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(rate.getReal(), attitude.getSpin().getNorm().getReal(), 1.0e-10);
         double dt_R = 10.0;
         T dt = zero.add(dt_R);
 
         T alpha = rate.multiply(dt);
         FieldAttitude<T> shifted = attitude.shiftedBy(dt);
-        Assert.assertEquals(rate.getReal(), shifted.getSpin().getNorm().getReal(), 1.0e-10);
-        Assert.assertEquals(alpha.getReal(), FieldRotation.distance(attitude.getRotation(), shifted.getRotation()).getReal(), 1.0e-10);
+        Assertions.assertEquals(rate.getReal(), shifted.getSpin().getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(alpha.getReal(), FieldRotation.distance(attitude.getRotation(), shifted.getRotation()).getReal(), 1.0e-10);
 
         FieldVector3D<T> xSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Assert.assertEquals(0.0, xSat.subtract(new FieldVector3D<>(alpha.cos(), alpha.sin(), zero)).getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, xSat.subtract(new FieldVector3D<>(alpha.cos(), alpha.sin(), zero)).getNorm().getReal(), 1.0e-10);
         FieldVector3D<T> ySat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
-        Assert.assertEquals(0.0, ySat.subtract(new FieldVector3D<>(alpha.sin().multiply(-1), alpha.cos(), zero)).getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, ySat.subtract(new FieldVector3D<>(alpha.sin().multiply(-1), alpha.cos(), zero)).getNorm().getReal(), 1.0e-10);
         FieldVector3D<T> zSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assert.assertEquals(0.0, zSat.subtract(Vector3D.PLUS_K).getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, zSat.subtract(Vector3D.PLUS_K).getNorm().getReal(), 1.0e-10);
 
     }
 
@@ -88,10 +88,10 @@ public class FieldAttitudeTest {
         FieldAttitude<T> attitude = new FieldAttitude<>(new FieldAbsoluteDate<>(field), FramesFactory.getEME2000(),
                                                         new FieldRotation<>(zero.add(0.48), zero.add(0.64), zero.add(0.36), zero.add(0.48), false),
                                                         new FieldVector3D<>(rate, FieldVector3D.getPlusK(field)), FieldVector3D.getZero(field));
-        Assert.assertEquals(rate.getReal(), attitude.getSpin().getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(rate.getReal(), attitude.getSpin().getNorm().getReal(), 1.0e-10);
         T dt = zero.add(10.0);
         FieldAttitude<T> shifted = attitude.shiftedBy(dt);
-        Assert.assertEquals(rate.getReal(), shifted.getSpin().getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(rate.getReal(), shifted.getSpin().getNorm().getReal(), 1.0e-10);
 
         FieldVector3D<T> shiftedX  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
         FieldVector3D<T> shiftedY  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
@@ -99,21 +99,21 @@ public class FieldAttitudeTest {
         FieldVector3D<T> originalX = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         FieldVector3D<T> originalY = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
         FieldVector3D<T> originalZ = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assert.assertEquals( FastMath.cos(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedX, originalX).getReal(), 1.0e-10);
-        Assert.assertEquals( FastMath.sin(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedX, originalY).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedX, originalZ).getReal(), 1.0e-10);
-        Assert.assertEquals(-FastMath.sin(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedY, originalX).getReal(), 1.0e-10);
-        Assert.assertEquals( FastMath.cos(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedY, originalY).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedY, originalZ).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedZ, originalX).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedZ, originalY).getReal(), 1.0e-10);
-        Assert.assertEquals( 1.0,                 FieldVector3D.dotProduct(shiftedZ, originalZ).getReal(), 1.0e-10);
+        Assertions.assertEquals( FastMath.cos(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedX, originalX).getReal(), 1.0e-10);
+        Assertions.assertEquals( FastMath.sin(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedX, originalY).getReal(), 1.0e-10);
+        Assertions.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedX, originalZ).getReal(), 1.0e-10);
+        Assertions.assertEquals(-FastMath.sin(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedY, originalX).getReal(), 1.0e-10);
+        Assertions.assertEquals( FastMath.cos(rate.getReal() * dt.getReal()), FieldVector3D.dotProduct(shiftedY, originalY).getReal(), 1.0e-10);
+        Assertions.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedY, originalZ).getReal(), 1.0e-10);
+        Assertions.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedZ, originalX).getReal(), 1.0e-10);
+        Assertions.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedZ, originalY).getReal(), 1.0e-10);
+        Assertions.assertEquals( 1.0,                 FieldVector3D.dotProduct(shiftedZ, originalZ).getReal(), 1.0e-10);
 
         FieldVector3D<T> forward = FieldAngularCoordinates.estimateRate(attitude.getRotation(), shifted.getRotation(), dt);
-        Assert.assertEquals(0.0, forward.subtract(attitude.getSpin()).getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, forward.subtract(attitude.getSpin()).getNorm().getReal(), 1.0e-10);
 
         FieldVector3D<T> reversed = FieldAngularCoordinates.estimateRate(shifted.getRotation(), attitude.getRotation(), dt);
-        Assert.assertEquals(0.0, reversed.add(attitude.getSpin()).getNorm().getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, reversed.add(attitude.getSpin()).getNorm().getReal(), 1.0e-10);
 
     }
 
@@ -174,10 +174,10 @@ public class FieldAttitudeTest {
             maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
 
         }
-        Assert.assertTrue(maxShiftAngleError         > 6.0e-6);
-        Assert.assertTrue(maxInterpolationAngleError < 6.0e-15);
-        Assert.assertTrue(maxShiftRateError          > 7.0e-8);
-        Assert.assertTrue(maxInterpolationRateError  < 2.0e-16);
+        Assertions.assertTrue(maxShiftAngleError         > 6.0e-6);
+        Assertions.assertTrue(maxInterpolationAngleError < 6.0e-15);
+        Assertions.assertTrue(maxShiftRateError          > 7.0e-8);
+        Assertions.assertTrue(maxInterpolationRateError  < 2.0e-16);
 
         // past sample end, interpolation error should increase, but still be far better than quadratic shift
         maxShiftAngleError = 0;
@@ -201,10 +201,10 @@ public class FieldAttitudeTest {
             maxShiftRateError           = FastMath.max(maxShiftRateError, shiftRateError.getReal());
             maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
         }
-        Assert.assertTrue(maxShiftAngleError         > 1.0e-5);
-        Assert.assertTrue(maxInterpolationAngleError < 8.0e-13);
-        Assert.assertTrue(maxShiftRateError          > 1.0e-7);
-        Assert.assertTrue(maxInterpolationRateError  < 6.0e-14);
+        Assertions.assertTrue(maxShiftAngleError         > 1.0e-5);
+        Assertions.assertTrue(maxInterpolationAngleError < 8.0e-13);
+        Assertions.assertTrue(maxShiftRateError          > 1.0e-7);
+        Assertions.assertTrue(maxInterpolationRateError  < 6.0e-14);
 
     }
 

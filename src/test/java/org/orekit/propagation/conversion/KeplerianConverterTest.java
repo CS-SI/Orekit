@@ -16,13 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
@@ -35,6 +32,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class KeplerianConverterTest {
 
@@ -54,9 +54,11 @@ public class KeplerianConverterTest {
         checkFit(orbit, 86400, 300, 1.0e-3, true, 2.691e-8);
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void testConversionWithFreeParameter() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
+        Assertions.assertThrows(OrekitException.class, () -> {
+            checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
+        });
     }
 
     protected void checkFit(final Orbit orbit,
@@ -82,35 +84,35 @@ public class KeplerianConverterTest {
 
         fitter.convert(sample, positionOnly, freeParameters);
 
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
+        Assertions.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
         KeplerianPropagator prop = (KeplerianPropagator)fitter.getAdaptedPropagator();
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
                             fitted.getPVCoordinates().getPosition().getX(),
                             eps * orbit.getPVCoordinates().getPosition().getX());
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
                             fitted.getPVCoordinates().getPosition().getY(),
                             eps * orbit.getPVCoordinates().getPosition().getY());
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
                             fitted.getPVCoordinates().getPosition().getZ(),
                             eps * orbit.getPVCoordinates().getPosition().getZ());
 
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
                             -eps * orbit.getPVCoordinates().getVelocity().getX());
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
                             eps * orbit.getPVCoordinates().getVelocity().getY());
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
                             eps * orbit.getPVCoordinates().getVelocity().getZ());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 

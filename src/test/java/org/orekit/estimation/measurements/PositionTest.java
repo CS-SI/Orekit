@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -25,8 +23,8 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -87,12 +85,12 @@ public class PositionTest {
         // Mean and std errors check
         for (int i = 0; i < 3; i++) {
             // Check position values
-            Assert.assertEquals(0.0, pvDiffStat[i].getMean(), 3.8e-7);
-            Assert.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.3e-7);
+            Assertions.assertEquals(0.0, pvDiffStat[i].getMean(), 3.8e-7);
+            Assertions.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.3e-7);
         }
 
         // Test measurement type
-        Assert.assertEquals(Position.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(Position.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -134,8 +132,8 @@ public class PositionTest {
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                                                   PositionAngle.TRUE, 1.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     final double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
@@ -147,7 +145,7 @@ public class PositionTest {
         }
 
         // median errors
-        Assert.assertEquals(0.0, new Median().evaluate(errorsP), 2.1e-100);
+        Assertions.assertEquals(0.0, new Median().evaluate(errorsP), 2.1e-100);
 
     }
 
@@ -193,27 +191,27 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
-                assertEquals(baseWeight, p.getBaseWeight()[i], eps);
+                Assertions.assertEquals(baseWeight, p.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                assertEquals(sigmaP, p.getTheoreticalStandardDeviation()[i]  , eps);
+                Assertions.assertEquals(sigmaP, p.getTheoreticalStandardDeviation()[i]  , eps);
             }
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            assertEquals(0., normP, eps);
+            Assertions.assertEquals(0., normP, eps);
 
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            assertEquals(0., normCorrCoef, eps);
+            Assertions.assertEquals(0., normCorrCoef, eps);
         }
     }
 
@@ -259,27 +257,27 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
-                assertEquals(baseWeight, p.getBaseWeight()[i], eps);
+                Assertions.assertEquals(baseWeight, p.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
+                Assertions.assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
             }
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            assertEquals(0., normP, eps);
+            Assertions.assertEquals(0., normP, eps);
 
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            assertEquals(0., normCorrCoef, eps);
+            Assertions.assertEquals(0., normCorrCoef, eps);
         }
     }
 
@@ -337,27 +335,27 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
-                assertEquals(baseWeight, p.getBaseWeight()[i], eps);
+                Assertions.assertEquals(baseWeight, p.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
+                Assertions.assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
             }
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            assertEquals(0., normP, eps);
+            Assertions.assertEquals(0., normP, eps);
 
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            assertEquals(0., normCorrCoef, eps);
+            Assertions.assertEquals(0., normCorrCoef, eps);
         }
 
     }
@@ -376,7 +374,7 @@ public class PositionTest {
         // Build with one 3-sized vectors
         try {
             new Position(date, position, new double[] {1.}, weight, new ObservableSatellite(0));
-            Assert.fail("An OrekitException should have been thrown");
+            Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }
@@ -384,7 +382,7 @@ public class PositionTest {
         // Build with one 3x3 matrix
         try {
             new Position(date, position, new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));
-            Assert.fail("An OrekitException should have been thrown");
+            Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }

@@ -16,14 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.Arrays;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -35,6 +31,10 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.Arrays;
 
 public class DSSTNewtonianAttractionTest {
 
@@ -73,16 +73,16 @@ public class DSSTNewtonianAttractionTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(0.0,                   elements[0], eps);
-        Assert.assertEquals(0.0,                   elements[1], eps);
-        Assert.assertEquals(0.0,                   elements[2], eps);
-        Assert.assertEquals(0.0,                   elements[3], eps);
-        Assert.assertEquals(0.0,                   elements[4], eps);
-        Assert.assertEquals(1.4585773985530907E-4, elements[5], eps);
+        Assertions.assertEquals(0.0,                   elements[0], eps);
+        Assertions.assertEquals(0.0,                   elements[1], eps);
+        Assertions.assertEquals(0.0,                   elements[2], eps);
+        Assertions.assertEquals(0.0,                   elements[3], eps);
+        Assertions.assertEquals(0.0,                   elements[4], eps);
+        Assertions.assertEquals(1.4585773985530907E-4, elements[5], eps);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }

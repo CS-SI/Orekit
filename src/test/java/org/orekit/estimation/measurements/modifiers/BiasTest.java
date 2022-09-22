@@ -16,13 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -37,6 +35,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.List;
 
 public class BiasTest {
 
@@ -122,7 +122,7 @@ public class BiasTest {
                                      0.0,  3.7e-7,
                                      0.0,  1.7e-10);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
-            Assert.assertEquals(realStationsBiases[i],
+            Assertions.assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
                                 3.3e-6);
         }
@@ -137,10 +137,10 @@ public class BiasTest {
                             new double[] {    1.0,    0.0 },
                             new double[] { -10000.0, -10000.0 },
                             new double[] { +10000.0, +10000.0 });
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER, oe.getSpecifier());
-            Assert.assertEquals("not-OK", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER, oe.getSpecifier());
+            Assertions.assertEquals("not-OK", oe.getParts()[0]);
         }
     }
 }

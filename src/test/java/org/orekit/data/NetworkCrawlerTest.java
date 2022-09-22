@@ -16,16 +16,15 @@
  */
 package org.orekit.data;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.errors.OrekitException;
 
 public class NetworkCrawlerTest extends AbstractListCrawlerTest<URL> {
 
@@ -50,10 +49,10 @@ public class NetworkCrawlerTest extends AbstractListCrawlerTest<URL> {
             File inexistent = new File(existing.getParent(), "inexistant-directory");
             new NetworkCrawler(inexistent.toURI().toURL()).feed(Pattern.compile(".*"), new CountingLoader(),
                                                                 DataContext.getDefault().getDataProvidersManager());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertTrue(oe.getCause() instanceof FileNotFoundException);
-            Assert.assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
+            Assertions.assertTrue(oe.getCause() instanceof FileNotFoundException);
+            Assertions.assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
         }
     }
 
@@ -74,7 +73,7 @@ public class NetworkCrawlerTest extends AbstractListCrawlerTest<URL> {
 //            new NetworkCrawler(new URL("http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history"));
 //        crawler.setTimeout(1000);
 //        crawler.feed(Pattern.compile(".*\\.history"), loader);
-//        Assert.assertEquals(1, loader.getCount());
+//        Assertions.assertEquals(1, loader.getCount());
 //
 //    }
 

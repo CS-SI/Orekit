@@ -16,11 +16,6 @@
  */
 package org.orekit.forces.radiation;
 
-
-import java.io.FileNotFoundException;
-import java.lang.reflect.InvocationTargetException;
-import java.text.ParseException;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -36,9 +31,9 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -79,6 +74,10 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 
 
 public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
@@ -182,15 +181,15 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        Assert.assertFalse(srp.dependsOnPositionOnly());
+        Assertions.assertFalse(srp.dependsOnPositionOnly());
 
         Vector3D position = orbit.getPVCoordinates().getPosition();
         Frame frame       = orbit.getFrame();
-        Assert.assertEquals(1.0,
+        Assertions.assertEquals(1.0,
                             srp.getLightingRatio(position, frame, date),
                             1.0e-15);
 
-        Assert.assertEquals(1.0,
+        Assertions.assertEquals(1.0,
                             srp.getLightingRatio(new FieldVector3D<>(Decimal64Field.getInstance(), position),
                                                  frame,
                                                  new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date)).getReal(),
@@ -215,7 +214,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
 
             double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-            Assert.assertEquals(86164, period, 1);
+            Assertions.assertEquals(86164, period, 1);
 
         // creation of the propagator
         KeplerianPropagator k = new KeplerianPropagator(orbit);
@@ -242,7 +241,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                 e.printStackTrace();
             }
         }
-        Assert.assertTrue(3==count);
+        Assertions.assertTrue(3==count);
     }
 
     @Test
@@ -568,7 +567,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
                                            0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
-        Assert.assertEquals(86164, period, 1);
+        Assertions.assertEquals(86164, period, 1);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
@@ -597,12 +596,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
-        Assert.assertTrue(calc.getCalls() < 7100);
+        Assertions.assertTrue(calc.getCalls() < 7100);
     }
 
     public static void checkRadius(double radius , double min , double max) {
-        Assert.assertTrue(radius >= min);
-        Assert.assertTrue(radius <= max);
+        Assertions.assertTrue(radius >= min);
+        Assertions.assertTrue(radius <= max);
     }
 
     private double mu = 3.98600E14;
@@ -614,8 +613,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
-            Assert.assertTrue(alpha > 100.0);
-            Assert.assertTrue(alpha < 112.0);
+            Assertions.assertTrue(alpha > 100.0);
+            Assertions.assertTrue(alpha < 112.0);
             checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003524, 0.003541);
         }
 
@@ -763,9 +762,9 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
 
     /** Testing if eclipses due to Moon are considered.
@@ -830,10 +829,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         MoonEclipseStepHandler handler = new MoonEclipseStepHandler(moon, sun, srp);
         propagator.setStepHandler(step, handler);
         propagator.propagate(orbit.getDate().shiftedBy(duration));
-        Assert.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
-        Assert.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
-        Assert.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
-        Assert.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
+        Assertions.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
+        Assertions.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
+        Assertions.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
+        Assertions.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
     }
 
     /** Specialized step handler.
@@ -915,14 +914,14 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
             // Check behaviour
             if (isInMoonUmbra || isInEarthUmbra) {
-                Assert.assertEquals(0.0, lightingRatio, 1e-8);
+                Assertions.assertEquals(0.0, lightingRatio, 1e-8);
             }
             else if (isInMoonPenumbra || isInEarthPenumbra) {
-                Assert.assertTrue(lightingRatio < 1.0);
-                Assert.assertTrue(lightingRatio > 0.0);
+                Assertions.assertTrue(lightingRatio < 1.0);
+                Assertions.assertTrue(lightingRatio > 0.0);
             }
             else {
-                Assert.assertEquals(1.0, lightingRatio, 1e-8);
+                Assertions.assertEquals(1.0, lightingRatio, 1e-8);
             }
         }
     }
@@ -999,10 +998,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         FieldMoonEclipseStepHandler<T> handler = new FieldMoonEclipseStepHandler<>(moon, sun, srp);
         propagator.setStepHandler(step, handler);
         propagator.propagate(orbit.getDate().shiftedBy(duration));
-        Assert.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
-        Assert.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
-        Assert.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
-        Assert.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
+        Assertions.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
+        Assertions.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
+        Assertions.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
+        Assertions.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
     }
 
     /** Specialized step handler.
@@ -1085,18 +1084,18 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
             // Check behaviour
             if (isInMoonUmbra || isInEarthUmbra) {
-                Assert.assertEquals(0.0, lightingRatio.getReal(), 1e-8);
+                Assertions.assertEquals(0.0, lightingRatio.getReal(), 1e-8);
             }
             else if (isInMoonPenumbra || isInEarthPenumbra) {
-                Assert.assertTrue(lightingRatio.getReal() < 1.0);
-                Assert.assertTrue(lightingRatio.getReal() > 0.0);
+                Assertions.assertTrue(lightingRatio.getReal() < 1.0);
+                Assertions.assertTrue(lightingRatio.getReal() > 0.0);
             }
             else {
-                Assert.assertEquals(1.0, lightingRatio.getReal(), 1e-8);
+                Assertions.assertEquals(1.0, lightingRatio.getReal(), 1e-8);
             }
         }
     }
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

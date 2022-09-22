@@ -16,17 +16,13 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -47,6 +43,10 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EventEnablingPredicateFilterTest {
 
@@ -119,11 +119,11 @@ public class EventEnablingPredicateFilterTest {
                                     }
                 }).withMaxCheck(60.0);
 
-        Assert.assertSame(raw, aboveGroundElevationDetector.getDetector());
-        Assert.assertEquals(0.001, raw.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, aboveGroundElevationDetector.getMaxIterationCount());
+        Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
+        Assertions.assertEquals(0.001, raw.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, aboveGroundElevationDetector.getMaxIterationCount());
 
 
         Propagator propagator =
@@ -144,25 +144,25 @@ public class EventEnablingPredicateFilterTest {
             final double eMinus = raw.getElevation(e.getState().shiftedBy(-10.0));
             final double e0     = raw.getElevation(e.getState());
             final double ePlus  = raw.getElevation(e.getState().shiftedBy(+10.0));
-            Assert.assertTrue(e0 > eMinus);
-            Assert.assertTrue(e0 > ePlus);
-            Assert.assertTrue(e0 > minElevation);
+            Assertions.assertTrue(e0 > eMinus);
+            Assertions.assertTrue(e0 > ePlus);
+            Assertions.assertTrue(e0 > minElevation);
         }
-        Assert.assertEquals(expectedEvents, logger.getLoggedEvents().size());
+        Assertions.assertEquals(expectedEvents, logger.getLoggedEvents().size());
 
         propagator.clearEventsDetectors();
         double g1Raw = raw.g(propagator.propagate(orbit.getDate().shiftedBy(18540.0)));
         double g2Raw = raw.g(propagator.propagate(orbit.getDate().shiftedBy(18624.0)));
         double g1 = aboveGroundElevationDetector.g(propagator.propagate(orbit.getDate().shiftedBy(18540.0)));
         double g2 = aboveGroundElevationDetector.g(propagator.propagate(orbit.getDate().shiftedBy(18624.0)));
-        Assert.assertTrue(g1Raw > 0);
-        Assert.assertTrue(g2Raw < 0);
+        Assertions.assertTrue(g1Raw > 0);
+        Assertions.assertTrue(g2Raw < 0);
         if (sameSign) {
-            Assert.assertTrue(g1 > 0);
-            Assert.assertTrue(g2 < 0);
+            Assertions.assertTrue(g1 > 0);
+            Assertions.assertTrue(g2 < 0);
         } else {
-            Assert.assertTrue(g1 < 0);
-            Assert.assertTrue(g2 > 0);
+            Assertions.assertTrue(g1 < 0);
+            Assertions.assertTrue(g2 > 0);
         }
 
     }
@@ -200,16 +200,16 @@ public class EventEnablingPredicateFilterTest {
         propagator.addEventDetector(logger.monitorDetector(filtered));
         propagator.propagate(orbit.getDate().shiftedBy(Constants.JULIAN_DAY));
         List<LoggedEvent> events = logger.getLoggedEvents();
-        Assert.assertEquals(4, events.size());
-        Assert.assertEquals(6 * 3600, events.get(0).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
-        Assert.assertEquals(7 * 3600, events.get(1).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
-        Assert.assertEquals(8 * 3600, events.get(2).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
-        Assert.assertEquals(9 * 3600, events.get(3).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
-        Assert.assertEquals(4, reset.size());
-        Assert.assertEquals(6 * 3600, reset.get(0).durationFrom(orbit.getDate()), 1.0e-6);
-        Assert.assertEquals(7 * 3600, reset.get(1).durationFrom(orbit.getDate()), 1.0e-6);
-        Assert.assertEquals(8 * 3600, reset.get(2).durationFrom(orbit.getDate()), 1.0e-6);
-        Assert.assertEquals(9 * 3600, reset.get(3).durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(4, events.size());
+        Assertions.assertEquals(6 * 3600, events.get(0).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(7 * 3600, events.get(1).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(8 * 3600, events.get(2).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(9 * 3600, events.get(3).getState().getDate().durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(4, reset.size());
+        Assertions.assertEquals(6 * 3600, reset.get(0).durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(7 * 3600, reset.get(1).durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(8 * 3600, reset.get(2).durationFrom(orbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(9 * 3600, reset.get(3).durationFrom(orbit.getDate()), 1.0e-6);
 
     }
 
@@ -242,7 +242,7 @@ public class EventEnablingPredicateFilterTest {
         List<LoggedEvent> events = logger.getLoggedEvents();
 
         // 300 periods, 150 events as half of them are filtered out
-        Assert.assertEquals(150, events.size());
+        Assertions.assertEquals(150, events.size());
 
         // as we have encountered a lot of enabling status changes, we exceeded the internal history
         // if we try to display again the filtered g function for dates far in the past,
@@ -250,7 +250,7 @@ public class EventEnablingPredicateFilterTest {
         propagator.clearEventsDetectors();
         for (double dt = 5000.0; dt < 10000.0; dt += 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt)));
-            Assert.assertTrue(filteredG < 0.0);
+            Assertions.assertTrue(filteredG < 0.0);
         }
 
         // on the other hand, if we try to display again the filtered g function for past dates
@@ -258,9 +258,9 @@ public class EventEnablingPredicateFilterTest {
         for (double dt = 195400.0; dt < 196200.0; dt += 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt)));
             if (dt < 195750) {
-                Assert.assertTrue(filteredG > 0.0);
+                Assertions.assertTrue(filteredG > 0.0);
             } else {
-                Assert.assertTrue(filteredG < 0.0);
+                Assertions.assertTrue(filteredG < 0.0);
             }
         }
 
@@ -295,7 +295,7 @@ public class EventEnablingPredicateFilterTest {
         List<LoggedEvent> events = logger.getLoggedEvents();
 
         // 300 periods, 150 events as half of them are filtered out
-        Assert.assertEquals(150, events.size());
+        Assertions.assertEquals(150, events.size());
 
         // as we have encountered a lot of enabling status changes, we exceeded the internal history
         // if we try to display again the filtered g function for dates far in the future,
@@ -303,7 +303,7 @@ public class EventEnablingPredicateFilterTest {
         propagator.clearEventsDetectors();
         for (double dt = -5000.0; dt > -10000.0; dt -= 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt)));
-            Assert.assertTrue(filteredG < 0.0);
+            Assertions.assertTrue(filteredG < 0.0);
         }
 
         // on the other hand, if we try to display again the filtered g function for future dates
@@ -311,9 +311,9 @@ public class EventEnablingPredicateFilterTest {
         for (double dt = -195400.0; dt > -196200.0; dt -= 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt)));
             if (dt < -195750) {
-                Assert.assertTrue(filteredG < 0.0);
+                Assertions.assertTrue(filteredG < 0.0);
             } else {
-                Assert.assertTrue(filteredG > 0.0);
+                Assertions.assertTrue(filteredG > 0.0);
             }
         }
 
@@ -329,7 +329,7 @@ public class EventEnablingPredicateFilterTest {
         new EventEnablingPredicateFilter<>(detector, predicate);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         Utils.setDataRoot("regular-data");
@@ -347,7 +347,7 @@ public class EventEnablingPredicateFilterTest {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         earth = null;
         gp    = null;

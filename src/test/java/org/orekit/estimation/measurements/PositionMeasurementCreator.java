@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.propagation.SpacecraftState;
 
 public class PositionMeasurementCreator extends MeasurementCreator {
@@ -31,7 +31,7 @@ public class PositionMeasurementCreator extends MeasurementCreator {
     public void handleStep(final SpacecraftState currentState) {
         final Vector3D p = currentState.getPVCoordinates().getPosition();
         final Position measurement = new Position(currentState.getDate(), p, 1.0, 1.0, satellite);
-        Assert.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
         addMeasurement(measurement);
     }
 

@@ -16,12 +16,10 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
-import java.util.ArrayList;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042;
@@ -34,11 +32,13 @@ import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
 import org.orekit.time.GNSSDate;
 
+import java.util.ArrayList;
+
 public class Rtcm1042Test {
 
     private double eps = 1.0e-15;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("gnss");
     }
@@ -89,46 +89,46 @@ public class Rtcm1042Test {
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(beidouMessage).build();
-        Assert.assertNotNull(propagator);
-        Assert.assertEquals(0.0, beidouMessage.getDate().
+        Assertions.assertNotNull(propagator);
+        Assertions.assertEquals(0.0, beidouMessage.getDate().
                             durationFrom(new GNSSDate(beidouMessage.getWeek(), 1000.0 * beidouMessage.getTime(), SatelliteSystem.BEIDOU).getDate()), eps);
 
         // Verify message number
-        Assert.assertEquals(1042,                   rtcm1042.getTypeCode());
-        Assert.assertEquals(1,                      rtcm1042.getData().size());
+        Assertions.assertEquals(1042,                   rtcm1042.getTypeCode());
+        Assertions.assertEquals(1,                      rtcm1042.getData().size());
 
         // Verify navigation message
-        Assert.assertEquals(12,                     beidouMessage.getPRN());
-        Assert.assertEquals(8157,                   beidouMessage.getWeek());
-        Assert.assertEquals(2.1475894557210572E-9,  beidouMessage.getIDot(),               eps);
-        Assert.assertEquals(20,                     beidouMessage.getAODE(),               eps);
-        Assert.assertEquals(1.3769368E-17,          beidouMessage.getAf2(),                eps);
-        Assert.assertEquals(1.5994495E-10,          beidouMessage.getAf1(),                eps);
-        Assert.assertEquals(5.721448687836528E-4,   beidouMessage.getAf0(),                eps);
-        Assert.assertEquals(20,                     beidouMessage.getAODC());
-        Assert.assertEquals(0.0,                    beidouMessage.getCrs(),                eps);
-        Assert.assertEquals(1.4587496546628753E-4,  beidouMessage.getMeanMotion(),         eps);
-        Assert.assertEquals(0.16717753824407455,    beidouMessage.getM0(),                 eps);
-        Assert.assertEquals(0.0,                    beidouMessage.getCuc(),                eps);
-        Assert.assertEquals(0.03899807028938085,    beidouMessage.getE(),                  eps);
-        Assert.assertEquals(0.0,                    beidouMessage.getCus(),                eps);
-        Assert.assertEquals(5153.562498092651,      FastMath.sqrt(beidouMessage.getSma()), eps);
-        Assert.assertEquals(560696.0,               beidouMessage.getTime(),               eps);
-        Assert.assertEquals(0.0,                    beidouMessage.getCic(),                eps);
-        Assert.assertEquals(0.0,                    beidouMessage.getCis(),                eps);
-        Assert.assertEquals(0.9877147247285952,     beidouMessage.getI0(),                 eps);
-        Assert.assertEquals(0.0,                    beidouMessage.getCrc(),                eps);
-        Assert.assertEquals(0.30049130834913723,    beidouMessage.getPa(),                 eps);
-        Assert.assertEquals(-5.855958209879004E-9,  beidouMessage.getOmegaDot(),           eps);
-        Assert.assertEquals(0.6980085400002902,     beidouMessage.getOmega0(),             eps);
-        Assert.assertEquals(7.9E-9,                 beidouMessage.getTGD1(),               eps);
-        Assert.assertEquals(4.63E-8,                beidouMessage.getTGD2(),               eps);
+        Assertions.assertEquals(12,                     beidouMessage.getPRN());
+        Assertions.assertEquals(8157,                   beidouMessage.getWeek());
+        Assertions.assertEquals(2.1475894557210572E-9,  beidouMessage.getIDot(),               eps);
+        Assertions.assertEquals(20,                     beidouMessage.getAODE(),               eps);
+        Assertions.assertEquals(1.3769368E-17,          beidouMessage.getAf2(),                eps);
+        Assertions.assertEquals(1.5994495E-10,          beidouMessage.getAf1(),                eps);
+        Assertions.assertEquals(5.721448687836528E-4,   beidouMessage.getAf0(),                eps);
+        Assertions.assertEquals(20,                     beidouMessage.getAODC());
+        Assertions.assertEquals(0.0,                    beidouMessage.getCrs(),                eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  beidouMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(0.16717753824407455,    beidouMessage.getM0(),                 eps);
+        Assertions.assertEquals(0.0,                    beidouMessage.getCuc(),                eps);
+        Assertions.assertEquals(0.03899807028938085,    beidouMessage.getE(),                  eps);
+        Assertions.assertEquals(0.0,                    beidouMessage.getCus(),                eps);
+        Assertions.assertEquals(5153.562498092651,      FastMath.sqrt(beidouMessage.getSma()), eps);
+        Assertions.assertEquals(560696.0,               beidouMessage.getTime(),               eps);
+        Assertions.assertEquals(0.0,                    beidouMessage.getCic(),                eps);
+        Assertions.assertEquals(0.0,                    beidouMessage.getCis(),                eps);
+        Assertions.assertEquals(0.9877147247285952,     beidouMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.0,                    beidouMessage.getCrc(),                eps);
+        Assertions.assertEquals(0.30049130834913723,    beidouMessage.getPa(),                 eps);
+        Assertions.assertEquals(-5.855958209879004E-9,  beidouMessage.getOmegaDot(),           eps);
+        Assertions.assertEquals(0.6980085400002902,     beidouMessage.getOmega0(),             eps);
+        Assertions.assertEquals(7.9E-9,                 beidouMessage.getTGD1(),               eps);
+        Assertions.assertEquals(4.63E-8,                beidouMessage.getTGD2(),               eps);
 
         // Verify other data
-        Assert.assertEquals(12,                     ephemerisData.getSatelliteID());
-        Assert.assertEquals(0.0,                    ephemerisData.getSvHealth(),        eps);
-        Assert.assertEquals(63224,                  ephemerisData.getBeidouToc(),       eps);
-        Assert.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), beidouMessage.getSvAccuracy(), eps);
+        Assertions.assertEquals(12,                     ephemerisData.getSatelliteID());
+        Assertions.assertEquals(0.0,                    ephemerisData.getSvHealth(),        eps);
+        Assertions.assertEquals(63224,                  ephemerisData.getBeidouToc(),       eps);
+        Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), beidouMessage.getSvAccuracy(), eps);
 
     }
 
@@ -174,7 +174,7 @@ public class Rtcm1042Test {
 
        final Rtcm1042 rtcm1042 = (Rtcm1042) new RtcmMessagesParser(messages).parse(message, false);
 
-       Assert.assertNull(rtcm1042);
+       Assertions.assertNull(rtcm1042);
     }
 
 

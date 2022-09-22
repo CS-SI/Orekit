@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -25,9 +25,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -56,7 +56,7 @@ public class FieldEclipseDetectorTest {
     private double               earthRadius;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
@@ -66,7 +66,7 @@ public class FieldEclipseDetectorTest {
             earthRadius = 6400000.;
             mu  = 3.9860047e14;
         } catch (OrekitException oe) {
-            Assert.fail(oe.getLocalizedMessage());
+            Assertions.fail(oe.getLocalizedMessage());
         }
     }
 
@@ -114,17 +114,17 @@ public class FieldEclipseDetectorTest {
                                                                earth, earthRadius).
                             withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
                             withUmbra();
-        Assert.assertEquals(60.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-3, e.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
-        Assert.assertSame(sun, e.getOcculted());
-        Assert.assertEquals(sunRadius, e.getOccultedRadius(), 1.0);
-        Assert.assertSame(earth, e.getOcculting());
-        Assert.assertEquals(earthRadius, e.getOccultingRadius(), 1.0);
-        Assert.assertTrue(e.getTotalEclipse());
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-3, e.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
+        Assertions.assertSame(sun, e.getOcculted());
+        Assertions.assertEquals(sunRadius, e.getOccultedRadius(), 1.0);
+        Assertions.assertSame(earth, e.getOcculting());
+        Assertions.assertEquals(earthRadius, e.getOccultingRadius(), 1.0);
+        Assertions.assertTrue(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-3);
+        Assertions.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-3);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPenumbra(Field<T> field) {
@@ -155,10 +155,10 @@ public class FieldEclipseDetectorTest {
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(zero.add(60.), zero.add(1.e-3), sun, sunRadius,
                                                                earth, earthRadius).
                             withPenumbra();
-        Assert.assertFalse(e.getTotalEclipse());
+        Assertions.assertFalse(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate).getReal(), 2.0e-6);
+        Assertions.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate).getReal(), 2.0e-6);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestWithMethods(Field<T> field) {
@@ -193,12 +193,12 @@ public class FieldEclipseDetectorTest {
                              withMaxCheck(field.getZero().add(120.0)).
                              withThreshold(field.getZero().add(1.0e-4)).
                              withMaxIter(12);
-        Assert.assertEquals(120.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-4, e.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(12, e.getMaxIterationCount());
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-4, e.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-3);
+        Assertions.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-3);
 
     }
 
@@ -239,7 +239,7 @@ public class FieldEclipseDetectorTest {
                                                                                                                                                                           field.getZero().add(0)))),
                                                                                          FramesFactory.getGCRF(),
                                                                                          zero.add(mu)));
-        Assert.assertEquals(-FastMath.PI, e.g(s).getReal(), 1.0e-15);
+        Assertions.assertEquals(-FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInsideOcculted(Field<T> field) {
@@ -281,7 +281,7 @@ public class FieldEclipseDetectorTest {
                                                                                                                                                                           field.getOne()))),
                                                                                          FramesFactory.getGCRF(),
                                                                                          zero.add(mu)));
-        Assert.assertEquals(FastMath.PI, e.g(s).getReal(), 1.0e-15);
+        Assertions.assertEquals(FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void testTooSmallMaxIterationCount(Field<T> field) {
@@ -320,9 +320,9 @@ public class FieldEclipseDetectorTest {
        propagator.addEventDetector(e);
         try {
             propagator.propagate(iniDate.shiftedBy(6000));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
+            Assertions.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
         }
     }
 

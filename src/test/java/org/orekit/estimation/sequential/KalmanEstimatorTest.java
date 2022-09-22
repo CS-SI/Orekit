@@ -16,17 +16,11 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -62,6 +56,12 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 public class KalmanEstimatorTest {
 
     @Test
@@ -69,9 +69,9 @@ public class KalmanEstimatorTest {
         try {
             new KalmanEstimatorBuilder().
             build();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -808,12 +808,12 @@ public class KalmanEstimatorTest {
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assert.assertEquals("a[0]", a0Driver.getName());
+        Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assert.assertEquals("a[1]", a1Driver.getName());
+        Assertions.assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -827,11 +827,11 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(4.7246,
+        Assertions.assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               before.getPVCoordinates().getPosition()),
                             1.0e-3);
-        Assert.assertEquals(0.0010514,
+        Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
@@ -862,10 +862,10 @@ public class KalmanEstimatorTest {
         for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
             }
         }
 
@@ -968,15 +968,15 @@ public class KalmanEstimatorTest {
         }
 
         // Verify time
-        Assert.assertEquals(0.0, decorated.getTime(), 1.0e-15);
+        Assertions.assertEquals(0.0, decorated.getTime(), 1.0e-15);
         // Verify covariance matrix
         final RealMatrix covariance = decorated.getCovariance();
         for (int i = 0; i < covariance.getRowDimension(); i++) {
             for (int j = 0; j < covariance.getColumnDimension(); j++) {
                 if (i == j) {
-                    Assert.assertEquals(1.0, covariance.getEntry(i, j), 1.0e-15);
+                    Assertions.assertEquals(1.0, covariance.getEntry(i, j), 1.0e-15);
                 } else {
-                    Assert.assertEquals(0.0, covariance.getEntry(i, j), 1.0e-15);
+                    Assertions.assertEquals(0.0, covariance.getEntry(i, j), 1.0e-15);
                 }
             }
         }
@@ -1052,12 +1052,12 @@ public class KalmanEstimatorTest {
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assert.assertEquals("a[0]", a0Driver.getName());
+        Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assert.assertEquals("a[1]", a1Driver.getName());
+        Assertions.assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -1071,11 +1071,11 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(4.7246,
+        Assertions.assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               before.getPVCoordinates().getPosition()),
                             1.0e-3);
-        Assert.assertEquals(0.0010514,
+        Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
@@ -1106,10 +1106,10 @@ public class KalmanEstimatorTest {
         for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
             }
         }
 
@@ -1177,9 +1177,9 @@ public class KalmanEstimatorTest {
         final Vector3D pos2 = estimated[1].getInitialState().getPVCoordinates().getPosition();
 
         // Verify
-        Assert.assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
-        Assert.assertEquals(0.0, pos1.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
-        Assert.assertEquals(0.0, pos2.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
+        Assertions.assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
+        Assertions.assertEquals(0.0, pos1.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
+        Assertions.assertEquals(0.0, pos2.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
 
     }
 
