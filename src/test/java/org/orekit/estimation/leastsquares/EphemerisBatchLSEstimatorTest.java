@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.EphemerisContext;
@@ -58,7 +58,7 @@ public class EphemerisBatchLSEstimatorTest {
     private Propagator       propagator;
     private EphemerisContext context;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IllegalArgumentException, OrekitException {
         Utils.setDataRoot("regular-data");
 
@@ -129,10 +129,10 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assert.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-7);
-        Assert.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-7);
+        Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
 
     }
 
@@ -174,10 +174,10 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assert.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-17);
-        Assert.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-17);
+        Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
 
     }
 
@@ -225,11 +225,11 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assert.assertEquals(refAzBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-8);
-        Assert.assertEquals(refElBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(1).getValue(), 1.0e-7);
-        Assert.assertEquals(2, estimator.getMeasurementsParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(refAzBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-8);
+        Assertions.assertEquals(refElBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(1).getValue(), 1.0e-7);
+        Assertions.assertEquals(2, estimator.getMeasurementsParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
 
     }
 
