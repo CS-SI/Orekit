@@ -2,9 +2,9 @@ package org.orekit.propagation.analytical;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -24,7 +24,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
     /** Orbit propagator. */
     private UnnormalizedSphericalHarmonicsProvider provider;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
         provider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
@@ -49,7 +49,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         RealMatrix dYdP = harvester.getParametersJacobian(initialState);
-        Assert.assertNull(dYdP);
+        Assertions.assertNull(dYdP);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(0.0, (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0], 8.78e-13);
+            Assertions.assertEquals(0.0, (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0], 8.78e-13);
         }
 
     }

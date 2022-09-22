@@ -16,13 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -35,10 +28,10 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -93,6 +86,12 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 
 public class EcksteinHechlerPropagatorTest {
 
@@ -121,7 +120,7 @@ public class EcksteinHechlerPropagatorTest {
         SpacecraftState finalOrbit = extrapolator.propagate(initDate);
 
         // positions match perfectly
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()),
                             1.0e-8);
@@ -135,11 +134,11 @@ public class EcksteinHechlerPropagatorTest {
         // that remains close to a numerical reference throughout the orbit.
         // This is shown in the testInitializationCorrectness() where a numerical
         // fit is used to check initialization
-        Assert.assertEquals(0.137,
+        Assertions.assertEquals(0.137,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             1.0e-3);
-        Assert.assertEquals(125.2, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+        Assertions.assertEquals(125.2, finalOrbit.getA() - initialOrbit.getA(), 0.1);
 
     }
 
@@ -163,7 +162,7 @@ public class EcksteinHechlerPropagatorTest {
         SpacecraftState finalOrbit = extrapolator.propagate(initDate);
 
         // positions match perfectly
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()),
                             3.0e-8);
@@ -177,11 +176,11 @@ public class EcksteinHechlerPropagatorTest {
         // that remains close to a numerical reference throughout the orbit.
         // This is shown in the testInitializationCorrectness() where a numerical
         // fit is used to check initialization
-        Assert.assertEquals(0.137,
+        Assertions.assertEquals(0.137,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             1.0e-3);
-        Assert.assertEquals(126.8, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+        Assertions.assertEquals(126.8, finalOrbit.getA() - initialOrbit.getA(), 0.1);
 
     }
 
@@ -227,28 +226,28 @@ public class EcksteinHechlerPropagatorTest {
         SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
         SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
 
-        Assert.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate), 0.0,
+        Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate), 0.0,
                      Utils.epsilonTest);
         // comparison of each orbital parameters
-        Assert.assertEquals(finalOrbitAna.getA(), finalOrbitKep.getA(), 10
+        Assertions.assertEquals(finalOrbitAna.getA(), finalOrbitKep.getA(), 10
                      * Utils.epsilonTest * finalOrbitKep.getA());
-        Assert.assertEquals(finalOrbitAna.getEquinoctialEx(), finalOrbitKep.getEquinoctialEx(), Utils.epsilonE
+        Assertions.assertEquals(finalOrbitAna.getEquinoctialEx(), finalOrbitKep.getEquinoctialEx(), Utils.epsilonE
                      * finalOrbitKep.getE());
-        Assert.assertEquals(finalOrbitAna.getEquinoctialEy(), finalOrbitKep.getEquinoctialEy(), Utils.epsilonE
+        Assertions.assertEquals(finalOrbitAna.getEquinoctialEy(), finalOrbitKep.getEquinoctialEy(), Utils.epsilonE
                      * finalOrbitKep.getE());
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx(), finalOrbitKep.getHx()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx(), finalOrbitKep.getHx()),
                      finalOrbitKep.getHx(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy(), finalOrbitKep.getHy()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy(), finalOrbitKep.getHy()),
                      finalOrbitKep.getHy(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv(), finalOrbitKep.getLv()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv(), finalOrbitKep.getLv()),
                      finalOrbitKep.getLv(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLv()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE(), finalOrbitKep.getLE()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE(), finalOrbitKep.getLE()),
                      finalOrbitKep.getLE(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLE()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM(), finalOrbitKep.getLM()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM(), finalOrbitKep.getLM()),
                      finalOrbitKep.getLM(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLM()));
 
@@ -281,18 +280,18 @@ public class EcksteinHechlerPropagatorTest {
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
-        Assert.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
+        Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
 
         // computation of M final orbit
         double LM = finalOrbit.getLE() - finalOrbit.getEquinoctialEx()
         * FastMath.sin(finalOrbit.getLE()) + finalOrbit.getEquinoctialEy()
         * FastMath.cos(finalOrbit.getLE());
 
-        Assert.assertEquals(LM, finalOrbit.getLM(), Utils.epsilonAngle
+        Assertions.assertEquals(LM, finalOrbit.getLM(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbit.getLM()));
 
         // test of tan ((LE - Lv)/2) :
-        Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
+        Assertions.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
                      tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit
                                .getEquinoctialEy()), Utils.epsilonAngle);
 
@@ -304,7 +303,7 @@ public class EcksteinHechlerPropagatorTest {
         - finalOrbit.getEquinoctialEy() * FastMath.cos(finalOrbit.getLE())
         + initialOrbit.getEquinoctialEy() * FastMath.cos(initialOrbit.getLE());
 
-        Assert.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle
+        Assertions.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle
                      * FastMath.abs(deltaE - delta));
 
         // for final orbit
@@ -334,7 +333,7 @@ public class EcksteinHechlerPropagatorTest {
 
         Vector3D r = new Vector3D(finalOrbit.getA(), (new Vector3D(x3, U, y3, V)));
 
-        Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(),
+        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(),
                      Utils.epsilonTest * r.getNorm());
 
     }
@@ -363,17 +362,17 @@ public class EcksteinHechlerPropagatorTest {
 
         SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
 
-        Assert.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
+        Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
 
         // computation of M final orbit
         double LM = finalOrbit.getLE() - finalOrbit.getEquinoctialEx()
         * FastMath.sin(finalOrbit.getLE()) + finalOrbit.getEquinoctialEy()
         * FastMath.cos(finalOrbit.getLE());
 
-        Assert.assertEquals(LM, finalOrbit.getLM(), Utils.epsilonAngle);
+        Assertions.assertEquals(LM, finalOrbit.getLM(), Utils.epsilonAngle);
 
         // test of tan((LE - Lv)/2) :
-        Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
+        Assertions.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv()) / 2.),
                      tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit
                                .getEquinoctialEy()), Utils.epsilonAngle);
 
@@ -386,7 +385,7 @@ public class EcksteinHechlerPropagatorTest {
         - finalOrbit.getEquinoctialEy() * FastMath.cos(finalOrbit.getLE())
         + initialOrbit.getEquinoctialEy() * FastMath.cos(initialOrbit.getLE());
 
-        Assert.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle
+        Assertions.assertEquals(deltaM, deltaE - delta, Utils.epsilonAngle
                      * FastMath.abs(deltaE - delta));
 
         // for final orbit
@@ -416,123 +415,134 @@ public class EcksteinHechlerPropagatorTest {
 
         Vector3D r = new Vector3D(finalOrbit.getA(), (new Vector3D(x3, U, y3, V)));
 
-        Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(),
+        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(),
                      Utils.epsilonTest * r.getNorm());
 
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void undergroundOrbit() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            // for a semi major axis < equatorial radius
+            Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+            Vector3D velocity = new Vector3D(-500.0, 800.0, 100.0);
+            AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
+            Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                    FramesFactory.getEME2000(), initDate, provider.getMu());
+            // Extrapolator definition
+            // -----------------------
+            EcksteinHechlerPropagator extrapolator =
+                    new EcksteinHechlerPropagator(initialOrbit, provider);
 
-        // for a semi major axis < equatorial radius
-        Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        Vector3D velocity = new Vector3D(-500.0, 800.0, 100.0);
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                                  FramesFactory.getEME2000(), initDate, provider.getMu());
-        // Extrapolator definition
-        // -----------------------
-        EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(initialOrbit, provider);
-
-        // Extrapolation at the initial date
-        // ---------------------------------
-        double delta_t = 0.0;
-        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
-        extrapolator.propagate(extrapDate);
+            // Extrapolation at the initial date
+            // ---------------------------------
+            double delta_t = 0.0;
+            AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
+            extrapolator.propagate(extrapDate);
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void equatorialOrbit() {
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        Orbit initialOrbit = new CircularOrbit(7000000, 1.0e-4, -1.5e-4,
-                                               0.0, 1.2, 2.3, PositionAngle.MEAN,
-                                               FramesFactory.getEME2000(),
-                                               initDate, provider.getMu());
-        // Extrapolator definition
-        // -----------------------
-        EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(initialOrbit, provider);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
+            Orbit initialOrbit = new CircularOrbit(7000000, 1.0e-4, -1.5e-4,
+                    0.0, 1.2, 2.3, PositionAngle.MEAN,
+                    FramesFactory.getEME2000(),
+                    initDate, provider.getMu());
+            // Extrapolator definition
+            // -----------------------
+            EcksteinHechlerPropagator extrapolator =
+                    new EcksteinHechlerPropagator(initialOrbit, provider);
 
-        // Extrapolation at the initial date
-        // ---------------------------------
-        double delta_t = 0.0;
-        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
-        extrapolator.propagate(extrapDate);
+            // Extrapolation at the initial date
+            // ---------------------------------
+            double delta_t = 0.0;
+            AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
+            extrapolator.propagate(extrapDate);
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void criticalInclination() {
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        Orbit initialOrbit = new CircularOrbit(new PVCoordinates(new Vector3D(-3862363.8474653554,
-                                                                              -3521533.9758022362,
-                                                                              4647637.852558916),
-                                                                 new Vector3D(65.36170817232278,
-                                                                              -6056.563439401233,
-                                                                              -4511.1247889782757)),
-                                               FramesFactory.getEME2000(),
-                                               initDate, provider.getMu());
+        Assertions.assertThrows(OrekitException.class, () -> {
+            AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
+            Orbit initialOrbit = new CircularOrbit(new PVCoordinates(new Vector3D(-3862363.8474653554,
+                    -3521533.9758022362,
+                    4647637.852558916),
+                    new Vector3D(65.36170817232278,
+                            -6056.563439401233,
+                            -4511.1247889782757)),
+                    FramesFactory.getEME2000(),
+                    initDate, provider.getMu());
 
-        // Extrapolator definition
-        // -----------------------
-        EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(initialOrbit, provider);
+            // Extrapolator definition
+            // -----------------------
+            EcksteinHechlerPropagator extrapolator =
+                    new EcksteinHechlerPropagator(initialOrbit, provider);
 
-        // Extrapolation at the initial date
-        // ---------------------------------
-        double delta_t = 0.0;
-        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
-        extrapolator.propagate(extrapDate);
+            // Extrapolation at the initial date
+            // ---------------------------------
+            double delta_t = 0.0;
+            AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
+            extrapolator.propagate(extrapDate);
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void tooEllipticalOrbit() {
-        // for an eccentricity too big for the model
-        Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                                  FramesFactory.getEME2000(), initDate, provider.getMu());
-        // Extrapolator definition
-        // -----------------------
-        EcksteinHechlerPropagator extrapolator =
-            new EcksteinHechlerPropagator(initialOrbit, provider);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            // for an eccentricity too big for the model
+            Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+            Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+            AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
+            Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                    FramesFactory.getEME2000(), initDate, provider.getMu());
+            // Extrapolator definition
+            // -----------------------
+            EcksteinHechlerPropagator extrapolator =
+                    new EcksteinHechlerPropagator(initialOrbit, provider);
 
-        // Extrapolation at the initial date
-        // ---------------------------------
-        double delta_t = 0.0;
-        AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
-        extrapolator.propagate(extrapDate);
+            // Extrapolation at the initial date
+            // ---------------------------------
+            double delta_t = 0.0;
+            AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
+            extrapolator.propagate(extrapDate);
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void hyperbolic() {
-        KeplerianOrbit hyperbolic =
-            new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
-        EcksteinHechlerPropagator propagator =
-            new EcksteinHechlerPropagator(hyperbolic, provider);
-        propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
+        Assertions.assertThrows(OrekitException.class, () -> {
+            KeplerianOrbit hyperbolic =
+                    new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, PositionAngle.TRUE,
+                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
+            EcksteinHechlerPropagator propagator =
+                    new EcksteinHechlerPropagator(hyperbolic, provider);
+            propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
+        });
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void wrongAttitude() {
-        KeplerianOrbit orbit =
-            new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
-                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
-        AttitudeProvider wrongLaw = new AttitudeProvider() {
-            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
-                throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
-            }
-            public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
-                                                                                FieldAbsoluteDate<T> date, Frame frame)
+        Assertions.assertThrows(OrekitException.class, () -> {
+            KeplerianOrbit orbit =
+                    new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
+                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
+            AttitudeProvider wrongLaw = new AttitudeProvider() {
+                public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
+                    throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
+                }
+                public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+                        FieldAbsoluteDate<T> date, Frame frame)
                 {
-                throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
-            }
-        };
-        EcksteinHechlerPropagator propagator =
-            new EcksteinHechlerPropagator(orbit, wrongLaw, provider);
-        propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
+                    throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
+                }
+            };
+            EcksteinHechlerPropagator propagator =
+                    new EcksteinHechlerPropagator(orbit, wrongLaw, provider);
+            propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
+        });
     }
 
     @Test
@@ -571,24 +581,24 @@ public class EcksteinHechlerPropagatorTest {
         Vector3D keplerianA    = keplerian.getPVCoordinates().getAcceleration();
 
         // perturbed orbit position should be similar to Keplerian orbit position
-        Assert.assertEquals(0.0, Vector3D.distance(referenceP, computedP), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(referenceP, keplerianP), 4.0e-9);
+        Assertions.assertEquals(0.0, Vector3D.distance(referenceP, computedP), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(referenceP, keplerianP), 4.0e-9);
 
         // perturbed orbit velocity should be equal to Keplerian orbit because
         // it was in fact reconstructed from Cartesian coordinates
         double computationErrorV   = Vector3D.distance(referenceV, computedV);
         double nonKeplerianEffectV = Vector3D.distance(referenceV, keplerianV);
-        Assert.assertEquals(nonKeplerianEffectV, computationErrorV, 2.0e-12);
-        Assert.assertEquals(2.2e-4, computationErrorV, 3.0e-6);
+        Assertions.assertEquals(nonKeplerianEffectV, computationErrorV, 2.0e-12);
+        Assertions.assertEquals(2.2e-4, computationErrorV, 3.0e-6);
 
         // perturbed orbit acceleration should be different from Keplerian orbit because
         // Keplerian orbit doesn't take orbit shape changes into account
         // perturbed orbit acceleration should be consistent with position evolution
         double computationErrorA   = Vector3D.distance(referenceA, computedA);
         double nonKeplerianEffectA = Vector3D.distance(referenceA, keplerianA);
-        Assert.assertEquals(8.0e-8,  computationErrorA, 2.0e-9);
-        Assert.assertEquals(6.37e-3, nonKeplerianEffectA, 7.0e-6);
-        Assert.assertTrue(computationErrorA < nonKeplerianEffectA / 60000);
+        Assertions.assertEquals(8.0e-8,  computationErrorA, 2.0e-9);
+        Assertions.assertEquals(6.37e-3, nonKeplerianEffectA, 7.0e-6);
+        Assertions.assertTrue(computationErrorA < nonKeplerianEffectA / 60000);
 
     }
 
@@ -600,19 +610,19 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         NodeDetector detector = new NodeDetector(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assert.assertTrue(FramesFactory.getITRF(IERSConventions.IERS_2010, true) == detector.getFrame());
+        Assertions.assertTrue(FramesFactory.getITRF(IERSConventions.IERS_2010, true) == detector.getFrame());
         propagator.addEventDetector(detector);
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
-        Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
-        Assert.assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
-        Assert.assertTrue(pv.getVelocity().getZ() > 0);
+        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
+        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
+        Assertions.assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
+        Assertions.assertTrue(pv.getVelocity().getZ() > 0);
         Collection<EventDetector> detectors = propagator.getEventsDetectors();
-        Assert.assertEquals(1, detectors.size());
+        Assertions.assertEquals(1, detectors.size());
         propagator.clearEventsDetectors();
-        Assert.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
     }
 
     @Test
@@ -626,7 +636,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent<NodeDetector>()));
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        Assert.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
+        Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
     }
 
     @Test
@@ -640,9 +650,9 @@ public class EcksteinHechlerPropagatorTest {
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
-        Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
-        Assert.assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 410);
+        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
+        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
+        Assertions.assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 410);
     }
 
     @Test
@@ -656,7 +666,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addEventDetector(new DateDetector(stopDate));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        Assert.assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
+        Assertions.assertEquals(0, stopDate.durationFrom(propagated.getDate()), 1.0e-10);
     }
 
     @Test
@@ -671,7 +681,7 @@ public class EcksteinHechlerPropagatorTest {
             private AbsoluteDate previous;
             public void handleStep(SpacecraftState currentState) {
                 if (previous != null) {
-                    Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
+                    Assertions.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
                 previous = currentState.getDate();
             }
@@ -692,8 +702,8 @@ public class EcksteinHechlerPropagatorTest {
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         ElevationDetector detector = new ElevationDetector(60, 1.0e-9, topo).withConstantElevation(0.09);
-        Assert.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
-        Assert.assertTrue(topo == detector.getTopocentricFrame());
+        Assertions.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
+        Assertions.assertTrue(topo == detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
@@ -701,10 +711,10 @@ public class EcksteinHechlerPropagatorTest {
                                                    propagated.getFrame(),
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
-        Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
-        Assert.assertTrue("Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900", farTarget.durationFrom(propagated.getDate()) < 7900.0);
-        Assert.assertEquals(0.09, elevation, 1.0e-11);
-        Assert.assertTrue(zVelocity < 0);
+        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
+        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0,"Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900");
+        Assertions.assertEquals(0.09, elevation, 1.0e-11);
+        Assertions.assertTrue(zVelocity < 0);
     }
 
     @Test
@@ -731,10 +741,10 @@ public class EcksteinHechlerPropagatorTest {
         // the osculating parameters recomputed by the default Eckstein-Hechler propagator are quite different
         // from initial orbit
         CircularOrbit defaultOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(defaultEH.propagateOrbit(initial.getDate()));
-        Assert.assertEquals(267.4, defaultOrbit.getA() - initial.getA(), 0.1);
+        Assertions.assertEquals(267.4, defaultOrbit.getA() - initial.getA(), 0.1);
 
         // the position on the other hand match perfectly
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(defaultOrbit.getPVCoordinates().getPosition(),
                                               initial.getPVCoordinates().getPosition()),
                             1.0e-8);
@@ -762,12 +772,12 @@ public class EcksteinHechlerPropagatorTest {
         // the default Eckstein-Hechler propagator did however quite a good job, as it found
         // an orbit close to the best fitting
         CircularOrbit fittedOrbit  = (CircularOrbit) OrbitType.CIRCULAR.convertType(fittedEH.propagateOrbit(initial.getDate()));
-        Assert.assertEquals(0.623, defaultOrbit.getA() - fittedOrbit.getA(), 0.1);
+        Assertions.assertEquals(0.623, defaultOrbit.getA() - fittedOrbit.getA(), 0.1);
 
         // the position on the other hand are slightly different
         // because the fitted orbit minimizes the residuals over a complete time span,
         // not on a single point
-        Assert.assertEquals(58.0,
+        Assertions.assertEquals(58.0,
                             Vector3D.distance(defaultOrbit.getPVCoordinates().getPosition(),
                                               fittedOrbit.getPVCoordinates().getPosition()),
                             0.1);
@@ -795,16 +805,16 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Verify
-        Assert.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
-        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
-        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
-        Assert.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
-        Assert.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
+        Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
+        Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPVCoordinates().getPosition(),
                                               finalState.getPVCoordinates().getPosition()),
                             11.4);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPVCoordinates().getVelocity(),
                                               finalState.getPVCoordinates().getVelocity()),
                             4.2e-2);
@@ -831,16 +841,16 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Verify
-        Assert.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
-        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
-        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
-        Assert.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
-        Assert.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
+        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
+        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
+        Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
+        Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPVCoordinates().getPosition(),
                                               finalState.getPVCoordinates().getPosition()),
                             11.4);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPVCoordinates().getVelocity(),
                                               finalState.getPVCoordinates().getVelocity()),
                             4.2e-2);
@@ -879,8 +889,8 @@ public class EcksteinHechlerPropagatorTest {
         });
         num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assert.assertEquals(3190.029, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
-        Assert.assertEquals(  49.638, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+        Assertions.assertEquals(3190.029, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
+        Assertions.assertEquals(  49.638, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
 
     }
 
@@ -891,7 +901,7 @@ public class EcksteinHechlerPropagatorTest {
                                                                  - ey * ey));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         double mu  = 3.9860047e14;
@@ -905,7 +915,7 @@ public class EcksteinHechlerPropagatorTest {
         provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, TideSystem.UNKNOWN, cnm, snm);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         provider = null;
     }

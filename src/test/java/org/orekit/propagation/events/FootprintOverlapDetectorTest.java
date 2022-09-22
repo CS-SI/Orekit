@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -28,9 +24,9 @@ import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.GeodeticPoint;
@@ -58,6 +54,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.List;
+
 public class FootprintOverlapDetectorTest {
 
     private Propagator propagator;
@@ -81,11 +81,11 @@ public class FootprintOverlapDetectorTest {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, itrf);
         FootprintOverlapDetector detector = new FootprintOverlapDetector(fov, earth, aoi, 20000.);
-        Assert.assertEquals(9.91475183e-3, detector.getZone().getSize(), 1.0e-10);
+        Assertions.assertEquals(9.91475183e-3, detector.getZone().getSize(), 1.0e-10);
         Field sampledZoneField = FootprintOverlapDetector.class.getDeclaredField("sampledZone");
         sampledZoneField.setAccessible(true);
         List<?> sampledZone = (List<?>) sampledZoneField.get(detector);
-        Assert.assertEquals(1140, sampledZone.size());
+        Assertions.assertEquals(1140, sampledZone.size());
     }
 
     @Test
@@ -118,7 +118,7 @@ public class FootprintOverlapDetectorTest {
                              initialOrbit.getDate().shiftedBy(735000));
 
         List<LoggedEvent> events = logger.getLoggedEvents();
-        Assert.assertEquals(8, events.size());
+        Assertions.assertEquals(8, events.size());
 
         // the first two consecutive close events occur during the same ascending orbit
         // we first see Corsica, then lose visibility over the sea, then see continental France
@@ -150,12 +150,12 @@ public class FootprintOverlapDetectorTest {
                                 final double spacecraftLatitude, final double spacecraftLongitude,
                                 final double fovCenterLatitude, final double fovCenterLongitude) {
 
-        Assert.assertFalse(start.isIncreasing());
-        Assert.assertTrue(end.isIncreasing());
-        Assert.assertEquals(expectedStart,
+        Assertions.assertFalse(start.isIncreasing());
+        Assertions.assertTrue(end.isIncreasing());
+        Assertions.assertEquals(expectedStart,
                             start.getState().getDate().durationFrom(initialOrbit.getDate()),
                             0.001);
-        Assert.assertEquals(expectedDuration,
+        Assertions.assertEquals(expectedDuration,
                             end.getState().getDate().durationFrom(start.getState().getDate()),
                             0.001);
 
@@ -164,8 +164,8 @@ public class FootprintOverlapDetectorTest {
         // sub-satellite point
         Vector3D p = middle.getPVCoordinates().getPosition();
         GeodeticPoint gpSat = earth.transform(p, middle.getFrame(), middle.getDate());
-        Assert.assertEquals(spacecraftLatitude,  FastMath.toDegrees(gpSat.getLatitude()),  0.001);
-        Assert.assertEquals(spacecraftLongitude, FastMath.toDegrees(gpSat.getLongitude()), 0.001);
+        Assertions.assertEquals(spacecraftLatitude,  FastMath.toDegrees(gpSat.getLatitude()),  0.001);
+        Assertions.assertEquals(spacecraftLongitude, FastMath.toDegrees(gpSat.getLongitude()), 0.001);
 
         // point at center of Field Of View
         final Transform scToInert = middle.toTransform().getInverse();
@@ -173,12 +173,12 @@ public class FootprintOverlapDetectorTest {
                 earth.getIntersectionPoint(new Line(p, scToInert.transformPosition(Vector3D.PLUS_K), 1.0e-6),
                                            middle.getPVCoordinates().getPosition(),
                                            middle.getFrame(), middle.getDate());
-        Assert.assertEquals(fovCenterLatitude,  FastMath.toDegrees(gpFOV.getLatitude()),  0.001);
-        Assert.assertEquals(fovCenterLongitude, FastMath.toDegrees(gpFOV.getLongitude()), 0.001);
+        Assertions.assertEquals(fovCenterLatitude,  FastMath.toDegrees(gpFOV.getLatitude()),  0.001);
+        Assertions.assertEquals(fovCenterLongitude, FastMath.toDegrees(gpFOV.getLongitude()), 0.001);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
 
@@ -207,7 +207,7 @@ public class FootprintOverlapDetectorTest {
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         } catch (OrekitException oe) {
-            Assert.fail(oe.getMessage());
+            Assertions.fail(oe.getMessage());
         }
 
     }

@@ -16,23 +16,13 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.pvCloseTo;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -64,6 +54,16 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.pvCloseTo;
 
 public class MarshallSolarActivityFutureEstimationTest {
 
@@ -255,13 +255,13 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        Assert.assertEquals(new DateComponents(2010, Month.NOVEMBER, 1),
+        Assertions.assertEquals(new DateComponents(2010, Month.NOVEMBER, 1),
                             msafe.getFileDate(new AbsoluteDate("2010-05-01", utc)));
-        Assert.assertEquals(new DateComponents(2010, Month.DECEMBER, 1),
+        Assertions.assertEquals(new DateComponents(2010, Month.DECEMBER, 1),
                             msafe.getFileDate(new AbsoluteDate("2010-06-01", utc)));
-        Assert.assertEquals(new DateComponents(2011, Month.JANUARY, 1),
+        Assertions.assertEquals(new DateComponents(2011, Month.JANUARY, 1),
                             msafe.getFileDate(new AbsoluteDate("2010-07-01", utc)));
-        Assert.assertEquals(new DateComponents(2011, Month.JANUARY, 1),
+        Assertions.assertEquals(new DateComponents(2011, Month.JANUARY, 1),
                             msafe.getFileDate(new AbsoluteDate("2030-01-01", utc)));
 
     }
@@ -271,31 +271,31 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
-        Assert.assertEquals(94.2,
+        Assertions.assertEquals(94.2,
                             msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-10-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(96.6,
+        Assertions.assertEquals(96.6,
                             msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-10-17T12:00:00", utc)),
                             1.0e-10);
-        Assert.assertEquals(99.0,
+        Assertions.assertEquals(99.0,
                             msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-11-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-11-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG,
+        Assertions.assertEquals(MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG,
                             msafe.getStrengthLevel());
     }
 
@@ -305,31 +305,31 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        Assert.assertEquals(87.6,
+        Assertions.assertEquals(87.6,
                             msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-10-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(88.7,
+        Assertions.assertEquals(88.7,
                             msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-10-17T12:00:00", utc)),
                             1.0e-10);
-        Assert.assertEquals(89.8,
+        Assertions.assertEquals(89.8,
                             msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-11-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-11-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE,
+        Assertions.assertEquals(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE,
                             msafe.getStrengthLevel());
     }
 
@@ -339,31 +339,31 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
-        Assert.assertEquals(80.4,
+        Assertions.assertEquals(80.4,
                             msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-10-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(80.6,
+        Assertions.assertEquals(80.6,
                             msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-10-16T12:00:00", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-10-17T12:00:00", utc)),
                             1.0e-10);
-        Assert.assertEquals(80.8,
+        Assertions.assertEquals(80.8,
                             msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getMeanFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-11-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
+        Assertions.assertEquals(msafe.getInstantFlux(new AbsoluteDate("2010-11-01", utc)),
                             msafe.getDailyFlux(new AbsoluteDate("2010-11-02", utc)),
                             1.0e-10);
-        Assert.assertEquals(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK,
+        Assertions.assertEquals(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK,
                             msafe.getStrengthLevel());
 
     }
@@ -383,18 +383,18 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
-        Assert.assertEquals(2 + 1.0 / 3.0,
+        Assertions.assertEquals(2 + 1.0 / 3.0,
                             msafe.get24HoursKp(new AbsoluteDate("2010-10-01", utc)),
                             0.2);
-        Assert.assertEquals(3.0,
+        Assertions.assertEquals(3.0,
                             msafe.get24HoursKp(new AbsoluteDate("2011-05-01", utc)),
                             0.1);
 
         // this one should get exactly to an element of the AP_ARRAY: ap = 7.0
-        Assert.assertEquals(2.0,
+        Assertions.assertEquals(2.0,
                             msafe.get24HoursKp(new AbsoluteDate("2010-08-01", utc)),
                             0.3);
-        Assert.assertEquals(msafe.getThreeHourlyKP(new AbsoluteDate("2010-08-01", utc)),
+        Assertions.assertEquals(msafe.getThreeHourlyKP(new AbsoluteDate("2010-08-01", utc)),
                             msafe.get24HoursKp(new AbsoluteDate("2010-08-01", utc)),
                             1.0e-14);
 
@@ -405,16 +405,16 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        Assert.assertEquals(2 - 1.0 / 3.0,
+        Assertions.assertEquals(2 - 1.0 / 3.0,
                             msafe.get24HoursKp(new AbsoluteDate("2010-10-01", utc)),
                             0.1);
-        Assert.assertEquals(2 + 1.0 / 3.0,
+        Assertions.assertEquals(2 + 1.0 / 3.0,
                             msafe.get24HoursKp(new AbsoluteDate("2011-05-01", utc)),
                             0.1);
-        Assert.assertEquals(2.0 - 1.0 / 3.0,
+        Assertions.assertEquals(2.0 - 1.0 / 3.0,
                             msafe.get24HoursKp(new AbsoluteDate("2010-08-01", utc)),
                             0.1);
-        Assert.assertEquals(msafe.getThreeHourlyKP(new AbsoluteDate("2010-08-01", utc)),
+        Assertions.assertEquals(msafe.getThreeHourlyKP(new AbsoluteDate("2010-08-01", utc)),
                             msafe.get24HoursKp(new AbsoluteDate("2010-08-01", utc)),
                             1.0e-14);
 
@@ -425,16 +425,16 @@ public class MarshallSolarActivityFutureEstimationTest {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
-        Assert.assertEquals(1 + 1.0 / 3.0,
+        Assertions.assertEquals(1 + 1.0 / 3.0,
                             msafe.get24HoursKp(new AbsoluteDate("2010-10-01", utc)),
                             0.1);
-        Assert.assertEquals(2.0,
+        Assertions.assertEquals(2.0,
                             msafe.get24HoursKp(new AbsoluteDate("2011-05-01", utc)),
                             0.3);
-        Assert.assertEquals(1 + 1.0 / 3.0,
+        Assertions.assertEquals(1 + 1.0 / 3.0,
                             msafe.get24HoursKp(new AbsoluteDate("2010-08-01", utc)),
                             0.1);
-        Assert.assertEquals(msafe.getThreeHourlyKP(new AbsoluteDate("2010-08-01", utc)),
+        Assertions.assertEquals(msafe.getThreeHourlyKP(new AbsoluteDate("2010-08-01", utc)),
                             msafe.get24HoursKp(new AbsoluteDate("2010-08-01", utc)),
                             1.0e-14);
 
@@ -446,13 +446,13 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
         for (double ap: msafe.getAp(new AbsoluteDate("2010-10-01", utc))) {
-            Assert.assertEquals(9.1, ap, 1e-10);
+            Assertions.assertEquals(9.1, ap, 1e-10);
         }
         for (double ap: msafe.getAp(new AbsoluteDate("2011-05-01", utc))) {
-            Assert.assertEquals(14.4, ap, 1e-10);
+            Assertions.assertEquals(14.4, ap, 1e-10);
         }
         for (double ap: msafe.getAp(new AbsoluteDate("2010-08-01", utc))) {
-            Assert.assertEquals(7.0, ap, 1e-10);
+            Assertions.assertEquals(7.0, ap, 1e-10);
         }
     }
 
@@ -462,13 +462,13 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
         for (double ap: msafe.getAp(new AbsoluteDate("2010-10-01", utc))) {
-            Assert.assertEquals(6.4, ap, 1e-10);
+            Assertions.assertEquals(6.4, ap, 1e-10);
         }
         for (double ap: msafe.getAp(new AbsoluteDate("2011-05-01", utc))) {
-            Assert.assertEquals(9.6, ap, 1e-10);
+            Assertions.assertEquals(9.6, ap, 1e-10);
         }
         for (double ap: msafe.getAp(new AbsoluteDate("2010-08-01", utc))) {
-            Assert.assertEquals(6.1, ap, 1e-10);
+            Assertions.assertEquals(6.1, ap, 1e-10);
         }
     }
 
@@ -478,13 +478,13 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
         for (double ap: msafe.getAp(new AbsoluteDate("2010-10-01", utc))) {
-            Assert.assertEquals(4.9, ap, 1e-10);
+            Assertions.assertEquals(4.9, ap, 1e-10);
         }
         for (double ap: msafe.getAp(new AbsoluteDate("2011-05-01", utc))) {
-            Assert.assertEquals(6.9, ap, 1e-10);
+            Assertions.assertEquals(6.9, ap, 1e-10);
         }
         for (double ap: msafe.getAp(new AbsoluteDate("2010-08-01", utc))) {
-            Assert.assertEquals(4.9, ap, 1e-10);
+            Assertions.assertEquals(4.9, ap, 1e-10);
         }
     }
 
@@ -494,8 +494,8 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
-        Assert.assertEquals(new AbsoluteDate("2010-05-01", utc), msafe.getMinDate());
-        Assert.assertEquals(78.1,
+        Assertions.assertEquals(new AbsoluteDate("2010-05-01", utc), msafe.getMinDate());
+        Assertions.assertEquals(78.1,
                             msafe.getMeanFlux(msafe.getMinDate()),
                             1.0e-14);
     }
@@ -506,42 +506,50 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
-        Assert.assertEquals(new AbsoluteDate("2030-10-01", utc), msafe.getMaxDate());
-        Assert.assertEquals(67.0,
+        Assertions.assertEquals(new AbsoluteDate("2030-10-01", utc), msafe.getMaxDate());
+        Assertions.assertEquals(67.0,
                             msafe.getMeanFlux(msafe.getMaxDate()),
                             1.0e-14);
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testPastOutOfRange() {
-        MarshallSolarActivityFutureEstimation msafe =
-            loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
-        msafe.get24HoursKp(new AbsoluteDate("1960-10-01", utc));
+        Assertions.assertThrows(OrekitException.class, () -> {
+            MarshallSolarActivityFutureEstimation msafe =
+                    loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
+            msafe.get24HoursKp(new AbsoluteDate("1960-10-01", utc));
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testFutureOutOfRange() {
-        MarshallSolarActivityFutureEstimation msafe =
-            loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
-        msafe.get24HoursKp(new AbsoluteDate("2060-10-01", utc));
+        Assertions.assertThrows(OrekitException.class, () -> {
+            MarshallSolarActivityFutureEstimation msafe =
+                    loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
+            msafe.get24HoursKp(new AbsoluteDate("2060-10-01", utc));
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testExtraData() {
-        MarshallSolarActivityFutureEstimation msafe =
-            new MarshallSolarActivityFutureEstimation("Jan2011F10-extra-data\\.txt",
-                                                      MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
-        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-        manager.feed(msafe.getSupportedNames(), msafe);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            MarshallSolarActivityFutureEstimation msafe =
+                    new MarshallSolarActivityFutureEstimation("Jan2011F10-extra-data\\.txt",
+                            MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
+            DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+            manager.feed(msafe.getSupportedNames(), msafe);
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNoData() {
-        MarshallSolarActivityFutureEstimation msafe =
-            new MarshallSolarActivityFutureEstimation("Jan2011F10-no-data\\.txt",
-                                                      MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
-        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-        manager.feed(msafe.getSupportedNames(), msafe);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            MarshallSolarActivityFutureEstimation msafe =
+                    new MarshallSolarActivityFutureEstimation("Jan2011F10-no-data\\.txt",
+                            MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
+            DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+            manager.feed(msafe.getSupportedNames(), msafe);
+        });
     }
 
     @Test
@@ -557,8 +565,8 @@ public class MarshallSolarActivityFutureEstimationTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(original);
 
-        Assert.assertTrue(bos.size() > 400);
-        Assert.assertTrue(bos.size() < 450);
+        Assertions.assertTrue(bos.size() > 400);
+        Assertions.assertTrue(bos.size() < 450);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -566,18 +574,18 @@ public class MarshallSolarActivityFutureEstimationTest {
         MarshallSolarActivityFutureEstimation deserialized = (MarshallSolarActivityFutureEstimation) ois.readObject();
         DataProvidersManager managerDeserialized = DataContext.getDefault().getDataProvidersManager();
         managerDeserialized.feed(deserialized.getSupportedNames(), deserialized);
-        Assert.assertEquals(original.getMeanFlux(date),    deserialized.getMeanFlux(date),    1.0e-12);
-        Assert.assertEquals(original.getDailyFlux(date),   deserialized.getDailyFlux(date),   1.0e-12);
-        Assert.assertEquals(original.getInstantFlux(date), deserialized.getInstantFlux(date), 1.0e-12);
+        Assertions.assertEquals(original.getMeanFlux(date),    deserialized.getMeanFlux(date),    1.0e-12);
+        Assertions.assertEquals(original.getDailyFlux(date),   deserialized.getDailyFlux(date),   1.0e-12);
+        Assertions.assertEquals(original.getInstantFlux(date), deserialized.getInstantFlux(date), 1.0e-12);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         utc = null;
     }

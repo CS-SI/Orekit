@@ -22,9 +22,9 @@ import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -54,10 +54,10 @@ public class GeographicZoneDetectorTest {
                 new GeographicZoneDetector(20.0, 1.e-3, earth, buildFrance(), FastMath.toRadians(0.5)).
                 withHandler(new ContinueOnEvent<GeographicZoneDetector>());
 
-        Assert.assertEquals(20.0, d.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-3, d.getThreshold(), 1.0e-15);
-        Assert.assertEquals(0.5, FastMath.toDegrees(d.getMargin()), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertEquals(20.0, d.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(1.0e-3, d.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(0.5, FastMath.toDegrees(d.getMargin()), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -81,7 +81,7 @@ public class GeographicZoneDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(10 * Constants.JULIAN_DAY));
-        Assert.assertEquals(26, logger.getLoggedEvents().size());
+        Assertions.assertEquals(26, logger.getLoggedEvents().size());
 
     }
 
@@ -116,7 +116,7 @@ public class GeographicZoneDetectorTest {
         return new SphericalPolygonsSet(1.0e-10, vertices);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

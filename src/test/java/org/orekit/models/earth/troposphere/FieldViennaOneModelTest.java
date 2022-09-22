@@ -16,8 +16,8 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -25,10 +25,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -57,12 +57,12 @@ public class FieldViennaOneModelTest {
 
     private static double epsilon = 1e-6;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
@@ -115,8 +115,8 @@ public class FieldViennaOneModelTest {
 
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
 
-        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
-        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
+        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
+        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
     }
 
     @Test
@@ -134,8 +134,8 @@ public class FieldViennaOneModelTest {
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(height));
         ViennaOneModel model = new ViennaOneModel(a, z);
         final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), point, model.getParameters(field), date);
-        Assert.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
     }
 
     @Test
@@ -154,7 +154,7 @@ public class FieldViennaOneModelTest {
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), point, model.getParameters(field), date);
-            Assert.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
@@ -271,7 +271,7 @@ public class FieldViennaOneModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.0e-11);
+            Assertions.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.0e-11);
         }
     }
 

@@ -16,15 +16,12 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -44,6 +41,9 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EcksteinHechlerBatchLSEstimatorTest {
 
@@ -83,10 +83,10 @@ public class EcksteinHechlerBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
 
     }
 
@@ -125,10 +125,10 @@ public class EcksteinHechlerBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
 
     }
 
@@ -298,7 +298,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
                                                        0.0, 3.2e-6,
                                                        0.0, 3.8e-7,
                                                        0.0, 1.5e-10);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
         }

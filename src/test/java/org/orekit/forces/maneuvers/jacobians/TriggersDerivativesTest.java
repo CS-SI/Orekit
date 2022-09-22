@@ -16,11 +16,6 @@
  */
 package org.orekit.forces.maneuvers.jacobians;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -29,9 +24,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
@@ -62,6 +57,10 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class TriggersDerivativesTest {
 
@@ -221,7 +220,7 @@ public class TriggersDerivativesTest {
         }
 
         for (int i = 0; i < tolerance.length; ++i) {
-            Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
+            Assertions.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
         }
 
     }
@@ -322,7 +321,7 @@ public class TriggersDerivativesTest {
         }
 
         for (int i = 0; i < tolerance.length; ++i) {
-            Assert.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
+            Assertions.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
         }
 
     }
@@ -520,7 +519,7 @@ public class TriggersDerivativesTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));

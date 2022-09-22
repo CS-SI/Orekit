@@ -16,10 +16,6 @@
  */
 package org.orekit.frames;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -34,8 +30,8 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
@@ -48,6 +44,9 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TransformTest {
 
@@ -70,7 +69,7 @@ public class TransformTest {
         Vector3D p2 = randomVector(100.0, random);
         Line line = new Line(p1, p2, 1.0e-6);
         Line transformed = Transform.IDENTITY.transformLine(line);
-        Assert.assertSame(line, transformed);
+        Assertions.assertSame(line, transformed);
     }
 
     @Test
@@ -83,7 +82,7 @@ public class TransformTest {
                         tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16, 21, 0, 0, utc)));
         FieldTransform<Decimal64> t2 =
                         tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16,  9, 0, 0, utc)));
-        Assert.assertEquals(-43200.0, t2.getDate().durationFrom(t1.getDate()), 1.0e-15);
+        Assertions.assertEquals(-43200.0, t2.getDate().durationFrom(t1.getDate()), 1.0e-15);
     }
 
     @Test
@@ -96,7 +95,7 @@ public class TransformTest {
                           new Transform(AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I));
         Vector3D u = transform.transformPosition(new Vector3D(1.0, 1.0, 1.0));
         Vector3D v = new Vector3D(0.0, 1.0, 1.0);
-        Assert.assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
+        Assertions.assertEquals(0, u.subtract(v).getNorm(), 1.0e-15);
     }
 
     @Test
@@ -167,14 +166,14 @@ public class TransformTest {
         // despite neither raw transforms have angular acceleration,
         // the combination does have an angular acceleration,
         // it is due to the cross product Ω₁ ⨯ Ω₂
-        Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
-        Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);
+        Assertions.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);
 
-        Assert.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
 
     }
 
@@ -260,7 +259,7 @@ public class TransformTest {
         Transform.IDENTITY.getJacobian(filter, jacobian);
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
-                Assert.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j], 1.0e-15);
+                Assertions.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j], 1.0e-15);
             }
         }
     }
@@ -291,9 +290,9 @@ public class TransformTest {
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 Vector3D b = transform.transformVector(a);
-                Assert.assertEquals(0, b.subtract(a).getNorm(), 1.0e-15);
+                Assertions.assertEquals(0, b.subtract(a).getNorm(), 1.0e-15);
                 Vector3D c = transform.transformPosition(a);
-                Assert.assertEquals(0,
+                Assertions.assertEquals(0,
                              c.subtract(a).subtract(delta).getNorm(),
                              1.0e-14);
             }
@@ -502,12 +501,12 @@ public class TransformTest {
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = new Vector3D(rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 Vector3D b = transform.transformVector(a);
-                Assert.assertEquals(Vector3D.angle(axis, a), Vector3D.angle(axis, b), 1.0e-14);
+                Assertions.assertEquals(Vector3D.angle(axis, a), Vector3D.angle(axis, b), 1.0e-14);
                 Vector3D aOrtho = Vector3D.crossProduct(axis, a);
                 Vector3D bOrtho = Vector3D.crossProduct(axis, b);
-                Assert.assertEquals(angle, Vector3D.angle(aOrtho, bOrtho), 1.0e-14);
+                Assertions.assertEquals(angle, Vector3D.angle(aOrtho, bOrtho), 1.0e-14);
                 Vector3D c = transform.transformPosition(a);
-                Assert.assertEquals(0, c.subtract(b).getNorm(), 1.0e-14);
+                Assertions.assertEquals(0, c.subtract(b).getNorm(), 1.0e-14);
             }
 
         }
@@ -563,13 +562,13 @@ public class TransformTest {
                     PVCoordinates estimatedColumn = new PVCoordinates(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
 
                     // check the rest of the matrix remains untouched
                     for (int l = 3; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
 
                 }
@@ -577,7 +576,7 @@ public class TransformTest {
                 // check the rest of the matrix remains untouched
                 for (int c = directions.length; c < jacobian[0].length; ++c) {
                     for (int l = 0; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
                 }
 
@@ -640,16 +639,16 @@ public class TransformTest {
                     PVCoordinates estimatedColumn = new PVCoordinates(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getX(), jacobian[3][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getY(), jacobian[4][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getZ(), jacobian[5][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getX(), jacobian[3][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getY(), jacobian[4][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getZ(), jacobian[5][c], epsilonV);
 
                     // check the rest of the matrix remains untouched
                     for (int l = 6; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
 
                 }
@@ -657,7 +656,7 @@ public class TransformTest {
                 // check the rest of the matrix remains untouched
                 for (int c = directions.length; c < jacobian[0].length; ++c) {
                     for (int l = 0; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c], 1.0e-15);
                     }
                 }
 
@@ -724,15 +723,15 @@ public class TransformTest {
                     PVCoordinates estimatedColumn = new PVCoordinates(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX(),     jacobian[0][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY(),     jacobian[1][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ(),     jacobian[2][c], epsilonP);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getX(),     jacobian[3][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getY(),     jacobian[4][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getZ(),     jacobian[5][c], epsilonV);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getX(), jacobian[6][c], epsilonA);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getY(), jacobian[7][c], epsilonA);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getZ(), jacobian[8][c], epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX(),     jacobian[0][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY(),     jacobian[1][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ(),     jacobian[2][c], epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getX(),     jacobian[3][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getY(),     jacobian[4][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getZ(),     jacobian[5][c], epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getX(), jacobian[6][c], epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getY(), jacobian[7][c], epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getZ(), jacobian[8][c], epsilonA);
 
                 }
 
@@ -753,7 +752,7 @@ public class TransformTest {
                 Line transformed = transform.transformLine(l);
                 for (int k = 0; k < 10; ++k) {
                     Vector3D p = l.pointAt(random.nextDouble() * 1.0e6);
-                    Assert.assertEquals(0.0, transformed.distance(transform.transformPosition(p)), 1.0e-9);
+                    Assertions.assertEquals(0.0, transformed.distance(transform.transformPosition(p)), 1.0e-9);
                 }
             }
         }
@@ -786,7 +785,7 @@ public class TransformTest {
             linearB.setColumn(3, new double[] { p0.getX(), p0.getY(), p0.getZ() });
 
             // both linear transforms should be equal
-            Assert.assertEquals(0.0, linearB.subtract(linearA).getNorm1(),
+            Assertions.assertEquals(0.0, linearB.subtract(linearA).getNorm1(),
                                 1.0e-15 * linearA.getNorm1());
 
             for (int i = 0; i < 100; ++i) {
@@ -794,14 +793,14 @@ public class TransformTest {
                 Vector3D q  = t.transformPosition(p);
 
                 double[] qA = linearA.operate(new double[] { p.getX(), p.getY(), p.getZ(), 1.0 });
-                Assert.assertEquals(q.getX(), qA[0], 1.0e-13 * p.getNorm());
-                Assert.assertEquals(q.getY(), qA[1], 1.0e-13 * p.getNorm());
-                Assert.assertEquals(q.getZ(), qA[2], 1.0e-13 * p.getNorm());
+                Assertions.assertEquals(q.getX(), qA[0], 1.0e-13 * p.getNorm());
+                Assertions.assertEquals(q.getY(), qA[1], 1.0e-13 * p.getNorm());
+                Assertions.assertEquals(q.getZ(), qA[2], 1.0e-13 * p.getNorm());
 
                 double[] qB = linearB.operate(new double[] { p.getX(), p.getY(), p.getZ(), 1.0 });
-                Assert.assertEquals(q.getX(), qB[0], 1.0e-10 * p.getNorm());
-                Assert.assertEquals(q.getY(), qB[1], 1.0e-10 * p.getNorm());
-                Assert.assertEquals(q.getZ(), qB[2], 1.0e-10 * p.getNorm());
+                Assertions.assertEquals(q.getX(), qB[0], 1.0e-10 * p.getNorm());
+                Assertions.assertEquals(q.getY(), qB[1], 1.0e-10 * p.getNorm());
+                Assertions.assertEquals(q.getZ(), qB[2], 1.0e-10 * p.getNorm());
 
             }
 
@@ -978,23 +977,23 @@ public class TransformTest {
                 double theOzDot2 = t0.getRotationAcceleration().getZ();
 
                 // check consistency
-                Assert.assertEquals(theXDot, numXDot, 1.0e-13 * v);
-                Assert.assertEquals(theYDot, numYDot, 1.0e-13 * v);
-                Assert.assertEquals(theZDot, numZDot, 1.0e-13 * v);
+                Assertions.assertEquals(theXDot, numXDot, 1.0e-13 * v);
+                Assertions.assertEquals(theYDot, numYDot, 1.0e-13 * v);
+                Assertions.assertEquals(theZDot, numZDot, 1.0e-13 * v);
 
-                Assert.assertEquals(theXDot2, numXDot2, 1.0e-13 * a);
-                Assert.assertEquals(theYDot2, numYDot2, 1.0e-13 * a);
-                Assert.assertEquals(theZDot2, numZDot2, 1.0e-13 * a);
+                Assertions.assertEquals(theXDot2, numXDot2, 1.0e-13 * a);
+                Assertions.assertEquals(theYDot2, numYDot2, 1.0e-13 * a);
+                Assertions.assertEquals(theZDot2, numZDot2, 1.0e-13 * a);
 
-                Assert.assertEquals(theQ0Dot, numQ0Dot, 1.0e-13 * omega);
-                Assert.assertEquals(theQ1Dot, numQ1Dot, 1.0e-13 * omega);
-                Assert.assertEquals(theQ2Dot, numQ2Dot, 1.0e-13 * omega);
-                Assert.assertEquals(theQ3Dot, numQ3Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ0Dot, numQ0Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ1Dot, numQ1Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ2Dot, numQ2Dot, 1.0e-13 * omega);
+                Assertions.assertEquals(theQ3Dot, numQ3Dot, 1.0e-13 * omega);
 
 
-                Assert.assertEquals(theOxDot2, numOxDot, 1.0e-12 * omegaDot);
-                Assert.assertEquals(theOyDot2, numOyDot, 1.0e-12 * omegaDot);
-                Assert.assertEquals(theOzDot2, numOzDot, 1.0e-12 * omegaDot);
+                Assertions.assertEquals(theOxDot2, numOxDot, 1.0e-12 * omegaDot);
+                Assertions.assertEquals(theOyDot2, numOyDot, 1.0e-12 * omegaDot);
+                Assertions.assertEquals(theOzDot2, numOzDot, 1.0e-12 * omegaDot);
 
             }
         }
@@ -1013,12 +1012,12 @@ public class TransformTest {
             Transform reference = evolvingTransform(t0, dt);
             Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample);
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           2.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           6.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       4.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            2.0e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         6.0e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 4.0e-14);
+            Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           2.0e-15);
+            Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           6.0e-15);
+            Assertions.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       4.0e-14);
+            Assertions.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            2.0e-15);
+            Assertions.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         6.0e-15);
+            Assertions.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 4.0e-14);
 
         }
 
@@ -1080,10 +1079,10 @@ public class TransformTest {
         for (int i = 0; i < 100; ++i) {
             Vector3D a = randomVector(1.0e3, random);
             Vector3D tA = transform.transformVector(a);
-            Assert.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
+            Assertions.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
             Vector3D b = randomVector(1.0e3, random);
             Vector3D tB = transform.transformPosition(b);
-            Assert.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
+            Assertions.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
             PVCoordinates pv  = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
             checkVector(pv.getPosition(),     tPv.getPosition(), 1.0e-10);
@@ -1096,9 +1095,8 @@ public class TransformTest {
         double refNorm = reference.getNorm();
         double resNorm = result.getNorm();
         double tolerance = relativeTolerance * (1 + FastMath.max(refNorm, resNorm));
-        Assert.assertEquals("ref = " + reference + ", res = " + result + " -> " +
-                            (Vector3D.distance(reference, result) / (1 + FastMath.max(refNorm, resNorm))),
-                            0, Vector3D.distance(reference, result), tolerance);
+        Assertions.assertEquals(0, Vector3D.distance(reference, result), tolerance, "ref = " + reference + ", res = " + result + " -> " +
+                (Vector3D.distance(reference, result) / (1 + FastMath.max(refNorm, resNorm))));
     }
 
 }

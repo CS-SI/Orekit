@@ -16,12 +16,8 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -34,9 +30,9 @@ import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -53,6 +49,10 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 
 public class NRLMSISE00Test {
@@ -219,9 +219,9 @@ public class NRLMSISE00Test {
         // Run
         try {
             atm.getDensity(date.shiftedBy(2 * Constants.JULIAN_YEAR), pos, itrf);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
         }
 
         final double rho = atm.getDensity(date, pos, itrf);
@@ -246,7 +246,7 @@ public class NRLMSISE00Test {
 
         final Object out = createOutput(atm, 172, 29000., 60., -70, lst, 150., 150., ap);
         gtd7d.invoke(out, 400.0);
-        Assert.assertEquals(rho, ((Double) getDensity.invoke(out, 5)).doubleValue(), rho * 1.e-3);
+        Assertions.assertEquals(rho, ((Double) getDensity.invoke(out, 5)).doubleValue(), rho * 1.e-3);
 
     }
 
@@ -281,9 +281,9 @@ public class NRLMSISE00Test {
             atm.getDensity(new FieldAbsoluteDate<>(field, date).shiftedBy(2 * Constants.JULIAN_YEAR),
                            new FieldVector3D<>(field.getOne(), pos),
                            itrf);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE, oe.getSpecifier());
         }
 
         final double    rho = atm.getDensity(date, pos, itrf);
@@ -291,7 +291,7 @@ public class NRLMSISE00Test {
                                                new FieldVector3D<>(field.getOne(), pos),
                                                itrf);
 
-        Assert.assertEquals(rho, rho64.getReal(), rho * 2.0e-13);
+        Assertions.assertEquals(rho, rho64.getReal(), rho * 2.0e-13);
 
     }
 
@@ -356,16 +356,16 @@ public class NRLMSISE00Test {
                                                                              factory3.variable(2, pos.getZ())),
                                                          itrf);
 
-        Assert.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-13);
-        Assert.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-13);
-        Assert.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-13);
-        Assert.assertEquals(rhoX.getPartialDerivative(1),
+        Assertions.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-13);
+        Assertions.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-13);
+        Assertions.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-13);
+        Assertions.assertEquals(rhoX.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(1, 0, 0),
                             FastMath.abs(2.0e-10 * rhoX.getPartialDerivative(1)));
-        Assert.assertEquals(rhoY.getPartialDerivative(1),
+        Assertions.assertEquals(rhoY.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(0, 1, 0),
                             FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
-        Assert.assertEquals(rhoZ.getPartialDerivative(1),
+        Assertions.assertEquals(rhoZ.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(0, 0, 1),
                             FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
 
@@ -375,12 +375,12 @@ public class NRLMSISE00Test {
     public void testWrongNumberLow() {
         try {
             new NRLMSISE00(null, null, null).withSwitch(0, 17);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
-            Assert.assertEquals( 0, oe.getParts()[0]);
-            Assert.assertEquals( 1, oe.getParts()[1]);
-            Assert.assertEquals(23, oe.getParts()[2]);
+            Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+            Assertions.assertEquals( 0, oe.getParts()[0]);
+            Assertions.assertEquals( 1, oe.getParts()[1]);
+            Assertions.assertEquals(23, oe.getParts()[2]);
         }
     }
 
@@ -388,12 +388,12 @@ public class NRLMSISE00Test {
     public void testWrongNumberHigh() {
         try {
             new NRLMSISE00(null, null, null).withSwitch(24, 17);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
-            Assert.assertEquals(24, oe.getParts()[0]);
-            Assert.assertEquals( 1, oe.getParts()[1]);
-            Assert.assertEquals(23, oe.getParts()[2]);
+            Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+            Assertions.assertEquals(24, oe.getParts()[0]);
+            Assertions.assertEquals( 1, oe.getParts()[1]);
+            Assertions.assertEquals(23, oe.getParts()[2]);
         }
     }
 
@@ -583,14 +583,14 @@ public class NRLMSISE00Test {
                 maxAbsoluteError = FastMath.max(maxAbsoluteError, FastMath.abs(resDouble - resField));
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((resDouble - resField) / resDouble));
             }
-            Assert.assertEquals(0.0, maxAbsoluteError, absTolerance);
+            Assertions.assertEquals(0.0, maxAbsoluteError, absTolerance);
             if (maxAbsoluteError != 0.0) {
-                Assert.assertEquals(0.0, maxRelativeError, relTolerance);
+                Assertions.assertEquals(0.0, maxRelativeError, relTolerance);
             }
 
         } catch (NoSuchMethodException | SecurityException |
                         IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
         }
     }
 
@@ -636,21 +636,21 @@ public class NRLMSISE00Test {
                         // when switches are off, some altitudes generate NaNs
                         // for example when switch 15 is 0, DM28 is not set and remains equals to 0
                         // so a division later on generate NaNs
-                        Assert.assertTrue(Double.isNaN(dF));
+                        Assertions.assertTrue(Double.isNaN(dF));
                     } else if (dD == 0) {
                         // some densities are forced to zero depending on altitude
-                        Assert.assertEquals(dD, dF, Precision.SAFE_MIN);
+                        Assertions.assertEquals(dD, dF, Precision.SAFE_MIN);
                     } else {
                         maxDensityError = FastMath.max(maxDensityError, FastMath.abs((dD - dF) / dD));
                     }
                 }
             }
-            Assert.assertEquals(0.0, maxTemperatureError, temperatureRelativeTolerance);
-            Assert.assertEquals(0.0, maxDensityError,     densityRelativeTolerance);
+            Assertions.assertEquals(0.0, maxTemperatureError, temperatureRelativeTolerance);
+            Assertions.assertEquals(0.0, maxDensityError,     densityRelativeTolerance);
 
         } catch (NoSuchMethodException | SecurityException |
                         IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
         }
     }
 
@@ -683,7 +683,7 @@ public class NRLMSISE00Test {
             return cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
                  IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
 
@@ -698,7 +698,7 @@ public class NRLMSISE00Test {
         } catch (NoSuchMethodException | SecurityException |
                  IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
     }
@@ -710,7 +710,7 @@ public class NRLMSISE00Test {
             return ((double[]) temperaturesField.get(o))[index];
          } catch (NoSuchFieldException | SecurityException |
                  IllegalAccessException | IllegalArgumentException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
 
@@ -752,7 +752,7 @@ public class NRLMSISE00Test {
                                     f107a, f107, ap);
         } catch (NoSuchMethodException | SecurityException | InstantiationException |
                  IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
 
@@ -767,7 +767,7 @@ public class NRLMSISE00Test {
         } catch (NoSuchMethodException | SecurityException |
                  IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
     }
@@ -779,7 +779,7 @@ public class NRLMSISE00Test {
             return ((CalculusFieldElement[]) temperaturesField.get(o))[index].getReal();
         } catch (NoSuchFieldException | SecurityException |
                  IllegalAccessException | IllegalArgumentException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
 
@@ -859,22 +859,22 @@ public class NRLMSISE00Test {
             System.out.printf("AnO:  %E  %E\n", dAnORef[id],  getOutputDensity(out, 8) * 1e-6);
             System.out.printf("Rho:  %E  %E\n\n", rhoRef[id], getOutputDensity(out, 5) * 1e-3);
         } else {
-            Assert.assertEquals(tInfRef[id], getOutputTemperature(out, 0), deltaT);
-            Assert.assertEquals(tAltRef[id], getOutputTemperature(out, 1), deltaT);
-            Assert.assertEquals(dHeRef[id],  getOutputDensity(out, 0) * 1e-6, dHeRef[id]  * deltaD);
-            Assert.assertEquals(dORef[id],   getOutputDensity(out, 1) * 1e-6, dORef[id]   * deltaD);
-            Assert.assertEquals(dN2Ref[id],  getOutputDensity(out, 2) * 1e-6, dN2Ref[id]  * deltaD);
-            Assert.assertEquals(dO2Ref[id],  getOutputDensity(out, 3) * 1e-6, dO2Ref[id]  * deltaD);
-            Assert.assertEquals(dARRef[id],  getOutputDensity(out, 4) * 1e-6, dARRef[id]  * deltaD);
-            Assert.assertEquals(dHRef[id],   getOutputDensity(out, 6) * 1e-6, dHRef[id]   * deltaD);
-            Assert.assertEquals(dNRef[id],   getOutputDensity(out, 7) * 1e-6, dNRef[id]   * deltaD);
-            Assert.assertEquals(dAnORef[id], getOutputDensity(out, 8) * 1e-6, dAnORef[id] * deltaD);
-            Assert.assertEquals(rhoRef[id],  getOutputDensity(out, 5) * 1e-3, rhoRef[id]  * deltaD);
+            Assertions.assertEquals(tInfRef[id], getOutputTemperature(out, 0), deltaT);
+            Assertions.assertEquals(tAltRef[id], getOutputTemperature(out, 1), deltaT);
+            Assertions.assertEquals(dHeRef[id],  getOutputDensity(out, 0) * 1e-6, dHeRef[id]  * deltaD);
+            Assertions.assertEquals(dORef[id],   getOutputDensity(out, 1) * 1e-6, dORef[id]   * deltaD);
+            Assertions.assertEquals(dN2Ref[id],  getOutputDensity(out, 2) * 1e-6, dN2Ref[id]  * deltaD);
+            Assertions.assertEquals(dO2Ref[id],  getOutputDensity(out, 3) * 1e-6, dO2Ref[id]  * deltaD);
+            Assertions.assertEquals(dARRef[id],  getOutputDensity(out, 4) * 1e-6, dARRef[id]  * deltaD);
+            Assertions.assertEquals(dHRef[id],   getOutputDensity(out, 6) * 1e-6, dHRef[id]   * deltaD);
+            Assertions.assertEquals(dNRef[id],   getOutputDensity(out, 7) * 1e-6, dNRef[id]   * deltaD);
+            Assertions.assertEquals(dAnORef[id], getOutputDensity(out, 8) * 1e-6, dAnORef[id] * deltaD);
+            Assertions.assertEquals(rhoRef[id],  getOutputDensity(out, 5) * 1e-3, rhoRef[id]  * deltaD);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

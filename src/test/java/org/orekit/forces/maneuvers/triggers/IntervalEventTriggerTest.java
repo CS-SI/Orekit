@@ -16,14 +16,11 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
-
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.IntervalEventTrigger;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
@@ -33,6 +30,8 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
+
+import java.util.List;
 
 public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEventTrigger<DateDetector>> {
 
@@ -66,11 +65,11 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
         IntervalDates trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
                                               AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    dates = trigger.getFiringIntervalDetector().getDates();
-        Assert.assertEquals(1,     trigger.getEventsDetectors().count());
-        Assert.assertEquals(1,     trigger.getFieldEventsDetectors(Decimal64Field.getInstance()).count());
-        Assert.assertEquals(2,     dates.size());
-        Assert.assertEquals(  0.0, dates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
-        Assert.assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        Assertions.assertEquals(1,     trigger.getEventsDetectors().count());
+        Assertions.assertEquals(1,     trigger.getFieldEventsDetectors(Decimal64Field.getInstance()).count());
+        Assertions.assertEquals(2,     dates.size());
+        Assertions.assertEquals(  0.0, dates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        Assertions.assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
 }

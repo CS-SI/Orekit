@@ -16,9 +16,6 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-
-import java.text.ParseException;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -29,9 +26,9 @@ import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -50,6 +47,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.text.ParseException;
 
 public class JB2008Test {
 
@@ -168,11 +167,11 @@ public class JB2008Test {
         // alt = 89.999km
         try {
             atm.getDensity(0., 0., 0., 0., 0., 89999.0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, oe.getSpecifier());
-            Assert.assertEquals(89999.0, (Double) oe.getParts()[0], 1.0e-15);
-            Assert.assertEquals(90000.0, (Double) oe.getParts()[1], 1.0e-15);
+            Assertions.assertEquals(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, oe.getSpecifier());
+            Assertions.assertEquals(89999.0, (Double) oe.getParts()[0], 1.0e-15);
+            Assertions.assertEquals(90000.0, (Double) oe.getParts()[1], 1.0e-15);
         }
 
     }
@@ -202,7 +201,7 @@ public class JB2008Test {
                                                            new FieldVector3D<>(field.getOne(), pos),
                                                            itrf);
 
-                    Assert.assertEquals(rho, rho64.getReal(), rho * 4.0e-13);
+                    Assertions.assertEquals(rho, rho64.getReal(), rho * 4.0e-13);
 
                 }
             }
@@ -266,16 +265,16 @@ public class JB2008Test {
                                                                              factory3.variable(2, pos.getZ())),
                                                          itrf);
 
-        Assert.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-14);
-        Assert.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-14);
-        Assert.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-14);
-        Assert.assertEquals(rhoX.getPartialDerivative(1),
+        Assertions.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-14);
+        Assertions.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-14);
+        Assertions.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-14);
+        Assertions.assertEquals(rhoX.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(1, 0, 0),
                             FastMath.abs(6.0e-10 * rhoX.getPartialDerivative(1)));
-        Assert.assertEquals(rhoY.getPartialDerivative(1),
+        Assertions.assertEquals(rhoY.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(0, 1, 0),
                             FastMath.abs(6.0e-10 * rhoY.getPartialDerivative(1)));
-        Assert.assertEquals(rhoZ.getPartialDerivative(1),
+        Assertions.assertEquals(rhoZ.getPartialDerivative(1),
                             rhoDS.getPartialDerivative(0, 0, 1),
                             FastMath.abs(6.0e-10 * rhoY.getPartialDerivative(1)));
 
@@ -316,7 +315,7 @@ public class JB2008Test {
 
         // Verify
         final double ref = 6.6862e-11;
-        Assert.assertEquals(ref, density, 1.0e-15);
+        Assertions.assertEquals(ref, density, 1.0e-15);
 
     }
 
@@ -367,7 +366,7 @@ public class JB2008Test {
             System.out.printf("Case #%d\n", nb);
             System.out.printf("Rho:  %12.5e  %12.5e\n", rhoRef[id], rho);
         } else {
-            Assert.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
+            Assertions.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
         }
 
     }
@@ -388,12 +387,12 @@ public class JB2008Test {
           System.out.printf("Case #%d\n", nb);
           System.out.printf("Rho:  %12.5e  %12.5e\n", rhoRef[id], rho);
         } else {
-            Assert.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
+            Assertions.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
     }

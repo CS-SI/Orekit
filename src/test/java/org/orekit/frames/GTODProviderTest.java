@@ -16,13 +16,6 @@
  */
 package org.orekit.frames;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -33,9 +26,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
@@ -47,6 +40,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 
 public class GTODProviderTest {
@@ -226,8 +225,8 @@ public class GTODProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 295000);
-        Assert.assertTrue(bos.size() < 300000);
+        Assertions.assertTrue(bos.size() > 295000);
+        Assertions.assertTrue(bos.size() < 300000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -237,13 +236,13 @@ public class GTODProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }
@@ -253,8 +252,8 @@ public class GTODProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     private <T extends CalculusFieldElement<T>> void checkPV(FieldPVCoordinates<T> reference,
@@ -264,8 +263,8 @@ public class GTODProviderTest {
 
         FieldVector3D<T> dP = result.getPosition().subtract(reference.getPosition());
         FieldVector3D<T> dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(expectedPositionError, dP.getNorm().getReal(), 0.01 * expectedPositionError);
-        Assert.assertEquals(expectedVelocityError, dV.getNorm().getReal(), 0.01 * expectedVelocityError);
+        Assertions.assertEquals(expectedPositionError, dP.getNorm().getReal(), 0.01 * expectedPositionError);
+        Assertions.assertEquals(expectedVelocityError, dV.getNorm().getReal(), 0.01 * expectedVelocityError);
     }
 
 }

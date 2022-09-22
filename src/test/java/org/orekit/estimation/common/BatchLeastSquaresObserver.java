@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation.common;
 
-import java.util.Locale;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
@@ -35,6 +32,9 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Observer for Batch Least Squares orbit determination.

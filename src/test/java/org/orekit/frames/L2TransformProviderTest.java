@@ -16,14 +16,14 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -67,10 +67,10 @@ public class L2TransformProviderTest {
         Vector3D posL2   = l2Frame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Moon are aligned as seen from Earth
-        Assert.assertEquals(0.0, Vector3D.angle(posMoon, posL2), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.angle(posMoon, posL2), 1.0e-10);
 
         // check L2 if at least 60 000km farther than Moon
-        Assert.assertTrue(posL2.getNorm() > posMoon.getNorm() + 6.0e7);
+        Assertions.assertTrue(posL2.getNorm() > posMoon.getNorm() + 6.0e7);
 
     }
 
@@ -104,10 +104,10 @@ public class L2TransformProviderTest {
         FieldVector3D<T> posL2   = l2Frame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Moon are aligned as seen from Earth
-        Assert.assertEquals(0.0, FieldVector3D.angle(posMoon, posL2).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, FieldVector3D.angle(posMoon, posL2).getReal(), 1.0e-10);
 
         // check L2 if at least 60 000km farther than Moon
-        Assert.assertTrue(posL2.getNorm().getReal() > posMoon.getNorm().getReal() + 6.0e7);
+        Assertions.assertTrue(posL2.getNorm().getReal() > posMoon.getNorm().getReal() + 6.0e7);
 
     }
 
@@ -137,10 +137,10 @@ public class L2TransformProviderTest {
         Vector3D posL2   = l2Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Earth are aligned as seen from Sun
-        Assert.assertEquals(0.0, Vector3D.angle(posEarth, posL2), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.angle(posEarth, posL2), 1.0e-10);
 
         // check L2 if at least 1 000 000km farther than Earth
-        Assert.assertTrue(posL2.getNorm() > posEarth.getNorm() + 1.0e9);
+        Assertions.assertTrue(posL2.getNorm() > posEarth.getNorm() + 1.0e9);
     }
 
     @Test
@@ -173,10 +173,10 @@ public class L2TransformProviderTest {
         FieldVector3D<T> posL2   = l2Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Earth are aligned as seen from Sun
-        Assert.assertEquals(0.0, FieldVector3D.angle(posEarth, posL2).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, FieldVector3D.angle(posEarth, posL2).getReal(), 1.0e-10);
 
         // check L2 if at least 1 000 000km farther than Earth
-        Assert.assertTrue(posL2.getNorm().getReal() > posEarth.getNorm().getReal() + 1.0e9);
+        Assertions.assertTrue(posL2.getNorm().getReal() > posEarth.getNorm().getReal() + 1.0e9);
     }
 
     @Test
@@ -205,10 +205,10 @@ public class L2TransformProviderTest {
         Vector3D posL2   = l2Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Jupiter are aligned as seen from Sun
-        Assert.assertEquals(0.0, Vector3D.angle(posJupiter, posL2), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.angle(posJupiter, posL2), 1.0e-10);
 
         // check L2 if at least 50 000 000km farther than Jupiter
-        Assert.assertTrue(posL2.getNorm() > posJupiter.getNorm() + 5.0e10);
+        Assertions.assertTrue(posL2.getNorm() > posJupiter.getNorm() + 5.0e10);
     }
 
     @Test
@@ -241,10 +241,10 @@ public class L2TransformProviderTest {
         FieldVector3D<T> posL2   = l2Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Jupiter are aligned as seen from Sun
-        Assert.assertEquals(0.0, FieldVector3D.angle(posJupiter, posL2).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, FieldVector3D.angle(posJupiter, posL2).getReal(), 1.0e-10);
 
         // check L2 if at least 50 000 000km farther than Jupiter
-        Assert.assertTrue(posL2.getNorm().getReal() > posJupiter.getNorm().getReal() + 5.0e10);
+        Assertions.assertTrue(posL2.getNorm().getReal() > posJupiter.getNorm().getReal() + 5.0e10);
     }
 
     @Test
@@ -259,8 +259,8 @@ public class L2TransformProviderTest {
             final AbsoluteDate date              = date0.shiftedBy(dt);
             final Vector3D     sunPositionInL2   = sun.getPVCoordinates(date, l2Frame).getPosition();
             final Vector3D     earthPositionInL2 = earth.getPVCoordinates(date, l2Frame).getPosition();
-            Assert.assertEquals(0.0, Vector3D.angle(sunPositionInL2,   Vector3D.MINUS_I), 3.0e-14);
-            Assert.assertEquals(0.0, Vector3D.angle(earthPositionInL2, Vector3D.MINUS_I), 3.0e-14);
+            Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInL2,   Vector3D.MINUS_I), 3.0e-14);
+            Assertions.assertEquals(0.0, Vector3D.angle(earthPositionInL2, Vector3D.MINUS_I), 3.0e-14);
         }
     }
 
@@ -280,12 +280,12 @@ public class L2TransformProviderTest {
             final FieldAbsoluteDate<T> date              = date0.shiftedBy(dt);
             final FieldVector3D<T>     sunPositionInL2   = sun.getPVCoordinates(date, l2Frame).getPosition();
             final FieldVector3D<T>     earthPositionInL2 = earth.getPVCoordinates(date, l2Frame).getPosition();
-            Assert.assertEquals(0.0, FieldVector3D.angle(sunPositionInL2,   Vector3D.MINUS_I).getReal(), 3.0e-14);
-            Assert.assertEquals(0.0, FieldVector3D.angle(earthPositionInL2, Vector3D.MINUS_I).getReal(), 3.0e-14);
+            Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInL2,   Vector3D.MINUS_I).getReal(), 3.0e-14);
+            Assertions.assertEquals(0.0, FieldVector3D.angle(earthPositionInL2, Vector3D.MINUS_I).getReal(), 3.0e-14);
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

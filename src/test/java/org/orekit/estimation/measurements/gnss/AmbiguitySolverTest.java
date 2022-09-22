@@ -16,14 +16,14 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AmbiguitySolverTest {
 
@@ -39,7 +39,7 @@ public class AmbiguitySolverTest {
         });
 
         // acceptance ratio not met
-        Assert.assertTrue(new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
+        Assertions.assertTrue(new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
                                               new SimpleRatioAmbiguityAcceptance(0.5)).
                           fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance).
                           isEmpty());
@@ -47,10 +47,10 @@ public class AmbiguitySolverTest {
         List<ParameterDriver> fixed = new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
                                                           new SimpleRatioAmbiguityAcceptance(0.8)).
                                       fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
-        Assert.assertEquals(3, fixed.size());
-        Assert.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
-        Assert.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
-        Assert.assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
+        Assertions.assertEquals(3, fixed.size());
+        Assertions.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
     }
 
     private List<ParameterDriver> createAmbiguities(double...floatValues) {

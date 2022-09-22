@@ -16,12 +16,10 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
-import java.util.ArrayList;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
@@ -34,11 +32,13 @@ import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
 import org.orekit.time.GNSSDate;
 
+import java.util.ArrayList;
+
 public class Rtcm1044Test {
 
     private double eps = 9.0e-10;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("gnss");
     }
@@ -91,46 +91,46 @@ public class Rtcm1044Test {
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(qzssMessage).build();
-        Assert.assertNotNull(propagator);
-        Assert.assertEquals(0.0, qzssMessage.getDate().
+        Assertions.assertNotNull(propagator);
+        Assertions.assertEquals(0.0, qzssMessage.getDate().
                             durationFrom(new GNSSDate(qzssMessage.getWeek(), 1000.0 * qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);
 
         // Verify message number
-        Assert.assertEquals(1044,                   rtcm1044.getTypeCode());
-        Assert.assertEquals(1,                      rtcm1044.getData().size());
+        Assertions.assertEquals(1044,                   rtcm1044.getTypeCode());
+        Assertions.assertEquals(1,                      rtcm1044.getData().size());
 
         // Verify navigation message
-        Assert.assertEquals(204,                    qzssMessage.getPRN());
-        Assert.assertEquals(441,                    qzssMessage.getWeek());
-        Assert.assertEquals(2.1475894557210572E-9,  qzssMessage.getIDot(),               eps);
-        Assert.assertEquals(132,                    qzssMessage.getIODE(),               eps);
-        Assert.assertEquals(3.524958E-15,           qzssMessage.getAf2(),                eps);
-        Assert.assertEquals(3.1980107E-10,          qzssMessage.getAf1(),                eps);
-        Assert.assertEquals(5.721445195376873E-4,   qzssMessage.getAf0(),                eps);
-        Assert.assertEquals(695,                    qzssMessage.getIODC());
-        Assert.assertEquals(0.0,                    qzssMessage.getCrs(),                eps);
-        Assert.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion(),         eps);
-        Assert.assertEquals(0.16717753824407455,    qzssMessage.getM0(),                 eps);
-        Assert.assertEquals(0.0,                    qzssMessage.getCuc(),                eps);
-        Assert.assertEquals(0.0389980711042881,     qzssMessage.getE(),                  eps);
-        Assert.assertEquals(0.0,                    qzssMessage.getCus(),                eps);
-        Assert.assertEquals(5153.562498092651,      FastMath.sqrt(qzssMessage.getSma()), eps);
-        Assert.assertEquals(560688.0,               qzssMessage.getTime(),               eps);
-        Assert.assertEquals(0.0,                    qzssMessage.getCic(),                eps);
-        Assert.assertEquals(0.0,                    qzssMessage.getCis(),                eps);
-        Assert.assertEquals(0.9877147247285952,     qzssMessage.getI0(),                 eps);
-        Assert.assertEquals(0.0,                    qzssMessage.getCrc(),                eps);
-        Assert.assertEquals(0.30049130834913723,    qzssMessage.getPa(),                 eps);
-        Assert.assertEquals(-5.855958209879004E-9,  qzssMessage.getOmegaDot(),           eps);
-        Assert.assertEquals(0.6980085400002902,     qzssMessage.getOmega0(),             eps);
-        Assert.assertEquals(1.3969839E-9,           qzssMessage.getTGD(),                eps);
+        Assertions.assertEquals(204,                    qzssMessage.getPRN());
+        Assertions.assertEquals(441,                    qzssMessage.getWeek());
+        Assertions.assertEquals(2.1475894557210572E-9,  qzssMessage.getIDot(),               eps);
+        Assertions.assertEquals(132,                    qzssMessage.getIODE(),               eps);
+        Assertions.assertEquals(3.524958E-15,           qzssMessage.getAf2(),                eps);
+        Assertions.assertEquals(3.1980107E-10,          qzssMessage.getAf1(),                eps);
+        Assertions.assertEquals(5.721445195376873E-4,   qzssMessage.getAf0(),                eps);
+        Assertions.assertEquals(695,                    qzssMessage.getIODC());
+        Assertions.assertEquals(0.0,                    qzssMessage.getCrs(),                eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(0.16717753824407455,    qzssMessage.getM0(),                 eps);
+        Assertions.assertEquals(0.0,                    qzssMessage.getCuc(),                eps);
+        Assertions.assertEquals(0.0389980711042881,     qzssMessage.getE(),                  eps);
+        Assertions.assertEquals(0.0,                    qzssMessage.getCus(),                eps);
+        Assertions.assertEquals(5153.562498092651,      FastMath.sqrt(qzssMessage.getSma()), eps);
+        Assertions.assertEquals(560688.0,               qzssMessage.getTime(),               eps);
+        Assertions.assertEquals(0.0,                    qzssMessage.getCic(),                eps);
+        Assertions.assertEquals(0.0,                    qzssMessage.getCis(),                eps);
+        Assertions.assertEquals(0.9877147247285952,     qzssMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.0,                    qzssMessage.getCrc(),                eps);
+        Assertions.assertEquals(0.30049130834913723,    qzssMessage.getPa(),                 eps);
+        Assertions.assertEquals(-5.855958209879004E-9,  qzssMessage.getOmegaDot(),           eps);
+        Assertions.assertEquals(0.6980085400002902,     qzssMessage.getOmega0(),             eps);
+        Assertions.assertEquals(1.3969839E-9,           qzssMessage.getTGD(),                eps);
 
         // Verify other data
-        Assert.assertEquals(204,                    ephemerisData.getSatelliteID());
-        Assert.assertEquals(63216.0,                ephemerisData.getQzssToc(), eps);
-        Assert.assertEquals(2,                      ephemerisData.getQzssCodeOnL2());
-        Assert.assertEquals(0,                      ephemerisData.getQzssFitInterval());
-        Assert.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), qzssMessage.getSvAccuracy(), eps);
+        Assertions.assertEquals(204,                    ephemerisData.getSatelliteID());
+        Assertions.assertEquals(63216.0,                ephemerisData.getQzssToc(), eps);
+        Assertions.assertEquals(2,                      ephemerisData.getQzssCodeOnL2());
+        Assertions.assertEquals(0,                      ephemerisData.getQzssFitInterval());
+        Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), qzssMessage.getSvAccuracy(), eps);
 
     }
 
@@ -177,7 +177,7 @@ public class Rtcm1044Test {
 
        final Rtcm1044 rtcm1044 = (Rtcm1044) new RtcmMessagesParser(messages).parse(message, false);
 
-       Assert.assertNull(rtcm1044);
+       Assertions.assertNull(rtcm1044);
     }
 
 

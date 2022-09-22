@@ -16,12 +16,8 @@
  */
 package org.orekit.frames;
 
-
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -32,6 +28,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 
 public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
 
@@ -40,7 +39,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt", manager, () -> utc).fillHistory(null, history);
-        Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56475),
+        Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56475),
                                              TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, history, true).getStartDate());
     }
@@ -50,8 +49,8 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt", manager, () -> utc).fillHistory(null, history);
-        Assert.assertTrue(getMaxGap(history) < 2);
-        Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56968),
+        Assertions.assertTrue(getMaxGap(history) < 2);
+        Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56968),
                                              TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, history, false).getEndDate());
     }
@@ -64,15 +63,15 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
 
         // earliest date is for pole position, provided days 56546, 56547, 56548
-        Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56546),
+        Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56546),
                                              TimeScalesFactory.getUTC()),
                             history.getStartDate());
 
         // with this single file, there is a hole between last pole (56548) and first rapid data (56555)
-        Assert.assertEquals(56555 - 56548, getMaxGap(data));
+        Assertions.assertEquals(56555 - 56548, getMaxGap(data));
 
         // latest date is for EOP prediction, corresponding to 56926
-        Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56926),
+        Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56926),
                                              TimeScalesFactory.getUTC()),
                             history.getEndDate());
     }
@@ -85,9 +84,9 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 10, 14, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-042.txt, rapid service section, lines 53-56
-        Assert.assertEquals(        (-3 * -0.001957 + 27 * -0.003274 + 27 * -0.004706 - 3 * -0.006211) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
-        Assert.assertEquals(asToRad((-3 *  0.11518  + 27 *  0.11389  + 27 *  0.11285  - 3 *  0.11171)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
-        Assert.assertEquals(asToRad((-3 *  0.28484  + 27 *  0.28449  + 27 *  0.28408  - 3 *  0.28379)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assertions.assertEquals(        (-3 * -0.001957 + 27 * -0.003274 + 27 * -0.004706 - 3 * -0.006211) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assertions.assertEquals(asToRad((-3 *  0.11518  + 27 *  0.11389  + 27 *  0.11285  - 3 *  0.11171)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assertions.assertEquals(asToRad((-3 *  0.28484  + 27 *  0.28449  + 27 *  0.28408  - 3 *  0.28379)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
     }
 
     @Test
@@ -98,9 +97,9 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 8, 26, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-040.txt, final values section, lines 79-82
-        Assert.assertEquals(        (-3 * 0.04058 + 27 * 0.04000 + 27 * 0.03953 - 3 * 0.03917) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
-        Assert.assertEquals(asToRad((-3 * 0.1692  + 27 * 0.1689  + 27 * 0.1685  - 3 * 0.1684)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
-        Assert.assertEquals(asToRad((-3 * 0.3336  + 27 * 0.3322  + 27 * 0.3307  - 3 * 0.3294)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assertions.assertEquals(        (-3 * 0.04058 + 27 * 0.04000 + 27 * 0.03953 - 3 * 0.03917) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assertions.assertEquals(asToRad((-3 * 0.1692  + 27 * 0.1689  + 27 * 0.1685  - 3 * 0.1684)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assertions.assertEquals(asToRad((-3 * 0.3336  + 27 * 0.3322  + 27 * 0.3307  - 3 * 0.3294)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
     }
 
     private double asToRad(double mas) {
@@ -129,10 +128,10 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         try {
             new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(expected, oe.getSpecifier());
-            Assert.assertTrue(((String) oe.getParts()[0]).endsWith(name));
+            Assertions.assertEquals(expected, oe.getSpecifier());
+            Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(name));
         }
     }
 
@@ -148,10 +147,10 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         try {
             new BulletinAFilesLoader(name, manager, () -> utc).fillHistory(null, history);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
-            Assert.assertTrue(((String) oe.getParts()[0]).endsWith(name));
+            Assertions.assertEquals(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE, oe.getSpecifier());
+            Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(name));
         }
     }
 

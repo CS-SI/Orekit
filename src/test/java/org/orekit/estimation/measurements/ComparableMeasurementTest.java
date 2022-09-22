@@ -18,8 +18,8 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -73,23 +73,23 @@ public class ComparableMeasurementTest {
         }
 
         // Same object, only case when compareTo returns 0
-        Assert.assertEquals(azel.compareTo(azel), 0);
+        Assertions.assertEquals(azel.compareTo(azel), 0);
 
         // Sorted by date by default
-        Assert.assertEquals(pv.compareTo(azel), -1);
-        Assert.assertEquals(range.compareTo(pv2), +1);
+        Assertions.assertEquals(pv.compareTo(azel), -1);
+        Assertions.assertEquals(range.compareTo(pv2), +1);
 
         // Same date but different measurement - "bigger" measurement after "smaller" one
-        Assert.assertEquals(range.compareTo(azel), -1);
-        Assert.assertEquals(azel.compareTo(range), +1);
+        Assertions.assertEquals(range.compareTo(azel), -1);
+        Assertions.assertEquals(azel.compareTo(range), +1);
 
         // Same date, same size, but different values, "bigger" measurement after "smaller" one
-        Assert.assertEquals(pv.compareTo(pv3), -1);
-        Assert.assertEquals(pv3.compareTo(pv), +1);
+        Assertions.assertEquals(pv.compareTo(pv3), -1);
+        Assertions.assertEquals(pv3.compareTo(pv), +1);
 
         // Same date, same size, same values - Arbitrary order, always return -1
-        Assert.assertEquals(pv.compareTo(pv2), -1);
-        Assert.assertEquals(pv2.compareTo(pv), -1);
+        Assertions.assertEquals(pv.compareTo(pv2), -1);
+        Assertions.assertEquals(pv2.compareTo(pv), -1);
 
     }
 }

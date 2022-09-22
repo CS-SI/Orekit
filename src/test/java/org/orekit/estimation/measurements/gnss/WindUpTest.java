@@ -16,14 +16,12 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.SortedSet;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -56,6 +54,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.SortedSet;
 
 public class WindUpTest {
 
@@ -148,7 +148,7 @@ public class WindUpTest {
                                                          withHandler(new ContinueOnEvent<>()),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
         SortedSet<ObservedMeasurement<?>> measurements = generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
-        Assert.assertEquals(120, measurements.size());
+        Assertions.assertEquals(120, measurements.size());
 
         WindUp windUp = new WindUpFactory().getWindUp(system, prn, station.getBaseFrame().getName());
         Propagator propagator = new KeplerianPropagator(orbit, attitudeProvider);
@@ -165,12 +165,12 @@ public class WindUpTest {
             min = FastMath.min(min, correction);
             max = FastMath.max(max, correction);
         }
-        Assert.assertEquals(expectedMin, min, 1.0e-5);
-        Assert.assertEquals(expectedMax, max, 1.0e-5);
+        Assertions.assertEquals(expectedMin, min, 1.0e-5);
+        Assertions.assertEquals(expectedMax, max, 1.0e-5);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -178,7 +178,7 @@ public class WindUpTest {
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         earth = null;
     }
