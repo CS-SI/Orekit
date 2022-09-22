@@ -16,12 +16,12 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class MeasurementCreator implements OrekitFixedStepHandler {
 

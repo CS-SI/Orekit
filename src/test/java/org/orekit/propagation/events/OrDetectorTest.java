@@ -16,17 +16,17 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.Collections;
-import java.util.NoSuchElementException;
-
 import org.hipparchus.ode.events.Action;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.Collections;
+import java.util.NoSuchElementException;
 
 /**
  * Unit tests for {@link BooleanDetector#orCombine(EventDetector...)}.
@@ -45,7 +45,7 @@ public class OrDetectorTest {
     private BooleanDetector or;
 
     /** create subject under test and dependencies. */
-    @Before
+    @BeforeEach
     public void setUp() {
         a = new MockDetector();
         b = new MockDetector();
@@ -60,35 +60,35 @@ public class OrDetectorTest {
     public void testG() {
         // test zero cases
         a.g = b.g = 0.0;
-        Assert.assertEquals(0.0, or.g(s), 0);
+        Assertions.assertEquals(0.0, or.g(s), 0);
         a.g = -1;
         b.g = 0;
-        Assert.assertEquals(0.0, or.g(s), 0);
+        Assertions.assertEquals(0.0, or.g(s), 0);
         a.g = 0;
         b.g = -1;
-        Assert.assertEquals(0.0, or.g(s), 0);
+        Assertions.assertEquals(0.0, or.g(s), 0);
 
         // test negative cases
         a.g = -1;
         b.g = -1;
-        Assert.assertTrue("negative", or.g(s) < 0);
+        Assertions.assertTrue(or.g(s) < 0, "negative");
 
         // test positive cases
         a.g = 0;
         b.g = 1;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
         a.g = 1;
         b.g = -1;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
         a.g = 1;
         b.g = 0;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
         a.g = -1;
         b.g = 1;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
         a.g = 1;
         b.g = 1;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
 
     }
 
@@ -99,22 +99,22 @@ public class OrDetectorTest {
     public void testCancellation() {
         a.g = -1e-10;
         b.g = -1e10;
-        Assert.assertTrue("negative", or.g(s) < 0);
+        Assertions.assertTrue(or.g(s) < 0, "negative");
         a.g = -1e10;
         b.g = -1e-10;
-        Assert.assertTrue("negative", or.g(s) < 0);
+        Assertions.assertTrue(or.g(s) < 0, "negative");
         a.g = -1e10;
         b.g = 1e-10;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
         a.g = 1e-10;
         b.g = -1e10;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
         a.g = 1e10;
         b.g = -1e-10;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
         a.g = -1e-10;
         b.g = 1e10;
-        Assert.assertTrue("positive", or.g(s) > 0);
+        Assertions.assertTrue(or.g(s) > 0, "positive");
     }
 
     /**
@@ -140,7 +140,7 @@ public class OrDetectorTest {
         or.init(s, t);
 
         // verify
-        Assert.assertEquals(2, or.getDetectors().size());
+        Assertions.assertEquals(2, or.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
         Mockito.verify(c).init(s, t, or);
@@ -152,7 +152,7 @@ public class OrDetectorTest {
         // action
         try {
             BooleanDetector.orCombine(Collections.emptyList());
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (NoSuchElementException e) {
             // expected
         }

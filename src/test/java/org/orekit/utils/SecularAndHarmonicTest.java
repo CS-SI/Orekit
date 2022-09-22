@@ -16,9 +16,6 @@
  */
 package org.orekit.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.Derivative;
@@ -40,9 +37,9 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -67,6 +64,9 @@ import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SecularAndHarmonicTest {
 
     private TimeScale utc;
@@ -74,7 +74,7 @@ public class SecularAndHarmonicTest {
     private BodyShape earth;
     private TimeScalarFunction gmst;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         Utils.setDataRoot("regular-data:potential");
@@ -108,8 +108,8 @@ public class SecularAndHarmonicTest {
         final double[] initialMSTModel = fitGMST(initialGuessedOrbit, nbOrbits, mst);
 
         // the initial guess is very far from the desired phasing parameters
-        Assert.assertTrue(FastMath.abs(mst - initialMSTModel[0]) * 3600.0 > 0.4);
-        Assert.assertTrue(FastMath.abs(initialMSTModel[1]) * 3600 > 0.5 / Constants.JULIAN_DAY);
+        Assertions.assertTrue(FastMath.abs(mst - initialMSTModel[0]) * 3600.0 > 0.4);
+        Assertions.assertTrue(FastMath.abs(initialMSTModel[1]) * 3600 > 0.5 / Constants.JULIAN_DAY);
 
         CircularOrbit finalOrbit =
                 new CircularOrbit(7173353.364197798,
@@ -123,8 +123,8 @@ public class SecularAndHarmonicTest {
         final double[] finalMSTModel = fitGMST(finalOrbit, nbOrbits, mst);
 
         // the final orbit is much closer to the desired phasing parameters
-        Assert.assertTrue(FastMath.abs(mst - finalMSTModel[0]) * 3600.0 < 0.0012);
-        Assert.assertTrue(FastMath.abs(finalMSTModel[1]) * 3600 < 0.0004 / Constants.JULIAN_DAY);
+        Assertions.assertTrue(FastMath.abs(mst - finalMSTModel[0]) * 3600.0 < 0.0012);
+        Assertions.assertTrue(FastMath.abs(finalMSTModel[1]) * 3600 < 0.0004 / Constants.JULIAN_DAY);
 
     }
 
@@ -160,7 +160,7 @@ public class SecularAndHarmonicTest {
             indepModel[iM].fit();
             resettingModel.fit();
 
-            Assert.assertArrayEquals(indepModel[iM].getFittedParameters(),
+            Assertions.assertArrayEquals(indepModel[iM].getFittedParameters(),
                                      resettingModel.getFittedParameters(),
                                      1e-14);
         }
@@ -177,8 +177,8 @@ public class SecularAndHarmonicTest {
         sh.addPoint(sh.getReferenceDate().shiftedBy(2.0), 2.0);
         sh.addPoint(sh.getReferenceDate().shiftedBy(3.0), 3.0);
         sh.fit();
-        Assert.assertEquals(0.0, sh.getFittedParameters()[0], 1.0e-15);
-        Assert.assertEquals(1.0, sh.getFittedParameters()[1], 1.0e-15);
+        Assertions.assertEquals(0.0, sh.getFittedParameters()[0], 1.0e-15);
+        Assertions.assertEquals(1.0, sh.getFittedParameters()[1], 1.0e-15);
     }
 
     @Test
@@ -192,9 +192,9 @@ public class SecularAndHarmonicTest {
         sh.addPoint(sh.getReferenceDate().shiftedBy(3.0), Double.NaN);
         try {
             sh.fit();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
-            Assert.assertEquals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, mise.getSpecifier());
+            Assertions.assertEquals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, mise.getSpecifier());
         }
     }
 
@@ -202,9 +202,9 @@ public class SecularAndHarmonicTest {
     public void testConvergence() {
         try {
             doTestConvergence(0.2, 3);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
-            Assert.assertEquals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, mise.getSpecifier());
+            Assertions.assertEquals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, mise.getSpecifier());
         }
         doTestConvergence(0.3, 3);
     }
@@ -233,9 +233,9 @@ public class SecularAndHarmonicTest {
         osc.addHarmonics(7.0, 2.0, -8.0);
         SecularAndHarmonic sh = osc.fittedSH(200, 1.0);
 
-        Assert.assertEquals(0.0, sh.getReferenceDate().durationFrom(tRef), 1.0e-10);
+        Assertions.assertEquals(0.0, sh.getReferenceDate().durationFrom(tRef), 1.0e-10);
 
-        Assert.assertEquals(FastMath.hypot(5, -5) +
+        Assertions.assertEquals(FastMath.hypot(5, -5) +
                             FastMath.hypot(4, -6) +
                             FastMath.hypot(3, -7) +
                             FastMath.hypot(2, -8),
@@ -243,9 +243,9 @@ public class SecularAndHarmonicTest {
 
         for (double dt = 0.0; dt < 120.0; dt += 1.0) {
             final AbsoluteDate date = tRef.shiftedBy(dt);
-            Assert.assertEquals(osc.value(date),            sh.osculatingValue(date),            1.0e-10);
-            Assert.assertEquals(osc.firstDerivative(date),  sh.osculatingDerivative(date),       1.0e-10);
-            Assert.assertEquals(osc.secondDerivative(date), sh.osculatingSecondDerivative(date), 1.0e-10);
+            Assertions.assertEquals(osc.value(date),            sh.osculatingValue(date),            1.0e-10);
+            Assertions.assertEquals(osc.firstDerivative(date),  sh.osculatingDerivative(date),       1.0e-10);
+            Assertions.assertEquals(osc.secondDerivative(date), sh.osculatingSecondDerivative(date), 1.0e-10);
         }
 
     }
@@ -268,9 +268,9 @@ public class SecularAndHarmonicTest {
 
         for (double dt = 0.0; dt < 12.0; dt += 0.01) {
             final AbsoluteDate date = tRef.shiftedBy(dt);
-            Assert.assertEquals(mean.value(date),            sh.meanValue(date, 1, 2),            1.0e-10);
-            Assert.assertEquals(mean.firstDerivative(date),  sh.meanDerivative(date, 1, 2),       1.0e-10);
-            Assert.assertEquals(mean.secondDerivative(date), sh.meanSecondDerivative(date, 1, 2), 1.0e-10);
+            Assertions.assertEquals(mean.value(date),            sh.meanValue(date, 1, 2),            1.0e-10);
+            Assertions.assertEquals(mean.firstDerivative(date),  sh.meanDerivative(date, 1, 2),       1.0e-10);
+            Assertions.assertEquals(mean.secondDerivative(date), sh.meanSecondDerivative(date, 1, 2), 1.0e-10);
         }
 
     }

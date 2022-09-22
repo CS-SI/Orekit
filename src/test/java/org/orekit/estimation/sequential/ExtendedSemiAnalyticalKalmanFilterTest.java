@@ -1,20 +1,11 @@
 package org.orekit.estimation.sequential;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -70,6 +61,15 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Validation against real data of the ESKF. This test is a short version of the one presented in:
@@ -154,23 +154,23 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final StreamingStatistics statX = observer.getXStatistics();
         final StreamingStatistics statY = observer.getYStatistics();
         final StreamingStatistics statZ = observer.getZStatistics();
-        Assert.assertEquals(0.0, statX.getMean(), 1.09e-4);
-        Assert.assertEquals(0.0, statY.getMean(), 1.03e-4);
-        Assert.assertEquals(0.0, statZ.getMean(), 1.12e-4);
-        Assert.assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
-        Assert.assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
-        Assert.assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value
-        Assert.assertEquals(0.0, statX.getMax(),  0.031);
-        Assert.assertEquals(0.0, statY.getMax(),  0.029);
-        Assert.assertEquals(0.0, statX.getMax(),  0.033);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.09e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.03e-4);
+        Assertions.assertEquals(0.0, statZ.getMean(), 1.12e-4);
+        Assertions.assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
+        Assertions.assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
+        Assertions.assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value
+        Assertions.assertEquals(0.0, statX.getMax(),  0.031);
+        Assertions.assertEquals(0.0, statY.getMax(),  0.029);
+        Assertions.assertEquals(0.0, statX.getMax(),  0.033);
 
         // Check that "physical" matrices are null
         final KalmanEstimation estimation = observer.getEstimation();
-        Assert.assertNotNull(estimation.getPhysicalEstimatedState());
-        Assert.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
-        Assert.assertNotNull(estimation.getPhysicalKalmanGain());
-        Assert.assertNotNull(estimation.getPhysicalMeasurementJacobian());
-        Assert.assertNotNull(estimation.getPhysicalStateTransitionMatrix());
+        Assertions.assertNotNull(estimation.getPhysicalEstimatedState());
+        Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
+        Assertions.assertNotNull(estimation.getPhysicalKalmanGain());
+        Assertions.assertNotNull(estimation.getPhysicalMeasurementJacobian());
+        Assertions.assertNotNull(estimation.getPhysicalStateTransitionMatrix());
 
     }
 
@@ -440,7 +440,6 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
      * Initialize the estimator used for the orbit determination and run the estimation.
      * @param propagator orbit propagator
      * @param measurements list of measurements
-     * @param initialOrbit initial orbit
      * @param provider covariance matrix provider
      */
     private static Observer initializeEstimator(final OrbitDeterminationPropagatorBuilder propagator,
@@ -492,8 +491,6 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
 
         /**
          * Constructor.
-         * @param startEpoch start epoch
-         * @param nbOfMeasurement expected number of measurements
          */
         public Observer() {
             statX = new StreamingStatistics();

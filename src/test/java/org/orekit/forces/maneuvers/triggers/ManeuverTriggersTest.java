@@ -16,14 +16,11 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
-
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -35,6 +32,8 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+
+import java.util.stream.Stream;
 
 public class ManeuverTriggersTest {
 
@@ -63,7 +62,7 @@ public class ManeuverTriggersTest {
         dummy.init(state, state.getDate().shiftedBy(60));
         dummy.init(new FieldSpacecraftState<>(Decimal64Field.getInstance(), state),
                    new FieldAbsoluteDate<>(Decimal64Field.getInstance(), state.getDate().shiftedBy(60)));
-        Assert.assertEquals("", dummy.getName());
+        Assertions.assertEquals("", dummy.getName());
 
     }
 

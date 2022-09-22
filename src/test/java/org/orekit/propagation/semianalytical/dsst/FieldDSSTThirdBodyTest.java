@@ -16,22 +16,15 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -61,6 +54,13 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class FieldDSSTThirdBodyTest {
 
@@ -117,12 +117,12 @@ public class FieldDSSTThirdBodyTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(0.0,                    elements[0].getReal(), eps);
-        Assert.assertEquals(4.346622384804537E-10,  elements[1].getReal(), eps);
-        Assert.assertEquals(7.293879548440941E-10,  elements[2].getReal(), eps);
-        Assert.assertEquals(7.465699631747887E-11,  elements[3].getReal(), eps);
-        Assert.assertEquals(3.9170221137233836E-10, elements[4].getReal(), eps);
-        Assert.assertEquals(-3.178319341840074E-10, elements[5].getReal(), eps);
+        Assertions.assertEquals(0.0,                    elements[0].getReal(), eps);
+        Assertions.assertEquals(4.346622384804537E-10,  elements[1].getReal(), eps);
+        Assertions.assertEquals(7.293879548440941E-10,  elements[2].getReal(), eps);
+        Assertions.assertEquals(7.465699631747887E-11,  elements[3].getReal(), eps);
+        Assertions.assertEquals(3.9170221137233836E-10, elements[4].getReal(), eps);
+        Assertions.assertEquals(-3.178319341840074E-10, elements[5].getReal(), eps);
 
     }
 
@@ -163,12 +163,12 @@ public class FieldDSSTThirdBodyTest {
             }
         }
 
-        Assert.assertEquals(-413.20633326933154,    y[0].getReal(), 1.0e-15);
-        Assert.assertEquals(-1.8060137920197483E-5, y[1].getReal(), 1.0e-20);
-        Assert.assertEquals(-2.8416367511811057E-5, y[2].getReal(), 1.4e-20);
-        Assert.assertEquals(-2.791424363476855E-6,  y[3].getReal(), 1.0e-21);
-        Assert.assertEquals(1.8817187527805853E-6,  y[4].getReal(), 1.0e-21);
-        Assert.assertEquals(-3.423664701811889E-5,  y[5].getReal(), 1.0e-20);
+        Assertions.assertEquals(-413.20633326933154,    y[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-1.8060137920197483E-5, y[1].getReal(), 1.0e-20);
+        Assertions.assertEquals(-2.8416367511811057E-5, y[2].getReal(), 1.4e-20);
+        Assertions.assertEquals(-2.791424363476855E-6,  y[3].getReal(), 1.0e-21);
+        Assertions.assertEquals(1.8817187527805853E-6,  y[4].getReal(), 1.0e-21);
+        Assertions.assertEquals(-3.423664701811889E-5,  y[5].getReal(), 1.0e-20);
 
     }
 
@@ -286,7 +286,7 @@ public class FieldDSSTThirdBodyTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assert.assertEquals(0, error, 7.7e-11);
+                Assertions.assertEquals(0, error, 7.7e-11);
             }
         }
 
@@ -427,7 +427,7 @@ public class FieldDSSTThirdBodyTest {
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+            Assertions.assertEquals(shortPeriodJacobianRef[i][0],
                                 shortPeriodJacobian[i][0],
                                 FastMath.abs(shortPeriodJacobianRef[i][0] * 2.5e-11));
         }
@@ -530,7 +530,7 @@ public class FieldDSSTThirdBodyTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }

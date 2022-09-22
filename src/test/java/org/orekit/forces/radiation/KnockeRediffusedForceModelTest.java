@@ -26,9 +26,9 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.forces.AbstractForceModelTest;
@@ -64,7 +64,7 @@ import org.orekit.utils.PVCoordinates;
  */
 public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -384,7 +384,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         final SpacecraftState finalState = propagator.propagate(date0.shiftedBy(duration));
 
-        Assert.assertTrue(finalState.getDate().equals(date0.shiftedBy(duration)));
+        Assertions.assertTrue(finalState.getDate().equals(date0.shiftedBy(duration)));
     }
 
     /** Knocke model specialized step handler. */
@@ -422,9 +422,9 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
             final double crossTrackAcceleration = knockeAcceleration.dotProduct(crossTrackUnit);
 
             // Check values
-            Assert.assertEquals(2.5e-10, radialAcceleration, 1.5e-10);
-            Assert.assertEquals(0.0, alongTrackAcceleration, 5e-11);
-            Assert.assertEquals(0.0, crossTrackAcceleration, 5e-12);
+            Assertions.assertEquals(2.5e-10, radialAcceleration, 1.5e-10);
+            Assertions.assertEquals(0.0, alongTrackAcceleration, 5e-11);
+            Assertions.assertEquals(0.0, crossTrackAcceleration, 5e-12);
         }
 
     }

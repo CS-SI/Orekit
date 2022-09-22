@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -33,7 +33,7 @@ import org.orekit.files.ccsds.ndm.odm.opm.Opm;
  */
 public class NdmParserTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -49,9 +49,9 @@ public class NdmParserTest {
             new ParserBuilder().buildNdmParser().parseMessage(source);
 
             // verify
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException oe) {
-           Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+           Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
         }
     }
 
@@ -60,8 +60,8 @@ public class NdmParserTest {
         final String name = "/ccsds/ndm/empty.xml";
         final DataSource source = new DataSource(name, () -> NdmParserTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
-        Assert.assertTrue(ndm.getComments().isEmpty());
-        Assert.assertTrue(ndm.getConstituents().isEmpty());
+        Assertions.assertTrue(ndm.getComments().isEmpty());
+        Assertions.assertTrue(ndm.getConstituents().isEmpty());
     }
 
     @Test
@@ -69,12 +69,12 @@ public class NdmParserTest {
         final String name = "/ccsds/ndm/NDM-opm.xml";
         final DataSource source = new DataSource(name, () -> NdmParserTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
-        Assert.assertEquals(1, ndm.getComments().size());
-        Assert.assertEquals("NDM with only one constituent: an OPM", ndm.getComments().get(0));
-        Assert.assertEquals(1, ndm.getConstituents().size());
+        Assertions.assertEquals(1, ndm.getComments().size());
+        Assertions.assertEquals("NDM with only one constituent: an OPM", ndm.getComments().get(0));
+        Assertions.assertEquals(1, ndm.getConstituents().size());
         Opm opm = (Opm) ndm.getConstituents().get(0);
-        Assert.assertEquals("OSPREY 5", opm.getMetadata().getObjectName());
-        Assert.assertEquals(3000.0, opm.getData().getSpacecraftParametersBlock().getMass(), 1.0e-10);
+        Assertions.assertEquals("OSPREY 5", opm.getMetadata().getObjectName());
+        Assertions.assertEquals(3000.0, opm.getData().getSpacecraftParametersBlock().getMass(), 1.0e-10);
     }
 
     @Test
@@ -82,15 +82,15 @@ public class NdmParserTest {
         final String name = "/ccsds/ndm/NDM-ocm-apm.xml";
         final DataSource source = new DataSource(name, () -> NdmParserTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
-        Assert.assertEquals(1, ndm.getComments().size());
-        Assert.assertEquals("NDM with two constituents: an OCM and an APM", ndm.getComments().get(0));
-        Assert.assertEquals(2, ndm.getConstituents().size());
+        Assertions.assertEquals(1, ndm.getComments().size());
+        Assertions.assertEquals("NDM with two constituents: an OCM and an APM", ndm.getComments().get(0));
+        Assertions.assertEquals(2, ndm.getConstituents().size());
         Ocm ocm = (Ocm) ndm.getConstituents().get(0);
-        Assert.assertEquals("1998-999A", ocm.getMetadata().getInternationalDesignator());
-        Assert.assertEquals("WGS-84", ocm.getData().getUserDefinedBlock().getParameters().get("EARTH_MODEL"));
+        Assertions.assertEquals("1998-999A", ocm.getMetadata().getInternationalDesignator());
+        Assertions.assertEquals("WGS-84", ocm.getData().getUserDefinedBlock().getParameters().get("EARTH_MODEL"));
         Apm apm = (Apm) ndm.getConstituents().get(1);
-        Assert.assertEquals("MARS SPIRIT", apm.getMetadata().getObjectName());
-        Assert.assertEquals("INSTRUMENT_A", apm.getData().getQuaternionBlock().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals("MARS SPIRIT", apm.getMetadata().getObjectName());
+        Assertions.assertEquals("INSTRUMENT_A", apm.getData().getQuaternionBlock().getEndpoints().getFrameA().getName());
     }
 
 }

@@ -23,13 +23,16 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
-import org.orekit.estimation.measurements.*;
+import org.orekit.estimation.measurements.BistaticRange;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -110,13 +113,13 @@ public class BistaticRangeBuilderTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assert.assertTrue(date.compareTo(tInf) >= 0);
-            Assert.assertTrue(date.compareTo(tSup) <= 0);
+            Assertions.assertTrue(date.compareTo(tInf) >= 0);
+            Assertions.assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 // measurements are always chronological, even with backward propagation,
                 // due to the SortedSet (which is intended for combining several
                 // measurements types with different builders and schedulers)
-                Assert.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
             }
             previous = date;
             SpacecraftState state = propagator.propagate(date);
@@ -125,10 +128,10 @@ public class BistaticRangeBuilderTest {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }
         }
-        Assert.assertEquals(0.0, maxError, tolerance);
+        Assertions.assertEquals(0.0, maxError, tolerance);
      }
 
-     @Before
+     @BeforeEach
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

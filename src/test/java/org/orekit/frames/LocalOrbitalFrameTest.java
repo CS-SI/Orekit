@@ -17,9 +17,9 @@
 package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -109,22 +109,22 @@ public class LocalOrbitalFrameTest {
         PVCoordinates pv2 = provider.getPVCoordinates(date, FramesFactory.getGCRF());
         Vector3D p2 = pv2.getPosition();
         Vector3D v2 = pv2.getVelocity();
-        Assert.assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
-        Assert.assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
+        Assertions.assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
+        Assertions.assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
 
         Vector3D xDirection = t.transformVector(Vector3D.PLUS_I);
         Vector3D yDirection = t.transformVector(Vector3D.PLUS_J);
         Vector3D zDirection = t.transformVector(Vector3D.PLUS_K);
-        Assert.assertEquals(0, Vector3D.angle(expectedXDirection, xDirection), 2.0e-15);
-        Assert.assertEquals(0, Vector3D.angle(expectedYDirection, yDirection), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.angle(expectedZDirection, zDirection), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.angle(expectedRotationDirection, t.getRotationRate()), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.angle(expectedXDirection, xDirection), 2.0e-15);
+        Assertions.assertEquals(0, Vector3D.angle(expectedYDirection, yDirection), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.angle(expectedZDirection, zDirection), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.angle(expectedRotationDirection, t.getRotationRate()), 1.0e-15);
 
-        Assert.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
+        Assertions.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);

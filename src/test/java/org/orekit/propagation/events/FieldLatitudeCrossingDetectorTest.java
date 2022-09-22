@@ -20,9 +20,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -59,10 +59,10 @@ public class FieldLatitudeCrossingDetectorTest {
                 new FieldLatitudeCrossingDetector<>(v(60.0), v(1.e-6), earth, FastMath.toRadians(60.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assert.assertEquals(60.0, d.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(60.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(60.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -92,21 +92,21 @@ public class FieldLatitudeCrossingDetectorTest {
             FieldSpacecraftState<Decimal64> state = e.getState();
             double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                                               earth.getBodyFrame(), date).getLatitude().getReal();
-            Assert.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
+            Assertions.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
             if (previous != null) {
                 if (e.isIncreasing()) {
                     // crossing northward
-                    Assert.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() > 3611.0);
-                    Assert.assertEquals(4954.70, state.getDate().durationFrom(previous).getReal(), 0.01);
+                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() > 3611.0);
+                    Assertions.assertEquals(4954.70, state.getDate().durationFrom(previous).getReal(), 0.01);
                 } else {
                     // crossing southward
-                    Assert.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() < -3615.0);
-                    Assert.assertEquals(956.17, state.getDate().durationFrom(previous).getReal(), 0.01);
+                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() < -3615.0);
+                    Assertions.assertEquals(956.17, state.getDate().durationFrom(previous).getReal(), 0.01);
                 }
             }
             previous = state.getDate().toAbsoluteDate();
         }
-        Assert.assertEquals(30, logger.getLoggedEvents().size());
+        Assertions.assertEquals(30, logger.getLoggedEvents().size());
 
     }
 
@@ -121,10 +121,10 @@ public class FieldLatitudeCrossingDetectorTest {
                 new FieldLatitudeCrossingDetector<>(v(10.0), v(1.e-6), earth, FastMath.toRadians(82.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assert.assertEquals(10.0, d.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(82.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertEquals(10.0, d.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(82.0, FastMath.toDegrees(d.getLatitude()), 1.0e-14);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -149,7 +149,7 @@ public class FieldLatitudeCrossingDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(0, logger.getLoggedEvents().size());
+        Assertions.assertEquals(0, logger.getLoggedEvents().size());
 
     }
 
@@ -163,7 +163,7 @@ public class FieldLatitudeCrossingDetectorTest {
         return new Decimal64(value);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

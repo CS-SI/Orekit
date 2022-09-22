@@ -18,9 +18,9 @@ package org.orekit.bodies;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -37,7 +37,7 @@ public class LoxodromeTest {
     private GeodeticPoint philadelphia;
     private OneAxisEllipsoid earth;
 
-    @Before
+    @BeforeEach
     public void setup() {
         Utils.setDataRoot("regular-data");
 
@@ -67,7 +67,7 @@ public class LoxodromeTest {
 
     void executeTest(final String header, final GeodeticPoint start, final GeodeticPoint stop, final double expectedAzimuth, final double numericalError, final double pointError) {
         final double az = earth.azimuthBetweenPoints(start, stop);
-        Assert.assertEquals(expectedAzimuth, az, 1e-4);
+        Assertions.assertEquals(expectedAzimuth, az, 1e-4);
 
         final Loxodrome lox = new Loxodrome(start, az, earth);
         final LoxodromeArc arc = new LoxodromeArc(start, stop, earth);
@@ -79,11 +79,11 @@ public class LoxodromeTest {
         final double error2 = earth.transform(actual).distance(earth.transform(stop));
 
         // over short distances, analytic answer within 1m of numerical computation
-        Assert.assertTrue(header + " analytic answer not within " + numericalError + "m of numerical answer [error=" + error1 + "m]", error1 < numericalError);
+        Assertions.assertTrue(error1 < numericalError,header + " analytic answer not within " + numericalError + "m of numerical answer [error=" + error1 + "m]");
         // over short distances, analytic answer is within 5m of actual lat/lon
-        Assert.assertTrue(header + " computed destination not within " + pointError + "m of actual answer.[error=" + error2 + "m]", error2 < pointError);
+        Assertions.assertTrue(error2 < pointError,header + " computed destination not within " + pointError + "m of actual answer.[error=" + error2 + "m]");
         // verify accuracy to 0.001%
-        Assert.assertEquals(header + " accuracy beyond allowable tolerance", 0.0, error1 / arc.getDistance(), 1e-5);
+        Assertions.assertEquals(0.0, error1 / arc.getDistance(), 1e-5,header + " accuracy beyond allowable tolerance");
     }
 
     GeodeticPoint highFidelityPointAtDistance(final GeodeticPoint start, final double azimuth, final double distance) {

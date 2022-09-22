@@ -16,18 +16,11 @@
  */
 package org.orekit.models.earth.displacement;
 
-
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
@@ -38,6 +31,12 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class OceanLoadingTest {
 
@@ -51,8 +50,8 @@ public class OceanLoadingTest {
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] == 2) {
                 double f = tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI);
-                Assert.assertTrue(f >  1.5);
-                Assert.assertTrue(f <= 2.5);
+                Assertions.assertTrue(f >  1.5);
+                Assertions.assertTrue(f <= 2.5);
             }
         }
     }
@@ -65,8 +64,8 @@ public class OceanLoadingTest {
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] == 1) {
                 double f = tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI);
-                Assert.assertTrue(f >  0.5);
-                Assert.assertTrue(f <= 1.5);
+                Assertions.assertTrue(f >  0.5);
+                Assertions.assertTrue(f <= 1.5);
             }
         }
     }
@@ -79,8 +78,8 @@ public class OceanLoadingTest {
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] == 0) {
                 double f = tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI);
-                Assert.assertTrue(f >  0.0);
-                Assert.assertTrue(f <= 0.5);
+                Assertions.assertTrue(f >  0.0);
+                Assertions.assertTrue(f <= 0.5);
             }
         }
     }
@@ -89,7 +88,7 @@ public class OceanLoadingTest {
     public void testNoExtra() {
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] > 2) {
-                Assert.fail("unexpected tide " + tide.getDoodsonNumber());
+                Assertions.fail("unexpected tide " + tide.getDoodsonNumber());
             }
         }
     }
@@ -117,7 +116,7 @@ public class OceanLoadingTest {
             for (int i = 1; i < tides.size(); ++i) {
                 final Tide t1 = tides.get(i - 1);
                 final Tide t2 = tides.get(i);
-                Assert.assertTrue(t1.getRate(el) < t2.getRate(el));
+                Assertions.assertTrue(t1.getRate(el) < t2.getRate(el));
             }
         }
     }
@@ -132,11 +131,11 @@ public class OceanLoadingTest {
 
         final AbsoluteDate   t0530  = new AbsoluteDate(-122502, 11, 9, 5, 30, 0.0, TimeScalesFactory.getTAI());
         final BodiesElements el0530 = fna.evaluateAll(t0530);
-        Assert.assertTrue(tide1.getRate(el0530) < tide2.getRate(el0530));
+        Assertions.assertTrue(tide1.getRate(el0530) < tide2.getRate(el0530));
 
         final AbsoluteDate   t0430  = t0530.shiftedBy(-3600.0);
         final BodiesElements el0430 = fna.evaluateAll(t0430);
-        Assert.assertTrue(tide1.getRate(el0430) > tide2.getRate(el0430));
+        Assertions.assertTrue(tide1.getRate(el0430) > tide2.getRate(el0430));
 
     }
 
@@ -150,11 +149,11 @@ public class OceanLoadingTest {
 
         final AbsoluteDate   t1700  = new AbsoluteDate(56824, 11, 2, 17, 0, 0.0, TimeScalesFactory.getTAI());
         final BodiesElements el1700 = fna.evaluateAll(t1700);
-        Assert.assertTrue(tide1.getRate(el1700) < tide2.getRate(el1700));
+        Assertions.assertTrue(tide1.getRate(el1700) < tide2.getRate(el1700));
 
         final AbsoluteDate   t1800  = t1700.shiftedBy(3600.0);
         final BodiesElements el1800 = fna.evaluateAll(t1800);
-        Assert.assertTrue(tide1.getRate(el1800) > tide2.getRate(el1800));
+        Assertions.assertTrue(tide1.getRate(el1800) > tide2.getRate(el1800));
 
     }
 
@@ -210,9 +209,9 @@ public class OceanLoadingTest {
         for (int i = 0; i < ref.length; ++i) {
             BodiesElements elements = fna.evaluateAll(t0.shiftedBy(i * 3600.0));
             final Vector3D d = loading.displacement(elements, earth.getBodyFrame(), refPoint);
-            Assert.assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
-            Assert.assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
-            Assert.assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
+            Assertions.assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
+            Assertions.assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
+            Assertions.assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
         }
     }
 
@@ -273,9 +272,9 @@ public class OceanLoadingTest {
         for (int i = 0; i < ref.length; ++i) {
             BodiesElements elements = fna.evaluateAll(t0.shiftedBy(i * 3600.0));
             final Vector3D d = loading.displacement(elements, earth.getBodyFrame(), refPoint);
-            Assert.assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
-            Assert.assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
-            Assert.assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
+            Assertions.assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
+            Assertions.assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
+            Assertions.assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
         }
     }
 
@@ -287,12 +286,12 @@ public class OceanLoadingTest {
             Map<Tide, Double> map = (Map<Tide, Double>) mapField.get(null);
             return map.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList());
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data:oso-blq");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

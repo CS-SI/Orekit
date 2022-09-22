@@ -16,17 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
@@ -44,6 +37,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class DSSTThirdBodyTest {
 
@@ -93,12 +93,12 @@ public class DSSTThirdBodyTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(0.0,                    elements[0], eps);
-        Assert.assertEquals(4.346622384804537E-10,  elements[1], eps);
-        Assert.assertEquals(7.293879548440941E-10,  elements[2], eps);
-        Assert.assertEquals(7.465699631747887E-11,  elements[3], eps);
-        Assert.assertEquals(3.9170221137233836E-10, elements[4], eps);
-        Assert.assertEquals(-3.178319341840074E-10, elements[5], eps);
+        Assertions.assertEquals(0.0,                    elements[0], eps);
+        Assertions.assertEquals(4.346622384804537E-10,  elements[1], eps);
+        Assertions.assertEquals(7.293879548440941E-10,  elements[2], eps);
+        Assertions.assertEquals(7.465699631747887E-11,  elements[3], eps);
+        Assertions.assertEquals(3.9170221137233836E-10, elements[4], eps);
+        Assertions.assertEquals(-3.178319341840074E-10, elements[5], eps);
 
     }
 
@@ -131,12 +131,12 @@ public class DSSTThirdBodyTest {
             }
         }
 
-        Assert.assertEquals(-413.20633326933154,    y[0], 1.e-14);
-        Assert.assertEquals(-1.8060137920197483E-5, y[1], 1.e-20);
-        Assert.assertEquals(-2.8416367511811057E-5, y[2], 1.e-20);
-        Assert.assertEquals(-2.791424363476855E-6,  y[3], 1.e-21);
-        Assert.assertEquals(1.8817187527805853E-6,  y[4], 1.e-21);
-        Assert.assertEquals(-3.423664701811889E-5,  y[5], 1.e-20);
+        Assertions.assertEquals(-413.20633326933154,    y[0], 1.e-14);
+        Assertions.assertEquals(-1.8060137920197483E-5, y[1], 1.e-20);
+        Assertions.assertEquals(-2.8416367511811057E-5, y[2], 1.e-20);
+        Assertions.assertEquals(-2.791424363476855E-6,  y[3], 1.e-21);
+        Assertions.assertEquals(1.8817187527805853E-6,  y[4], 1.e-21);
+        Assertions.assertEquals(-3.423664701811889E-5,  y[5], 1.e-20);
     }
 
     private SpacecraftState getGEOState() throws IllegalArgumentException {
@@ -155,7 +155,7 @@ public class DSSTThirdBodyTest {
         return new SpacecraftState(orbit);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }

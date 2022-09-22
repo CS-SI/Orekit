@@ -16,10 +16,8 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,9 +25,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.GeodeticPoint;
@@ -56,9 +54,11 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.util.List;
+
 public class EstimatedIonosphericModelTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
@@ -73,7 +73,7 @@ public class EstimatedIonosphericModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
                                              model.getParameters());
         // Verify
-        Assert.assertEquals(0.162, delay, 0.001);
+        Assertions.assertEquals(0.162, delay, 0.001);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class EstimatedIonosphericModelTest {
                                         Frequency.G01.getMHzFrequency() * 1.0e6,
                                         model.getParameters(field));
         // Verify
-        Assert.assertEquals(0.162, delay.getReal(), 0.001);
+        Assertions.assertEquals(0.162, delay.getReal(), 0.001);
     }
 
     @Test
@@ -106,8 +106,8 @@ public class EstimatedIonosphericModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
                                              model.getParameters());
 
-        Assert.assertTrue(Precision.compareTo(delayMeters, 12., 1.0e-6) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters, 0.,  1.0e-6) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 12., 1.0e-6) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 0.,  1.0e-6) > 0);
     }
 
     @Test
@@ -125,8 +125,8 @@ public class EstimatedIonosphericModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
                                              model.getParameters(field));
 
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., 1.0e-6) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 0.,  1.0e-6) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., 1.0e-6) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 0.,  1.0e-6) > 0);
     }
 
     @Test
@@ -158,7 +158,7 @@ public class EstimatedIonosphericModelTest {
 
         // Delay
         final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
-        Assert.assertEquals(0.0, delay, Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, delay, Double.MIN_VALUE);
     }
 
     @Test
@@ -195,7 +195,7 @@ public class EstimatedIonosphericModelTest {
 
         // Delay
         final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
-        Assert.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
     }
 
     @Test
@@ -217,7 +217,7 @@ public class EstimatedIonosphericModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
                                              model.getParameters());
 
-        Assert.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e-15);
+        Assertions.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e-15);
     }
 
     @Test
@@ -276,7 +276,7 @@ public class EstimatedIonosphericModelTest {
         // Verify delay equality
         final double delayR = model.pathDelay(dsState.toSpacecraftState(), baseFrame, frequency, model.getParameters());
         final DerivativeStructure delayD = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field));
-        Assert.assertEquals(delayR, delayD.getValue(), 1e-15);
+        Assertions.assertEquals(delayR, delayD.getValue(), 1e-15);
 
         // Compute Delay with state derivatives
         final DerivativeStructure delay = model.pathDelay(dsElevation, frequency, model.getParameters(field));
@@ -340,7 +340,7 @@ public class EstimatedIonosphericModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 8.3e-11);
+            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 8.3e-11);
         }
     }
 
@@ -485,7 +485,7 @@ public class EstimatedIonosphericModelTest {
                            delayM4, delayM3, delayM2, delayM1,
                            delayP1, delayP2, delayP3, delayP4);
 
-        Assert.assertEquals(compDeriv[7], refDeriv[0][0], 1.0e-15);
+        Assertions.assertEquals(compDeriv[7], refDeriv[0][0], 1.0e-15);
 
     }
 

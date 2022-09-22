@@ -16,15 +16,15 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -55,7 +55,7 @@ public class NeQuickModelTest {
     private double[] medium;
     private double[] high;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         high = new double[] {
@@ -82,7 +82,7 @@ public class NeQuickModelTest {
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assert.assertEquals(20.40, stec, 0.09);
+        Assertions.assertEquals(20.40, stec, 0.09);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class NeQuickModelTest {
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assert.assertEquals(20.40, stec.getReal(), 0.09);
+        Assertions.assertEquals(20.40, stec.getReal(), 0.09);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class NeQuickModelTest {
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assert.assertEquals(6.96, stec, 0.05);
+        Assertions.assertEquals(6.96, stec, 0.05);
     }
 
     @Test
@@ -154,7 +154,7 @@ public class NeQuickModelTest {
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assert.assertEquals(6.96, stec.getReal(), 0.05);
+        Assertions.assertEquals(6.96, stec.getReal(), 0.05);
     }
 
     @Test
@@ -187,7 +187,7 @@ public class NeQuickModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
 
         // Verify
-        Assert.assertEquals(1.13, delay, 0.01);
+        Assertions.assertEquals(1.13, delay, 0.01);
     }
 
     @Test
@@ -232,7 +232,7 @@ public class NeQuickModelTest {
                                         Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters(field));
 
         // Verify
-        Assert.assertEquals(1.13, delay.getReal(), 0.01);
+        Assertions.assertEquals(1.13, delay.getReal(), 0.01);
     }
 
 }

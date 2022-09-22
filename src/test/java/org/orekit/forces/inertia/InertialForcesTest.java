@@ -16,8 +16,6 @@
  */
 package org.orekit.forces.inertia;
 
-import static org.junit.Assert.assertFalse;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -34,9 +32,9 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -154,7 +152,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
                                          Constants.EIGEN5C_EARTH_MU);
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
         final InertialForces forceModel = new InertialForces(pva.getFrame());
-        assertFalse(forceModel.dependsOnPositionOnly());
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         checkStateJacobianVs80Implementation(new SpacecraftState(pva), forceModel,
                                              Utils.defaultLaw(),
                                              1.0e-50, false);
@@ -174,7 +172,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
                                          Constants.EIGEN5C_EARTH_MU);
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
         final InertialForces forceModel = new InertialForces(pva.getFrame());
-        assertFalse(forceModel.dependsOnPositionOnly());
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(pva), forceModel,
                                              Utils.defaultLaw(),
                                              1.0e-50, false);
@@ -257,9 +255,9 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
 
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
@@ -350,9 +348,9 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
                 maxA = 0;
             }
         }
-        Assert.assertEquals(0, maxP, 1.1e-14);
-        Assert.assertEquals(0, maxV, 1.0e-15);
-        Assert.assertEquals(0, maxA, 1.0e-15);
+        Assertions.assertEquals(0, maxP, 1.1e-14);
+        Assertions.assertEquals(0, maxV, 1.0e-15);
+        Assertions.assertEquals(0, maxA, 1.0e-15);
     }
 
     @Test
@@ -372,7 +370,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
             final InertialForces forceModel = new InertialForces(pva.getFrame());
             forceModel.getParameterDriver(" ");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
         }
     }
 
@@ -385,12 +383,12 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
             final InertialForces force = new InertialForces(ecef);
             force.getParametersDrivers();
         } catch (OrekitIllegalArgumentException oe) {
-            Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES,
+            Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES,
                                 oe.getSpecifier());
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

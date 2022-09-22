@@ -22,10 +22,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -75,7 +75,7 @@ public class FieldAdditionalEquationsTest {
         final double rate      = 1.5;
         final double dt        = 600.0;
         Linear<T> linear = new Linear<>("linear", reference, rate);
-        Assert.assertFalse(linear.wasCalled());
+        Assertions.assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
@@ -88,8 +88,8 @@ public class FieldAdditionalEquationsTest {
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(linear.wasCalled());
-        Assert.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
+        Assertions.assertTrue(linear.wasCalled());
+        Assertions.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
 
     }
 
@@ -99,7 +99,7 @@ public class FieldAdditionalEquationsTest {
         final double rate      = 1.5;
         final double dt        = 600.0;
         Linear<T> linear = new Linear<>("linear", reference, rate);
-        Assert.assertFalse(linear.wasCalled());
+        Assertions.assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
@@ -112,8 +112,8 @@ public class FieldAdditionalEquationsTest {
         FieldSpacecraftState<T> finalState = propagatorDSST.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(linear.wasCalled());
-        Assert.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
+        Assertions.assertTrue(linear.wasCalled());
+        Assertions.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
 
     }
 
@@ -122,11 +122,11 @@ public class FieldAdditionalEquationsTest {
         final double reference1 = 3.5;
         final double rate1      = 1.5;
         Linear<T> linear1 = new Linear<>("linear-1", reference1, rate1);
-        Assert.assertFalse(linear1.wasCalled());
+        Assertions.assertFalse(linear1.wasCalled());
         final double reference2 = 4.5;
         final double rate2      = 1.25;
         Linear<T> linear2 = new Linear<>("linear-2", reference2, rate2);
-        Assert.assertFalse(linear2.wasCalled());
+        Assertions.assertFalse(linear2.wasCalled());
         final double dt = 600;
 
         // action
@@ -142,14 +142,14 @@ public class FieldAdditionalEquationsTest {
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(linear1.wasCalled());
-        Assert.assertTrue(linear2.wasCalled());
-        Assert.assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0].getReal(), 1.0e-10);
-        Assert.assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0].getReal(), 1.0e-10);
+        Assertions.assertTrue(linear1.wasCalled());
+        Assertions.assertTrue(linear2.wasCalled());
+        Assertions.assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0].getReal(), 1.0e-10);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -163,7 +163,7 @@ public class FieldAdditionalEquationsTest {
         tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         initDate     = null;
         initialState = null;
@@ -186,7 +186,7 @@ public class FieldAdditionalEquationsTest {
 
         @Override
         public void init(FieldSpacecraftState<T> initiaState, FieldAbsoluteDate<T> target) {
-            Assert.assertEquals(expectedAtInit, initiaState.getAdditionalState(getName())[0].getReal(), 1.0e-15);
+            Assertions.assertEquals(expectedAtInit, initiaState.getAdditionalState(getName())[0].getReal(), 1.0e-15);
             called = true;
         }
 

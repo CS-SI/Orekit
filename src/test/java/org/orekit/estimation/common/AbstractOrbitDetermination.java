@@ -16,23 +16,6 @@
  */
 package org.orekit.estimation.common;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.regex.Pattern;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -161,6 +144,23 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
@@ -446,7 +446,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Run the sequential batch least squares.
-     * @param input input file
      * @param print if true, print logs
      * @throws IOException if input files cannot be read
      */
@@ -2468,7 +2467,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Display parameters changes.
-     * @param stream output stream
      * @param header header message
      * @param sort if true, parameters will be sorted lexicographically
      * @param parameters parameters list

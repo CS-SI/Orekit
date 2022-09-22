@@ -2,9 +2,9 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
@@ -23,7 +23,7 @@ public class TLEStateTransitionMatrixTest {
     private TLE tleGPS;
     private TLE tleSPOT;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 
@@ -48,10 +48,12 @@ public class TLEStateTransitionMatrixTest {
         doTestStateJacobian(2.53e-9, tleGPS);
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNullStmName() {
-        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleSPOT);
-        propagator.setupMatricesComputation(null, null, null);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleSPOT);
+            propagator.setupMatricesComputation(null, null, null);
+        });
     }
 
     private void doTestStateJacobian(double tolerance, TLE tle) {
@@ -64,7 +66,7 @@ public class TLEStateTransitionMatrixTest {
         final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(initialState);
-        Assert.assertNull(dYdY0);
+        Assertions.assertNull(dYdY0);
         final SpacecraftState finalState = propagator.propagate(target);
         dYdY0 = harvester.getStateTransitionMatrix(finalState);
 
@@ -97,7 +99,7 @@ public class TLEStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, tolerance);
+                    Assertions.assertEquals(0, error, tolerance);
                 }
             }
         }

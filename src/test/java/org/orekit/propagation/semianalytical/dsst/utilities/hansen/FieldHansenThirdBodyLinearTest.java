@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class FieldHansenThirdBodyLinearTest {
 
@@ -127,7 +127,7 @@ public class FieldHansenThirdBodyLinearTest {
                 maxRelativeError = FastMath.max(maxRelativeError, relativeError);
             }
         }
-        Assert.assertEquals(0.0, maxRelativeError.getReal(), tol.getReal());
+        Assertions.assertEquals(0.0, maxRelativeError.getReal(), tol.getReal());
 
     }
 
