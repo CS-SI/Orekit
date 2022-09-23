@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="726">
+        Added ephemeris based estimation.
+      </action>
       <action dev="maxime" type="update" issue="955">
         Added method to get measurement types.
       </action>
