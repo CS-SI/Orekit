@@ -202,6 +202,16 @@ to the `ParameterDriver` class. During setup, the user can retrieve three differ
 Then, looping on the elements of these lists, the user can change the default settings depending on his/her needs
 and for example fix a few orbital parameters while estimating a few propagation and measurements parameters.
 
+### Ephemeris based estimation
+
+Since Orekit 11.3 it is possible to perform ephemeris based estimation. The purpose of the ephemeris based estimation
+is to estimate only the measurement parameters. The dynamical parameter (i.e., orbital and propagator parameters) are
+not estimated. A typical application is the calibration of a telescope clock bias using precise GNSS ephemeris computed
+by analysis centers.
+
+To perform the ephemeris based estimation, the user must provide to the estimator an `EphemerisPropagatorBuilder`
+containing the ephemeris. Orekit automatically disable the estimation of the dynamical parameters.
+
 #### Parameters values changes
 
 Once everything has been set up, the `estimate` method of `BatchLSEstimator` is called. The least squares solver will

@@ -81,7 +81,7 @@
           - UnscentedTransformProvider utProvider
           + RealVector[] unscentedTransform()
           + predict(double time, RealVector[] predictedStates, RealMatrix noise)
-          + correct(T measurement, RealVector[] innovations)
+          + correct(T measurement, RealMatrix innovationCovarianceMatrix, RealMatrix crossCovarianceMatrix, RealVector innovation)
         }
     
         UnscentedKalmanFilter_T o-->"1"  UnscentedProcess : estimate
@@ -104,8 +104,8 @@
       class UnscentedKalmanEstimator {
         - UnscentedKalmanFilter filter
         - UnscentedKalmanModel processModel
-        + Propagator processMeasurements(List<ObservedMeasurement> measurements)
-        + Propagator estimationStep(ObservedMeasurement<?> observedMeasurement)
+        + Propagator[] processMeasurements(List<ObservedMeasurement> measurements)
+        + Propagator[] estimationStep(ObservedMeasurement<?> observedMeasurement)
       }
 
       class UnscentedKalmanEstimatorBuilder {
@@ -122,7 +122,7 @@
         - ParameterDriversList estimatedMeasurementsParameters
         - AbsoluteDate currentDate
         - ProcessEstimate correctedEstimate
-        - NumericalPropagatorBuilder builder
+        - List<NumericalPropagatorBuilder> builder
         + ProcessEstimate getEstimate()
         + AbsoluteDate getCurrentDate()
         + SpacecraftState[] getPredictedSpacecraftStates()

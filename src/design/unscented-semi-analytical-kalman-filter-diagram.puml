@@ -23,30 +23,39 @@
   skinparam NoteBackgroundColor   #F3EFEB
   skinparam NoteBorderColor       #691616
   skinparam NoteFontColor         #691616
+  skinparam linetype              ortho
   skinparam ClassFontSize         11
 
   package org.hipparchus.filtering #ECEBD8 {
 
-    package kalman.unscented #DDEBD8 {
-
-      interface KalmanFilter
-
-      interface UnscentedProcess {
-        + getEvolution()
-        + getInnovation()
+      package unscented #DDEBD8 {
+    
+        interface UnscentedProcess {
+          + UnscentedEvolution getEvolution()
+          + RealVector getInnovations()
+        }
+    
+        class UnscentedEvolution {
+          + RealVector[] getCurrentStates()
+          + double getCurrentTime()
+          + RealVector[] getCurrentMeasurements()
+          + RealMatrix getProcessNoiseMatrix()
+        }
+    
+        class "UnscentedKalmanFilter<T extends Measurement>" as UnscentedKalmanFilter_T {
+          - ProcessEstimate predicted
+          - ProcessEstimate corrected
+          - UnscentedTransformProvider utProvider
+          + RealVector[] unscentedTransform()
+          + predict(double time, RealVector[] predictedStates, RealMatrix noise)
+          + correct(T measurement, RealMatrix innovationCovarianceMatrix, RealMatrix crossCovarianceMatrix, RealVector innovation)
+        }
+    
+        UnscentedKalmanFilter_T o-->"1"  UnscentedProcess : estimate
+        UnscentedKalmanFilter_T --> UnscentedEvolution
+        UnscentedProcess --> UnscentedEvolution : generate
+    
       }
-      
-      class UnscentedKalmanFilter {
-        + UnscentedKalmanFilter(MatrixDecomposer decomposer, UnscentedProcess process, ProcessEstimate initialState, UnscentedTransformProvider utProvider)
-        + ProcessEstimate estimationStep(measurement)
-        + UnscentedTransformProvider getUnscentedTransformProvider()
-      }
-
-      UnscentedKalmanFilter *-->"1"  UnscentedProcess
-
-    }
-
-    UnscentedKalmanFilter --|> KalmanFilter
 
   }
 
@@ -99,14 +108,14 @@
          - computeOsculatingElements()
       }
 
-      class UskfMeasurementHandler
+      class SemiAnalyticalMeasurementHandler
 
-      OrekitStepHandler <|..  UskfMeasurementHandler
+      OrekitStepHandler <|..  SemiAnalyticalMeasurementHandler
       SemiAnalyticalUnscentedKalmanEstimator <--   SemiAnalyticalUnscentedKalmanEstimatorBuilder
       UnscentedProcess <|..  SemiAnalyticalUnscentedKalmanModel
       SemiAnalyticalUnscentedKalmanModel <--   SemiAnalyticalUnscentedKalmanEstimator
-      UnscentedKalmanFilter <--   SemiAnalyticalUnscentedKalmanEstimator
-      UskfMeasurementHandler <--   SemiAnalyticalUnscentedKalmanModel
+      SemiAnalyticalUnscentedKalmanEstimator *-left-> UnscentedKalmanFilter_T
+      SemiAnalyticalMeasurementHandler <--   SemiAnalyticalUnscentedKalmanModel
 
     }
 
