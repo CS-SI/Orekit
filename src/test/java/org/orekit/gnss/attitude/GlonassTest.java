@@ -16,7 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class GlonassTest extends AbstractGNSSAttitudeProviderTest {

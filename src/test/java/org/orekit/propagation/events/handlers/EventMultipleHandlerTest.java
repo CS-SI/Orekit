@@ -17,9 +17,9 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -38,7 +38,7 @@ import org.orekit.utils.Constants;
  */
 public class EventMultipleHandlerTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -61,10 +61,10 @@ public class EventMultipleHandlerTest {
 
         // actions
         EventMultipleHandler<DateDetector> facade1 = new EventMultipleHandler<DateDetector>().addHandler(handler1).addHandler(handler2);
-        Assert.assertEquals(Action.STOP, facade1.eventOccurred(s, detector, true));
+        Assertions.assertEquals(Action.STOP, facade1.eventOccurred(s, detector, true));
 
         EventMultipleHandler<DateDetector> facade2 = new EventMultipleHandler<DateDetector>().addHandler(handler1).addHandler(handler3);
-        Assert.assertEquals(Action.CONTINUE, facade2.eventOccurred(s, detector, true));
+        Assertions.assertEquals(Action.CONTINUE, facade2.eventOccurred(s, detector, true));
     }
 
     /**
@@ -87,8 +87,8 @@ public class EventMultipleHandlerTest {
         EventMultipleHandler<DateDetector> facade = new EventMultipleHandler<DateDetector>().addHandlers(handler1, handler2, handler3);
 
         // verify
-        Assert.assertEquals(Action.RESET_STATE, facade.eventOccurred(s, detector, true));
-        Assert.assertEquals(s.shiftedBy(30).getOrbit().getDate(), facade.resetState(detector, s).getOrbit().getDate());
+        Assertions.assertEquals(Action.RESET_STATE, facade.eventOccurred(s, detector, true));
+        Assertions.assertEquals(s.shiftedBy(30).getOrbit().getDate(), facade.resetState(detector, s).getOrbit().getDate());
     }
 
     /**

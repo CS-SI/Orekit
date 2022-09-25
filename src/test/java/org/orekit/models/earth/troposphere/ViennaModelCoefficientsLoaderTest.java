@@ -17,8 +17,8 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -46,13 +46,13 @@ public class ViennaModelCoefficientsLoaderTest {
         final double a[]       = tropoLoader.getA();
         final double delays[]  = tropoLoader.getZenithDelay();
 
-        Assert.assertEquals(0.00127935, a[0], epsilon);
-        Assert.assertEquals(0.00064084, a[1], epsilon);
+        Assertions.assertEquals(0.00127935, a[0], epsilon);
+        Assertions.assertEquals(0.00064084, a[1], epsilon);
 
-        Assert.assertEquals(2.3131, delays[0], epsilon);
-        Assert.assertEquals(0.3086, delays[1], epsilon);
+        Assertions.assertEquals(2.3131, delays[0], epsilon);
+        Assertions.assertEquals(0.3086, delays[1], epsilon);
 
-        Assert.assertEquals("VMFG_20181119.H18", tropoLoader.getSupportedNames());
+        Assertions.assertEquals("VMFG_20181119.H18", tropoLoader.getSupportedNames());
     }
 
     @Test
@@ -73,13 +73,13 @@ public class ViennaModelCoefficientsLoaderTest {
         final double a[]       = tropoLoader.getA();
         final double delays[]  = tropoLoader.getZenithDelay();
 
-        Assert.assertEquals(0.00117002, a[0], epsilon);
-        Assert.assertEquals(0.00045484, a[1], epsilon);
+        Assertions.assertEquals(0.00117002, a[0], epsilon);
+        Assertions.assertEquals(0.00045484, a[1], epsilon);
 
-        Assert.assertEquals(2.3203, delays[0], epsilon);
-        Assert.assertEquals(0.0191, delays[1], epsilon);
+        Assertions.assertEquals(2.3203, delays[0], epsilon);
+        Assertions.assertEquals(0.0191, delays[1], epsilon);
 
-        Assert.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
+        Assertions.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
     }
 
     @Test
@@ -100,13 +100,13 @@ public class ViennaModelCoefficientsLoaderTest {
         final double a[]       = tropoLoader.getA();
         final double delays[]  = tropoLoader.getZenithDelay();
 
-        Assert.assertEquals(0.00127606, a[0], epsilon);
-        Assert.assertEquals(0.00056388, a[1], epsilon);
+        Assertions.assertEquals(0.00127606, a[0], epsilon);
+        Assertions.assertEquals(0.00056388, a[1], epsilon);
 
-        Assert.assertEquals(2.3117, delays[0], epsilon);
-        Assert.assertEquals(0.2239, delays[1], epsilon);
+        Assertions.assertEquals(2.3117, delays[0], epsilon);
+        Assertions.assertEquals(0.2239, delays[1], epsilon);
 
-        Assert.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
+        Assertions.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
     }
 
     @Test
@@ -134,10 +134,10 @@ public class ViennaModelCoefficientsLoaderTest {
         model1.loadViennaCoefficients(dateTimeComponents);
         model2.loadViennaCoefficients(dateTimeComponents);
 
-        Assert.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
-        Assert.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
-        Assert.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
-        Assert.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
+        Assertions.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
+        Assertions.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
+        Assertions.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
+        Assertions.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
         // Test longitude = 180° and longitude = -180°
         longitude1 = FastMath.toRadians(180.0);
@@ -149,10 +149,10 @@ public class ViennaModelCoefficientsLoaderTest {
         model1.loadViennaCoefficients(dateTimeComponents);
         model2.loadViennaCoefficients(dateTimeComponents);
 
-        Assert.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
-        Assert.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
-        Assert.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
-        Assert.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
+        Assertions.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
+        Assertions.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
+        Assertions.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
+        Assertions.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
         // Test longitude = 0° and longitude = 360°
         longitude1 = FastMath.toRadians(0.0);
@@ -164,10 +164,10 @@ public class ViennaModelCoefficientsLoaderTest {
         model1.loadViennaCoefficients(dateTimeComponents);
         model2.loadViennaCoefficients(dateTimeComponents);
 
-        Assert.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
-        Assert.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
-        Assert.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
-        Assert.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
+        Assertions.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
+        Assertions.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
+        Assertions.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
+        Assertions.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
     }
 
@@ -187,10 +187,10 @@ public class ViennaModelCoefficientsLoaderTest {
 
         try {
             tropoLoader.loadViennaCoefficients();
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
 
@@ -208,12 +208,12 @@ public class ViennaModelCoefficientsLoaderTest {
 
         try {
             tropoLoader.loadViennaCoefficients(dateTimeComponents);
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE,
+            Assertions.assertEquals(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE,
                                 oe.getSpecifier());
-            Assert.assertEquals(dateTimeComponents.toString(),
+            Assertions.assertEquals(dateTimeComponents.toString(),
                                 (String) oe.getParts()[0]);
         }
     }

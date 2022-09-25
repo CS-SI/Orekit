@@ -19,9 +19,9 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -49,9 +49,9 @@ public class ApsideDetectorTest {
                                  withThreshold(1.0e-12).
                                  withHandler(new ContinueOnEvent<ApsideDetector>());
 
-        Assert.assertEquals(600.0, detector.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        Assertions.assertEquals(600.0, detector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 
 
         EventsLogger logger = new EventsLogger();
@@ -59,16 +59,16 @@ public class ApsideDetectorTest {
 
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assert.assertEquals(30, logger.getLoggedEvents().size());
+        Assertions.assertEquals(30, logger.getLoggedEvents().size());
         for (LoggedEvent e : logger.getLoggedEvents()) {
             KeplerianOrbit o = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(e.getState().getOrbit());
             double expected = e.isIncreasing() ? 0.0 : FastMath.PI;
-            Assert.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly(), expected), 4.0e-14);
+            Assertions.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly(), expected), 4.0e-14);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         final TimeScale utc = TimeScalesFactory.getUTC();

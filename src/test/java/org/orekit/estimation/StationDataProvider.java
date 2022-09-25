@@ -1,8 +1,8 @@
 package org.orekit.estimation;
 
-import java.util.List;
-
 import org.orekit.estimation.measurements.GroundStation;
+
+import java.util.List;
 
 /**
  * Utility class for station data providers.

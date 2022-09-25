@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
@@ -33,6 +30,9 @@ import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
+
+import java.util.List;
+import java.util.Map;
 
 public class TLEContext implements StationDataProvider {
     public IERSConventions                      conventions;

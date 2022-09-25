@@ -54,7 +54,7 @@ public class KalmanEstimatorUtil {
      * </p>
      * @param observedMeasurement the measurement
      * @param referenceDate reference date
-     * @return decorated measurements
+     * @return decorated measurement
      */
     public static MeasurementDecorator decorate(final ObservedMeasurement<?> observedMeasurement,
                                                 final AbsoluteDate referenceDate) {
@@ -64,11 +64,11 @@ public class KalmanEstimatorUtil {
         // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
         // Normalizing it leaves us with the matrix of the correlation coefficients
         final RealMatrix covariance;
-        if (observedMeasurement instanceof PV) {
+        if (observedMeasurement.getMeasurementType().equals(PV.MEASUREMENT_TYPE)) {
             // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
             final PV pv = (PV) observedMeasurement;
             covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
-        } else if (observedMeasurement instanceof Position) {
+        } else if (observedMeasurement.getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
             // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
             final Position position = (Position) observedMeasurement;
             covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());
@@ -93,9 +93,13 @@ public class KalmanEstimatorUtil {
                                       final ParameterDriversList propagationParameters,
                                       final ParameterDriversList measurementParameters) {
 
-        // count parameters, taking care of counting all orbital parameters
-        // regardless of them being estimated or not
-        int requiredDimension = orbitalParameters.getNbParams();
+        // count parameters
+        int requiredDimension = 0;
+        for (final ParameterDriver driver : orbitalParameters.getDrivers()) {
+            if (driver.isSelected()) {
+                ++requiredDimension;
+            }
+        }
         for (final ParameterDriver driver : propagationParameters.getDrivers()) {
             if (driver.isSelected()) {
                 ++requiredDimension;

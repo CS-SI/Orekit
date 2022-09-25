@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -67,7 +67,7 @@ public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, Aem> {
     }
 
     // temporarily ignored as Orekit does not yet support SPIN_NUTATION attitude type
-    @Ignore
+    @Disabled
     @Test
     public void testWriteExample06() {
         doTest("/ccsds/adm/aem/AEMExample06.txt");

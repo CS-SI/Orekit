@@ -22,8 +22,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.MerweUnscentedTransform;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -49,9 +49,9 @@ public class UnscentedKalmanEstimatorTest {
         try {
             new UnscentedKalmanEstimatorBuilder().
             build();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+        	Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -71,9 +71,9 @@ public class UnscentedKalmanEstimatorTest {
             new UnscentedKalmanEstimatorBuilder().
             addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6))).
             build();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED, oe.getSpecifier());
+        	Assertions.assertEquals(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED, oe.getSpecifier());
         }
     }
 

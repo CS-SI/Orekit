@@ -253,7 +253,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // Store providers for process noise matrices
         this.covarianceMatricesProviders = covarianceMatricesProviders;
         this.measurementProcessNoiseMatrix = measurementProcessNoiseMatrix;
-        this.covarianceIndirection       = new int[covarianceMatricesProviders.size()][columns];
+        this.covarianceIndirection       = new int[builders.size()][columns];
         for (int k = 0; k < covarianceIndirection.length; ++k) {
             final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
             final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
@@ -261,7 +261,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             int i = 0;
             for (final ParameterDriver driver : orbitDrivers.getDrivers()) {
                 final Integer c = orbitalParameterColumns.get(driver.getName());
-                covarianceIndirection[k][i++] = (c == null) ? -1 : c.intValue();
+                if (c != null) {
+                    covarianceIndirection[k][i++] = c.intValue();
+                }
             }
             for (final ParameterDriver driver : parametersDrivers.getDrivers()) {
                 final Integer c = propagationParameterColumns.get(driver.getName());
@@ -326,9 +328,11 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
             // Covariance matrix
             final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
-            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
-                                      getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
-            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            if (nbDyn > 0) {
+                final RealMatrix noiseP = covarianceMatricesProviders.get(k).
+                        getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            }
             if (measurementProcessNoiseMatrix != null) {
                 final RealMatrix noiseM = measurementProcessNoiseMatrix.
                                           getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
@@ -375,7 +379,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
         // nothing by default
     }
-
 
     /** {@inheritDoc} */
     @Override
@@ -650,12 +653,13 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Indexes
             final int[] indK = covarianceIndirection[k];
 
-            // Reset reference (for example compute short periodic terms in DSST)
-            harvesters[k].setReferenceState(predictedSpacecraftStates[k]);
-
             // Derivatives of the state vector with respect to initial state vector
             final int nbOrbParams = estimatedOrbitalParameters[k].getNbParams();
             if (nbOrbParams > 0) {
+
+                // Reset reference (for example compute short periodic terms in DSST)
+                harvesters[k].setReferenceState(predictedSpacecraftStates[k]);
+
                 final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
 
                 // Fill upper left corner (dY/dY0)
@@ -933,10 +937,12 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
             // Covariance matrix
             final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
-            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
-                                      getProcessNoiseMatrix(correctedSpacecraftStates[k],
-                                                            predictedSpacecraftStates[k]);
-            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            if (nbDyn > 0) {
+                final RealMatrix noiseP = covarianceMatricesProviders.get(k).
+                                          getProcessNoiseMatrix(correctedSpacecraftStates[k],
+                                                                predictedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            }
             if (measurementProcessNoiseMatrix != null) {
                 final RealMatrix noiseM = measurementProcessNoiseMatrix.
                                           getProcessNoiseMatrix(correctedSpacecraftStates[k],

@@ -16,20 +16,13 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataFilter;
-import org.orekit.data.GzipFilter;
 import org.orekit.data.DataSource;
+import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.HatanakaCompressFilter;
@@ -38,10 +31,17 @@ import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+
 
 public class PhaseMinusCodeCycleSlipDetectorTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -67,51 +67,51 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         for(CycleSlipDetectorResults d: results) {
             switch(getPrn(d)) {
                 case 1:
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,33 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,33 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,40 ,00.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,40 ,00.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 5:
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  2, 44, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 6:
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 28, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 28, 30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 31, 0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 31, 0.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 7:
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 13,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 13,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 11,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  4, 11,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 9:
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 32,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 32,  00.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 31,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016, 2, 13,  2, 31,  30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 case 11:
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G01).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
 
-                    Assert.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
-                    Assert.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getEndDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,  2, 13,  5,  0,  0.0000000, TimeScalesFactory.getTAI())),1e-9);
+                    Assertions.assertEquals(19.0, d.getBeginDate(Frequency.G02).durationFrom(new AbsoluteDate(2016,2, 13  ,2  ,31 ,30.0000000, TimeScalesFactory.getTAI())),1e-9);
                     break;
 
                 default:   break;
@@ -148,7 +148,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                         new AbsoluteDate(2016,02,13,04,54,13.000 , TimeScalesFactory.getUTC())};
                     int i1 = 0;
                     for (AbsoluteDate dateL1: d.getCycleSlipMap().get(Frequency.G01)) {
-                        Assert.assertEquals(0,  dateL1.compareTo(dateCycleSlipL1[i1]));
+                        Assertions.assertEquals(0,  dateL1.compareTo(dateCycleSlipL1[i1]));
                         i1++;
                     }
                     //The dates have been created manually within the file
@@ -159,7 +159,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                         new AbsoluteDate(2016,02,13,04,54,13.000 , TimeScalesFactory.getUTC())};
                     int i2 = 0;
                     for(AbsoluteDate dateL2: d.getCycleSlipMap().get(Frequency.G02)) {
-                        Assert.assertEquals(0,  dateL2.compareTo(dateCycleSlipL2[i2]));
+                        Assertions.assertEquals(0,  dateL2.compareTo(dateCycleSlipL2[i2]));
                         i2++;
                     }
                 default:    break;
@@ -202,11 +202,11 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             for(CycleSlipDetectorResults d : resultsL2) {
                 if(i == 0) {
                     final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
-                    Assert.assertEquals(3, computedDateOnL2.size());
-                    Assert.assertEquals(0.0, computedDateOnL2.get(0).durationFrom(dateL2[i]), 0.0);
+                    Assertions.assertEquals(3, computedDateOnL2.size());
+                    Assertions.assertEquals(0.0, computedDateOnL2.get(0).durationFrom(dateL2[i]), 0.0);
                 } else {
                     final List<AbsoluteDate> computedDateOnL2 = d.getCycleSlipMap().get(Frequency.G02);
-                    Assert.assertEquals(0, computedDateOnL2.size());
+                    Assertions.assertEquals(0, computedDateOnL2.size());
                 }
 
             }
@@ -228,18 +228,18 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             for(CycleSlipDetectorResults d : resultsL1) {
                 if(i == 0) {
                     final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
-                    Assert.assertEquals(3, computedDateOnL1.size());
+                    Assertions.assertEquals(3, computedDateOnL1.size());
                     int i1 = 0;
                     for(AbsoluteDate date: computedDateOnL1) {
-                        Assert.assertEquals(0.0, date.durationFrom(dateL1[i1]), 1e-9);
+                        Assertions.assertEquals(0.0, date.durationFrom(dateL1[i1]), 1e-9);
                         i1++;
                     }
                 } else if (i == 1) {
                     final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
-                    Assert.assertEquals(2, computedDateOnL1.size());
+                    Assertions.assertEquals(2, computedDateOnL1.size());
                 } else {
                     final List<AbsoluteDate> computedDateOnL1 = d.getCycleSlipMap().get(Frequency.G01);
-                    Assert.assertEquals(0, computedDateOnL1.size());
+                    Assertions.assertEquals(0, computedDateOnL1.size());
                 }
             }
         }

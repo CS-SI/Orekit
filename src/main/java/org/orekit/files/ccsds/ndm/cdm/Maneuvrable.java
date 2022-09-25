@@ -23,12 +23,37 @@ package org.orekit.files.ccsds.ndm.cdm;
 public enum Maneuvrable {
 
     /** Maneuvrable. */
-    YES,
+    YES("YES"),
 
     /** Non Maneuvrable. */
-    NO,
+    NO("NO"),
 
     /** Don't know or not applicable. */
-    NOT_APPLICABLE;
+    N_A("N/A");
+
+    /** Value of the enum .*/
+    private String value;
+
+    Maneuvrable(final String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return this.getValue();
+    }
+
+    public static Maneuvrable getEnum(final String keyValue) {
+        for (Maneuvrable v : values()) {
+            if (v.getValue().equalsIgnoreCase(keyValue)) {
+                return v;
+            }
+        }
+        throw new IllegalArgumentException();
+    }
 
 }

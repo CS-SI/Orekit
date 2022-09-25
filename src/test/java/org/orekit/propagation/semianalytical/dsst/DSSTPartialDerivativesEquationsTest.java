@@ -16,16 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import static org.hamcrest.CoreMatchers.is;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -35,9 +25,9 @@ import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -83,6 +73,16 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+
 /** Unit tests for {@link DSSTPartialDerivativesEquations}. */
 @Deprecated
 public class DSSTPartialDerivativesEquationsTest {
@@ -107,7 +107,7 @@ public class DSSTPartialDerivativesEquationsTest {
      * set up {@link #pde} and dependencies.
      *
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -272,7 +272,7 @@ public class DSSTPartialDerivativesEquationsTest {
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
             for (int i = 0; i < 6; ++i) {
-                Assert.assertEquals(dYdPRef[i][0], pickUp.dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
+                Assertions.assertEquals(dYdPRef[i][0], pickUp.dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
             }
 
         }
@@ -363,72 +363,80 @@ public class DSSTPartialDerivativesEquationsTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((pickUp.dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, tolerance);
+                    Assertions.assertEquals(0, error, tolerance);
                 }
             }
         }
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNotInitialized() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Orbit initialOrbit =
+                    new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
+                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                            Constants.EIGEN5C_EARTH_MU);
+            final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
+            double dP = 0.001;
+            DSSTPropagator propagator =
+                    setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+            new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
+        });
      }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testTooSmallDimension() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Orbit initialOrbit =
+                    new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
+                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                            Constants.EIGEN5C_EARTH_MU);
+            final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
-        partials.setInitialJacobians(new SpacecraftState(orbit),
-                                     new double[5][6], new double[6][2]);
+            double dP = 0.001;
+            DSSTPropagator propagator =
+                    setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+            partials.setInitialJacobians(new SpacecraftState(orbit),
+                    new double[5][6], new double[6][2]);
+        });
      }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testTooLargeDimension() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Orbit initialOrbit =
+                    new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
+                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                            Constants.EIGEN5C_EARTH_MU);
+            final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
-        partials.setInitialJacobians(new SpacecraftState(orbit),
-                                     new double[8][6], new double[6][2]);
+            double dP = 0.001;
+            DSSTPropagator propagator =
+                    setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+            partials.setInitialJacobians(new SpacecraftState(orbit),
+                    new double[8][6], new double[6][2]);
+        });
      }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testMismatchedDimensions() {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            Orbit initialOrbit =
+                    new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
+                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                            Constants.EIGEN5C_EARTH_MU);
+            final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
-        double dP = 0.001;
-        DSSTPropagator propagator =
-                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
-        partials.setInitialJacobians(new SpacecraftState(orbit),
-                                     new double[6][6], new double[7][2]);
+            double dP = 0.001;
+            DSSTPropagator propagator =
+                    setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
+            partials.setInitialJacobians(new SpacecraftState(orbit),
+                    new double[6][6], new double[7][2]);
+        });
      }
 
     @Test
@@ -450,9 +458,9 @@ public class DSSTPartialDerivativesEquationsTest {
             partials.setInitialJacobians(new SpacecraftState(orbit),
                                          new double[6][6], new double[6][3]);
             partials.derivatives(new SpacecraftState(orbit));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
+            Assertions.assertEquals(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
                                 oe.getSpecifier());
         }
     }
@@ -551,8 +559,8 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         private void checkState(final SpacecraftState state) {
-            Assert.assertEquals(1, state.getAdditionalStates().size());
-            Assert.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
+            Assertions.assertEquals(1, state.getAdditionalStates().size());
+            Assertions.assertTrue(state.getAdditionalStates().containsKey(mapper.getName()));
             mapper.setReferenceState(state);
             dYdY0 = mapper.getStateTransitionMatrix(state);
             dYdP  = mapper.getParametersJacobian(state);
@@ -602,7 +610,7 @@ public class DSSTPartialDerivativesEquationsTest {
         RealMatrix dYdY0MEAN = mapperMEAN.getStateTransitionMatrix(initialStateMEAN);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
-                Assert.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
+                Assertions.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
             }
         }
 
@@ -618,8 +626,8 @@ public class DSSTPartialDerivativesEquationsTest {
         final double[] refLine1 = new double[] {1.0000, -5750.3478, 15270.6488, -2707.1208, -2165.0148, -178.3653};
         final double[] refLine6 = new double[] {0.0000, 0.0035, 0.0013, -0.0005, 0.0005, 1.0000};
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);
-            Assert.assertEquals(refLine6[i], dYdY0OSC.getEntry(5, i), 1e-4);
+            Assertions.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);
+            Assertions.assertEquals(refLine6[i], dYdY0OSC.getEntry(5, i), 1e-4);
         }
 
     }

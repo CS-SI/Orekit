@@ -22,9 +22,9 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -50,7 +50,7 @@ public class StateCovarianceMatrixProviderTest {
     private SpacecraftState initialState;
     private double[][]      initCov;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -173,7 +173,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 4.0e-7);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -260,7 +260,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 3.0e-5);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -336,7 +336,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 5.0e-4);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -378,7 +378,7 @@ public class StateCovarianceMatrixProviderTest {
     private void compareCovariance(final RealMatrix reference, final RealMatrix computed, final double threshold) {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
-                Assert.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column), FastMath.abs(threshold * reference.getEntry(row, column)));
+                Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column), FastMath.abs(threshold * reference.getEntry(row, column)));
             }
         }
     }

@@ -16,14 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -33,9 +27,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -78,6 +72,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class FieldDSSTSolarRadiationPressureTest {
 
@@ -153,12 +153,12 @@ public class FieldDSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(6.843966348263062E-8,    elements[0].getReal(), 1.1e-11);
-        Assert.assertEquals(-2.990913371084091E-11,  elements[1].getReal(), 2.2e-19);
-        Assert.assertEquals(-2.538374405334012E-10,  elements[2].getReal(), 8.0e-19);
-        Assert.assertEquals(2.0384702426501394E-13,  elements[3].getReal(), 2.0e-20);
-        Assert.assertEquals(-2.3346333406116967E-14, elements[4].getReal(), 8.5e-22);
-        Assert.assertEquals(1.6087485237156322E-11,  elements[5].getReal(), 1.7e-18);
+        Assertions.assertEquals(6.843966348263062E-8,    elements[0].getReal(), 1.1e-11);
+        Assertions.assertEquals(-2.990913371084091E-11,  elements[1].getReal(), 2.2e-19);
+        Assertions.assertEquals(-2.538374405334012E-10,  elements[2].getReal(), 8.0e-19);
+        Assertions.assertEquals(2.0384702426501394E-13,  elements[3].getReal(), 2.0e-20);
+        Assertions.assertEquals(-2.3346333406116967E-14, elements[4].getReal(), 8.5e-22);
+        Assertions.assertEquals(1.6087485237156322E-11,  elements[5].getReal(), 1.7e-18);
 
     }
 
@@ -223,12 +223,12 @@ public class FieldDSSTSolarRadiationPressureTest {
             }
         }
 
-        Assert.assertEquals(0.36637346843285684,     y[0].getReal(), 0.5e-12);
-        Assert.assertEquals(-2.4294913010512626E-10, y[1].getReal(), 2.6e-20);
-        Assert.assertEquals(-3.858954680824408E-9,   y[2].getReal(), 7.e-20);
-        Assert.assertEquals(-3.0648619902684686E-9,  y[3].getReal(), 0.9e-21);
-        Assert.assertEquals(-4.9023731169635814E-9,  y[4].getReal(), 1.1e-19);
-        Assert.assertEquals(-2.385357916413363E-9,   y[5].getReal(), 1.3e-20);
+        Assertions.assertEquals(0.36637346843285684,     y[0].getReal(), 0.5e-12);
+        Assertions.assertEquals(-2.4294913010512626E-10, y[1].getReal(), 2.6e-20);
+        Assertions.assertEquals(-3.858954680824408E-9,   y[2].getReal(), 7.e-20);
+        Assertions.assertEquals(-3.0648619902684686E-9,  y[3].getReal(), 0.9e-21);
+        Assertions.assertEquals(-4.9023731169635814E-9,  y[4].getReal(), 1.1e-19);
+        Assertions.assertEquals(-2.385357916413363E-9,   y[5].getReal(), 1.3e-20);
     }
 
     @Test
@@ -346,7 +346,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assert.assertEquals(0, error, 8.3e-10);
+                Assertions.assertEquals(0, error, 8.3e-10);
             }
         }
 
@@ -492,7 +492,7 @@ public class FieldDSSTSolarRadiationPressureTest {
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+            Assertions.assertEquals(shortPeriodJacobianRef[i][0],
                                 shortPeriodJacobian[i][0],
                                 FastMath.abs(shortPeriodJacobianRef[i][0] * tolerance));
         }
@@ -574,7 +574,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));

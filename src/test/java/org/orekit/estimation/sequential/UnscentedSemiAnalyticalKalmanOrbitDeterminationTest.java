@@ -31,8 +31,8 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MerweUnscentedTransform;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -166,23 +166,23 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assert.assertEquals(0.0, statX.getMean(), 7.46e-5);
-        Assert.assertEquals(0.0, statY.getMean(), 2.96e-5);
-        Assert.assertEquals(0.0, statZ.getMean(), 2.07e-4);
-        Assert.assertEquals(0.0, statX.getMin(),  0.0016); // Value is negative
-        Assert.assertEquals(0.0, statY.getMin(),  0.0021); // Value is negative
-        Assert.assertEquals(0.0, statZ.getMin(),  0.0709); // Value is negative
-        Assert.assertEquals(0.0, statX.getMax(),  0.0103);
-        Assert.assertEquals(0.0, statY.getMax(),  0.0073);
-        Assert.assertEquals(0.0, statZ.getMax(),  0.0082);
+        Assertions.assertEquals(0.0, statX.getMean(), 7.46e-5);
+        Assertions.assertEquals(0.0, statY.getMean(), 2.96e-5);
+        Assertions.assertEquals(0.0, statZ.getMean(), 2.07e-4);
+        Assertions.assertEquals(0.0, statX.getMin(),  0.0016); // Value is negative
+        Assertions.assertEquals(0.0, statY.getMin(),  0.0021); // Value is negative
+        Assertions.assertEquals(0.0, statZ.getMin(),  0.0709); // Value is negative
+        Assertions.assertEquals(0.0, statX.getMax(),  0.0103);
+        Assertions.assertEquals(0.0, statY.getMax(),  0.0073);
+        Assertions.assertEquals(0.0, statZ.getMax(),  0.0082);
 
         // Check that "physical" matrices are not null
-        Assert.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
-        Assert.assertNotNull(estimation.getPhysicalKalmanGain());
+        Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
+        Assertions.assertNotNull(estimation.getPhysicalKalmanGain());
 
         // Verify that station transition and measurement matrices are null
-        Assert.assertNull(estimation.getPhysicalMeasurementJacobian());
-        Assert.assertNull(estimation.getPhysicalStateTransitionMatrix());
+        Assertions.assertNull(estimation.getPhysicalMeasurementJacobian());
+        Assertions.assertNull(estimation.getPhysicalStateTransitionMatrix());
 
     }
 

@@ -16,14 +16,14 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import java.util.Arrays;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.utils.IERSConventions;
+
+import java.util.Arrays;
 
 
 public class FacadeFrameTest {
@@ -34,9 +34,9 @@ public class FacadeFrameTest {
             FrameFacade ff = FrameFacade.parse(cbf.name(),
                                                IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                true, true, true);
-            Assert.assertSame(cbf, ff.asCelestialBodyFrame());
-            Assert.assertNull(ff.asOrbitRelativeFrame());
-            Assert.assertNull(ff.asSpacecraftBodyFrame());
+            Assertions.assertSame(cbf, ff.asCelestialBodyFrame());
+            Assertions.assertNull(ff.asOrbitRelativeFrame());
+            Assertions.assertNull(ff.asSpacecraftBodyFrame());
         }
     }
 
@@ -46,9 +46,9 @@ public class FacadeFrameTest {
             FrameFacade ff = FrameFacade.parse(orf.name(),
                                                IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                true, true, true);
-            Assert.assertNull(ff.asCelestialBodyFrame());
-            Assert.assertSame(orf, ff.asOrbitRelativeFrame());
-            Assert.assertNull(ff.asSpacecraftBodyFrame());
+            Assertions.assertNull(ff.asCelestialBodyFrame());
+            Assertions.assertSame(orf, ff.asOrbitRelativeFrame());
+            Assertions.assertNull(ff.asSpacecraftBodyFrame());
         }
     }
 
@@ -60,10 +60,10 @@ public class FacadeFrameTest {
                 FrameFacade ff = FrameFacade.parse(sbf.toString(),
                                                    IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                    true, true, true);
-            Assert.assertNull(ff.asCelestialBodyFrame());
-            Assert.assertNull(ff.asOrbitRelativeFrame());
-            Assert.assertEquals(be,    ff.asSpacecraftBodyFrame().getBaseEquipment());
-            Assert.assertEquals(label, ff.asSpacecraftBodyFrame().getLabel());
+            Assertions.assertNull(ff.asCelestialBodyFrame());
+            Assertions.assertNull(ff.asOrbitRelativeFrame());
+            Assertions.assertEquals(be,    ff.asSpacecraftBodyFrame().getBaseEquipment());
+            Assertions.assertEquals(label, ff.asSpacecraftBodyFrame().getLabel());
             }
         }
     }
@@ -74,14 +74,14 @@ public class FacadeFrameTest {
         FrameFacade ff = FrameFacade.parse(name,
                                            IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                            true, true, true);
-        Assert.assertNull(ff.asFrame());
-        Assert.assertNull(ff.asCelestialBodyFrame());
-        Assert.assertNull(ff.asOrbitRelativeFrame());
-        Assert.assertNull(ff.asSpacecraftBodyFrame());
-        Assert.assertEquals(name, ff.getName());
+        Assertions.assertNull(ff.asFrame());
+        Assertions.assertNull(ff.asCelestialBodyFrame());
+        Assertions.assertNull(ff.asOrbitRelativeFrame());
+        Assertions.assertNull(ff.asSpacecraftBodyFrame());
+        Assertions.assertEquals(name, ff.getName());
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

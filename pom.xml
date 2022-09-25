@@ -51,7 +51,8 @@
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>2.2</orekit.hipparchus.version>
-    <orekit.junit.version>4.13.2</orekit.junit.version>
+    <orekit.junit.version>5.9.0</orekit.junit.version>
+    <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
@@ -282,6 +283,9 @@
       <name>Steven Ports</name>
     </contributor>
     <contributor>
+      <name>Joseph Reed</name>
+    </contributor>
+    <contributor>
       <name>Silvia R&#237;os Berganti&#241;os</name>
     </contributor>
     <contributor>
@@ -396,12 +400,25 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
       <version>${orekit.junit.version}</version>
-      <type>jar</type>
-      <scope>test</scope>
       <optional>false</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${orekit.junit.version}</version>
+      <optional>false</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>${orekit.hamcrest.version}</version>
+      <optional>false</optional>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

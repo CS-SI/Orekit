@@ -29,7 +29,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 /** {@link org.orekit.propagation.sampling.OrekitStepHandler Step handler} picking up
- * {@link ObservedMeasurement measurements} for both {@link SemiAnalyticalUnscentedKalmanEstimator} and {@link SemiAnalytical(rKalmanEstimator}.
+ * {@link ObservedMeasurement measurements} for both {@link SemiAnalyticalUnscentedKalmanEstimator} and {@link SemiAnalyticalKalmanEstimator}.
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
  * @author Julie Bayard

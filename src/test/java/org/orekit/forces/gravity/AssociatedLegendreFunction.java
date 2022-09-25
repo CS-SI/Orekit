@@ -16,15 +16,14 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.dfp.Dfp;
+import org.hipparchus.dfp.DfpField;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.dfp.Dfp;
-import org.hipparchus.dfp.DfpField;
 
 /** Implementation of associated Legendre functions from defining formulas.
  * <p>

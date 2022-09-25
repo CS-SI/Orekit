@@ -19,9 +19,9 @@ package org.orekit.time;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Decimal64;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 
@@ -36,9 +36,9 @@ public class SatelliteClockScaleTest {
         final double    offset = 0.0;
         final double    drift  = 0.001;
         final TimeScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
-        Assert.assertEquals("SCLK", sclk.toString());
-        Assert.assertEquals(-25.0, sclk.offsetFromTAI(epoch), 1.0e-12);
-        Assert.assertEquals(-24.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)), 1.0e-12);
+        Assertions.assertEquals("SCLK", sclk.toString());
+        Assertions.assertEquals(-25.0, sclk.offsetFromTAI(epoch), 1.0e-12);
+        Assertions.assertEquals(-24.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)), 1.0e-12);
     }
 
     @Test
@@ -46,9 +46,9 @@ public class SatelliteClockScaleTest {
         final double    offset = 325.0;
         final double    drift  = 0.002;
         final TimeScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
-        Assert.assertEquals("SCLK", sclk.toString());
-        Assert.assertEquals(300.0, sclk.offsetFromTAI(epoch), 1.0e-12);
-        Assert.assertEquals(302.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)), 1.0e-12);
+        Assertions.assertEquals("SCLK", sclk.toString());
+        Assertions.assertEquals(300.0, sclk.offsetFromTAI(epoch), 1.0e-12);
+        Assertions.assertEquals(302.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)), 1.0e-12);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class SatelliteClockScaleTest {
         final double    drift  = 0.001;
         final TimeScale sclk   = new SatelliteClockScale("SCLK",epoch, utc,  offset, drift);
         FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(epoch, new Decimal64(1000.0));
-        Assert.assertEquals(-24.0, sclk.offsetFromTAI(date).getReal(), 1.0e-12);
+        Assertions.assertEquals(-24.0, sclk.offsetFromTAI(date).getReal(), 1.0e-12);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class SatelliteClockScaleTest {
                                                new TimeComponents(dtc.getTime().getSecondsInUTCDay() +
                                                                   offset),
                                                sclk);
-        Assert.assertEquals(0.0, date.durationFrom(epoch), 2.0e-12);
+        Assertions.assertEquals(0.0, date.durationFrom(epoch), 2.0e-12);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class SatelliteClockScaleTest {
                                                new TimeComponents(dtc.getTime().getSecondsInUTCDay() +
                                                                   offset + shift),
                                                sclk);
-        Assert.assertEquals(shift / (1 + drift), date.durationFrom(epoch), 2.0e-12);
+        Assertions.assertEquals(shift / (1 + drift), date.durationFrom(epoch), 2.0e-12);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class SatelliteClockScaleTest {
         for (double dt = -1000; dt < 1000; dt += 0.01) {
             AbsoluteDate ref     = epoch.shiftedBy(dt);
             AbsoluteDate rebuilt = new AbsoluteDate(ref.getComponents(sclk), sclk);
-            Assert.assertEquals(0.0, rebuilt.durationFrom(ref), 6.0e-12);
+            Assertions.assertEquals(0.0, rebuilt.durationFrom(ref), 6.0e-12);
         }
     }
 
@@ -104,7 +104,7 @@ public class SatelliteClockScaleTest {
         final SatelliteClockScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
         for (double count = -1000; count < 1000; count += 0.01) {
             double rebuilt = sclk.countAtDate(sclk.dateAtCount(count));
-            Assert.assertEquals(count, rebuilt, 2.0e-13);
+            Assertions.assertEquals(count, rebuilt, 2.0e-13);
         }
     }
 
@@ -113,20 +113,20 @@ public class SatelliteClockScaleTest {
         final double              offset = 325.0;
         final double              drift  = 10.002;
         final SatelliteClockScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
-        Assert.assertEquals(0.0,    sclk.dateAtCount(offset).durationFrom(epoch), 1.0e-15);
-        Assert.assertEquals(offset, sclk.countAtDate(epoch),                      1.0e-15);
+        Assertions.assertEquals(0.0,    sclk.dateAtCount(offset).durationFrom(epoch), 1.0e-15);
+        Assertions.assertEquals(offset, sclk.countAtDate(epoch),                      1.0e-15);
         RandomGenerator random = new Well19937a(0xc7607abceb6835bdl);
         AbsoluteDate previous = epoch;
         for (int i = 0; i < 100; ++i) {
             AbsoluteDate current = epoch.shiftedBy((random.nextDouble() * 10000) - 5000);
             double deltaT     = current.durationFrom(previous);
             double deltaCount = sclk.countAtDate(current) - sclk.countAtDate(previous);
-            Assert.assertEquals(drift, deltaCount / deltaT - 1.0, 2.0e-12);
+            Assertions.assertEquals(drift, deltaCount / deltaT - 1.0, 2.0e-12);
             previous = current;
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         utc   = TimeScalesFactory.getUTC();

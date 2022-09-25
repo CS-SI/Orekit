@@ -16,23 +16,6 @@
  */
 package org.orekit.estimation.common;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.regex.Pattern;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -165,6 +148,23 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
@@ -450,7 +450,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Run the sequential batch least squares.
-     * @param input input file
      * @param print if true, print logs
      * @throws IOException if input files cannot be read
      */
@@ -863,21 +862,24 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 if (measurementsParameters.getNbParams() > 0) {
                     displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
                                              true, length, measurementsParameters);
+
+                    // Measurements statistics summary
+                    System.out.println("");
+                    rangeLog.displaySummary(System.out);
+                    rangeRateLog.displaySummary(System.out);
+                    azimuthLog.displaySummary(System.out);
+                    elevationLog.displaySummary(System.out);
+                    positionOnlyLog.displaySummary(System.out);
+                    positionLog.displaySummary(System.out);
+                    velocityLog.displaySummary(System.out);
+                    
+                    // Covariances and sigmas
+                    displayFinalCovariances(System.out, kalman);
+
                 }
 
-                // Measurements statistics summary
-                System.out.println("");
-                rangeLog.displaySummary(System.out);
-                rangeRateLog.displaySummary(System.out);
-                azimuthLog.displaySummary(System.out);
-                elevationLog.displaySummary(System.out);
-                positionOnlyLog.displaySummary(System.out);
-                positionLog.displaySummary(System.out);
-                velocityLog.displaySummary(System.out);
-                
-                // Covariances and sigmas
-                displayFinalCovariances(System.out, kalman);
             }
+            
 
             // Instantiation of the results
             return new ResultKalman(propagationParameters, measurementsParameters,
@@ -887,7 +889,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                     positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
                                     covarianceMatrix);
         }
-
 
     }
 
@@ -2418,7 +2419,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Display parameters changes.
-     * @param stream output stream
      * @param header header message
      * @param sort if true, parameters will be sorted lexicographically
      * @param parameters parameters list
@@ -2664,19 +2664,22 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                EvaluationLogger<Position> positionOnlyLog,
                                EvaluationLogger<PV> positionLog,
                                EvaluationLogger<PV> velocityLog) {
-        if (evaluation.getObservedMeasurement() instanceof Range) {
+        
+        // Get measurement type and send measurement to proper logger.
+        final String measurementType = evaluation.getObservedMeasurement().getMeasurementType();
+        if (measurementType.equals(Range.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<Range> ev = (EstimatedMeasurement<Range>) evaluation;
             if (rangeLog != null) {
                 rangeLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof RangeRate) {
+        } else if (measurementType.equals(RangeRate.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<RangeRate> ev = (EstimatedMeasurement<RangeRate>) evaluation;
             if (rangeRateLog != null) {
                 rangeRateLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof AngularAzEl) {
+        } else if (measurementType.equals(AngularAzEl.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<AngularAzEl> ev = (EstimatedMeasurement<AngularAzEl>) evaluation;
             if (azimuthLog != null) {
@@ -2685,13 +2688,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             if (elevationLog != null) {
                 elevationLog.log(ev);
             }
-        }  else if (evaluation.getObservedMeasurement() instanceof Position) {
+        }  else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
             if (positionOnlyLog != null) {
                 positionOnlyLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof PV) {
+        } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
             final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
             if (positionLog != null) {
@@ -2700,7 +2703,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             if (velocityLog != null) {
                 velocityLog.log(ev);
             }
-        } else if (evaluation.getObservedMeasurement() instanceof MultiplexedMeasurement) {
+        } else if (measurementType.equals(MultiplexedMeasurement.MEASUREMENT_TYPE)) {
             for (final EstimatedMeasurement<?> em : ((MultiplexedMeasurement) evaluation.getObservedMeasurement()).getEstimatedMeasurements()) {
                 logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
             }
@@ -2774,21 +2777,23 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             // Register the measurement in the proper measurement logger
             logEvaluation(estimatedMeasurement,
                     rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
-            if (observedMeasurement instanceof Range) {
+            // Get measurement type
+            final String measurementType = observedMeasurement.getMeasurementType();
+            if (measurementType.equals(Range.MEASUREMENT_TYPE)) {
                 measType    = "RANGE";
                 stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
                                 getStation().getBaseFrame().getName();
-            } else if (observedMeasurement instanceof RangeRate) {
+            } else if (measurementType.equals(RangeRate.MEASUREMENT_TYPE)) {
                 measType    = "RANGE_RATE";
                 stationName =  ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).getObservedMeasurement().
                                 getStation().getBaseFrame().getName();
-            } else if (observedMeasurement instanceof AngularAzEl) {
+            } else if (measurementType.equals(AngularAzEl.MEASUREMENT_TYPE)) {
                 measType    = "AZ_EL";
                 stationName =  ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).getObservedMeasurement().
                                 getStation().getBaseFrame().getName();
-            } else if (observedMeasurement instanceof PV) {
+            } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
                 measType    = "PV";
-            } else if (observedMeasurement instanceof Position) {
+            } else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
                 measType    = "POSITION";
             }
             

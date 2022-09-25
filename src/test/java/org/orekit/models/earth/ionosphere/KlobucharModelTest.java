@@ -16,17 +16,17 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -61,7 +61,7 @@ public class KlobucharModelTest {
 
     private UTCScale utc;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
@@ -73,7 +73,7 @@ public class KlobucharModelTest {
         utc = TimeScalesFactory.getUTC();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         utc = null;
     }
@@ -95,8 +95,8 @@ public class KlobucharModelTest {
                                              FastMath.toRadians(azimuth),
                                              1575.42e6, model.getParameters());
 
-        Assert.assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
     }
 
     @Test
@@ -121,8 +121,8 @@ public class KlobucharModelTest {
                                         elevation, azimuth,
                                         1575.42e6, model.getParameters(field));
 
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 0., epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 0., epsilon) > 0);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class KlobucharModelTest {
                                                    FastMath.toRadians(azimuth),
                                                    1575.42e6, model.getParameters());
 
-        Assert.assertEquals(23.784, delayMeters, 0.001);
+        Assertions.assertEquals(23.784, delayMeters, 0.001);
     }
 
     @Test
@@ -173,7 +173,7 @@ public class KlobucharModelTest {
                                               elevation, azimuth,
                                               1575.42e6, model.getParameters(field));
 
-        Assert.assertEquals(23.784, delayMeters.getReal(), 0.001);
+        Assertions.assertEquals(23.784, delayMeters.getReal(), 0.001);
     }
 
     @Test
@@ -208,7 +208,7 @@ public class KlobucharModelTest {
         double delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters());
 
         // Verify
-        Assert.assertEquals(delayAzEl, delayState, 1.0e-6);
+        Assertions.assertEquals(delayAzEl, delayState, 1.0e-6);
     }
 
     @Test
@@ -252,7 +252,7 @@ public class KlobucharModelTest {
         T delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters(field));
 
         // Verify
-        Assert.assertEquals(delayAzEl.getReal(), delayState.getReal(), 1.0e-6);
+        Assertions.assertEquals(delayAzEl.getReal(), delayState.getReal(), 1.0e-6);
     }
 
 }

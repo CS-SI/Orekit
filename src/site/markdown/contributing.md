@@ -134,11 +134,18 @@ Here's how to make your first contribution:
     git config user.email "address@domain.tld"
     ```  
    
-5. Create a new branch on your fork. The branch must:
-    - have the **develop** branch as the source branch.
-    - have a name related to the future contribution. For instance, if you
-      want to correct an issue, the name must be **issue-XXX** where **XXX**
-      represents the issue number.
+5. Create a new branch on your fork.
+
+   The branch must have a name related to the future contribution.  
+   For instance, if you want to correct an issue, the name must be **issue-XXX** where **XXX** represents the issue number.
+
+   If you are contributing a new feature or are correcting a bug that will need an API change, have the **develop** branch as the source branch.  
+   Your contribution will be eligible for a minor version or major version (if API is changed).
+   
+   **Important note:**  
+   If you are correcting a bug with no API change needed, have the latest **release-X.Y** branch as the source branch.  
+   Your contribution will be eligible for a patch version.  
+   Patch versions are released more often and it really simplifies the work of the release manager if you start from the latest release branch.
 
 6. Be sure to activate checkstyle (use the **checkstyle.xml** file at the root
     of the project) to help you follow the coding rules of Orekit (see
@@ -147,7 +154,11 @@ Here's how to make your first contribution:
 7. Perform your development and validation.
 
 8. Update the **changes.xml** file in *src/changes/* directory (see former
-    entries to help you).
+    entries to help you).  
+   *Note*: do this only if your work is planned for a minor/major version.  
+   If your contribution can be added to a patch version, then the release manager will update the changes.xml file.  
+   This file is a big source of merge conflicts so it's much easier to handle it in a go when doing the release.  
+   See point 5 for the differences between minor/major versions and patch versions.
 
 9. Run all Orekit tests to ensure everything works.
 

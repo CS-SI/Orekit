@@ -19,9 +19,9 @@ package org.orekit.propagation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -42,7 +42,7 @@ public class AdditionalStateProviderTest {
     private SpacecraftState            initialState;
     private AdaptiveStepsizeIntegrator integrator;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -68,7 +68,7 @@ public class AdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider provider = new TimeDifferenceProvider(name);
-        Assert.assertFalse(provider.wasCalled());
+        Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -78,8 +78,8 @@ public class AdditionalStateProviderTest {
         final SpacecraftState propagated = propagator.propagate(initDate.shiftedBy(dt));
 
         // Verify
-        Assert.assertTrue(provider.wasCalled());
-        Assert.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
 
     }
 
@@ -93,7 +93,7 @@ public class AdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider provider = new TimeDifferenceProvider(name);
-        Assert.assertFalse(provider.wasCalled());
+        Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -103,8 +103,8 @@ public class AdditionalStateProviderTest {
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(dt));
 
         // Verify
-        Assert.assertTrue(provider.wasCalled());
-        Assert.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
 
     }
 
@@ -118,7 +118,7 @@ public class AdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider provider = new TimeDifferenceProvider(name);
-        Assert.assertFalse(provider.wasCalled());
+        Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -128,8 +128,8 @@ public class AdditionalStateProviderTest {
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(dt));
 
         // Verify
-        Assert.assertTrue(provider.wasCalled());
-        Assert.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
 
     }
 

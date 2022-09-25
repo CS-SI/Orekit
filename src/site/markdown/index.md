@@ -208,6 +208,7 @@
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
     * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
+    * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides

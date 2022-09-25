@@ -17,7 +17,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -307,11 +307,11 @@ public class UnscentedEstimationTestUtils {
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
-        Assert.assertEquals(iterations, estimator.getIterationsCount());
-        Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Assertions.assertEquals(iterations, estimator.getIterationsCount());
+        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
         Optimum optimum = estimator.getOptimum();
-        Assert.assertEquals(iterations, optimum.getIterations());
-        Assert.assertEquals(evaluations, optimum.getEvaluations());
+        Assertions.assertEquals(iterations, optimum.getIterations());
+        Assertions.assertEquals(evaluations, optimum.getEvaluations());
 
         int    k   = 0;
         double sum = 0;
@@ -335,16 +335,16 @@ public class UnscentedEstimationTestUtils {
         final double rms = FastMath.sqrt(sum / k);
         final double deltaPos = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
         final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
-        Assert.assertEquals(expectedRMS,
+        Assertions.assertEquals(expectedRMS,
                             rms,
                             rmsEps);
-        Assert.assertEquals(expectedMax,
+        Assertions.assertEquals(expectedMax,
                             max,
                             maxEps);
-        Assert.assertEquals(expectedDeltaPos,
+        Assertions.assertEquals(expectedDeltaPos,
                             deltaPos,
                             posEps);
-        Assert.assertEquals(expectedDeltaVel,
+        Assertions.assertEquals(expectedDeltaVel,
                             deltaVel,
                             velEps);
 
@@ -379,7 +379,7 @@ public class UnscentedEstimationTestUtils {
         Propagator estimated = kalman.processMeasurements(measurements)[0];
         
         // Check the number of measurements processed by the filter
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
 
             // Get the last estimation
@@ -421,12 +421,12 @@ public class UnscentedEstimationTestUtils {
 
             final double deltaPosK = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assert.assertEquals(expectedDeltaPos, deltaPosK, posEps);
-            Assert.assertEquals(expectedDeltaVel, deltaVelK, velEps);
+            Assertions.assertEquals(expectedDeltaPos, deltaPosK, posEps);
+            Assertions.assertEquals(expectedDeltaVel, deltaVelK, velEps);
 
             for (int i = 0; i < 3; i++) {
-                Assert.assertEquals(expectedSigmasPos[i], sigmas[i],   sigmaPosEps);
-                Assert.assertEquals(expectedSigmasVel[i], sigmas[i+3], sigmaVelEps);
+            	Assertions.assertEquals(expectedSigmasPos[i], sigmas[i],   sigmaPosEps);
+            	Assertions.assertEquals(expectedSigmasVel[i], sigmas[i+3], sigmaVelEps);
             }
         
     }

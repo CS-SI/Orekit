@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
  * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
- * or {@link DSSTPropagator} .
+ * or {@link DSSTPropagator}.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>

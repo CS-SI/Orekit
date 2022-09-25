@@ -7,8 +7,8 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MerweUnscentedTransform;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.DSSTContext;
@@ -76,9 +76,9 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         try {
             new SemiAnalyticalUnscentedKalmanEstimatorBuilder().
             build();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+        	Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -96,9 +96,9 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
             new SemiAnalyticalUnscentedKalmanEstimatorBuilder().
             addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6))).
             build();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED, oe.getSpecifier());
+        	Assertions.assertEquals(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -173,15 +173,15 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assert.assertEquals(0.0, observer.getMeanResidual(), 4.98e-8);
-        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assert.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assert.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assert.assertNotNull(kalman.getPhysicalEstimatedState());
+        Assertions.assertEquals(0.0, observer.getMeanResidual(), 4.98e-8);
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
 
     }
 
@@ -258,16 +258,15 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assert.assertEquals(0.0, observer.getMeanResidual(), 2.59e-3);
-        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assert.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assert.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assert.assertNotNull(kalman.getPhysicalEstimatedState());
-
+        Assertions.assertEquals(0.0, observer.getMeanResidual(), 2.59e-3);
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
 
     }
 
@@ -353,15 +352,15 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assert.assertEquals(0.0, observer.getMeanResidual(), 2.55e-3);
-        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assert.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assert.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assert.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assert.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assert.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assert.assertNotNull(kalman.getPhysicalEstimatedState());
+        Assertions.assertEquals(0.0, observer.getMeanResidual(), 2.55e-3);
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
 
     }
 }

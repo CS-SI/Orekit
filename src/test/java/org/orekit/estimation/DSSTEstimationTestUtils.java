@@ -16,12 +16,6 @@
  */
 package org.orekit.estimation;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -32,7 +26,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -70,6 +64,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Utility class for orbit determination tests. */
 public class DSSTEstimationTestUtils {
@@ -287,11 +287,11 @@ public class DSSTEstimationTestUtils {
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
-        Assert.assertEquals(iterations, estimator.getIterationsCount());
-        Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Assertions.assertEquals(iterations, estimator.getIterationsCount());
+        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
         Optimum optimum = estimator.getOptimum();
-        Assert.assertEquals(iterations, optimum.getIterations());
-        Assert.assertEquals(evaluations, optimum.getEvaluations());
+        Assertions.assertEquals(iterations, optimum.getIterations());
+        Assertions.assertEquals(evaluations, optimum.getEvaluations());
 
         int    k   = 0;
         double sum = 0;
@@ -312,16 +312,16 @@ public class DSSTEstimationTestUtils {
             }
         }
 
-        Assert.assertEquals(expectedRMS,
+        Assertions.assertEquals(expectedRMS,
                             FastMath.sqrt(sum / k),
                             rmsEps);
-        Assert.assertEquals(expectedMax,
+        Assertions.assertEquals(expectedMax,
                             max,
                             maxEps);
-        Assert.assertEquals(expectedDeltaPos,
+        Assertions.assertEquals(expectedDeltaPos,
                             Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
                             posEps);
-        Assert.assertEquals(expectedDeltaVel,
+        Assertions.assertEquals(expectedDeltaVel,
                             Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
                             velEps);
 
@@ -371,7 +371,7 @@ public class DSSTEstimationTestUtils {
         DSSTPropagator estimated = kalman.processMeasurements(measurements);
 
         // Check the number of measurements processed by the filter
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
@@ -401,9 +401,9 @@ public class DSSTEstimationTestUtils {
             // Check the final orbit estimation & PV sigmas
             final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assert.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
-            Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
-            Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+            Assertions.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
+            Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 
         }
     }
@@ -450,7 +450,7 @@ public class DSSTEstimationTestUtils {
         DSSTPropagator estimated = kalman.processMeasurements(measurements);
 
         // Check the number of measurements processed by the filter
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
@@ -480,9 +480,9 @@ public class DSSTEstimationTestUtils {
             // Check the final orbit estimation & PV sigmas
             final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assert.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
-            Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
-            Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+            Assertions.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
+            Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 
         }
     }

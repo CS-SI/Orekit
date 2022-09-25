@@ -16,16 +16,16 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import java.util.Arrays;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.L2Frame;
+
+import java.util.Arrays;
 
 
 public class CenterNameTest {
@@ -35,7 +35,7 @@ public class CenterNameTest {
         for (final String name : Arrays.asList("SOLAR_SYSTEM_BARYCENTER", "SUN", "MERCURY", "VENUS",
                                                "EARTH_MOON", "EARTH", "MOON", "MARS", "JUPITER",
                                                "SATURN", "URANUS", "NEPTUNE", "PLUTO")) {
-            Assert.assertNotNull(CenterName.valueOf(name).getCelestialBody());
+            Assertions.assertNotNull(CenterName.valueOf(name).getCelestialBody());
         }
     }
 
@@ -44,7 +44,7 @@ public class CenterNameTest {
         for (final String name : Arrays.asList("CERES", "SEDNA", "ERIS", "PLANET-9")) {
             try {
                 CenterName.valueOf(name);
-                Assert.fail("an exception should have been thrown");
+                Assertions.fail("an exception should have been thrown");
             } catch (IllegalArgumentException iae) {
                 // expected
             }
@@ -53,31 +53,31 @@ public class CenterNameTest {
 
     @Test
     public void testGuess() {
-        Assert.assertEquals("SATURN",
+        Assertions.assertEquals("SATURN",
                             CenterName.guessCenter(CelestialBodyFactory.getSaturn().getBodyOrientedFrame()));
-        Assert.assertEquals("MERCURY",
+        Assertions.assertEquals("MERCURY",
                             CenterName.guessCenter(CelestialBodyFactory.getMercury().getInertiallyOrientedFrame()));
-        Assert.assertEquals("PLANET-X",
+        Assertions.assertEquals("PLANET-X",
                             CenterName.guessCenter(new ModifiedFrame(FramesFactory.getEME2000(), CelestialBodyFrame.EME2000,
                                                                      CelestialBodyFactory.getMars(), "PLANET-X")));
-        Assert.assertEquals("SOLAR SYSTEM BARYCENTER",
+        Assertions.assertEquals("SOLAR SYSTEM BARYCENTER",
                             CenterName.guessCenter(FramesFactory.getICRF()));
-        Assert.assertEquals("EARTH",
+        Assertions.assertEquals("EARTH",
                             CenterName.guessCenter(Frame.getRoot()));
-        Assert.assertEquals("EARTH",
+        Assertions.assertEquals("EARTH",
                             CenterName.guessCenter(FramesFactory.getTOD(true)));
-        Assert.assertEquals("UNKNOWN",
+        Assertions.assertEquals("UNKNOWN",
                             CenterName.guessCenter(new L2Frame(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth())));
     }
 
     @Test
     public void testMap() {
-        Assert.assertEquals(CenterName.SATURN,
+        Assertions.assertEquals(CenterName.SATURN,
                             CenterName.map(CelestialBodyFactory.getSaturn().getBodyOrientedFrame()));
-        Assert.assertNull(CenterName.map(new L2Frame(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth())));
+        Assertions.assertNull(CenterName.map(new L2Frame(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth())));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

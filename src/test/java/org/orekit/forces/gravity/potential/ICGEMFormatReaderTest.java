@@ -16,17 +16,12 @@
  */
 package org.orekit.forces.gravity.potential;
 
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.exception.Localizable;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -40,6 +35,10 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ICGEMFormatReaderTest {
 
     @Test
@@ -48,26 +47,26 @@ public class ICGEMFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(new AbsoluteDate(2004, 10, 1, 12, 0, 0.0, TimeScalesFactory.getTT()));
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         try {
             harmonics.getUnnormalizedCnm(3, 3);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
         } catch (Exception e) {
-            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+            Assertions.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
         try {
             harmonics.getUnnormalizedCnm(4, 2);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
         } catch (Exception e) {
-            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+            Assertions.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
         harmonics.getUnnormalizedCnm(3, 2);
-        Assert.assertEquals(3, provider.getMaxDegree());
-        Assert.assertEquals(2, provider.getMaxOrder());
+        Assertions.assertEquals(3, provider.getMaxDegree());
+        Assertions.assertEquals(2, provider.getMaxOrder());
     }
 
     @Test
@@ -75,20 +74,20 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
         NormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
         double offset     = date.durationFrom(refDate);
         double offsetYear = offset / Constants.JULIAN_YEAR;
-        Assert.assertEquals(0.957212879862e-06 + offsetYear * 0.490000000000e-11,
+        Assertions.assertEquals(0.957212879862e-06 + offsetYear * 0.490000000000e-11,
                             harmonics.getNormalizedCnm(3, 0), 1.0e-15);
-        Assert.assertEquals( 0.174804558032e-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
-        Assert.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
-        Assert.assertEquals( 0.308816581016e-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
-        Assert.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
-        Assert.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
+        Assertions.assertEquals( 0.174804558032e-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
+        Assertions.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
+        Assertions.assertEquals( 0.308816581016e-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
+        Assertions.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
+        Assertions.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
     }
 
     @Deprecated
@@ -97,11 +96,11 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
+        Assertions.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
+        Assertions.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
     }
 
     @Test
@@ -109,9 +108,9 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("GrazLGM300c.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
-        Assert.assertEquals(4.9028010560e+12, provider.getMu(), 1.0e-20);
-        Assert.assertEquals(1.7380000000e+06, provider.getAe(), 1.0e-20);
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(4.9028010560e+12, provider.getMu(), 1.0e-20);
+        Assertions.assertEquals(1.7380000000e+06, provider.getAe(), 1.0e-20);
     }
 
     @Test
@@ -119,9 +118,9 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("shgj180ua01.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
-        Assert.assertEquals(3.248585920790e+14, provider.getMu(), 1.0e-20);
-        Assert.assertEquals(6.0510e+06,         provider.getAe(), 1.0e-20);
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(3.248585920790e+14, provider.getMu(), 1.0e-20);
+        Assertions.assertEquals(6.0510e+06,         provider.getAe(), 1.0e-20);
     }
 
     @Test
@@ -129,9 +128,9 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("jgm85f01.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
-        Assert.assertEquals(4.28283763830e+13, provider.getMu(), 1.0e-20);
-        Assert.assertEquals(3.39420e+06,       provider.getAe(), 1.0e-20);
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(4.28283763830e+13, provider.getMu(), 1.0e-20);
+        Assertions.assertEquals(3.39420e+06,       provider.getAe(), 1.0e-20);
     }
 
     @Test
@@ -139,7 +138,7 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 2;
@@ -155,8 +154,8 @@ public class ICGEMFormatReaderTest {
         checkValue(harmonics.getUnnormalizedSnm(4, 4),
                    date, 4, 4, 2004, 10, 1, 0.308816581016e-06, 0, 0, 0, 0, 0,
                    maxUlps);
-        Assert.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
-        Assert.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
+        Assertions.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
+        Assertions.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
     }
 
     @Test
@@ -164,7 +163,7 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 3;
@@ -183,8 +182,8 @@ public class ICGEMFormatReaderTest {
                    date, 4, 4, 2005, 1, 1, 3.08820169866e-07, 4.35447782358e-13,
                    -1.21823769110e-11, 3.89722186321e-11, 7.28153817742e-12, -7.64506592459e-12,
                    maxUlps);
-        Assert.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
-        Assert.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
+        Assertions.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
+        Assertions.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
     }
 
     @Test
@@ -193,7 +192,7 @@ public class ICGEMFormatReaderTest {
         TimeScale tt = DataContext.getDefault().getTimeScales().getTT();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("EIGEN-6S4-v2-truncated", true, tt));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 3);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
         try {
             Field rawProviderField = WrappingUnnormalizedProvider.class.getDeclaredField("rawProvider");
@@ -219,16 +218,16 @@ public class ICGEMFormatReaderTest {
             ref.add(new AbsoluteDate(2014,  6, 15,  9, 17, 0.0, tt));
             ref.add(new AbsoluteDate(2050,  1,  1,  0,  0, 0.0, tt));
             ref.sort(new ChronologicalComparator());
-            Assert.assertEquals(35, pieces.getSpansNumber());
+            Assertions.assertEquals(35, pieces.getSpansNumber());
             TimeSpanMap.Transition<PiecewisePart> transition = pieces.getFirstTransition();
             for (final AbsoluteDate expected : ref) {
-                Assert.assertEquals(expected, transition.getDate());
+                Assertions.assertEquals(expected, transition.getDate());
                 transition = transition.next();
             }
-            Assert.assertNull(transition);
+            Assertions.assertNull(transition);
 
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
         }
 
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
@@ -254,8 +253,8 @@ public class ICGEMFormatReaderTest {
                    1.41428736507E-06, 3.11677919895E-10,
                    -8.67871982998E-11, 1.53591055907E-10, -4.45522488259E-11, 8.52872405198E-11,
                    maxUlps);
-        Assert.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
-        Assert.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
+        Assertions.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
+        Assertions.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
     }
 
     @Test
@@ -264,7 +263,7 @@ public class ICGEMFormatReaderTest {
         TimeScale tai = DataContext.getDefault().getTimeScales().getTAI();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s4-split-between", true, tai));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(1, 1);
-        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
         try {
             Field rawProviderField = WrappingUnnormalizedProvider.class.getDeclaredField("rawProvider");
@@ -283,25 +282,25 @@ public class ICGEMFormatReaderTest {
             ref.add(new AbsoluteDate(2002,  6,  1,  0,  0, 0.0, tai));
             ref.add(new AbsoluteDate(2004,  1,  1,  0,  0, 0.0, tai));
             ref.sort(new ChronologicalComparator());
-            Assert.assertEquals(7, pieces.getSpansNumber());
+            Assertions.assertEquals(7, pieces.getSpansNumber());
             TimeSpanMap.Transition<PiecewisePart> transition = pieces.getFirstTransition();
             for (final AbsoluteDate expected : ref) {
-                Assert.assertEquals(expected, transition.getDate());
+                Assertions.assertEquals(expected, transition.getDate());
                 transition = transition.next();
             }
-            Assert.assertNull(transition);
+            Assertions.assertNull(transition);
 
             AbsoluteDate previous = null;
             for (final AbsoluteDate current : ref) {
                 if (previous != null) {
                     UnnormalizedSphericalHarmonics sh = provider.onDate(previous.shiftedBy(0.5 * current.durationFrom(previous)));
-                    Assert.assertEquals(1.0, sh.getUnnormalizedCnm(0, 0), 1.0e-15);
-                    Assert.assertEquals(0.0, sh.getUnnormalizedSnm(0, 0), 1.0e-15);
+                    Assertions.assertEquals(1.0, sh.getUnnormalizedCnm(0, 0), 1.0e-15);
+                    Assertions.assertEquals(0.0, sh.getUnnormalizedSnm(0, 0), 1.0e-15);
                 }
                 previous = current;
             }
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
         }
 
     }
@@ -426,11 +425,11 @@ public class ICGEMFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader(name, false));
         try {
             GravityFieldFactory.getUnnormalizedProvider(degree, order);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(specifier, oe.getSpecifier());
+            Assertions.assertEquals(specifier, oe.getSpecifier());
             if (specifier.equals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE)) {
-                Assert.assertEquals(lineError, ((Integer) oe.getParts()[0]).intValue());
+                Assertions.assertEquals(lineError, ((Integer) oe.getParts()[0]).intValue());
             }
         }
     }
@@ -440,7 +439,7 @@ public class ICGEMFormatReaderTest {
     public void testZeroTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_zero_tide_icgem", false));
-        Assert.assertEquals(TideSystem.ZERO_TIDE,
+        Assertions.assertEquals(TideSystem.ZERO_TIDE,
                             GravityFieldFactory.getUnnormalizedProvider(3, 3).getTideSystem());
     }
 
@@ -448,7 +447,7 @@ public class ICGEMFormatReaderTest {
     public void testUnknownTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_unknown_tide_icgem", false));
-        Assert.assertEquals(TideSystem.UNKNOWN,
+        Assertions.assertEquals(TideSystem.UNKNOWN,
                             GravityFieldFactory.getUnnormalizedProvider(3, 3).getTideSystem());
     }
 
@@ -457,7 +456,7 @@ public class ICGEMFormatReaderTest {
     public void testLowercaseD() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_small_d_icgem", false));
-        Assert.assertEquals(10.0,
+        Assertions.assertEquals(10.0,
                 GravityFieldFactory
                         .getUnnormalizedProvider(3, 3)
                         .onDate(AbsoluteDate.J2000_EPOCH)
@@ -474,10 +473,10 @@ public class ICGEMFormatReaderTest {
                 .getUnnormalizedProvider(2, 2)
                 .onDate(AbsoluteDate.J2000_EPOCH);
         //check coefficients not in the file are initialized correctly
-        Assert.assertEquals(0.0, harmonics.getUnnormalizedCnm(1, 0), 0.0);
-        Assert.assertEquals(0.0, harmonics.getUnnormalizedCnm(1, 1), 0.0);
+        Assertions.assertEquals(0.0, harmonics.getUnnormalizedCnm(1, 0), 0.0);
+        Assertions.assertEquals(0.0, harmonics.getUnnormalizedCnm(1, 1), 0.0);
         //check a coefficient is read correctly
-        Assert.assertEquals(10.0, harmonics.getUnnormalizedCnm(2, 2), 0.0);
+        Assertions.assertEquals(10.0, harmonics.getUnnormalizedCnm(2, 2), 0.0);
     }
 
     private void checkValue(final double value,
@@ -513,7 +512,7 @@ public class ICGEMFormatReaderTest {
                                         cosHalfYear * FastMath.cos(MathUtils.TWO_PI * dtYear * 2) +
                                         sinHalfYear * FastMath.sin(MathUtils.TWO_PI * dtYear * 2));
         double epsilon = maxUlps * FastMath.ulp(unNormalized);
-        Assert.assertEquals(unNormalized, value, epsilon);
+        Assertions.assertEquals(unNormalized, value, epsilon);
     }
 
 }

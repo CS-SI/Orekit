@@ -17,9 +17,9 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -75,12 +75,12 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 62 ps for Galileo.
         //          The computed value is equal to 67.284 ps, therefore lying in the supposed range.
-        Assert.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
-        Assert.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Data root
         Utils.setDataRoot("regular-data");

@@ -20,9 +20,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -59,16 +59,16 @@ public class OsculatingToMeanElementsConverterTest {
 
         final double eps  = 1.e-15;
 
-        Assert.assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
-        Assert.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
-        Assert.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
-        Assert.assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
-        Assert.assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
-        Assert.assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
+        Assertions.assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
+        Assertions.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
+        Assertions.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
+        Assertions.assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
+        Assertions.assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
+        Assertions.assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
                             MathUtils.normalizeAngle(meanOrbit.getLM(), FastMath.PI), eps);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
