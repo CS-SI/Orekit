@@ -48,6 +48,9 @@
       <action dev="vincent" type="update" issue="956">
         Migrated all tests from JUnit4 to JUnit5.
       </action>
+      <action dev="vincent" type="add" issue="953">
+        Added method to convert to/from an Orekit frame and a CCSDS Frame.
+      </action>
       <action dev="vincent" type="add" issue="952">
         Added ExtremumApproachEventDetector.
       </action>
