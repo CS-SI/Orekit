@@ -18,9 +18,7 @@ package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedEvolution;
@@ -181,18 +179,12 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                 // Add the driver name if it has not been added yet
                 if (!estimatedPropagationParametersNames.contains(driverName)) {
                     estimatedPropagationParametersNames.add(driverName);
+                    ++columns;
                 }
             }
 
         }
         estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
-
-        // Populate the map of propagation drivers' columns and update the total number of columns
-        final Map<String, Integer> propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
-        for (final String driverName : estimatedPropagationParametersNames) {
-            propagationParameterColumns.put(driverName, columns);
-            ++columns;
-        }
 
         // Set the estimated measurement parameters
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
