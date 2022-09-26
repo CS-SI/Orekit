@@ -16,10 +16,14 @@
  */
 package org.orekit.propagation;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -230,23 +234,175 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
     }
 
-    /** Get the state covariance matrix (6x6 dimension) expressed in a given orbit type.
-     * @param state spacecraft state to which the covariance matrix should correspond
-     * @param orbitType output orbit type
-     * @param angleType output position angle
-     *        (not used if orbitType equals {@code CARTESIAN})
-     * @return the state covariance matrix in <code>orbitType</code> and <code>angleType</code>
-     * @see #getStateCovariance(SpacecraftState)
-     * @see #getStateCovariance(SpacecraftState, Frame)
+    /**
+     * Convert the covariance matrix from a {@link Frame frame} to a {@link LOFType commonly used local orbital frame}.
+     * <p>
+     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * Operations" by David A. Vallado".
+     * <p>
+     * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
+     * and position angle types of the input covariance must be provided.
+     *
+     * @param orbit        orbit to which the covariance matrix should correspond
+     * @param frameIn      the frame in which the input covariance matrix is expressed (must be inertial)
+     * @param lofOut       the target local orbital frame
+     * @param inputCov     input covariance
+     * @param covOrbitType orbit type of the covariance matrix
+     * @param covAngleType position angle type of the covariance matrix (not used if covOrbitType equals
+     *                     {@code CARTESIAN})
+     *
+     * @return the covariance matrix expressed in the target frame
      */
-    public RealMatrix getStateCovariance(final SpacecraftState state, final OrbitType orbitType, final PositionAngle angleType) {
+    public static RealMatrix changeCovarianceFrame(final Orbit orbit,
+            final Frame frameIn, final LOFType lofOut,
+            final RealMatrix inputCov,
+            final OrbitType covOrbitType, final PositionAngle covAngleType) {
 
-        // Get the current propagated covariance
-        final RealMatrix covariance = toRealMatrix(state.getAdditionalState(additionalName));
+        // Input frame is inertial
+        if (frameIn.isPseudoInertial()) {
+
+            // Convert input matrix to Cartesian parameters in input frame
+            final RealMatrix cartesianCovarianceIn = changeCovarianceType(orbit, covOrbitType, covAngleType,
+                    OrbitType.CARTESIAN, PositionAngle.MEAN, inputCov);
+
+            // Compute rotation matrix from frameIn to lofOut
+            final Rotation rotationFromFrameInToLofOut = lofOut.rotationFromInertial(orbit.getPVCoordinates(frameIn));
+
+            // Builds the matrix to perform covariance transformation
+            final RealMatrix transformationMatrix = buildTransformationMatrixFromRotation(rotationFromFrameInToLofOut);
+
+            // Get the Cartesian covariance matrix converted to frameOut
+            final RealMatrix cartesianCovarianceOut =
+                    transformationMatrix.multiply(cartesianCovarianceIn.multiplyTransposed(transformationMatrix));
+
+            // Convert orbit frame to output frame
+            final Orbit outOrbit = new CartesianOrbit(orbit.getPVCoordinates(frameIn), frameIn, orbit.getMu());
+
+            // Convert output Cartesian matrix to initial orbit type and position angle
+            return changeCovarianceType(outOrbit, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                    covOrbitType, covAngleType, cartesianCovarianceOut);
+
+        }
+
+        // Output frame is not inertial
+        else {
+            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frameIn.getName());
+        }
+    }
+
+    /**
+     * Get the covariance matrix in another orbit type.
+     *
+     * @param orbit        orbit to which the covariance matrix should correspond
+     * @param inOrbitType  initial orbit type of the state covariance matrix
+     * @param inAngleType  initial position angle type of the state covariance matrix
+     * @param outOrbitType target orbit type of the state covariance matrix
+     * @param outAngleType target position angle type of the state covariance matrix
+     * @param inputCov     input covariance
+     *
+     * @return the covariance expressed in the target orbit type with the target position angle
+     */
+    public static RealMatrix changeCovarianceType(final Orbit orbit,
+            final OrbitType inOrbitType, final PositionAngle inAngleType,
+            final OrbitType outOrbitType, final PositionAngle outAngleType,
+            final RealMatrix inputCov) {
+
+        // Notations:
+        // I: Input orbit type
+        // O: Output orbit type
+        // C: Cartesian parameters
+
+        // Compute dOutputdCartesian
+        final double[][] aOC               = new double[STATE_DIMENSION][STATE_DIMENSION];
+        final Orbit      orbitInOutputType = outOrbitType.convertType(orbit);
+        orbitInOutputType.getJacobianWrtCartesian(outAngleType, aOC);
+        final RealMatrix dOdC = new Array2DRowRealMatrix(aOC, false);
+
+        // Compute dCartesiandInput
+        final double[][] aCI              = new double[STATE_DIMENSION][STATE_DIMENSION];
+        final Orbit      orbitInInputType = inOrbitType.convertType(orbit);
+        orbitInInputType.getJacobianWrtParameters(inAngleType, aCI);
+        final RealMatrix dCdI = new Array2DRowRealMatrix(aCI, false);
+
+        // Compute dOutputdInput
+        final RealMatrix dOdI = dOdC.multiply(dCdI);
+
+        // Conversion of the state covariance matrix in target orbit type
+        final RealMatrix outputCov = dOdI.multiply(inputCov.multiplyTransposed(dOdI));
 
         // Return the converted covariance
-        return changeCovarianceType(state.getOrbit(), covOrbitType, covAngleType, orbitType, angleType, covariance);
+        return outputCov;
 
+    }
+
+    private static RealMatrix buildTransformationMatrixFromRotation(final Rotation rotation) {
+
+        final double[][] rotationMatrixData = rotation.getMatrix();
+
+        final RealMatrix transformationMatrix = MatrixUtils.createRealMatrix(6, 6);
+
+        // Fills in the upper left and lower right blocks with the rotation
+        transformationMatrix.setSubMatrix(rotationMatrixData, 0, 0);
+        transformationMatrix.setSubMatrix(rotationMatrixData, 3, 3);
+
+        return transformationMatrix;
+    }
+
+    /**
+     * Convert the covariance matrix from a {@link Frame frame} to a {@link LOFType commonly used local orbital frame}.
+     * <p>
+     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * Operations" by David A. Vallado".
+     * <p>
+     * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
+     * and position angle types of the input covariance must be provided.
+     *
+     * @param orbit        orbit to which the covariance matrix should correspond
+     * @param lofIn        the local orbital frame in which the input covariance matrix is expressed (must be inertial)
+     * @param frameOut     the target frame (must be inertial)
+     * @param inputCov     input covariance
+     * @param covOrbitType orbit type of the covariance matrix
+     * @param covAngleType position angle type of the covariance matrix (not used if covOrbitType equals
+     *                     {@code CARTESIAN})
+     *
+     * @return the covariance matrix expressed in the target frame
+     */
+    public static RealMatrix changeCovarianceFrame(final Orbit orbit,
+            final LOFType lofIn, final Frame frameOut,
+            final RealMatrix inputCov,
+            final OrbitType covOrbitType, final PositionAngle covAngleType) {
+
+        // Input frame is inertial
+        if (frameOut.isPseudoInertial()) {
+
+            // Convert input matrix to Cartesian parameters in input frame
+            final RealMatrix cartesianCovarianceIn = changeCovarianceType(orbit, covOrbitType, covAngleType,
+                    OrbitType.CARTESIAN, PositionAngle.MEAN, inputCov);
+
+            // Compute rotation matrix from lofIn to frameOut
+            final Rotation rotationFromLofInToFrameOut =
+                    lofIn.rotationFromInertial(orbit.getPVCoordinates(frameOut)).revert();
+
+            // Builds the matrix to perform covariance transformation
+            final RealMatrix transformationMatrix = buildTransformationMatrixFromRotation(rotationFromLofInToFrameOut);
+
+            // Get the Cartesian covariance matrix converted to frameOut
+            final RealMatrix cartesianCovarianceOut =
+                    transformationMatrix.multiply(cartesianCovarianceIn.multiplyTransposed(transformationMatrix));
+
+            // Convert orbit frame to output frame
+            final Orbit outOrbit = new CartesianOrbit(orbit.getPVCoordinates(frameOut), frameOut, orbit.getMu());
+
+            // Convert output Cartesian matrix to initial orbit type and position angle
+            return changeCovarianceType(outOrbit, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                    covOrbitType, covAngleType, cartesianCovarianceOut);
+
+        }
+
+        // Output frame is not inertial
+        else {
+            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frameOut.getName());
+        }
     }
 
     /** Get the covariance matrix in another frame.
@@ -295,50 +451,30 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
         // Convert output Cartesian matrix to initial orbit type and position angle
         return changeCovarianceType(outOrbit, OrbitType.CARTESIAN, PositionAngle.MEAN,
-                                    covOrbitType, covAngleType, cartesianCovarianceOut);
+                covOrbitType, covAngleType, cartesianCovarianceOut);
 
     }
 
-    /** Get the covariance matrix in another orbit type.
-     * @param orbit orbit to which the covariance matrix should correspond
-     * @param inOrbitType initial orbit type of the state covariance matrix
-     * @param inAngleType initial position angle type of the state covariance matrix
-     * @param outOrbitType target orbit type of the state covariance matrix
-     * @param outAngleType target position angle type of the state covariance matrix
-     * @param inputCov input covariance
-     * @return the covariance expressed in the target orbit type with the
-     *         target position angle
+    /**
+     * Get the state covariance matrix (6x6 dimension) expressed in a given orbit type.
+     *
+     * @param state     spacecraft state to which the covariance matrix should correspond
+     * @param orbitType output orbit type
+     * @param angleType output position angle (not used if orbitType equals {@code CARTESIAN})
+     *
+     * @return the state covariance matrix in <code>orbitType</code> and <code>angleType</code>
+     *
+     * @see #getStateCovariance(SpacecraftState)
+     * @see #getStateCovariance(SpacecraftState, Frame)
      */
-    public static RealMatrix changeCovarianceType(final Orbit orbit,
-                                                  final OrbitType inOrbitType, final PositionAngle inAngleType,
-                                                  final OrbitType outOrbitType, final PositionAngle outAngleType,
-                                                  final RealMatrix inputCov) {
+    public RealMatrix getStateCovariance(final SpacecraftState state, final OrbitType orbitType,
+            final PositionAngle angleType) {
 
-        // Notations:
-        // I: Input orbit type
-        // O: Output orbit type
-        // C: Cartesian parameters
-
-        // Compute dOutputdCartesian
-        final double[][] aOC = new double[STATE_DIMENSION][STATE_DIMENSION];
-        final Orbit orbitInOutputType = outOrbitType.convertType(orbit);
-        orbitInOutputType.getJacobianWrtCartesian(outAngleType, aOC);
-        final RealMatrix dOdC = new Array2DRowRealMatrix(aOC, false);
-
-        // Compute dCartesiandInput
-        final double[][] aCI = new double[STATE_DIMENSION][STATE_DIMENSION];
-        final Orbit orbitInInputType = inOrbitType.convertType(orbit);
-        orbitInInputType.getJacobianWrtParameters(inAngleType, aCI);
-        final RealMatrix dCdI = new Array2DRowRealMatrix(aCI, false);
-
-        // Compute dOutputdInput
-        final RealMatrix dOdI = dOdC.multiply(dCdI);
-
-        // Conversion of the state covariance matrix in target orbit type
-        final RealMatrix outputCov = dOdI.multiply(inputCov.multiplyTransposed(dOdI));
+        // Get the current propagated covariance
+        final RealMatrix covariance = toRealMatrix(state.getAdditionalState(additionalName));
 
         // Return the converted covariance
-        return outputCov;
+        return changeCovarianceType(state.getOrbit(), covOrbitType, covAngleType, orbitType, angleType, covariance);
 
     }
 
