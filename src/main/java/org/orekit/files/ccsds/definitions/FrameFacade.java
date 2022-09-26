@@ -16,10 +16,17 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Facade in front of several frames types in CCSDS messages.
  * @author Luc Maisonobe
@@ -110,7 +117,7 @@ public class FrameFacade {
 
     /** Map an Orekit frame to a CCSDS frame facade.
      * @param frame a reference frame.
-     * @return the CCSDSFrame corresponding to the Orekit frame
+     * @return the CCSDS frame corresponding to the Orekit frame
      */
     public static FrameFacade map(final Frame frame) {
         final CelestialBodyFrame cbf = CelestialBodyFrame.map(frame);
@@ -163,4 +170,131 @@ public class FrameFacade {
 
     }
 
+    /**
+     * Computes the transform from one {@link FrameFacade CCCSDS frame facade} to the other.
+     * <p>
+     * Note that the pivot frame provided <b>must be inertial</b> and <b>coherent</b> to the frames you are working
+     * with.
+     * </p>
+     *
+     * @param frameIn    the input {@link FrameFacade CCSDS frame facade} to convert from
+     * @param frameOut   the output {@link FrameFacade CCSDS frame facade}  to convert to
+     * @param pivotFrame <b>Inertial</b> frame used as a pivot to create the transform
+     * @param date       the date for the transform
+     * @param pv         the PV coordinates provider (required when one of the frames is a LOF)
+     *
+     * @return the transform from input to output frame
+     */
+    public static Transform getTransform(final FrameFacade frameIn, final FrameFacade frameOut, final Frame pivotFrame,
+            final AbsoluteDate date, final PVCoordinatesProvider pv) {
+
+        // Gets transform according to the types of the input frames
+        if (frameIn.asFrame() != null) {
+            return getTransform(frameIn.asFrame(), frameOut, date, pv);
+
+        }
+        else if (frameIn.asOrbitRelativeFrame() != null) {
+            return getTransform(frameIn.asOrbitRelativeFrame(), frameOut, pivotFrame, date, pv);
+        }
+
+        // Transform cannot be gotten from these 2 frames
+        throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM, frameIn.getName(),
+                frameOut.getName());
+
+    }
+
+    /**
+     * Computes the transform from an Orekit {@link Frame} to a CCSDS {@link FrameFacade frame}.
+     *
+     * @param frameIn  the input {@link Frame Orekit frame} to convert from
+     * @param frameOut the output {@link FrameFacade CCSDS frame facade} to convert to
+     * @param date     the date for the transform
+     * @param pv       the PV coordinates provider (required when one of the frames is a
+     *                 {@link org.orekit.frames.LocalOrbitalFrame local orbital frame})
+     *
+     * @return the transform from input to output frame
+     */
+    public static Transform getTransform(final Frame frameIn, final FrameFacade frameOut,
+            final AbsoluteDate date, final PVCoordinatesProvider pv) {
+
+        // Gets transform according to the types of the input frames
+        if (frameOut.asFrame() != null) {
+            return frameIn.getTransformTo(frameOut.asFrame(), date);
+
+        }
+        else if (frameOut.asOrbitRelativeFrame() != null) {
+            final LOFType lofOut = frameOut.asOrbitRelativeFrame().getLofType();
+
+            if (lofOut != null) {
+                return lofOut.transformFromInertial(date, pv.getPVCoordinates(date, frameIn));
+            }
+        }
+
+        // Transform cannot be gotten from these 2 frames
+        throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM, frameIn.getName(),
+                frameOut.getName());
+    }
+
+    /**
+     * Computes the transform from an Orekit {@link OrbitRelativeFrame orbit relative frame} to a
+     * {@link FrameFacade CCSDS frame}.
+     * <p>
+     * Note that the pivot frame provided <b>must be inertial</b>.
+     * </p>
+     *
+     * @param frameIn    the input {@link OrbitRelativeFrame orbit relative frame} to convert from
+     * @param frameOut   the output {@link FrameFacade CCSDS frame facade} to convert to
+     * @param pivotFrame <b>Inertial</b> frame used as a pivot to create the transform
+     * @param date       the date for the transform
+     * @param pv         the PV coordinates provider (required when one of the frames is a LOF)
+     *
+     * @return the transform from input to output frame
+     *
+     * @throws OrekitIllegalArgumentException if one of the local orbital frame is undefined or if the input pivotFrame
+     *                                        is not inertial
+     */
+    public static Transform getTransform(final OrbitRelativeFrame frameIn, final FrameFacade frameOut,
+            final Frame pivotFrame,
+            final AbsoluteDate date, final PVCoordinatesProvider pv) {
+
+        if (pivotFrame.isPseudoInertial()) {
+
+            final LOFType lofIn = frameIn.getLofType();
+
+            if (lofIn != null) {
+                if (frameOut.asFrame() != null) {
+                    return lofIn.transformFromInertial(date, pv.getPVCoordinates(date, frameOut.asFrame()))
+                            .getInverse();
+
+                }
+                else if (frameOut.asOrbitRelativeFrame() != null) {
+
+                    final LOFType lofOut = frameOut.asOrbitRelativeFrame().getLofType();
+
+                    if (lofOut != null) {
+
+                        // First rotation from input local orbital frame to inertial pivot
+                        final Rotation first =
+                                lofIn.rotationFromInertial(pv.getPVCoordinates(date, pivotFrame)).revert();
+
+                        // Second rotation from inertial pivot to output local orbital frame
+                        final Rotation second = lofOut.rotationFromInertial(pv.getPVCoordinates(date, pivotFrame));
+
+                        // Composed rotation
+                        final Rotation lofInToLofOut = second.applyTo(first);
+
+                        // Returns the composed transform
+                        return new Transform(date, lofInToLofOut);
+                    }
+                }
+            }
+            // Transform cannot be gotten from these 2 frames
+            throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM, "undefined relative orbit frame",
+                    frameOut.getName());
+        }
+        else {
+            // Input pivotFrame is not inertial, an exception is thrown
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, pivotFrame.getName());
+        }
+    }
 }
