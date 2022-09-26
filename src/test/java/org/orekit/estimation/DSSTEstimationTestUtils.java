@@ -449,6 +449,9 @@ public class DSSTEstimationTestUtils {
         // Add the measurements to the Kalman filter
         DSSTPropagator estimated = kalman.processMeasurements(measurements);
 
+        // Verify epoch of estimation
+        Assertions.assertEquals(0.0, refOrbit[0].getDate().durationFrom(estimated.getInitialState().getDate()), 1.0e-10);
+
         // Check the number of measurements processed by the filter
         Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 

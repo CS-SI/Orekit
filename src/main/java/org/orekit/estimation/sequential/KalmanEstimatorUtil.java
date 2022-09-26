@@ -20,12 +20,16 @@ import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -140,7 +144,6 @@ public class KalmanEstimatorUtil {
      * @param observedMeasurement measurement to consider
      * @param allStates all states
      * @return array containing only the states relevant to the measurement
-     * @since 10.1
      */
     public static SpacecraftState[] filterRelevant(final ObservedMeasurement<?> observedMeasurement,
                                                    final SpacecraftState[] allStates) {
@@ -150,6 +153,61 @@ public class KalmanEstimatorUtil {
             relevantStates[i] = allStates[satellites.get(i).getPropagatorIndex()];
         }
         return relevantStates;
+    }
+
+    /** Set and apply a dynamic outlier filter on a measurement.<p>
+     * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<p>
+     * Compute the sigma array using the matrix in input and set the filter.<p>
+     * Apply the filter by calling the modify method on the estimated measurement.<p>
+     * Reset the filter.
+     * @param measurement measurement to filter
+     * @param innovationCovarianceMatrix So called innovation covariance matrix S, with:<p>
+     *        S = H.Ppred.Ht + R<p>
+     *        Where:<p>
+     *         - H is the normalized measurement matrix (Ht its transpose)<p>
+     *         - Ppred is the normalized predicted covariance matrix<p>
+     *         - R is the normalized measurement noise matrix
+     * @param <T> the type of measurement
+     */
+    public static <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
+                                                                                    final RealMatrix innovationCovarianceMatrix) {
+
+        // Observed measurement associated to the predicted measurement
+        final ObservedMeasurement<T> observedMeasurement = measurement.getObservedMeasurement();
+
+        // Check if a dynamic filter was added to the measurement
+        // If so, update its sigma value and apply it
+        for (EstimationModifier<T> modifier : observedMeasurement.getModifiers()) {
+            if (modifier instanceof DynamicOutlierFilter<?>) {
+                final DynamicOutlierFilter<T> dynamicOutlierFilter = (DynamicOutlierFilter<T>) modifier;
+
+                // Initialize the values of the sigma array used in the dynamic filter
+                final double[] sigmaDynamic     = new double[innovationCovarianceMatrix.getColumnDimension()];
+                final double[] sigmaMeasurement = observedMeasurement.getTheoreticalStandardDeviation();
+
+                // Set the sigma value for each element of the measurement
+                // Here we do use the value suggested by David A. Vallado (see [1]§10.6):
+                // sigmaDynamic[i] = sqrt(diag(S))*sigma[i]
+                // With S = H.Ppred.Ht + R
+                // Where:
+                //  - S is the measurement error matrix in input
+                //  - H is the normalized measurement matrix (Ht its transpose)
+                //  - Ppred is the normalized predicted covariance matrix
+                //  - R is the normalized measurement noise matrix
+                //  - sigma[i] is the theoretical standard deviation of the ith component of the measurement.
+                //    It is used here to un-normalize the value before it is filtered
+                for (int i = 0; i < sigmaDynamic.length; i++) {
+                    sigmaDynamic[i] = FastMath.sqrt(innovationCovarianceMatrix.getEntry(i, i)) * sigmaMeasurement[i];
+                }
+                dynamicOutlierFilter.setSigma(sigmaDynamic);
+
+                // Apply the modifier on the estimated measurement
+                modifier.modify(measurement);
+
+                // Re-initialize the value of the filter for the next measurement of the same type
+                dynamicOutlierFilter.setSigma(null);
+            }
+        }
     }
 
 }

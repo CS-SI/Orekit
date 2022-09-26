@@ -216,6 +216,15 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedDeltaVel, velEps,
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
+
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+
     }
 
     /**
@@ -281,6 +290,14 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedDeltaVel, velEps,
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
+
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
     }
     
     /**
@@ -346,6 +363,14 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedDeltaVel, velEps,
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
+
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
     }
     
     /**
@@ -429,6 +454,14 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
+
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
     }
     
     /**
@@ -510,6 +543,14 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
+
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
     }
     
     /**
@@ -591,6 +632,14 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedDeltaVel, velEps,
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
+
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
     }
     
 }

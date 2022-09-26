@@ -30,11 +30,8 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -446,7 +443,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         predictedMeasurement.setEstimatedValue(predictedMeas.toArray());
 
         // set estimated value to the predicted value by the filter
-        applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
+        KalmanEstimatorUtil.applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
         if (predictedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
             // set innovation to null to notify filter measurement is rejected
             return null;
@@ -664,48 +661,6 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
     @Override
     public EstimatedMeasurement<?> getCorrectedMeasurement() {
         return correctedMeasurement;
-    }
-
-    /** Set and apply a dynamic outlier filter on a measurement.<p>
-     * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<p>
-     * Compute the sigma array using the matrix in input and set the filter.<p>
-     * Apply the filter by calling the modify method on the estimated measurement.<p>
-     * Reset the filter.
-     * @param measurement measurement to filter
-     * @param innovationCovarianceMatrix innovation covariance matrix
-     * @param <T> the type of measurement
-     */
-    private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
-                                                                              final RealMatrix innovationCovarianceMatrix) {
-
-        // Observed measurement associated to the predicted measurement
-        final ObservedMeasurement<T> observedMeasurement = measurement.getObservedMeasurement();
-
-        // Check if a dynamic filter was added to the measurement
-        // If so, update its sigma value and apply it
-        for (EstimationModifier<T> modifier : observedMeasurement.getModifiers()) {
-            if (modifier instanceof DynamicOutlierFilter<?>) {
-                final DynamicOutlierFilter<T> dynamicOutlierFilter = (DynamicOutlierFilter<T>) modifier;
-
-                // Initialize the values of the sigma array used in the dynamic filter
-                final double[] sigmaDynamic = new double[innovationCovarianceMatrix.getColumnDimension()];
-
-                // Set the sigma value for each element of the measurement
-                // Here we do use the value suggested by David A. Vallado (see [1]§10.6):
-                // sigmaDynamic[i] = sqrt(diag(S))
-                // Where S is the measurement error matrix in input
-                for (int i = 0; i < sigmaDynamic.length; i++) {
-                    sigmaDynamic[i] = FastMath.sqrt(innovationCovarianceMatrix.getEntry(i, i));
-                }
-                dynamicOutlierFilter.setSigma(sigmaDynamic);
-
-                // Apply the modifier on the estimated measurement
-                modifier.modify(measurement);
-
-                // Re-initialize the value of the filter for the next measurement of the same type
-                dynamicOutlierFilter.setSigma(null);
-            }
-        }
     }
 
 }

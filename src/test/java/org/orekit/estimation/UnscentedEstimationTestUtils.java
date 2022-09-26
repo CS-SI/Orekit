@@ -377,34 +377,36 @@ public class UnscentedEstimationTestUtils {
 
         // Add the measurements to the Kalman filter
         Propagator estimated = kalman.processMeasurements(measurements)[0];
-        
+
+        // Verify epoch of estimation
+        Assertions.assertEquals(0.0, refOrbit.getDate().durationFrom(estimated.getInitialState().getDate()), 1.0e-10);
+
         // Check the number of measurements processed by the filter
         Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
+        // Get the last estimation
+        final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
+        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
 
-            // Get the last estimation
-            final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
-            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
+        // Get the last covariance matrix estimation
+        final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
 
-            // Get the last covariance matrix estimation
-            final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
+        // Convert the orbital part to Cartesian formalism
+        // Assuming all 6 orbital parameters are estimated by the filter
+        final double[][] dCdY = new double[6][6];
+        estimatedOrbit.getJacobianWrtParameters(positionAngle, dCdY);
+        final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
+        final RealMatrix estimatedCartesianP = 
+                        Jacobian.
+                        multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
+                        multiply(Jacobian.transpose());
 
-            // Convert the orbital part to Cartesian formalism
-            // Assuming all 6 orbital parameters are estimated by the filter
-            final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle, dCdY);
-            final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
-            final RealMatrix estimatedCartesianP = 
-                            Jacobian.
-                            multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
-                            multiply(Jacobian.transpose());
-
-            // Get the final sigmas (ie.sqrt of the diagonal of the Cartesian orbital covariance matrix)
-            final double[] sigmas = new double[6];
-            for (int i = 0; i < 6; i++) {
-                sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
-            }
+        // Get the final sigmas (ie.sqrt of the diagonal of the Cartesian orbital covariance matrix)
+        final double[] sigmas = new double[6];
+        for (int i = 0; i < 6; i++) {
+            sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
+        }
 //          // FIXME: debug print values
 //          final double dPos = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
 //          final double dVel = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
@@ -419,15 +421,15 @@ public class UnscentedEstimationTestUtils {
 //                          + sigmas[5]);
 //          //debug
 
-            final double deltaPosK = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
-            final double deltaVelK = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assertions.assertEquals(expectedDeltaPos, deltaPosK, posEps);
-            Assertions.assertEquals(expectedDeltaVel, deltaVelK, velEps);
-
-            for (int i = 0; i < 3; i++) {
-            	Assertions.assertEquals(expectedSigmasPos[i], sigmas[i],   sigmaPosEps);
-            	Assertions.assertEquals(expectedSigmasVel[i], sigmas[i+3], sigmaVelEps);
-            }
+        final double deltaPosK = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        final double deltaVelK = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
+        Assertions.assertEquals(expectedDeltaPos, deltaPosK, posEps);
+        Assertions.assertEquals(expectedDeltaVel, deltaVelK, velEps);
+        
+        for (int i = 0; i < 3; i++) {
+        	Assertions.assertEquals(expectedSigmasPos[i], sigmas[i],   sigmaPosEps);
+        	Assertions.assertEquals(expectedSigmasVel[i], sigmas[i+3], sigmaVelEps);
+        }
         
     }
 
