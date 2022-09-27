@@ -374,20 +374,9 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Apply the dynamic outlier filter, if it exists
         KalmanEstimatorUtil.applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
-        if (predictedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
-            // set innovation to null to notify filter measurement is rejected
-            return null;
-        } else {
-            // Normalized innovation of the measurement (Nx1)
-            final double[] observed  = predictedMeasurement.getObservedMeasurement().getObservedValue();
-            final double[] estimated = predictedMeasurement.getEstimatedValue();
-            final double[] residuals = new double[observed.length];
 
-            for (int i = 0; i < observed.length; i++) {
-                residuals[i] = observed[i] - estimated[i];
-            }
-            return MatrixUtils.createRealVector(residuals);
-        }
+        // Compute the innovation vector (not normalized for unscented Kalman filter)
+        return KalmanEstimatorUtil.computeInnovationVector(predictedMeasurement);
 
     }
 

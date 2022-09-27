@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -29,17 +30,27 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.UnscentedEstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class UnscentedKalmanEstimatorTest {
@@ -641,5 +652,204 @@ public class UnscentedKalmanEstimatorTest {
         Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
         Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
     }
-    
+
+    @Test
+    public void testMultiSat() {
+
+        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder1 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        final NumericalPropagatorBuilder propagatorBuilder2 =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        final AbsoluteDate referenceDate = propagatorBuilder1.getInitialOrbitDate();
+
+        // Create perfect inter-satellites range measurements
+        final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
+        final Orbit closeOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
+                                                                                 original.getPosition().add(new Vector3D(1000, 2000, 3000)),
+                                                                                 original.getVelocity().add(new Vector3D(-0.03, 0.01, 0.02))),
+                                                    context.initialOrbit.getFrame(),
+                                                    context.initialOrbit.getMu());
+        final Propagator closePropagator = UnscentedEstimationTestUtils.createPropagator(closeOrbit,
+                                                                                         propagatorBuilder2);
+        final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
+        closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        Propagator propagator1 = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                               propagatorBuilder1);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
+        final List<ObservedMeasurement<?>> measurements =
+        		UnscentedEstimationTestUtils.createMeasurements(propagator1,
+                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                           localClockOffset,
+                                                                                                           remoteClockOffset),
+                                                                1.0, 3.0, 300.0);
+
+        // create perfect range measurements for first satellite
+        propagator1 = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                    propagatorBuilder1);
+        measurements.addAll(UnscentedEstimationTestUtils.createMeasurements(propagator1,
+                                                                            new RangeMeasurementCreator(context),
+                                                                            1.0, 3.0, 60.0));
+        measurements.sort(Comparator.naturalOrder());
+
+        // create orbit estimator
+        final RealMatrix processNoiseMatrix = MatrixUtils.createRealMatrix(6, 6);
+        final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
+        		        unscentedTransformProvider(new MerweUnscentedTransform(12)).
+                        addPropagationConfiguration(propagatorBuilder1, new ConstantProcessNoise(processNoiseMatrix)).
+                        addPropagationConfiguration(propagatorBuilder2, new ConstantProcessNoise(processNoiseMatrix)).
+                        build();
+
+        List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
+        ParameterDriver a0Driver = parameters.get(0);
+        Assertions.assertEquals("a[0]", a0Driver.getName());
+        a0Driver.setValue(a0Driver.getValue() + 1.2);
+        a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+
+        ParameterDriver a1Driver = parameters.get(6);
+        Assertions.assertEquals("a[1]", a1Driver.getName());
+        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
+                                                parameters.get( 7).getValue(),
+                                                parameters.get( 8).getValue(),
+                                                parameters.get( 9).getValue(),
+                                                parameters.get(10).getValue(),
+                                                parameters.get(11).getValue(),
+                                                PositionAngle.TRUE,
+                                                closeOrbit.getFrame(),
+                                                closeOrbit.getDate(),
+                                                closeOrbit.getMu());
+        Assertions.assertEquals(4.7246,
+                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
+                                              before.getPVCoordinates().getPosition()),
+                            1.0e-3);
+        Assertions.assertEquals(0.0010514,
+                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                                              before.getPVCoordinates().getVelocity()),
+                            1.0e-6);
+
+        Orbit[] refOrbits = new Orbit[] {
+            propagatorBuilder1.
+            buildPropagator(propagatorBuilder1.getSelectedNormalizedParameters()).
+            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
+            propagatorBuilder2.
+            buildPropagator(propagatorBuilder2.getSelectedNormalizedParameters()).
+            propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+        };
+        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
+                                           refOrbits, new PositionAngle[] { PositionAngle.TRUE, PositionAngle.TRUE },
+                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+                                           new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
+                                           new double[][] {
+                                               { 1.5e-7, 0.6e-7, 4.2e-7 },
+                                               { 1.5e-7, 0.5e-7, 4.2e-7 }
+                                           }, new double[] { 1e-8, 1e-8 },
+                                           new double[][] {
+                                               { 1.9e-11, 17.5e-11, 3.1e-11 },
+                                               { 2.0e-11, 17.5e-11, 2.8e-11 }
+                                           }, new double[] { 1.0e-12, 1.0e-12 });
+
+        // after the call to estimate, the parameters lacking a user-specified reference date
+        // got a default one
+        for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
+            if (driver.getName().startsWith("a[")) {
+                // user-specified reference date
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+            } else {
+                // default reference date
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+            }
+        }
+
+        Assertions.assertEquals(12, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(12, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+
+    }
+
+    /**
+     * Test of a wrapped exception in a Kalman observer
+     */
+    @Test
+    public void testWrappedException() {
+
+        // Create context
+        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create initial orbit and propagator builder
+        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final boolean       perfectStart  = true;
+        final double        minStep       = 1.e-6;
+        final double        maxStep       = 60.;
+        final double        dP            = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(orbitType, positionAngle, perfectStart,
+                                              minStep, maxStep, dP);
+
+        // estimated bias
+        final Bias<Range> rangeBias = new Bias<Range>(new String[] {"rangeBias"}, new double[] {0.0},
+        	                                          new double[] {1.0},
+        	                                          new double[] {0.0}, new double[] {10000.0});
+        rangeBias.getParametersDrivers().get(0).setSelected(true);
+
+
+        // List of estimated measurement parameters
+        final ParameterDriversList drivers = new ParameterDriversList();
+        drivers.add(rangeBias.getParametersDrivers().get(0));
+
+        // Create perfect range measurements
+        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+        		UnscentedEstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(context, 2.0),
+                                                               1.0, 3.0, 300.0);
+
+        measurements.forEach(measurement -> ((Range) measurement).addModifier(rangeBias));
+        propagatorBuilder.getAllForceModels().forEach(force -> force.getParametersDrivers().forEach(parameter -> parameter.setSelected(true)));
+        // Build the Kalman filter
+        final UnscentedKalmanEstimatorBuilder kalmanBuilder = new UnscentedKalmanEstimatorBuilder();
+        kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(8));
+        kalmanBuilder.addPropagationConfiguration(propagatorBuilder,
+                                                  new ConstantProcessNoise(MatrixUtils.createRealMatrix(7, 7)));
+        kalmanBuilder.estimatedMeasurementsParameters(drivers, new ConstantProcessNoise(MatrixUtils.createRealIdentityMatrix(1)));
+        final UnscentedKalmanEstimator kalman = kalmanBuilder.build();
+        kalman.setObserver(estimation -> {
+                throw new DummyException();
+            });
+
+
+        try {
+            // Filter the measurements and expect an exception to occur
+        	UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
+                                               context.initialOrbit, positionAngle,
+                                               0., 0.,
+                                               0., 0.,
+                                               new double[3], 0.,
+                                               new double[3], 0.);
+        } catch (DummyException de) {
+            // expected
+        }
+
+    }
+
+    private static class DummyException extends OrekitException {
+        private static final long serialVersionUID = 1L;
+        public DummyException() {
+            super(OrekitMessages.INTERNAL_ERROR);
+        }
+    }
+
 }

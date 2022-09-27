@@ -363,4 +363,5 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
 
     }
+
 }

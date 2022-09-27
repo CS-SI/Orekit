@@ -16,10 +16,12 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -37,6 +39,10 @@ import org.orekit.utils.ParameterDriversList;
 
 /**
  * Utility class for Kalman Filter.
+ * <p>
+ * This class includes common methods used by the different Kalman
+ * models in Orekit (i.e., Extended, Unscented, and Semi-analytical)
+ * </p>
  * @since 11.3
  */
 public class KalmanEstimatorUtil {
@@ -208,6 +214,42 @@ public class KalmanEstimatorUtil {
                 dynamicOutlierFilter.setSigma(null);
             }
         }
+    }
+
+    /**
+     * Compute the unnormalized innovation vector from the given predicted measurement.
+     * @param predicted predicted measurement
+     * @return the innovation vector
+     */
+    public static RealVector computeInnovationVector(final EstimatedMeasurement<?> predicted) {
+        final double[] sigmas = new double[predicted.getObservedMeasurement().getDimension()];
+        Arrays.fill(sigmas, 1.0);
+        return computeInnovationVector(predicted, sigmas);
+    }
+
+    /**
+     * Compute the normalized innovation vector from the given predicted measurement.
+     * @param predicted predicted measurement
+     * @param sigma measurement standard deviation
+     * @return the innovation vector
+     */
+    public static RealVector computeInnovationVector(final EstimatedMeasurement<?> predicted, final double[] sigma) {
+
+        if (predicted.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
+            // set innovation to null to notify filter measurement is rejected
+            return null;
+        } else {
+            // Normalized innovation of the measurement (Nx1)
+            final double[] observed  = predicted.getObservedMeasurement().getObservedValue();
+            final double[] estimated = predicted.getEstimatedValue();
+            final double[] residuals = new double[observed.length];
+
+            for (int i = 0; i < observed.length; i++) {
+                residuals[i] = (observed[i] - estimated[i]) / sigma[i];
+            }
+            return MatrixUtils.createRealVector(residuals);
+        }
+
     }
 
 }
