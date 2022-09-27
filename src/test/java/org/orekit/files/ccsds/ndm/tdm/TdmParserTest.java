@@ -244,6 +244,21 @@ public class TdmParserTest {
     }
 
     @Test
+    public void testIssue963() {
+
+        // Check that a TDM with spaces in between participants in PATH is rejected
+        final String name = "/ccsds/tdm/kvn/TDM-issue963.txt";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
+        try {
+            // Number format exception in metadata part
+            new ParserBuilder().buildTdmParser().parseMessage(source);
+            Assertions.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+        }
+    }
+
+    @Test
     public void testParseTdmXmlExampleAllKeywordsSequential() {
 
         // Testing all TDM keywords
