@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="963">
+        Fixed rejection of irregular TDM PATH field.
+      </action>
       <action dev="bryan" type="update" issue="726">
         Added ephemeris based estimation.
       </action>
