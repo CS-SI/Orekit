@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
@@ -29,7 +30,6 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /**
  * Implementation of an Unscented Semi-analytical Kalman filter (USKF) to perform orbit determination.
@@ -58,10 +58,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Bryan Cazabonne
  * @since 11.3
  */
-public class SemiAnalyticalUnscentedKalmanEstimator {
-
-    /** Builders for orbit propagators. */
-    private DSSTPropagatorBuilder propagatorBuilder;
+public class SemiAnalyticalUnscentedKalmanEstimator extends BaseKalmanEstimator {
 
     /** Unscented Kalman filter process model. */
     private final SemiAnalyticalUnscentedKalmanModel processModel;
@@ -83,9 +80,7 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
                                            final ParameterDriversList estimatedMeasurementParameters,
                                            final CovarianceMatrixProvider measurementProcessNoiseMatrix,
                                            final UnscentedTransformProvider utProvider) {
-
-        this.propagatorBuilder = propagatorBuilder;
-
+        super(Collections.singletonList(propagatorBuilder));
         // Build the process model and measurement model
         this.processModel = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
                                                                    estimatedMeasurementParameters, measurementProcessNoiseMatrix);
@@ -133,40 +128,6 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
      */
     public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
         return processModel.getPhysicalEstimatedCovarianceMatrix();
-    }
-
-    /** Get the orbital parameters supported by this estimator.
-     * <p>
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return orbital parameters supported by this estimator
-     */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-            if (driver.isSelected() || !estimatedOnly) {
-                driver.setName(driver.getName());
-                estimated.add(driver);
-            }
-        }
-        return estimated;
-    }
-
-    /** Get the propagator parameters supported by this estimator.
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return propagator parameters supported by this estimator
-     */
-    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (delegating.isSelected() || !estimatedOnly) {
-                for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                    estimated.add(driver);
-                }
-            }
-        }
-        return estimated;
     }
 
     /** Get the list of estimated measurements parameters.

@@ -28,13 +28,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 
 /**
@@ -69,10 +67,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class KalmanEstimator {
-
-    /** Builders for orbit propagators. */
-    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
+public class KalmanEstimator extends BaseKalmanEstimator {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -99,8 +94,7 @@ public class KalmanEstimator {
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-
-        this.propagatorBuilders = propagatorBuilders;
+        super(propagatorBuilders);
         this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
         this.observer           = null;
 
@@ -147,56 +141,6 @@ public class KalmanEstimator {
      */
     public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
         return processModel.getPhysicalEstimatedCovarianceMatrix();
-    }
-
-    /** Get the orbital parameters supported by this estimator.
-     * <p>
-     * If there are more than one propagator builder, then the names
-     * of the drivers have an index marker in square brackets appended
-     * to them in order to distinguish the various orbits. So for example
-     * with one builder generating Keplerian orbits the names would be
-     * simply "a", "e", "i"... but if there are several builders the
-     * names would be "a[0]", "e[0]", "i[0]"..."a[1]", "e[1]", "i[1]"...
-     * </p>
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return orbital parameters supported by this estimator
-     */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (int i = 0; i < propagatorBuilders.size(); ++i) {
-            final String suffix = propagatorBuilders.size() > 1 ? "[" + i + "]" : null;
-            for (final ParameterDriver driver : propagatorBuilders.get(i).getOrbitalParametersDrivers().getDrivers()) {
-                if (driver.isSelected() || !estimatedOnly) {
-                    if (suffix != null && !driver.getName().endsWith(suffix)) {
-                        // we add suffix only conditionally because the method may already have been called
-                        // and suffixes may have already been appended
-                        driver.setName(driver.getName() + suffix);
-                    }
-                    estimated.add(driver);
-                }
-            }
-        }
-        return estimated;
-    }
-
-    /** Get the propagator parameters supported by this estimator.
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return propagator parameters supported by this estimator
-     */
-    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (PropagatorBuilder builder : propagatorBuilders) {
-            for (final DelegatingDriver delegating : builder.getPropagationParametersDrivers().getDrivers()) {
-                if (delegating.isSelected() || !estimatedOnly) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        estimated.add(driver);
-                    }
-                }
-            }
-        }
-        return estimated;
     }
 
     /** Get the list of estimated measurements parameters.

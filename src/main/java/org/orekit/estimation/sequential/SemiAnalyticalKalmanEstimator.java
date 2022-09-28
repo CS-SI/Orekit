@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
@@ -30,7 +31,6 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /**
  * Implementation of an Extended Semi-analytical Kalman Filter (ESKF) to perform orbit determination.
@@ -64,10 +64,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 11.1
  */
-public class SemiAnalyticalKalmanEstimator {
-
-    /** Builders for orbit propagators. */
-    private DSSTPropagatorBuilder propagatorBuilder;
+public class SemiAnalyticalKalmanEstimator extends BaseKalmanEstimator {
 
     /** Kalman filter process model. */
     private final SemiAnalyticalKalmanModel processModel;
@@ -87,9 +84,7 @@ public class SemiAnalyticalKalmanEstimator {
                                          final CovarianceMatrixProvider covarianceMatrixProvider,
                                          final ParameterDriversList estimatedMeasurementParameters,
                                          final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-
-        this.propagatorBuilder = propagatorBuilder;
-
+        super(Collections.singletonList(propagatorBuilder));
         // Build the process model and measurement model
         this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, covarianceMatrixProvider,
                                                           estimatedMeasurementParameters,  measurementProcessNoiseMatrix);
@@ -132,47 +127,6 @@ public class SemiAnalyticalKalmanEstimator {
      */
     public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
         return processModel.getPhysicalEstimatedCovarianceMatrix();
-    }
-
-    /** Get the orbital parameters supported by this estimator.
-     * <p>
-     * If there are more than one propagator builder, then the names
-     * of the drivers have an index marker in square brackets appended
-     * to them in order to distinguish the various orbits. So for example
-     * with one builder generating Keplerian orbits the names would be
-     * simply "a", "e", "i"... but if there are several builders the
-     * names would be "a[0]", "e[0]", "i[0]"..."a[1]", "e[1]", "i[1]"...
-     * </p>
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return orbital parameters supported by this estimator
-     */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-            if (driver.isSelected() || !estimatedOnly) {
-                driver.setName(driver.getName());
-                estimated.add(driver);
-            }
-        }
-        return estimated;
-    }
-
-    /** Get the propagator parameters supported by this estimator.
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return propagator parameters supported by this estimator
-     */
-    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
-
-        final ParameterDriversList estimated = new ParameterDriversList();
-        for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (delegating.isSelected() || !estimatedOnly) {
-                for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                    estimated.add(driver);
-                }
-            }
-        }
-        return estimated;
     }
 
     /** Get the list of estimated measurements parameters.
