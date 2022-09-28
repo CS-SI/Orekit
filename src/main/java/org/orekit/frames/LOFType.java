@@ -23,12 +23,15 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-/** Enumerate for different types of Local Orbital Frames.
+/**
+ * Enumerate for different types of Local Orbital Frames.
+ *
  * @author Luc Maisonobe
  */
 public enum LOFType {
@@ -95,30 +98,43 @@ public enum LOFType {
 
             final Vector3D position = pv.getPosition();
             final Vector3D velocity = pv.getVelocity();
-            final Vector3D momentum = Vector3D.crossProduct(position, velocity);
+            final Vector3D momentum = pv.getMomentum();
 
             switch (fromLOF) {
                 case EQW:
                     final Vector3D ascendingNode = new Vector3D(-momentum.getY(), momentum.getX(), 0);
-                    return new Rotation(ascendingNode, Vector3D.crossProduct(Vector3D.PLUS_K, ascendingNode),
-                                        position, Vector3D.crossProduct(Vector3D.PLUS_K, position));
+                    return new Rotation(ascendingNode, Vector3D.crossProduct(momentum, ascendingNode),
+                                        position, Vector3D.crossProduct(momentum, position));
                 case NTW:
-                    return new Rotation(Vector3D.crossProduct(velocity, Vector3D.PLUS_K), velocity,
-                                        position, Vector3D.crossProduct(Vector3D.PLUS_K, position));
+                    final Vector3D transverse = velocity.crossProduct(momentum);
+
+                    final double cosAngle =
+                            transverse.dotProduct(position) / (transverse.getNorm() * position.getNorm());
+
+                    final double angle = FastMath.acos(cosAngle);
+
+                    final double[][] rotationMatrixData = new double[][] {
+                            { FastMath.cos(angle), FastMath.sin(angle), 0 },
+                            { -FastMath.sin(angle), FastMath.cos(angle), 0 },
+                            { 0, 0, 1 },
+                    };
+
+                    return new Rotation(rotationMatrixData, 1e-15);
+
                 case VNC:
-                    return new Rotation(velocity, Vector3D.PLUS_J,
-                                        position, Vector3D.PLUS_K);
+                    return new Rotation(velocity, velocity.crossProduct(momentum),
+                                        position, momentum);
                 case LVLH:
                     return Rotation.IDENTITY;
                 case VVLH:
-                    return new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K,
-                                        Vector3D.PLUS_I, Vector3D.PLUS_K);
+                    return new Rotation(position.negate(), position.negate().crossProduct(momentum.negate()),
+                                        position, momentum);
                 case LVLH_CCSDS:
-                    return new Rotation(Vector3D.PLUS_K, Vector3D.MINUS_J,
-                                        Vector3D.PLUS_I, Vector3D.PLUS_K);
+                    return new Rotation(momentum.negate().crossProduct(position), position,
+                                        position, momentum);
                 case TNW:
-                    return new Rotation(velocity, Vector3D.crossProduct(Vector3D.PLUS_K, velocity),
-                                        position, Vector3D.crossProduct(Vector3D.PLUS_K, position));
+                    return new Rotation(velocity, momentum.crossProduct(velocity),
+                                        position, momentum.crossProduct(position));
                 default:
                     return Rotation.IDENTITY;
             }
