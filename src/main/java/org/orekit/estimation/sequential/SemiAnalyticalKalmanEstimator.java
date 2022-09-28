@@ -75,9 +75,6 @@ public class SemiAnalyticalKalmanEstimator {
     /** Filter. */
     private final ExtendedKalmanFilter<MeasurementDecorator> filter;
 
-    /** Observer to retrieve current estimation info. */
-    private KalmanObserver observer;
-
     /** Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
@@ -92,7 +89,6 @@ public class SemiAnalyticalKalmanEstimator {
                                          final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.propagatorBuilder = propagatorBuilder;
-        this.observer          = null;
 
         // Build the process model and measurement model
         this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, covarianceMatrixProvider,
@@ -107,7 +103,7 @@ public class SemiAnalyticalKalmanEstimator {
      * @param observer the observer
      */
     public void setObserver(final KalmanObserver observer) {
-        this.observer = observer;
+        processModel.setObserver(observer);
     }
 
     /** Get the current measurement number.
@@ -195,7 +191,6 @@ public class SemiAnalyticalKalmanEstimator {
      */
     public DSSTPropagator processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements) {
         try {
-            processModel.setObserver(observer);
             return processModel.processMeasurements(observedMeasurements, filter);
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);

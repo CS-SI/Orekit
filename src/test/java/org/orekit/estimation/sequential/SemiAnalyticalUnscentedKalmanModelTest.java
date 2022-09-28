@@ -17,7 +17,6 @@
 package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
@@ -164,13 +163,17 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final KalmanModel model = new KalmanModel(Collections.singletonList(propagatorBuilder),
-                                                  Collections.singletonList(covMatrixProvider),
-                                                  estimatedMeasurementsParameters,
-                                                  null);
+        final SemiAnalyticalUnscentedKalmanModel model = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder,
+                                                                                                covMatrixProvider,
+                                                                                                estimatedMeasurementsParameters,
+                                                                                                null);
+        model.setObserver(modelLogger);
 
         // Evaluate at t0
         // --------------
+
+        // Observer
+        Assertions.assertNotNull(model.getObserver());
 
         // Time
         Assertions.assertEquals(0., model.getEstimate().getTime(), 0.);
@@ -179,28 +182,20 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
         // Measurement number
         Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
 
-        // Normalized state - is zeros
-        final RealVector stateN = model.getEstimate().getState();
-        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
-
-        // Physical state - = initialized
-        final RealVector x = model.getPhysicalEstimatedState();
+        // Physical state and predicted filter correction
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
         orbitType.mapOrbitToArray(orbit0, positionAngle, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
-        final double[] dX = x.subtract(expX).toArray();
-        Assertions.assertArrayEquals(new double[M], dX, tol);
+        Assertions.assertArrayEquals(model.getPhysicalEstimatedState().toArray(), expX.toArray(), tol);
+        Assertions.assertArrayEquals(model.getEstimate().getState().toArray(),    new double[8], tol);
 
         // Normalized covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
-        final double[][] expPn = new double[M][M];
+        final double[][] expPn = covMatrixProvider.getInitialCovarianceMatrix(null).getData();
         for (int i = 0; i < M; i++) {
-            for (int j = 0; j < M; j++) {
-                expPn[i][j] = 1.;
-            }
             Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
 

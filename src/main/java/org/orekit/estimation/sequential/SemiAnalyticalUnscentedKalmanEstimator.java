@@ -18,13 +18,11 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
-import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.UnscentedTransformProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -71,9 +69,6 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
     /** Filter. */
     private final UnscentedKalmanFilter<MeasurementDecorator> filter;
 
-    /** Observer to retrieve current estimation info. */
-    private KalmanObserver observer;
-
     /** Unscented Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
@@ -90,7 +85,6 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
                                            final UnscentedTransformProvider utProvider) {
 
         this.propagatorBuilder = propagatorBuilder;
-        this.observer          = null;
 
         // Build the process model and measurement model
         this.processModel = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
@@ -105,7 +99,7 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
      * @param observer the observer
      */
     public void setObserver(final KalmanObserver observer) {
-        this.observer = observer;
+        this.processModel.setObserver(observer);
     }
 
     /** Get the current measurement number.
@@ -190,12 +184,7 @@ public class SemiAnalyticalUnscentedKalmanEstimator {
      * @return estimated propagators
      */
     public DSSTPropagator processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements) {
-        try {
-            processModel.setObserver(observer);
-            return processModel.processMeasurements(observedMeasurements, filter);
-        } catch (MathRuntimeException mrte) {
-            throw new OrekitException(mrte);
-        }
+        return processModel.processMeasurements(observedMeasurements, filter);
     }
 
 }

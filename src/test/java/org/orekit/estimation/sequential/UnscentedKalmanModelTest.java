@@ -25,6 +25,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.MerweUnscentedTransform;
+import org.hipparchus.util.UnscentedTransformProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,9 @@ public class UnscentedKalmanModelTest {
 
     /** Kalman estimator containing models. */
     private UnscentedKalmanEstimator kalman;
+
+    /** Unscented transform provider. */
+    private UnscentedTransformProvider utProvider;
 
     /** Kalman observer. */
     private ModelLogger modelLogger;
@@ -152,9 +156,12 @@ public class UnscentedKalmanModelTest {
         this.M = scales.length;
         this.covMatrixProvider = setInitialCovarianceMatrix(scales);
 
+        // Unscented  transform provider
+        this.utProvider = new MerweUnscentedTransform(8);
+
         // Initialize Kalman
         final UnscentedKalmanEstimatorBuilder kalmanBuilder = new UnscentedKalmanEstimatorBuilder();
-        kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(8));
+        kalmanBuilder.unscentedTransformProvider(utProvider);
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder, covMatrixProvider);
         kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, null);
         this.kalman = kalmanBuilder.build();
@@ -225,7 +232,7 @@ public class UnscentedKalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final KalmanModel model = new KalmanModel(Collections.singletonList(propagatorBuilder),
+        final UnscentedKalmanModel model = new UnscentedKalmanModel(Collections.singletonList(propagatorBuilder),
                                                   Collections.singletonList(covMatrixProvider),
                                                   estimatedMeasurementsParameters,
                                                   null);
@@ -240,28 +247,20 @@ public class UnscentedKalmanModelTest {
         // Measurement number
         Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
 
-        // Normalized state - is zeros
-        final RealVector stateN = model.getEstimate().getState();
-        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
-
-        // Physical state - = initialized
-        final RealVector x = model.getPhysicalEstimatedState();
+        // Physical state
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
         orbitType.mapOrbitToArray(orbit0, positionAngle, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
-        final double[] dX = x.subtract(expX).toArray();
-        Assertions.assertArrayEquals(new double[M], dX, tol);
+        Assertions.assertArrayEquals(model.getPhysicalEstimatedState().toArray(), expX.toArray(), tol);
+        Assertions.assertArrayEquals(model.getEstimate().getState().toArray(),    expX.toArray(), tol);
 
-        // Normalized covariance - filled with 1
+        // Covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
-        final double[][] expPn = new double[M][M];
+        final double[][] expPn = covMatrixProvider.getInitialCovarianceMatrix(null).getData();
         for (int i = 0; i < M; i++) {
-            for (int j = 0; j < M; j++) {
-                expPn[i][j] = 1.;
-            }
             Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
 
@@ -352,43 +351,6 @@ public class UnscentedKalmanModelTest {
         expXpred.setEntry(7, satRangeBiasPred);
 
     }
-
-    /** Return expected Kalman current state using propagator builder and measurement driver list.
-     * @param stateSize the size of the state vector
-     * @param builder propagator builder
-     * @param estimatedMeasurementsParameters estimated measurements parameters
-     * @return expected Kalman state
-     */
-    /*private RealVector getExpectedKalmanState(final int stateSize,
-                                             final NumericalPropagatorBuilder builder,
-                                             ParameterDriversList estimatedMeasurementsParameters) {
-
-        final double[] kalmanState = new double[stateSize];
-
-        int i = 0;
-        // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                kalmanState[i++] = driver.getValue();
-            }
-        }
-
-        // Propagation parameters
-        for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                kalmanState[i++] = driver.getValue();
-            }
-        }
-
-        // Measurement parameters
-        for (ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                kalmanState[i++] = driver.getValue();
-            }
-        }
-
-        return MatrixUtils.createRealVector(kalmanState);
-    }*/
 
     /** Get an array of the scales of the estimated parameters.
      * @param builder propagator builder

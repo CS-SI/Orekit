@@ -18,14 +18,12 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
-import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.UnscentedTransformProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -207,16 +205,12 @@ public class UnscentedKalmanEstimator {
      * @return estimated propagator
      */
     public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
-        try {
-            final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
-            processModel.finalizeEstimation(observedMeasurement, estimate);
-            if (observer != null) {
-                observer.evaluationPerformed(processModel);
-            }
-            return processModel.getEstimatedPropagators();
-        } catch (MathRuntimeException mrte) {
-            throw new OrekitException(mrte);
+        final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
+        processModel.finalizeEstimation(observedMeasurement, estimate);
+        if (observer != null) {
+            observer.evaluationPerformed(processModel);
         }
+        return processModel.getEstimatedPropagators();
     }
 
     /** Process several measurements.
