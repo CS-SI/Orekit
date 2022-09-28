@@ -31,8 +31,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 
-import java.util.Locale;
-
 /**
  * Additional state provider for state covariance matrix.
  * <p>
@@ -260,55 +258,24 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
                                                    final RealMatrix inputCov,
                                                    final OrbitType covOrbitType, final PositionAngle covAngleType) {
 
-        // In case the input and output local orbital frame type are the same
-        if (lofIn.equals(lofOut)) {
-            return inputCov;
-        }
-
         // Pivot frame is inertial
         if (pivotFrame.isPseudoInertial()) {
+
             // Convert input matrix to Cartesian parameters in input frame
             final RealMatrix cartesianCovarianceIn = changeCovarianceType(orbit, covOrbitType, covAngleType,
                                                                           OrbitType.CARTESIAN, PositionAngle.MEAN,
                                                                           inputCov);
 
-            // Compute rotation matrix from lofIn to frameOut
-
-            /*
-            final Rotation rotationFromLofInToFrameOut =
-                    lofIn.rotationFromInertial(orbit.getPVCoordinates()).revert();
-
-            System.out.println("rotationFromLofInToFrameOut.revert");
-            printMatrix(new BlockRealMatrix(rotationFromLofInToFrameOut.revert().getMatrix()));
-
-            final Rotation rotationFromPivotFrameToLofOut =
-                    lofIn.rotationFromInertial(orbit.getPVCoordinates());
-
-            System.out.println("rotationFromPivotFrameToLofOut");
-            printMatrix(new BlockRealMatrix(rotationFromPivotFrameToLofOut.getMatrix()));
-
-            final Rotation rotationFromLofInToLofOut =
-                    rotationFromPivotFrameToLofOut.compose(rotationFromLofInToFrameOut,
-                                                           RotationConvention.VECTOR_OPERATOR);
-
-             */
-
+            // Compute rotation matrix from lofIn to lofOut
             final Rotation rotationFromLofInToLofOut = LOFType.rotationFromLOFInToLOFOut(lofIn, lofOut,
-                                                                                         orbit.getPVCoordinates(
-                                                                                         ));
+                                                                                         orbit.getPVCoordinates());
 
             // Builds the matrix to perform covariance transformation
             final RealMatrix transformationMatrix = buildTransformationMatrixFromRotation(rotationFromLofInToLofOut);
 
-            System.out.println("transformationMatrix");
-            printMatrix(transformationMatrix);
-
             // Get the Cartesian covariance matrix converted to frameOut
             final RealMatrix cartesianCovarianceOut =
                     transformationMatrix.multiply(cartesianCovarianceIn.multiplyTransposed(transformationMatrix));
-
-            // Convert orbit frame to output frame
-            // final Orbit outOrbit = new CartesianOrbit(orbit.getPVCoordinates(frameOut), frameOut, orbit.getMu());
 
             // Convert output Cartesian matrix to initial orbit type and position angle
             return changeCovarianceType(orbit, OrbitType.CARTESIAN, PositionAngle.MEAN,
@@ -320,22 +287,6 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         else {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, pivotFrame.getName());
         }
-    }
-
-    public static void printMatrix(final RealMatrix covariance) {
-
-        // Create a string builder
-        final StringBuilder covToPrint = new StringBuilder();
-        for (int row = 0; row < covariance.getRowDimension(); row++) {
-            for (int column = 0; column < covariance.getColumnDimension(); column++) {
-                covToPrint.append(String.format(Locale.US, "%16.16e", covariance.getEntry(row, column)));
-                covToPrint.append(" ");
-            }
-            covToPrint.append("\n");
-        }
-
-        // Print
-        System.out.println(covToPrint);
 
     }
 
@@ -395,6 +346,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         transformationMatrix.setSubMatrix(rotationMatrixData, 3, 3);
 
         return transformationMatrix;
+
     }
 
     /**
@@ -452,6 +404,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         else {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frameOut.getName());
         }
+
     }
 
     /**
@@ -508,6 +461,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         else {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frameIn.getName());
         }
+
     }
 
     /** Get the covariance matrix in another frame.
@@ -597,6 +551,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
             }
         }
         return matrix;
+
     }
 
     /** Set the covariance data into an array.

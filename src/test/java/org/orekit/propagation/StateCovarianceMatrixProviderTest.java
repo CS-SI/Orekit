@@ -26,6 +26,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -53,7 +54,6 @@ public class StateCovarianceMatrixProviderTest {
 
     private SpacecraftState initialState;
     private double[][]      initCov;
-
     final private double DEFAULT_VALLADO_THRESHOLD = 1e-6;
 
     /**
@@ -547,7 +547,6 @@ public class StateCovarianceMatrixProviderTest {
                                                                     PositionAngle.MEAN);
 
         // Then
-
         // Expected covariance matrix obtained by rotation initial covariance matrix by 90 degrees
         final RealMatrix expectedMatrixInRTN = new BlockRealMatrix(new double[][] {
                 { 1, 0, 0, 0, 0, 0 },
@@ -616,7 +615,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test Vallado test case : ECI cartesian to RTN")
-    void should_Vallado_RSW_covariance_matrix() {
+    void should_return_Vallado_RSW_covariance_matrix_from_ECI() {
 
         // Initialize Orekit
         Utils.setDataRoot("regular-data");
@@ -683,7 +682,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test Vallado test case : ECI cartesian to NTW")
-    void should_Vallado_NTW_covariance_matrix() {
+    void should_return_Vallado_NTW_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -716,12 +715,179 @@ public class StateCovarianceMatrixProviderTest {
 
     }
 
+    /**
+     * This test is based on the following paper : Covariance Transformations for Satellite Flight Dynamics Operations
+     * from David A. Vallado.
+     * <p>
+     * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
+     * cartesian covariance in ECEF from p.18.
+     * </p>
+     * <p>
+     * <b>BEWARE: It has been found that the earth rotation in this Vallado's case is given 1 million times slower than
+     * the expected value. This has been corrected and the expected covariance matrix is now the covariance matrix
+     * computed by Orekit given the similarities with Vallado's results. In addition, the small differences potentially
+     * come from the custom EOP that Vallado uses. Hence, this test can be considered as a <u>non regression
+     * test</u>.</b>
+     * </p>
+     */
+    @Test
+    @DisplayName("Test Vallado test case : ECI cartesian to PEF")
+    void should_return_Vallado_PEF_covariance_matrix_from_ECI() {
+
+        // Initialize orekit
+        Utils.setDataRoot("regular-data");
+
+        // Given
+        // Initialize orbit
+        final AbsoluteDate  initialDate   = getValladoInitialDate();
+        final PVCoordinates initialPV     = getValladoInitialPV();
+        final Frame         inertialFrame = FramesFactory.getGCRF();
+
+        final Orbit initialOrbit = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+
+        // Initialize input covariance matrix
+        final RealMatrix initialCovarianceMatrix = getValladoInitialCovarianceMatrix();
+
+        // Initialize output frame
+        final Frame outputFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+
+        // When
+        final RealMatrix convertedCovarianceMatrixInITRF =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    inertialFrame, outputFrame, initialCovarianceMatrix,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+
+        // Then
+        final RealMatrix expectedCovarianceMatrixInITRF = new BlockRealMatrix(new double[][] {
+                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03,
+                        3.4548396261054936e-05, 2.6851237046859200e-06, 5.8312677693153940e-05 },
+                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02,
+                        1.4852736004690684e-04, 1.6544247282904867e-04, 1.2884310644320954e-04 },
+                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00,
+                        5.9252211072590390e-05, 1.2841787487219444e-04, 1.0000913090989617e-04 },
+                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05,
+                        3.5631474857130520e-07, 7.6083489184819870e-07, 5.9252213790760030e-07 },
+                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04,
+                        7.6083489184819880e-07, 1.6542289254142709e-06, 1.2841787929229964e-06 },
+                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04,
+                        5.9252213790760020e-07, 1.2841787929229960e-06, 1.0000913098203875e-06 }
+        });
+
+        compareCovariance(expectedCovarianceMatrixInITRF, convertedCovarianceMatrixInITRF, 1e-20);
+
+    }
+
+    /**
+     * This test is based on the following paper : Covariance Transformations for Satellite Flight Dynamics Operations
+     * from David A. Vallado.
+     * <p>
+     * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
+     * cartesian covariance in ECEF from p.18.
+     */
+    @Test
+    //TODO
+    @DisplayName("Test Vallado test case : PEF cartesian to ECI")
+    void should_return_Vallado_ECI_covariance_matrix_from_PEF() {
+
+        // Initialize orekit
+        Utils.setDataRoot("regular-data");
+
+        // Given
+        final AbsoluteDate  initialDate   = getValladoInitialDate();
+        final PVCoordinates initialPV     = getValladoInitialPV();
+        final Frame         inertialFrame = FramesFactory.getGCRF();
+        final Orbit         initialOrbit  = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+
+        final RealMatrix initialCovarianceMatrix = new BlockRealMatrix(new double[][] {
+                { 9.934002e-001, 7.512598e-003, 5.831364e-003, 3.400170e-005, 7.512591e-005, 5.831364e-005 },
+                { 7.512598e-003, 1.006599e+000, 1.288427e-002, 7.512605e-005, 1.659892e-004, 1.288427e-004 },
+                { 5.831364e-003, 1.288427e-002, 1.000001e+000, 5.831364e-005, 1.288427e-004, 1.000092e-004 },
+                { 3.400170e-005, 7.512605e-005, 5.831364e-005, 3.400170e-007, 7.512598e-007, 5.831364e-007 },
+                { 7.512591e-005, 1.659892e-004, 1.288427e-004, 7.512598e-007, 1.659891e-006, 1.288427e-006 },
+                { 5.831364e-005, 1.288427e-004, 1.000092e-004, 5.831364e-007, 1.288427e-006, 1.000092e-006 }
+        });
+
+        final Frame inputFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+
+        // When
+        final RealMatrix convertedCovarianceMatrixInECI =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    inputFrame, inertialFrame, initialCovarianceMatrix,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+
+        // Then
+        final RealMatrix expectedCovarianceMatrixInECI = getValladoInitialCovarianceMatrix();
+
+        final RealMatrix differenceMatrix = expectedCovarianceMatrixInECI.subtract(convertedCovarianceMatrixInECI);
+        System.out.println("convertedCovarianceMatrixInECI");
+        printMatrix(convertedCovarianceMatrixInECI);
+
+        System.out.println("differenceMatrix");
+        printMatrix(differenceMatrix);
+
+        compareCovariance(expectedCovarianceMatrixInECI, convertedCovarianceMatrixInECI, DEFAULT_VALLADO_THRESHOLD);
+
+    }
+
+    /**
+     * This test is based on the following paper : Covariance Transformations for Satellite Flight Dynamics Operations
+     * from David A. Vallado.
+     * <p>
+     * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
+     * cartesian covariance in MOD from p.17.
+     */
+    @Test
+    @DisplayName("Test Vallado test case : ECI cartesian to MOD")
+    void should_return_Vallado_MOD_covariance_matrix_from_ECI() {
+
+        // Initialize orekit
+        Utils.setDataRoot("regular-data");
+
+        // Given
+        final AbsoluteDate  initialDate   = getValladoInitialDate();
+        final PVCoordinates initialPV     = getValladoInitialPV();
+        final Frame         inertialFrame = FramesFactory.getGCRF();
+        final Orbit         initialOrbit  = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+
+        final RealMatrix initialCovarianceMatrix = getValladoInitialCovarianceMatrix();
+
+        final Frame outputFrame = FramesFactory.getMOD(IERSConventions.IERS_2010);
+
+        // When
+        final RealMatrix convertedCovarianceMatrixInMOD =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    inertialFrame, outputFrame, initialCovarianceMatrix,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+
+        // Then
+        final RealMatrix expectedCovarianceMatrixInMOD = new BlockRealMatrix(new double[][] {
+                { 9.999939e-001, 9.999070e-003, 9.997861e-003, 9.993866e-005, 9.999070e-005, 9.997861e-005 },
+                { 9.999070e-003, 1.000004e+000, 1.000307e-002, 9.999070e-005, 1.000428e-004, 1.000307e-004 },
+                { 9.997861e-003, 1.000307e-002, 1.000002e+000, 9.997861e-005, 1.000307e-004, 1.000186e-004 },
+                { 9.993866e-005, 9.999070e-005, 9.997861e-005, 9.993866e-007, 9.999070e-007, 9.997861e-007 },
+                { 9.999070e-005, 1.000428e-004, 1.000307e-004, 9.999070e-007, 1.000428e-006, 1.000307e-006 },
+                { 9.997861e-005, 1.000307e-004, 1.000186e-004, 9.997861e-007, 1.000307e-006, 1.000186e-006 },
+        });
+
+        final RealMatrix differenceMatrix = expectedCovarianceMatrixInMOD.subtract(convertedCovarianceMatrixInMOD);
+        System.out.println("convertedCovarianceMatrixInMOD");
+        printMatrix(convertedCovarianceMatrixInMOD);
+
+        System.out.println("differenceMatrix");
+        printMatrix(differenceMatrix);
+
+        compareCovariance(expectedCovarianceMatrixInMOD, convertedCovarianceMatrixInMOD, DEFAULT_VALLADO_THRESHOLD);
+
+    }
+
     @Test
     @DisplayName("Test conversion from Vallado test case NTW to RSW")
     void should_convert_Vallado_NTW_to_RSW() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
+
+        final Orbit orbitMock = Mockito.mock(Orbit.class);
 
         // Given
         final AbsoluteDate  initialDate   = getValladoInitialDate();
@@ -753,9 +919,8 @@ public class StateCovarianceMatrixProviderTest {
                 { 6.700644e-005, 2.372970e-004, -1.019283e-004, 6.700644e-007, 2.372970e-006, -1.019283e-006 },
                 { -2.878187e-005, -1.019283e-004, 4.378217e-005, -2.878187e-007, -1.019283e-006, 4.378217e-007 }
         });
-        System.out.println("convertedCovarianceMatrixInRTN");
-        printMatrix(convertedCovarianceMatrixInRTN);
-        compareCovariance(expectedCovarianceMatrixInRTN, convertedCovarianceMatrixInRTN, 1e-3);
+
+        compareCovariance(expectedCovarianceMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
 
     }
 
