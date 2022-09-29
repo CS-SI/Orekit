@@ -58,12 +58,12 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>
  * Also, it is possible to detect solely one type of event using an {@link EventSlopeFilter event slope filter}. For
  * example in order to only detect closest approach, one should type the following :
+ * </p>
  * <pre>{@code
  * ExtremumApproachDetector extremumApproachDetector = new ExtremumApproachDetector(secondaryPVProvider);
  * EventDetector closeApproachDetector = new EventSlopeFilter<ExtremumApproachDetector>(extremumApproachDetector,FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
  *  }
  * </pre>
- * </p>
  *
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see EventSlopeFilter
