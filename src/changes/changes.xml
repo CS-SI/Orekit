@@ -36,6 +36,9 @@
       <action dev="vincent" type="update" issue="956">
         Migrated all tests from JUnit4 to JUnit5.
       </action>
+      <action dev="vincent" type="add" issue="952">
+        Added ExtremumApproachEventDetector.
+      </action>
       <action dev="evan" type="add">
         Added constructor to AggregateBoundedPropagator for more control over which
         propagator is used.
