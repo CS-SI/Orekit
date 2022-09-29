@@ -26,8 +26,8 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -141,15 +141,15 @@ public class StateCovarianceMatrixProviderTest {
     void should_return_same_covariance_matrix() {
 
         // Given
-        final AbsoluteDate initialDate   = new AbsoluteDate();
-        final Frame        inertialFrame = FramesFactory.getGCRF();
-        final double       mu            = 398600e9;
+        final AbsoluteDate initialDate          = new AbsoluteDate();
+        final Frame        initialInertialFrame = FramesFactory.getGCRF();
+        final double       mu                   = 398600e9;
 
         final PVCoordinates initialPV = new PVCoordinates(
                 new Vector3D(6778000, 0, 0),
                 new Vector3D(0, 7668.63, 0));
 
-        final Orbit initialOrbit = new CartesianOrbit(initialPV, inertialFrame, initialDate, mu);
+        final Orbit initialOrbit = new CartesianOrbit(initialPV, initialInertialFrame, initialDate, mu);
 
         final RealMatrix initialCovarianceInInertialFrame = new BlockRealMatrix(new double[][] {
                 { 1, 0, 0, 0, 0, 0 },
@@ -162,7 +162,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // When
         final RealMatrix covarianceMatrixInRTN = StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                                                     inertialFrame,
+                                                                                                     initialInertialFrame,
                                                                                                      LOFType.QSW,
                                                                                                      initialCovarianceInInertialFrame,
                                                                                                      OrbitType.CARTESIAN,
@@ -515,19 +515,19 @@ public class StateCovarianceMatrixProviderTest {
     }
 
     @Test
-    @DisplayName("Test conversion from inertial frame to RTN local orbital frame")
+    @DisplayName("Test covariance conversion from inertial frame to RTN local orbital frame")
     void should_rotate_covariance_matrix_by_ninety_degrees() {
 
         // Given
-        final AbsoluteDate initialDate   = new AbsoluteDate();
-        final Frame        inertialFrame = FramesFactory.getGCRF();
-        final double       mu            = 398600e9;
+        final AbsoluteDate initialDate          = new AbsoluteDate();
+        final Frame        initialInertialFrame = FramesFactory.getGCRF();
+        final double       mu                   = 398600e9;
 
         final PVCoordinates initialPV = new PVCoordinates(
                 new Vector3D(0, 6778000, 0),
                 new Vector3D(-7668.63, 0, 0));
 
-        final Orbit initialOrbit = new CartesianOrbit(initialPV, inertialFrame, initialDate, mu);
+        final Orbit initialOrbit = new CartesianOrbit(initialPV, initialInertialFrame, initialDate, mu);
 
         final RealMatrix initialCovarianceInInertialFrame = new BlockRealMatrix(new double[][] {
                 { 1, 0, 0, 0, 0, 1e-5 },
@@ -541,7 +541,7 @@ public class StateCovarianceMatrixProviderTest {
         // When
         final RealMatrix convertedCovarianceMatrixInRTN =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                    inertialFrame, LOFType.QSW,
+                                                                    initialInertialFrame, LOFType.QSW,
                                                                     initialCovarianceInInertialFrame,
                                                                     OrbitType.CARTESIAN,
                                                                     PositionAngle.MEAN);
@@ -561,19 +561,19 @@ public class StateCovarianceMatrixProviderTest {
     }
 
     @Test
-    @DisplayName("Test conversion from RTN local orbital frame to inertial frame")
+    @DisplayName("Test covariance conversion from RTN local orbital frame to inertial frame")
     void should_rotate_covariance_matrix_by_minus_ninety_degrees() {
 
         // Given
-        final AbsoluteDate initialDate   = new AbsoluteDate();
-        final Frame        inertialFrame = FramesFactory.getGCRF();
-        final double       mu            = 398600e9;
+        final AbsoluteDate initialDate          = new AbsoluteDate();
+        final Frame        initialInertialFrame = FramesFactory.getGCRF();
+        final double       mu                   = 398600e9;
 
         final PVCoordinates initialPV = new PVCoordinates(
                 new Vector3D(0, 6778000, 0),
                 new Vector3D(-7668.63, 0, 0));
 
-        final Orbit initialOrbit = new CartesianOrbit(initialPV, inertialFrame, initialDate, mu);
+        final Orbit initialOrbit = new CartesianOrbit(initialPV, initialInertialFrame, initialDate, mu);
 
         final RealMatrix initialCovarianceInRTN = new BlockRealMatrix(new double[][] {
                 { 1, 0, 0, 0, 0, 0 },
@@ -587,8 +587,8 @@ public class StateCovarianceMatrixProviderTest {
         // When
         final RealMatrix convertedCovarianceMatrixInInertialFrame =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                    LOFType.QSW, inertialFrame, initialCovarianceInRTN,
-                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                                                    LOFType.QSW, initialInertialFrame,
+                                                                    initialCovarianceInRTN);
 
         // Then
 
@@ -612,26 +612,30 @@ public class StateCovarianceMatrixProviderTest {
      * <p>
      * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
      * cartesian covariance in RSW from p.19.
+     * <p>
+     * Note that the followings local orbital frame are equivalent RSW=RTN=QSW.
      */
     @Test
-    @DisplayName("Test Vallado test case : ECI cartesian to RTN")
+    @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to RTN")
     void should_return_Vallado_RSW_covariance_matrix_from_ECI() {
 
         // Initialize Orekit
         Utils.setDataRoot("regular-data");
 
         // Given
-        final AbsoluteDate  initialDate   = getValladoInitialDate();
-        final PVCoordinates initialPV     = getValladoInitialPV();
-        final Frame         inertialFrame = FramesFactory.getGCRF();
-        final Orbit         initialOrbit  = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
+        final Orbit initialOrbit =
+                new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
 
         final RealMatrix initialCovarianceMatrix = getValladoInitialCovarianceMatrix();
 
         // When
         final RealMatrix convertedCovarianceMatrixInRTN =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                    inertialFrame, LOFType.QSW, initialCovarianceMatrix,
+                                                                    initialInertialFrame, LOFType.QSW,
+                                                                    initialCovarianceMatrix,
                                                                     OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Then
@@ -681,24 +685,26 @@ public class StateCovarianceMatrixProviderTest {
      * cartesian covariance in NTW from p.19.
      */
     @Test
-    @DisplayName("Test Vallado test case : ECI cartesian to NTW")
+    @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to NTW")
     void should_return_Vallado_NTW_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
 
         // Given
-        final AbsoluteDate  initialDate   = getValladoInitialDate();
-        final PVCoordinates initialPV     = getValladoInitialPV();
-        final Frame         inertialFrame = FramesFactory.getGCRF();
-        final Orbit         initialOrbit  = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
+        final Orbit initialOrbit =
+                new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
 
         final RealMatrix initialCovarianceMatrix = getValladoInitialCovarianceMatrix();
 
         // When
         final RealMatrix convertedCovarianceMatrixInNTW =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                    inertialFrame, LOFType.NTW, initialCovarianceMatrix,
+                                                                    initialInertialFrame, LOFType.NTW,
+                                                                    initialCovarianceMatrix,
                                                                     OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Then
@@ -719,6 +725,91 @@ public class StateCovarianceMatrixProviderTest {
      * This test is based on the following paper : Covariance Transformations for Satellite Flight Dynamics Operations
      * from David A. Vallado.
      * <p>
+     * More specifically, we're using the initial covariance matrix from p.14 as a reference to test multiple
+     * conversions.
+     * <p>
+     * This test aims to verify the numerical precision after various conversions and serves as a non regression test
+     * for future updates.
+     * <p>
+     * Also, note that the conversion from the RTN to TEME tests the fact that the orbit is initially expressed in GCRF
+     * while we want the covariance expressed in TEME. Hence, it tests that the rotation from RTN to TEME needs to be
+     * obtained by expressing the orbit PVCoordinates in the TEME frame (see relevent changeCovarianceFrame method).
+     */
+    @Test
+    @DisplayName("Test custom covariance conversion Vallado test case : GCRF -> TEME -> IRTF -> NTW -> RTN -> ITRF -> GCRF")
+    void should_return_initial_covariance_after_multiple_conversion() {
+
+        // Initialize orekit
+        Utils.setDataRoot("regular-data");
+
+        // Given
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
+        final Orbit initialOrbit =
+                new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
+
+        final RealMatrix initialCovarianceMatrixInGCRF = getValladoInitialCovarianceMatrix();
+
+        final Frame teme = FramesFactory.getTEME();
+
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+
+        // When
+        // GCRF -> TEME
+        final RealMatrix convertedCovarianceMatrixInTEME =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    initialInertialFrame, teme,
+                                                                    initialCovarianceMatrixInGCRF,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+
+        // TEME -> ITRF
+        final RealMatrix convertedCovarianceMatrixInITRF =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    teme, itrf,
+                                                                    convertedCovarianceMatrixInTEME,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+        // ITRF -> NTW
+        final RealMatrix convertedCovarianceMatrixInNTW =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    itrf, LOFType.NTW,
+                                                                    convertedCovarianceMatrixInITRF,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+        // NTW -> RTN
+        final RealMatrix convertedCovarianceMatrixInRTN =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    LOFType.NTW, LOFType.QSW,
+                                                                    convertedCovarianceMatrixInNTW);
+        // RTN -> ITRF
+        final RealMatrix convertedCovarianceMatrixBackInITRF =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    LOFType.QSW, itrf,
+                                                                    convertedCovarianceMatrixInRTN);
+
+        // ITRF -> TEME
+        final RealMatrix convertedCovarianceMatrixBackInTEME =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    itrf, teme,
+                                                                    convertedCovarianceMatrixBackInITRF,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+        // TEME -> GCRF
+        final RealMatrix convertedCovarianceMatrixInGCRF =
+                StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
+                                                                    teme, initialInertialFrame,
+                                                                    convertedCovarianceMatrixBackInTEME,
+                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+
+        // Then
+        final RealMatrix expectedCovarianceMatrixInGCRF = getValladoInitialCovarianceMatrix();
+
+        compareCovariance(expectedCovarianceMatrixInGCRF, convertedCovarianceMatrixInGCRF, 1e-12);
+
+    }
+
+    /**
+     * This test is based on the following paper : Covariance Transformations for Satellite Flight Dynamics Operations
+     * from David A. Vallado.
+     * <p>
      * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
      * cartesian covariance in ECEF from p.18.
      * </p>
@@ -731,7 +822,7 @@ public class StateCovarianceMatrixProviderTest {
      * </p>
      */
     @Test
-    @DisplayName("Test Vallado test case : ECI cartesian to PEF")
+    @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to PEF")
     void should_return_Vallado_PEF_covariance_matrix_from_ECI() {
 
         // Initialize orekit
@@ -739,11 +830,11 @@ public class StateCovarianceMatrixProviderTest {
 
         // Given
         // Initialize orbit
-        final AbsoluteDate  initialDate   = getValladoInitialDate();
-        final PVCoordinates initialPV     = getValladoInitialPV();
-        final Frame         inertialFrame = FramesFactory.getGCRF();
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
 
-        final Orbit initialOrbit = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+        final Orbit initialOrbit = new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
 
         // Initialize input covariance matrix
         final RealMatrix initialCovarianceMatrix = getValladoInitialCovarianceMatrix();
@@ -754,23 +845,24 @@ public class StateCovarianceMatrixProviderTest {
         // When
         final RealMatrix convertedCovarianceMatrixInITRF =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                    inertialFrame, outputFrame, initialCovarianceMatrix,
+                                                                    initialInertialFrame, outputFrame,
+                                                                    initialCovarianceMatrix,
                                                                     OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Then
         final RealMatrix expectedCovarianceMatrixInITRF = new BlockRealMatrix(new double[][] {
-                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03,
-                        3.4548396261054936e-05, 2.6851237046859200e-06, 5.8312677693153940e-05 },
-                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02,
-                        1.4852736004690684e-04, 1.6544247282904867e-04, 1.2884310644320954e-04 },
-                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00,
-                        5.9252211072590390e-05, 1.2841787487219444e-04, 1.0000913090989617e-04 },
-                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05,
-                        3.5631474857130520e-07, 7.6083489184819870e-07, 5.9252213790760030e-07 },
-                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04,
-                        7.6083489184819880e-07, 1.6542289254142709e-06, 1.2841787929229964e-06 },
-                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04,
-                        5.9252213790760020e-07, 1.2841787929229960e-06, 1.0000913098203875e-06 }
+                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03, 3.4548396261054936e-05,
+                        2.6851237046859200e-06, 5.8312677693153940e-05 },
+                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02, 1.4852736004690684e-04,
+                        1.6544247282904867e-04, 1.2884310644320954e-04 },
+                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00, 5.9252211072590390e-05,
+                        1.2841787487219444e-04, 1.0000913090989617e-04 },
+                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05, 3.5631474857130520e-07,
+                        7.6083489184819870e-07, 5.9252213790760030e-07 },
+                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04, 7.6083489184819880e-07,
+                        1.6542289254142709e-06, 1.2841787929229964e-06 },
+                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04, 5.9252213790760020e-07,
+                        1.2841787929229960e-06, 1.0000913098203875e-06 }
         });
 
         compareCovariance(expectedCovarianceMatrixInITRF, convertedCovarianceMatrixInITRF, 1e-20);
@@ -782,29 +874,35 @@ public class StateCovarianceMatrixProviderTest {
      * from David A. Vallado.
      * <p>
      * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
-     * cartesian covariance in ECEF from p.18.
+     * cartesian covariance in PEF from p.18.
      */
     @Test
-    //TODO
-    @DisplayName("Test Vallado test case : PEF cartesian to ECI")
+    @DisplayName("Test covariance conversion Vallado test case : PEF cartesian to ECI")
     void should_return_Vallado_ECI_covariance_matrix_from_PEF() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
 
         // Given
-        final AbsoluteDate  initialDate   = getValladoInitialDate();
-        final PVCoordinates initialPV     = getValladoInitialPV();
-        final Frame         inertialFrame = FramesFactory.getGCRF();
-        final Orbit         initialOrbit  = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
+        final Orbit initialOrbit =
+                new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
 
-        final RealMatrix initialCovarianceMatrix = new BlockRealMatrix(new double[][] {
-                { 9.934002e-001, 7.512598e-003, 5.831364e-003, 3.400170e-005, 7.512591e-005, 5.831364e-005 },
-                { 7.512598e-003, 1.006599e+000, 1.288427e-002, 7.512605e-005, 1.659892e-004, 1.288427e-004 },
-                { 5.831364e-003, 1.288427e-002, 1.000001e+000, 5.831364e-005, 1.288427e-004, 1.000092e-004 },
-                { 3.400170e-005, 7.512605e-005, 5.831364e-005, 3.400170e-007, 7.512598e-007, 5.831364e-007 },
-                { 7.512591e-005, 1.659892e-004, 1.288427e-004, 7.512598e-007, 1.659891e-006, 1.288427e-006 },
-                { 5.831364e-005, 1.288427e-004, 1.000092e-004, 5.831364e-007, 1.288427e-006, 1.000092e-006 }
+        final RealMatrix initialCovarianceMatrixInPEF = new BlockRealMatrix(new double[][] {
+                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03, 3.4548396261054936e-05,
+                        2.6851237046859200e-06, 5.8312677693153940e-05 },
+                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02, 1.4852736004690684e-04,
+                        1.6544247282904867e-04, 1.2884310644320954e-04 },
+                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00, 5.9252211072590390e-05,
+                        1.2841787487219444e-04, 1.0000913090989617e-04 },
+                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05, 3.5631474857130520e-07,
+                        7.6083489184819870e-07, 5.9252213790760030e-07 },
+                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04, 7.6083489184819880e-07,
+                        1.6542289254142709e-06, 1.2841787929229964e-06 },
+                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04, 5.9252213790760020e-07,
+                        1.2841787929229960e-06, 1.0000913098203875e-06 }
         });
 
         final Frame inputFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
@@ -812,20 +910,14 @@ public class StateCovarianceMatrixProviderTest {
         // When
         final RealMatrix convertedCovarianceMatrixInECI =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                    inputFrame, inertialFrame, initialCovarianceMatrix,
+                                                                    inputFrame, initialInertialFrame,
+                                                                    initialCovarianceMatrixInPEF,
                                                                     OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Then
         final RealMatrix expectedCovarianceMatrixInECI = getValladoInitialCovarianceMatrix();
 
-        final RealMatrix differenceMatrix = expectedCovarianceMatrixInECI.subtract(convertedCovarianceMatrixInECI);
-        System.out.println("convertedCovarianceMatrixInECI");
-        printMatrix(convertedCovarianceMatrixInECI);
-
-        System.out.println("differenceMatrix");
-        printMatrix(differenceMatrix);
-
-        compareCovariance(expectedCovarianceMatrixInECI, convertedCovarianceMatrixInECI, DEFAULT_VALLADO_THRESHOLD);
+        compareCovariance(expectedCovarianceMatrixInECI, convertedCovarianceMatrixInECI, 1e-7);
 
     }
 
@@ -835,19 +927,21 @@ public class StateCovarianceMatrixProviderTest {
      * <p>
      * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
      * cartesian covariance in MOD from p.17.
+     * </p>
      */
     @Test
-    @DisplayName("Test Vallado test case : ECI cartesian to MOD")
+    @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to MOD")
     void should_return_Vallado_MOD_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
 
         // Given
-        final AbsoluteDate  initialDate   = getValladoInitialDate();
-        final PVCoordinates initialPV     = getValladoInitialPV();
-        final Frame         inertialFrame = FramesFactory.getGCRF();
-        final Orbit         initialOrbit  = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
+        final Orbit initialOrbit =
+                new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
 
         final RealMatrix initialCovarianceMatrix = getValladoInitialCovarianceMatrix();
 
@@ -856,7 +950,8 @@ public class StateCovarianceMatrixProviderTest {
         // When
         final RealMatrix convertedCovarianceMatrixInMOD =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit,
-                                                                    inertialFrame, outputFrame, initialCovarianceMatrix,
+                                                                    initialInertialFrame, outputFrame,
+                                                                    initialCovarianceMatrix,
                                                                     OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Then
@@ -869,31 +964,31 @@ public class StateCovarianceMatrixProviderTest {
                 { 9.997861e-005, 1.000307e-004, 1.000186e-004, 9.997861e-007, 1.000307e-006, 1.000186e-006 },
         });
 
-        final RealMatrix differenceMatrix = expectedCovarianceMatrixInMOD.subtract(convertedCovarianceMatrixInMOD);
-        System.out.println("convertedCovarianceMatrixInMOD");
-        printMatrix(convertedCovarianceMatrixInMOD);
-
-        System.out.println("differenceMatrix");
-        printMatrix(differenceMatrix);
-
         compareCovariance(expectedCovarianceMatrixInMOD, convertedCovarianceMatrixInMOD, DEFAULT_VALLADO_THRESHOLD);
 
     }
 
+    /**
+     * This test is based on the following paper : Covariance Transformations for Satellite Flight Dynamics Operations
+     * from David A. Vallado.
+     * <p>
+     * More specifically, we're using the initial NTW covariance matrix from p.19 and compare the computed result with
+     * the cartesian covariance in RSW from the same page.
+     * </p>
+     */
     @Test
-    @DisplayName("Test conversion from Vallado test case NTW to RSW")
+    @DisplayName("Test covariance conversion from Vallado test case NTW to RSW")
     void should_convert_Vallado_NTW_to_RSW() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
 
-        final Orbit orbitMock = Mockito.mock(Orbit.class);
-
         // Given
-        final AbsoluteDate  initialDate   = getValladoInitialDate();
-        final PVCoordinates initialPV     = getValladoInitialPV();
-        final Frame         inertialFrame = FramesFactory.getGCRF();
-        final Orbit         initialOrbit  = new CartesianOrbit(initialPV, inertialFrame, initialDate, getValladoMu());
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
+        final Orbit initialOrbit =
+                new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
 
         final RealMatrix initialCovarianceMatrixInNTW = new BlockRealMatrix(new double[][] {
                 { 9.918792e-001, 6.679546e-003, -2.868345e-003, 1.879167e-005, 6.679546e-005, -2.868345e-005 },
@@ -907,8 +1002,7 @@ public class StateCovarianceMatrixProviderTest {
         // When
         final RealMatrix convertedCovarianceMatrixInRTN =
                 StateCovarianceMatrixProvider.changeCovarianceFrame(initialOrbit, LOFType.NTW, LOFType.QSW,
-                                                                    inertialFrame, initialCovarianceMatrixInNTW,
-                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                                                    initialCovarianceMatrixInNTW);
 
         // Then
         final RealMatrix expectedCovarianceMatrixInRTN = new BlockRealMatrix(new double[][] {
@@ -921,6 +1015,60 @@ public class StateCovarianceMatrixProviderTest {
         });
 
         compareCovariance(expectedCovarianceMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
+
+    }
+
+    /**
+     * This test is based on the following paper : Covariance Transformations for Satellite Flight Dynamics Operations
+     * from David A. Vallado.
+     * <p>
+     * More specifically, we're using the initial NTW covariance matrix from p.19 and compare the computed result with
+     * the cartesian covariance in RSW from the same page.
+     * </p>
+     */
+    @Test
+    @DisplayName("Test thrown error if input frame is not pseudo-inertial and the covariance matrix is not expressed in cartesian elements")
+    void should_return_orekit_exception() {
+
+        // Initialize orekit
+        Utils.setDataRoot("regular-data");
+
+        // Given
+        final AbsoluteDate  initialDate          = getValladoInitialDate();
+        final PVCoordinates initialPV            = getValladoInitialPV();
+        final Frame         initialInertialFrame = FramesFactory.getGCRF();
+        final Orbit initialOrbit =
+                new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
+
+        final RealMatrix randomCovarianceMatrix = new BlockRealMatrix(new double[][] {
+                { 9.918792e-001, 6.679546e-003, -2.868345e-003, 1.879167e-005, 6.679546e-005, -2.868345e-005 },
+                { 6.679546e-003, 1.013743e+000, -1.019560e-002, 6.679546e-005, 2.374262e-004, -1.019560e-004 },
+                { -2.868345e-003, -1.019560e-002, 9.943782e-001, -2.868345e-005, -1.019560e-004, 4.378217e-005 },
+                { 1.879167e-005, 6.679546e-005, -2.868345e-005, 1.879167e-007, 6.679546e-007, -2.868345e-007 },
+                { 6.679546e-005, 2.374262e-004, -1.019560e-004, 6.679546e-007, 2.374262e-006, -1.019560e-006 },
+                { -2.868345e-005, -1.019560e-004, 4.378217e-005, -2.868345e-007, -1.019560e-006, 4.378217e-007 }
+        });
+
+        final Frame nonInertialFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+
+        final Frame inertialFrame = FramesFactory.getGCRF();
+
+        // When & Then
+        Assertions.assertThrows(OrekitException.class,
+                                () -> {
+                                    StateCovarianceMatrixProvider.changeCovarianceFrame(
+                                            initialOrbit, nonInertialFrame, inertialFrame,
+                                            randomCovarianceMatrix, OrbitType.CIRCULAR,
+                                            PositionAngle.MEAN);
+                                });
+
+        Assertions.assertThrows(OrekitException.class,
+                                () -> {
+                                    StateCovarianceMatrixProvider.changeCovarianceFrame(
+                                            initialOrbit, nonInertialFrame, LOFType.QSW,
+                                            randomCovarianceMatrix, OrbitType.EQUINOCTIAL,
+                                            PositionAngle.MEAN);
+                                });
 
     }
 
