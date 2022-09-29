@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="gc" type="fix" issue="943">
+        Improved AbsoluteDate.equals method with management of past and future infinity.
+      </action>
       <action dev="bryan" type="add" issue="901">
         Added additional state provider for covariance matrix propagation.
       </action>
