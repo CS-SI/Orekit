@@ -66,6 +66,15 @@ public class ParameterDriversList {
      * being set to the value of the last driver added (i.e.
      * each addition overrides the parameter value).
      * </p>
+     * <p>
+     * </p>
+     * Warning if a driver is added and a driver with the same name
+     * was already added before, they should have the same validity
+     * Period (that is to say that the {@link ParameterDriver#setPeriods}
+     * method should have been called with same arguments for all drivers
+     * having the same name) to avoid surprises. Whatever, all driver having
+     * same name will have their valueSpanMap, nameSpanMap and validity period
+     * overwritten with the last driver added attributes.
      * @param driver driver to add
      */
     public void add(final ParameterDriver driver) {
@@ -267,9 +276,16 @@ public class ParameterDriversList {
         /** Add a driver. Warning, by doing this operation
          * all the delegated drivers present in the parameterDriverList
          * will be overwritten with the attributes of the driver given
-         * in argument. In order to have no surprise, the driver in argument
-         * must have same validityPeriod and estimation intervals as the other
-         * parameters drivers delegated by the same delegating driver.
+         * in argument.
+         * <p>
+         * </p>
+         * Warning if a driver is added and a driver with the same name
+         * was already added before, they should have the same validity
+         * Period (that is to say that the {@link ParameterDriver#setPeriods}
+         * method should have been called with same arguments for all drivers
+         * having the same name) to avoid surprises. Whatever, all driver having
+         * same name will have their valueSpanMap, nameSpanMap and validity period
+         * overwritten with the last driver added attributes.
          * @param driver driver to add
          */
         private void add(final ParameterDriver driver) {
@@ -295,6 +311,15 @@ public class ParameterDriversList {
          * only as a child of the current instance. Changes are therefore
          * still forwarded to it, but it is itself not responsible anymore
          * for forwarding change.
+         * <p>
+         * </p>
+         * Warning if a driver is added and a driver with the same name
+         * was already added before, they should have the same validity
+         * Period (that is to say that the {@link ParameterDriver#setPeriods}
+         * method should have been called with same arguments for all drivers
+         * having the same name) to avoid surprises. Whatever, all driver having
+         * same name will have their valueSpanMap, nameSpanMap and validity period
+         * overwritten with the last driver added attributes.
          * </p>
          * @param other instance to merge
          */

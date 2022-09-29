@@ -283,6 +283,12 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = απροσδόκητες υψ�
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = μη έγκυρο όνομα παραμέτρου {0}, έγκυρα ονόματα: {1}
 
+# {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
+PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES = <MISSING TRANSLATION>
+
+# setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
+PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = <MISSING TRANSLATION>
+
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = <MISSING TRANSLATION>
 

@@ -24,7 +24,10 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
@@ -58,7 +61,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
     private double[][][] stateDerivatives;
 
     /** Partial derivatives with respect to parameters. */
-    private final Map<String, double[]> parametersDerivatives;
+    private final Map<ParameterDriver, TimeSpanMap<double[]>> parametersDerivatives;
 
     /** Simple constructor.
      * @param observedMeasurement associated observed measurement
@@ -79,7 +82,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
         this.participants          = participants.clone();
         this.status                = Status.PROCESSED;
         this.stateDerivatives      = new double[states.length][][];
-        this.parametersDerivatives = new IdentityHashMap<String, double[]>();
+        this.parametersDerivatives = new IdentityHashMap<ParameterDriver, TimeSpanMap<double[]>>();
     }
 
     /** Get the associated observed measurement.
@@ -222,30 +225,31 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
      * @return all the drivers with set derivatives
      * @since 9.0
      */
-    public Stream<String> getDerivativesDrivers() {
+    public Stream<ParameterDriver> getDerivativesDrivers() {
         return parametersDerivatives.entrySet().stream().map(entry -> entry.getKey());
     }
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to a parameter.
-     * @param driverSpanName name of the span of the driver for the parameter for which
+     * @param driver name of the span of the driver for the parameter for which
      * the derivative wants to be known.
+     * @param date date at which the parameter derivatives wants to be known
      * @return partial derivatives of the simulated value
      * @exception OrekitIllegalArgumentException if parameter is unknown
      */
-    public double[] getParameterDerivatives(final String driverSpanName)
+    public double[] getParameterDerivatives(final ParameterDriver driver, final AbsoluteDate date)
         throws OrekitIllegalArgumentException {
-        final double[] p = parametersDerivatives.get(driverSpanName);
+        final double[] p = parametersDerivatives.get(driver).get(date);
         if (p == null) {
             final StringBuilder builder = new StringBuilder();
-            for (final Map.Entry<String, double[]> entry : parametersDerivatives.entrySet()) {
+            for (final Map.Entry<ParameterDriver, TimeSpanMap<double[]>> entry : parametersDerivatives.entrySet()) {
                 if (builder.length() > 0) {
                     builder.append(", ");
                 }
                 builder.append(entry.getKey());
             }
             throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                     driverSpanName,
+                                                     driver,
                                                      builder.length() > 0 ? builder.toString() : "<none>");
         }
         return p;
@@ -253,13 +257,44 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
 
     /** Set the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to parameter.
-     * @param driverSpanName name of the span of the driver for the parameter for which
+     * @param driver name of the span of the driver for the parameter for which
      * the derivative wants to be known.
+     * @param date date at which the parameterDerivative wants to be set
      * @param parameterDerivatives partial derivatives with respect to parameter
      */
-    public void setParameterDerivatives(final String driverSpanName, final double... parameterDerivatives) {
-        parametersDerivatives.put(driverSpanName, parameterDerivatives);
+    //public void setParameterDerivatives(final String driver, final double... parameterDerivatives) {
+    public void setParameterDerivatives(final ParameterDriver driver, final AbsoluteDate date, final double... parameterDerivatives) {
+        if (!parametersDerivatives.containsKey(driver) || parametersDerivatives.get(driver) == null) {
+            final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<double[]>(parameterDerivatives);
+            final TimeSpanMap<String> driverNameSpan = driver.getNamesSpanMap();
+            for (Span<String> span = driverNameSpan.getSpan(driverNameSpan.getFirstSpan().getEnd()); span != null; span = span.next()) {
+                derivativeSpanMap.addValidAfter(parameterDerivatives, span.getStart(), false);
+            }
+            parametersDerivatives.put(driver, derivativeSpanMap);
+
+        } else {
+
+            AbsoluteDate dateToAddAfter = driver.getNamesSpanMap().getSpan(date).getStart();
+            if (dateToAddAfter.equals(AbsoluteDate.PAST_INFINITY)) {
+                dateToAddAfter = driver.getNamesSpanMap().getSpan(date).getEnd();
+                parametersDerivatives.get(driver).addValidBefore(parameterDerivatives, dateToAddAfter, false);
+            } else {
+                parametersDerivatives.get(driver).addValidAfter(parameterDerivatives, dateToAddAfter, false);
+            }
+
+        }
+
     }
+
+    /** Set the partial derivatives of the {@link #getEstimatedValue()
+     * simulated measurement} with respect to parameter.
+     * @param driver driver for the parameter
+     * @param parameterDerivativesMap partial derivatives with respect to parameter
+     */
+    public void setParameterDerivatives(final ParameterDriver driver, final TimeSpanMap<double[]> parameterDerivativesMap) {
+        parametersDerivatives.put(driver, parameterDerivativesMap);
+    }
+
 
     /** Enumerate for the status of the measurement. */
     public enum Status {

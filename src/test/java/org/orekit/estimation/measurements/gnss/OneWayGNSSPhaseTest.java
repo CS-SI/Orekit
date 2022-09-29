@@ -468,7 +468,7 @@ public class OneWayGNSSPhaseTest {
 
                     for (int i = 0; i < drivers.length; ++i) {
                         for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(span.getData());
+                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
                             Assert.assertEquals(1, measurement.getDimension());
                             Assert.assertEquals(1, gradient.length);
                             

@@ -24,9 +24,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class multiplexing several measurements as one.
  * <p>
@@ -173,7 +176,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
             Arrays.fill(m, zeroDerivative);
         }
 
-        final Map<String, double[]> parametersDerivatives = new IdentityHashMap<>();
+        final Map<ParameterDriver, TimeSpanMap<double[]>> parametersDerivatives = new IdentityHashMap<>();
         index = 0;
         for (int i = 0; i < observedMeasurements.size(); ++i) {
 
@@ -190,13 +193,33 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
 
             // parameters derivatives
             eI.getDerivativesDrivers().forEach(driver -> {
-                final String delagatingSpanName = parametersDrivers.findDelegatingSpanNameBySpanName(driver);
-                double[] derivatives = parametersDerivatives.get(delagatingSpanName);
-                if (derivatives == null) {
-                    derivatives = new double[dimension];
-                    parametersDerivatives.put(delagatingSpanName, derivatives);
+                final ParameterDriversList.DelegatingDriver delegating = parametersDrivers.findByName(driver.getName());
+
+                if (parametersDerivatives.get(delegating) == null) {
+                    final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<double[]>(new double[dimension]);
+                    parametersDerivatives.put(delegating, derivativeSpanMap);
                 }
-                System.arraycopy(eI.getParameterDerivatives(driver), 0, derivatives, idx, dimI);
+
+                final TimeSpanMap<Double> driverNameSpan = delegating.getValueSpanMap();
+                for (Span<Double> span = driverNameSpan.getSpan(driverNameSpan.getFirstSpan().getEnd()); span != null; span = span.next()) {
+
+                    double[] derivatives = parametersDerivatives.get(delegating).get(span.getStart());
+                    if (derivatives == null) {
+                        derivatives = new double[dimension];
+                    }
+                    if (!parametersDerivatives.get(delegating).getSpan(span.getStart()).getStart().equals(span.getStart())) {
+                        if ((span.getStart()).equals(AbsoluteDate.PAST_INFINITY)) {
+                            parametersDerivatives.get(delegating).addValidBefore(derivatives, span.getEnd(), false);
+                        } else {
+                            parametersDerivatives.get(delegating).addValidAfter(derivatives, span.getStart(), false);
+                        }
+
+                    }
+
+                    System.arraycopy(eI.getParameterDerivatives(driver, span.getStart()), 0, derivatives, idx, dimI);
+
+                }
+
             });
 
             index += dimI;

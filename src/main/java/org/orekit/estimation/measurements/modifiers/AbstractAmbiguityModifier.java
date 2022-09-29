@@ -70,7 +70,7 @@ public class AbstractAmbiguityModifier {
             value[0] += ambiguity.getValue(span.getStart());
             if (ambiguity.isSelected()) {
             // add the partial derivatives
-                estimated.setParameterDerivatives(span.getData(), 1.0);
+                estimated.setParameterDerivatives(ambiguity, span.getStart(), 1.0);
             }
             estimated.setEstimatedValue(value);
         }

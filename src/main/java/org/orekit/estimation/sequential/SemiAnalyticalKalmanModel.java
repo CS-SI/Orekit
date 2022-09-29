@@ -943,7 +943,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     // Derivatives of current measurement w/r to selected measurement parameter
-                    final double[] aMPm = predictedMeasurement.getParameterDerivatives(span.getData());
+                    final double[] aMPm = predictedMeasurement.getParameterDerivatives(driver, span.getStart());
 
                     // Check that the measurement parameter is managed by the filter
                     if (measurementParameterColumns.get(span.getData()) != null) {

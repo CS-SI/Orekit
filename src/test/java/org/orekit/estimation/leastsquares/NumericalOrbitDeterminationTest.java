@@ -60,7 +60,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -154,29 +153,26 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
     
     /** {@inheritDoc} */
     @Override
-    
+    /**
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
                                             final Atmosphere atmosphere, final DragSensitive spacecraft) {
         final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
-        AbsoluteDate dateeee = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
+        AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
         //AbsoluteDate dateeee = new AbsoluteDate(2014, 02, 14, 03, 0, 0, TimeScalesFactory.getUTC());
         
-        dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).setPeriods(dateeee, dateeee.shiftedBy(15*3600), 8*3600);
-        System.out.println("drag model nbperiod");
-        System.out.println(dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).getValueSpanMap().getSpansNumber());
-        propagatorBuilder.addForceModel(dragModel);
-        System.out.println( propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(3).getValueSpanMap().getSpansNumber());
-        return dragModel.getParametersDrivers();
-    }
-    
-
-/**
-    protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
-                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
+        dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).setPeriods(date, date.shiftedBy(15*3600), 8*3600);
         propagatorBuilder.addForceModel(dragModel);
         return dragModel.getParametersDrivers();
     }*/
+    
+
+    
+    protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
+                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
+        final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
+        propagatorBuilder.addForceModel(dragModel);
+        return dragModel.getParametersDrivers();
+    }
     
     /**
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
@@ -246,7 +242,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-    	System.out.println("Lageos");
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
@@ -295,7 +290,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-    	System.out.println("GNSS");
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
@@ -346,7 +340,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         throws URISyntaxException, IllegalArgumentException, IOException,
               OrekitException, ParseException {
 
-        System.out.println("W3B");
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
         final File input  = new File(inputPath);
@@ -373,9 +366,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final Vector3D refPos = new Vector3D(-40541446.255, -9905357.41, 206777.413);
         final Vector3D refVel = new Vector3D(759.0685, -1476.5156, 54.793);
 
-        System.out.println("\n\nPOS et VEL");
-        System.out.println(estimatedPos.toString());
-        System.out.println(estimatedVel.toString());
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 

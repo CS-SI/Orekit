@@ -233,13 +233,13 @@ public class RangeAnalytic extends Range {
             final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
 
             if (groundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQT.getX());
+                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQT.getX());
             }
             if (groundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQT.getY());
+                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQT.getY());
             }
             if (groundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQT.getZ());
+                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQT.getZ());
             }
 
         }
@@ -348,7 +348,7 @@ public class RangeAnalytic extends Range {
 
                 final Integer index = indices.get(span.getData());
                 if (index != null) {
-                    estimated.setParameterDerivatives(span.getData(), derivatives[index]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
             }
         }

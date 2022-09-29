@@ -185,7 +185,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());
                 if (index != null) {
-                    estimated.setParameterDerivatives(span.getData(), azDerivatives[index], elDerivatives[index]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), azDerivatives[index], elDerivatives[index]);
                 }
             }
         }

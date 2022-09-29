@@ -83,7 +83,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
      * @param <T> type of the element
      * @param station station
      * @param state spacecraft state
-     * @param parameters ionospheric model parameters
+     * @param parameters ionospheric model parameters at state date
      * @return the measurement error due to ionosphere
      */
     private <T extends CalculusFieldElement<T>> T phaseErrorIonosphericModel(final GroundStation station,
@@ -171,7 +171,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         final ModifierGradientConverter converter =
                         new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
-        final Gradient[] gParameters = converter.getParameters(gState, ionoModel);
+        final Gradient[] gParameters = converter.getParametersAtStateDate(gState, ionoModel);
         final Gradient gDelay = phaseErrorIonosphericModel(station, gState, gParameters);
         final double[] derivatives = gDelay.getGradient();
 
@@ -191,10 +191,10 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
                     parameterDerivative -= dDelaydP[index];
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                     index = index + 1;
                 }
             }
@@ -209,9 +209,9 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     // update estimated derivatives with derivative of the modification wrt station parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative -= phaseErrorParameterDerivative(station, driver, state);
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }
         }

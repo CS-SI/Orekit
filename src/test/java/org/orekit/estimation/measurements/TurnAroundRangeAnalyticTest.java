@@ -577,7 +577,7 @@ public class TurnAroundRangeAnalyticTest {
                 if (isModifier) {
                   modifier.modify(TAR);
                 }
-                final double[] gradient  = TAR.getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
+                final double[] gradient  = TAR.getParameterDerivatives(drivers[i], new AbsoluteDate());
 
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
@@ -597,7 +597,7 @@ public class TurnAroundRangeAnalyticTest {
                     ref = dMkdP.value(drivers[i], date);
                 } else {
                     // Compute a reference value using TurnAroundRange function
-                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()))[0];
+                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate())[0];
                 }
 
                 // Deltas

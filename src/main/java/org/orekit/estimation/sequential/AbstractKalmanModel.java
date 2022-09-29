@@ -303,6 +303,8 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         this.scale = new double[columns];
         int index = 0;
         for (final ParameterDriver driver : allEstimatedOrbitalParameters.getDrivers()) {
+            // orbital drivers should have only 1 span on their value TimeSpanMap (only
+            // 1 value to be estimated)
             scale[index++] = driver.getScale();
         }
         for (final ParameterDriver driver : allEstimatedPropagationParameters.getDrivers()) {
@@ -330,9 +332,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
         int p = 0;
         for (final ParameterDriver driver : allEstimatedOrbitalParameters.getDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                correctedState.setEntry(p++, driver.getNormalizedValue(span.getStart()));
-            }
+            // orbital drivers should have only 1 span on their value TimeSpanMap (only
+            // 1 value to be estimated), that is why we can call the getNormalizedValue() method
+            correctedState.setEntry(p++, driver.getNormalizedValue());
         }
         for (final ParameterDriver driver : allEstimatedPropagationParameters.getDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
@@ -421,6 +423,8 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         int requiredDimension = orbitalParameters.getNbParams();
         for (final ParameterDriver driver : propagationParameters.getDrivers()) {
             if (driver.isSelected()) {
+                // orbital drivers should have only 1 span on their value TimeSpanMap (only
+                // 1 value to be estimated)
                 requiredDimension += driver.getNbOfValues();
             }
         }
@@ -628,9 +632,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         final RealVector physicalEstimatedState = new ArrayRealVector(scale.length);
         int i = 0;
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                physicalEstimatedState.setEntry(i++, span.getData());
-            }
+            // orbital drivers should have only 1 span on their value TimeSpanMap (only
+            // 1 value to be estimated), that is why we can call the getValue() method
+            physicalEstimatedState.setEntry(i++, driver.getValue());
         }
         for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
             for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
@@ -864,7 +868,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 if (driver.isSelected()) {
                     for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                         // Derivatives of current measurement w/r to selected measurement parameter
-                        final double[] aMPm = predictedMeasurement.getParameterDerivatives(span.getData());
+                        final double[] aMPm = predictedMeasurement.getParameterDerivatives(driver, span.getStart());
 
                         // Check that the measurement parameter is managed by the filter
                         if (measurementParameterColumns.get(span.getData()) != null) {
@@ -1164,9 +1168,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // the selected orbital drivers are already up to date with the prediction
             for (DelegatingDriver orbitalDriver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
                 if (orbitalDriver.isSelected()) {
-                    for (Span<Double> span = orbitalDriver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                        predictedState.setEntry(jOrb++, orbitalDriver.getNormalizedValue(span.getStart()));
-                    }
+                    // orbital drivers should have only 1 span on their value TimeSpanMap (only
+                    // 1 value to be estimated), that is why we can call the getNormalizedValue() method
+                    predictedState.setEntry(jOrb++, orbitalDriver.getNormalizedValue());
                 }
             }
 
@@ -1184,10 +1188,10 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         int i = 0;
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
             // let the parameter handle min/max clipping
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                driver.setNormalizedValue(correctedState.getEntry(i), span.getStart());
-                correctedState.setEntry(i++, driver.getNormalizedValue(span.getStart()));
-            }
+            // orbital drivers should have only 1 span on their value TimeSpanMap (only
+            // 1 value to be estimated), that is why we can call the getValue() method
+            driver.setNormalizedValue(correctedState.getEntry(i));
+            correctedState.setEntry(i++, driver.getNormalizedValue());
         }
         for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
             // let the parameter handle min/max clipping

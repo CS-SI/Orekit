@@ -135,7 +135,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -206,7 +206,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -279,7 +279,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -349,7 +349,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1).getNameSpan(new AbsoluteDate()));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
                 Assert.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());

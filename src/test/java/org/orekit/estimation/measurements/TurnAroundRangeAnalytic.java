@@ -511,24 +511,24 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
             // Primary station drivers
             if (primaryGroundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(primaryGroundStation.getEastOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQM.getX());
+                estimated.setParameterDerivatives(primaryGroundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQM.getX());
             }
             if (primaryGroundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(primaryGroundStation.getNorthOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQM.getY());
+                estimated.setParameterDerivatives(primaryGroundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQM.getY());
             }
             if (primaryGroundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(primaryGroundStation.getZenithOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQM.getZ());
+                estimated.setParameterDerivatives(primaryGroundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQM.getZ());
             }
 
             // secondary station drivers
             if (secondaryGroundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(secondaryGroundStation.getEastOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQS.getX());
+                estimated.setParameterDerivatives(secondaryGroundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQS.getX());
             }
             if (secondaryGroundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(secondaryGroundStation.getNorthOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQS.getY());
+                estimated.setParameterDerivatives(secondaryGroundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQS.getY());
             }
             if (secondaryGroundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(secondaryGroundStation.getZenithOffsetDriver().getNameSpan(new AbsoluteDate()), dRdQS.getZ());
+                estimated.setParameterDerivatives(secondaryGroundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQS.getZ());
             }
         }
 
@@ -707,7 +707,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         for (final ParameterDriver driver : getParametersDrivers()) {
             final Integer index = indices.get(driver.getName());
             if (index != null) {
-                estimated.setParameterDerivatives(driver.getNameSpan(new AbsoluteDate()), derivatives[index]);
+                estimated.setParameterDerivatives(driver, new AbsoluteDate(), derivatives[index]);
             }
         }
 

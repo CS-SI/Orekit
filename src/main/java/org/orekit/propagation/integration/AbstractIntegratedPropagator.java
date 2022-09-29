@@ -215,8 +215,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param mu central attraction coefficient (m³/s²)
      */
     public void setMu(final double mu) {
-    	System.out.println("IN");
-    	System.out.println(mu);
         stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
                                    stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());

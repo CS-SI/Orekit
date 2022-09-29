@@ -62,7 +62,7 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
-     * @param parameters tropospheric model parameters
+     * @param parameters tropospheric model parameters at current date
      * @param date current date
      * @return the path delay due to the troposphere in m
      */

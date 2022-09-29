@@ -182,7 +182,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
                 final Integer index = parameterIndicesPhase.get(span.getData());
                 if (index != null) {
-                    estimatedPhase.setParameterDerivatives(span.getData(), phaseDerivatives[index]);
+                    estimatedPhase.setParameterDerivatives(phaseMeasurementDriver, span.getStart(), phaseDerivatives[index]);
                 }
             }
         }

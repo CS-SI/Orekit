@@ -27,6 +27,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
@@ -42,11 +43,11 @@ import org.orekit.utils.TimeSpanMap.Span;
  * internal parameter in a physical model that needs to be slightly
  * offset. The physical model will expose to the algorithm a
  * set of instances of this class so the algorithm can call the
- * {@link #setValue(double)} method to update the
- * parameter value. Some parameters driver only have 1 value estimated
+ * {@link #setValue(double, AbsoluteDate)} method to update the
+ * parameter value at given date. Some parameters driver only have 1 value estimated
  * over the all period (constructor by default). Some others have several
  * values estimated on a period for example if the time period is 3 days
- * a drag is estimated all days then 3 values would be estimated, one for
+ * for a drag parameter estimated all days then 3 values would be estimated, one for
  * each time period. In order to allow several values to be estimated with
  * a validity period the method {@link setValidityPeriod} must be called
  * at the beginning of the orbit determination when the all time period is
@@ -182,7 +183,7 @@ public class ParameterDriver {
         // at construction the parameter driver
         // will be consider with only 1 estimated value over the all orbit
         // determination, by convention validityPeriod is set to zero
-        this.validityPeriod        = 0;
+        this.validityPeriod        = 0.;
         this.referenceValue        = referenceValue;
         this.scale                 = scale;
         this.minValue              = minValue;
@@ -337,9 +338,17 @@ public class ParameterDriver {
      * 1 days = 86400sec. To be called after constructor to cut the temporal axis with
      * the wanted parameter driver temporality for estimations on the wanted interval.
      * <b>Must be called only once at the beginning of orbit
-     * determination for example.</b> This function should not be called on {@link DateDriver} and
+     * determination for example. If called several times, will throw exception. If parameter
+     * estimations intervals want to be changed then a new ParameterDriver must be created.
+     * </b> This function should not be called on {@link DateDriver} and
      * any of {@link ParameterDrivenDateIntervalDetector} attribute, because there is no sense to
      * estimate several values for dateDriver.
+     * <p>
+     * </p>
+     * <b>The choice of orbitDeterminationStartDate, orbitDeterminationEndDate and
+     * validityPeriodForDriver </b> in a case of orbit determination <b> must be done carefully</b>,
+     * indeed, enough measurement should be available for each time interval or
+     * the orbit determination won't converge.
      * @param orbitDeterminationStartDate start date for which the parameter driver
      * starts to be estimated.
      * @param orbitDeterminationEndDate end date for which the parameter driver
@@ -354,18 +363,24 @@ public class ParameterDriver {
 
         // by convention 0 is when the parameter needs to be drived only on 1
         // interval from -INF to +INF time period
-        this.validityPeriod = validityPeriodForDriver;
+        if (validityPeriod != 0) {
+            // throw exception if called several time, must be called only once at the beginning of orbit
+            // determination, if the periods wants to be changed a new parameter must be created
+            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET, name);
+        } else {
+            this.validityPeriod = validityPeriodForDriver;
 
-        int spanNumber = 1;
-        if (validityPeriodForDriver > 0) {
-            AbsoluteDate currentDate = orbitDeterminationStartDate.shiftedBy(validityPeriodForDriver);
-            //splitting the names and values span map accordingly with start and end of orbit determination
-            //and validity period. A security is added to avoid having to few measurements point for a span
-            //in order to assure orbit determination convergence
-            while (currentDate.isBefore(orbitDeterminationEndDate) && orbitDeterminationEndDate.durationFrom(currentDate) > validityPeriodForDriver / 3.0) {
-                valueSpanMap.addValidAfter(getValue(currentDate), currentDate, false);
-                nameSpanMap.addValidAfter(SPAN + getName() + Integer.toString(spanNumber++), currentDate, false);
-                currentDate = currentDate.shiftedBy(validityPeriodForDriver);
+            int spanNumber = 1;
+            if (validityPeriodForDriver > 0) {
+                AbsoluteDate currentDate = orbitDeterminationStartDate.shiftedBy(validityPeriodForDriver);
+                //splitting the names and values span map accordingly with start and end of orbit determination
+                //and validity period. A security is added to avoid having to few measurements point for a span
+                //in order to assure orbit determination convergence
+                while (currentDate.isBefore(orbitDeterminationEndDate) && orbitDeterminationEndDate.durationFrom(currentDate) > validityPeriodForDriver / 3.0) {
+                    valueSpanMap.addValidAfter(getValue(currentDate), currentDate, false);
+                    nameSpanMap.addValidAfter(SPAN + getName() + Integer.toString(spanNumber++), currentDate, false);
+                    currentDate = currentDate.shiftedBy(validityPeriodForDriver);
+                }
             }
         }
     }
@@ -474,6 +489,21 @@ public class ParameterDriver {
         return (getValue(date) - getReferenceValue()) / scale;
     }
 
+    /** Get normalized value. Only useable on ParameterDriver
+     * which have only 1 span on their TimeSpanMap value (that is
+     * to say for which the setPeriod method wasn't called) otherwise
+     * it will throw an exception.
+     * <p>
+     * The normalized value is a non-dimensional value
+     * suitable for use as part of a vector in an optimization
+     * process. It is computed as {@code (current - reference)/scale}.
+     * </p>
+     * @return normalized value
+     */
+    public double getNormalizedValue() {
+        return (getValue() - getReferenceValue()) / scale;
+    }
+
     /** Set normalized value at specific date.
      * <p>
      * The normalized value is a non-dimensional value
@@ -485,6 +515,21 @@ public class ParameterDriver {
      */
     public void setNormalizedValue(final double normalized, final AbsoluteDate date) {
         setValue(getReferenceValue() + scale * normalized, date);
+    }
+
+    /** Set normalized value at specific date. Only useable on ParameterDriver
+     * which have only 1 span on their TimeSpanMap value (that is
+     * to say for which the setPeriod method wasn't called) otherwise
+     * it will throw an exception.
+     * <p>
+     * The normalized value is a non-dimensional value
+     * suitable for use as part of a vector in an optimization
+     * process. It is computed as {@code (current - reference)/scale}.
+     * </p>
+     * @param normalized value
+     */
+    public void setNormalizedValue(final double normalized) {
+        setValue(getReferenceValue() + scale * normalized);
     }
 
     /** Get current reference date.
@@ -511,7 +556,12 @@ public class ParameterDriver {
      * @return current parameter value
      */
     public double getValue() {
-        return valueSpanMap.get(new AbsoluteDate());
+        final double value = (validityPeriod == 0.) ? valueSpanMap.get(new AbsoluteDate()) : Double.NaN;
+        if (Double.isNaN(value)) {
+            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, name, "getValue(date)");
+        }
+        // Attention voir si qlqchose est retourné si une exception est levée
+        return value;
     }
 
     /** Get current parameter value at specific date.
@@ -519,13 +569,14 @@ public class ParameterDriver {
      * parameter driver has 1 value estimated over the all orbit determination
      * period (not validity period intervals for estimation), the date value can
      * be <em>{@code null}</em> and then the only estimated value will be
-     * returned, or can be whatever the result would be the same
+     * returned, in this case the date can also be whatever the value returned would
+     * be the same. Moreover in this particular case one can also call the {@link #getValue()}.
      * @return current parameter value at date date, or for the all period if
      * no validity period (= 1 value estimated over the all orbit determination
      * period)
      */
     public double getValue(final AbsoluteDate date) {
-        return validityPeriod == 0 ? valueSpanMap.get(new AbsoluteDate()) : valueSpanMap.get(date);
+        return validityPeriod == 0. ? valueSpanMap.get(new AbsoluteDate()) : valueSpanMap.get(date);
     }
 
     /** Get the value as a gradient at special date.
@@ -569,16 +620,19 @@ public class ParameterDriver {
         AbsoluteDate referenceDateSpan = new AbsoluteDate();
 
         // if valid for infinity (only 1 value estimation for the orbit determination )
-        if (validityPeriod == 0) {
+        if (validityPeriod == 0.) {
             previousValue = this.getValue(referenceDateSpan);
             this.valueSpanMap = new TimeSpanMap<>(FastMath.max(minValue, FastMath.min(maxValue, newValue)));
         // if needs to be estimated per time range / validity period
+
+        // if several value intervals
         } else {
             final Span<Double> valueSpan = valueSpanMap.getSpan(date);
             previousValue = valueSpan.getData();
             referenceDateSpan = valueSpan.getStart();
             // if the Span considered is from past infinity to valueSpanEndDate it is
-            // impossible to addValidAfter past infinity because it is creating a new span
+            // impossible to addValidAfter past infinity because it is creating a new span that
+            // is why the below trick was set up
             if (referenceDateSpan.equals(AbsoluteDate.PAST_INFINITY)) {
                 referenceDateSpan = valueSpan.getEnd();
                 this.valueSpanMap.addValidBefore(FastMath.max(minValue, FastMath.min(maxValue, newValue)),
@@ -591,6 +645,31 @@ public class ParameterDriver {
 
         for (final ParameterObserver observer : observers) {
             observer.valueChanged(previousValue, this, date);
+        }
+    }
+
+
+    /** Set parameter value. Only useable on ParameterDriver
+     * which have only 1 span on their TimeSpanMap value (that is
+     * to say for which the setPeriod method wasn't called)
+     * <p>
+     * If {@code newValue} is below {@link #getMinValue()}, it will
+     * be silently set to {@link #getMinValue()}. If {@code newValue} is
+     * above {@link #getMaxValue()}, it will be silently set to {@link
+     * #getMaxValue()}.
+     * </p>
+     * @param newValue new value to set
+     */
+    public void setValue(final double newValue) {
+        if (validityPeriod == 0.) {
+            final AbsoluteDate referenceDateSpan = new AbsoluteDate();
+            final double previousValue = this.getValue(referenceDateSpan);
+            this.valueSpanMap = new TimeSpanMap<>(FastMath.max(minValue, FastMath.min(maxValue, newValue)));
+            for (final ParameterObserver observer : observers) {
+                observer.valueChanged(previousValue, this, referenceDateSpan);
+            }
+        } else {
+            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, name, "setValue(date)");
         }
     }
 

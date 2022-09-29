@@ -189,7 +189,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         // update estimated derivatives with Jacobian of the measure wrt state
         final ModifierGradientConverter converter = new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
-        final Gradient[] gParameters = converter.getParameters(gState, tropoModel);
+        final Gradient[] gParameters = converter.getParametersAtStateDate(gState, tropoModel);
         final Gradient gDelay = phaseErrorTroposphericModel(station, gState, gParameters, measurement.getWavelength());
         final double[] derivatives = gDelay.getGradient();
 
@@ -211,10 +211,10 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                     // update estimated derivatives with derivative of the modification wrt tropospheric parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
                     parameterDerivative += dDelaydP[index];
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                     index = index + 1;
                 }
             }
@@ -228,9 +228,9 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     // update estimated derivatives with derivative of the modification wrt station parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += phaseErrorParameterDerivative(station, driver, state, measurement.getWavelength());
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }
         }

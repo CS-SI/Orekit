@@ -228,7 +228,7 @@ public class TDOA extends AbstractMeasurement<TDOA> {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());
                 if (index != null) {
-                    estimated.setParameterDerivatives(span.getData(), derivatives[index]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
             }
         }

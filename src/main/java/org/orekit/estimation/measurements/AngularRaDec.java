@@ -200,7 +200,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());
                 if (index != null) {
-                    estimated.setParameterDerivatives(span.getData(), raDerivatives[index], decDerivatives[index]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), raDerivatives[index], decDerivatives[index]);
                 }
             }
         }

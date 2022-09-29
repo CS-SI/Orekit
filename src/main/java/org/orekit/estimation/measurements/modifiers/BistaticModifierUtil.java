@@ -85,10 +85,10 @@ class BistaticModifierUtil {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                     // update estimated derivatives with derivative of the modification wrt model parameters
-                    double parameterDerivative  = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative  = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += derivativesUp[index + converter.getFreeStateParameters()];
                     parameterDerivative += derivativesDown[index + converter.getFreeStateParameters()];
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                     index++;
                 }
             }
@@ -102,10 +102,10 @@ class BistaticModifierUtil {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                     // update estimated derivatives with derivative of the modification wrt station parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(emitter, state),
                                                                          3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }
         }
@@ -118,10 +118,10 @@ class BistaticModifierUtil {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                     // update estimated derivatives with derivative of the modification wrt station parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(receiver, state),
                                                                          3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }
         }

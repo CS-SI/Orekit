@@ -205,13 +205,15 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
             // combine uplink and downlink partial derivatives with respect to parameters
             evalOneWay1.getDerivativesDrivers().forEach(driver -> {
-                final double[] pd1 = evalOneWay1.getParameterDerivatives(driver);
-                final double[] pd2 = evalOneWay2.getParameterDerivatives(driver);
-                final double[] pd = new double[pd1.length];
-                for (int i = 0; i < pd.length; ++i) {
-                    pd[i] = 0.5 * (pd1[i] + pd2[i]);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    final double[] pd1 = evalOneWay1.getParameterDerivatives(driver, span.getStart());
+                    final double[] pd2 = evalOneWay2.getParameterDerivatives(driver, span.getStart());
+                    final double[] pd = new double[pd1.length];
+                    for (int i = 0; i < pd.length; ++i) {
+                        pd[i] = 0.5 * (pd1[i] + pd2[i]);
+                    }
+                    estimated.setParameterDerivatives(driver, span.getStart(), pd);
                 }
-                estimated.setParameterDerivatives(driver, pd);
             });
 
         } else {
@@ -290,7 +292,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 final Integer index = indices.get(span.getData());
                 if (index != null) {
-                    estimated.setParameterDerivatives(span.getData(), derivatives[index]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
             }
         }

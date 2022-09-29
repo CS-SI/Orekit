@@ -243,7 +243,7 @@ public class AngularRaDecTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i].getNameSpan(new AbsoluteDate()));
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
                 Assert.assertEquals(2, measurement.getDimension());
                 Assert.assertEquals(2, gradient.length);
 

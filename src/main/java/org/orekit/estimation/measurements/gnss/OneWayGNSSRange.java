@@ -148,7 +148,7 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
 
                 final Integer index = parameterIndices.get(span.getData());
                 if (index != null) {
-                    estimatedRange.setParameterDerivatives(span.getData(), rangeDerivatives[index]);
+                    estimatedRange.setParameterDerivatives(measurementDriver, span.getStart(), rangeDerivatives[index]);
                 }
             }
         }

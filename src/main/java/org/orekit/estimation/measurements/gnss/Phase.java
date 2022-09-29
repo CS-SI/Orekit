@@ -210,7 +210,7 @@ public class Phase extends AbstractMeasurement<Phase> {
 
                 final Integer index = indices.get(span.getData());
                 if (index != null) {
-                    estimated.setParameterDerivatives(span.getData(), derivatives[index]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
             }
         }

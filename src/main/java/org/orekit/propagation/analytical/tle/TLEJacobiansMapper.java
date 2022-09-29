@@ -126,7 +126,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         if (parameters.getNbValuesToEstimate() != 0) {
 
             computeDerivatives(state);
-            // a test   
             for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] row = dYdP[i];
                 for (int j = 0; j < parameters.getNbValuesToEstimate(); j++) {

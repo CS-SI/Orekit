@@ -82,10 +82,10 @@ class TDOAModifierUtil {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                     // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += primeDerivatives[index + converter.getFreeStateParameters()];
                     parameterDerivative -= secondDerivatives[index + converter.getFreeStateParameters()];
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                     index += 1;
                 }
             }
@@ -100,10 +100,10 @@ class TDOAModifierUtil {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(primeStation, state),
                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }
         }
@@ -116,10 +116,10 @@ class TDOAModifierUtil {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                    double parameterDerivative = estimated.getParameterDerivatives(span.getData())[0];
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative -= Differentiation.differentiate((d, t) -> modelEffect.evaluate(secondStation, state),
                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(span.getData(), parameterDerivative);
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }
         }

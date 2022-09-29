@@ -177,7 +177,7 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
                 final Integer index = indices.get(span.getData());
                 if (index != null) {
-                    estimatedPhase.setParameterDerivatives(span.getData(), derivatives[index]);
+                    estimatedPhase.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
             }
         }

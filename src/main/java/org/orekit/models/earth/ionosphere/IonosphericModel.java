@@ -56,7 +56,7 @@ public interface IonosphericModel extends ParametersDriversProvider, Serializabl
      * @param state       spacecraft state
      * @param baseFrame   base frame associated with the station
      * @param frequency   frequency of the signal in Hz
-     * @param parameters  ionospheric model parameters
+     * @param parameters  ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
     double pathDelay(SpacecraftState state, TopocentricFrame baseFrame, double frequency, double[] parameters);
@@ -75,7 +75,7 @@ public interface IonosphericModel extends ParametersDriversProvider, Serializabl
      * @param state       spacecraft state
      * @param baseFrame   base frame associated with the station
      * @param frequency   frequency of the signal in Hz
-     * @param parameters  ionospheric model parameters
+     * @param parameters  ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
     <T extends CalculusFieldElement<T>> T pathDelay(FieldSpacecraftState<T> state, TopocentricFrame baseFrame, double frequency, T[] parameters);

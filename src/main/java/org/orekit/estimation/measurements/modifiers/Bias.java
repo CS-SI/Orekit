@@ -89,7 +89,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
                 value[nb] += driver.getValue(span.getStart());
                 if (driver.isSelected()) {
                 // add the partial derivatives
-                    estimated.setParameterDerivatives(span.getData(), derivatives[nb++]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[nb++]);
                 }
             }
         }
