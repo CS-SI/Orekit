@@ -758,3 +758,6 @@ INCONSISTENT_SELECTION = <MISSING TRANSLATION>
 
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
+
+# orbital parameters type: {0} is different from expected orbital type : {1}
+WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
