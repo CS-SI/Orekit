@@ -48,8 +48,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.Locale;
-
 public class StateCovarianceMatrixProviderTest {
 
     private SpacecraftState initialState;
@@ -136,6 +134,10 @@ public class StateCovarianceMatrixProviderTest {
         }
     }
 
+    /**
+     * In that particular case, the RTN local orbital frame is perfectly aligned with the inertial frame. Hence, the
+     * frame conversion should return the same covariance matrix as input.
+     */
     @Test
     @DisplayName("Test conversion from inertial frame to RTN local orbital frame")
     void should_return_same_covariance_matrix() {
@@ -152,12 +154,12 @@ public class StateCovarianceMatrixProviderTest {
         final Orbit initialOrbit = new CartesianOrbit(initialPV, initialInertialFrame, initialDate, mu);
 
         final RealMatrix initialCovarianceInInertialFrame = new BlockRealMatrix(new double[][] {
-                { 1, 0, 0, 0, 0, 0 },
-                { 0, 1, 0, 0, 0, 0 },
+                { 1, 0, 0, 0, 1e-5, 1e-4 },
+                { 0, 1, 0, 0, 0, 1e-5 },
                 { 0, 0, 1, 0, 0, 0 },
                 { 0, 0, 0, 1e-3, 0, 0 },
-                { 0, 0, 0, 0, 1e-3, 0 },
-                { 0, 0, 0, 0, 0, 1e-3 }
+                { 1e-5, 0, 0, 0, 1e-3, 0 },
+                { 1e-4, 1e-5, 0, 0, 0, 1e-3 }
         });
 
         // When
@@ -170,12 +172,12 @@ public class StateCovarianceMatrixProviderTest {
 
         // Then
         final RealMatrix expectedMatrixInRTN = new BlockRealMatrix(new double[][] {
-                { 1, 0, 0, 0, 0, 0 },
-                { 0, 1, 0, 0, 0, 0 },
+                { 1, 0, 0, 0, 1e-5, 1e-4 },
+                { 0, 1, 0, 0, 0, 1e-5 },
                 { 0, 0, 1, 0, 0, 0 },
                 { 0, 0, 0, 1e-3, 0, 0 },
-                { 0, 0, 0, 0, 1e-3, 0 },
-                { 0, 0, 0, 0, 0, 1e-3 }
+                { 1e-5, 0, 0, 0, 1e-3, 0 },
+                { 1e-4, 1e-5, 0, 0, 0, 1e-3 }
         });
 
         compareCovariance(covarianceMatrixInRTN, expectedMatrixInRTN, 1e-20);
@@ -1070,23 +1072,6 @@ public class StateCovarianceMatrixProviderTest {
                                             randomCovarianceMatrix, OrbitType.EQUINOCTIAL,
                                             PositionAngle.MEAN);
                                 });
-
-    }
-
-    public static void printMatrix(final RealMatrix covariance) {
-
-        // Create a string builder
-        final StringBuilder covToPrint = new StringBuilder();
-        for (int row = 0; row < covariance.getRowDimension(); row++) {
-            for (int column = 0; column < covariance.getColumnDimension(); column++) {
-                covToPrint.append(String.format(Locale.US, "%16.16e", covariance.getEntry(row, column)));
-                covToPrint.append(" ");
-            }
-            covToPrint.append("\n");
-        }
-
-        // Print
-        System.out.println(covToPrint);
 
     }
 
