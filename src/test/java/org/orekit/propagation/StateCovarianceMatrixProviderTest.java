@@ -733,7 +733,8 @@ public class StateCovarianceMatrixProviderTest {
      * <p>
      * Also, note that the conversion from the RTN to TEME tests the fact that the orbit is initially expressed in GCRF
      * while we want the covariance expressed in TEME. Hence, it tests that the rotation from RTN to TEME needs to be
-     * obtained by expressing the orbit PVCoordinates in the TEME frame (see relevent changeCovarianceFrame method).
+     * obtained by expressing the orbit PVCoordinates in the TEME frame (hence the use of orbit.gtPVCoordinates(frameOut)
+     * ,see relevant changeCovarianceFrame method).
      */
     @Test
     @DisplayName("Test custom covariance conversion Vallado test case : GCRF -> TEME -> IRTF -> NTW -> RTN -> ITRF -> GCRF")

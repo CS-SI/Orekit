@@ -216,7 +216,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado".
      * <p>
-     * The <u>input</u> covariance matrix is expected to be expressed in <b>cartesian elements</b>.
+     * The <u>input</u> covariance matrix is necessarily expressed in <b>cartesian elements</b>.
      * <p>
      * The <u>output</u> covariance matrix will be expressed in <b>cartesian elements</b>.
      *
@@ -283,8 +283,8 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
      * and position angle types of the input covariance must be provided.
      * <p>
-     * In case the <u>input</u> frame is <b>not</b> pseudo-inertial, the <u>input</u> covariance matrix is expected to
-     * be expressed in <b>cartesian elements</b>.
+     * In case the <u>input</u> frame is <b>not</b> pseudo-inertial, the <u>input</u> covariance matrix is necessarily
+     * expressed in <b>cartesian elements</b>.
      * <p>
      * In case the <u>output</u> frame is <b>not</b> pseudo-inertial, the <u>output</u> covariance matrix will be
      * expressed in <b>cartesian elements</b>.
@@ -293,9 +293,9 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @param frameIn the frame in which the input covariance matrix is expressed
      * @param frameOut the target frame
      * @param inputCov input covariance
-     * @param covOrbitType orbit type of the covariance matrix
-     * @param covAngleType position angle type of the covariance matrix (not used if covOrbitType equals
-     * {@code CARTESIAN})
+     * @param covOrbitType orbit type of the covariance matrix (used if frameIn is pseudo-inertial)
+     * @param covAngleType position angle type of the covariance matrix (used if frameIn is pseudo-inertial) (<b>not</b>
+     * used if covOrbitType equals {@code CARTESIAN})
      * @return the covariance matrix expressed in the target frame
      * @throws OrekitException if input frame is <b>not</b> pseudo-inertial <b>and</b> the input covariance is
      * <b>not</b> expressed in cartesian elements.
