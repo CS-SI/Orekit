@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="967">
+        Fixed documentation in BulletinAFilesLoader.
+      </action>
       <action dev="serrof" type="fix" issue="963">
         Fixed rejection of irregular TDM PATH field.
       </action>
