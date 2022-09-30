@@ -1214,11 +1214,17 @@ public class AbsoluteDate
         }
 
         if (date instanceof AbsoluteDate) {
-            return durationFrom((AbsoluteDate) date) == 0;
+
+            // Improve robustness against positive/negative infinity dates
+            if ( this.offset == Double.NEGATIVE_INFINITY && ((AbsoluteDate) date).offset == Double.NEGATIVE_INFINITY ||
+                    this.offset == Double.POSITIVE_INFINITY && ((AbsoluteDate) date).offset == Double.POSITIVE_INFINITY ) {
+                return true;
+            } else {
+                return durationFrom((AbsoluteDate) date) == 0;
+            }
         }
 
         return false;
-
     }
 
     /** Check if the instance represents the same time as another.

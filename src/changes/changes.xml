@@ -21,17 +21,26 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="963">
+        Fixed rejection of irregular TDM PATH field.
+      </action>
       <action dev="bryan" type="update" issue="726">
         Added ephemeris based estimation.
       </action>
       <action dev="maxime" type="update" issue="955">
         Added method to get measurement types.
       </action>
+      <action dev="gc" type="fix" issue="943">
+        Improved AbsoluteDate.equals method with management of past and future infinity.
+      </action>
       <action dev="bryan" type="add" issue="901">
         Added additional state provider for covariance matrix propagation.
       </action>
       <action dev="vincent" type="update" issue="956">
         Migrated all tests from JUnit4 to JUnit5.
+      </action>
+      <action dev="vincent" type="add" issue="952">
+        Added ExtremumApproachEventDetector.
       </action>
       <action dev="evan" type="add">
         Added constructor to AggregateBoundedPropagator for more control over which

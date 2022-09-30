@@ -16,6 +16,19 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.util.FastMath;
@@ -30,19 +43,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 public class AbsoluteDateTest {
 
@@ -1375,7 +1375,37 @@ public class AbsoluteDateTest {
                 CoreMatchers.is("(-9223372036854775779 + 3.0E300) seconds past epoch"));
     }
 
+    /** Test for issue 943: management of past and future infinity in equality checks. */
     @Test
+    public void test_issue_943() {
+
+        // Run issue test
+        final AbsoluteDate date1 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        date1.durationFrom(date2);
+        Assertions.assertEquals(date1, date2);
+
+        // Check equality is as expected for PAST INFINITY
+        final AbsoluteDate date3 = AbsoluteDate.PAST_INFINITY;
+        final AbsoluteDate date4 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        Assertions.assertEquals(date3, date4);
+
+        // Check equality is as expected for FUTURE INFINITY
+        final AbsoluteDate date5 = AbsoluteDate.FUTURE_INFINITY;
+        final AbsoluteDate date6 = new AbsoluteDate(AbsoluteDate.FUTURE_INFINITY, 0);
+        Assertions.assertEquals(date5, date6); 
+
+        // Check inequality is as expected
+        final AbsoluteDate date7 = new AbsoluteDate(AbsoluteDate.PAST_INFINITY, 0);
+        final AbsoluteDate date8 = new AbsoluteDate(AbsoluteDate.FUTURE_INFINITY, 0);
+        Assertions.assertNotEquals(date7, date8); 
+
+        // Check inequality is as expected
+        final AbsoluteDate date9 = new AbsoluteDate(AbsoluteDate.ARBITRARY_EPOCH.getEpoch(), Double.POSITIVE_INFINITY);
+        final AbsoluteDate date10 = new AbsoluteDate(AbsoluteDate.ARBITRARY_EPOCH.getEpoch(), Double.POSITIVE_INFINITY);
+        Assertions.assertEquals(date9, date10); 
+    }
+
     public void testNegativeOffsetConstructor() {
         try {
             AbsoluteDate date = new AbsoluteDate(2019, 10, 11, 20, 40,
