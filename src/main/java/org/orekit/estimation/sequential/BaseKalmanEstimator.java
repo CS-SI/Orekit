@@ -18,7 +18,10 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
@@ -92,5 +95,51 @@ public abstract class BaseKalmanEstimator {
         }
         return estimated;
     }
+
+
+    /** Get the current measurement number.
+     * @return current measurement number
+     */
+    public int getCurrentMeasurementNumber() {
+        return getKalmanEstimation().getCurrentMeasurementNumber();
+    }
+
+    /** Get the current date.
+     * @return current date
+     */
+    public AbsoluteDate getCurrentDate() {
+        return getKalmanEstimation().getCurrentDate();
+    }
+
+    /** Get the "physical" estimated state (i.e. not normalized)
+     * <p>
+     * For the Semi-analytical Kalman Filters
+     * it corresponds to the corrected filter correction.
+     * In other words, it doesn't represent an orbital state.
+     * </p>
+     * @return the "physical" estimated state
+     */
+    public RealVector getPhysicalEstimatedState() {
+        return getKalmanEstimation().getPhysicalEstimatedState();
+    }
+
+    /** Get the "physical" estimated covariance matrix (i.e. not normalized)
+     * @return the "physical" estimated covariance matrix
+     */
+    public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
+        return getKalmanEstimation().getPhysicalEstimatedCovarianceMatrix();
+    }
+
+    /** Get the list of estimated measurements parameters.
+     * @return the list of estimated measurements parameters
+     */
+    public ParameterDriversList getEstimatedMeasurementsParameters() {
+        return getKalmanEstimation().getEstimatedMeasurementsParameters();
+    }
+
+    /** Get the provider for kalman filter estimations.
+     * @return the provider for Kalman filter estimations
+     */
+    protected abstract KalmanEstimation getKalmanEstimation();
 
 }

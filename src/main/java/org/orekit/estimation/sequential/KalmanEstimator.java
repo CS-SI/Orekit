@@ -22,8 +22,6 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
@@ -108,46 +106,17 @@ public class KalmanEstimator extends BaseKalmanEstimator {
 
     }
 
+    /** {@inheritDoc}. */
+    @Override
+    protected KalmanEstimation getKalmanEstimation() {
+        return processModel;
+    }
+
     /** Set the observer.
      * @param observer the observer
      */
     public void setObserver(final KalmanObserver observer) {
         this.observer = observer;
-    }
-
-    /** Get the current measurement number.
-     * @return current measurement number
-     */
-    public int getCurrentMeasurementNumber() {
-        return processModel.getCurrentMeasurementNumber();
-    }
-
-    /** Get the current date.
-     * @return current date
-     */
-    public AbsoluteDate getCurrentDate() {
-        return processModel.getCurrentDate();
-    }
-
-    /** Get the "physical" estimated state (i.e. not normalized)
-     * @return the "physical" estimated state
-     */
-    public RealVector getPhysicalEstimatedState() {
-        return processModel.getPhysicalEstimatedState();
-    }
-
-    /** Get the "physical" estimated covariance matrix (i.e. not normalized)
-     * @return the "physical" estimated covariance matrix
-     */
-    public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
-        return processModel.getPhysicalEstimatedCovarianceMatrix();
-    }
-
-    /** Get the list of estimated measurements parameters.
-     * @return the list of estimated measurements parameters
-     */
-    public ParameterDriversList getEstimatedMeasurementsParameters() {
-        return processModel.getEstimatedMeasurementsParameters();
     }
 
     /** Process a single measurement.
