@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="gateanpierre" type="add" issue="961">
+        Added Unscented Semi-analytical Kalman Estimator.
+      </action>
+      <action dev="gateanpierre" type="add" issue="960">
+        Added Unscented Kalman Estimator.
+      </action>
       <action dev="maxime" type="fix" issue="967">
         Fixed documentation in BulletinAFilesLoader.
       </action>
