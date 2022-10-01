@@ -1,8 +1,28 @@
+/* Copyright 2002-2022 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.estimation.sequential;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,10 +44,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-import java.util.ArrayList;
-import java.util.List;
+public class SemiAnalyticalUnscentedKalmanModelTest {
 
-public class SemiAnalyticalKalmanModelTest {
 
     /** Orbit type for propagation. */
     private final OrbitType orbitType = OrbitType.EQUINOCTIAL;
@@ -47,8 +65,8 @@ public class SemiAnalyticalKalmanModelTest {
     /** Estimated measurement parameters list. */
     private ParameterDriversList estimatedMeasurementsParameters;
 
-    /** Kalman extended estimator containing models. */
-    private SemiAnalyticalKalmanEstimator kalman;
+    /** Kalman estimator containing models. */
+    private SemiAnalyticalUnscentedKalmanEstimator kalman;
 
     /** Kalman observer. */
     private ModelLogger modelLogger;
@@ -66,13 +84,12 @@ public class SemiAnalyticalKalmanModelTest {
     private ParameterDriver srpCoefDriver;
 
     /** Tolerance for the test. */
-    private final double tol = 1e-16;
+    private final double tol = 5.0e-9;
 
     @BeforeEach
     public void setup() {
-
         // Create context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Initial orbit and date
         this.orbit0 = context.initialOrbit;
@@ -82,7 +99,7 @@ public class SemiAnalyticalKalmanModelTest {
         this.propagatorBuilder = context.createBuilder(PropagationType.MEAN, PropagationType.OSCULATING, true,
                                                        1.0e-6, 60.0, 10., DSSTForce.SOLAR_RADIATION_PRESSURE);
 
-        // Create PV at t0
+        //  t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
 
         // Create one 0m range measurement at t0 + 10s
@@ -124,7 +141,8 @@ public class SemiAnalyticalKalmanModelTest {
         this.covMatrixProvider = setInitialCovarianceMatrix(scales);
 
         // Initialize Kalman
-        final SemiAnalyticalKalmanEstimatorBuilder kalmanBuilder = new SemiAnalyticalKalmanEstimatorBuilder();
+        final SemiAnalyticalUnscentedKalmanEstimatorBuilder kalmanBuilder = new SemiAnalyticalUnscentedKalmanEstimatorBuilder();
+        kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(8));
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder, covMatrixProvider);
         kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, null);
         this.kalman = kalmanBuilder.build();
@@ -145,10 +163,10 @@ public class SemiAnalyticalKalmanModelTest {
     private void checkModelAtT0() {
 
         // Instantiate a Model from attributes
-        final SemiAnalyticalKalmanModel model = new SemiAnalyticalKalmanModel(propagatorBuilder,
-                                                  covMatrixProvider,
-                                                  estimatedMeasurementsParameters,
-                                                  null);
+        final SemiAnalyticalUnscentedKalmanModel model = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder,
+                                                                                                covMatrixProvider,
+                                                                                                estimatedMeasurementsParameters,
+                                                                                                null);
         model.setObserver(modelLogger);
 
         // Evaluate at t0
@@ -164,28 +182,20 @@ public class SemiAnalyticalKalmanModelTest {
         // Measurement number
         Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
 
-        // Normalized state - is zeros
-        final RealVector stateN = model.getEstimate().getState();
-        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
-
-        // Physical state - = initialized
-        final RealVector x = model.getPhysicalEstimatedState();
+        // Physical state and predicted filter correction
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
         orbitType.mapOrbitToArray(orbit0, positionAngle, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
-        final double[] dX = x.subtract(expX).toArray();
-        Assertions.assertArrayEquals(new double[M], dX, tol);
+        Assertions.assertArrayEquals(model.getPhysicalEstimatedState().toArray(), expX.toArray(), tol);
+        Assertions.assertArrayEquals(model.getEstimate().getState().toArray(),    new double[8], tol);
 
         // Normalized covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
-        final double[][] expPn = new double[M][M];
+        final double[][] expPn = covMatrixProvider.getInitialCovarianceMatrix(null).getData();
         for (int i = 0; i < M; i++) {
-            for (int j = 0; j < M; j++) {
-                expPn[i][j] = 1.;
-            }
             Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
 
@@ -196,6 +206,12 @@ public class SemiAnalyticalKalmanModelTest {
         for (int i = 0; i < M; i++) {
             Assertions.assertArrayEquals(new double[M], dP[i], tol, "Failed on line " + i);
         }
+
+        // State transition matrix (null for unscented kalman filter)
+        Assertions.assertNull(model.getPhysicalStateTransitionMatrix());
+
+        // Measurement matrix (null for unscented kalman filter)
+        Assertions.assertNull(model.getPhysicalMeasurementJacobian());
 
         // Check that other "physical" matrices are null
         Assertions.assertNull(model.getEstimate().getInnovationCovariance());
@@ -214,7 +230,7 @@ public class SemiAnalyticalKalmanModelTest {
      * @return array containing the scales of the estimated parameter
      */
     private double[] getParametersScale(final DSSTPropagatorBuilder builder,
-                                        final ParameterDriversList estimatedMeasurementsParameters) {
+                                       ParameterDriversList estimatedMeasurementsParameters) {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters

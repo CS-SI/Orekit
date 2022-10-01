@@ -19,10 +19,9 @@ package org.orekit.estimation.sequential;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
+import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
-import org.orekit.errors.OrekitException;
+import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -30,7 +29,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 /**
- * Implementation of an Extended Semi-analytical Kalman Filter (ESKF) to perform orbit determination.
+ * Implementation of an Unscented Semi-analytical Kalman filter (USKF) to perform orbit determination.
  * <p>
  * The filter uses a {@link DSSTPropagatorBuilder}.
  * </p>
@@ -38,56 +37,53 @@ import org.orekit.utils.ParameterDriversList;
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
  *   <li><b>Orbital parameters</b>:The position and velocity of the spacecraft, or, more generally, its orbit.<br>
  *       These parameters are retrieved from the reference trajectory propagator builder when the filter is initialized.</li>
- *   <li><b>Propagation parameters</b>: Some parameters modelling physical processes (SRP or drag coefficients).<br>
+ *   <li><b>Propagation parameters</b>: Some parameters modeling physical processes (SRP or drag coefficients etc...).<br>
  *       They are also retrieved from the propagator builder during the initialization phase.</li>
  *   <li><b>Measurements parameters</b>: Parameters related to measurements (station biases, positions etc...).<br>
  *       They are passed down to the filter in its constructor.</li>
  * </ol>
  * <p>
  * The Kalman filter implementation used is provided by the underlying mathematical library Hipparchus.
- * All the variables seen by Hipparchus (states, covariances, measurement matrices...) are normalized
+ * All the variables seen by Hipparchus (states, covariances...) are normalized
  * using a specific scale for each estimated parameters or standard deviation noise for each measurement components.
  * </p>
  *
- * @see "Folcik Z., Orbit Determination Using Modern Filters/Smoothers and Continuous Thrust Modeling,
- *       Master of Science Thesis, Department of Aeronautics and Astronautics, MIT, June, 2008."
+ * <p>An {@link SemiAnalyticalUnscentedKalmanEstimator} object is built using the {@link SemiAnalyticalUnscentedKalmanEstimatorBuilder#build() build}
+ * method of a {@link SemiAnalyticalUnscentedKalmanEstimatorBuilder}.</p>
  *
- * @see "Cazabonne B., Bayard J., Journot M., and Cefola P. J., A Semi-analytical Approach for Orbit
- *       Determination based on Extended Kalman Filter, AAS Paper 21-614, AAS/AIAA Astrodynamics
- *       Specialist Conference, Big Sky, August 2021."
- *
- * @author Julie Bayard
+ * @author Gaëtan Pierre
  * @author Bryan Cazabonne
- * @author Maxime Journot
- * @since 11.1
+ * @since 11.3
  */
-public class SemiAnalyticalKalmanEstimator extends BaseKalmanEstimator {
+public class SemiAnalyticalUnscentedKalmanEstimator extends BaseKalmanEstimator {
 
-    /** Kalman filter process model. */
-    private final SemiAnalyticalKalmanModel processModel;
+    /** Unscented Kalman filter process model. */
+    private final SemiAnalyticalUnscentedKalmanModel processModel;
 
     /** Filter. */
-    private final ExtendedKalmanFilter<MeasurementDecorator> filter;
+    private final UnscentedKalmanFilter<MeasurementDecorator> filter;
 
-    /** Kalman filter estimator constructor (package private).
+    /** Unscented Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
-     * @param covarianceMatrixProvider provider for process noise matrix
+     * @param processNoiseMatricesProvider provider for process noise matrix
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @param utProvider provider for the unscented transform
      */
-    public SemiAnalyticalKalmanEstimator(final MatrixDecomposer decomposer,
-                                         final DSSTPropagatorBuilder propagatorBuilder,
-                                         final CovarianceMatrixProvider covarianceMatrixProvider,
-                                         final ParameterDriversList estimatedMeasurementParameters,
-                                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+    SemiAnalyticalUnscentedKalmanEstimator(final MatrixDecomposer decomposer,
+                                           final DSSTPropagatorBuilder propagatorBuilder,
+                                           final CovarianceMatrixProvider processNoiseMatricesProvider,
+                                           final ParameterDriversList estimatedMeasurementParameters,
+                                           final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                                           final UnscentedTransformProvider utProvider) {
         super(Collections.singletonList(propagatorBuilder));
         // Build the process model and measurement model
-        this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, covarianceMatrixProvider,
-                                                          estimatedMeasurementParameters,  measurementProcessNoiseMatrix);
+        this.processModel = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
+                                                                   estimatedMeasurementParameters, measurementProcessNoiseMatrix);
 
-        // Extended Kalman Filter of Hipparchus
-        this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
+        // Unscented Kalman Filter of Hipparchus
+        this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate(), utProvider);
 
     }
 
@@ -101,7 +97,7 @@ public class SemiAnalyticalKalmanEstimator extends BaseKalmanEstimator {
      * @param observer the observer
      */
     public void setObserver(final KalmanObserver observer) {
-        processModel.setObserver(observer);
+        this.processModel.setObserver(observer);
     }
 
     /** Process a single measurement.
@@ -112,11 +108,7 @@ public class SemiAnalyticalKalmanEstimator extends BaseKalmanEstimator {
      * @return estimated propagators
      */
     public DSSTPropagator processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements) {
-        try {
-            return processModel.processMeasurements(observedMeasurements, filter);
-        } catch (MathRuntimeException mrte) {
-            throw new OrekitException(mrte);
-        }
+        return processModel.processMeasurements(observedMeasurements, filter);
     }
 
 }

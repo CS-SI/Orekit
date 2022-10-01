@@ -33,13 +33,9 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.PropagationType;
@@ -70,7 +66,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 11.1
  */
-public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
+public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator>, SemiAnalyticalProcess {
 
     /** Builders for DSST propagator. */
     private final DSSTPropagatorBuilder builder;
@@ -271,10 +267,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         }
 
         // Verify dimension
-        checkDimension(noiseK.getRowDimension(),
-                       builder.getOrbitalParametersDrivers(),
-                       builder.getPropagationParametersDrivers(),
-                       estimatedMeasurementsParameters);
+        KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                           builder.getOrbitalParametersDrivers(),
+                                           builder.getPropagationParametersDrivers(),
+                                           estimatedMeasurementsParameters);
 
         final RealMatrix correctedCovariance = normalizeCovarianceMatrix(noiseK);
 
@@ -283,9 +279,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     }
 
-    /** Get the observer for Kalman Filter estimations.
-     * @return the observer for Kalman Filter estimations
-     */
+    /** {@inheritDoc} */
+    @Override
     public KalmanObserver getObserver() {
         return observer;
     }
@@ -320,7 +315,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             observedMeasurements.sort(new ChronologicalComparator());
 
             // Initialize step handler and set it to the propagator
-            final EskfMeasurementHandler stepHandler = new EskfMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
+            final SemiAnalyticalMeasurementHandler stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
             dsstPropagator.getMultiplexer().add(stepHandler);
             dsstPropagator.propagate(observedMeasurements.get(0).getDate(), observedMeasurements.get(observedMeasurements.size() - 1).getDate());
 
@@ -404,10 +399,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         }
 
         // Verify dimension
-        checkDimension(noiseK.getRowDimension(),
-                       builder.getOrbitalParametersDrivers(),
-                       builder.getPropagationParametersDrivers(),
-                       estimatedMeasurementsParameters);
+        KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                           builder.getOrbitalParametersDrivers(),
+                                           builder.getPropagationParametersDrivers(),
+                                           estimatedMeasurementsParameters);
 
         final RealMatrix normalizedProcessNoise = normalizeCovarianceMatrix(noiseK);
 
@@ -422,29 +417,13 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                     final RealMatrix innovationCovarianceMatrix) {
 
         // Apply the dynamic outlier filter, if it exists
-        applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
-        if (predictedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
-            // set innovation to null to notify filter measurement is rejected
-            return null;
-        } else {
-            // Normalized innovation of the measurement (Nx1)
-            final double[] observed  = predictedMeasurement.getObservedMeasurement().getObservedValue();
-            final double[] estimated = predictedMeasurement.getEstimatedValue();
-            final double[] sigma     = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
-            final double[] residuals = new double[observed.length];
-
-            for (int i = 0; i < observed.length; i++) {
-                residuals[i] = (observed[i] - estimated[i]) / sigma[i];
-            }
-            return MatrixUtils.createRealVector(residuals);
-        }
-
+        KalmanEstimatorUtil.applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
+        // Compute the innovation vector
+        return KalmanEstimatorUtil.computeInnovationVector(predictedMeasurement, predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
-    /** Finalize estimation.
-     * @param observedMeasurement measurement that has just been processed
-     * @param estimate corrected estimate
-     */
+    /** {@inheritDoc} */
+    @Override
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
                                    final ProcessEstimate estimate) {
         // Update the process estimate
@@ -469,9 +448,14 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesValues(),
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
                                                             });
+        // Call the observer if the user add one
+        if (observer != null) {
+            observer.evaluationPerformed(this);
+        }
     }
 
-    /** Finalize estimation operations on the observation grid. */
+    /** {@inheritDoc} */
+    @Override
     public void finalizeOperationsObservationGrid() {
         // Update parameters
         updateParameters();
@@ -705,9 +689,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         return correctedMeasurement;
     }
 
-    /** Update the nominal spacecraft state.
-     * @param nominal nominal spacecraft state
-     */
+    /** {@inheritDoc} */
+    @Override
     public void updateNominalSpacecraftState(final SpacecraftState nominal) {
         this.nominalMeanSpacecraftState = nominal;
         // Update the builder with the nominal mean elements orbit
@@ -735,9 +718,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
     }
 
-    /** Update the DSST short periodic terms.
-     * @param state current mean state
-     */
+    /** {@inheritDoc} */
+    @Override
     public void updateShortPeriods(final SpacecraftState state) {
         // Loop on DSST force models
         for (final DSSTForceModel model : builder.getAllForceModels()) {
@@ -746,9 +728,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         harvester.updateFieldShortPeriodTerms(state);
     }
 
-    /** Initialize the short periodic terms for the Kalman Filter.
-     * @param meanState mean state for auxiliary elements
-     */
+    /** {@inheritDoc} */
+    @Override
     public void initializeShortPeriodicTerms(final SpacecraftState meanState) {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force :  builder.getAllForceModels()) {
@@ -1019,111 +1000,6 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             }
         }
         return normalizedCovarianceMatrix;
-    }
-
-    /** Check dimension.
-     * @param dimension dimension to check
-     * @param orbitalParameters orbital parameters
-     * @param propagationParameters propagation parameters
-     * @param measurementParameters measurements parameters
-     */
-    private void checkDimension(final int dimension,
-                                final ParameterDriversList orbitalParameters,
-                                final ParameterDriversList propagationParameters,
-                                final ParameterDriversList measurementParameters) {
-
-        // count parameters, taking care of counting all orbital parameters
-        // regardless of them being estimated or not
-        int requiredDimension = orbitalParameters.getNbParams();
-        for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-        for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                ++requiredDimension;
-            }
-        }
-
-        if (dimension != requiredDimension) {
-            // there is a problem, set up an explicit error message
-            final StringBuilder strBuilder = new StringBuilder();
-            for (final ParameterDriver driver : orbitalParameters.getDrivers()) {
-                if (strBuilder.length() > 0) {
-                    strBuilder.append(", ");
-                }
-                strBuilder.append(driver.getName());
-            }
-            for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    strBuilder.append(driver.getName());
-                }
-            }
-            for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    strBuilder.append(driver.getName());
-                }
-            }
-            throw new OrekitException(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS,
-                                      dimension, strBuilder.toString());
-        }
-
-    }
-
-    /** Set and apply a dynamic outlier filter on a measurement.<p>
-     * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<p>
-     * Compute the sigma array using the matrix in input and set the filter.<p>
-     * Apply the filter by calling the modify method on the estimated measurement.<p>
-     * Reset the filter.
-     * @param measurement measurement to filter
-     * @param innovationCovarianceMatrix So called innovation covariance matrix S, with:<p>
-     *        S = H.Ppred.Ht + R<p>
-     *        Where:<p>
-     *         - H is the normalized measurement matrix (Ht its transpose)<p>
-     *         - Ppred is the normalized predicted covariance matrix<p>
-     *         - R is the normalized measurement noise matrix
-     * @param <T> the type of measurement
-     */
-    private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
-                                                                              final RealMatrix innovationCovarianceMatrix) {
-
-        // Observed measurement associated to the predicted measurement
-        final ObservedMeasurement<T> observedMeasurement = measurement.getObservedMeasurement();
-
-        // Check if a dynamic filter was added to the measurement
-        // If so, update its sigma value and apply it
-        for (EstimationModifier<T> modifier : observedMeasurement.getModifiers()) {
-            if (modifier instanceof DynamicOutlierFilter<?>) {
-                final DynamicOutlierFilter<T> dynamicOutlierFilter = (DynamicOutlierFilter<T>) modifier;
-
-                // Initialize the values of the sigma array used in the dynamic filter
-                final double[] sigmaDynamic     = new double[innovationCovarianceMatrix.getColumnDimension()];
-                final double[] sigmaMeasurement = observedMeasurement.getTheoreticalStandardDeviation();
-
-                // Set the sigma value for each element of the measurement
-                // Here we do use the value suggested by David A. Vallado (see [1]§10.6):
-                // sigmaDynamic[i] = sqrt(diag(S))*sigma[i]
-                // With S = H.Ppred.Ht + R
-                // Where:
-                //  - S is the measurement error matrix in input
-                //  - H is the normalized measurement matrix (Ht its transpose)
-                //  - Ppred is the normalized predicted covariance matrix
-                //  - R is the normalized measurement noise matrix
-                //  - sigma[i] is the theoretical standard deviation of the ith component of the measurement.
-                //    It is used here to un-normalize the value before it is filtered
-                for (int i = 0; i < sigmaDynamic.length; i++) {
-                    sigmaDynamic[i] = FastMath.sqrt(innovationCovarianceMatrix.getEntry(i, i)) * sigmaMeasurement[i];
-                }
-                dynamicOutlierFilter.setSigma(sigmaDynamic);
-
-                // Apply the modifier on the estimated measurement
-                modifier.modify(measurement);
-
-                // Re-initialize the value of the filter for the next measurement of the same type
-                dynamicOutlierFilter.setSigma(null);
-            }
-        }
     }
 
     /** Get the number of estimated orbital parameters.

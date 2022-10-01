@@ -36,6 +36,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.SemiAnalyticalKalmanEstimator;
+import org.orekit.estimation.sequential.SemiAnalyticalUnscentedKalmanEstimator;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -406,5 +407,90 @@ public class DSSTEstimationTestUtils {
 
         }
     }
+    /**
+     * Checker for Semi-analytical Unscented Kalman estimator validation
+     * @param context context used for the test
+     * @param kalman Unscented Kalman filter
+     * @param measurements List of observed measurements to be processed by the Kalman
+     * @param refOrbit Reference orbits at last measurement date
+     * @param expectedDeltaPos Expected position difference between estimated orbit and reference orbits
+     * @param posEps Tolerance on expected position difference
+     * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
+     * @param velEps Tolerance on expected velocity difference
+     */
+    public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalUnscentedKalmanEstimator kalman,
+                                      final List<ObservedMeasurement<?>> measurements,
+                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final double expectedDeltaPos, final double posEps,
+                                      final double expectedDeltaVel, final double velEps) {
+        checkKalmanFit(context, kalman, measurements,
+                new Orbit[] { refOrbit },
+                new PositionAngle[] { positionAngle },
+                new double[] { expectedDeltaPos }, new double[] { posEps },
+                new double[] { expectedDeltaVel }, new double[] { velEps });
+        }
+    /**
+     * Checker for Semi-analytical Unscented Kalman estimator validation
+     * @param context context used for the test
+     * @param kalman Unscented Kalman filter
+     * @param measurements List of observed measurements to be processed by the Kalman
+     * @param refOrbit Reference orbits at last measurement date
+     * @param expectedDeltaPos Expected position difference between estimated orbit and reference orbits
+     * @param posEps Tolerance on expected position difference
+     * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
+     * @param velEps Tolerance on expected velocity difference
+     */
+    public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalUnscentedKalmanEstimator kalman,
+                                      final List<ObservedMeasurement<?>> measurements,
+                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final double[] expectedDeltaPos, final double[] posEps,
+                                      final double[] expectedDeltaVel, final double []velEps) {
+
+        // Add the measurements to the Kalman filter
+        DSSTPropagator estimated = kalman.processMeasurements(measurements);
+
+        // Verify epoch of estimation
+        Assertions.assertEquals(0.0, refOrbit[0].getDate().durationFrom(estimated.getInitialState().getDate()), 1.0e-10);
+
+        // Check the number of measurements processed by the filter
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+
+        for (int k = 0; k < refOrbit.length; ++k) {
+            // Get the last estimation
+            final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
+            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
+
+            // Get the last covariance matrix estimation
+            final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
+
+            // Convert the orbital part to Cartesian formalism
+            // Assuming all 6 orbital parameters are estimated by the filter
+            final double[][] dCdY = new double[6][6];
+            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
+            final RealMatrix estimatedCartesianP = 
+                            Jacobian.
+                            multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
+                            multiply(Jacobian.transpose());
+
+            // Get the final sigmas (ie.sqrt of the diagonal of the Cartesian orbital covariance matrix)
+            final double[] sigmas = new double[6];
+            for (int i = 0; i < 6; i++) {
+                sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
+            }
+
+            // Check the final orbit estimation & PV sigmas
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
+            Assertions.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
+            Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+
+        }
+    }
+
+
+
 
 }

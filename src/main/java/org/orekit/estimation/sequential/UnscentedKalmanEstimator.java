@@ -18,26 +18,21 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
-import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
-import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
+import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
-import org.orekit.errors.OrekitException;
+import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-
 /**
- * Implementation of a Kalman filter to perform orbit determination.
+ * Implementation of an Unscented Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
- * or {@link DSSTPropagator}.
+ * The filter uses a {@link NumericalPropagatorBuilder} to initialize its reference trajectory.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
@@ -53,56 +48,52 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * <p>
  * The Kalman filter implementation used is provided by the underlying mathematical library Hipparchus.
- * All the variables seen by Hipparchus (states, covariances, measurement matrices...) are normalized
- * using a specific scale for each estimated parameters or standard deviation noise for each measurement components.
  * </p>
  *
- * <p>A {@link KalmanEstimator} object is built using the {@link KalmanEstimatorBuilder#build() build}
- * method of a {@link KalmanEstimatorBuilder}.</p>
+ * <p>An {@link UnscentedKalmanEstimator} object is built using the {@link UnscentedKalmanEstimatorBuilder#build() build}
+ * method of a {@link UnscentedKalmanEstimatorBuilder}.</p>
  *
- * @author Romain Gerbaud
- * @author Maxime Journot
- * @author Luc Maisonobe
- * @since 9.2
+ * @author Gaëtan Pierre
+ * @author Bryan Cazabonne
+ * @since 11.3
  */
-public class KalmanEstimator extends BaseKalmanEstimator {
+public class UnscentedKalmanEstimator extends BaseKalmanEstimator {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
 
-    /** Kalman filter process model. */
-    private final AbstractKalmanModel processModel;
+    /** Unscented Kalman filter process model. */
+    private final UnscentedKalmanModel processModel;
 
     /** Filter. */
-    private final ExtendedKalmanFilter<MeasurementDecorator> filter;
+    private final UnscentedKalmanFilter<MeasurementDecorator> filter;
 
     /** Observer to retrieve current estimation info. */
     private KalmanObserver observer;
 
-    /** Kalman filter estimator constructor (package private).
+    /** Unscented Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilders propagators builders used to evaluate the orbit.
      * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @since 10.3
+     * @param utProvider provider for the unscented transform.
      */
-    KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                    final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
-                    final ParameterDriversList estimatedMeasurementParameters,
-                    final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+    UnscentedKalmanEstimator(final MatrixDecomposer decomposer,
+                             final List<NumericalPropagatorBuilder> propagatorBuilders,
+                             final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
+                             final ParameterDriversList estimatedMeasurementParameters,
+                             final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                             final UnscentedTransformProvider utProvider) {
         super(propagatorBuilders);
-        this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
-        this.observer           = null;
+        this.referenceDate = propagatorBuilders.get(0).getInitialOrbitDate();
+        this.observer      = null;
 
         // Build the process model and measurement model
-        this.processModel = propagatorBuilders.get(0).buildKalmanModel(propagatorBuilders,
-                                                                       processNoiseMatricesProviders,
-                                                                       estimatedMeasurementParameters,
-                                                                       measurementProcessNoiseMatrix);
+        this.processModel = new UnscentedKalmanModel(propagatorBuilders, processNoiseMatricesProviders,
+                                                     estimatedMeasurementParameters, measurementProcessNoiseMatrix);
 
-        this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
+        this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate(), utProvider);
 
     }
 
@@ -124,24 +115,20 @@ public class KalmanEstimator extends BaseKalmanEstimator {
      * Update the filter with the new measurement by calling the estimate method.
      * </p>
      * @param observedMeasurement the measurement to process
-     * @return estimated propagators
+     * @return estimated propagator
      */
     public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
-        try {
-            final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
-            processModel.finalizeEstimation(observedMeasurement, estimate);
-            if (observer != null) {
-                observer.evaluationPerformed(processModel);
-            }
-            return processModel.getEstimatedPropagators();
-        } catch (MathRuntimeException mrte) {
-            throw new OrekitException(mrte);
+        final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
+        processModel.finalizeEstimation(observedMeasurement, estimate);
+        if (observer != null) {
+            observer.evaluationPerformed(processModel);
         }
+        return processModel.getEstimatedPropagators();
     }
 
     /** Process several measurements.
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
-     * @return estimated propagators
+     * @return estimated propagator
      */
     public Propagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
         Propagator[] propagators = null;

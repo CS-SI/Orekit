@@ -27,6 +27,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MerweUnscentedTransform;
 import org.hipparchus.util.Precision;
 import org.orekit.KeyValueFileParser;
 import org.orekit.attitudes.AttitudeProvider;
@@ -68,6 +69,8 @@ import org.orekit.estimation.sequential.KalmanEstimation;
 import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
 import org.orekit.estimation.sequential.KalmanObserver;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimatorBuilder;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
@@ -132,6 +135,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -600,7 +604,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     protected ResultKalman runKalman(final File input, final OrbitType orbitType, final boolean print,
                                      final RealMatrix cartesianOrbitalP, final RealMatrix cartesianOrbitalQ,
                                      final RealMatrix propagationP, final RealMatrix propagationQ,
-                                     final RealMatrix measurementP, final RealMatrix measurementQ)
+                                     final RealMatrix measurementP, final RealMatrix measurementQ,
+                                     final Boolean isUnscented)
         throws IOException {
 
         // Read input parameters
@@ -732,6 +737,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         // Build the full covariance matrix and process noise matrix
         final int nbPropag = (propagationP != null)?propagationP.getRowDimension():0;
+        final int nbMeas = (measurementP != null)?measurementP.getRowDimension():0;
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6 + nbPropag,
                                                                  6 + nbPropag);
         final RealMatrix Q = MatrixUtils.createRealMatrix(6 + nbPropag,
@@ -747,197 +753,143 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         }
 
         // Build the Kalman
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
-        if (measurementP != null) {
-            // Measurement part
-            kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
-        }
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        if (isUnscented) {
+            // Unscented 
+            final UnscentedKalmanEstimatorBuilder kalmanBuilder = new UnscentedKalmanEstimatorBuilder().
+                    addPropagationConfiguration((NumericalPropagatorBuilder) propagatorBuilder, new ConstantProcessNoise(initialP, Q));
+            if (measurementP != null) {
+                // Measurement part
+                kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
+            }
+            // Unscented
+            final UnscentedKalmanEstimator kalman = kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(6 + nbPropag + nbMeas)).build();
+            Observer observer = new Observer(print, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
+            // Add an observer
+            kalman.setObserver(observer);
+            // Process the list measurements 
+            final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
 
-        // Add an observer
-        kalman.setObserver(new KalmanObserver() {
 
-            /** Date of the first measurement.*/
-            private AbsoluteDate t0;
+            // Process the list measurements 
 
-            /** {@inheritDoc} */
-            @Override
-            @SuppressWarnings("unchecked")
-            public void evaluationPerformed(final KalmanEstimation estimation) {
+            // Get the last estimated physical covariances
+            final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
 
-                // Current measurement number, date and status
-                final EstimatedMeasurement<?> estimatedMeasurement = estimation.getCorrectedMeasurement();
-                final int currentNumber        = estimation.getCurrentMeasurementNumber();
-                final AbsoluteDate currentDate = estimatedMeasurement.getDate();
-                final EstimatedMeasurement.Status currentStatus = estimatedMeasurement.getStatus();
+            // Parameters and measurements.
+            final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
+            final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
 
-                // Current estimated measurement
-                final ObservedMeasurement<?>  observedMeasurement  = estimatedMeasurement.getObservedMeasurement();
-
-                // Measurement type & Station name
-                String measType    = "";
-                String stationName = "";
-
-                // Register the measurement in the proper measurement logger
-                logEvaluation(estimatedMeasurement,
-                              rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
+            // Eventually, print parameter changes, statistics and covariances
+            if (print) {
                 
-                // Get measurement type
-                final String measurementType = observedMeasurement.getMeasurementType();
-                if (measurementType.equals(Range.MEASUREMENT_TYPE)) {
-                    measType    = "RANGE";
-                    stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
-                                    getStation().getBaseFrame().getName();
-                } else if (measurementType.equals(RangeRate.MEASUREMENT_TYPE)) {
-                    measType    = "RANGE_RATE";
-                    stationName =  ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).getObservedMeasurement().
-                                    getStation().getBaseFrame().getName();
-                } else if (measurementType.equals(AngularAzEl.MEASUREMENT_TYPE)) {
-                    measType    = "AZ_EL";
-                    stationName =  ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).getObservedMeasurement().
-                                    getStation().getBaseFrame().getName();
-                } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
-                    measType    = "PV";
-                } else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
-                    measType    = "POSITION";
+                // Display parameter change for non orbital drivers
+                int length = 0;
+                for (final ParameterDriver parameterDriver : propagationParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                if (propagationParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
+                                             true, length, propagationParameters);
+                }
+                if (measurementsParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
+                                             true, length, measurementsParameters);
+                }
+                // Measurements statistics summary
+                System.out.println("");
+                rangeLog.displaySummary(System.out);
+                rangeRateLog.displaySummary(System.out);
+                azimuthLog.displaySummary(System.out);
+                elevationLog.displaySummary(System.out);
+                positionOnlyLog.displaySummary(System.out);
+                positionLog.displaySummary(System.out);
+                velocityLog.displaySummary(System.out);
+                
+                // Covariances and sigmas
+                displayFinalCovariances(System.out, kalman);
+            }
+
+            // Instantiation of the results
+            return new ResultKalman(propagationParameters, measurementsParameters,
+                                    kalman.getCurrentMeasurementNumber(), estimated.getPVCoordinates(),
+                                    rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
+                                    azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
+                                    positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
+                                    covarianceMatrix);
+        
+        } else {
+            // Extended 
+            final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
+                    addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
+            if (measurementP != null) {
+                // Measurement part
+                kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
+            }
+            // Extended
+            final KalmanEstimator kalman = kalmanBuilder.build();
+            Observer observer = new Observer(print, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
+            // Add an observer
+            kalman.setObserver(observer);
+            
+            // Process the list measurements 
+            final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+
+            // Get the last estimated physical covariances
+            final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
+
+            // Parameters and measurements.
+            final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
+            final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
+
+            // Eventually, print parameter changes, statistics and covariances
+            if (print) {
+                
+                // Display parameter change for non orbital drivers
+                int length = 0;
+                for (final ParameterDriver parameterDriver : propagationParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                if (propagationParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
+                                             true, length, propagationParameters);
+                }
+                if (measurementsParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
+                                             true, length, measurementsParameters);
+
+                    // Measurements statistics summary
+                    System.out.println("");
+                    rangeLog.displaySummary(System.out);
+                    rangeRateLog.displaySummary(System.out);
+                    azimuthLog.displaySummary(System.out);
+                    elevationLog.displaySummary(System.out);
+                    positionOnlyLog.displaySummary(System.out);
+                    positionLog.displaySummary(System.out);
+                    velocityLog.displaySummary(System.out);
+                    
+                    // Covariances and sigmas
+                    displayFinalCovariances(System.out, kalman);
+
                 }
 
-
-                // Print data on terminal
-                // ----------------------
-
-                // Header
-                if (print) {
-                    if (currentNumber == 1) {
-                        // Set t0 to first measurement date
-                        t0 = currentDate;
-
-                        // Print header
-                        final String formatHeader = "%-4s\t%-25s\t%15s\t%-10s\t%-10s\t%-20s\t%20s\t%20s";
-                        String header = String.format(Locale.US, formatHeader,
-                                                      "Nb", "Epoch", "Dt[s]", "Status", "Type", "Station",
-                                                      "DP Corr", "DV Corr");
-                        // Orbital drivers
-                        for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
-                            header += String.format(Locale.US, "\t%20s", driver.getName());
-                            header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
-                        }
-
-                        // Propagation drivers
-                        for (DelegatingDriver driver : estimation.getEstimatedPropagationParameters().getDrivers()) {
-                            header += String.format(Locale.US, "\t%20s", driver.getName());
-                            header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
-                        }
-
-                        // Measurements drivers
-                        for (DelegatingDriver driver : estimation.getEstimatedMeasurementsParameters().getDrivers()) {
-                            header += String.format(Locale.US, "\t%20s", driver.getName());
-                            header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
-                        }
-
-                        // Print header
-                        System.out.println(header);
-                    }
-
-                    // Print current measurement info in terminal
-                    String line = "";
-                    // Line format
-                    final String lineFormat = "%4d\t%-25s\t%15.3f\t%-10s\t%-10s\t%-20s\t%20.9e\t%20.9e";
-
-                    // Orbital correction = DP & DV between predicted orbit and estimated orbit
-                    final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getPosition();
-                    final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getVelocity();
-                    final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getPosition();
-                    final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getVelocity();
-                    final double DPcorr       = Vector3D.distance(predictedP, estimatedP);
-                    final double DVcorr       = Vector3D.distance(predictedV, estimatedV);
-
-                    line = String.format(Locale.US, lineFormat,
-                                         currentNumber, currentDate.toString(),
-                                         currentDate.durationFrom(t0), currentStatus.toString(),
-                                         measType, stationName,
-                                         DPcorr, DVcorr);
-
-                    // Handle parameters printing (value and error)
-                    int jPar = 0;
-                    final RealMatrix Pest = estimation.getPhysicalEstimatedCovarianceMatrix();
-                    // Orbital drivers
-                    for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
-                        line += String.format(Locale.US, "\t%20.9f", driver.getValue());
-                        line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
-                        jPar++;
-                    }
-                    // Propagation drivers
-                    for (DelegatingDriver driver : estimation.getEstimatedPropagationParameters().getDrivers()) {
-                        line += String.format(Locale.US, "\t%20.9f", driver.getValue());
-                        line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
-                        jPar++;
-                    }
-                    // Measurements drivers
-                    for (DelegatingDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-                        line += String.format(Locale.US, "\t%20.9f", driver.getValue());
-                        line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
-                        jPar++;
-                    }
-
-                    // Print the line
-                    System.out.println(line);
-                }
             }
-        });
+            
 
-        // Process the list measurements
-        final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
-
-        // Get the last estimated physical covariances
-        final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
-
-        // Parameters and measurements.
-        final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
-        final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
-
-        // Eventually, print parameter changes, statistics and covariances
-        if (print) {
-
-            // Display parameter change for non orbital drivers
-            int length = 0;
-            for (final ParameterDriver parameterDriver : propagationParameters.getDrivers()) {
-                length = FastMath.max(length, parameterDriver.getName().length());
-            }
-            for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
-                length = FastMath.max(length, parameterDriver.getName().length());
-            }
-            if (propagationParameters.getNbParams() > 0) {
-                displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
-                                         true, length, propagationParameters);
-            }
-            if (measurementsParameters.getNbParams() > 0) {
-                displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
-                                         true, length, measurementsParameters);
-            }
-
-            // Measurements statistics summary
-            System.out.println("");
-            rangeLog.displaySummary(System.out);
-            rangeRateLog.displaySummary(System.out);
-            azimuthLog.displaySummary(System.out);
-            elevationLog.displaySummary(System.out);
-            positionOnlyLog.displaySummary(System.out);
-            positionLog.displaySummary(System.out);
-            velocityLog.displaySummary(System.out);
-
-            // Covariances and sigmas
-            displayFinalCovariances(System.out, kalman);
+            // Instantiation of the results
+            return new ResultKalman(propagationParameters, measurementsParameters,
+                                    kalman.getCurrentMeasurementNumber(), estimated.getPVCoordinates(),
+                                    rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
+                                    azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
+                                    positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
+                                    covarianceMatrix);
         }
 
-        // Instantiation of the results
-        return new ResultKalman(propagationParameters, measurementsParameters,
-                                kalman.getCurrentMeasurementNumber(), estimated.getPVCoordinates(),
-                                rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
-                                azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
-                                positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
-                                covarianceMatrix);
     }
 
      /**
@@ -2604,11 +2556,107 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             logStream.format(Locale.US, strFormat + numFormat + "\n", paramNames[i], sigmas[i]);
         }
         logStream.println("");
+    } 
+
+    /** Display covariances and sigmas as predicted by a Kalman filter at date t. 
+     */
+    private void displayFinalCovariances(final PrintStream logStream, final UnscentedKalmanEstimator kalman) {
+        
+//        // Get kalman estimated propagator
+//        final NumericalPropagator kalmanProp = kalman.getProcessModel().getEstimatedPropagator();
+//        
+//        // Link the partial derivatives to this propagator
+//        final String equationName = "kalman-derivatives";
+//        PartialDerivativesEquations kalmanDerivatives = new PartialDerivativesEquations(equationName, kalmanProp);
+//        
+//        // Initialize the derivatives
+//        final SpacecraftState rawState = kalmanProp.getInitialState();
+//        final SpacecraftState stateWithDerivatives =
+//                        kalmanDerivatives.setInitialJacobians(rawState);
+//        kalmanProp.resetInitialState(stateWithDerivatives);
+//        
+//        // Propagate to target date
+//        final SpacecraftState kalmanState = kalmanProp.propagate(targetDate);
+//        
+//        // Compute STM
+//        RealMatrix STM = kalman.getProcessModel().getErrorStateTransitionMatrix(kalmanState, kalmanDerivatives);
+//        
+//        // Compute covariance matrix
+//        RealMatrix P = kalman.getProcessModel().unNormalizeCovarianceMatrix(kalman.predictCovariance(STM,
+//                                                                              kalman.getProcessModel().getProcessNoiseMatrix()));
+        final RealMatrix P = kalman.getPhysicalEstimatedCovarianceMatrix();
+        final String[] paramNames = new String[P.getRowDimension()];
+        int index = 0;
+        int paramSize = 0;
+        for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
+            paramNames[index++] = driver.getName();
+            paramSize = FastMath.max(paramSize, driver.getName().length());
+        }
+        for (final ParameterDriver driver : kalman.getPropagationParametersDrivers(true).getDrivers()) {
+            paramNames[index++] = driver.getName();
+            paramSize = FastMath.max(paramSize, driver.getName().length());
+        }
+        for (final ParameterDriver driver : kalman.getEstimatedMeasurementsParameters().getDrivers()) {
+            paramNames[index++] = driver.getName();
+            paramSize = FastMath.max(paramSize, driver.getName().length());
+        }
+        if (paramSize < 20) {
+            paramSize = 20;
+        }
+        
+        // Header
+        logStream.format("\n%s\n", "Kalman Final Covariances:");
+//        logStream.format(Locale.US, "\tDate: %-23s UTC\n",
+//                         targetDate.toString(TimeScalesFactory.getUTC()));
+        logStream.format(Locale.US, "\tDate: %-23s UTC\n",
+                         kalman.getCurrentDate().toString(TimeScalesFactory.getUTC()));
+        
+        // Covariances
+        String strFormat = String.format("%%%2ds  ", paramSize);
+        logStream.format(strFormat, "Covariances:");
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+        }
+        logStream.println("");
+        String numFormat = String.format("%%%2d.6f  ", paramSize);
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+            for (int j = 0; j <= i; j++) {
+                logStream.format(Locale.US, numFormat, P.getEntry(i, j));
+            }
+            logStream.println("");
+        }
+        
+        // Correlation coeff
+        final double[] sigmas = new double[P.getRowDimension()];
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            sigmas[i] = FastMath.sqrt(P.getEntry(i, i));
+        }
+        
+        logStream.format("\n" + strFormat, "Corr coef:");
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+        }
+        logStream.println("");
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+            for (int j = 0; j <= i; j++) {
+                logStream.format(Locale.US, numFormat, P.getEntry(i, j)/(sigmas[i]*sigmas[j]));
+            }
+            logStream.println("");
+        }
+        
+        // Sigmas
+        logStream.format("\n" + strFormat + "\n", "Sigmas: ");
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat + numFormat + "\n", paramNames[i], sigmas[i]);
+        }
+        logStream.println("");
     }
 
     /** Log evaluations.
      */
-    private void logEvaluation(EstimatedMeasurement<?> evaluation,
+    private static void logEvaluation(EstimatedMeasurement<?> evaluation,
                                EvaluationLogger<Range> rangeLog,
                                EvaluationLogger<RangeRate> rangeRateLog,
                                EvaluationLogger<AngularAzEl> azimuthLog,
@@ -2660,6 +2708,180 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
             }
         }
+    }
+
+    /** Observer for Kalman estimation. */
+    public static class Observer implements KalmanObserver {
+
+        /** Date of the first measurement.*/
+        private AbsoluteDate t0;
+        
+        /** Printing flag. */
+        private Boolean print;
+        
+        /** Range logger. */
+        private RangeLog rangeLog;
+        
+        /** Range rate logger. */
+        private RangeRateLog rangeRateLog;
+        
+        /** Azimuth logger. */
+        private AzimuthLog azimuthLog;
+        
+        /** Elevation logger. */
+        private ElevationLog elevationLog;
+        
+        /** Position only logger. */
+        private PositionOnlyLog positionOnlyLog;
+        
+        /** Position logger. */
+        private PositionLog positionLog;
+        
+        /** Velocity logger. */
+        private VelocityLog velocityLog;
+
+        public Observer(Boolean print, RangeLog rangeLog, RangeRateLog rangeRateLog, AzimuthLog azimuthLog,
+                ElevationLog elevationLog, PositionOnlyLog positionOnlyLog, PositionLog positionLog,
+                VelocityLog velocityLog) {
+            super();
+            this.print           = print;
+            this.rangeLog        = rangeLog;
+            this.rangeRateLog    = rangeRateLog;
+            this.azimuthLog      = azimuthLog;
+            this.elevationLog    = elevationLog;
+            this.positionOnlyLog = positionOnlyLog;
+            this.positionLog     = positionLog;
+            this.velocityLog     = velocityLog;
+        }
+
+
+
+        /** {@inheritDoc} */
+        @Override
+        @SuppressWarnings("unchecked")
+        public void evaluationPerformed(final KalmanEstimation estimation) {
+
+            // Current measurement number, date and status
+            final EstimatedMeasurement<?> estimatedMeasurement = estimation.getCorrectedMeasurement();
+            final int currentNumber        = estimation.getCurrentMeasurementNumber();
+            final AbsoluteDate currentDate = estimatedMeasurement.getDate();
+            final EstimatedMeasurement.Status currentStatus = estimatedMeasurement.getStatus();
+
+            // Current estimated measurement
+            final ObservedMeasurement<?>  observedMeasurement  = estimatedMeasurement.getObservedMeasurement();
+            
+            // Measurement type & Station name
+            String measType    = "";
+            String stationName = "";
+
+            // Register the measurement in the proper measurement logger
+            logEvaluation(estimatedMeasurement,
+                    rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
+            // Get measurement type
+            final String measurementType = observedMeasurement.getMeasurementType();
+            if (measurementType.equals(Range.MEASUREMENT_TYPE)) {
+                measType    = "RANGE";
+                stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
+                                getStation().getBaseFrame().getName();
+            } else if (measurementType.equals(RangeRate.MEASUREMENT_TYPE)) {
+                measType    = "RANGE_RATE";
+                stationName =  ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).getObservedMeasurement().
+                                getStation().getBaseFrame().getName();
+            } else if (measurementType.equals(AngularAzEl.MEASUREMENT_TYPE)) {
+                measType    = "AZ_EL";
+                stationName =  ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).getObservedMeasurement().
+                                getStation().getBaseFrame().getName();
+            } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
+                measType    = "PV";
+            } else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
+                measType    = "POSITION";
+            }
+            
+
+            // Print data on terminal
+            // ----------------------
+
+            // Header
+            if (print) {
+                if (currentNumber == 1) {
+                    // Set t0 to first measurement date
+                    t0 = currentDate;
+
+                    // Print header
+                    final String formatHeader = "%-4s\t%-25s\t%15s\t%-10s\t%-10s\t%-20s\t%20s\t%20s";
+                    String header = String.format(Locale.US, formatHeader,
+                                                  "Nb", "Epoch", "Dt[s]", "Status", "Type", "Station",
+                                                  "DP Corr", "DV Corr");
+                    // Orbital drivers
+                    for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
+                        header += String.format(Locale.US, "\t%20s", driver.getName());
+                        header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
+                    }
+
+                    // Propagation drivers
+                    for (DelegatingDriver driver : estimation.getEstimatedPropagationParameters().getDrivers()) {
+                        header += String.format(Locale.US, "\t%20s", driver.getName());
+                        header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
+                    }
+
+                    // Measurements drivers
+                    for (DelegatingDriver driver : estimation.getEstimatedMeasurementsParameters().getDrivers()) {
+                        header += String.format(Locale.US, "\t%20s", driver.getName());
+                        header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
+                    }
+
+                    // Print header
+                    System.out.println(header);
+                }
+
+                // Print current measurement info in terminal
+                String line = "";
+                // Line format
+                final String lineFormat = "%4d\t%-25s\t%15.3f\t%-10s\t%-10s\t%-20s\t%20.9e\t%20.9e";
+
+                // Orbital correction = DP & DV between predicted orbit and estimated orbit
+                final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getVelocity();
+                final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getVelocity();
+                final double DPcorr       = Vector3D.distance(predictedP, estimatedP);
+                final double DVcorr       = Vector3D.distance(predictedV, estimatedV);
+
+                line = String.format(Locale.US, lineFormat,
+                                     currentNumber, currentDate.toString(), 
+                                     currentDate.durationFrom(t0), currentStatus.toString(),
+                                     measType, stationName,
+                                     DPcorr, DVcorr);
+
+                // Handle parameters printing (value and error) 
+                int jPar = 0;
+                final RealMatrix Pest = estimation.getPhysicalEstimatedCovarianceMatrix();
+                // Orbital drivers
+                for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
+                    line += String.format(Locale.US, "\t%20.9f", driver.getValue());
+                    line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
+                    jPar++;
+                }
+                // Propagation drivers
+                for (DelegatingDriver driver : estimation.getEstimatedPropagationParameters().getDrivers()) {
+                    line += String.format(Locale.US, "\t%20.9f", driver.getValue());
+                    line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
+                    jPar++;
+                }
+                // Measurements drivers
+                for (DelegatingDriver driver : estimation.getEstimatedMeasurementsParameters().getDrivers()) {
+                    line += String.format(Locale.US, "\t%20.9f", driver.getValue());
+                    line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
+                    jPar++;
+                }
+
+                // Print the line
+                System.out.println(line);
+            }
+        }
+
+    
+    
     }
 
 }

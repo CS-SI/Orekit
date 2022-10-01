@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.sequential;
 
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -55,12 +60,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public class KalmanEstimatorTest {
 
@@ -933,39 +932,8 @@ public class KalmanEstimatorTest {
                                                new Vector3D(1.0, -1.0, 0.0),
                                                0.5, 1.0, new ObservableSatellite(0));
 
-        // Create propagator builder
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true, 1.e-6, 60., 1.);
-
-        // Covariance matrix initialization
-        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
-        });
-
-        // Process noise matrix
-        RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
-        });
-
-
-        // Build the Kalman filter
-        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        build();
-
         // Decorated measurement
-        MeasurementDecorator decorated = null;
-
-        // Call the private method "decorate" in KalmanEstimator class
-        try {
-            Method decorate = KalmanEstimator.class.getDeclaredMethod("decorate",
-                                                                      ObservedMeasurement.class);
-            decorate.setAccessible(true);
-            decorated = (MeasurementDecorator) decorate.invoke(kalman, position);
-        } catch (NoSuchMethodException | IllegalAccessException |
-                        IllegalArgumentException | InvocationTargetException e) {
-
-        }
+        MeasurementDecorator decorated = KalmanEstimatorUtil.decorate(position, context.initialOrbit.getDate());
 
         // Verify time
         Assertions.assertEquals(0.0, decorated.getTime(), 1.0e-15);

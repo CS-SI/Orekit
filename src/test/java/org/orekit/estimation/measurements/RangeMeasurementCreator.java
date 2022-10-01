@@ -50,6 +50,10 @@ public class RangeMeasurementCreator extends MeasurementCreator {
         this(provider, antennaPhaseCenter, 0.0);
     }
 
+    public StationDataProvider getStationDataProvider() {
+    	return provider;
+    }
+
     public RangeMeasurementCreator(final StationDataProvider provider, final Vector3D antennaPhaseCenter, final double bias) {
         this.provider           = provider;
         this.antennaPhaseCenter = antennaPhaseCenter;
