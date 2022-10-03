@@ -52,7 +52,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * It is possible to change the covariance frame by using the
  * {@link #changeCovarianceFrame(Orbit, Frame, Frame, RealMatrix, OrbitType, PositionAngle)} method. This method is
  * based on Equation (18) of <i>Covariance Transformations for Satellite Flight Dynamics Operations</i> by David A.
- * Vallado. It is important to highlight that the frames must be inertial frames.
+ * Vallado.
  * <p>
  * Finally, covariance orbit type can be changed using the
  * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle, OrbitType, PositionAngle, RealMatrix)} method.
