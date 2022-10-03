@@ -336,8 +336,10 @@ public enum OrekitMessages implements Localizable {
     NO_STATION_ECCENTRICITY_FOR_EPOCH(
             "no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}"),
     INCONSISTENT_SELECTION("inconsistent parameters selection between pairs {0}/{1} and {2}/{3}"),
+    NO_UNSCENTED_TRANSFORM_CONFIGURED("no unscented transform configured"),
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
     WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}");
+
 
     // CHECKSTYLE: resume JavadocVariable check
 

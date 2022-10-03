@@ -199,7 +199,10 @@
     *  Kalman filtering
         * customizable process noise matrices providers
         * time dependent process noise provider
+        * implementation of the Extended Kalman Filter
         * implementation of the Extended Semi-analytical Kalman Filter
+        * implementation of the Unscented Kalman Filter
+        * implementation of the Unscented Semi-analytical Kalman Filter
     * parameters estimation
         * orbital parameters estimation (or only a subset if desired)
         * force model parameters estimation (drag coefficients, radiation pressure coefficients,

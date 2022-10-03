@@ -250,7 +250,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
                                                cartesianOrbitalP, cartesianOrbitalQ,
                                                null, null,
-                                               measurementP, measurementQ);
+                                               measurementP, measurementQ, false);
 
         // Definition of the accuracy for the test
         final double distanceAccuracy = 0.86;
@@ -390,7 +390,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         ResultKalman kalmanW3B = runKalman(input, orbitType, print,
                                            cartesianOrbitalP, cartesianOrbitalQ,
                                            propagationP, propagationQ,
-                                           measurementP, measurementQ);
+                                           measurementP, measurementQ, false);
 
         // Tests
         // -----
