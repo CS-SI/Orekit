@@ -1068,7 +1068,7 @@ public class CdmParserTest {
 	    
 	    
 	    // Check CLASSIFICATION is correctly read
-	    Assert.assertEquals("CLASSIFICATION", "\"Operator-proprietary data; secondary distribution not permitted.\"", 
+	    Assert.assertEquals("CLASSIFICATION", "\"Operator-proprietary data; Example taken from CCSDS example CDM pink book (CCSDS 508.0-P-1.0.2)\"", 
 	    		file.getHeader().getClassification());
 	    
 	    
