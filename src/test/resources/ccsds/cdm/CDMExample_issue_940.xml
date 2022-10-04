@@ -8,7 +8,7 @@ id="CCSDS_CDM_VERS" version="1.0">
 <ORIGINATOR>JSPOC</ORIGINATOR>
 <MESSAGE_FOR>SATELLITE A</MESSAGE_FOR>
 <MESSAGE_ID>201113719185-1</MESSAGE_ID>
-<CLASSIFICATION>"Operator-proprietary data; Example taken from CCSDS example CDM pink book (CCSDS 508.0-P-1.0.2)"</CLASSIFICATION>
+<CLASSIFICATION>"Free text - for examples see CDM pink book (CCSDS 508.0-P-1.0.2)"</CLASSIFICATION>
 </header>
 <body>
 <relativeMetadataData>
