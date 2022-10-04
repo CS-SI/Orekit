@@ -242,55 +242,82 @@ public final class KeplerianAnomalyUtility {
     /**
      * Computes the hyperbolic eccentric anomaly from the hyperbolic mean anomaly.
      * <p>
-     * The algorithm used here for solving hyperbolic Kepler equation is Danby's
-     * iterative method (3rd order) with Vallado's initial guess.
+     * The algorithm used here for solving hyperbolic Kepler equation is from
+     * Gooding, R.H., Odell, A.W. "The hyperbolic Kepler equation (and the elliptic
+     * equation revisited)." Celestial Mechanics 44, 267–282 (1988).
+     * https://doi.org/10.1007/BF01235540
      * </p>
      * @param e eccentricity &gt; 1
      * @param M hyperbolic mean anomaly
      * @return hyperbolic eccentric anomaly
      */
     public static double hyperbolicMeanToEccentric(final double e, final double M) {
-        // Resolution of hyperbolic Kepler equation for Keplerian parameters
+        // Solve L = S - g * asinh(S) for S = sinh(H).
+        final double L = M / e;
+        final double g = 1.0 / e;
+        final double g1 = 1.0 - g;
 
-        // Initial guess
-        double H;
-        if (e < 1.6) {
-            if (-FastMath.PI < M && M < 0. || M > FastMath.PI) {
-                H = M - e;
+        // Starter based on Lagrange's theorem.
+        double S = L;
+        if (L == 0.0) {
+            return 0.0;
+        }
+        final double cl = FastMath.sqrt(1.0 + L * L);
+        final double al = FastMath.asinh(L);
+        final double w = g * g * al / (cl * cl * cl);
+        S = 1.0 - g / cl;
+        S = L + g * al / FastMath.cbrt(S * S * S + w * L * (1.5 - (4.0 / 3.0) * g));
+
+        // Two iterations (at most) of Halley-then-Newton process.
+        for (int i = 0; i < 2; ++i) {
+            final double s0 = S * S;
+            final double s1 = s0 + 1.0;
+            final double s2 = FastMath.sqrt(s1);
+            final double s3 = s1 * s2;
+            final double fdd = g * S / s3;
+            final double fddd = g * (1.0 - 2.0 * s0) / (s1 * s3);
+
+            double f;
+            double fd;
+            if (s0 / 6.0 + g1 >= 0.5) {
+                f = (S - g * FastMath.asinh(S)) - L;
+                fd = 1.0 - g / s2;
             } else {
-                H = M + e;
+                // Accurate computation of S - (1 - g1) * asinh(S)
+                // when (g1, S) is close to (0, 0).
+                final double t = S / (1.0 + FastMath.sqrt(1.0 + S * S));
+                final double tsq = t * t;
+                double x = S * (g1 + g * tsq);
+                double term = 2.0 * g * t;
+                double twoI1 = 1.0;
+                double x0;
+                int j = 0;
+                do {
+                    if (++j == 1000000) {
+                        // This isn't expected to happen, but it protects against an infinite loop.
+                        throw new MathIllegalStateException(
+                                OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY, j);
+                    }
+                    twoI1 += 2.0;
+                    term *= tsq;
+                    x0 = x;
+                    x -= term / twoI1;
+                } while (x != x0);
+                f = x - L;
+                fd = (s0 / (s2 + 1.0) + g1) / s2;
             }
-        } else {
-            if (e < 3.6 && FastMath.abs(M) > FastMath.PI) {
-                H = M - FastMath.copySign(e, M);
-            } else {
-                H = M / (e - 1.);
+            final double ds = f * fd / (0.5 * f * fdd - fd * fd);
+            final double stemp = S + ds;
+            if (S == stemp) {
+                break;
             }
+            f += ds * (fd + 0.5 * ds * (fdd + ds / 3.0 * fddd));
+            fd += ds * (fdd + 0.5 * ds * fddd);
+            S = stemp - f / fd;
         }
 
-        // Iterative computation
-        int iter = 0;
-        do {
-            final double f3 = e * FastMath.cosh(H);
-            final double f2 = e * FastMath.sinh(H);
-            final double f1 = f3 - 1.;
-            final double f0 = f2 - H - M;
-            final double f12 = 2. * f1;
-            final double d = f0 / f12;
-            final double fdf = f1 - d * f2;
-            final double ds = f0 / fdf;
-
-            final double shift = f0 / (fdf + ds * ds * f3 / 6.);
-
-            H -= shift;
-
-            if (FastMath.abs(shift) <= 1.0e-12) {
-                return H;
-            }
-
-        } while (++iter < 50);
-
-        throw new MathIllegalStateException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY, iter);
+        final double H = FastMath.asinh(S);
+        return H;
     }
 
     /**

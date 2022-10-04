@@ -152,6 +152,12 @@ public class KeplerianAnomalyUtilityTest {
         final double M7 = -0.286;
         final double E7 = KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e7, M7);
         Assertions.assertEquals(-0.09158570899196887, E7, 1e-14);
+
+        // Issue 951.
+        final double e8 = 1.251844925917281;
+        final double M8 = 54.70111712786907;
+        final double E8 = KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e8, M8);
+        Assertions.assertEquals(4.550432282228856, E8, 1e-14);
     }
 
     @Test

@@ -209,6 +209,12 @@ public class FieldKeplerianAnomalyUtilityTest {
         final T M7 = field.getZero().add(-0.286);
         final T E7 = FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e7, M7);
         Assertions.assertEquals(-0.09158570899196887, E7.getReal(), 1e-14);
+
+        // Issue 951.
+        final T e8 = field.getZero().add(1.251844925917281);
+        final T M8 = field.getZero().add(54.70111712786907);
+        final T E8 = FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e8, M8);
+        Assertions.assertEquals(4.550432282228856, E8.getReal(), 1e-14);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestHyperbolicEccentricToMean(final Field<T> field) {

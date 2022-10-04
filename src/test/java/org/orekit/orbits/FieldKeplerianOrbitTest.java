@@ -1739,7 +1739,7 @@ public class FieldKeplerianOrbitTest {
             MatcherAssert.assertThat(rebuilt.getPerigeeArgumentDot().getReal(),               relativelyCloseTo(orbit.getPerigeeArgumentDot().getReal(),               1));
             MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot().getReal(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot().getReal(), 1));
             for (PositionAngle type2 : PositionAngle.values()) {
-                MatcherAssert.assertThat(rebuilt.getAnomaly(type2).getReal(),    relativelyCloseTo(orbit.getAnomaly(type2).getReal(),    2));
+                MatcherAssert.assertThat(rebuilt.getAnomaly(type2).getReal(),    relativelyCloseTo(orbit.getAnomaly(type2).getReal(),    3));
                 MatcherAssert.assertThat(rebuilt.getAnomalyDot(type2).getReal(), relativelyCloseTo(orbit.getAnomalyDot(type2).getReal(), 4));
             }
         }

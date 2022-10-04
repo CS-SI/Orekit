@@ -17,7 +17,8 @@
 package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.Field;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
@@ -273,8 +274,10 @@ public class FieldKeplerianAnomalyUtility {
     /**
      * Computes the hyperbolic eccentric anomaly from the hyperbolic mean anomaly.
      * <p>
-     * The algorithm used here for solving hyperbolic Kepler equation is Danby's
-     * iterative method (3rd order) with Vallado's initial guess.
+     * The algorithm used here for solving hyperbolic Kepler equation is from
+     * Gooding, R.H., Odell, A.W. "The hyperbolic Kepler equation (and the elliptic
+     * equation revisited)." Celestial Mechanics 44, 267–282 (1988).
+     * https://doi.org/10.1007/BF01235540
      * </p>
      * @param <T> field type
      * @param e eccentricity &gt; 1
@@ -282,50 +285,82 @@ public class FieldKeplerianAnomalyUtility {
      * @return hyperbolic eccentric anomaly
      */
     public static <T extends CalculusFieldElement<T>> T hyperbolicMeanToEccentric(final T e, final T M) {
-        // Resolution of hyperbolic Kepler equation for Keplerian parameters
+        final Field<T> field = e.getField();
+        final T zero = field.getZero();
+        final T one = field.getOne();
+        final T two = zero.add(2.0);
+        final T three = zero.add(3.0);
+        final T half = zero.add(0.5);
+        final T onePointFive = zero.add(1.5);
+        final T fourThirds = zero.add(4.0).divide(zero.add(3.0));
 
-        // Field value of pi
-        final T pi = e.getPi();
+        // Solve L = S - g * asinh(S) for S = sinh(H).
+        final T L = M.divide(e);
+        final T g = e.reciprocal();
+        final T g1 = one.subtract(g);
 
-        // Initial guess
-        T H;
-        if (e.getReal() < 1.6) {
-            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
-                H = M.subtract(e);
+        // Starter based on Lagrange's theorem.
+        T S = L;
+        if (L.isZero()) {
+            return M.getField().getZero();
+        }
+        final T cl = L.multiply(L).add(one).sqrt();
+        final T al = L.asinh();
+        final T w = g.multiply(g).multiply(al).divide(cl.multiply(cl).multiply(cl));
+        S = one.subtract(g.divide(cl));
+        S = L.add(g.multiply(al).divide(S.multiply(S).multiply(S)
+                .add(w.multiply(L).multiply(onePointFive.subtract(fourThirds.multiply(g)))).cbrt()));
+
+        // Two iterations (at most) of Halley-then-Newton process.
+        for (int i = 0; i < 2; ++i) {
+            final T s0 = S.multiply(S);
+            final T s1 = s0.add(one);
+            final T s2 = s1.sqrt();
+            final T s3 = s1.multiply(s2);
+            final T fdd = g.multiply(S).divide(s3);
+            final T fddd = g.multiply(one.subtract(two.multiply(s0))).divide(s1.multiply(s3));
+
+            T f;
+            T fd;
+            if (s0.divide(zero.add(6.0)).add(g1).getReal() >= 0.5) {
+                f = S.subtract(g.multiply(S.asinh())).subtract(L);
+                fd = one.subtract(g.divide(s2));
             } else {
-                H = M.add(e);
+                // Accurate computation of S - (1 - g1) * asinh(S)
+                // when (g1, S) is close to (0, 0).
+                final T t = S.divide(one.add(one.add(S.multiply(S)).sqrt()));
+                final T tsq = t.multiply(t);
+                T x = S.multiply(g1.add(g.multiply(tsq)));
+                T term = two.multiply(g).multiply(t);
+                T twoI1 = one;
+                T x0;
+                int j = 0;
+                do {
+                    if (++j == 1000000) {
+                        // This isn't expected to happen, but it protects against an infinite loop.
+                        throw new MathIllegalStateException(
+                                OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY, j);
+                    }
+                    twoI1 = twoI1.add(2.0);
+                    term = term.multiply(tsq);
+                    x0 = x;
+                    x = x.subtract(term.divide(twoI1));
+                } while (x.getReal() != x0.getReal());
+                f = x.subtract(L);
+                fd = s0.divide(s2.add(one)).add(g1).divide(s2);
             }
-        } else {
-            if (e.getReal() < 3.6 && M.abs().getReal() > pi.getReal()) {
-                H = M.subtract(e.copySign(M));
-            } else {
-                H = M.divide(e.subtract(1));
+            final T ds = f.multiply(fd).divide(half.multiply(f).multiply(fdd).subtract(fd.multiply(fd)));
+            final T stemp = S.add(ds);
+            if (S.getReal() == stemp.getReal()) {
+                break;
             }
+            f = f.add(ds.multiply(fd.add(half.multiply(ds.multiply(fdd.add(ds.divide(three).multiply(fddd)))))));
+            fd = fd.add(ds.multiply(fdd.add(half.multiply(ds).multiply(fddd))));
+            S = stemp.subtract(f.divide(fd));
         }
 
-        // Iterative computation
-        int iter = 0;
-        do {
-            final T f3 = e.multiply(H.cosh());
-            final T f2 = e.multiply(H.sinh());
-            final T f1 = f3.subtract(1);
-            final T f0 = f2.subtract(H).subtract(M);
-            final T f12 = f1.multiply(2);
-            final T d = f0.divide(f12);
-            final T fdf = f1.subtract(d.multiply(f2));
-            final T ds = f0.divide(fdf);
-
-            final T shift = f0.divide(fdf.add(ds.multiply(ds.multiply(f3.divide(6)))));
-
-            H = H.subtract(shift);
-
-            if ((shift.abs().getReal()) <= 1.0e-12) {
-                return H;
-            }
-
-        } while (++iter < 50);
-
-        throw new MathIllegalArgumentException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY, iter);
+        final T H = S.asinh();
+        return H;
     }
 
     /**
