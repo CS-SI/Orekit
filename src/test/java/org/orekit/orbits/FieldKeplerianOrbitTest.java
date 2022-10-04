@@ -257,11 +257,6 @@ public class FieldKeplerianOrbitTest {
     }
 
     @Test
-    public void testIssue544() {
-        doTestIssue544(Decimal64Field.getInstance());
-    }
-
-    @Test
     public void testIssue674() {
         doTestIssue674(Decimal64Field.getInstance());
     }
@@ -1896,17 +1891,6 @@ public class FieldKeplerianOrbitTest {
                                                    shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-10);
 
-    }
-
-    private  <T extends CalculusFieldElement<T>> void doTestIssue544(Field<T> field) {
-        // Initial parameters
-        // In order to test the issue, we volontary set the anomaly at Double.NaN.
-        T e=        field.getZero().add(0.7311);
-        T anomaly=  field.getZero().add(Double.NaN);
-        // Computes the elliptic eccentric anomaly
-        T E = FieldKeplerianOrbit.meanToEllipticEccentric(anomaly, e);
-        // Verify that an infinite loop did not occur
-        Assertions.assertTrue(Double.isNaN(E.getReal()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue674(Field<T> field) {
