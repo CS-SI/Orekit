@@ -2,7 +2,7 @@ CCSDS_CDM_VERS                = 1.0
 CREATION_DATE                 = 2010-03-12T22:31:12.000
 ORIGINATOR                    = JSPOC
 MESSAGE_ID                    = 201113719185-1
-CLASSIFICATION                = "Operator-proprietary data; secondary distribution not permitted."
+CLASSIFICATION                = "Operator-proprietary data; Example taken from CCSDS example CDM pink book (CCSDS 508.0-P-1.0.2)"
 CONJUNCTION_ID                = 20220708T10hz SATELLITEA SATELLITEB
 COMMENT Relative Metadata/Data
 TCA                           = 2010-03-13T22:37:52.618
