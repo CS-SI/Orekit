@@ -24,13 +24,11 @@ import java.util.stream.Stream;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -85,20 +83,6 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
-
-    /** First coefficient to compute Kepler equation solver starter. */
-    private static final double A;
-
-    /** Second coefficient to compute Kepler equation solver starter. */
-    private static final double B;
-
-    static {
-        final double k1 = 3 * FastMath.PI + 2;
-        final double k2 = FastMath.PI - 1;
-        final double k3 = 6 * FastMath.PI - 1;
-        A  = 3 * k2 * k2 / k1;
-        B  = k3 * k3 / (6 * k1);
-    }
 
     /** Semi-major axis (m). */
     private final T a;
@@ -238,13 +222,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             switch (type) {
                 case MEAN :
                     vUD = (a.getReal() < 0) ?
-                          hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomalyUD, eUD), eUD) :
-                          ellipticEccentricToTrue(meanToEllipticEccentric(anomalyUD, eUD), eUD);
+                          FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, anomalyUD) :
+                          FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, anomalyUD);
                     break;
                 case ECCENTRIC :
                     vUD = (a.getReal() < 0) ?
-                          hyperbolicEccentricToTrue(anomalyUD, eUD) :
-                          ellipticEccentricToTrue(anomalyUD, eUD);
+                          FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD, anomalyUD) :
+                          FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD, anomalyUD);
                     break;
                 case TRUE :
                     vUD = anomalyUD;
@@ -259,14 +243,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                 case MEAN :
 
                     this.v = (a.getReal() < 0) ?
-                             hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e), e) :
-                             ellipticEccentricToTrue(meanToEllipticEccentric(anomaly, e), e);
+                             FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly) :
+                             FieldKeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
 
                     break;
                 case ECCENTRIC :
                     this.v = (a.getReal() < 0) ?
-                             hyperbolicEccentricToTrue(anomaly, e) :
-                             ellipticEccentricToTrue(anomaly, e);
+                             FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly) :
+                             FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
 
                     break;
                 case TRUE :
@@ -367,13 +351,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final T eSE = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE = rV2OnMu.subtract(1);
             e = (eSE.multiply(eSE).add(eCE.multiply(eCE))).sqrt();
-            v = ellipticEccentricToTrue(eSE.atan2(eCE), e);
+            v = FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, eSE.atan2(eCE));
         } else {
             // hyperbolic orbit
             final T eSH = FieldVector3D.dotProduct(pvP, pvV).divide(muA.negate().sqrt());
             final T eCH = rV2OnMu.subtract(1);
             e = (m2.negate().divide(muA).add(1)).sqrt();
-            v = hyperbolicEccentricToTrue((eCH.add(eSH)).divide(eCH.subtract(eSH)).log().divide(2), e);
+            v = FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, (eCH.add(eSH)).divide(eCH.subtract(eSH)).log().divide(2));
         }
 
         // Checking eccentricity range
@@ -411,8 +395,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
             final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(getMeanAnomaly(), MDot);
             final FieldUnivariateDerivative1<T> vUD = (a.getReal() < 0) ?
-                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MUD, eUD), eUD) :
-                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MUD, eUD), eUD);
+                                            FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
+                                            FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
             vDot = vUD.getDerivative(1);
 
         } else {
@@ -547,7 +531,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return eccentric anomaly (rad)
      */
     public T getEccentricAnomaly() {
-        return (a.getReal() < 0) ? trueToHyperbolicEccentric(v, e) : trueToEllipticEccentric(v, e);
+        return (a.getReal() < 0) ?
+               FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, v) :
+               FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, v);
     }
 
     /** Get the eccentric anomaly derivative.
@@ -565,8 +551,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
         final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(v, vDot);
         final FieldUnivariateDerivative1<T> EUD = (a.getReal() < 0) ?
-                                                trueToHyperbolicEccentric(vUD, eUD) :
-                                                trueToEllipticEccentric(vUD, eUD);
+                                                FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
+                                                FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
         return EUD.getDerivative(1);
 
     }
@@ -576,8 +562,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     public T getMeanAnomaly() {
         return (a.getReal() < 0) ?
-               hyperbolicEccentricToMean(trueToHyperbolicEccentric(v, e), e) :
-               ellipticEccentricToMean(trueToEllipticEccentric(v, e), e);
+               FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, v) :
+               FieldKeplerianAnomalyUtility.ellipticTrueToMean(e, v);
     }
 
     /** Get the mean anomaly derivative.
@@ -595,8 +581,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
         final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(v, vDot);
         final FieldUnivariateDerivative1<T> MUD = (a.getReal() < 0) ?
-                                                hyperbolicEccentricToMean(trueToHyperbolicEccentric(vUD, eUD), eUD) :
-                                                ellipticEccentricToMean(trueToEllipticEccentric(vUD, eUD), eUD);
+                                                FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD, vUD) :
+                                                FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD, vUD);
         return MUD.getDerivative(1);
 
     }
@@ -635,11 +621,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param e eccentricity
      * @param <T> type of the field elements
      * @return v the true anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#ellipticEccentricToMean(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T ellipticEccentricToTrue(final T E, final T e) {
-        final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
-        final FieldSinCos<T> scE = FastMath.sinCos(E);
-        return E.add(beta.multiply(scE.sin()).divide(beta.multiply(scE.cos()).subtract(1).negate()).atan().multiply(2));
+        return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
     }
 
     /** Computes the elliptic eccentric anomaly from the true anomaly.
@@ -647,11 +633,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param e eccentricity
      * @param <T> type of the field elements
      * @return E the elliptic eccentric anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#ellipticTrueToEccentric(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T trueToEllipticEccentric(final T v, final T e) {
-        final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
-        final FieldSinCos<T> scv = FastMath.sinCos(v);
-        return v.subtract((beta.multiply(scv.sin()).divide(beta.multiply(scv.cos()).add(1))).atan().multiply(2));
+        return FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, v);
     }
 
     /** Computes the true anomaly from the hyperbolic eccentric anomaly.
@@ -659,11 +645,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param e eccentricity
      * @param <T> type of the field elements
      * @return v the true anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#hyperbolicEccentricToTrue(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T hyperbolicEccentricToTrue(final T H, final T e) {
-        final T s    = e.add(1).divide(e.subtract(1)).sqrt();
-        final T tanH = H.multiply(0.5).tanh();
-        return s.multiply(tanH).atan().multiply(2);
+        return FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, H);
     }
 
     /** Computes the hyperbolic eccentric anomaly from the true anomaly.
@@ -671,11 +657,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param e eccentricity
      * @param <T> type of the field elements
      * @return H the hyperbolic eccentric anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#hyperbolicTrueToEccentric(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T trueToHyperbolicEccentric(final T v, final T e) {
-        final FieldSinCos<T> scv = FastMath.sinCos(v);
-        final T sinhH = e.multiply(e).subtract(1).sqrt().multiply(scv.sin()).divide(e.multiply(scv.cos()).add(1));
-        return sinhH.asinh();
+        return FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, v);
     }
 
     /** Computes the mean anomaly from the hyperbolic eccentric anomaly.
@@ -683,169 +669,35 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param e eccentricity
      * @param <T> type of the field elements
      * @return M the mean anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#hyperbolicEccentricToMean(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T hyperbolicEccentricToMean(final T H, final T e) {
-        return e.multiply(H.sinh()).subtract(H);
+        return FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, H);
     }
 
     /** Computes the elliptic eccentric anomaly from the mean anomaly.
-     * <p>
-     * The algorithm used here for solving Kepler equation has been published
-     * in: "Procedures for  solving Kepler's Equation", A. W. Odell and
-     * R. H. Gooding, Celestial Mechanics 38 (1986) 307-334
-     * </p>
      * @param M mean anomaly (rad)
      * @param e eccentricity
      * @param <T> type of the field elements
      * @return E the eccentric anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#ellipticMeanToEccentric(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
-        // reduce M to [-PI PI) interval
-        final T reducedM = MathUtils.normalizeAngle(M, M.getField().getZero());
-
-        // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-        T E;
-        if (reducedM.abs().getReal() < 1.0 / 6.0) {
-            if (FastMath.abs(reducedM.getReal()) < Precision.SAFE_MIN) {
-                // this is an Orekit change to the S12 starter, mainly used when T is some kind of derivative structure.
-                // If reducedM is 0.0, the derivative of cbrt is infinite which induces NaN appearing later in
-                // the computation. As in this case E and M are almost equal, we initialize E with reducedM
-                E = reducedM;
-            } else {
-                // this is the standard S12 starter
-                E = reducedM.add(e.multiply( (reducedM.multiply(6).cbrt()).subtract(reducedM)));
-            }
-        } else {
-            final T pi = e.getPi();
-            if (reducedM.getReal() < 0) {
-                final T w = reducedM.add(pi);
-                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).subtract(pi).subtract(reducedM)));
-            } else {
-                final T w = reducedM.negate().add(pi);
-                E = reducedM.add(e.multiply(w.multiply(A).divide(w.negate().add(B)).negate().subtract(reducedM).add(pi)));
-            }
-        }
-
-        final T e1 = e.negate().add(1);
-        final boolean noCancellationRisk = (e1.getReal() + E.getReal() * E.getReal() / 6) >= 0.1;
-
-        // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
-        for (int j = 0; j < 2; ++j) {
-
-            final T f;
-            T fd;
-            final FieldSinCos<T> scE = FastMath.sinCos(E);
-            final T fdd  = e.multiply(scE.sin());
-            final T fddd = e.multiply(scE.cos());
-
-            if (noCancellationRisk) {
-
-                f  = (E.subtract(fdd)).subtract(reducedM);
-                fd = fddd.negate().add(1);
-            } else {
-
-
-                f  = eMeSinE(E, e).subtract(reducedM);
-                final T s = E.multiply(0.5).sin();
-                fd = e1.add(e.multiply(s).multiply(s).multiply(2));
-            }
-            final T dee = f.multiply(fd).divide(f.multiply(fdd).multiply(0.5).subtract(fd.multiply(fd)));
-
-            // update eccentric anomaly, using expressions that limit underflow problems
-            final T w = fd.add(dee.multiply(fdd.add(dee.multiply(fddd.divide(3)))).multiply(0.5));
-            fd = fd.add(dee.multiply(fdd.add(dee.multiply(fddd).multiply(0.5))));
-            E = E.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
-
-        }
-
-        // expand the result back to original range
-        E = E.add(M).subtract(reducedM);
-        return E;
-    }
-
-    /** Accurate computation of E - e sin(E).
-     * <p>
-     * This method is used when E is close to 0 and e close to 1,
-     * i.e. near the perigee of almost parabolic orbits
-     * </p>
-     * @param E eccentric anomaly
-     * @param e eccentricity
-     * @param <T> Type of the field elements
-     * @return E - e sin(E)
-     */
-    private static <T extends CalculusFieldElement<T>> T eMeSinE(final T E, final T e) {
-
-        T x = (e.negate().add(1)).multiply(E.sin());
-        final T mE2 = E.negate().multiply(E);
-        T term = E;
-        double d    = 0;
-        // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (T x0 = E.getField().getZero().add(Double.NaN); !Double.valueOf(x.getReal()).equals(Double.valueOf(x0.getReal()));) {
-            d += 2;
-            term = term.multiply(mE2.divide(d * (d + 1)));
-            x0 = x;
-            x = x.subtract(term);
-        }
-        return x;
+        return FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, M);
     }
 
     /** Computes the hyperbolic eccentric anomaly from the mean anomaly.
-     * <p>
-     * The algorithm used here for solving hyperbolic Kepler equation is
-     * Danby's iterative method (3rd order) with Vallado's initial guess.
-     * </p>
      * @param M mean anomaly (rad)
      * @param e eccentricity
      * @param <T> Type of the field elements
      * @return H the hyperbolic eccentric anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#hyperbolicMeanToEccentric(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T meanToHyperbolicEccentric(final T M, final T e) {
-
-        // Resolution of hyperbolic Kepler equation for Keplerian parameters
-
-        // Field value of pi
-        final T pi = e.getPi();
-
-        // Initial guess
-        T H;
-        if (e.getReal() < 1.6) {
-            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
-                H = M.subtract(e);
-            } else {
-                H = M.add(e);
-            }
-        } else {
-            if (e.getReal() < 3.6 && M.abs().getReal() > pi.getReal()) {
-                H = M.subtract(e.copySign(M));
-            } else {
-                H = M.divide(e.subtract(1));
-            }
-        }
-
-        // Iterative computation
-        int iter = 0;
-        do {
-            final T f3  = e.multiply(H.cosh());
-            final T f2  = e.multiply(H.sinh());
-            final T f1  = f3.subtract(1);
-            final T f0  = f2.subtract(H).subtract(M);
-            final T f12 = f1.multiply(2);
-            final T d   = f0.divide(f12);
-            final T fdf = f1.subtract(d.multiply(f2));
-            final T ds  = f0.divide(fdf);
-
-            final T shift = f0.divide(fdf.add(ds.multiply(ds.multiply(f3.divide(6)))));
-
-            H = H.subtract(shift);
-
-            if ((shift.abs().getReal()) <= 1.0e-12) {
-                return H;
-            }
-
-        } while (++iter < 50);
-
-        throw new MathIllegalArgumentException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
-                                               iter);
+        return FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, M);
     }
 
     /** Computes the mean anomaly from the elliptic eccentric anomaly.
@@ -853,9 +705,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param e eccentricity
      * @param <T> type of the field elements
      * @return M the mean anomaly
+     * @deprecated As of 11.3, replaced by
+     * {@link FieldKeplerianAnomalyUtility#ellipticEccentricToMean(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
-        return E.subtract(e.multiply(E.sin()));
+        return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
     }
 
     /** {@inheritDoc} */

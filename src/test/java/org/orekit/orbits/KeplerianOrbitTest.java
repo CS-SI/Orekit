@@ -1380,7 +1380,7 @@ public class KeplerianOrbitTest {
             MatcherAssert.assertThat(rebuilt.getPerigeeArgumentDot(),               relativelyCloseTo(orbit.getPerigeeArgumentDot(),               1));
             MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
             for (PositionAngle type2 : PositionAngle.values()) {
-                MatcherAssert.assertThat(rebuilt.getAnomaly(type2),    relativelyCloseTo(orbit.getAnomaly(type2),    2));
+                MatcherAssert.assertThat(rebuilt.getAnomaly(type2),    relativelyCloseTo(orbit.getAnomaly(type2),    3));
                 MatcherAssert.assertThat(rebuilt.getAnomalyDot(type2), relativelyCloseTo(orbit.getAnomalyDot(type2), 4));
             }
         }
@@ -1585,18 +1585,6 @@ public class KeplerianOrbitTest {
                                               shiftedOrbitCopy.getPVCoordinates().getVelocity()),
                             1.0e-10);
 
-    }
-
-    @Test
-    public void testIssue544() {
-        // Initial parameters
-        // In order to test the issue, we volontary set the anomaly at Double.NaN.
-        double e = 0.7311;
-        double anomaly = Double.NaN;
-        // Computes the elliptic eccentric anomaly
-        double E = KeplerianOrbit.meanToEllipticEccentric(anomaly, e);
-        // Verify that an infinite loop did not occur
-        Assertions.assertTrue(Double.isNaN(E));
     }
 
     @Test
