@@ -27,10 +27,10 @@
         KeplerianOrbit and FieldKeplerianOrbit. Incorporated Gooding and Odell
         algorithm for solving the hyperbolic Kepler equation.
       </action>
-      <action dev="gateanpierre" type="add" issue="961">
+      <action dev="gaetanpierre" type="add" issue="961">
         Added Unscented Semi-analytical Kalman Estimator.
       </action>
-      <action dev="gateanpierre" type="add" issue="960">
+      <action dev="gaetanpierre" type="add" issue="960">
         Added Unscented Kalman Estimator.
       </action>
       <action dev="maxime" type="fix" issue="967">
