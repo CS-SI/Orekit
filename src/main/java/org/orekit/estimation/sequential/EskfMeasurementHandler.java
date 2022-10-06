@@ -21,12 +21,8 @@ import java.util.List;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -39,9 +35,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Maxime Journot
  * @since 11.1
  */
+@Deprecated
 public class EskfMeasurementHandler implements OrekitStepHandler {
 
-    /** Least squares model. */
+    /** ESKF model. */
     private final SemiAnalyticalKalmanModel model;
 
     /** Extended Kalman Filter. */
@@ -104,7 +101,7 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
                 model.updateNominalSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
 
                 // Process the current observation
-                final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurements.get(index)));
+                final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurements.get(index), referenceDate));
 
                 // Finalize the estimation
                 model.finalizeEstimation(observedMeasurements.get(index), estimate);
@@ -125,41 +122,6 @@ public class EskfMeasurementHandler implements OrekitStepHandler {
 
         // Reset the initial state of the propagator
         model.finalizeOperationsObservationGrid();
-
-    }
-
-    /** Decorate an observed measurement.
-     * <p>
-     * The "physical" measurement noise matrix is the covariance matrix of the measurement.
-     * Normalizing it consists in applying the following equation: Rn[i,j] =  R[i,j]/σ[i]/σ[j]
-     * Thus the normalized measurement noise matrix is the matrix of the correlation coefficients
-     * between the different components of the measurement.
-     * </p>
-     * @param observedMeasurement the measurement
-     * @return decorated measurement
-     */
-    private MeasurementDecorator decorate(final ObservedMeasurement<?> observedMeasurement) {
-
-        // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
-        // of the measurement on its non-diagonal elements.
-        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
-        // Normalizing it leaves us with the matrix of the correlation coefficients
-        final RealMatrix covariance;
-        if (observedMeasurement instanceof PV) {
-            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final PV pv = (PV) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
-        } else if (observedMeasurement instanceof Position) {
-            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final Position position = (Position) observedMeasurement;
-            covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());
-        } else {
-            // For other measurements we do not have a covariance matrix.
-            // Thus the correlation coefficients matrix is an identity matrix.
-            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
-        }
-
-        return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
 
     }
 

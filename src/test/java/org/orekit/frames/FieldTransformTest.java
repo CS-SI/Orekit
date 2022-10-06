@@ -16,13 +16,8 @@
  */
 package org.orekit.frames;
 
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -36,14 +31,18 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FieldTransformTest {
 
@@ -78,7 +77,7 @@ public class FieldTransformTest {
         FieldVector3D<T> p2 = randomVector(field, 100.0, random);
         FieldLine<T> line = new FieldLine<>(p1, p2, 1.0e-6);
         FieldLine<T> transformed = FieldTransform.getIdentity(field).transformLine(line);
-        Assert.assertSame(line, transformed);
+        Assertions.assertSame(line, transformed);
     }
 
     @Test
@@ -96,7 +95,7 @@ public class FieldTransformTest {
                                  new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), FieldVector3D.getPlusI(field)));
         FieldVector3D<T> u = transform.transformPosition(createVector(field, 1.0, 1.0, 1.0));
         FieldVector3D<T> v = createVector(field, 0.0, 1.0, 1.0);
-        Assert.assertEquals(0, u.subtract(v).getNorm().getReal(), 1.0e-15);
+        Assertions.assertEquals(0, u.subtract(v).getNorm().getReal(), 1.0e-15);
     }
 
     @Test
@@ -177,14 +176,14 @@ public class FieldTransformTest {
         // despite neither raw transforms have angular acceleration,
         // the combination does have an angular acceleration,
         // it is due to the cross product Ω₁ ⨯ Ω₂
-        Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
-        Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm().getReal() > 0.01);
+        Assertions.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+        Assertions.assertTrue(t12.getAngular().getRotationAcceleration().getNorm().getReal() > 0.01);
 
-        Assert.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm().getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm().getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm().getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm().getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm().getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm().getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
     }
 
     @Test
@@ -285,7 +284,7 @@ public class FieldTransformTest {
         FieldTransform.getIdentity(field).getJacobian(filter, jacobian);
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
-                Assert.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j].getReal(), 1.0e-15);
+                Assertions.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j].getReal(), 1.0e-15);
             }
         }
     }
@@ -324,9 +323,9 @@ public class FieldTransformTest {
             for (int j = 0; j < 10; ++j) {
                 FieldVector3D<T> a = createVector(field, rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 FieldVector3D<T> b = transform.transformVector(a);
-                Assert.assertEquals(0, b.subtract(a).getNorm().getReal(), 1.0e-15);
+                Assertions.assertEquals(0, b.subtract(a).getNorm().getReal(), 1.0e-15);
                 FieldVector3D<T> c = transform.transformPosition(a);
-                Assert.assertEquals(0,
+                Assertions.assertEquals(0,
                                     c.subtract(a).subtract(delta).getNorm().getReal(),
                                     1.0e-14);
             }
@@ -346,9 +345,9 @@ public class FieldTransformTest {
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = createVector(field, rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble()).toVector3D();
                 FieldVector3D<T> b = transform.transformVector(a);
-                Assert.assertEquals(0, b.subtract(a).getNorm().getReal(), 1.0e-15);
+                Assertions.assertEquals(0, b.subtract(a).getNorm().getReal(), 1.0e-15);
                 FieldVector3D<T> c = transform.transformPosition(a);
-                Assert.assertEquals(0,
+                Assertions.assertEquals(0,
                                     c.subtract(a).subtract(delta).getNorm().getReal(),
                                     1.0e-14);
             }
@@ -599,12 +598,12 @@ public class FieldTransformTest {
             for (int j = 0; j < 10; ++j) {
                 FieldVector3D<T> a = createVector(field, rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
                 FieldVector3D<T> b = transform.transformVector(a);
-                Assert.assertEquals(FieldVector3D.angle(axis, a).getReal(), FieldVector3D.angle(axis, b).getReal(), 1.0e-14);
+                Assertions.assertEquals(FieldVector3D.angle(axis, a).getReal(), FieldVector3D.angle(axis, b).getReal(), 1.0e-14);
                 FieldVector3D<T> aOrtho = FieldVector3D.crossProduct(axis, a);
                 FieldVector3D<T> bOrtho = FieldVector3D.crossProduct(axis, b);
-                Assert.assertEquals(angle.getReal(), FieldVector3D.angle(aOrtho, bOrtho).getReal(), 1.0e-14);
+                Assertions.assertEquals(angle.getReal(), FieldVector3D.angle(aOrtho, bOrtho).getReal(), 1.0e-14);
                 FieldVector3D<T> c = transform.transformPosition(a);
-                Assert.assertEquals(0, c.subtract(b).getNorm().getReal(), 1.0e-14);
+                Assertions.assertEquals(0, c.subtract(b).getNorm().getReal(), 1.0e-14);
             }
 
         }
@@ -666,13 +665,13 @@ public class FieldTransformTest {
                     FieldPVCoordinates<T> estimatedColumn = new FieldPVCoordinates<>(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX().getReal(), jacobian[0][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY().getReal(), jacobian[1][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ().getReal(), jacobian[2][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX().getReal(), jacobian[0][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY().getReal(), jacobian[1][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ().getReal(), jacobian[2][c].getReal(), epsilonP);
 
                     // check the rest of the matrix remains untouched
                     for (int l = 3; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
                     }
 
                 }
@@ -680,7 +679,7 @@ public class FieldTransformTest {
                 // check the rest of the matrix remains untouched
                 for (int c = directions.length; c < jacobian[0].length; ++c) {
                     for (int l = 0; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
                     }
                 }
 
@@ -749,16 +748,16 @@ public class FieldTransformTest {
                     FieldPVCoordinates<T> estimatedColumn = new FieldPVCoordinates<>(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX().getReal(), jacobian[0][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY().getReal(), jacobian[1][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ().getReal(), jacobian[2][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getX().getReal(), jacobian[3][c].getReal(), epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getY().getReal(), jacobian[4][c].getReal(), epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getZ().getReal(), jacobian[5][c].getReal(), epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX().getReal(), jacobian[0][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY().getReal(), jacobian[1][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ().getReal(), jacobian[2][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getX().getReal(), jacobian[3][c].getReal(), epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getY().getReal(), jacobian[4][c].getReal(), epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getZ().getReal(), jacobian[5][c].getReal(), epsilonV);
 
                     // check the rest of the matrix remains untouched
                     for (int l = 6; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
                     }
 
                 }
@@ -766,7 +765,7 @@ public class FieldTransformTest {
                 // check the rest of the matrix remains untouched
                 for (int c = directions.length; c < jacobian[0].length; ++c) {
                     for (int l = 0; l < jacobian.length; ++l) {
-                        Assert.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
+                        Assertions.assertEquals(l + 0.1 * c, jacobian[l][c].getReal(), 1.0e-15);
                     }
                 }
 
@@ -839,15 +838,15 @@ public class FieldTransformTest {
                     FieldPVCoordinates<T> estimatedColumn = new FieldPVCoordinates<>(-3 * d, d4, 32 * d, d3, -168 * d, d2, 672 * d, d1);
 
                     // check analytical Jacobian against finite difference reference
-                    Assert.assertEquals(estimatedColumn.getPosition().getX().getReal(),     jacobian[0][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getY().getReal(),     jacobian[1][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getPosition().getZ().getReal(),     jacobian[2][c].getReal(), epsilonP);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getX().getReal(),     jacobian[3][c].getReal(), epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getY().getReal(),     jacobian[4][c].getReal(), epsilonV);
-                    Assert.assertEquals(estimatedColumn.getVelocity().getZ().getReal(),     jacobian[5][c].getReal(), epsilonV);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getX().getReal(), jacobian[6][c].getReal(), epsilonA);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getY().getReal(), jacobian[7][c].getReal(), epsilonA);
-                    Assert.assertEquals(estimatedColumn.getAcceleration().getZ().getReal(), jacobian[8][c].getReal(), epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getX().getReal(),     jacobian[0][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getY().getReal(),     jacobian[1][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getPosition().getZ().getReal(),     jacobian[2][c].getReal(), epsilonP);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getX().getReal(),     jacobian[3][c].getReal(), epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getY().getReal(),     jacobian[4][c].getReal(), epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getVelocity().getZ().getReal(),     jacobian[5][c].getReal(), epsilonV);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getX().getReal(), jacobian[6][c].getReal(), epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getY().getReal(), jacobian[7][c].getReal(), epsilonA);
+                    Assertions.assertEquals(estimatedColumn.getAcceleration().getZ().getReal(), jacobian[8][c].getReal(), epsilonA);
 
                 }
 
@@ -872,7 +871,7 @@ public class FieldTransformTest {
                 FieldLine<T> transformed = transform.transformLine(l);
                 for (int k = 0; k < 10; ++k) {
                     FieldVector3D<T> p = l.pointAt(random.nextDouble() * 1.0e6);
-                    Assert.assertEquals(0.0, transformed.distance(transform.transformPosition(p)).getReal(), 1.0e-9);
+                    Assertions.assertEquals(0.0, transformed.distance(transform.transformPosition(p)).getReal(), 1.0e-9);
                 }
             }
         }
@@ -894,7 +893,7 @@ public class FieldTransformTest {
                 FieldLine<T> transformed = transform.transformLine(l);
                 for (int k = 0; k < 10; ++k) {
                     Vector3D p = l.pointAt(random.nextDouble() * 1.0e6);
-                    Assert.assertEquals(0.0, transformed.distance(transform.transformPosition(p)).getReal(), 1.0e-9);
+                    Assertions.assertEquals(0.0, transformed.distance(transform.transformPosition(p)).getReal(), 1.0e-9);
                 }
             }
         }
@@ -948,7 +947,7 @@ public class FieldTransformTest {
                     diffMax = FastMath.max(sub.getEntry(i, j).getReal(), diffMax);
                 }
             }
-            Assert.assertEquals(0.0, diffMax, 2.0e-12 * refMax);
+            Assertions.assertEquals(0.0, diffMax, 2.0e-12 * refMax);
 
 
             for (int i = 0; i < 100; ++i) {
@@ -961,14 +960,14 @@ public class FieldTransformTest {
                 pField[2] = p.getZ();
                 pField[3] = field.getOne();
                 T[] qA = linearA.operate(pField);
-                Assert.assertEquals(q.getX().getReal(), qA[0].getReal(), 1.0e-13 * p.getNorm().getReal());
-                Assert.assertEquals(q.getY().getReal(), qA[1].getReal(), 1.0e-13 * p.getNorm().getReal());
-                Assert.assertEquals(q.getZ().getReal(), qA[2].getReal(), 1.0e-13 * p.getNorm().getReal());
+                Assertions.assertEquals(q.getX().getReal(), qA[0].getReal(), 1.0e-13 * p.getNorm().getReal());
+                Assertions.assertEquals(q.getY().getReal(), qA[1].getReal(), 1.0e-13 * p.getNorm().getReal());
+                Assertions.assertEquals(q.getZ().getReal(), qA[2].getReal(), 1.0e-13 * p.getNorm().getReal());
 
                 T[] qB = linearB.operate(pField);
-                Assert.assertEquals(q.getX().getReal(), qB[0].getReal(), 1.0e-10 * p.getNorm().getReal());
-                Assert.assertEquals(q.getY().getReal(), qB[1].getReal(), 1.0e-10 * p.getNorm().getReal());
-                Assert.assertEquals(q.getZ().getReal(), qB[2].getReal(), 1.0e-10 * p.getNorm().getReal());
+                Assertions.assertEquals(q.getX().getReal(), qB[0].getReal(), 1.0e-10 * p.getNorm().getReal());
+                Assertions.assertEquals(q.getY().getReal(), qB[1].getReal(), 1.0e-10 * p.getNorm().getReal());
+                Assertions.assertEquals(q.getZ().getReal(), qB[2].getReal(), 1.0e-10 * p.getNorm().getReal());
 
             }
 
@@ -1152,23 +1151,23 @@ public class FieldTransformTest {
                 T theOzDot2 = t0.getRotationAcceleration().getZ();
 
                 // check consistency
-                Assert.assertEquals(theXDot.getReal(), numXDot.getReal(), 1.0e-13 * v.getReal());
-                Assert.assertEquals(theYDot.getReal(), numYDot.getReal(), 1.0e-13 * v.getReal());
-                Assert.assertEquals(theZDot.getReal(), numZDot.getReal(), 1.0e-13 * v.getReal());
+                Assertions.assertEquals(theXDot.getReal(), numXDot.getReal(), 1.0e-13 * v.getReal());
+                Assertions.assertEquals(theYDot.getReal(), numYDot.getReal(), 1.0e-13 * v.getReal());
+                Assertions.assertEquals(theZDot.getReal(), numZDot.getReal(), 1.0e-13 * v.getReal());
 
-                Assert.assertEquals(theXDot2.getReal(), numXDot2.getReal(), 1.0e-13 * a.getReal());
-                Assert.assertEquals(theYDot2.getReal(), numYDot2.getReal(), 1.0e-13 * a.getReal());
-                Assert.assertEquals(theZDot2.getReal(), numZDot2.getReal(), 1.0e-13 * a.getReal());
+                Assertions.assertEquals(theXDot2.getReal(), numXDot2.getReal(), 1.0e-13 * a.getReal());
+                Assertions.assertEquals(theYDot2.getReal(), numYDot2.getReal(), 1.0e-13 * a.getReal());
+                Assertions.assertEquals(theZDot2.getReal(), numZDot2.getReal(), 1.0e-13 * a.getReal());
 
-                Assert.assertEquals(theQ0Dot.getReal(), numQ0Dot.getReal(), 1.0e-13 * omega.getReal());
-                Assert.assertEquals(theQ1Dot.getReal(), numQ1Dot.getReal(), 1.0e-13 * omega.getReal());
-                Assert.assertEquals(theQ2Dot.getReal(), numQ2Dot.getReal(), 1.0e-13 * omega.getReal());
-                Assert.assertEquals(theQ3Dot.getReal(), numQ3Dot.getReal(), 1.0e-13 * omega.getReal());
+                Assertions.assertEquals(theQ0Dot.getReal(), numQ0Dot.getReal(), 1.0e-13 * omega.getReal());
+                Assertions.assertEquals(theQ1Dot.getReal(), numQ1Dot.getReal(), 1.0e-13 * omega.getReal());
+                Assertions.assertEquals(theQ2Dot.getReal(), numQ2Dot.getReal(), 1.0e-13 * omega.getReal());
+                Assertions.assertEquals(theQ3Dot.getReal(), numQ3Dot.getReal(), 1.0e-13 * omega.getReal());
 
 
-                Assert.assertEquals(theOxDot2.getReal(), numOxDot.getReal(), 1.0e-12 * omegaDot.getReal());
-                Assert.assertEquals(theOyDot2.getReal(), numOyDot.getReal(), 1.0e-12 * omegaDot.getReal());
-                Assert.assertEquals(theOzDot2.getReal(), numOzDot.getReal(), 1.0e-12 * omegaDot.getReal());
+                Assertions.assertEquals(theOxDot2.getReal(), numOxDot.getReal(), 1.0e-12 * omegaDot.getReal());
+                Assertions.assertEquals(theOyDot2.getReal(), numOyDot.getReal(), 1.0e-12 * omegaDot.getReal());
+                Assertions.assertEquals(theOzDot2.getReal(), numOzDot.getReal(), 1.0e-12 * omegaDot.getReal());
 
             }
         }
@@ -1190,12 +1189,12 @@ public class FieldTransformTest {
             FieldTransform<T> reference = evolvingTransform(t0, dt);
             FieldTransform<T> interpolated = FieldTransform.interpolate(reference.getFieldDate(), sample);
             FieldTransform<T> error = new FieldTransform<>(reference.getFieldDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm().getReal(),           4.0e-12);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm().getReal(),           3.0e-11);
-            Assert.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm().getReal(),       3.0e-10);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle().getReal(),            2.0e-10);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm().getReal(),         2.0e-09);
-            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm().getReal(), 8.0e-09);
+            Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm().getReal(),           4.0e-12);
+            Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm().getReal(),           3.0e-11);
+            Assertions.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm().getReal(),       3.0e-10);
+            Assertions.assertEquals(0.0, error.getAngular().getRotation().getAngle().getReal(),            2.0e-10);
+            Assertions.assertEquals(0.0, error.getAngular().getRotationRate().getNorm().getReal(),         2.0e-09);
+            Assertions.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm().getReal(), 8.0e-09);
 
         }
 
@@ -1269,10 +1268,10 @@ public class FieldTransformTest {
         for (int i = 0; i < 100; ++i) {
             FieldVector3D<T> a = randomVector(transform.getFieldDate().getField(), 1.0e3, random);
             FieldVector3D<T> tA = transform.transformVector(a);
-            Assert.assertEquals(0, a.subtract(tA).getNorm().getReal(), 1.0e-10 * a.getNorm().getReal());
+            Assertions.assertEquals(0, a.subtract(tA).getNorm().getReal(), 1.0e-10 * a.getNorm().getReal());
             FieldVector3D<T> b = randomVector(transform.getFieldDate().getField(), 1.0e3, random);
             FieldVector3D<T> tB = transform.transformPosition(b);
-            Assert.assertEquals(0, b.subtract(tB).getNorm().getReal(), 1.0e-10 * b.getNorm().getReal());
+            Assertions.assertEquals(0, b.subtract(tB).getNorm().getReal(), 1.0e-10 * b.getNorm().getReal());
             FieldPVCoordinates<T> pv  = new FieldPVCoordinates<>(randomVector(transform.getFieldDate().getField(), 1.0e3, random),
                                                                  randomVector(transform.getFieldDate().getField(), 1.0, random),
                                                                  randomVector(transform.getFieldDate().getField(), 1.0e-3, random));
@@ -1288,9 +1287,9 @@ public class FieldTransformTest {
         T refNorm = reference.getNorm();
         T resNorm = result.getNorm();
         double tolerance = relativeTolerance * (1 + FastMath.max(refNorm.getReal(), resNorm.getReal()));
-        Assert.assertEquals("ref = " + reference + ", res = " + result + " -> " +
-                            (FieldVector3D.distance(reference, result).divide(1 + FastMath.max(refNorm.getReal(), resNorm.getReal()))),
-                            0, FieldVector3D.distance(reference, result).getReal(), tolerance);
+        Assertions.assertEquals(0, FieldVector3D.distance(reference, result).getReal(), tolerance,
+                "ref = " + reference + ", res = " + result + " -> " +
+                (FieldVector3D.distance(reference, result).divide(1 + FastMath.max(refNorm.getReal(), resNorm.getReal()))));
     }
 
     private <T extends CalculusFieldElement<T>> FieldVector3D<T> createVector(Field<T> field,

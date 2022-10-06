@@ -16,17 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.List;
-
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -51,6 +49,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.List;
 
 public class EclipseDetectorTest {
 
@@ -96,39 +96,39 @@ public class EclipseDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(withFlattening));
         double duration = 15000.0;
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(duration));
-        Assert.assertEquals(duration, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals(duration, finalState.getDate().durationFrom(iniDate), 1.0e-3);
         final List<LoggedEvent> events = logger.getLoggedEvents();
-        Assert.assertEquals(10, events.size());
-        Assert.assertTrue(events.get(0).getEventDetector() == withoutFlattening);
-        Assert.assertFalse(events.get(0).isIncreasing());
-        Assert.assertEquals( 2274.702, events.get(0).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(1).getEventDetector() == withFlattening);
-        Assert.assertFalse(events.get(1).isIncreasing());
-        Assert.assertEquals( 2280.427, events.get(1).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(2).getEventDetector() == withFlattening);
-        Assert.assertTrue(events.get(2).isIncreasing());
-        Assert.assertEquals( 4310.742, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(3).getEventDetector() == withoutFlattening);
-        Assert.assertTrue(events.get(3).isIncreasing());
-        Assert.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.6e-3);
-        Assert.assertTrue(events.get(4).getEventDetector() == withoutFlattening);
-        Assert.assertFalse(events.get(4).isIncreasing());
-        Assert.assertEquals( 8189.250, events.get(4).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(5).getEventDetector() == withFlattening);
-        Assert.assertFalse(events.get(5).isIncreasing());
-        Assert.assertEquals( 8194.978, events.get(5).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(6).getEventDetector() == withFlattening);
-        Assert.assertTrue(events.get(6).isIncreasing());
-        Assert.assertEquals(10225.704, events.get(6).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(7).getEventDetector() == withoutFlattening);
-        Assert.assertTrue(events.get(7).isIncreasing());
-        Assert.assertEquals(10232.115, events.get(7).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(8).getEventDetector() == withoutFlattening);
-        Assert.assertFalse(events.get(8).isIncreasing());
-        Assert.assertEquals(14103.800, events.get(8).getState().getDate().durationFrom(iniDate), 1.0e-3);
-        Assert.assertTrue(events.get(9).getEventDetector() == withFlattening);
-        Assert.assertFalse(events.get(9).isIncreasing());
-        Assert.assertEquals(14109.530, events.get(9).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals(10, events.size());
+        Assertions.assertTrue(events.get(0).getEventDetector() == withoutFlattening);
+        Assertions.assertFalse(events.get(0).isIncreasing());
+        Assertions.assertEquals( 2274.702, events.get(0).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(1).getEventDetector() == withFlattening);
+        Assertions.assertFalse(events.get(1).isIncreasing());
+        Assertions.assertEquals( 2280.427, events.get(1).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(2).getEventDetector() == withFlattening);
+        Assertions.assertTrue(events.get(2).isIncreasing());
+        Assertions.assertEquals( 4310.742, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(3).getEventDetector() == withoutFlattening);
+        Assertions.assertTrue(events.get(3).isIncreasing());
+        Assertions.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.6e-3);
+        Assertions.assertTrue(events.get(4).getEventDetector() == withoutFlattening);
+        Assertions.assertFalse(events.get(4).isIncreasing());
+        Assertions.assertEquals( 8189.250, events.get(4).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(5).getEventDetector() == withFlattening);
+        Assertions.assertFalse(events.get(5).isIncreasing());
+        Assertions.assertEquals( 8194.978, events.get(5).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(6).getEventDetector() == withFlattening);
+        Assertions.assertTrue(events.get(6).isIncreasing());
+        Assertions.assertEquals(10225.704, events.get(6).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(7).getEventDetector() == withoutFlattening);
+        Assertions.assertTrue(events.get(7).isIncreasing());
+        Assertions.assertEquals(10232.115, events.get(7).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(8).getEventDetector() == withoutFlattening);
+        Assertions.assertFalse(events.get(8).isIncreasing());
+        Assertions.assertEquals(14103.800, events.get(8).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertTrue(events.get(9).getEventDetector() == withFlattening);
+        Assertions.assertFalse(events.get(9).isIncreasing());
+        Assertions.assertEquals(14109.530, events.get(9).getState().getDate().durationFrom(iniDate), 1.0e-3);
 
     }
 
@@ -139,13 +139,13 @@ public class EclipseDetectorTest {
                             withThreshold(1.0e-3).
                             withHandler(new StopOnDecreasing<EclipseDetector>()).
                             withUmbra();
-        Assert.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
-        Assert.assertTrue(e.getTotalEclipse());
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
+        Assertions.assertTrue(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
     }
 
     @Test
@@ -154,10 +154,10 @@ public class EclipseDetectorTest {
                             withMaxCheck(60.0).
                             withThreshold(1.0e-3).
                             withPenumbra();
-        Assert.assertFalse(e.getTotalEclipse());
+        Assertions.assertFalse(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 2.0e-6);
+        Assertions.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 2.0e-6);
     }
 
     @Test
@@ -167,12 +167,12 @@ public class EclipseDetectorTest {
                              withMaxCheck(120.0).
                              withThreshold(1.0e-4).
                              withMaxIter(12);
-        Assert.assertEquals(120.0, e.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-4, e.getThreshold(), 1.0e-15);
-        Assert.assertEquals(12, e.getMaxIterationCount());
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(1.0e-4, e.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
     }
 
@@ -186,9 +186,9 @@ public class EclipseDetectorTest {
                                                                    mu));
         try {
             e.g(s);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
         }
     }
 
@@ -202,7 +202,7 @@ public class EclipseDetectorTest {
                                                                                                 Vector3D.PLUS_K),
                                                                    FramesFactory.getGCRF(),
                                                                    mu));
-        Assert.assertEquals(FastMath.PI, e.g(s), 1.0e-15);
+        Assertions.assertEquals(FastMath.PI, e.g(s), 1.0e-15);
     }
 
     @Test
@@ -216,13 +216,13 @@ public class EclipseDetectorTest {
        propagator.addEventDetector(e);
         try {
             propagator.propagate(iniDate.shiftedBy(6000));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
+            Assertions.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
@@ -248,11 +248,11 @@ public class EclipseDetectorTest {
             earth = new OneAxisEllipsoid(6400000., 0.0, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
             sunRadius = 696000000.;
         } catch (OrekitException oe) {
-            Assert.fail(oe.getLocalizedMessage());
+            Assertions.fail(oe.getLocalizedMessage());
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         iniDate = null;
         initialState = null;

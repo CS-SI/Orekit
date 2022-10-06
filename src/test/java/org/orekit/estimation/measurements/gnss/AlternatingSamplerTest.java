@@ -17,8 +17,8 @@
 package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AlternatingSamplerTest {
 
@@ -54,7 +54,7 @@ public class AlternatingSamplerTest {
 
     @Test
     public void testNoIntegerInRange() {
-        Assert.assertFalse(new AlternatingSampler(12.4, 0.25).inRange());
+        Assertions.assertFalse(new AlternatingSampler(12.4, 0.25).inRange());
     }
 
     @Test
@@ -64,20 +64,20 @@ public class AlternatingSamplerTest {
                   final AlternatingSampler sampler = new AlternatingSampler(a, r);
 
                   while (sampler.inRange()) {
-                      Assert.assertTrue(sampler.getCurrent() >= a - r);
-                      Assert.assertTrue(sampler.getCurrent() <= a + r);
+                      Assertions.assertTrue(sampler.getCurrent() >= a - r);
+                      Assertions.assertTrue(sampler.getCurrent() <= a + r);
                       sampler.generateNext();
                   };
 
                   // once range has been exceeded, all generated numbers
                   // are out of range
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
 
               }
         }
@@ -94,27 +94,27 @@ public class AlternatingSamplerTest {
 
                   while (sampler.inRange()) {
                       final int k = (int) (sampler.getCurrent() - min);
-                      Assert.assertFalse(seen[k]);
+                      Assertions.assertFalse(seen[k]);
                       seen[k] = true;
-                      Assert.assertTrue(sampler.getCurrent() >= a - r);
-                      Assert.assertTrue(sampler.getCurrent() <= a + r);
+                      Assertions.assertTrue(sampler.getCurrent() >= a - r);
+                      Assertions.assertTrue(sampler.getCurrent() <= a + r);
                       sampler.generateNext();
                   };
 
                   // once range has been exceeded, all generated numbers
                   // are out of range
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
-                  Assert.assertFalse(sampler.inRange());
+                  Assertions.assertFalse(sampler.inRange());
 
                   // all the integers in the [min; max] range
                   // should have been generated exactly once
                   for (final boolean s : seen) {
-                      Assert.assertTrue(s);
+                      Assertions.assertTrue(s);
                   }
 
               }
@@ -124,20 +124,20 @@ public class AlternatingSamplerTest {
     private void check(final AlternatingSampler sampler, final int... expected) {
 
         for (int i = 0; i < expected.length; ++i) {
-            Assert.assertTrue(sampler.inRange());
-            Assert.assertEquals(expected[i], sampler.getCurrent());
+            Assertions.assertTrue(sampler.inRange());
+            Assertions.assertEquals(expected[i], sampler.getCurrent());
             sampler.generateNext();
         }
 
         // once range has been exceeded, all generated numbers
         // are out of range
-        Assert.assertFalse(sampler.inRange());
+        Assertions.assertFalse(sampler.inRange());
         sampler.generateNext();
-        Assert.assertFalse(sampler.inRange());
+        Assertions.assertFalse(sampler.inRange());
         sampler.generateNext();
-        Assert.assertFalse(sampler.inRange());
+        Assertions.assertFalse(sampler.inRange());
         sampler.generateNext();
-        Assert.assertFalse(sampler.inRange());
+        Assertions.assertFalse(sampler.inRange());
 
     }
 

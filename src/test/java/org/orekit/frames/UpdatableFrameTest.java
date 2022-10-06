@@ -16,17 +16,17 @@
  */
 package org.orekit.frames;
 
-import java.util.Random;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.Random;
 
 public class UpdatableFrameTest {
 
@@ -67,11 +67,11 @@ public class UpdatableFrameTest {
                                              Transform transform, AbsoluteDate date) {
         try {
             f0.updateTransform(f1, f2, transform, date);
-            Assert.fail("Should raise a FrameAncestorException");
+            Assertions.fail("Should raise a FrameAncestorException");
         } catch(FrameAncestorException expected){
             // expected behavior
         } catch (Exception e) {
-            Assert.fail("wrong exception caught");
+            Assertions.fail("wrong exception caught");
         }
     }
 
@@ -119,13 +119,13 @@ public class UpdatableFrameTest {
                                       random.nextDouble(),
                                       random.nextDouble());
             Vector3D b = transform.transformVector(a);
-            Assert.assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
+            Assertions.assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
             Vector3D c = transform.transformPosition(a);
-            Assert.assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
+            Assertions.assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }

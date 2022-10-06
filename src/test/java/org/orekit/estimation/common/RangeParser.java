@@ -17,11 +17,11 @@
 
 package org.orekit.estimation.common;
 
-import java.util.Map;
-
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
+
+import java.util.Map;
 
 /** Parser for range measurements.
  * @author Luc Maisonobe

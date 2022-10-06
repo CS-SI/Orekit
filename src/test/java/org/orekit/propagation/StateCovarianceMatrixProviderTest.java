@@ -17,21 +17,15 @@
 package org.orekit.propagation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -39,9 +33,7 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -49,19 +41,16 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.Arrays;
-
 public class StateCovarianceMatrixProviderTest {
 
     private SpacecraftState initialState;
-    private double[][] initCov;
+    private double[][]      initCov;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -184,7 +173,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 4.0e-7);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -271,7 +260,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 3.0e-5);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -347,7 +336,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 5.0e-4);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -366,16 +355,14 @@ public class StateCovarianceMatrixProviderTest {
         compareCovariance(transformedCovA, transformedCovB, 1.0e-15);
 
         // Define a new output frame
-        final OrbitType     outOrbitType = OrbitType.KEPLERIAN;
+        final OrbitType outOrbitType = OrbitType.KEPLERIAN;
         final PositionAngle outAngleType = PositionAngle.MEAN;
 
         // Transformation using getStateJacobian() method
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType);
 
         // Second transformation
-        RealMatrix transformedCovD =
-                StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN,
-                        PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
+        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -384,132 +371,14 @@ public class StateCovarianceMatrixProviderTest {
 
     /**
      * Compare two covariance matrices
-     *
      * @param reference reference covariance
-     * @param computed  computed covariance
+     * @param computed computed covariance
      * @param threshold threshold for comparison
      */
     private void compareCovariance(final RealMatrix reference, final RealMatrix computed, final double threshold) {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
-                Assert.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
-                        FastMath.abs(threshold * reference.getEntry(row, column)));
-            }
-        }
-    }
-
-    /**
-     * Test transform obtained from getTransform to convert a covariance matrix.
-     */
-    @Test
-    public void testConvertCovFrame() {
-
-        // Given
-        final Orbit keplerianOrbit = new KeplerianOrbit(7.E6, 0.001, FastMath.toRadians(45.), 0., 0., 0.,
-                PositionAngle.TRUE, FramesFactory.getEME2000(),
-                new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC()),
-                Constants.GRIM5C1_EARTH_MU);
-
-        final Orbit cartesianOrbit = OrbitType.CARTESIAN.convertType(keplerianOrbit);
-
-        final Frame pivotFrame = FramesFactory.getGCRF();
-
-        double sig_sma = 1000;
-        double sig_ecc = 1000 / cartesianOrbit.getA();
-        double sig_inc = FastMath.toRadians(0.01);
-        double sig_pom = FastMath.toRadians(0.01);
-        double sig_gom = FastMath.toRadians(0.01);
-        double sig_anm = FastMath.toRadians(0.1);
-
-        sig_sma *= sig_sma;
-        sig_ecc *= sig_ecc;
-        sig_inc *= sig_inc;
-        sig_pom *= sig_pom;
-        sig_gom *= sig_gom;
-        sig_anm *= sig_anm;
-
-        final RealMatrix covarianceMatrix = new DiagonalMatrix(new double[] { sig_sma, sig_ecc, sig_inc,
-                sig_pom, sig_gom, sig_anm });
-
-        CelestialBodyFrame in = CelestialBodyFrame.EME2000;
-        FrameFacade from = new FrameFacade(in.getFrame(IERSConventions.IERS_2010, false, DataContext.getDefault()),
-                in, null, null, in.name());
-
-        OrbitRelativeFrame out = OrbitRelativeFrame.TNW;
-        FrameFacade        to  = new FrameFacade(null, null, out, null, out.name());
-
-        System.out.println("CREATING TRANSFORM");
-        final Transform inToOutTransform = FrameFacade.getTransform(from, to, pivotFrame, cartesianOrbit.getDate(),
-                cartesianOrbit);
-
-        System.out.println("rotation from transform");
-        System.out.println(Arrays.deepToString(inToOutTransform.getRotation().getMatrix()));
-
-        System.out.println("rotation rate from transform");
-        System.out.println(inToOutTransform.getRotationRate());
-
-        // When
-        /*
-        final RealMatrix converted = StateCovarianceMatrixProvider.changeCovarianceFrame(cartesianOrbit, transform,
-                covarianceMatrix, OrbitType.CARTESIAN, PositionAngle.MEAN);
-
-         */
-        // Gets the rotation from the transform
-        final double[][] rotInToOut = inToOutTransform.getRotation().getMatrix();
-        // Builds the matrix to perform covariance transformation
-        final RealMatrix matInToOut = MatrixUtils.createRealMatrix(6, 6);
-        // Fills in the upper left and lower right blocks with the rotation
-        matInToOut.setSubMatrix(rotInToOut, 0, 0);
-        matInToOut.setSubMatrix(rotInToOut, 3, 3);
-        final RealMatrix converted = matInToOut.multiply(covarianceMatrix.multiplyTransposed(matInToOut));
-
-        // Get the Jacobian of the transform
-        final double[][] jacobian = new double[6][6];
-        inToOutTransform.getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
-
-        System.out.println("jacobian");
-        System.out.println(Arrays.deepToString(jacobian));
-
-        // Matrix to perform the covariance transformation
-        final RealMatrix j = new Array2DRowRealMatrix(jacobian, false);
-
-        // Then
-        // Reference data from CelestLab :
-        // https://sourceforge.isae.fr/svn/dcas-soft-espace/support/softs/CelestLab/trunk/help/en_US/scilab_en_US_help/jacobian%20matrices.html cas-3
-        // Attention : CCSDS covariance matrix are supposed to be expressed in cartesian.
-        //             However,the Celestlab example uses keplerian data.
-        //             So here we consider that the covariance is cartesian.
-        //             The celestlab variable dpv_dkep must be overloaded so that it can be an identity matrix.
-
-        double[][] expected = {
-                { 2.543E-08, 0., 5.027E-09, 0., 0., 0. },
-                { 0., 1000000., 0., 0., 0., 0. },
-                { 5.027E-09, 0., 2.543E-08, 0., 0., 0. },
-                { 0., 0., 0., 0.0000015, 0., 0.0000015 },
-                { 0., 0., 0., 0., 3.046E-08, 0. },
-                { 0., 0., 0., 0.0000015, 0., 0.0000015 } };
-
-        System.out.println("Pure rotation matrix");
-        System.out.println(Arrays.deepToString(matInToOut.getData()));
-
-        System.out.println("Matrix from jacobian");
-        System.out.println(Arrays.deepToString(j.getData()));
-
-        // Both matrices are identical if the absolute error on each term doesn't exceed 1E-7 USI
-        validateMatrix(expected, converted.getData(), 4.e-8);
-    }
-
-    /**
-     * Assert that data double array is equals to expected.
-     *
-     * @param data      input data to assert
-     * @param expected  expected data
-     * @param threshold threshold for precision
-     */
-    private void validateMatrix(double[][] expected, double[][] data, double threshold) {
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[0].length; j++) {
-                Assert.assertEquals(expected[i][j], data[i][j], threshold);
+                Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column), FastMath.abs(threshold * reference.getEntry(row, column)));
             }
         }
     }

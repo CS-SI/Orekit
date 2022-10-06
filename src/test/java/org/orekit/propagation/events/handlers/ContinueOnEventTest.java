@@ -17,8 +17,8 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -36,7 +36,7 @@ public class ContinueOnEventTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(s, new ContinueOnEvent<EventDetector>().resetState(null, s));
+        Assertions.assertSame(s, new ContinueOnEvent<EventDetector>().resetState(null, s));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class ContinueOnEventTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, true));
+        Assertions.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, true));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ContinueOnEventTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, false));
+        Assertions.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, false));
     }
 
 }

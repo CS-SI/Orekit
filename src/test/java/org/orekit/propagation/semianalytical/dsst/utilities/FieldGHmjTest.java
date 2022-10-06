@@ -16,16 +16,16 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.random.MersenneTwister;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class FieldGHmjTest {
 
@@ -55,8 +55,8 @@ public class FieldGHmjTest {
                     final int j = m / 2;
                     T[] GHmsj = MathArrays.buildArray(field, 2);
                     GHmsj = getGHmsj(k, h, a, b, m, s, j, field);
-                    Assert.assertEquals(GHmsj[0].getReal(), gMSJ.getGmsj(m, s, j).getReal(), FastMath.abs(GHmsj[0].multiply(eps)).getReal());
-                    Assert.assertEquals(GHmsj[1].getReal(), gMSJ.getHmsj(m, s, j).getReal(), FastMath.abs(GHmsj[1].multiply(eps)).getReal());
+                    Assertions.assertEquals(GHmsj[0].getReal(), gMSJ.getGmsj(m, s, j).getReal(), FastMath.abs(GHmsj[0].multiply(eps)).getReal());
+                    Assertions.assertEquals(GHmsj[1].getReal(), gMSJ.getHmsj(m, s, j).getReal(), FastMath.abs(GHmsj[1].multiply(eps)).getReal());
                 }
             }
         }
@@ -85,8 +85,8 @@ public class FieldGHmjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final T[] dGHdk = getdGHdk(k, h, a, b, m, s, j, field);
-                    Assert.assertEquals(dGHdk[0].getReal(), gMSJ.getdGmsdk(m, s, j).getReal(), FastMath.abs(dGHdk[0].multiply(eps)).getReal());
-                    Assert.assertEquals(dGHdk[1].getReal(), gMSJ.getdHmsdk(m, s, j).getReal(), FastMath.abs(dGHdk[1].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHdk[0].getReal(), gMSJ.getdGmsdk(m, s, j).getReal(), FastMath.abs(dGHdk[0].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHdk[1].getReal(), gMSJ.getdHmsdk(m, s, j).getReal(), FastMath.abs(dGHdk[1].multiply(eps)).getReal());
                 }
             }
         }
@@ -115,8 +115,8 @@ public class FieldGHmjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final T[] dGHdh = getdGHdh(k, h, a, b, m, s, j, field);
-                    Assert.assertEquals(dGHdh[0].getReal(), gMSJ.getdGmsdh(m, s, j).getReal(), FastMath.abs(dGHdh[0].multiply(eps)).getReal());
-                    Assert.assertEquals(dGHdh[1].getReal(), gMSJ.getdHmsdh(m, s, j).getReal(), FastMath.abs(dGHdh[1].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHdh[0].getReal(), gMSJ.getdGmsdh(m, s, j).getReal(), FastMath.abs(dGHdh[0].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHdh[1].getReal(), gMSJ.getdHmsdh(m, s, j).getReal(), FastMath.abs(dGHdh[1].multiply(eps)).getReal());
                 }
             }
         }
@@ -145,8 +145,8 @@ public class FieldGHmjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final T[] dGHda = getdGHda(k, h, a, b, m, s, j, field);
-                    Assert.assertEquals(dGHda[0].getReal(), gMSJ.getdGmsdAlpha(m, s, j).getReal(), FastMath.abs(dGHda[0].multiply(eps)).getReal());
-                    Assert.assertEquals(dGHda[1].getReal(), gMSJ.getdHmsdAlpha(m, s, j).getReal(), FastMath.abs(dGHda[1].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHda[0].getReal(), gMSJ.getdGmsdAlpha(m, s, j).getReal(), FastMath.abs(dGHda[0].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHda[1].getReal(), gMSJ.getdHmsdAlpha(m, s, j).getReal(), FastMath.abs(dGHda[1].multiply(eps)).getReal());
                 }
             }
         }
@@ -175,8 +175,8 @@ public class FieldGHmjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final T[] dGHdb = getdGHdb(k, h, a, b, m, s, j, field);
-                    Assert.assertEquals(dGHdb[0].getReal(), gMSJ.getdGmsdBeta(m, s, j).getReal(), FastMath.abs(dGHdb[0].multiply(eps)).getReal());
-                    Assert.assertEquals(dGHdb[1].getReal(), gMSJ.getdHmsdBeta(m, s, j).getReal(), FastMath.abs(dGHdb[1].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHdb[0].getReal(), gMSJ.getdGmsdBeta(m, s, j).getReal(), FastMath.abs(dGHdb[0].multiply(eps)).getReal());
+                    Assertions.assertEquals(dGHdb[1].getReal(), gMSJ.getdHmsdBeta(m, s, j).getReal(), FastMath.abs(dGHdb[1].multiply(eps)).getReal());
                 }
             }
         }

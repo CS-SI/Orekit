@@ -16,13 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.analysis.MultivariateVectorFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -34,9 +27,9 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.ForceModel;
@@ -62,6 +55,13 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class JacobianPropagatorConverterTest {
 
     private double mu;
@@ -77,9 +77,9 @@ public class JacobianPropagatorConverterTest {
     public void testDerivativesNothing() {
         try {
             doTestDerivatives(1.0, 1.0);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalArgumentException miae) {
-            Assert.assertEquals(LocalizedCoreFormats.AT_LEAST_ONE_COLUMN, miae.getSpecifier());
+            Assertions.assertEquals(LocalizedCoreFormats.AT_LEAST_ONE_COLUMN, miae.getSpecifier());
         }
     }
 
@@ -167,7 +167,7 @@ public class JacobianPropagatorConverterTest {
             setSample.invoke(fitter, sample);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                         IllegalArgumentException | InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
         }
 
         MultivariateVectorFunction   f = fitter.getObjectiveFunction();
@@ -201,12 +201,12 @@ public class JacobianPropagatorConverterTest {
                 }
             }
         }
-        Assert.assertEquals(0.0, maxErrorP, tolP);
-        Assert.assertEquals(0.0, maxErrorV, tolV);
+        Assertions.assertEquals(0.0, maxErrorP, tolP);
+        Assertions.assertEquals(0.0, maxErrorV, tolV);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
 
         Utils.setDataRoot("regular-data:potential/shm-format");

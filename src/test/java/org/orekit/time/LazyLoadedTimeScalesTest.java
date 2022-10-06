@@ -1,14 +1,14 @@
 package org.orekit.time;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.utils.IERSConventions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit tests for {@link LazyLoadedTimeScales}.
@@ -21,7 +21,7 @@ public class LazyLoadedTimeScalesTest {
     private LazyLoadedTimeScales timeScales;
 
     /** Create subject under test. */
-    @Before
+    @BeforeEach
     public void setUp() {
         LazyLoadedDataContext defaultContext =
                 (LazyLoadedDataContext) Utils.setDataRoot("regular-data");
@@ -46,10 +46,10 @@ public class LazyLoadedTimeScalesTest {
                 String message = conventions + " " + simpleEop;
 
                 // verify
-                Assert.assertSame(message, gmst, timeScales.getGMST(conventions, simpleEop));
+                Assertions.assertSame(gmst, timeScales.getGMST(conventions, simpleEop), message);
                 double expected = 24110.54841 + ut1.offsetFromTAI(date);
-                Assert.assertEquals(message, expected, gmst.offsetFromTAI(date), 0);
-                Assert.assertTrue(message + " " + scales, !scales.contains(gmst));
+                Assertions.assertEquals(expected, gmst.offsetFromTAI(date), 0, message);
+                Assertions.assertTrue(!scales.contains(gmst), message + " " + scales);
                 scales.add(gmst);
             }
         }
@@ -70,8 +70,8 @@ public class LazyLoadedTimeScalesTest {
                 String message = conventions + " " + simpleEop;
 
                 // verify
-                Assert.assertSame(message, ut1, timeScales.getUT1(conventions, simpleEop));
-                Assert.assertSame(ut1.getEOPHistory().getConventions(), conventions);
+                Assertions.assertSame(ut1, timeScales.getUT1(conventions, simpleEop), message);
+                Assertions.assertSame(ut1.getEOPHistory().getConventions(), conventions);
                 double expected = utc.offsetFromTAI(date);
                 if (conventions != IERSConventions.IERS_1996) {
                     expected += -0.4051590;
@@ -79,8 +79,8 @@ public class LazyLoadedTimeScalesTest {
                 if (!simpleEop) {
                     expected += conventions.getEOPTidalCorrection(timeScales).value(date)[2];
                 }
-                Assert.assertEquals(message, expected, ut1.offsetFromTAI(date), 0);
-                Assert.assertTrue(message + " " + scales, !scales.contains(ut1));
+                Assertions.assertEquals(expected, ut1.offsetFromTAI(date), 0, message);
+                Assertions.assertTrue(!scales.contains(ut1), message + " " + scales);
                 scales.add(ut1);
             }
         }

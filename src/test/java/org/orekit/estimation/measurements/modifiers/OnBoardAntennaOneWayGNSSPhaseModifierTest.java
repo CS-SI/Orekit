@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -40,6 +38,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.List;
 
 
 public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
@@ -103,9 +103,9 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             OneWayGNSSPhase sr = (OneWayGNSSPhase) spacecraftCenteredMeasurements.get(i);
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
-            Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assert.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() >= -1.0);
-            Assert.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() <= -0.36);
+            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() >= -1.0);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() <= -0.36);
         }
     }
 
@@ -169,8 +169,8 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
             sr.addModifier(modifier);
             EstimatedMeasurement<OneWayGNSSPhase> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
-            Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assert.assertEquals(ar.getObservedValue()[0] * FREQUENCY.getWavelength(), estimated.getEstimatedValue()[0] * FREQUENCY.getWavelength(), 6.0e-5);
+            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            Assertions.assertEquals(ar.getObservedValue()[0] * FREQUENCY.getWavelength(), estimated.getEstimatedValue()[0] * FREQUENCY.getWavelength(), 6.0e-5);
         }
 
     }

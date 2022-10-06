@@ -16,13 +16,13 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
+import org.orekit.gnss.metric.messages.ParsedMessage;
+
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-
-import org.orekit.gnss.metric.messages.ParsedMessage;
 
 
 

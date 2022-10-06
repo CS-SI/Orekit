@@ -16,13 +16,13 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import java.util.Random;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import java.util.Random;
 
 public abstract class AbstractEncodedMessagesTest {
 
@@ -38,10 +38,10 @@ public abstract class AbstractEncodedMessagesTest {
     public void testTooLargeDataType() {
         try {
             buildAndStart(new byte[] { 0, 1, 2, 3, 4, 5}).extractBits(64);
-            Assert.fail("an exception should habe been thrown");
+            Assertions.fail("an exception should habe been thrown");
         } catch (OrekitException re) {
-            Assert.assertEquals(OrekitMessages.TOO_LARGE_DATA_TYPE, re.getSpecifier());
-            Assert.assertEquals(64, ((Integer) re.getParts()[0]).intValue());
+            Assertions.assertEquals(OrekitMessages.TOO_LARGE_DATA_TYPE, re.getSpecifier());
+            Assertions.assertEquals(64, ((Integer) re.getParts()[0]).intValue());
         }
     }
 
@@ -49,55 +49,55 @@ public abstract class AbstractEncodedMessagesTest {
     public void testUnexpectedNoData() {
         try {
             buildAndStart(new byte[0]).extractBits(1);
-            Assert.fail("an exception should habe been thrown");
+            Assertions.fail("an exception should habe been thrown");
         } catch (OrekitException re) {
-            Assert.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, re.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, re.getSpecifier());
         }
     }
 
     @Test
     public void testZeroBits() {
-        Assert.assertEquals(0, buildAndStart(new byte[0]).extractBits(0));
+        Assertions.assertEquals(0, buildAndStart(new byte[0]).extractBits(0));
     }
 
     @Test
     public void testFirstByte() {
         final String s = "11111111";
-        Assert.assertEquals(0x01, buildAndStart(byteArrayFromBinary(s)).extractBits(1));
-        Assert.assertEquals(0x03, buildAndStart(byteArrayFromBinary(s)).extractBits(2));
-        Assert.assertEquals(0x07, buildAndStart(byteArrayFromBinary(s)).extractBits(3));
-        Assert.assertEquals(0x0F, buildAndStart(byteArrayFromBinary(s)).extractBits(4));
-        Assert.assertEquals(0x1F, buildAndStart(byteArrayFromBinary(s)).extractBits(5));
-        Assert.assertEquals(0x3F, buildAndStart(byteArrayFromBinary(s)).extractBits(6));
-        Assert.assertEquals(0x7F, buildAndStart(byteArrayFromBinary(s)).extractBits(7));
-        Assert.assertEquals(0xFF, buildAndStart(byteArrayFromBinary(s)).extractBits(8));
+        Assertions.assertEquals(0x01, buildAndStart(byteArrayFromBinary(s)).extractBits(1));
+        Assertions.assertEquals(0x03, buildAndStart(byteArrayFromBinary(s)).extractBits(2));
+        Assertions.assertEquals(0x07, buildAndStart(byteArrayFromBinary(s)).extractBits(3));
+        Assertions.assertEquals(0x0F, buildAndStart(byteArrayFromBinary(s)).extractBits(4));
+        Assertions.assertEquals(0x1F, buildAndStart(byteArrayFromBinary(s)).extractBits(5));
+        Assertions.assertEquals(0x3F, buildAndStart(byteArrayFromBinary(s)).extractBits(6));
+        Assertions.assertEquals(0x7F, buildAndStart(byteArrayFromBinary(s)).extractBits(7));
+        Assertions.assertEquals(0xFF, buildAndStart(byteArrayFromBinary(s)).extractBits(8));
     }
 
     @Test
     public void testExhaustAfterInitialSuccess() {
         EncodedMessage m = buildAndStart(byteArrayFromBinary("10111011"));
-        Assert.assertEquals(5, m.extractBits(3));
-        Assert.assertEquals(3, m.extractBits(2));
+        Assertions.assertEquals(5, m.extractBits(3));
+        Assertions.assertEquals(3, m.extractBits(2));
         try {
             m.extractBits(4);
-            Assert.fail("an exception should habe been thrown");
+            Assertions.fail("an exception should habe been thrown");
         } catch (OrekitException re) {
-            Assert.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, re.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, re.getSpecifier());
         }
     }
 
     @Test
     public void testCrossingByte() {
         EncodedMessage m = buildAndStart(byteArrayFromBinary("0100110101101011"));
-        Assert.assertEquals(0x09, m.extractBits(5));
-        Assert.assertEquals(0x2B, m.extractBits(6));
-        Assert.assertEquals(0x0B, m.extractBits(5));
+        Assertions.assertEquals(0x09, m.extractBits(5));
+        Assertions.assertEquals(0x2B, m.extractBits(6));
+        Assertions.assertEquals(0x0B, m.extractBits(5));
     }
 
     @Test
     public void testLargeType() {
         EncodedMessage m = buildAndStart(byteArrayFromBinary("01001101011010110100110101101011"));
-        Assert.assertEquals(0x4D6B4D6B, m.extractBits(32));
+        Assertions.assertEquals(0x4D6B4D6B, m.extractBits(32));
     }
 
     @Test
@@ -133,13 +133,13 @@ public abstract class AbstractEncodedMessagesTest {
                 for (int k = 0; k < size; ++k) {
                     ref = (ref << 1) | bits[index++];
                 }
-                Assert.assertEquals(ref, m.extractBits(size));
+                Assertions.assertEquals(ref, m.extractBits(size));
             }
             try {
                 m.extractBits(1);
-                Assert.fail("an exception should have been thrown");
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitException me) {
-                Assert.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, me.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, me.getSpecifier());
             }
 
         }

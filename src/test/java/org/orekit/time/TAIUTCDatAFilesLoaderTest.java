@@ -16,10 +16,8 @@
  */
 package org.orekit.time;
 
-
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -148,7 +146,7 @@ public class TAIUTCDatAFilesLoaderTest {
     private void checkOffset(int year, int month, int day, double offset) {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
     private void checkException(String name, OrekitMessages message) {
@@ -156,9 +154,9 @@ public class TAIUTCDatAFilesLoaderTest {
         TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(message, oe.getSpecifier());
+            Assertions.assertEquals(message, oe.getSpecifier());
         }
     }
 

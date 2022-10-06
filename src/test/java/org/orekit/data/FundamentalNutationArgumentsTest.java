@@ -16,6 +16,28 @@
  */
 package org.orekit.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -31,39 +53,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Function;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-
 public class FundamentalNutationArgumentsTest {
 
     @Test
     public void testNoStream() {
         try {
             new FundamentalNutationArguments(IERSConventions.IERS_2010, TimeScalesFactory.getTT(), null, "dummy");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals("dummy", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals("dummy", oe.getParts()[0]);
         }
     }
 
@@ -86,9 +85,9 @@ public class FundamentalNutationArgumentsTest {
             new FundamentalNutationArguments(IERSConventions.IERS_2010, null,
                                              new ByteArrayInputStream(modified.getBytes()),
                                              "modified-data");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
         }
     }
 
@@ -106,13 +105,13 @@ public class FundamentalNutationArgumentsTest {
         m.setAccessible(true);
         for (String n : Arrays.asList("L", "L_PRIME", "F", "D", "OMEGA",
                                       "L_ME", "L_VE", "L_E", "L_MA", "L_J", "L_SA", "L_U", "L_NE", "PA")) {
-            Assert.assertEquals(n, m.invoke(null, n).toString());
+            Assertions.assertEquals(n, m.invoke(null, n).toString());
         }
         try {
             m.invoke(null, "inexistent");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (InvocationTargetException ite) {
-            Assert.assertTrue(ite.getCause() instanceof IllegalArgumentException);
+            Assertions.assertTrue(ite.getCause() instanceof IllegalArgumentException);
         }
     }
 
@@ -169,20 +168,20 @@ public class FundamentalNutationArgumentsTest {
             maxErrorLNe    = FastMath.max(maxErrorLNe,    FastMath.abs(lNe   .value(dtDS).getPartialDerivative(1) - be.getLNeDot()));
             maxErrorPa     = FastMath.max(maxErrorPa,     FastMath.abs(pa    .value(dtDS).getPartialDerivative(1) - be.getPaDot()));
         }
-        Assert.assertEquals(0, maxErrorGamma,  8.0e-13);
-        Assert.assertEquals(0, maxErrorL,      1.0e-14);
-        Assert.assertEquals(0, maxErrorLPrime, 6.0e-16);
-        Assert.assertEquals(0, maxErrorF,      6.0e-15);
-        Assert.assertEquals(0, maxErrorD,      6.0e-15);
-        Assert.assertEquals(0, maxErrorLMe,    2.0e-15);
-        Assert.assertEquals(0, maxErrorLVe,    5.0e-16);
-        Assert.assertEquals(0, maxErrorLE,     3.0e-16);
-        Assert.assertEquals(0, maxErrorLMa,    4.0e-16);
-        Assert.assertEquals(0, maxErrorLJu,    3.0e-17);
-        Assert.assertEquals(0, maxErrorLSa,    4.0e-17);
-        Assert.assertEquals(0, maxErrorLUr,    1.0e-16);
-        Assert.assertEquals(0, maxErrorLNe,    8.0e-17);
-        Assert.assertEquals(0, maxErrorPa,     3.0e-20);
+        Assertions.assertEquals(0, maxErrorGamma,  8.0e-13);
+        Assertions.assertEquals(0, maxErrorL,      1.0e-14);
+        Assertions.assertEquals(0, maxErrorLPrime, 6.0e-16);
+        Assertions.assertEquals(0, maxErrorF,      6.0e-15);
+        Assertions.assertEquals(0, maxErrorD,      6.0e-15);
+        Assertions.assertEquals(0, maxErrorLMe,    2.0e-15);
+        Assertions.assertEquals(0, maxErrorLVe,    5.0e-16);
+        Assertions.assertEquals(0, maxErrorLE,     3.0e-16);
+        Assertions.assertEquals(0, maxErrorLMa,    4.0e-16);
+        Assertions.assertEquals(0, maxErrorLJu,    3.0e-17);
+        Assertions.assertEquals(0, maxErrorLSa,    4.0e-17);
+        Assertions.assertEquals(0, maxErrorLUr,    1.0e-16);
+        Assertions.assertEquals(0, maxErrorLNe,    8.0e-17);
+        Assertions.assertEquals(0, maxErrorPa,     3.0e-20);
     }
 
     private UnivariateDifferentiableFunction differentiate(final FundamentalNutationArguments fna, final AbsoluteDate t0,
@@ -252,20 +251,20 @@ public class FundamentalNutationArgumentsTest {
             maxErrorLNe    = FastMath.max(maxErrorLNe,    FastMath.abs(lNe   .value(dtDS).getPartialDerivative(1) - be.getLNeDot().getReal()));
             maxErrorPa     = FastMath.max(maxErrorPa,     FastMath.abs(pa    .value(dtDS).getPartialDerivative(1) - be.getPaDot().getReal()));
         }
-        Assert.assertEquals(0, maxErrorGamma,  8.0e-13);
-        Assert.assertEquals(0, maxErrorL,      1.0e-14);
-        Assert.assertEquals(0, maxErrorLPrime, 6.0e-16);
-        Assert.assertEquals(0, maxErrorF,      6.0e-15);
-        Assert.assertEquals(0, maxErrorD,      6.0e-15);
-        Assert.assertEquals(0, maxErrorLMe,    2.0e-15);
-        Assert.assertEquals(0, maxErrorLVe,    5.0e-16);
-        Assert.assertEquals(0, maxErrorLE,     3.0e-16);
-        Assert.assertEquals(0, maxErrorLMa,    4.0e-16);
-        Assert.assertEquals(0, maxErrorLJu,    3.0e-17);
-        Assert.assertEquals(0, maxErrorLSa,    4.0e-17);
-        Assert.assertEquals(0, maxErrorLUr,    1.0e-16);
-        Assert.assertEquals(0, maxErrorLNe,    8.0e-17);
-        Assert.assertEquals(0, maxErrorPa,     3.0e-20);
+        Assertions.assertEquals(0, maxErrorGamma,  8.0e-13);
+        Assertions.assertEquals(0, maxErrorL,      1.0e-14);
+        Assertions.assertEquals(0, maxErrorLPrime, 6.0e-16);
+        Assertions.assertEquals(0, maxErrorF,      6.0e-15);
+        Assertions.assertEquals(0, maxErrorD,      6.0e-15);
+        Assertions.assertEquals(0, maxErrorLMe,    2.0e-15);
+        Assertions.assertEquals(0, maxErrorLVe,    5.0e-16);
+        Assertions.assertEquals(0, maxErrorLE,     3.0e-16);
+        Assertions.assertEquals(0, maxErrorLMa,    4.0e-16);
+        Assertions.assertEquals(0, maxErrorLJu,    3.0e-17);
+        Assertions.assertEquals(0, maxErrorLSa,    4.0e-17);
+        Assertions.assertEquals(0, maxErrorLUr,    1.0e-16);
+        Assertions.assertEquals(0, maxErrorLNe,    8.0e-17);
+        Assertions.assertEquals(0, maxErrorPa,     3.0e-20);
     }
 
     private <T extends CalculusFieldElement<T>> UnivariateDifferentiableFunction differentiate(final FundamentalNutationArguments fna, final FieldAbsoluteDate<T> t0,
@@ -308,8 +307,8 @@ public class FundamentalNutationArgumentsTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(nutation);
 
-        Assert.assertTrue(bos.size() > low);
-        Assert.assertTrue(bos.size() < high);
+        Assertions.assertTrue(bos.size() > low);
+        Assertions.assertTrue(bos.size() < high);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -318,26 +317,26 @@ public class FundamentalNutationArgumentsTest {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
             BodiesElements be1 = nutation.evaluateAll(date);
             BodiesElements be2 = deserialized.evaluateAll(date);
-            Assert.assertEquals(be1.getGamma(),  be2.getGamma(),  1.0e-15);
-            Assert.assertEquals(be1.getL(),      be2.getL(),      1.0e-15);
-            Assert.assertEquals(be1.getLPrime(), be2.getLPrime(), 1.0e-15);
-            Assert.assertEquals(be1.getF(),      be2.getF(),      1.0e-15);
-            Assert.assertEquals(be1.getD(),      be2.getD(),      1.0e-15);
-            Assert.assertEquals(be1.getOmega(),  be2.getOmega(),  1.0e-15);
-            Assert.assertEquals(be1.getLMe(),    be2.getLMe(),    1.0e-15);
-            Assert.assertEquals(be1.getLVe(),    be2.getLVe(),    1.0e-15);
-            Assert.assertEquals(be1.getLE(),     be2.getLE(),     1.0e-15);
-            Assert.assertEquals(be1.getLMa(),    be2.getLMa(),    1.0e-15);
-            Assert.assertEquals(be1.getLJu(),    be2.getLJu(),    1.0e-15);
-            Assert.assertEquals(be1.getLSa(),    be2.getLSa(),    1.0e-15);
-            Assert.assertEquals(be1.getLUr(),    be2.getLUr(),    1.0e-15);
-            Assert.assertEquals(be1.getLNe(),    be2.getLNe(),    1.0e-15);
-            Assert.assertEquals(be1.getPa(),     be2.getPa(),     1.0e-15);
+            Assertions.assertEquals(be1.getGamma(),  be2.getGamma(),  1.0e-15);
+            Assertions.assertEquals(be1.getL(),      be2.getL(),      1.0e-15);
+            Assertions.assertEquals(be1.getLPrime(), be2.getLPrime(), 1.0e-15);
+            Assertions.assertEquals(be1.getF(),      be2.getF(),      1.0e-15);
+            Assertions.assertEquals(be1.getD(),      be2.getD(),      1.0e-15);
+            Assertions.assertEquals(be1.getOmega(),  be2.getOmega(),  1.0e-15);
+            Assertions.assertEquals(be1.getLMe(),    be2.getLMe(),    1.0e-15);
+            Assertions.assertEquals(be1.getLVe(),    be2.getLVe(),    1.0e-15);
+            Assertions.assertEquals(be1.getLE(),     be2.getLE(),     1.0e-15);
+            Assertions.assertEquals(be1.getLMa(),    be2.getLMa(),    1.0e-15);
+            Assertions.assertEquals(be1.getLJu(),    be2.getLJu(),    1.0e-15);
+            Assertions.assertEquals(be1.getLSa(),    be2.getLSa(),    1.0e-15);
+            Assertions.assertEquals(be1.getLUr(),    be2.getLUr(),    1.0e-15);
+            Assertions.assertEquals(be1.getLNe(),    be2.getLNe(),    1.0e-15);
+            Assertions.assertEquals(be1.getPa(),     be2.getPa(),     1.0e-15);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }

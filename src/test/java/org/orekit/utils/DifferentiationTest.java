@@ -16,11 +16,10 @@
  */
 package org.orekit.utils;
 
-
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class DifferentiationTest {
 
@@ -51,7 +50,7 @@ public class DifferentiationTest {
 
         for (double x = -3.0; x < 3.0; x += 0.125) {
             driver.setValue(x);
-            Assert.assertEquals(f1Ref.value(driver), f1Diff.value(driver), tolerance);
+            Assertions.assertEquals(f1Ref.value(driver), f1Diff.value(driver), tolerance);
         }
 
     }

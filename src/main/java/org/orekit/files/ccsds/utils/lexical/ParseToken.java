@@ -66,6 +66,9 @@ public class ParseToken {
     /** Pattern for splitting comma-separated lists. */
     private static final Pattern SPLIT_AT_COMMAS = Pattern.compile("\\p{Space}*,\\p{Space}*");
 
+    /** Pattern for splitting comma-separated lists with no space in between. */
+    private static final Pattern SPLIT_AT_COMMAS_NO_SPACE = Pattern.compile(",");
+
     /** Pattern for true boolean value. */
     private static final Pattern BOOLEAN_TRUE = Pattern.compile("(?:yes)|(?:true)",
                                                                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
@@ -392,14 +395,14 @@ public class ParseToken {
         return true;
     }
 
-    /** Process the content as an array of integers.
+    /** Process the content as an array of integers. No spaces between commas are allowed.
      * @param consumer consumer of the array
      * @return always returns {@code true}
      */
     public boolean processAsIntegerArray(final IntegerArrayConsumer consumer) {
         try {
             if (type == TokenType.ENTRY) {
-                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent());
+                final String[] fields = SPLIT_AT_COMMAS_NO_SPACE.split(getRawContent());
                 final int[] integers = new int[fields.length];
                 for (int i = 0; i < fields.length; ++i) {
                     integers[i] = Integer.parseInt(fields[i]);

@@ -16,13 +16,13 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+
+import java.io.Serializable;
 
 /** Old Factory class for IAU poles, replaced as of Orekit 9.0 by a new implementation.
  * <p>The pole models provided here come from the <a
