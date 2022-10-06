@@ -222,6 +222,7 @@ public class FrameFacade {
 
         }
         else if (frameOut.asOrbitRelativeFrame() != null) {
+
             final LOFType lofOut = frameOut.asOrbitRelativeFrame().getLofType();
 
             if (lofOut != null) {
@@ -273,14 +274,14 @@ public class FrameFacade {
                     if (lofOut != null) {
 
                         // First rotation from input local orbital frame to inertial pivot
-                        final Rotation first =
+                        final Rotation lofInToPivot =
                                 lofIn.rotationFromInertial(pv.getPVCoordinates(date, pivotFrame)).revert();
 
                         // Second rotation from inertial pivot to output local orbital frame
-                        final Rotation second = lofOut.rotationFromInertial(pv.getPVCoordinates(date, pivotFrame));
+                        final Rotation pivotToLofOut = lofOut.rotationFromInertial(pv.getPVCoordinates(date, pivotFrame));
 
                         // Composed rotation
-                        final Rotation lofInToLofOut = second.applyTo(first);
+                        final Rotation lofInToLofOut = pivotToLofOut.applyTo(lofInToPivot);
 
                         // Returns the composed transform
                         return new Transform(date, lofInToLofOut);
