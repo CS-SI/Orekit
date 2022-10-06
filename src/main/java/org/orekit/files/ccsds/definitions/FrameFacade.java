@@ -30,6 +30,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Facade in front of several frames types in CCSDS messages.
  * @author Luc Maisonobe
+ * @author Vincent Cucchietti
  * @since 11.0
  */
 public class FrameFacade {
@@ -171,22 +172,21 @@ public class FrameFacade {
     }
 
     /**
-     * Computes the transform from one {@link FrameFacade CCCSDS frame facade} to the other.
+     * Computes the transform from one {@link FrameFacade CCCSDS frame} to the other.
      * <p>
      * Note that the pivot frame provided <b>must be inertial</b> and <b>coherent</b> to the frames you are working
      * with.
      * </p>
      *
-     * @param frameIn    the input {@link FrameFacade CCSDS frame facade} to convert from
-     * @param frameOut   the output {@link FrameFacade CCSDS frame facade}  to convert to
+     * @param frameIn the input {@link FrameFacade CCSDS frame} to convert from
+     * @param frameOut the output {@link FrameFacade CCSDS frame}  to convert to
      * @param pivotFrame <b>Inertial</b> frame used as a pivot to create the transform
-     * @param date       the date for the transform
-     * @param pv         the PV coordinates provider (required when one of the frames is a LOF)
-     *
-     * @return the transform from input to output frame
+     * @param date the date for the transform
+     * @param pv the PV coordinates provider (required when one of the frames is a LOF)
+     * @return the transform from one {@link FrameFacade CCCSDS frame} to the other
      */
     public static Transform getTransform(final FrameFacade frameIn, final FrameFacade frameOut, final Frame pivotFrame,
-            final AbsoluteDate date, final PVCoordinatesProvider pv) {
+                                         final AbsoluteDate date, final PVCoordinatesProvider pv) {
 
         // Gets transform according to the types of the input frames
         if (frameIn.asFrame() != null) {
@@ -199,23 +199,22 @@ public class FrameFacade {
 
         // Transform cannot be gotten from these 2 frames
         throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM, frameIn.getName(),
-                frameOut.getName());
+                                                 frameOut.getName());
 
     }
 
     /**
-     * Computes the transform from an Orekit {@link Frame} to a CCSDS {@link FrameFacade frame}.
+     * Computes the transform from an {@link Frame Orekit frame} to a  {@link FrameFacade CCSDS frame}.
      *
-     * @param frameIn  the input {@link Frame Orekit frame} to convert from
-     * @param frameOut the output {@link FrameFacade CCSDS frame facade} to convert to
-     * @param date     the date for the transform
-     * @param pv       the PV coordinates provider (required when one of the frames is a
-     *                 {@link org.orekit.frames.LocalOrbitalFrame local orbital frame})
-     *
-     * @return the transform from input to output frame
+     * @param frameIn the input {@link Frame Orekit frame} to convert from
+     * @param frameOut the output {@link FrameFacade CCSDS frame} to convert to
+     * @param date the date for the transform
+     * @param pv the PV coordinates provider (required when one of the frames is a
+     * {@link org.orekit.frames.LocalOrbitalFrame local orbital frame})
+     * @return the transform from an {@link Frame Orekit frame} to a  {@link FrameFacade CCSDS frame}
      */
     public static Transform getTransform(final Frame frameIn, final FrameFacade frameOut,
-            final AbsoluteDate date, final PVCoordinatesProvider pv) {
+                                         final AbsoluteDate date, final PVCoordinatesProvider pv) {
 
         // Gets transform according to the types of the input frames
         if (frameOut.asFrame() != null) {
@@ -232,30 +231,30 @@ public class FrameFacade {
 
         // Transform cannot be gotten from these 2 frames
         throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM, frameIn.getName(),
-                frameOut.getName());
+                                                 frameOut.getName());
     }
 
     /**
-     * Computes the transform from an Orekit {@link OrbitRelativeFrame orbit relative frame} to a
+     * Computes the transform from an {@link OrbitRelativeFrame Orekit orbit relative frame} to a
      * {@link FrameFacade CCSDS frame}.
      * <p>
-     * Note that the pivot frame provided <b>must be inertial</b>.
+     * Note that the pivot frame provided <b>must be inertial</b> and <b>coherent</b> to the frames you are working
+     * with.
      * </p>
      *
-     * @param frameIn    the input {@link OrbitRelativeFrame orbit relative frame} to convert from
-     * @param frameOut   the output {@link FrameFacade CCSDS frame facade} to convert to
+     * @param frameIn the input {@link OrbitRelativeFrame Orekit orbit relative frame} to convert from
+     * @param frameOut the output {@link FrameFacade CCSDS frame} to convert to
      * @param pivotFrame <b>Inertial</b> frame used as a pivot to create the transform
-     * @param date       the date for the transform
-     * @param pv         the PV coordinates provider (required when one of the frames is a LOF)
-     *
-     * @return the transform from input to output frame
-     *
+     * @param date the date for the transform
+     * @param pv the PV coordinates provider (required when one of the frames is a LOF)
+     * @return the transform from an {@link OrbitRelativeFrame Orekit orbit relative frame} to a
+     * {@link FrameFacade CCSDS frame}
      * @throws OrekitIllegalArgumentException if one of the local orbital frame is undefined or if the input pivotFrame
-     *                                        is not inertial
+     * is not inertial
      */
     public static Transform getTransform(final OrbitRelativeFrame frameIn, final FrameFacade frameOut,
-            final Frame pivotFrame,
-            final AbsoluteDate date, final PVCoordinatesProvider pv) {
+                                         final Frame pivotFrame,
+                                         final AbsoluteDate date, final PVCoordinatesProvider pv) {
 
         if (pivotFrame.isPseudoInertial()) {
 
@@ -290,7 +289,7 @@ public class FrameFacade {
             }
             // Transform cannot be gotten from these 2 frames
             throw new OrekitIllegalArgumentException(OrekitMessages.INVALID_TRANSFORM, "undefined relative orbit frame",
-                    frameOut.getName());
+                                                     frameOut.getName());
         }
         else {
             // Input pivotFrame is not inertial, an exception is thrown

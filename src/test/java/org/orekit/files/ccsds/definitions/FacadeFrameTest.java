@@ -16,7 +16,9 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -28,7 +30,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.StateCovarianceMatrixProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -42,7 +43,7 @@ public class FacadeFrameTest {
     /**
      * Configure access to Orekit data folder for simple unit tests.
      */
-    @BeforeClass
+    @BeforeAll
     public static void configureOrekitDataAccess() {
         Utils.setDataRoot("regular-data");
     }
@@ -113,9 +114,9 @@ public class FacadeFrameTest {
     private Orbit getOrbit() {
 
         Orbit kOrb = new KeplerianOrbit(7.E6, 0.001, FastMath.toRadians(45.), 0., 0., 0.,
-                PositionAngle.TRUE, FramesFactory.getEME2000(),
-                new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC()),
-                Constants.GRIM5C1_EARTH_MU);
+                                        PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                        new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC()),
+                                        Constants.GRIM5C1_EARTH_MU);
 
         return OrbitType.CARTESIAN.convertType(kOrb);
     }
@@ -167,11 +168,11 @@ public class FacadeFrameTest {
                         out, null, null, out.name());
                 try {
                     Transform t = FrameFacade.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -183,11 +184,11 @@ public class FacadeFrameTest {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
                     Transform t = FrameFacade.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -200,11 +201,11 @@ public class FacadeFrameTest {
                         out, null, null, out.name());
                 try {
                     Transform t = FrameFacade.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -215,11 +216,11 @@ public class FacadeFrameTest {
                 FrameFacade to = new FrameFacade(null, null, out, null, out.name());
                 try {
                     Transform t = FrameFacade.getTransform(from, to, pivotFrame, orbit.getDate(), orbit);
-                    Assert.assertNotNull(t);
+                    Assertions.assertNotNull(t);
                 } catch (IllegalArgumentException iae) {
-                    Assert.assertTrue(iae.getMessage().contains("is not implemented"));
+                    Assertions.assertTrue(iae.getMessage().contains("is not implemented"));
                 } catch (Exception e) {
-                    Assert.fail(e.getCause().getMessage());
+                    Assertions.fail(e.getCause().getMessage());
                 }
             }
         }
@@ -235,7 +236,7 @@ public class FacadeFrameTest {
     private void validateMatrix(double[][] data, double[][] expected, double threshold) {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {
-                Assert.assertEquals(expected[i][j], data[i][j], threshold);
+                Assertions.assertEquals(expected[i][j], data[i][j], threshold);
             }
         }
     }
