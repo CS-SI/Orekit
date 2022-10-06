@@ -65,7 +65,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class KalmanEstimator extends BaseKalmanEstimator {
+public class KalmanEstimator extends AbstractKalmanEstimator {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;

@@ -61,7 +61,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Maxime Journot
  * @since 11.1
  */
-public class SemiAnalyticalKalmanEstimator extends BaseKalmanEstimator {
+public class SemiAnalyticalKalmanEstimator extends AbstractKalmanEstimator {
 
     /** Kalman filter process model. */
     private final SemiAnalyticalKalmanModel processModel;
