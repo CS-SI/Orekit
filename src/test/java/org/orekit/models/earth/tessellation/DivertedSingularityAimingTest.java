@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.geometry.spherical.twod.S2Point;
@@ -31,8 +34,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.io.IOException;
 
 public class DivertedSingularityAimingTest {
 
@@ -84,6 +85,57 @@ public class DivertedSingularityAimingTest {
             Assertions.assertEquals(0.0064, Vector3D.distance(opposite, p), 1.0e-4);
             Assertions.assertEquals(0.0, Vector3D.angle(refDir, dir), 1.1e-9);
         }
+
+    }
+
+    /** Test issue 969 on computation of singularity point.
+     * Issue was due to an Hipparchus bug (see https://github.com/Hipparchus-Math/hipparchus/issues/208).
+     * It was fixed by upgrading to Hipparchus 2.3. 
+     */
+    @Test
+    public void testIssue969() throws IOException {
+
+        // Given
+        // -----
+        
+        // Zone on Earth
+        final GeodeticPoint northWest = new GeodeticPoint(FastMath.toRadians(30.), FastMath.toRadians(-30.), 10.);
+        final GeodeticPoint southWest = new GeodeticPoint(FastMath.toRadians(-10.), FastMath.toRadians(-30.), 3000.);
+        final GeodeticPoint southEast = new GeodeticPoint(FastMath.toRadians(-10.), FastMath.toRadians(20.), -2000.);
+        final GeodeticPoint northEast = new GeodeticPoint(FastMath.toRadians(30.), FastMath.toRadians(20.), -30.);
+
+        // When
+        // ----
+        
+        // Counter clockwise zone definition
+        final SphericalPolygonsSet targetZone = EllipsoidTessellator.buildSimpleZone(1.0e-10, northWest, southWest,
+                                                                                     southEast, northEast);
+        // Build DivertedSingularityAiming
+        final TileAiming tileAiming = new DivertedSingularityAiming(targetZone);
+
+        // Then
+        // ----
+        
+        // Check center and singularity
+        final S2Point centerZone = targetZone.getEnclosingCap().getCenter();
+        final GeodeticPoint centerGP = new GeodeticPoint(0.5 * FastMath.PI - centerZone.getPhi(), centerZone.getTheta(), 0.0);       
+
+        // Get singularity point (there should be just one)
+        List<GeodeticPoint> singularGPs = tileAiming.getSingularPoints();
+        final GeodeticPoint singularGP = singularGPs.get(0);
+
+        // Singular list size
+        Assertions.assertEquals(1, singularGPs.size());
+
+        // Check center
+        Assertions.assertEquals(9.0794674733, FastMath.toDegrees(centerGP.getLatitude()), 1.0e-10);
+        Assertions.assertEquals(-5., FastMath.toDegrees(centerGP.getLongitude()), 1.0e-14);
+        Assertions.assertEquals(0., FastMath.toDegrees(centerGP.getAltitude()), 0.);
+
+        // Check singularity (should be at the antipodes of center)
+        Assertions.assertEquals(-9.0794674733, FastMath.toDegrees(singularGP.getLatitude()), 1.0e-10);
+        Assertions.assertEquals(175., FastMath.toDegrees(singularGP.getLongitude()), 1.0e-13);
+        Assertions.assertEquals(0., FastMath.toDegrees(singularGP.getAltitude()), 0.);
 
     }
 
