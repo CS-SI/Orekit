@@ -16,19 +16,16 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-/** Screening volume shape possibilities used in CCSDS Conjunction Data Messages.
- * @author Melina Vanel
- * @since 11.2
+/** Screening type options allowed in CCSDS Conjunction Data Messages.
  */
-public enum ScreenVolumeShape {
+public enum ScreenType {
 
-    /** Ellipsoid. */
-    ELLIPSOID,
+    /** Shape type. */
+    SHAPE,
 
-    /** Box. */
-    BOX,
+    /** Collision probability type. */
+    PC,
 
-    /** Sphere. */
-    SPHERE,
-
+    /** Maximum collision probability type. */
+    PC_MAX,
 }

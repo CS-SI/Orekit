@@ -16,19 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-/** Screening volume shape possibilities used in CCSDS Conjunction Data Messages.
- * @author Melina Vanel
- * @since 11.2
+/** Flag indicating the type of alternate covariance information provided.
  */
-public enum ScreenVolumeShape {
+public enum AltCovarianceType {
 
-    /** Ellipsoid. */
-    ELLIPSOID,
+    /** Lower Triangular Format, specified in XYZ frame. */
+    XYZ,
 
-    /** Box. */
-    BOX,
-
-    /** Sphere. */
-    SPHERE,
+    /** Sigma/Eigenvector Format. */
+    CSIG3EIGVEC3,
 
 }
