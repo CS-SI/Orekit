@@ -112,6 +112,14 @@ id="CCSDS_CDM_VERS" version="1.0">
 <AREA_ALONG_OEB_MAX units="m**2">0.15</AREA_ALONG_OEB_MAX>
 <AREA_ALONG_OEB_INT units="m**2">0.3</AREA_ALONG_OEB_INT>
 <AREA_ALONG_OEB_MIN units="m**2">0.5</AREA_ALONG_OEB_MIN>
+<RCS units="m**2">2.4</RCS>
+<RCS_MIN units="m**2">1.4</RCS_MIN>
+<RCS_MAX units="m**2">3.4</RCS_MAX>
+<VM_ABSOLUTE>15.0</VM_ABSOLUTE>
+<VM_APPARENT_MIN>19.0</VM_APPARENT_MIN>
+<VM_APPARENT>15.4</VM_APPARENT>
+<VM_APPARENT_MAX>14.0</VM_APPARENT_MAX>
+<REFLECTANCE>0.7</REFLECTANCE>
 <HBR units="m">2.5</HBR>
 <APOAPSIS_ALTITUDE>800</APOAPSIS_ALTITUDE>
 <PERIAPSIS_ALTITUDE>750</PERIAPSIS_ALTITUDE>
@@ -180,6 +188,30 @@ id="CCSDS_CDM_VERS" version="1.0">
 <CZDOT_XDOT units="m**2/s**2">0.001</CZDOT_XDOT>
 <CZDOT_YDOT units="m**2/s**2">0.002</CZDOT_YDOT>
 <CZDOT_ZDOT units="m**2/s**2">0.003</CZDOT_ZDOT>
+<CDRG_X units="m**3/kg">0.07</CDRG_X>
+<CDRG_Y units="m**3/kg">0.08</CDRG_Y>
+<CDRG_Z units="m**3/kg">0.09</CDRG_Z>
+<CDRG_XDOT units="m**3/(kg*s)">0.001</CDRG_XDOT>
+<CDRG_YDOT units="m**3/(kg*s)">0.002</CDRG_YDOT>
+<CDRG_ZDOT units="m**3/(kg*s)">0.003</CDRG_ZDOT>
+<CDRG_DRG units="m**4/kg**2">0.004</CDRG_DRG>
+<CSRP_X units="m**3/kg">0.07</CSRP_X>
+<CSRP_Y units="m**3/kg">0.08</CSRP_Y>
+<CSRP_Z units="m**3/kg">0.09</CSRP_Z>
+<CSRP_XDOT units="m**3/(kg*s)">0.001</CSRP_XDOT>
+<CSRP_YDOT units="m**3/(kg*s)">0.002</CSRP_YDOT>
+<CSRP_ZDOT units="m**3/(kg*s)">0.003</CSRP_ZDOT>
+<CSRP_DRG units="m**4/kg**2">0.004</CSRP_DRG>
+<CSRP_SRP units="m**4/kg**2">0.005</CSRP_SRP>
+<CTHR_X units="m**2/s**2">0.07</CTHR_X>
+<CTHR_Y units="m**2/s**2">0.08</CTHR_Y>
+<CTHR_Z units="m**2/s**2">0.09</CTHR_Z>
+<CTHR_XDOT units="m**2/s**3">0.001</CTHR_XDOT>
+<CTHR_YDOT units="m**2/s**3">0.002</CTHR_YDOT>
+<CTHR_ZDOT units="m**2/s**3">0.003</CTHR_ZDOT>
+<CTHR_DRG units="m**3/(kg*s**2)">0.004</CTHR_DRG>
+<CTHR_SRP units="m**3/(kg*s**2)">0.005</CTHR_SRP>
+<CTHR_THR units="m**2/s**4">0.006</CTHR_THR>
 </covarianceMatrix>
 <covarianceMatrix>
 <DENSITY_FORECAST_UNCERTAINTY>2.5</DENSITY_FORECAST_UNCERTAINTY>

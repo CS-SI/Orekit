@@ -142,7 +142,7 @@ public class AdditionalParameters extends CommentsContainer {
         thrustAcceleration  = Double.NaN;
         sedr                = Double.NaN;
 
-        oebParentFrameEpoch = new AbsoluteDate();
+        oebParentFrameEpoch = AbsoluteDate.ARBITRARY_EPOCH;
         oebQ                = new double[4];
         oebMax              = Double.NaN;
         oebInt              = Double.NaN;

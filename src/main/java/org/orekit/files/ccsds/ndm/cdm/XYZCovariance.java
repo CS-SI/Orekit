@@ -492,11 +492,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,1] in covariance matrix (with index starting at 1).
-     * @param CDRGR = object [7,1] in covariance matrix (in m³/kg)
+     * @param CDRGX = object [7,1] in covariance matrix (in m³/kg)
      */
-    public void setCdrgx(final double CDRGR) {
+    public void setCdrgx(final double CDRGX) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(6, 0, CDRGR);
+        setCovarianceMatrixEntry(6, 0, CDRGX);
     }
 
     /**
@@ -509,11 +509,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,2] in covariance matrix (with index starting at 1).
-     * @param CDRGT = object [7,2] in covariance matrix (in m³/kg)
+     * @param CDRGY = object [7,2] in covariance matrix (in m³/kg)
      */
-    public void setCdrgy(final double CDRGT) {
+    public void setCdrgy(final double CDRGY) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(6, 1, CDRGT);
+        setCovarianceMatrixEntry(6, 1, CDRGY);
     }
 
     /**
@@ -526,11 +526,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,3] in covariance matrix (with index starting at 1).
-     * @param CDRGN = object [7,3] in covariance matrix (in m³/kg)
+     * @param CDRGZ = object [7,3] in covariance matrix (in m³/kg)
      */
-    public void setCdrgz(final double CDRGN) {
+    public void setCdrgz(final double CDRGZ) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(6, 2, CDRGN);
+        setCovarianceMatrixEntry(6, 2, CDRGZ);
     }
 
     /**
@@ -543,11 +543,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,4] in covariance matrix (with index starting at 1).
-     * @param CDRGRdot = object [7,4] in covariance matrix (in m³/(kg.s))
+     * @param CDRGXdot = object [7,4] in covariance matrix (in m³/(kg.s))
      */
-    public void setCdrgxdot(final double CDRGRdot) {
+    public void setCdrgxdot(final double CDRGXdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(6, 3, CDRGRdot);
+        setCovarianceMatrixEntry(6, 3, CDRGXdot);
     }
 
     /**
@@ -560,11 +560,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,5] in covariance matrix (with index starting at 1).
-     * @param CDRGTdot = object [7,5] in covariance matrix (in m³/(kg.s))
+     * @param CDRGYdot = object [7,5] in covariance matrix (in m³/(kg.s))
      */
-    public void setCdrgydot(final double CDRGTdot) {
+    public void setCdrgydot(final double CDRGYdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(6, 4, CDRGTdot);
+        setCovarianceMatrixEntry(6, 4, CDRGYdot);
     }
 
     /**
@@ -577,11 +577,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [7,6] in covariance matrix (with index starting at 1).
-     * @param CDRGNdot = object [7,6] in covariance matrix (in m³/(kg.s))
+     * @param CDRGZdot = object [7,6] in covariance matrix (in m³/(kg.s))
      */
-    public void setCdrgzdot(final double CDRGNdot) {
+    public void setCdrgzdot(final double CDRGZdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(6, 5, CDRGNdot);
+        setCovarianceMatrixEntry(6, 5, CDRGZdot);
     }
 
     /**
@@ -611,11 +611,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,1] in covariance matrix (with index starting at 1).
-     * @param CSRPR = object [8,1] in covariance matrix (in m³/kg)
+     * @param CSRPX = object [8,1] in covariance matrix (in m³/kg)
      */
-    public void setCsrpx(final double CSRPR) {
+    public void setCsrpx(final double CSRPX) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(7, 0, CSRPR);
+        setCovarianceMatrixEntry(7, 0, CSRPX);
     }
 
     /**
@@ -628,11 +628,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,2] in covariance matrix (with index starting at 1).
-     * @param CSRPT = object [8,2] in covariance matrix (in m³/kg)
+     * @param CSRPY = object [8,2] in covariance matrix (in m³/kg)
      */
-    public void setCsrpy(final double CSRPT) {
+    public void setCsrpy(final double CSRPY) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(7, 1, CSRPT);
+        setCovarianceMatrixEntry(7, 1, CSRPY);
     }
 
     /**
@@ -645,11 +645,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,3] in covariance matrix (with index starting at 1).
-     * @param CSRPN = object [8,3] in covariance matrix (in m³/kg)
+     * @param CSRPZ = object [8,3] in covariance matrix (in m³/kg)
      */
-    public void setCsrpz(final double CSRPN) {
+    public void setCsrpz(final double CSRPZ) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(7, 2, CSRPN);
+        setCovarianceMatrixEntry(7, 2, CSRPZ);
     }
 
     /**
@@ -662,11 +662,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,4] in covariance matrix (with index starting at 1).
-     * @param CSRPRdot = object [8,4] in covariance matrix (in m³/(kg.s))
+     * @param CSRPXdot = object [8,4] in covariance matrix (in m³/(kg.s))
      */
-    public void setCsrpxdot(final double CSRPRdot) {
+    public void setCsrpxdot(final double CSRPXdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(7, 3, CSRPRdot);
+        setCovarianceMatrixEntry(7, 3, CSRPXdot);
     }
 
     /**
@@ -679,11 +679,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,5] in covariance matrix (with index starting at 1).
-     * @param CSRPTdot = object [8,5] in covariance matrix (in m³/(kg.s))
+     * @param CSRPYdot = object [8,5] in covariance matrix (in m³/(kg.s))
      */
-    public void setCsrpydot(final double CSRPTdot) {
+    public void setCsrpydot(final double CSRPYdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(7, 4, CSRPTdot);
+        setCovarianceMatrixEntry(7, 4, CSRPYdot);
     }
 
     /**
@@ -696,11 +696,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [8,6] in covariance matrix (with index starting at 1).
-     * @param CSRPNdot = object [8,6] in covariance matrix (in m³/(kg.s))
+     * @param CSRPZdot = object [8,6] in covariance matrix (in m³/(kg.s))
      */
-    public void setCsrpzdot(final double CSRPNdot) {
+    public void setCsrpzdot(final double CSRPZdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(7, 5, CSRPNdot);
+        setCovarianceMatrixEntry(7, 5, CSRPZdot);
     }
 
     /**
@@ -747,11 +747,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,1] in covariance matrix (with index starting at 1).
-     * @param CTHRR = object [9,1] in covariance matrix (in m²/s²)
+     * @param CTHRX = object [9,1] in covariance matrix (in m²/s²)
      */
-    public void setCthrx(final double CTHRR) {
+    public void setCthrx(final double CTHRX) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(8, 0, CTHRR);
+        setCovarianceMatrixEntry(8, 0, CTHRX);
     }
 
     /**
@@ -764,11 +764,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,2] in covariance matrix (with index starting at 1).
-     * @param CTHRT = object [9,2] in covariance matrix (in m²/s²)
+     * @param CTHRY = object [9,2] in covariance matrix (in m²/s²)
      */
-    public void setCthry(final double CTHRT) {
+    public void setCthry(final double CTHRY) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(8, 1, CTHRT);
+        setCovarianceMatrixEntry(8, 1, CTHRY);
     }
 
     /**
@@ -781,11 +781,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,3] in covariance matrix (with index starting at 1).
-     * @param CTHRN = object [9,3] in covariance matrix (in m²/s²)
+     * @param CTHRZ = object [9,3] in covariance matrix (in m²/s²)
      */
-    public void setCthrz(final double CTHRN) {
+    public void setCthrz(final double CTHRZ) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(8, 2, CTHRN);
+        setCovarianceMatrixEntry(8, 2, CTHRZ);
     }
 
     /**
@@ -798,11 +798,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,4] in covariance matrix (with index starting at 1).
-     * @param CTHRRdot = object [9,4] in covariance matrix (in m²/s³)
+     * @param CTHRXdot = object [9,4] in covariance matrix (in m²/s³)
      */
-    public void setCthrxdot(final double CTHRRdot) {
+    public void setCthrxdot(final double CTHRXdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(8, 3, CTHRRdot);
+        setCovarianceMatrixEntry(8, 3, CTHRXdot);
     }
 
     /**
@@ -815,11 +815,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,5] in covariance matrix (with index starting at 1).
-     * @param CTHRTdot = object [9,5] in covariance matrix (in m²/s³)
+     * @param CTHRYdot = object [9,5] in covariance matrix (in m²/s³)
      */
-    public void setCthrydot(final double CTHRTdot) {
+    public void setCthrydot(final double CTHRYdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(8, 4, CTHRTdot);
+        setCovarianceMatrixEntry(8, 4, CTHRYdot);
     }
 
     /**
@@ -832,11 +832,11 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Set the object [9,6] in covariance matrix (with index starting at 1).
-     * @param CTHRNdot = object [9,6] in covariance matrix (in m²/s³)
+     * @param CTHRZdot = object [9,6] in covariance matrix (in m²/s³)
      */
-    public void setCthrzdot(final double CTHRNdot) {
+    public void setCthrzdot(final double CTHRZdot) {
         refuseFurtherComments();
-        setCovarianceMatrixEntry(8, 5, CTHRNdot);
+        setCovarianceMatrixEntry(8, 5, CTHRZdot);
     }
 
     /**
@@ -896,5 +896,4 @@ public class XYZCovariance extends CommentsContainer {
     public boolean isCovXYZset() {
         return covXYZset;
     }
-
 }
