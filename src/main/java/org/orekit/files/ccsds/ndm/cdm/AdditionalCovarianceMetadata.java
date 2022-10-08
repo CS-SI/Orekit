@@ -40,11 +40,11 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
 
     /** The drag consider parameter (DCP) sensitivity vectors map forward expected error in the drag acceleration to actual
      * componentized position errors at TCA. */
-    private double[] DcpSensitivityVectorPosition;
+    private double[] dcpSensitivityVectorPosition;
 
     /** The drag consider parameter (DCP) sensitivity vectors map forward expected error in the drag acceleration to actual
      * componentized velocity errors at TCA. */
-    private double[] DcpSensitivityVectorVelocity;
+    private double[] dcpSensitivityVectorVelocity;
 
 
     /** Simple constructor. */
@@ -136,28 +136,28 @@ public class AdditionalCovarianceMetadata extends CommentsContainer {
      * @return the dcpSensitivityVectorPosition
      */
     public double[] getDcpSensitivityVectorPosition() {
-        return DcpSensitivityVectorPosition.clone();
+        return dcpSensitivityVectorPosition == null ? null : dcpSensitivityVectorPosition.clone();
     }
 
     /** Set the DCP sensitivity vector (position errors at TCA).
      * @param dcpSensitivityVectorPosition the dcpSensitivityVectorPosition to set
      */
     public void setDcpSensitivityVectorPosition(final double[] dcpSensitivityVectorPosition) {
-        DcpSensitivityVectorPosition = dcpSensitivityVectorPosition.clone();
+        this.dcpSensitivityVectorPosition = dcpSensitivityVectorPosition == null ? null : dcpSensitivityVectorPosition.clone();
     }
 
     /** Get the DCP sensitivity vector (velocity errors at TCA).
      * @return the dcpSensitivityVectorVelocity
      */
     public double[] getDcpSensitivityVectorVelocity() {
-        return DcpSensitivityVectorVelocity.clone();
+        return dcpSensitivityVectorVelocity == null ? null : dcpSensitivityVectorVelocity.clone();
     }
 
     /** Set the DCP sensitivity vector (velocity errors at TCA).
      * @param dcpSensitivityVectorVelocity the dcpSensitivityVectorVelocity to set
      */
     public void setDcpSensitivityVectorVelocity(final double[] dcpSensitivityVectorVelocity) {
-        DcpSensitivityVectorVelocity = dcpSensitivityVectorVelocity.clone();
+        this.dcpSensitivityVectorVelocity = dcpSensitivityVectorVelocity == null ? null : dcpSensitivityVectorVelocity.clone();
     }
 
 }

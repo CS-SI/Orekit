@@ -71,7 +71,7 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
      * @return covarianceData the covariance data in the Sigma/Eigenvectors format.
      */
     public double[] getCsig3eigvec3() {
-        return csig3eigvec3.clone();
+        return csig3eigvec3 == null ? null : csig3eigvec3.clone();
     }
 
     /**
@@ -86,7 +86,7 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD, CdmMetadataKey.ALT_COV_TYPE);
         }
 
-        this.csig3eigvec3 = csig3eigvec3.clone();
+        this.csig3eigvec3 = csig3eigvec3 == null ? null : csig3eigvec3.clone();
     }
 
     /** Get the flag indicating whether the alternate covariance type set in the CDM Object metadata section is Sigma/Eigenvectors Covariance.

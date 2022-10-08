@@ -722,7 +722,7 @@ public class CdmRelativeMetadata {
      * @return the collisionPercentile
      */
     public int[] getCollisionPercentile() {
-        return collisionPercentile.clone();
+        return collisionPercentile == null ? null : collisionPercentile.clone();
     }
 
     /** Set the array of 1 to n elements indicating the percentile(s) for which estimates of the collision probability are provided in the
@@ -730,7 +730,7 @@ public class CdmRelativeMetadata {
      * @param collisionPercentile the collisionPercentile to set
      */
     public void setCollisionPercentile(final int[] collisionPercentile) {
-        this.collisionPercentile = collisionPercentile.clone();
+        this.collisionPercentile = collisionPercentile == null ? null : collisionPercentile.clone();;
     }
 
     /** Get the ID of previous CDM issued for event identified by CONJUNCTION_ID.
