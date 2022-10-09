@@ -16,18 +16,21 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-/** Enumerate for different types of Local Orbital Frames.
+/**
+ * Enumerate for different types of Local Orbital Frames.
+ *
  * @author Luc Maisonobe
  */
 public enum LOFType {
@@ -47,16 +50,23 @@ public enum LOFType {
      * @see #NTW
      */
     TNW {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
 
         /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+            return rotationFromLOFInToLOFOut(fromLOF, TNW, pv);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
@@ -81,16 +91,78 @@ public enum LOFType {
      * @see #VVLH
      */
     QSW {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
 
         /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+
+            // Compute the common rotation to all cases
+            final Rotation rotationFromECIToQSW = LOFType.QSW.rotationFromInertial(pv);
+
+            switch (fromLOF) {
+                case EQW:
+                    final Rotation rotationFromEQWToECI = LOFType.EQW.rotationFromInertial(pv);
+
+                    final Rotation rotationFromEQWToQSW =
+                            rotationFromEQWToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
+
+                    return rotationFromEQWToQSW;
+                case NTW:
+                    final Rotation rotationFromNTWToECI = LOFType.NTW.rotationFromInertial(pv).revert();
+
+                    final Rotation rotationFromNTWToQSW =
+                            rotationFromNTWToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
+
+                    return rotationFromNTWToQSW;
+
+                case VNC:
+                    final Rotation rotationFromVNCToECI = LOFType.VNC.rotationFromInertial(pv);
+
+                    final Rotation rotationFromVNCToQSW =
+                            rotationFromVNCToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
+
+                    return rotationFromVNCToQSW;
+
+                case VVLH:
+                    final Rotation rotationFromVVLHToECI = LOFType.VVLH.rotationFromInertial(pv);
+
+                    final Rotation rotationFromVVLHToQSW =
+                            rotationFromVVLHToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
+
+                    return rotationFromVVLHToQSW;
+
+                case LVLH_CCSDS:
+                    final Rotation rotationFromLVLH_CCSDSToECI = LOFType.LVLH_CCSDS.rotationFromInertial(pv);
+
+                    final Rotation rotationFromLVLH_CCSDSToQSW =
+                            rotationFromLVLH_CCSDSToECI.compose(rotationFromECIToQSW,
+                                                                RotationConvention.FRAME_TRANSFORM);
+
+                    return rotationFromLVLH_CCSDSToQSW;
+
+                case TNW:
+                    final Rotation rotationFromTNWToECI = LOFType.TNW.rotationFromInertial(pv);
+
+                    final Rotation rotationFromTNWToQSW =
+                            rotationFromTNWToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
+
+                    return rotationFromTNWToQSW;
+
+                default:
+                    return Rotation.IDENTITY;
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
@@ -121,16 +193,23 @@ public enum LOFType {
      * @see #VVLH
      */
     LVLH {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
 
         /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+            return rotationFromLOFInToLOFOut(fromLOF, LVLH, pv);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
@@ -159,16 +238,23 @@ public enum LOFType {
      * @since 11.0
      */
     LVLH_CCSDS {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.MINUS_K, Vector3D.MINUS_J);
         }
 
         /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+            return rotationFromLOFInToLOFOut(fromLOF, LVLH_CCSDS, pv);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.MINUS_K),
                                        new FieldVector3D<>(field, Vector3D.MINUS_J));
@@ -196,15 +282,22 @@ public enum LOFType {
      * @see #LVLH_CCSDS
      */
     VVLH {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             return LVLH_CCSDS.rotationFromInertial(pv);
         }
 
         /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+            return rotationFromLOFInToLOFOut(fromLOF, VVLH, pv);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             return LVLH_CCSDS.rotationFromInertial(field, pv);
         }
 
@@ -225,16 +318,23 @@ public enum LOFType {
      * @see #NTW
      */
     VNC {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_J);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+            return rotationFromLOFInToLOFOut(fromLOF, VNC, pv);
+        }
+
+        /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_J));
@@ -247,17 +347,24 @@ public enum LOFType {
      * @since 11.0
      */
     EQW {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             final Vector3D m = pv.getMomentum();
             return new Rotation(new Vector3D(-m.getY(), m.getX(), 0), m,
                                 Vector3D.PLUS_I, Vector3D.PLUS_J);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+            return rotationFromLOFInToLOFOut(fromLOF, EQW, pv);
+        }
+
+        /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             final FieldVector3D<T> m = pv.getMomentum();
             return new FieldRotation<>(new FieldVector3D<>(m.getY().negate(), m.getX(), field.getZero()),
                                        m,
@@ -282,16 +389,23 @@ public enum LOFType {
      * @since 11.0
      */
     NTW {
-
         /** {@inheritDoc} */
+        @Override
         public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_J, Vector3D.PLUS_K);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
+            return rotationFromLOFInToLOFOut(fromLOF, NTW, pv);
+        }
+
+        /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                     final FieldPVCoordinates<T> pv) {
+                                                                                         final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_J),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
@@ -299,9 +413,32 @@ public enum LOFType {
 
     };
 
-    /** Get the transform from an inertial frame defining position-velocity and the local orbital frame.
-     * @param date current date
+    /**
+     * Get the rotation from input to output {@link LOFType commonly used local orbital frame}.
+     *
+     * @param in input commonly used local orbital frame
+     * @param out output commonly used local orbital frame
      * @param pv position-velocity of the spacecraft in some inertial frame
+     * @return rotation from input to output {@link LOFType commonly used local orbital frame}.
+     * @since 11.3
+     */
+    public static Rotation rotationFromLOFInToLOFOut(final LOFType in, final LOFType out, final PVCoordinates pv) {
+
+        // First compute the rotation from the input LOF to the pivot LOF QSW
+        final Rotation inToQSW = LOFType.QSW.rotationFromLOFType(in, pv);
+
+        // Then compute the rotation from the pivot LOF QSW to the output LOF
+        final Rotation QSWToOut = LOFType.QSW.rotationFromLOFType(out, pv).revert();
+
+        // Output composed rotation
+        return inToQSW.compose(QSWToOut, RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /**
+     * Get the transform from an inertial frame defining position-velocity and the local orbital frame.
+     *
+     * @param date current date
+     * @param pv   position-velocity of the spacecraft in some inertial frame
      * @return transform from the frame where position-velocity are defined to local orbital frame
      */
     public Transform transformFromInertial(final AbsoluteDate date, final PVCoordinates pv) {
@@ -310,8 +447,8 @@ public enum LOFType {
         final Transform translation = new Transform(date, pv.negate());
 
         // compute the rotation part of the transform
-        final Rotation r = rotationFromInertial(pv);
-        final Vector3D p = pv.getPosition();
+        final Rotation r        = rotationFromInertial(pv);
+        final Vector3D p        = pv.getPosition();
         final Vector3D momentum = pv.getMomentum();
         final Transform rotation =
                 new Transform(date, r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
@@ -320,22 +457,24 @@ public enum LOFType {
 
     }
 
-    /** Get the transform from an inertial frame defining position-velocity and the local orbital frame.
+    /**
+     * Get the transform from an inertial frame defining position-velocity and the local orbital frame.
+     *
      * @param date current date
-     * @param pv position-velocity of the spacecraft in some inertial frame
-     * @param <T> type of the fiels elements
+     * @param pv   position-velocity of the spacecraft in some inertial frame
+     * @param <T>  type of the fields elements
      * @return transform from the frame where position-velocity are defined to local orbital frame
      * @since 9.0
      */
     public <T extends CalculusFieldElement<T>> FieldTransform<T> transformFromInertial(final FieldAbsoluteDate<T> date,
-                                                                                   final FieldPVCoordinates<T> pv) {
+                                                                                       final FieldPVCoordinates<T> pv) {
 
         // compute the translation part of the transform
         final FieldTransform<T> translation = new FieldTransform<>(date, pv.negate());
 
         // compute the rotation part of the transform
-        final FieldRotation<T> r = rotationFromInertial(date.getField(), pv);
-        final FieldVector3D<T> p = pv.getPosition();
+        final FieldRotation<T> r        = rotationFromInertial(date.getField(), pv);
+        final FieldVector3D<T> p        = pv.getPosition();
         final FieldVector3D<T> momentum = pv.getMomentum();
         final FieldTransform<T> rotation =
                 new FieldTransform<T>(date, r, new FieldVector3D<>(p.getNormSq().reciprocal(), r.applyTo(momentum)));
@@ -344,14 +483,23 @@ public enum LOFType {
 
     }
 
-    /** Get the rotation from inertial frame to local orbital frame.
+    /**
+     * Get the rotation from input {@link LOFType commonly used local orbital frame} to the instance.
+     * @param fromLOF input local orbital frame
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     * @return rotation from input local orbital frame to the instance
+     * @since 11.3
+     */
+    public abstract Rotation rotationFromLOFType(LOFType fromLOF, PVCoordinates pv);
+
+    /**
+     * Get the rotation from inertial frame to local orbital frame.
      * <p>
-     * This rotation does not include any time derivatives. If first
-     * time derivatives (i.e. rotation rate) is needed as well, the full
-     * {@link #transformFromInertial(AbsoluteDate, PVCoordinates) transformFromInertial}
-     * method must be called and the complete rotation transform must be extracted
-     * from it.
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as
+     * well, the full {@link #transformFromInertial(AbsoluteDate, PVCoordinates) transformFromInertial} method must be
+     * called and the complete rotation transform must be extracted from it.
      * </p>
+     *
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @return rotation from inertial frame to local orbital frame
      */

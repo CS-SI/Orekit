@@ -63,6 +63,12 @@
     * user-defined associated state
       (for example battery status, or higher order derivatives, or anything else)
 
+  * Covariance
+
+    * covariance propagation
+    * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
+    * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
+
   * Maneuvers
 
     * analytical models for small maneuvers without propagation

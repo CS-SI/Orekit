@@ -23,6 +23,9 @@
     <release version="11.3" date="TBD" description="TBD">
       <action dev="gc" type="add" issue="940">
         Accept new fields in CCSDS CDM files.
+      </action>  
+      <action dev="vincent" type="add" issue="964">
+        Added covariance transformation between local orbital frames.
       </action>
       <action dev="andrewsgoetz" type="fix" issue="951">
         Moved Keplerian anomaly conversion methods to KeplerianAnomalyUtility

@@ -761,3 +761,6 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = no unscented transform configured
 
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = value is not strictly positive: {0}
+
+# orbital parameters type: {0} is different from expected orbital type : {1}
+WRONG_ORBIT_PARAMETERS_TYPE = orbital parameters type: {0} is different from expected orbital type : {1}
