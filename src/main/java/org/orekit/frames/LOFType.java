@@ -129,9 +129,6 @@ public enum LOFType {
 
                     return rotationFromVNCToQSW;
 
-                case LVLH:
-                    return Rotation.IDENTITY;
-
                 case VVLH:
                     final Rotation rotationFromVVLHToECI = LOFType.VVLH.rotationFromInertial(pv);
 
@@ -487,10 +484,10 @@ public enum LOFType {
     }
 
     /**
-     * Get the rotation from input {@link LOFType commonly used local orbital frame}.
+     * Get the rotation from input {@link LOFType commonly used local orbital frame} to the instance.
      * @param fromLOF input local orbital frame
      * @param pv position-velocity of the spacecraft in some inertial frame
-     * @return rotation from input local orbital frame
+     * @return rotation from input local orbital frame to the instance
      * @since 11.3
      */
     public abstract Rotation rotationFromLOFType(LOFType fromLOF, PVCoordinates pv);
