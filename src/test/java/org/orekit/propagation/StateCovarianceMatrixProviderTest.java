@@ -37,6 +37,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -396,6 +397,55 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
+
+    }
+
+    /**
+     * Unit test for shiftedBy() method.
+     * The method is compared to covariance propagation using the Keplerian propagator.
+     */
+    @Test
+    public void testCovarianceShift() {
+
+        // Initialization
+        setUp();
+
+        // Keplerian propagator
+        final String        stmName   = "STM";
+        final OrbitType     propType  = OrbitType.CARTESIAN;
+        final PositionAngle angleType = PositionAngle.MEAN;
+        final KeplerianPropagator propagator = new KeplerianPropagator(initialState.getOrbit());
+        final double dt = 60.0;
+
+        // Finalize setting
+        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, null, null);
+
+        // Create additional state
+        final String     additionalName = "cartCov";
+        final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
+        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final StateCovarianceMatrixProvider provider =
+                new StateCovarianceMatrixProvider(additionalName, stmName, harvester,
+                                                  propType, angleType,
+                                                  initialStateCovariance);
+        propagator.addAdditionalStateProvider(provider);
+
+        // Propagate
+        final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(dt));
+
+        // Get the propagated covariance
+        final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
+        final RealMatrix propagatedCov = propagatedStateCov.getMatrix();
+
+        // Use of shiftedBy
+        final StateCovariance shiftedStateCov = initialStateCovariance.shiftedBy(initialState.getOrbit(), dt);
+        final RealMatrix shiftedCov = shiftedStateCov.getMatrix();
+
+        // Verify
+        compareCovariance(propagatedCov, shiftedCov, 4.0e-12);
+        Assertions.assertEquals(propagatedStateCov.getDate(), shiftedStateCov.getDate());
+        Assertions.assertEquals(propagatedStateCov.getOrbitType(), shiftedStateCov.getOrbitType());
+        Assertions.assertEquals(propagatedStateCov.getPositionAngle(), shiftedStateCov.getPositionAngle());
 
     }
 

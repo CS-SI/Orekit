@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -172,7 +173,7 @@ public class StateCovariance implements TimeStamped {
      * @param orbit orbit to which the covariance matrix should correspond
      * @param outOrbitType target orbit type of the state covariance matrix
      * @param outAngleType target position angle type of the state covariance matrix
-     * @return the covariance expressed in the target orbit type with the target position angle
+     * @return a new covariance state, expressed in the target orbit type with the target position angle
      */
     public StateCovariance changeCovarianceType(final Orbit orbit, final OrbitType outOrbitType, final PositionAngle outAngleType) {
         return changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType, outOrbitType, outAngleType, orbitalCovariance);
@@ -183,7 +184,7 @@ public class StateCovariance implements TimeStamped {
      *
      * @param orbit orbit orbit to which the covariance matrix should correspond
      * @param lofOut output local orbital frame
-     * @return the covariance expressed in the output local orbital frame
+     * @return a new covariance state, expressed in the output local orbital frame
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final LOFType lofOut) {
 
@@ -207,7 +208,7 @@ public class StateCovariance implements TimeStamped {
      *
      * @param orbit orbit orbit to which the covariance matrix should correspond
      * @param frameOut output frame
-     * @return the covariance expressed in the output frame
+     * @return a new covariance state, expressed in the output frame
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final Frame frameOut) {
 
@@ -223,6 +224,43 @@ public class StateCovariance implements TimeStamped {
             return changeFrameAndCreate(orbit, epoch, frame, frameOut, orbitalCovariance, orbitType, angleType);
 
         }
+
+    }
+
+    /**
+     * Get a time-shifted covariance matrix.
+     * <p>
+     * The shifting model is a Keplerian one. In other words, the state
+     * transition matrix is computed supposing Keplerian motion.
+     * <p>
+     * Shifting is <em>not</em> intended as a replacement for proper
+     * covariance propagation, but should be sufficient for small time
+     * shifts or coarse accuracy.
+     *
+     * @param orbit orbit to which the covariance matrix should correspond
+     * @param dt time shift in seconds
+     * @return a new covariance state, shifted with respect to the instance
+     */
+    public StateCovariance shiftedBy(final Orbit orbit, final double dt) {
+
+        // Shifted orbit
+        final Orbit shifted = orbit.shiftedBy(dt);
+
+        // Compute STM
+        final RealMatrix stm = getStm(orbit, dt);
+
+        // Convert covariance in STM type (i.e., Keplerian elements)
+        final StateCovariance inStmType = changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType,
+                                                              OrbitType.KEPLERIAN, PositionAngle.MEAN,
+                                                              orbitalCovariance);
+
+        // Shift covariance by applying the STM
+        final RealMatrix shiftedCov = stm.multiply(inStmType.getMatrix().multiplyTransposed(stm));
+
+        // Restore the initial covariance type
+        return changeTypeAndCreate(shifted, shifted.getDate(), frame,
+                                   OrbitType.KEPLERIAN, PositionAngle.MEAN,
+                                   orbitType, angleType, shiftedCov);
 
     }
 
@@ -557,6 +595,29 @@ public class StateCovariance implements TimeStamped {
 
         // Return
         return transformationMatrix;
+
+    }
+
+    /**
+     * Get the state transition matrix considering Keplerian contribution only.
+     *
+     * @param initialOrbit orbit to which the initial covariance matrix should correspond
+     * @param dt time difference between the two orbits
+     * @return the state transition matrix used to shift the covariance matrix
+     */
+    private RealMatrix getStm(final Orbit initialOrbit, final double dt) {
+
+        // initialize the STM
+        final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION);
+
+        // State transition matrix using Keplerian contribution only
+        final double mu  = initialOrbit.getMu();
+        final double sma = initialOrbit.getA();
+        final double contribution = -1.5 * dt * FastMath.sqrt(mu / FastMath.pow(sma, 5));
+        stm.setEntry(5, 0, contribution);
+
+        // Return
+        return stm;
 
     }
 
