@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="gc" type="add" issue="940">
+        Accept new fields in CCSDS CDM files.
+      </action>
       <action dev="andrewsgoetz" type="fix" issue="951">
         Moved Keplerian anomaly conversion methods to KeplerianAnomalyUtility
         and FieldKeplerianAnomalyUtility, deprecating the methods in
