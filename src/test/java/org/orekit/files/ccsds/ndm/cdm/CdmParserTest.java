@@ -1503,7 +1503,7 @@ public class CdmParserTest {
         Assertions.assertEquals(2.0, file.getDataObject1().getAdditionalParametersBlock().getOebMax(), 0.0); 
 
         // Check OEB_MED is correctly read
-        Assertions.assertEquals(1.0, file.getDataObject1().getAdditionalParametersBlock().getOebInt(), 0.0); 
+        Assertions.assertEquals(1.0, file.getDataObject1().getAdditionalParametersBlock().getOebIntermediate(), 0.0); 
 
         // Check OEB_MIN is correctly read
         Assertions.assertEquals(0.5, file.getDataObject1().getAdditionalParametersBlock().getOebMin(), 0.0); 
@@ -1512,7 +1512,7 @@ public class CdmParserTest {
         Assertions.assertEquals(0.15, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongMax(), 0.0); 	    
 
         // Check AREA_ALONG_OEB_MED is correctly read
-        Assertions.assertEquals(0.3, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongInt(), 0.0); 
+        Assertions.assertEquals(0.3, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongIntermediate(), 0.0); 
 
         // Check AREA_ALONG_OEB_MIN is correctly read
         Assertions.assertEquals(0.5, file.getDataObject1().getAdditionalParametersBlock().getOebAreaAlongMin(), 0.0); 

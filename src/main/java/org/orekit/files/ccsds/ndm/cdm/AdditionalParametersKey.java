@@ -80,7 +80,7 @@ public enum AdditionalParametersKey {
 
     /**  Intermediate physical dimension of Optimally Enclosing Box. */
     OEB_INT((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
-                                                                 container::setOebInt)),
+                                                                 container::setOebIntermediate)),
 
     /**  Minium physical dimension of Optimally Enclosing Box. */
     OEB_MIN((token, context, container) -> token.processAsDouble(Unit.METRE, context.getParsedUnitsBehavior(),
@@ -92,7 +92,7 @@ public enum AdditionalParametersKey {
 
     /** Cross-sectional area of Optimally Enclosing Box when viewed along the intermediate OEB direction. */
     AREA_ALONG_OEB_INT((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
-                                                                            container::setOebAreaAlongInt)),
+                                                                            container::setOebAreaAlongIntermediate)),
 
     /** Cross-sectional area of Optimally Enclosing Box when viewed along the minimum OEB direction. */
     AREA_ALONG_OEB_MIN((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
