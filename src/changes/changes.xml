@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="971">
+        Added new class to handle covariance matrix.
+      </action>
       <action dev="vincent" type="add" issue="964">
         Added covariance transformation between local orbital frames.
       </action>
