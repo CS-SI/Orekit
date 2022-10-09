@@ -688,7 +688,7 @@ public class CdmRelativeMetadata {
 
             if (this.getScreenVolumeShape() == ScreenVolumeShape.SPHERE) {
 
-                if (this.getScreenVolumeRadius() == Double.NaN) {
+                if (Double.isNaN(this.getScreenVolumeRadius())) {
                     throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS);
                 }
 
@@ -697,20 +697,20 @@ public class CdmRelativeMetadata {
                 if (this.getScreenVolumeFrame() == null) {
                     throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME);
                 }
-                if (this.getScreenVolumeX() == Double.NaN) {
+                if (Double.isNaN(this.getScreenVolumeX())) {
                     throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_X);
                 }
-                if (this.getScreenVolumeY() == Double.NaN) {
+                if (Double.isNaN(this.getScreenVolumeY())) {
                     throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Y);
                 }
-                if (this.getScreenVolumeZ() == Double.NaN) {
+                if (Double.isNaN(this.getScreenVolumeZ())) {
                     throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_VOLUME_Z);
                 }
             }
 
         } else if (this.getScreenType() == ScreenType.PC || this.getScreenType() == ScreenType.PC_MAX) {
 
-            if (this.getScreenPcThreshold() == Double.NaN) {
+            if (Double.isNaN(this.getScreenPcThreshold())) {
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD);
             }
         }

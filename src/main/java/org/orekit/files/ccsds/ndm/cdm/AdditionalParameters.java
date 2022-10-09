@@ -683,7 +683,7 @@ public class AdditionalParameters extends CommentsContainer {
         refuseFurtherComments();
 
         // Check key condition
-        if (getCovConfidence() == Double.NaN) {
+        if (Double.isNaN(getCovConfidence())) {
             throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, AdditionalParametersKey.COV_CONFIDENCE);
         }
 

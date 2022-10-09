@@ -1615,7 +1615,8 @@ public class CdmParserTest {
         
 
         // OBJECT 2 - Eigenvector covariance block
-        Assertions.assertEquals(AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType(), "ALT_COV_TYPE");       
+        Assertions.assertEquals(AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType(), "ALT_COV_TYPE");
+        Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getComments().get(0));
         Assertions.assertEquals(12,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3().length);
         for (int i=0; i<12; i++) {
             Assertions.assertEquals(i+1,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3()[i], COVARIANCE_DIAG_PRECISION);
@@ -1798,6 +1799,17 @@ public class CdmParserTest {
         Assertions.assertEquals(-4.594e-6, file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 4), COVARIANCE_PRECISION);
         Assertions.assertEquals(5.178e-5,  file.getDataObject2().getRTNCovarianceBlock().getRTNCovarianceMatrix().getEntry(5, 5), COVARIANCE_PRECISION);
 
+        // Improve coverage
+        // ----------------
+        
+        Assertions.assertEquals(true, parser.inData()); // Always true by construction
+        
+        // AdditionalCovarianceMetadata conditions coverage
+        file.getDataObject1().getAdditionalCovMetadataBlock().validate(1.0);
+        file.getDataObject1().getAdditionalCovMetadataBlock().setDcpSensitivityVectorPosition(null);
+        file.getDataObject1().getAdditionalCovMetadataBlock().setDcpSensitivityVectorVelocity(null);
+        Assertions.assertEquals(null, file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition());
+        Assertions.assertEquals(null, file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity());
     }
 
     @Test
