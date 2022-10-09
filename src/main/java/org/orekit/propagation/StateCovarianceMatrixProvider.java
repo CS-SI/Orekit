@@ -176,6 +176,11 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
                                        covInit);
     }
 
+    /**
+     * Builds the matrix to perform covariance transformation.
+     * @param rotation input rotation
+     * @return the matrix to perform the covariance transformation
+     */
     private static RealMatrix buildTransformationMatrixFromRotation(final Rotation rotation) {
 
         final double[][] rotationMatrixData = rotation.getMatrix();

@@ -423,6 +423,7 @@ public enum LOFType {
      * @param out output commonly used local orbital frame
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @return rotation from input to output {@link LOFType commonly used local orbital frame}.
+     * @since 11.3
      */
     public static Rotation rotationFromLOFInToLOFOut(final LOFType in, final LOFType out, final PVCoordinates pv) {
 
@@ -460,19 +461,6 @@ public enum LOFType {
     }
 
     /**
-     * Get the rotation from inertial frame to local orbital frame.
-     * <p>
-     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as
-     * well, the full {@link #transformFromInertial(AbsoluteDate, PVCoordinates) transformFromInertial} method must be
-     * called and the complete rotation transform must be extracted from it.
-     * </p>
-     *
-     * @param pv position-velocity of the spacecraft in some inertial frame
-     * @return rotation from inertial frame to local orbital frame
-     */
-    public abstract Rotation rotationFromInertial(PVCoordinates pv);
-
-    /**
      * Get the transform from an inertial frame defining position-velocity and the local orbital frame.
      *
      * @param date current date
@@ -498,7 +486,27 @@ public enum LOFType {
 
     }
 
+    /**
+     * Get the rotation from input {@link LOFType commonly used local orbital frame}.
+     * @param fromLOF input local orbital frame
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     * @return rotation from input local orbital frame
+     * @since 11.3
+     */
     public abstract Rotation rotationFromLOFType(LOFType fromLOF, PVCoordinates pv);
+
+    /**
+     * Get the rotation from inertial frame to local orbital frame.
+     * <p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as
+     * well, the full {@link #transformFromInertial(AbsoluteDate, PVCoordinates) transformFromInertial} method must be
+     * called and the complete rotation transform must be extracted from it.
+     * </p>
+     *
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     * @return rotation from inertial frame to local orbital frame
+     */
+    public abstract Rotation rotationFromInertial(PVCoordinates pv);
 
     /** Get the rotation from inertial frame to local orbital frame.
      * <p>
