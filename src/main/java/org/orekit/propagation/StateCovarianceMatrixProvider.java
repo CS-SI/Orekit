@@ -122,14 +122,61 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         this.covAngleType = covAngleType;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return additionalName;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // Convert the initial covariance matrix in the same orbit type as the STM
+        covInit = changeCovarianceType(initialState.getOrbit(),
+                                       covOrbitType, covAngleType,
+                                       stmOrbitType, stmAngleType,
+                                       covInit);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The covariance matrix can be computed only if the State Transition Matrix state is available.
+     * </p>
+     */
+    @Override
+    public boolean yield(final SpacecraftState state) {
+        return !state.hasAdditionalState(stmName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getAdditionalState(final SpacecraftState state) {
+
+        // State transition matrix for the input state
+        final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
+
+        // Compute the propagated covariance matrix
+        RealMatrix propCov = dYdY0.multiply(covInit.multiplyTransposed(dYdY0));
+        // Update to the user defined type
+        propCov = changeCovarianceType(state.getOrbit(),
+                                       stmOrbitType, stmAngleType,
+                                       covOrbitType, covAngleType,
+                                       propCov);
+
+        // Return the propagated covariance matrix
+        return toArray(propCov);
+
+    }
+
     /**
      * Convert the covariance matrix from a {@link LOFType commonly used local orbital frame} to another
-     * {@link LOFType commonly used local orbital frame}.
+     * {@link LOFType local orbital frame}.
      * <p>
      * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado".
      * <p>
-     * As this method transforms from and to a {@link LOFType commonly used local orbital frame}, it necessarily takes
+     * As this method transforms from and to a {@link LOFType local orbital frame}, it necessarily takes
      * in a covariance matrix expressed in <b>cartesian elements</b> and output a covariance matrix also expressed in
      * the
      * <b>cartesian elements</b>.
@@ -160,61 +207,6 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public String getName() {
-        return additionalName;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        // Convert the initial covariance matrix in the same orbit type as the STM
-        covInit = changeCovarianceType(initialState.getOrbit(),
-                                       covOrbitType, covAngleType,
-                                       stmOrbitType, stmAngleType,
-                                       covInit);
-    }
-
-    /**
-     * Builds the matrix to perform covariance transformation.
-     * @param rotation input rotation
-     * @return the matrix to perform the covariance transformation
-     */
-    private static RealMatrix buildTransformationMatrixFromRotation(final Rotation rotation) {
-
-        final double[][] rotationMatrixData = rotation.getMatrix();
-
-        final RealMatrix transformationMatrix = MatrixUtils.createRealMatrix(6, 6);
-
-        // Fills in the upper left and lower right blocks with the rotation
-        transformationMatrix.setSubMatrix(rotationMatrixData, 0, 0);
-        transformationMatrix.setSubMatrix(rotationMatrixData, 3, 3);
-
-        return transformationMatrix;
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
-
-        // State transition matrix for the input state
-        final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
-
-        // Compute the propagated covariance matrix
-        RealMatrix propCov = dYdY0.multiply(covInit.multiplyTransposed(dYdY0));
-        // Update to the user defined type
-        propCov = changeCovarianceType(state.getOrbit(),
-                                       stmOrbitType, stmAngleType,
-                                       covOrbitType, covAngleType,
-                                       propCov);
-
-        // Return the propagated covariance matrix
-        return toArray(propCov);
-
-    }
-
     /**
      * Convert the covariance matrix from a {@link LOFType commonly used local orbital frame} to a {@link Frame frame}.
      * <p>
@@ -235,9 +227,6 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
                                                    final LOFType lofIn, final Frame frameOut,
                                                    final RealMatrix inputCartesianCov) {
 
-        // Initialize output variable
-        final RealMatrix cartesianCovarianceOut;
-
         // Get the orbit inertial frame
         final Frame orbitInertialFrame = orbit.getFrame();
 
@@ -251,11 +240,9 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
                     buildTransformationMatrixFromRotation(rotationFromLofInToFrameOut);
 
             // Get the Cartesian covariance matrix converted to frameOut
-            cartesianCovarianceOut =
-                    transformationMatrix.multiply(inputCartesianCov.multiplyTransposed(transformationMatrix));
+            return transformationMatrix.multiply(inputCartesianCov.multiplyTransposed(transformationMatrix));
 
-        }
-        else {
+        } else {
             // Compute rotation matrix from lofIn to orbit inertial frame
             final Rotation rotationFromLofInToOrbitFrame =
                     lofIn.rotationFromInertial(orbit.getPVCoordinates()).revert();
@@ -269,13 +256,9 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
                     inputCartesianCov.multiplyTransposed(transformationMatrixFromLofInToOrbitFrame));
 
             // Get the Cartesian covariance matrix converted to frameOut
-            cartesianCovarianceOut =
-                    changeCovarianceFrame(orbit, orbitInertialFrame, frameOut, cartesianCovarianceInOrbitFrame,
-                                          OrbitType.CARTESIAN, PositionAngle.MEAN);
+            return changeCovarianceFrame(orbit, orbitInertialFrame, frameOut, cartesianCovarianceInOrbitFrame,
+                                         OrbitType.CARTESIAN, PositionAngle.MEAN);
         }
-
-        // Output converted covariance
-        return cartesianCovarianceOut;
 
     }
 
@@ -366,49 +349,6 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
     }
 
-    /**
-     * Get the covariance matrix in another orbit type.
-     *
-     * @param orbit orbit to which the covariance matrix should correspond
-     * @param inOrbitType initial orbit type of the state covariance matrix
-     * @param inAngleType initial position angle type of the state covariance matrix
-     * @param outOrbitType target orbit type of the state covariance matrix
-     * @param outAngleType target position angle type of the state covariance matrix
-     * @param inputCov input covariance
-     * @return the covariance expressed in the target orbit type with the target position angle
-     */
-    public static RealMatrix changeCovarianceType(final Orbit orbit,
-                                                  final OrbitType inOrbitType, final PositionAngle inAngleType,
-                                                  final OrbitType outOrbitType, final PositionAngle outAngleType,
-                                                  final RealMatrix inputCov) {
-
-        // Notations:
-        // I: Input orbit type
-        // O: Output orbit type
-        // C: Cartesian parameters
-
-        // Compute dOutputdCartesian
-        final double[][] aOC               = new double[STATE_DIMENSION][STATE_DIMENSION];
-        final Orbit      orbitInOutputType = outOrbitType.convertType(orbit);
-        orbitInOutputType.getJacobianWrtCartesian(outAngleType, aOC);
-        final RealMatrix dOdC = new Array2DRowRealMatrix(aOC, false);
-
-        // Compute dCartesiandInput
-        final double[][] aCI              = new double[STATE_DIMENSION][STATE_DIMENSION];
-        final Orbit      orbitInInputType = inOrbitType.convertType(orbit);
-        orbitInInputType.getJacobianWrtParameters(inAngleType, aCI);
-        final RealMatrix dCdI = new Array2DRowRealMatrix(aCI, false);
-
-        // Compute dOutputdInput
-        final RealMatrix dOdI = dOdC.multiply(dCdI);
-
-        // Conversion of the state covariance matrix in target orbit type
-        final RealMatrix outputCov = dOdI.multiply(inputCov.multiplyTransposed(dOdI));
-
-        // Return the converted covariance
-        return outputCov;
-
-    }
 
     /**
      * Convert the covariance matrix from a {@link Frame frame} to a {@link LOFType commonly used local orbital frame}.
@@ -491,23 +431,56 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     }
 
     /**
+     * Get the covariance matrix in another orbit type.
+     *
+     * @param orbit orbit to which the covariance matrix should correspond
+     * @param inOrbitType initial orbit type of the state covariance matrix
+     * @param inAngleType initial position angle type of the state covariance matrix
+     * @param outOrbitType target orbit type of the state covariance matrix
+     * @param outAngleType target position angle type of the state covariance matrix
+     * @param inputCov input covariance
+     * @return the covariance expressed in the target orbit type with the target position angle
+     */
+    public static RealMatrix changeCovarianceType(final Orbit orbit,
+                                                  final OrbitType inOrbitType, final PositionAngle inAngleType,
+                                                  final OrbitType outOrbitType, final PositionAngle outAngleType,
+                                                  final RealMatrix inputCov) {
+
+        // Notations:
+        // I: Input orbit type
+        // O: Output orbit type
+        // C: Cartesian parameters
+
+        // Compute dOutputdCartesian
+        final double[][] aOC               = new double[STATE_DIMENSION][STATE_DIMENSION];
+        final Orbit      orbitInOutputType = outOrbitType.convertType(orbit);
+        orbitInOutputType.getJacobianWrtCartesian(outAngleType, aOC);
+        final RealMatrix dOdC = new Array2DRowRealMatrix(aOC, false);
+
+        // Compute dCartesiandInput
+        final double[][] aCI              = new double[STATE_DIMENSION][STATE_DIMENSION];
+        final Orbit      orbitInInputType = inOrbitType.convertType(orbit);
+        orbitInInputType.getJacobianWrtParameters(inAngleType, aCI);
+        final RealMatrix dCdI = new Array2DRowRealMatrix(aCI, false);
+
+        // Compute dOutputdInput
+        final RealMatrix dOdI = dOdC.multiply(dCdI);
+
+        // Conversion of the state covariance matrix in target orbit type
+        final RealMatrix outputCov = dOdI.multiply(inputCov.multiplyTransposed(dOdI));
+
+        // Return the converted covariance
+        return outputCov;
+
+    }
+
+    /**
      * Get the orbit type in which the covariance matrix is expressed.
      *
      * @return the orbit type
      */
     public OrbitType getCovarianceOrbitType() {
         return covOrbitType;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * The covariance matrix can be computed only if the State Transition Matrix state is available.
-     * </p>
-     */
-    @Override
-    public boolean yield(final SpacecraftState state) {
-        return !state.hasAdditionalState(stmName);
     }
 
     /**
@@ -533,24 +506,6 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
         // Return the converted covariance
         return covariance;
-
-    }
-
-    /**
-     * Convert an array to a matrix (6x6 dimension).
-     *
-     * @param array input array
-     * @return the corresponding matrix
-     */
-    private RealMatrix toRealMatrix(final double[] array) {
-        final RealMatrix matrix = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
-        int              index  = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                matrix.setEntry(i, j, array[index++]);
-            }
-        }
-        return matrix;
 
     }
 
@@ -614,6 +569,43 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
             }
         }
         return array;
+    }
+
+    /**
+     * Convert an array to a matrix (6x6 dimension).
+     *
+     * @param array input array
+     * @return the corresponding matrix
+     */
+    private RealMatrix toRealMatrix(final double[] array) {
+        final RealMatrix matrix = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+        int              index  = 0;
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
+                matrix.setEntry(i, j, array[index++]);
+            }
+        }
+        return matrix;
+
+    }
+
+    /**
+     * Builds the matrix to perform covariance transformation.
+     * @param rotation input rotation
+     * @return the matrix to perform the covariance transformation
+     */
+    private static RealMatrix buildTransformationMatrixFromRotation(final Rotation rotation) {
+
+        final double[][] rotationMatrixData = rotation.getMatrix();
+
+        final RealMatrix transformationMatrix = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+
+        // Fills in the upper left and lower right blocks with the rotation
+        transformationMatrix.setSubMatrix(rotationMatrixData, 0, 0);
+        transformationMatrix.setSubMatrix(rotationMatrixData, 3, 3);
+
+        return transformationMatrix;
+
     }
 
 }
