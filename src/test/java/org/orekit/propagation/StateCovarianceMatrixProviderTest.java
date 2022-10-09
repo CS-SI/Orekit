@@ -140,7 +140,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test conversion from inertial frame to RTN local orbital frame")
-    void should_return_same_covariance_matrix() {
+    public void should_return_same_covariance_matrix() {
 
         // Given
         final AbsoluteDate initialDate          = new AbsoluteDate();
@@ -518,7 +518,7 @@ public class StateCovarianceMatrixProviderTest {
 
     @Test
     @DisplayName("Test covariance conversion from inertial frame to RTN local orbital frame")
-    void should_rotate_covariance_matrix_by_ninety_degrees() {
+    public void should_rotate_covariance_matrix_by_ninety_degrees() {
 
         // Given
         final AbsoluteDate initialDate          = new AbsoluteDate();
@@ -564,7 +564,7 @@ public class StateCovarianceMatrixProviderTest {
 
     @Test
     @DisplayName("Test covariance conversion from RTN local orbital frame to inertial frame")
-    void should_rotate_covariance_matrix_by_minus_ninety_degrees() {
+    public void should_rotate_covariance_matrix_by_minus_ninety_degrees() {
 
         // Given
         final AbsoluteDate initialDate          = new AbsoluteDate();
@@ -619,7 +619,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to RTN")
-    void should_return_Vallado_RSW_covariance_matrix_from_ECI() {
+    public void should_return_Vallado_RSW_covariance_matrix_from_ECI() {
 
         // Initialize Orekit
         Utils.setDataRoot("regular-data");
@@ -688,7 +688,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to NTW")
-    void should_return_Vallado_NTW_covariance_matrix_from_ECI() {
+    public void should_return_Vallado_NTW_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -740,7 +740,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test custom covariance conversion Vallado test case : GCRF -> TEME -> IRTF -> NTW -> RTN -> ITRF -> GCRF")
-    void should_return_initial_covariance_after_multiple_conversion() {
+    public  void should_return_initial_covariance_after_multiple_conversion() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -826,7 +826,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to PEF")
-    void should_return_Vallado_PEF_covariance_matrix_from_ECI() {
+    public void should_return_Vallado_PEF_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -881,7 +881,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : PEF cartesian to ECI")
-    void should_return_Vallado_ECI_covariance_matrix_from_PEF() {
+    public void should_return_Vallado_ECI_covariance_matrix_from_PEF() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -934,7 +934,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to MOD")
-    void should_return_Vallado_MOD_covariance_matrix_from_ECI() {
+    public void should_return_Vallado_MOD_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -981,7 +981,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test covariance conversion from Vallado test case NTW to RSW")
-    void should_convert_Vallado_NTW_to_RSW() {
+    public void should_convert_Vallado_NTW_to_RSW() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -1031,7 +1031,7 @@ public class StateCovarianceMatrixProviderTest {
      */
     @Test
     @DisplayName("Test thrown error if input frame is not pseudo-inertial and the covariance matrix is not expressed in cartesian elements")
-    void should_return_orekit_exception() {
+    public void should_return_orekit_exception() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
