@@ -211,12 +211,10 @@ public class StateCovariance implements TimeStamped {
                                            orbitalCovariance);
             }
 
-            throw new OrekitException(OrekitMessages.STATE_COVARIANCE_RESTRICTED_TO_CARTESIAN_ELEMENTS_ONLY,
-                                      frame.getName());
+            throw new OrekitException(OrekitMessages.CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME);
         }
 
-        throw new OrekitException(OrekitMessages.STATE_COVARIANCE_RESTRICTED_TO_CARTESIAN_ELEMENTS_ONLY,
-                                  lofType.name());
+        throw new OrekitException(OrekitMessages.CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF);
 
     }
 
