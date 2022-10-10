@@ -27,7 +27,7 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  * attribute which can be acces with getXYZCovariaxMatrix method. Beware that
  * there are thus 2 ways to modify the XYZ covariance : setC... ( setCxx,
  * setCyx ...) which should be prioritized and getXYZCovariaxMatrix.setEntry(row, col, value).
- * <p> The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey.ALT_COV_TYPE} is {@link AltCovarianceType.XYZ}, otherwise
+ * <p> The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is {@link AltCovarianceType#XYZ}, otherwise
  * its terms will return NaN. </p>
  * <p> When available, the matrix is given in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
  * are mandatory. The remaining elements will return NaN if not provided.</p>
@@ -43,7 +43,7 @@ public class XYZCovariance extends CommentsContainer {
     /** Simple constructor. To update matrix value there are 2 ways to modify the XYZ
      * covariance : setC... ( setCxx, setCyx ...) which should be prioritized and
      * getXYZCovariaxMatrix.setEntry(row, col, value).
-     * <p> The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey.ALT_COV_TYPE} is {@link AltCovarianceType.XYZ}, otherwise
+     * <p> The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is {@link AltCovarianceType#XYZ}, otherwise
      * its terms will return NaN. </p>
      * <p> When available, the matrix is given in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
      * are mandatory. The remaining elements will return NaN if not provided.</p>
@@ -109,7 +109,7 @@ public class XYZCovariance extends CommentsContainer {
 
     /**
      * Get the XYZ covariance matrix.
-     * <p> The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey.ALT_COV_TYPE} is {@link AltCovarianceType.XYZ}, otherwise
+     * <p> The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is {@link AltCovarianceType#XYZ}, otherwise
      * its terms will return NaN. </p>
      * <p> When available, the matrix is given in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
      * are mandatory. The remaining elements will return NaN if not provided.</p>
