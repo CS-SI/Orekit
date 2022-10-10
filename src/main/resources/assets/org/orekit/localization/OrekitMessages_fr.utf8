@@ -764,3 +764,6 @@ NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
 WRONG_ORBIT_PARAMETERS_TYPE = Le type de paramètres orbitaux: {0} est différent du type de paramètres orbitaux attendus: {1}
+
+# this state covariance can only be expressed in cartesian elements as it is using the following frame : {0}
+STATE_COVARIANCE_RESTRICTED_TO_CARTESIAN_ELEMENTS_ONLY = cette covariance d'état ne peut être exprimé qu'en éléments de type cartésien car elle utilise le référentiel suivant : {0}

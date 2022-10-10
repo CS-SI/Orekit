@@ -338,9 +338,8 @@ public enum OrekitMessages implements Localizable {
     INCONSISTENT_SELECTION("inconsistent parameters selection between pairs {0}/{1} and {2}/{3}"),
     NO_UNSCENTED_TRANSFORM_CONFIGURED("no unscented transform configured"),
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
-    WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}");
-
-
+    WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}"),
+    STATE_COVARIANCE_RESTRICTED_TO_CARTESIAN_ELEMENTS_ONLY("this state covariance can only be expressed in cartesian elements as it is using the following frame : {0}");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */
