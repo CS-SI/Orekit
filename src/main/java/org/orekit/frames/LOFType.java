@@ -101,62 +101,7 @@ public enum LOFType {
         /** {@inheritDoc} */
         @Override
         public Rotation rotationFromLOFType(final LOFType fromLOF, final PVCoordinates pv) {
-
-            // Compute the common rotation to all cases
-            final Rotation rotationFromECIToQSW = LOFType.QSW.rotationFromInertial(pv);
-
-            switch (fromLOF) {
-                case EQW:
-                    final Rotation rotationFromEQWToECI = LOFType.EQW.rotationFromInertial(pv);
-
-                    final Rotation rotationFromEQWToQSW =
-                            rotationFromEQWToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
-
-                    return rotationFromEQWToQSW;
-                case NTW:
-                    final Rotation rotationFromNTWToECI = LOFType.NTW.rotationFromInertial(pv).revert();
-
-                    final Rotation rotationFromNTWToQSW =
-                            rotationFromNTWToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
-
-                    return rotationFromNTWToQSW;
-
-                case VNC:
-                    final Rotation rotationFromVNCToECI = LOFType.VNC.rotationFromInertial(pv);
-
-                    final Rotation rotationFromVNCToQSW =
-                            rotationFromVNCToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
-
-                    return rotationFromVNCToQSW;
-
-                case VVLH:
-                    final Rotation rotationFromVVLHToECI = LOFType.VVLH.rotationFromInertial(pv);
-
-                    final Rotation rotationFromVVLHToQSW =
-                            rotationFromVVLHToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
-
-                    return rotationFromVVLHToQSW;
-
-                case LVLH_CCSDS:
-                    final Rotation rotationFromLVLH_CCSDSToECI = LOFType.LVLH_CCSDS.rotationFromInertial(pv);
-
-                    final Rotation rotationFromLVLH_CCSDSToQSW =
-                            rotationFromLVLH_CCSDSToECI.compose(rotationFromECIToQSW,
-                                                                RotationConvention.FRAME_TRANSFORM);
-
-                    return rotationFromLVLH_CCSDSToQSW;
-
-                case TNW:
-                    final Rotation rotationFromTNWToECI = LOFType.TNW.rotationFromInertial(pv);
-
-                    final Rotation rotationFromTNWToQSW =
-                            rotationFromTNWToECI.compose(rotationFromECIToQSW, RotationConvention.FRAME_TRANSFORM);
-
-                    return rotationFromTNWToQSW;
-
-                default:
-                    return Rotation.IDENTITY;
-            }
+            return rotationFromLOFInToLOFOut(fromLOF, QSW, pv);
         }
 
         /** {@inheritDoc} */
@@ -415,6 +360,9 @@ public enum LOFType {
 
     /**
      * Get the rotation from input to output {@link LOFType commonly used local orbital frame}.
+     * <p>
+     * This rotation does not include any time derivatives.
+     * </p>
      *
      * @param in input commonly used local orbital frame
      * @param out output commonly used local orbital frame
@@ -424,14 +372,14 @@ public enum LOFType {
      */
     public static Rotation rotationFromLOFInToLOFOut(final LOFType in, final LOFType out, final PVCoordinates pv) {
 
-        // First compute the rotation from the input LOF to the pivot LOF QSW
-        final Rotation inToQSW = LOFType.QSW.rotationFromLOFType(in, pv);
+        // First compute the rotation from the input LOF to the pivot inertial
+        final Rotation inToInertial = in.rotationFromInertial(pv).revert();
 
-        // Then compute the rotation from the pivot LOF QSW to the output LOF
-        final Rotation QSWToOut = LOFType.QSW.rotationFromLOFType(out, pv).revert();
+        // Then compute the rotation from the pivot inertial to the output LOF
+        final Rotation inertialToOut = out.rotationFromInertial(pv);
 
         // Output composed rotation
-        return inToQSW.compose(QSWToOut, RotationConvention.FRAME_TRANSFORM);
+        return inToInertial.compose(inertialToOut, RotationConvention.FRAME_TRANSFORM);
     }
 
     /**
