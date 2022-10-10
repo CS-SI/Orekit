@@ -450,12 +450,15 @@ public class StateCovarianceTest {
         // TEME -> ITRF
         final StateCovariance convertedCovarianceMatrixInITRF =
         		convertedCovarianceMatrixInTEME.changeCovarianceFrame(initialOrbit, itrf);
+
         // ITRF -> NTW
         final StateCovariance convertedCovarianceMatrixInNTW =
         		convertedCovarianceMatrixInITRF.changeCovarianceFrame(initialOrbit, LOFType.NTW);
+
         // NTW -> RTN
         final StateCovariance convertedCovarianceMatrixInRTN =
         		convertedCovarianceMatrixInNTW.changeCovarianceFrame(initialOrbit, LOFType.QSW);
+
         // RTN -> ITRF
         final StateCovariance convertedCovarianceMatrixBackInITRF =
         		convertedCovarianceMatrixInRTN.changeCovarianceFrame(initialOrbit, itrf);
@@ -463,6 +466,7 @@ public class StateCovarianceTest {
         // ITRF -> TEME
         final StateCovariance convertedCovarianceMatrixBackInTEME =
         		convertedCovarianceMatrixBackInITRF.changeCovarianceFrame(initialOrbit, teme);
+
         // TEME -> GCRF
         final StateCovariance convertedCovarianceMatrixInGCRF =
         		convertedCovarianceMatrixBackInTEME.changeCovarianceFrame(initialOrbit, initialInertialFrame);
@@ -679,6 +683,18 @@ public class StateCovarianceTest {
         });
 
         compareCovariance(expectedCovarianceMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
+
+    }
+
+    @Test
+    @DisplayName("Test shiftedBy method of StateCovariance")
+    void Should_return_expected_shifted_state_covariance() {
+        // Given
+
+
+        // When
+
+        // Then
 
     }
 
