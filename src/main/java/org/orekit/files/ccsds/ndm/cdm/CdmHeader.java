@@ -29,6 +29,9 @@ public class CdmHeader extends Header {
     /** ID that uniquely identifies a message from a given originator. */
     private String messageFor;
 
+    /** User-defined free-text message classification or caveats of this CDM. */
+    private String classification;
+
     /**
      * Constructor.
      * @param minVersionMessageId minimum version for {@link HeaderKey#MESSAGE_ID}
@@ -58,6 +61,20 @@ public class CdmHeader extends Header {
     public void setMessageFor(final String spacecraftNames) {
         refuseFurtherComments();
         this.messageFor = spacecraftNames;
+    }
+
+    /** Get the classification or caveats text message of this CDM.
+     * @return the classification
+     */
+    public String getClassification() {
+        return classification;
+    }
+
+    /** Set the classification or caveats text message of this CDM.
+     * @param classification the classification to set
+     */
+    public void setClassification(final String classification) {
+        this.classification = classification;
     }
 
 }

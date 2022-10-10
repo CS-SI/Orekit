@@ -26,6 +26,7 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
@@ -71,8 +72,18 @@ public class CdmMetadata extends Metadata {
     /** Operator email for the space object. */
     private String operatorEmail;
 
+    /** Unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    private String odmMsgLink;
+
+    /** Unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    private String admMsgLink;
+
     /** Unique name of the external ephemeris file used for the object or NONE. */
     private String ephemName;
+
+    /** Flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
+     * specified by CONJUNCTION_ID. */
+    private YesNoUnknown obsBeforeNextMessage;
 
     /** Operator email for the space object. */
     private CovarianceMethod covarianceMethod;
@@ -110,6 +121,15 @@ public class CdmMetadata extends Metadata {
     /** Is in-track thrust modelling used or not ? */
     private boolean isIntrackThrustModeled;
 
+    /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
+    private String covarianceSource;
+
+    /** Flag indicating the type of alternate covariance information provided. */
+    private AltCovarianceType altCovType;
+
+    /** Reference frame in which the alternate covariance data are given. */
+    private FrameFacade altCovRefFrame;
+
     /** Simple constructor.
      */
     public CdmMetadata() {
@@ -119,7 +139,6 @@ public class CdmMetadata extends Metadata {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        super.validate(version);
         // We only check values that are mandatory in a cdm file
         checkNotNull(object,                  CdmMetadataKey.OBJECT);
         checkNotNull(objectDesignator,        CdmMetadataKey.OBJECT_DESIGNATOR);
@@ -549,4 +568,113 @@ public class CdmMetadata extends Metadata {
         this.isIntrackThrustModeled = IntrackThrustModeled;
     }
 
+    /** Get the source of the covariance data.
+     * @return the covarianceSource
+     */
+    public String getCovarianceSource() {
+        return covarianceSource;
+    }
+
+    /** Set the source of the covariance data.
+     * @param covarianceSource the covarianceSource to set
+     */
+    public void setCovarianceSource(final String covarianceSource) {
+        refuseFurtherComments();
+        this.covarianceSource = covarianceSource;
+    }
+
+    /** Get the flag indicating the type of alternate covariance information provided.
+     * @return the altCovType
+     */
+    public AltCovarianceType getAltCovType() {
+        return altCovType;
+    }
+
+    /** Set the flag indicating the type of alternate covariance information provided.
+     * @param altCovType the altCovType to set
+     */
+    public void setAltCovType(final AltCovarianceType altCovType) {
+        refuseFurtherComments();
+        this.altCovType = altCovType;
+    }
+
+     /**
+     * Get the value of {@code ALT_COV_REF_FRAME} as an Orekit {@link Frame}.
+     * @return the reference frame
+     */
+    public FrameFacade getAltCovRefFrame() {
+        return altCovRefFrame;
+    }
+
+    /**
+     * Set the name of the reference frame in which the alternate covariance data are given.
+     * @param altCovRefFrame alternate covariance reference frame
+     */
+    public void setAltCovRefFrame(final FrameFacade altCovRefFrame) {
+        refuseFurtherComments();
+
+        if (getAltCovType() == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmMetadataKey.ALT_COV_TYPE);
+        }
+
+        if (altCovRefFrame.asFrame() == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
+        }
+
+        // Only set the frame if within the allowed options: GCRF, EME2000, ITRF
+        if ( altCovRefFrame.asCelestialBodyFrame() == CelestialBodyFrame.GCRF ||
+                 altCovRefFrame.asCelestialBodyFrame() == CelestialBodyFrame.EME2000 ||
+                     altCovRefFrame.asCelestialBodyFrame().name().contains("ITRF") ) {
+            this.altCovRefFrame = altCovRefFrame;
+        } else {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
+        }
+    }
+
+    /** Get the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @return the odmMsgLink
+     */
+    public String getOdmMsgLink() {
+        return odmMsgLink;
+    }
+
+    /** Set the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @param odmMsgLink the odmMsgLink to set
+     */
+    public void setOdmMsgLink(final String odmMsgLink) {
+        refuseFurtherComments();
+        this.odmMsgLink = odmMsgLink;
+    }
+
+    /** Get the unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @return the admMsgLink
+     */
+    public String getAdmMsgLink() {
+        return admMsgLink;
+    }
+
+    /** Set the unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message.
+     * @param admMsgLink the admMsgLink to set
+     */
+    public void setAdmMsgLink(final String admMsgLink) {
+        refuseFurtherComments();
+        this.admMsgLink = admMsgLink;
+    }
+
+    /** Get the flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
+     * specified by CONJUNCTION_ID.
+     * @return the obsBeforeNextMessage
+     */
+    public YesNoUnknown getObsBeforeNextMessage() {
+        return obsBeforeNextMessage;
+    }
+
+    /** Set the flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
+     * specified by CONJUNCTION_ID.
+     * @param obsBeforeNextMessage the obsBeforeNextMessage to set
+     */
+    public void setObsBeforeNextMessage(final YesNoUnknown obsBeforeNextMessage) {
+        refuseFurtherComments();
+        this.obsBeforeNextMessage = obsBeforeNextMessage;
+    }
 }
