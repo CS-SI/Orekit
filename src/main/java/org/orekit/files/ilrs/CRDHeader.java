@@ -21,13 +21,23 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 /**
  * Container for Consolidated laser ranging Data Format (CDR) header.
  * @author Bryan Cazabonne
+ * @author Rongwang Li
  * @since 10.3
  */
 public class CRDHeader extends ILRSHeader {
+
+    /** String delimiter regex of datetime. */
+    private static final String DATETIME_DELIMITER_REGEX = "[-:T]";
+
+    /** Space. */
+    private static final String SPACE = " ";
 
     /** Station name from official list. */
     private String stationName;
@@ -423,6 +433,71 @@ public class CRDHeader extends ILRSHeader {
      */
     public void setPredictionProvider(final String predictionProvider) {
         this.predictionProvider = predictionProvider;
+    }
+
+    /**
+     * Get a string representation of the H1 in the CRD format.
+     * @return a string representation of the H1, in the CRD format.
+     * @since 11.3
+     */
+    public String getH1CrdString() {
+        final DateComponents dc = getProductionEpoch();
+        return String.format("H1 %3s %2d %04d %02d %02d %02d", getFormat(),
+                getVersion(), dc.getYear(), dc.getMonth(), dc.getDay(),
+                getProductionHour());
+    }
+
+    /**
+     * Get a string representation of the H2 in the CRD format.
+     * @return a string representation of the H2, in the CRD format.
+     * @since 11.3
+     */
+    public String getH2CrdString() {
+        return String.format("H2 %s %4d %2d %2d %2d %s", stationName,
+                systemIdentifier, systemNumber, systemOccupancy,
+                epochIdentifier, stationNetword);
+    }
+
+    /**
+     * Get a string representation of the H3 in the CRD format.
+     * @return a string representation of the H3, in the CRD format.
+     * @since 11.3
+     */
+    public String getH3CrdString() {
+        final int targetLocation = getTargetLocation();
+        return String.format("H3 %s %7s %4s %5s %1d %1d %2s", getName(),
+                getIlrsSatelliteId(), getSic(), getNoradId(),
+                getSpacecraftEpochTimeScale(), getTargetClass(),
+                CRD.formatIntegerOrNaN(targetLocation, -1));
+    }
+
+    /**
+     * Get a string representation of the H4 in the CRD format.
+     * @return a string representation of the H4, in the CRD format.
+     * @since 11.3
+     */
+    public String getH4CrdString() {
+        // "2006-11-13T15:23:52" -- > "2006 11 13 15 23 52"
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        return String.format("H4 %2d %s %s %d %d %d %d %d %d %d %d", getDataType(),
+                getStartEpoch().toStringWithoutUtcOffset(utc, 0).replaceAll(DATETIME_DELIMITER_REGEX, SPACE),
+                getEndEpoch().toStringWithoutUtcOffset(utc, 0).replaceAll(DATETIME_DELIMITER_REGEX, SPACE),
+                dataReleaseFlag, isTroposphericRefractionApplied ? 1 : 0,
+                isCenterOfMassCorrectionApplied ? 1 : 0,
+                isReceiveAmplitudeCorrectionApplied ? 1 : 0,
+                isStationSystemDelayApplied ? 1 : 0,
+                isTransponderDelayApplied ? 1 : 0, rangeType.getIndicator(),
+                qualityIndicator);
+    }
+
+    /**
+     * Get a string representation of the H5 in the CRD format.
+     * @return a string representation of the H5, in the CRD format.
+     * @since 11.3
+     */
+    public String getH5CrdString() {
+        return String.format("H5 %2d %02d %s %3s %5d", getPredictionType(), getYearOfCentury(),
+                getDateAndTime(), getPredictionProvider(), getSequenceNumber());
     }
 
     /** Range type for SLR data. */
