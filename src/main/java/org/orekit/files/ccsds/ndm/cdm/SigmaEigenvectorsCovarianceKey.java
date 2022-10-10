@@ -18,18 +18,19 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
-/** Keywords allowed in {@link CdmHeader}.
- * @author Melina Vanel
- * @since 11.2
+/** Keys for {@link SigmaEigenvectorsCovariance covariance format} entries.
  */
-public enum CdmHeaderKey {
+public enum SigmaEigenvectorsCovarianceKey {
 
-    /** Creating spacecraft name for which the CDM is provided. */
-    MESSAGE_FOR((token, context, header) -> token.processAsUppercaseString(header::setMessageFor)),
+    /** Comment entry. */
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
-    /** User-defined free-text message classification or caveats of this CDM. */
-    CLASSIFICATION((token, context, header) -> token.processAsNormalizedString(header::setClassification));
+    /** The 3x3 positional covariance one-sigma dispersions corresponding to the major, intermediate and minor eigenvalues,
+     * followed by the associated eigenvectors. */
+    CSIG3EIGVEC3((token, context, container) -> token.processAsDoubleArray(container::setCsig3eigvec3));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -37,18 +38,18 @@ public enum CdmHeaderKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    CdmHeaderKey(final TokenProcessor processor) {
+    SigmaEigenvectorsCovarianceKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
-    /** Process an token.
+    /** Process one token.
      * @param token token to process
      * @param context context binding
-     * @param header header to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final CdmHeader header) {
-        return processor.process(token, context, header);
+    public boolean process(final ParseToken token, final ContextBinding context, final SigmaEigenvectorsCovariance container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -56,10 +57,10 @@ public enum CdmHeaderKey {
         /** Process one token.
          * @param token token to process
          * @param context context binding
-         * @param header header to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, CdmHeader header);
+        boolean process(ParseToken token, ContextBinding context, SigmaEigenvectorsCovariance container);
     }
 
 }

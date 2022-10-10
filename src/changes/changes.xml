@@ -27,6 +27,9 @@
       <action dev="bryan" type="add" issue="971">
         Added new class to handle covariance matrix.
       </action>
+      <action dev="gc" type="add" issue="940">
+        Accept new fields in CCSDS CDM files.
+      </action>
       <action dev="vincent" type="add" issue="964">
         Added covariance transformation between local orbital frames.
       </action>

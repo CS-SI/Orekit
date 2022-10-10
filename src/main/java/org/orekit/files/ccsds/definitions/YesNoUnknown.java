@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.cdm;
+package org.orekit.files.ccsds.definitions;
 
-/** Screening volume shape possibilities used in CCSDS Conjunction Data Messages.
- * @author Melina Vanel
- * @since 11.2
+/** Yes, No, Unknown values for various elements.
  */
-public enum ScreenVolumeShape {
+public enum YesNoUnknown {
 
-    /** Ellipsoid. */
-    ELLIPSOID,
+    /** YES value. */
+    YES,
 
-    /** Box. */
-    BOX,
+    /** NO value. */
+    NO,
 
-    /** Sphere. */
-    SPHERE,
+    /** UNKOWN value. */
+    UNKOWN;
 
 }
