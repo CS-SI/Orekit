@@ -20,12 +20,9 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.complex.Quaternion;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
-import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -33,7 +30,7 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class PhysicalProperties extends CommentsContainer {
+public class PhysicalProperties extends CommonPhysicalProperties {
 
     /** Satellite manufacturer name. */
     private String manufacturer;
@@ -62,33 +59,6 @@ public class PhysicalProperties extends CommentsContainer {
     /** Mass without propellant. */
     private double dryMass;
 
-    /** Optimally Enclosing Box parent reference frame. */
-    private FrameFacade oebParentFrame;
-
-    /** Optimally Enclosing Box parent reference frame epoch. */
-    private AbsoluteDate oebParentFrameEpoch;
-
-    /** Quaternion defining Optimally Enclosing Box. */
-    private final double[] oebQ;
-
-    /** Dimensions of Optimally Enclosing Box along X-OEB (i.e max). */
-    private double oebMax;
-
-    /** Dimensions of Optimally Enclosing Box along Y-OEB (i.e intermediate). */
-    private double oebIntermediate;
-
-    /** Dimensions of Optimally Enclosing Box along Z-OEB (i.e min). */
-    private double oebMin;
-
-    /** Cross-sectional area of Optimally Enclosing Box along X-OEB. */
-    private double oebAreaAlongMax;
-
-    /** Cross-sectional area of Optimally Enclosing Box along Y-OEB. */
-    private double oebAreaAlongIntermediate;
-
-    /** Cross-sectional area of Optimally Enclosing Box along Z-OEB. */
-    private double oebAreaAlongMin;
-
     /** Minimum cross-sectional area for collision probability estimation purposes. */
     private double minAreaForCollisionProbability;
 
@@ -98,15 +68,6 @@ public class PhysicalProperties extends CommentsContainer {
     /** Typical (50th percentile) cross-sectional area for collision probability estimation purposes. */
     private double typAreaForCollisionProbability;
 
-    /** Typical (50th percentile) radar cross-section. */
-    private double rcs;
-
-    /** Minimum radar cross-section. */
-    private double minRcs;
-
-    /** Maximum radar cross-section. */
-    private double maxRcs;
-
     /** Attitude-independent SRP area, not already into attitude-dependent area along OEB. */
     private double srpConstantArea;
 
@@ -115,21 +76,6 @@ public class PhysicalProperties extends CommentsContainer {
 
     /** SRP coefficient 1σ uncertainty. */
     private double srpUncertainty;
-
-    /** Typical (50th percentile) visual magnitude. */
-    private double vmAbsolute;
-
-    /** Minimum apparent visual magnitude. */
-    private double vmApparentMin;
-
-    /** Typical (50th percentile) apparent visual magnitude. */
-    private double vmApparent;
-
-    /** Maximum apparent visual magnitude. */
-    private double vmApparentMax;
-
-    /** Typical (50th percentile) coefficient of reflectance. */
-    private double reflectance;
 
     /** Attitude control mode. */
     private String attitudeControlMode;
@@ -165,39 +111,22 @@ public class PhysicalProperties extends CommentsContainer {
      * @param epochT0 T0 epoch from file metadata
      */
     PhysicalProperties(final AbsoluteDate epochT0) {
+
+        // Call to CommonPhysicalProperties constructor
+        super();
+
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         dockedWith                     = new ArrayList<>();
-        dragConstantArea                  = Double.NaN;
-        dragCoefficient         = Double.NaN;
+        dragConstantArea               = Double.NaN;
+        dragCoefficient                = Double.NaN;
         dragUncertainty                = 0.0;
-        initialWetMass                    = Double.NaN;
-        wetMass                           = Double.NaN;
+        initialWetMass                 = Double.NaN;
+        wetMass                        = Double.NaN;
         dryMass                        = Double.NaN;
-        oebParentFrame                 = new FrameFacade(null, null, OrbitRelativeFrame.RIC, null,
-                                                         OrbitRelativeFrame.RIC.name());
-        oebParentFrameEpoch            = epochT0;
-        oebQ                           = new double[4];
-        oebMax                         = Double.NaN;
-        oebIntermediate                = Double.NaN;
-        oebMin                         = Double.NaN;
-        oebAreaAlongMax                = Double.NaN;
-        oebAreaAlongIntermediate       = Double.NaN;
-        oebAreaAlongMin                = Double.NaN;
         minAreaForCollisionProbability = Double.NaN;
         maxAreaForCollisionProbability = Double.NaN;
         typAreaForCollisionProbability = Double.NaN;
-        rcs                            = Double.NaN;
-        minRcs                         = Double.NaN;
-        maxRcs                         = Double.NaN;
-        srpConstantArea                = Double.NaN;
-        srpCoefficient          = Double.NaN;
-        srpUncertainty                 = Double.NaN;
-        vmAbsolute                     = Double.NaN;
-        vmApparentMin                  = Double.NaN;
-        vmApparent                     = Double.NaN;
-        vmApparentMax                  = Double.NaN;
-        reflectance                    = Double.NaN;
         attitudeKnowledgeAccuracy      = Double.NaN;
         attitudeControlAccuracy        = Double.NaN;
         attitudePointingAccuracy       = Double.NaN;
@@ -343,142 +272,6 @@ public class PhysicalProperties extends CommentsContainer {
         this.dryMass = dryMass;
     }
 
-    /** Get the Optimally Enclosing Box parent reference frame.
-     * @return Optimally Enclosing Box parent reference frame
-     */
-    public FrameFacade getOebParentFrame() {
-        return oebParentFrame;
-    }
-
-    /** Set the Optimally Enclosing Box parent reference frame.
-     * @param oebParentFrame Optimally Enclosing Box parent reference frame
-     */
-    public void setOebParentFrame(final FrameFacade oebParentFrame) {
-        refuseFurtherComments();
-        this.oebParentFrame = oebParentFrame;
-    }
-
-    /** Get the Optimally Enclosing Box parent reference frame epoch.
-     * @return Optimally Enclosing Box parent reference frame epoch
-     */
-    public AbsoluteDate getOebParentFrameEpoch() {
-        return oebParentFrameEpoch;
-    }
-
-    /** Set the Optimally Enclosing Box parent reference frame epoch.
-     * @param oebParentFrameEpoch Optimally Enclosing Box parent reference frame epoch
-     */
-    public void setOebParentFrameEpoch(final AbsoluteDate oebParentFrameEpoch) {
-        refuseFurtherComments();
-        this.oebParentFrameEpoch = oebParentFrameEpoch;
-    }
-
-    /** Get the quaternion defining Optimally Enclosing Box.
-     * @return quaternion defining Optimally Enclosing Box
-     */
-    public Quaternion getOebQ() {
-        return new Quaternion(oebQ[0], oebQ[1], oebQ[2], oebQ[3]);
-    }
-
-    /** set the component of quaternion defining Optimally Enclosing Box.
-     * @param i index of the component
-     * @param qI component of quaternion defining Optimally Enclosing Box
-     */
-    public void setOebQ(final int i, final double qI) {
-        refuseFurtherComments();
-        oebQ[i] = qI;
-    }
-
-    /** Get the dimensions of Optimally Enclosing Box along X-OEB (i.e max).
-     * @return dimensions of Optimally Enclosing Box along X-OEB (i.e max)
-     */
-    public double getOebMax() {
-        return oebMax;
-    }
-
-    /** Set the dimensions of Optimally Enclosing Box along X-OEB (i.e max).
-     * @param oebMax dimensions of Optimally Enclosing Box along X-OEB (i.e max)
-     */
-    public void setOebMax(final double oebMax) {
-        refuseFurtherComments();
-        this.oebMax = oebMax;
-    }
-
-    /** Get the dimensions of Optimally Enclosing Box along Y-OEB (i.e intermediate).
-     * @return dimensions of Optimally Enclosing Box along Y-OEB (i.e intermediate).
-     */
-    public double getOebIntermediate() {
-        return oebIntermediate;
-    }
-
-    /** Set the dimensions of Optimally Enclosing Box along Y-OEB (i.e intermediate).
-     * @param oebIntermediate dimensions of Optimally Enclosing Box along Y-OEB (i.e intermediate).
-     */
-    public void setOebIntermediate(final double oebIntermediate) {
-        refuseFurtherComments();
-        this.oebIntermediate = oebIntermediate;
-    }
-
-    /** Get the dimensions of Optimally Enclosing Box along Z-OEB (i.e min).
-     * @return dimensions of Optimally Enclosing Box along Z-OEB (i.e min)
-     */
-    public double getOebMin() {
-        return oebMin;
-    }
-
-    /** Set the dimensions of Optimally Enclosing Box along Z-OEB (i.e min).
-     * @param oebMin dimensions of Optimally Enclosing Box along Z-OEB (i.e min)
-     */
-    public void setOebMin(final double oebMin) {
-        refuseFurtherComments();
-        this.oebMin = oebMin;
-    }
-
-    /** Get the cross-sectional area of Optimally Enclosing Box along X-OEB.
-     * @return cross-sectional area of Optimally Enclosing Box along X-OEB
-     */
-    public double getOebAreaAlongMax() {
-        return oebAreaAlongMax;
-    }
-
-    /** Set the cross-sectional area of Optimally Enclosing Box along X-OEB.
-     * @param oebAreaAlongMax cross-sectional area of Optimally Enclosing Box along X-OEB
-     */
-    public void setOebAreaAlongMax(final double oebAreaAlongMax) {
-        refuseFurtherComments();
-        this.oebAreaAlongMax = oebAreaAlongMax;
-    }
-
-    /** Get the cross-sectional area of Optimally Enclosing Box along Y-OEB.
-     * @return cross-sectional area of Optimally Enclosing Box along Y-OEB
-     */
-    public double getOebAreaAlongIntermediate() {
-        return oebAreaAlongIntermediate;
-    }
-
-    /** Set the cross-sectional area of Optimally Enclosing Box along Y-OEB.
-     * @param oebAreaAlongIntermediate cross-sectional area of Optimally Enclosing Box along X-OEB
-     */
-    public void setOebAreaAlongIntermediate(final double oebAreaAlongIntermediate) {
-        refuseFurtherComments();
-        this.oebAreaAlongIntermediate = oebAreaAlongIntermediate;
-    }
-
-    /** Get the cross-sectional area of Optimally Enclosing Box along Z-OEB.
-     * @return cross-sectional area of Optimally Enclosing Box along X-OEB
-     */
-    public double getOebAreaAlongMin() {
-        return oebAreaAlongMin;
-    }
-
-    /** Set the cross-sectional area of Optimally Enclosing Box along Z-OEB.
-     * @param oebAreaAlongMin cross-sectional area of Optimally Enclosing Box along X-OEB
-     */
-    public void setOebAreaAlongMin(final double oebAreaAlongMin) {
-        refuseFurtherComments();
-        this.oebAreaAlongMin = oebAreaAlongMin;
-    }
-
     /** Get the minimum cross-sectional area for collision probability estimation purposes.
      * @return minimum cross-sectional area for collision probability estimation purposes
      */
@@ -524,51 +317,6 @@ public class PhysicalProperties extends CommentsContainer {
         this.typAreaForCollisionProbability = typAreaForCollisionProbability;
     }
 
-    /** Get the typical (50th percentile) radar cross-section.
-     * @return typical (50th percentile) radar cross-section
-     */
-    public double getRcs() {
-        return rcs;
-    }
-
-    /** Set the typical (50th percentile) radar cross-section.
-     * @param rcs typical (50th percentile) radar cross-section
-     */
-    public void setRcs(final double rcs) {
-        refuseFurtherComments();
-        this.rcs = rcs;
-    }
-
-    /** Get the minimum radar cross-section.
-     * @return minimum radar cross-section
-     */
-    public double getMinRcs() {
-        return minRcs;
-    }
-
-    /** Set the minimum radar cross-section.
-     * @param minRcs minimum radar cross-section
-     */
-    public void setMinRcs(final double minRcs) {
-        refuseFurtherComments();
-        this.minRcs = minRcs;
-    }
-
-    /** Get the maximum radar cross-section.
-     * @return maximum radar cross-section
-     */
-    public double getMaxRcs() {
-        return maxRcs;
-    }
-
-    /** Set the maximum radar cross-section.
-     * @param maxRcs maximum radar cross-section
-     */
-    public void setMaxRcs(final double maxRcs) {
-        refuseFurtherComments();
-        this.maxRcs = maxRcs;
-    }
-
     /** Get the attitude-independent SRP area, not already into attitude-dependent area along OEB.
      * @return attitude-independent SRP area, not already into attitude-dependent area along OEB
      */
@@ -612,83 +360,6 @@ public class PhysicalProperties extends CommentsContainer {
     public void setSrpUncertainty(final double srpUncertainty) {
         refuseFurtherComments();
         this.srpUncertainty = srpUncertainty;
-    }
-
-    /** Get the typical (50th percentile) visual magnitude.
-     * @return typical (50th percentile) visual magnitude
-     */
-    public double getVmAbsolute() {
-        return vmAbsolute;
-    }
-
-    /** Set the typical (50th percentile) visual magnitude.
-     * @param vmAbsolute typical (50th percentile) visual magnitude
-     */
-    public void setVmAbsolute(final double vmAbsolute) {
-        refuseFurtherComments();
-        this.vmAbsolute = vmAbsolute;
-    }
-
-    /** Get the minimum apparent visual magnitude.
-     * @return minimum apparent visual magnitude
-     */
-    public double getVmApparentMin() {
-        return vmApparentMin;
-    }
-
-    /** Set the minimum apparent visual magnitude.
-     * @param vmApparentMin minimum apparent visual magnitude
-     */
-    public void setVmApparentMin(final double vmApparentMin) {
-        refuseFurtherComments();
-        this.vmApparentMin = vmApparentMin;
-    }
-
-    /** Get the typical (50th percentile) apparent visual magnitude.
-     * @return typical (50th percentile) apparent visual magnitude
-     */
-    public double getVmApparent() {
-        return vmApparent;
-    }
-
-    /** Set the typical (50th percentile) apparent visual magnitude.
-     * @param vmApparent typical (50th percentile) apparent visual magnitude
-     */
-    public void setVmApparent(final double vmApparent) {
-        refuseFurtherComments();
-        this.vmApparent = vmApparent;
-    }
-
-    /** Get the maximum apparent visual magnitude.
-     * @return maximum apparent visual magnitude
-     */
-    public double getVmApparentMax() {
-        return vmApparentMax;
-    }
-
-    /** Set the maximum apparent visual magnitude.
-     * @param vmApparentMax maximum apparent visual magnitude
-     */
-    public void setVmApparentMax(final double vmApparentMax) {
-        refuseFurtherComments();
-        this.vmApparentMax = vmApparentMax;
-    }
-
-    /** Get the typical (50th percentile) coefficient of reflectance.
-     * @return typical (50th percentile) coefficient of reflectance
-     * @since 11.2
-     */
-    public double getReflectance() {
-        return reflectance;
-    }
-
-    /** Set the typical (50th percentile) coefficient of reflectance.
-     * @param reflectance typical (50th percentile) coefficient of reflectance
-     * @since 11.2
-     */
-    public void setReflectance(final double reflectance) {
-        refuseFurtherComments();
-        this.reflectance = reflectance;
     }
 
     /** Get the attitude control mode.

@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -81,6 +82,14 @@ public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
      */
     public CdmData getDataObject2() {
         return getSegments().get(1).getData();
+    }
+
+    /** Get user defined parameters.
+     * <p> This method will return null if the user defined block is not present in the CDM</p>
+     * @return file data
+     */
+    public UserDefined getUserDefinedParameters() {
+        return getSegments().get(0).getData().getUserDefinedBlock();
     }
 
 }
