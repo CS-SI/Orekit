@@ -765,5 +765,8 @@ NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
 # orbital parameters type: {0} is different from expected orbital type : {1}
 WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
 
-# this state covariance can only be expressed in cartesian elements as it is using the following frame : {0}
-STATE_COVARIANCE_RESTRICTED_TO_CARTESIAN_ELEMENTS_ONLY = <MISSING TRANSLATION>
+# cannot change covariance type if defined in a local orbital frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>
+
+# cannot change covariance type if defined in a non pseudo-inertial reference frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSLATION>

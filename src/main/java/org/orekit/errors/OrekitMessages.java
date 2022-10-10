@@ -339,7 +339,8 @@ public enum OrekitMessages implements Localizable {
     NO_UNSCENTED_TRANSFORM_CONFIGURED("no unscented transform configured"),
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
     WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}"),
-    STATE_COVARIANCE_RESTRICTED_TO_CARTESIAN_ELEMENTS_ONLY("this state covariance can only be expressed in cartesian elements as it is using the following frame : {0}");
+    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF("cannot change covariance type if defined in a local orbital frame"),
+    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME("cannot change covariance type if defined in a non pseudo-inertial reference frame");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */
