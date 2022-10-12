@@ -16,14 +16,10 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
@@ -45,6 +41,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+
 public class SP3ParserTest {
 
     @Test
@@ -54,40 +54,40 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
-        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
-        Assert.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
+        Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
                           ((FactoryManagedFrame) file.getSatellites().get("1").getFrame()).getFactoryKey());
 
-        Assert.assertEquals(25, file.getSatelliteCount());
+        Assertions.assertEquals(25, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("1").getCoordinates();
-        Assert.assertEquals(3, coords.size());
+        Assertions.assertEquals(3, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 1994 12 17 0 0 0.00000000
-        Assert.assertEquals(new AbsoluteDate(1994, 12, 17, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(1994, 12, 17, 0, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // P 1 16258.524750 -3529.015750 -20611.427050 -62.540600
         checkPVEntry(new PVCoordinates(new Vector3D(16258524.75, -3529015.75, -20611427.049),
                                        Vector3D.ZERO),
                      coord);
-        Assert.assertEquals(-0.0000625406, coord.getClockCorrection(), 1.0e-15);
-        Assert.assertEquals("NGS", file.getAgency());
-        Assert.assertEquals("ITR92", file.getCoordinateSystem());
-        Assert.assertEquals("d", file.getDataUsed());
-        Assert.assertEquals(0.0, file.getDayFraction(), 1.0e-15);
-        Assert.assertEquals("1994-12-16T23:59:50.000", file.getEpoch().toString(TimeScalesFactory.getUTC()));
-        Assert.assertEquals(49703, file.getJulianDay());
-        Assert.assertEquals(3, file.getNumberOfEpochs());
-        Assert.assertEquals(900.0, file.getEpochInterval(), 1.0e-15);
-        Assert.assertEquals(779, file.getGpsWeek());
-        Assert.assertEquals(518400.0, file.getSecondsOfWeek(), 1.0e-10);
-        Assert.assertEquals(25, file.getSatellites().size());
-        Assert.assertEquals(SP3.SP3FileType.UNDEFINED, file.getType());
-        Assert.assertNull(file.getSatellites().get(null));
+        Assertions.assertEquals(-0.0000625406, coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals("NGS", file.getAgency());
+        Assertions.assertEquals("ITR92", file.getCoordinateSystem());
+        Assertions.assertEquals("d", file.getDataUsed());
+        Assertions.assertEquals(0.0, file.getDayFraction(), 1.0e-15);
+        Assertions.assertEquals("1994-12-16T23:59:50.000", file.getEpoch().toString(TimeScalesFactory.getUTC()));
+        Assertions.assertEquals(49703, file.getJulianDay());
+        Assertions.assertEquals(3, file.getNumberOfEpochs());
+        Assertions.assertEquals(900.0, file.getEpochInterval(), 1.0e-15);
+        Assertions.assertEquals(779, file.getGpsWeek());
+        Assertions.assertEquals(518400.0, file.getSecondsOfWeek(), 1.0e-10);
+        Assertions.assertEquals(25, file.getSatellites().size());
+        Assertions.assertEquals(SP3.SP3FileType.UNDEFINED, file.getType());
+        Assertions.assertNull(file.getSatellites().get(null));
     }
 
     @Test
@@ -97,18 +97,18 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
-        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
-        Assert.assertEquals(25, file.getSatelliteCount());
+        Assertions.assertEquals(25, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("1").getCoordinates();
-        Assert.assertEquals(3, coords.size());
+        Assertions.assertEquals(3, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 1994 12 17 0 0 0.00000000
-        Assert.assertEquals(new AbsoluteDate(1994, 12, 17, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(1994, 12, 17, 0, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // P 1 16258.524750 -3529.015750 -20611.427050 -62.540600
@@ -116,8 +116,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(16258524.75, -3529015.75, -20611427.049),
                                        new Vector3D(-656.0373, 2560.5954, -946.0427)),
                      coord);
-        Assert.assertEquals(-0.0000625406, coord.getClockCorrection(), 1.0e-15);
-        Assert.assertEquals(-0.0000024236, coord.getClockRateChange(), 1.0e-15);
+        Assertions.assertEquals(-0.0000625406, coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals(-0.0000024236, coord.getClockRateChange(), 1.0e-15);
     }
 
     @Test
@@ -127,25 +127,25 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
-        Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
-        Assert.assertEquals(26, file.getSatelliteCount());
+        Assertions.assertEquals(26, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("G01").getCoordinates();
-        Assert.assertEquals(2, coords.size());
+        Assertions.assertEquals(2, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 2001  8  8  0  0  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
         checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
                                        Vector3D.ZERO),
                      coord);
-        Assert.assertEquals(0.0001891633, coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals(0.0001891633, coord.getClockCorrection(), 1.0e-15);
     }
 
     @Test
@@ -155,18 +155,18 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
-        Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
-        Assert.assertEquals(26, file.getSatelliteCount());
+        Assertions.assertEquals(26, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("G01").getCoordinates();
-        Assert.assertEquals(2, coords.size());
+        Assertions.assertEquals(2, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 2001  8  8  0  0  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
@@ -174,8 +174,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
                                        new Vector3D(2029.8880364, -1846.2044804, 138.1387685)),
                      coord);
-        Assert.assertEquals(0.0001891633,  coord.getClockCorrection(), 1.0e-15);
-        Assert.assertEquals(-0.0004534317, coord.getClockRateChange(), 1.0e-15);
+        Assertions.assertEquals(0.0001891633,  coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals(-0.0004534317, coord.getClockRateChange(), 1.0e-15);
     }
 
     @Test
@@ -185,25 +185,25 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
-        Assert.assertEquals(SP3OrbitType.BCT, file.getOrbitType());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(SP3OrbitType.BCT, file.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
-        Assert.assertEquals(140, file.getSatelliteCount());
+        Assertions.assertEquals(140, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("S37").getCoordinates();
-        Assert.assertEquals(2, coords.size());
+        Assertions.assertEquals(2, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 2013  4  3  0  0  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2013, 4, 3, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2013, 4, 3, 0, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PS37 -34534.904566  24164.610955     29.812840      0.299420
         checkPVEntry(new PVCoordinates(new Vector3D(-34534904.566, 24164610.955, 29812.840),
                                        Vector3D.ZERO),
                      coord);
-        Assert.assertEquals(0.00000029942, coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals(0.00000029942, coord.getClockCorrection(), 1.0e-15);
     }
 
     @Test
@@ -213,18 +213,18 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
-        Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
-        Assert.assertEquals(26, file.getSatelliteCount());
+        Assertions.assertEquals(26, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("G01").getCoordinates();
-        Assert.assertEquals(2, coords.size());
+        Assertions.assertEquals(2, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 2001  8  8  0  0  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
@@ -232,8 +232,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
                                        new Vector3D(2029.8880364, -1846.2044804, 138.1387685)),
                      coord);
-        Assert.assertEquals(0.0001891633,  coord.getClockCorrection(), 1.0e-15);
-        Assert.assertEquals(-0.0004534317, coord.getClockRateChange(), 1.0e-15);
+        Assertions.assertEquals(0.0001891633,  coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals(-0.0004534317, coord.getClockRateChange(), 1.0e-15);
     }
 
     @Test
@@ -243,25 +243,25 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
-        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
-        Assert.assertEquals(87, file.getSatelliteCount());
+        Assertions.assertEquals(87, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("R23").getCoordinates();
-        Assert.assertEquals(2, coords.size());
+        Assertions.assertEquals(2, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
-        Assert.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
-        // PR23  24552.470459   -242.899447   6925.437998     86.875825                    
+        // PR23  24552.470459   -242.899447   6925.437998     86.875825
         checkPVEntry(new PVCoordinates(new Vector3D(24552470.459, -242899.447, 6925437.998),
                                        Vector3D.ZERO),
                      coord);
-        Assert.assertEquals(0.000086875825, coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals(0.000086875825, coord.getClockCorrection(), 1.0e-15);
     }
 
     @Test
@@ -279,8 +279,8 @@ public class SP3ParserTest {
         TimeScale gps = TimeScalesFactory.getGPS();
         SP3Ephemeris ephemeris = file.getSatellites().get("1");
         BoundedPropagator propagator = ephemeris.getPropagator();
-        Assert.assertEquals(propagator.getMinDate(), new AbsoluteDate(1994, 12, 17, gps));
-        Assert.assertEquals(propagator.getMaxDate(), new AbsoluteDate(1994, 12, 17, 23, 45, 0, gps));
+        Assertions.assertEquals(propagator.getMinDate(), new AbsoluteDate(1994, 12, 17, gps));
+        Assertions.assertEquals(propagator.getMaxDate(), new AbsoluteDate(1994, 12, 17, 23, 45, 0, gps));
         SP3Coordinate expected = ephemeris.getCoordinates().get(0);
         checkPVEntry(
                 propagator.getPVCoordinates(propagator.getMinDate(), frame),
@@ -294,8 +294,8 @@ public class SP3ParserTest {
 
         ephemeris = file.getSatellites().get("31");
         propagator = ephemeris.getPropagator();
-        Assert.assertEquals(propagator.getMinDate(), new AbsoluteDate(1994, 12, 17, gps));
-        Assert.assertEquals(propagator.getMaxDate(), new AbsoluteDate(1994, 12, 17, 23, 45, 0, gps));
+        Assertions.assertEquals(propagator.getMinDate(), new AbsoluteDate(1994, 12, 17, gps));
+        Assertions.assertEquals(propagator.getMaxDate(), new AbsoluteDate(1994, 12, 17, 23, 45, 0, gps));
         expected = ephemeris.getCoordinates().get(0);
         checkPVEntry(
                 propagator.propagate(propagator.getMinDate()).getPVCoordinates(frame),
@@ -316,26 +316,26 @@ public class SP3ParserTest {
         final DataSource compressed = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3 file = parser.parse(new UnixCompressFilter().filter(compressed));
 
-        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
-        Assert.assertEquals("FIT",file.getOrbitTypeKey());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assertions.assertEquals("FIT",file.getOrbitTypeKey());
+        Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
-        Assert.assertEquals(71, file.getSatelliteCount());
+        Assertions.assertEquals(71, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("R13").getCoordinates();
-        Assert.assertEquals(288, coords.size());
+        Assertions.assertEquals(288, coords.size());
 
         final SP3Coordinate coord = coords.get(228);
 
-        
-        Assert.assertEquals(new AbsoluteDate(2015, 5, 5, 19, 0, 0,
+
+        Assertions.assertEquals(new AbsoluteDate(2015, 5, 5, 19, 0, 0,
                 TimeScalesFactory.getGPS()), coord.getDate());
 
         // PR13  25330.290321   -411.728000   2953.331527   -482.447619
         checkPVEntry(new PVCoordinates(new Vector3D(25330290.321, -411728.000, 2953331.527),
                                        Vector3D.ZERO),
                      coord);
-        Assert.assertEquals(-0.000482447619,  coord.getClockCorrection(), 1.0e-15);
+        Assertions.assertEquals(-0.000482447619,  coord.getClockCorrection(), 1.0e-15);
     }
 
     private void checkPVEntry(final PVCoordinates expected, final PVCoordinates actual) {
@@ -348,15 +348,15 @@ public class SP3ParserTest {
         // sp3 files can have mm accuracy
         final double eps = 1e-3;
 
-        Assert.assertEquals(expectedPos.getX(), actualPos.getX(), eps);
-        Assert.assertEquals(expectedPos.getY(), actualPos.getY(), eps);
-        Assert.assertEquals(expectedPos.getZ(), actualPos.getZ(), eps);
+        Assertions.assertEquals(expectedPos.getX(), actualPos.getX(), eps);
+        Assertions.assertEquals(expectedPos.getY(), actualPos.getY(), eps);
+        Assertions.assertEquals(expectedPos.getZ(), actualPos.getZ(), eps);
 
-        Assert.assertEquals(expectedVel.getX(), actualVel.getX(), eps);
-        Assert.assertEquals(expectedVel.getY(), actualVel.getY(), eps);
-        Assert.assertEquals(expectedVel.getZ(), actualVel.getZ(), eps);
+        Assertions.assertEquals(expectedVel.getX(), actualVel.getX(), eps);
+        Assertions.assertEquals(expectedVel.getY(), actualVel.getY(), eps);
+        Assertions.assertEquals(expectedVel.getZ(), actualVel.getZ(), eps);
 
-        Assert.assertEquals(Vector3D.ZERO, actual.getAcceleration());
+        Assertions.assertEquals(Vector3D.ZERO, actual.getAcceleration());
     }
 
     @Test
@@ -367,11 +367,11 @@ public class SP3ParserTest {
             final Frame     frame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
             final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
             parser.parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                 oe.getSpecifier());
-            Assert.assertEquals(27, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(27, ((Integer) oe.getParts()[0]).intValue());
         }
 
     }
@@ -384,11 +384,11 @@ public class SP3ParserTest {
             final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
             final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
             parser.parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE,
+            Assertions.assertEquals(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE,
                                 oe.getSpecifier());
-            Assert.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
         }
 
     }
@@ -401,11 +401,11 @@ public class SP3ParserTest {
             final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
             final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
             parser.parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                 oe.getSpecifier());
-            Assert.assertEquals(13, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(13, ((Integer) oe.getParts()[0]).intValue());
         }
 
     }
@@ -418,8 +418,8 @@ public class SP3ParserTest {
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
         final SP3     file         = parser.parse(uncompressed);
-        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
-        Assert.assertEquals("BHN",file.getOrbitTypeKey());
+        Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assertions.assertEquals("BHN",file.getOrbitTypeKey());
     }
 
     @Test
@@ -430,8 +430,8 @@ public class SP3ParserTest {
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
         final SP3     file         = parser.parse(uncompressed);
-        Assert.assertEquals(SP3OrbitType.EXT, file.getOrbitType());
-        Assert.assertEquals("PRO",file.getOrbitTypeKey());
+        Assertions.assertEquals(SP3OrbitType.EXT, file.getOrbitType());
+        Assertions.assertEquals("PRO",file.getOrbitTypeKey());
     }
 
     @Test
@@ -442,8 +442,8 @@ public class SP3ParserTest {
         final DataSource   compressed   = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final DataSource   uncompressed = new UnixCompressFilter().filter(compressed);
         final SP3     file         = parser.parse(uncompressed);
-        Assert.assertEquals(SP3OrbitType.OTHER, file.getOrbitType());
-        Assert.assertEquals("UKN",file.getOrbitTypeKey());
+        Assertions.assertEquals(SP3OrbitType.OTHER, file.getOrbitType());
+        Assertions.assertEquals("UKN",file.getOrbitTypeKey());
     }
 
     @Test
@@ -454,11 +454,11 @@ public class SP3ParserTest {
             final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
             final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
             parser.parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.SP3_UNSUPPORTED_VERSION,
+            Assertions.assertEquals(OrekitMessages.SP3_UNSUPPORTED_VERSION,
                                 oe.getSpecifier());
-            Assert.assertEquals('z', ((Character) oe.getParts()[0]).charValue());
+            Assertions.assertEquals('z', ((Character) oe.getParts()[0]).charValue());
         }
 
     }
@@ -471,12 +471,12 @@ public class SP3ParserTest {
             final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
             final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
             parser.parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+            Assertions.assertEquals(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
                                 oe.getSpecifier());
-            Assert.assertEquals(  2, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(192, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(  2, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(192, ((Integer) oe.getParts()[2]).intValue());
         }
 
     }
@@ -491,19 +491,19 @@ public class SP3ParserTest {
 
         // Coordinates
         final List<SP3Coordinate> coords = file.getSatellites().get("L52").getCoordinates();
-        Assert.assertEquals(1, coords.size());
+        Assertions.assertEquals(1, coords.size());
         final SP3Coordinate coord = coords.get(0);
 
         // Verify
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
 
         // PL52   2228.470946   7268.265924   9581.471543
         // VL52 -44856.945000  24321.151000  -7116.222800
         checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
                                        new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
                      coord);
-        Assert.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
-        Assert.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
+        Assertions.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
+        Assertions.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
 
     }
 
@@ -517,15 +517,15 @@ public class SP3ParserTest {
 
         // Coordinates
         final List<SP3Coordinate> coords = file.getSatellites().get("L52").getCoordinates();
-        Assert.assertEquals(1, coords.size());
+        Assertions.assertEquals(1, coords.size());
         final SP3Coordinate coord = coords.get(0);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
 
         // 2016  2 28 0 0 0.00000000
-        Assert.assertEquals(new AbsoluteDate(2016, 2, 28, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2016, 2, 28, 0, 0, 0,
                 TimeScalesFactory.getUTC()), coord.getDate());
 
 
@@ -534,8 +534,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
                                        new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
                      coord);
-        Assert.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
-        Assert.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
+        Assertions.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
+        Assertions.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
 
     }
 
@@ -548,8 +548,8 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.IRNSS, file.getType());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.IRNSS, file.getType());
 
     }
 
@@ -562,8 +562,8 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.SBAS, file.getType());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.SBAS, file.getType());
 
     }
 
@@ -576,8 +576,8 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
 
     }
 
@@ -590,17 +590,17 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
-        Assert.assertEquals(1, file.getSatelliteCount());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
-        Assert.assertEquals(1, coords.size());
+        Assertions.assertEquals(1, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 2021 12 26  0  0  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2021, 12, 26, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2021, 12, 26, 0, 0, 0,
                 TimeScalesFactory.getUTC()), coord.getDate());
 
         // PL51   5029.867893   1304.362160 -11075.527276 999999.999999
@@ -620,17 +620,17 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
-        Assert.assertEquals(1, file.getSatelliteCount());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
-        Assert.assertEquals(91, coords.size());
+        Assertions.assertEquals(91, coords.size());
 
         final SP3Coordinate coord30 = coords.get(30);
 
         // 2016  7  6 16 60  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2016, 7, 6, 17, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2016, 7, 6, 17, 0, 0,
                 TimeScalesFactory.getUTC()), coord30.getDate());
 
         // PL51  11948.228978   2986.113872   -538.901114 999999.999999
@@ -642,7 +642,7 @@ public class SP3ParserTest {
         final SP3Coordinate coord31 = coords.get(31);
 
         // 2016  7  6 17  2  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2016, 7, 6, 17, 2, 0,
+        Assertions.assertEquals(new AbsoluteDate(2016, 7, 6, 17, 2, 0,
                 TimeScalesFactory.getUTC()), coord31.getDate());
 
         // PL51  11982.652569   2645.786926  -1177.549463 999999.999999
@@ -654,7 +654,7 @@ public class SP3ParserTest {
         final SP3Coordinate coord60 = coords.get(60);
 
         // 2016  7  6 17 60  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2016, 7, 6, 18, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2016, 7, 6, 18, 0, 0,
                 TimeScalesFactory.getUTC()), coord60.getDate());
 
         // PL51  -1693.056569  -4123.276630 -11431.599723 999999.999999
@@ -674,17 +674,17 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
-        Assert.assertEquals(1, file.getSatelliteCount());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
-        Assert.assertEquals(61, coords.size());
+        Assertions.assertEquals(61, coords.size());
 
         final SP3Coordinate coord30 = coords.get(30);
 
         // 2016  7  7 24  0  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2016, 7, 7, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2016, 7, 7, 0, 0, 0,
                 TimeScalesFactory.getUTC()), coord30.getDate());
 
         //PL51   2989.229334  -8494.421415   8385.068555
@@ -696,7 +696,7 @@ public class SP3ParserTest {
         final SP3Coordinate coord31 = coords.get(31);
 
         // 2016  7  7  0  2  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2016, 7, 7, 0, 2, 0,
+        Assertions.assertEquals(new AbsoluteDate(2016, 7, 7, 0, 2, 0,
                 TimeScalesFactory.getUTC()), coord31.getDate());
 
         // PL51   2744.983592  -9000.639164   7931.904779
@@ -716,17 +716,17 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
-        Assert.assertEquals(1, file.getSatelliteCount());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
-        Assert.assertEquals(1, coords.size());
+        Assertions.assertEquals(1, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 2016  7  3  0  0  0.1234
-        Assert.assertEquals(new AbsoluteDate(2016, 7, 3, 0, 0, 0.1234,
+        Assertions.assertEquals(new AbsoluteDate(2016, 7, 3, 0, 0, 0.1234,
                 TimeScalesFactory.getUTC()), coord.getDate());
 
     }
@@ -740,17 +740,17 @@ public class SP3ParserTest {
         final SP3   file   = new SP3Parser().parse(source);
 
         // Verify
-        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assert.assertEquals(SP3.SP3FileType.LEO, file.getType());
-        Assert.assertEquals(1, file.getSatelliteCount());
+        Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
-        Assert.assertEquals(1, coords.size());
+        Assertions.assertEquals(1, coords.size());
 
         final SP3Coordinate coord = coords.get(0);
 
         // 2021 12 26  0  0  0.00000000
-        Assert.assertEquals(new AbsoluteDate(2021, 12, 26, 0, 0, 0,
+        Assertions.assertEquals(new AbsoluteDate(2021, 12, 26, 0, 0, 0,
                 TimeScalesFactory.getUTC()), coord.getDate());
 
         // PL51   5029.867893   1304.362160 -11075.527276 999999.999999
@@ -761,7 +761,7 @@ public class SP3ParserTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

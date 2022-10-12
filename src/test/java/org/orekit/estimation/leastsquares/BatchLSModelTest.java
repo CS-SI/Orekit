@@ -16,19 +16,14 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -41,6 +36,9 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.List;
+import java.util.Map;
 
 public class BatchLSModelTest {
 
@@ -76,23 +74,20 @@ public class BatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                Assert.assertEquals(1, newOrbits.length);
-                Assert.assertEquals(0,
-                                    context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
-                                    1.0e-15);
-                Assert.assertEquals(0,
-                                    Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                                      newOrbits[0].getPVCoordinates().getPosition()),
-                                    1.0e-15);
-                Assert.assertEquals(measurements.size(), newEvaluations.size());
+                Assertions.assertEquals(1, newOrbits.length);
+                Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
+                        1.0e-15);
+                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
+                                  newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+                Assertions.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
         final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
-        
+
         // Test forward propagation flag to true
-        assertEquals(true, model.isForwardPropagation());
+        Assertions.assertEquals(true, model.isForwardPropagation());
 
         // evaluate model on perfect start point
         final double[] normalizedProp = propagatorBuilder.getSelectedNormalizedParameters();
@@ -107,13 +102,13 @@ public class BatchLSModelTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
-                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.6e-7);
+                Assertions.assertEquals(0.0, value.getFirst().getEntry(index++), 1.6e-7);
             }
         }
-        Assert.assertEquals(index, value.getFirst().getDimension());
+        Assertions.assertEquals(index, value.getFirst().getDimension());
 
     }
-    
+
     @Test
     public void testBackwardPropagation() {
 
@@ -146,12 +141,12 @@ public class BatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                // Do nothing here 
+                // Do nothing here
             }
         };
         final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         // Test forward propagation flag to false
-        assertEquals(false, model.isForwardPropagation());
+        Assertions.assertEquals(false, model.isForwardPropagation());
     }
 
 }

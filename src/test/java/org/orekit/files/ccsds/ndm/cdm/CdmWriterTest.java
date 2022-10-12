@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -57,6 +57,16 @@ public class CdmWriterTest extends AbstractWriterTest<CdmHeader, CdmSegment, Cdm
     @Test
     public void testWriteExample4() {
         doTest("/ccsds/cdm/CDMExample4.txt");
+    }
+    
+    @Test
+    public void testWrite_issue_942_KVN() {
+        doTest("/ccsds/cdm/CDMExample_issue942.txt");
+    }
+    
+    @Test
+    public void testWrite_issue_942_XML() {
+        doTest("/ccsds/cdm/CDMExample_issue942.xml");
     }
 
 }

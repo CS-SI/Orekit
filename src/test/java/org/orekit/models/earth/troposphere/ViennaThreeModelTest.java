@@ -18,10 +18,10 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -32,19 +32,19 @@ public class ViennaThreeModelTest {
 
     private static double epsilon = 1e-6;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
     public void testMappingFactors() {
-        
+
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
         //           height:    824 m
@@ -66,7 +66,7 @@ public class ViennaThreeModelTest {
         //
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);
         final double height       = 824.0;
@@ -75,21 +75,21 @@ public class ViennaThreeModelTest {
         final double elevation     = FastMath.toRadians(38.0);
         final double expectedHydro = 1.621024;
         final double expectedWet   = 1.623023;
-        
+
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        
+
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
-        Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
+
+        Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
+        Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
     public void testLowElevation() {
-        
+
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
         //           height:    824 m
@@ -111,7 +111,7 @@ public class ViennaThreeModelTest {
         //
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);
         final double height       = 824.0;
@@ -120,21 +120,21 @@ public class ViennaThreeModelTest {
         final double elevation     = FastMath.toRadians(5.0);
         final double expectedHydro = 10.132802;
         final double expectedWet   = 10.879154;
-        
+
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        
+
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
-        Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
+
+        Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
+        Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
     public void testHightElevation() {
-        
+
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
         //           height:    824 m
@@ -156,7 +156,7 @@ public class ViennaThreeModelTest {
         //
 
         final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
-        
+
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);
         final double height       = 824.0;
@@ -165,16 +165,16 @@ public class ViennaThreeModelTest {
         final double elevation     = FastMath.toRadians(85.0);
         final double expectedHydro = 1.003810;
         final double expectedWet   = 1.003816;
-        
+
         final double[] a = {0.00123462, 0.00047101};
         final double[] z = {2.1993, 0.0690};
-        
+
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
-        Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
+
+        Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
+        Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
@@ -187,8 +187,8 @@ public class ViennaThreeModelTest {
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
         ViennaThreeModel model = new ViennaThreeModel(a, z);
         final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
-        Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
 
     @Test
@@ -202,7 +202,7 @@ public class ViennaThreeModelTest {
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(), date);
-            Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }

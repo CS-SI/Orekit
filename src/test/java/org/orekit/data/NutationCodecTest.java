@@ -16,14 +16,12 @@
  */
 package org.orekit.data;
 
-
-import java.util.Arrays;
-
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 
 public class NutationCodecTest {
 
@@ -44,7 +42,7 @@ public class NutationCodecTest {
             long key = NutationCodec.encode(multipliers);
             int[] rebuilt = NutationCodec.decode(key);
             for (int k = 0; k < multipliers.length; ++k) {
-                Assert.assertEquals(multipliers[k], rebuilt[k]);
+                Assertions.assertEquals(multipliers[k], rebuilt[k]);
             }
         }
 

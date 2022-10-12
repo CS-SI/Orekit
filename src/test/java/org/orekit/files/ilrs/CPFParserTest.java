@@ -16,15 +16,10 @@
  */
 package org.orekit.files.ilrs;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -37,6 +32,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.List;
 
 
 public class CPFParserTest {
@@ -59,35 +59,35 @@ public class CPFParserTest {
 
         // Verify comments
         final List<String> comments = file.getComments();
-        Assert.assertEquals(8, comments.size());
-        Assert.assertEquals("Col 1 : <Record type=10)>", comments.get(0));
-        Assert.assertEquals("Col 8 : <Geocentric Z position in meters>", comments.get(7));
+        Assertions.assertEquals(8, comments.size());
+        Assertions.assertEquals("Col 1 : <Record type=10)>", comments.get(0));
+        Assertions.assertEquals("Col 8 : <Geocentric Z position in meters>", comments.get(7));
 
         // Verify header
         final CPFHeader header = file.getHeader();
-        Assert.assertEquals("CPF",    header.getFormat());
-        Assert.assertEquals(2,        header.getVersion());
-        Assert.assertEquals("CNE",    header.getSource());
-        Assert.assertEquals(2018,     header.getProductionEpoch().getYear());
-        Assert.assertEquals(6,        header.getProductionEpoch().getMonth());
-        Assert.assertEquals(13,       header.getProductionEpoch().getDay());
-        Assert.assertEquals(6,        header.getProductionHour());
-        Assert.assertEquals(164,      header.getSequenceNumber());
-        Assert.assertEquals(1,        header.getSubDailySequenceNumber());
-        Assert.assertEquals("jason3", header.getName());
-        Assert.assertEquals("1600201", header.getIlrsSatelliteId());
-        Assert.assertEquals("4379",   header.getSic());
-        Assert.assertEquals("41240",  header.getNoradId());
-        Assert.assertEquals(240,      header.getStep());
-        Assert.assertEquals(1,        header.getTargetClass());
-        Assert.assertEquals(0,        header.getRotationalAngleType());
-        Assert.assertEquals(1,        header.getTargetLocation());
-        Assert.assertTrue(header.isCompatibleWithTIVs());
-        Assert.assertFalse(header.isCenterOfMassCorrectionApplied());
-        Assert.assertEquals(0.0, start.durationFrom(header.getStartEpoch()), 1.0e-15);
-        Assert.assertEquals(0.0, end.durationFrom(header.getEndEpoch()),     1.0e-15);
-        Assert.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
-        Assert.assertEquals(0,        header.getRefFrameId());
+        Assertions.assertEquals("CPF",    header.getFormat());
+        Assertions.assertEquals(2,        header.getVersion());
+        Assertions.assertEquals("CNE",    header.getSource());
+        Assertions.assertEquals(2018,     header.getProductionEpoch().getYear());
+        Assertions.assertEquals(6,        header.getProductionEpoch().getMonth());
+        Assertions.assertEquals(13,       header.getProductionEpoch().getDay());
+        Assertions.assertEquals(6,        header.getProductionHour());
+        Assertions.assertEquals(164,      header.getSequenceNumber());
+        Assertions.assertEquals(1,        header.getSubDailySequenceNumber());
+        Assertions.assertEquals("jason3", header.getName());
+        Assertions.assertEquals("1600201", header.getIlrsSatelliteId());
+        Assertions.assertEquals("4379",   header.getSic());
+        Assertions.assertEquals("41240",  header.getNoradId());
+        Assertions.assertEquals(240,      header.getStep());
+        Assertions.assertEquals(1,        header.getTargetClass());
+        Assertions.assertEquals(0,        header.getRotationalAngleType());
+        Assertions.assertEquals(1,        header.getTargetLocation());
+        Assertions.assertTrue(header.isCompatibleWithTIVs());
+        Assertions.assertFalse(header.isCenterOfMassCorrectionApplied());
+        Assertions.assertEquals(0.0, start.durationFrom(header.getStartEpoch()), 1.0e-15);
+        Assertions.assertEquals(0.0, end.durationFrom(header.getEndEpoch()),     1.0e-15);
+        Assertions.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
+        Assertions.assertEquals(0,        header.getRefFrameId());
 
         // Coordinates
         final CPFEphemeris ephemeris    = file.getSatellites().get("1600201");
@@ -96,35 +96,35 @@ public class CPFParserTest {
         // Verify first coordinate
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(58282, 0.0, file.getTimeScale());
         final Vector3D firstPos = new Vector3D(6566174.663, 2703003.220, -3022783.901);
-        Assert.assertEquals(0, coord.get(0).getLeap());
-        Assert.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.get(0).getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
 
         // Verify last coordinate
         final AbsoluteDate lastEpoch = AbsoluteDate.createMJDDate(58287, 0.0, file.getTimeScale());
         final Vector3D lastPos  = new Vector3D(6045281.907, 1607181.391, -4519215.355);
-        Assert.assertEquals(0, coord.get(coord.size() - 1).getLeap());
-        Assert.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.get(coord.size() - 1).getLeap());
+        Assertions.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(10, ephemeris.getInterpolationSamples());
-        Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
-        Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
-        Assert.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
-        Assert.assertEquals(0.0, start.durationFrom(ephemeris.getStart()), 1.0e-15);
-        Assert.assertEquals(0.0, end.durationFrom(ephemeris.getStop()), 1.0e-15);
-        Assert.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
+        Assertions.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
+        Assertions.assertEquals(10, ephemeris.getInterpolationSamples());
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
+        Assertions.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
+        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
+        Assertions.assertEquals(0.0, start.durationFrom(ephemeris.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, end.durationFrom(ephemeris.getStop()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
         final BoundedPropagator propagator = ephemeris.getPropagator();
         // 10 0 58283  56640.000000  0      -1578630.043      -2922293.651      -6964482.056
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58283, 56640.000000, file.getTimeScale());
         final Vector3D position = new Vector3D(-1578630.043, -2922293.651, -6964482.056);
-        Assert.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.4e-10);
-        
+        Assertions.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.4e-10);
+
     }
 
     @Test
@@ -143,34 +143,34 @@ public class CPFParserTest {
 
         // Verify comments
         final List<String> comments = file.getComments();
-        Assert.assertEquals(0, comments.size());
+        Assertions.assertEquals(0, comments.size());
 
         // Verify header
         final CPFHeader header = file.getHeader();
-        Assert.assertEquals("CPF",     header.getFormat());
-        Assert.assertEquals(2,         header.getVersion());
-        Assert.assertEquals("HTS",     header.getSource());
-        Assert.assertEquals(2018,      header.getProductionEpoch().getYear());
-        Assert.assertEquals(6,         header.getProductionEpoch().getMonth());
-        Assert.assertEquals(13,        header.getProductionEpoch().getDay());
-        Assert.assertEquals(12,        header.getProductionHour());
-        Assert.assertEquals(164,       header.getSequenceNumber());
-        Assert.assertEquals(1,         header.getSubDailySequenceNumber());
-        Assert.assertEquals("lageos1", header.getName());
-        Assert.assertEquals("7603901",   header.getIlrsSatelliteId());
-        Assert.assertEquals("1155",      header.getSic());
-        Assert.assertEquals("8820",      header.getNoradId());
-        Assert.assertEquals(300,       header.getStep());
-        Assert.assertEquals(1,         header.getTargetClass());
-        Assert.assertEquals(0,         header.getRotationalAngleType());
-        Assert.assertEquals(1,         header.getTargetLocation());
-        Assert.assertTrue(header.isCompatibleWithTIVs());
-        Assert.assertFalse(header.isCenterOfMassCorrectionApplied());
-        Assert.assertEquals(0.0,    start.durationFrom(header.getStartEpoch()), 1.0e-15);
-        Assert.assertEquals(0.0,    end.durationFrom(header.getEndEpoch()),     1.0e-15);
-        Assert.assertEquals(0.2510, header.getCenterOfMassOffset(),             1.0e-15);
-        Assert.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
-        Assert.assertEquals(0,        header.getRefFrameId());
+        Assertions.assertEquals("CPF",     header.getFormat());
+        Assertions.assertEquals(2,         header.getVersion());
+        Assertions.assertEquals("HTS",     header.getSource());
+        Assertions.assertEquals(2018,      header.getProductionEpoch().getYear());
+        Assertions.assertEquals(6,         header.getProductionEpoch().getMonth());
+        Assertions.assertEquals(13,        header.getProductionEpoch().getDay());
+        Assertions.assertEquals(12,        header.getProductionHour());
+        Assertions.assertEquals(164,       header.getSequenceNumber());
+        Assertions.assertEquals(1,         header.getSubDailySequenceNumber());
+        Assertions.assertEquals("lageos1", header.getName());
+        Assertions.assertEquals("7603901",   header.getIlrsSatelliteId());
+        Assertions.assertEquals("1155",      header.getSic());
+        Assertions.assertEquals("8820",      header.getNoradId());
+        Assertions.assertEquals(300,       header.getStep());
+        Assertions.assertEquals(1,         header.getTargetClass());
+        Assertions.assertEquals(0,         header.getRotationalAngleType());
+        Assertions.assertEquals(1,         header.getTargetLocation());
+        Assertions.assertTrue(header.isCompatibleWithTIVs());
+        Assertions.assertFalse(header.isCenterOfMassCorrectionApplied());
+        Assertions.assertEquals(0.0,    start.durationFrom(header.getStartEpoch()), 1.0e-15);
+        Assertions.assertEquals(0.0,    end.durationFrom(header.getEndEpoch()),     1.0e-15);
+        Assertions.assertEquals(0.2510, header.getCenterOfMassOffset(),             1.0e-15);
+        Assertions.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
+        Assertions.assertEquals(0,        header.getRefFrameId());
 
         // Coordinates
         final CPFEphemeris ephemeris    = file.getSatellites().get("7603901");
@@ -179,33 +179,33 @@ public class CPFParserTest {
         // Verify first coordinate
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(58281, 84600.00000, file.getTimeScale());
         final Vector3D firstPos = new Vector3D(2966379.904, 4195129.466, -11136763.061);
-        Assert.assertEquals(0, coord.get(0).getLeap());
-        Assert.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.get(0).getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
 
         // Verify last coordinate
         final AbsoluteDate lastEpoch = AbsoluteDate.createMJDDate(58283, 86100.00000, file.getTimeScale());
         final Vector3D lastPos  = new Vector3D(-5292229.761, 4106329.723, -10235338.181);
-        Assert.assertEquals(0, coord.get(coord.size() - 1).getLeap());
-        Assert.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.get(coord.size() - 1).getLeap());
+        Assertions.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(10, ephemeris.getInterpolationSamples());
-        Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
-        Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
-        Assert.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
-        Assert.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
+        Assertions.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
+        Assertions.assertEquals(10, ephemeris.getInterpolationSamples());
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
+        Assertions.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
+        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
+        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
         final BoundedPropagator propagator = ephemeris.getPropagator();
         // 10 0 58282  78000.00000  0   -5843276.537    1074212.914  -10696380.103
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58282, 78000.00000, file.getTimeScale());
         final Vector3D position = new Vector3D(-5843276.537, 1074212.914, -10696380.103);
-        Assert.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.0e-9);
-        
+        Assertions.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.0e-9);
+
     }
 
     @Test
@@ -224,31 +224,31 @@ public class CPFParserTest {
 
         // Verify comments
         final List<String> comments = file.getComments();
-        Assert.assertEquals(0, comments.size());
+        Assertions.assertEquals(0, comments.size());
 
         // Verify header
         final CPFHeader header = file.getHeader();
-        Assert.assertEquals("CPF",        header.getFormat());
-        Assert.assertEquals(1,            header.getVersion());
-        Assert.assertEquals("ESA",        header.getSource());
-        Assert.assertEquals(2018,         header.getProductionEpoch().getYear());
-        Assert.assertEquals(6,            header.getProductionEpoch().getMonth());
-        Assert.assertEquals(13,           header.getProductionEpoch().getDay());
-        Assert.assertEquals(10,           header.getProductionHour());
-        Assert.assertEquals(6641,         header.getSequenceNumber());
-        Assert.assertEquals("galileo212", header.getName());
-        Assert.assertEquals("1606902",    header.getIlrsSatelliteId());
-        Assert.assertEquals("7212",       header.getSic());
-        Assert.assertEquals("41860",      header.getNoradId());
-        Assert.assertEquals(900,          header.getStep());
-        Assert.assertEquals(1,            header.getTargetClass());
-        Assert.assertEquals(0,            header.getRotationalAngleType());
-        Assert.assertTrue(header.isCompatibleWithTIVs());
-        Assert.assertFalse(header.isCenterOfMassCorrectionApplied());
-        Assert.assertEquals(0.0,    start.durationFrom(header.getStartEpoch()), 1.0e-15);
-        Assert.assertEquals(0.0,    end.durationFrom(header.getEndEpoch()),     1.0e-15);
-        Assert.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
-        Assert.assertEquals(0,        header.getRefFrameId());
+        Assertions.assertEquals("CPF",        header.getFormat());
+        Assertions.assertEquals(1,            header.getVersion());
+        Assertions.assertEquals("ESA",        header.getSource());
+        Assertions.assertEquals(2018,         header.getProductionEpoch().getYear());
+        Assertions.assertEquals(6,            header.getProductionEpoch().getMonth());
+        Assertions.assertEquals(13,           header.getProductionEpoch().getDay());
+        Assertions.assertEquals(10,           header.getProductionHour());
+        Assertions.assertEquals(6641,         header.getSequenceNumber());
+        Assertions.assertEquals("galileo212", header.getName());
+        Assertions.assertEquals("1606902",    header.getIlrsSatelliteId());
+        Assertions.assertEquals("7212",       header.getSic());
+        Assertions.assertEquals("41860",      header.getNoradId());
+        Assertions.assertEquals(900,          header.getStep());
+        Assertions.assertEquals(1,            header.getTargetClass());
+        Assertions.assertEquals(0,            header.getRotationalAngleType());
+        Assertions.assertTrue(header.isCompatibleWithTIVs());
+        Assertions.assertFalse(header.isCenterOfMassCorrectionApplied());
+        Assertions.assertEquals(0.0,    start.durationFrom(header.getStartEpoch()), 1.0e-15);
+        Assertions.assertEquals(0.0,    end.durationFrom(header.getEndEpoch()),     1.0e-15);
+        Assertions.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
+        Assertions.assertEquals(0,        header.getRefFrameId());
 
         // Coordinates
         final CPFEphemeris ephemeris    = file.getSatellites().get("1606902");
@@ -257,33 +257,33 @@ public class CPFParserTest {
         // Verify first coordinate
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(58281, 86382.000000, file.getTimeScale());
         final Vector3D firstPos = new Vector3D(-3442706.377, 29234902.063, 3170080.159);
-        Assert.assertEquals(0, coord.get(0).getLeap());
-        Assert.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.get(0).getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
 
         // Verify last coordinate
         final AbsoluteDate lastEpoch = AbsoluteDate.createMJDDate(58283, 86382.00000, file.getTimeScale());
         final Vector3D lastPos  = new Vector3D(-7329586.488, -24111259.078, -15507306.979);
-        Assert.assertEquals(0, coord.get(coord.size() - 1).getLeap());
-        Assert.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, coord.get(coord.size() - 1).getLeap());
+        Assertions.assertEquals(0.0, lastPos.distance(coord.get(coord.size() - 1).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(10, ephemeris.getInterpolationSamples());
-        Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
-        Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
-        Assert.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
-        Assert.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
+        Assertions.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
+        Assertions.assertEquals(10, ephemeris.getInterpolationSamples());
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
+        Assertions.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
+        Assertions.assertEquals(ephemeris,                        ephemeris.getSegments().get(0));
+        Assertions.assertEquals(0.0, firstPos.distance(ephemeris.getEphemeridesDataLines().get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
         final BoundedPropagator propagator = ephemeris.getPropagator();
         // 10 0 58282  78282.000000  0      22173889.124     -19259262.865       3650461.090
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58282, 78282.000000, file.getTimeScale());
         final Vector3D position = new Vector3D(22173889.124, -19259262.865, 3650461.090);
-        Assert.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 4.7e-10);
-        
+        Assertions.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 4.7e-10);
+
     }
 
     @Test
@@ -296,31 +296,31 @@ public class CPFParserTest {
 
         // Verify comments
         final List<String> comments = file.getComments();
-        Assert.assertEquals(2, comments.size());
+        Assertions.assertEquals(2, comments.size());
 
         // Verify header
         final CPFHeader header = file.getHeader();
-        Assert.assertEquals("CPF",        header.getFormat());
-        Assert.assertEquals(2,            header.getVersion());
-        Assert.assertEquals("CSG",        header.getSource());
-        Assert.assertEquals(2018,         header.getProductionEpoch().getYear());
-        Assert.assertEquals(6,            header.getProductionEpoch().getMonth());
-        Assert.assertEquals(13,           header.getProductionEpoch().getDay());
-        Assert.assertEquals(10,           header.getProductionHour());
-        Assert.assertEquals(6641,         header.getSequenceNumber());
-        Assert.assertEquals("orekitSat",  header.getName());
-        Assert.assertEquals("1234567",    header.getIlrsSatelliteId());
-        Assert.assertEquals("705",        header.getSic());
-        Assert.assertEquals("99999",      header.getNoradId());
-        Assert.assertEquals(900,          header.getStep());
-        Assert.assertEquals(1,            header.getTargetClass());
-        Assert.assertEquals(0,            header.getRotationalAngleType());
-        Assert.assertEquals(0.0,          header.getPrf(), 0.0);
-        Assert.assertEquals(0.0,          header.getTranspTransmitDelay(), 0.0);
-        Assert.assertEquals(0.0,          header.getTranspUtcOffset(), 0.0);
-        Assert.assertEquals(0.0,          header.getTranspOscDrift(), 0.0);
-        Assert.assertEquals(0.0,          header.getTranspClkRef(), 0.0);
-        
+        Assertions.assertEquals("CPF",        header.getFormat());
+        Assertions.assertEquals(2,            header.getVersion());
+        Assertions.assertEquals("CSG",        header.getSource());
+        Assertions.assertEquals(2018,         header.getProductionEpoch().getYear());
+        Assertions.assertEquals(6,            header.getProductionEpoch().getMonth());
+        Assertions.assertEquals(13,           header.getProductionEpoch().getDay());
+        Assertions.assertEquals(10,           header.getProductionHour());
+        Assertions.assertEquals(6641,         header.getSequenceNumber());
+        Assertions.assertEquals("orekitSat",  header.getName());
+        Assertions.assertEquals("1234567",    header.getIlrsSatelliteId());
+        Assertions.assertEquals("705",        header.getSic());
+        Assertions.assertEquals("99999",      header.getNoradId());
+        Assertions.assertEquals(900,          header.getStep());
+        Assertions.assertEquals(1,            header.getTargetClass());
+        Assertions.assertEquals(0,            header.getRotationalAngleType());
+        Assertions.assertEquals(0.0,          header.getPrf(), 0.0);
+        Assertions.assertEquals(0.0,          header.getTranspTransmitDelay(), 0.0);
+        Assertions.assertEquals(0.0,          header.getTranspUtcOffset(), 0.0);
+        Assertions.assertEquals(0.0,          header.getTranspOscDrift(), 0.0);
+        Assertions.assertEquals(0.0,          header.getTranspClkRef(), 0.0);
+
     }
 
     @Test
@@ -329,12 +329,12 @@ public class CPFParserTest {
             final String ex = "/ilrs/cpf_invalid_format.csg";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             new CPFParser().parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNEXPECTED_FORMAT_FOR_ILRS_FILE,
+            Assertions.assertEquals(OrekitMessages.UNEXPECTED_FORMAT_FOR_ILRS_FILE,
                                 oe.getSpecifier());
-            Assert.assertEquals("CPF", oe.getParts()[0]);
-            Assert.assertEquals("CDR", oe.getParts()[1]);
+            Assertions.assertEquals("CPF", oe.getParts()[0]);
+            Assertions.assertEquals("CDR", oe.getParts()[1]);
         }
     }
 
@@ -344,11 +344,11 @@ public class CPFParserTest {
             final String ex = "/ilrs/cpf_unexpected_end_of_file.csg";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             new CPFParser().parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CPF_UNEXPECTED_END_OF_FILE,
+            Assertions.assertEquals(OrekitMessages.CPF_UNEXPECTED_END_OF_FILE,
                                 oe.getSpecifier());
-            Assert.assertEquals(5, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(5, ((Integer) oe.getParts()[0]).intValue());
         }
 
     }
@@ -359,16 +359,16 @@ public class CPFParserTest {
             final String ex = "/ilrs/cpf_corrupted_data.csg";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             new CPFParser().parse(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                 oe.getSpecifier());
-            Assert.assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

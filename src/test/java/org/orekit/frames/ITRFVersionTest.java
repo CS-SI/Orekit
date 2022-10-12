@@ -16,14 +16,13 @@
  */
 package org.orekit.frames;
 
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -37,109 +36,109 @@ public class ITRFVersionTest {
 
     @Test
     public void testYears() {
-        Assert.assertEquals(2014, ITRFVersion.ITRF_2014.getYear());
-        Assert.assertEquals(2008, ITRFVersion.ITRF_2008.getYear());
-        Assert.assertEquals(2005, ITRFVersion.ITRF_2005.getYear());
-        Assert.assertEquals(2000, ITRFVersion.ITRF_2000.getYear());
-        Assert.assertEquals(1997, ITRFVersion.ITRF_1997.getYear());
-        Assert.assertEquals(1996, ITRFVersion.ITRF_1996.getYear());
-        Assert.assertEquals(1994, ITRFVersion.ITRF_1994.getYear());
-        Assert.assertEquals(1993, ITRFVersion.ITRF_1993.getYear());
-        Assert.assertEquals(1992, ITRFVersion.ITRF_1992.getYear());
-        Assert.assertEquals(1991, ITRFVersion.ITRF_1991.getYear());
-        Assert.assertEquals(1990, ITRFVersion.ITRF_1990.getYear());
-        Assert.assertEquals(1989, ITRFVersion.ITRF_1989.getYear());
-        Assert.assertEquals(1988, ITRFVersion.ITRF_1988.getYear());
+        Assertions.assertEquals(2014, ITRFVersion.ITRF_2014.getYear());
+        Assertions.assertEquals(2008, ITRFVersion.ITRF_2008.getYear());
+        Assertions.assertEquals(2005, ITRFVersion.ITRF_2005.getYear());
+        Assertions.assertEquals(2000, ITRFVersion.ITRF_2000.getYear());
+        Assertions.assertEquals(1997, ITRFVersion.ITRF_1997.getYear());
+        Assertions.assertEquals(1996, ITRFVersion.ITRF_1996.getYear());
+        Assertions.assertEquals(1994, ITRFVersion.ITRF_1994.getYear());
+        Assertions.assertEquals(1993, ITRFVersion.ITRF_1993.getYear());
+        Assertions.assertEquals(1992, ITRFVersion.ITRF_1992.getYear());
+        Assertions.assertEquals(1991, ITRFVersion.ITRF_1991.getYear());
+        Assertions.assertEquals(1990, ITRFVersion.ITRF_1990.getYear());
+        Assertions.assertEquals(1989, ITRFVersion.ITRF_1989.getYear());
+        Assertions.assertEquals(1988, ITRFVersion.ITRF_1988.getYear());
     }
 
     @Test
     public void testNames() {
-        Assert.assertEquals("ITRF-2014", ITRFVersion.ITRF_2014.getName());
-        Assert.assertEquals("ITRF-2008", ITRFVersion.ITRF_2008.getName());
-        Assert.assertEquals("ITRF-2005", ITRFVersion.ITRF_2005.getName());
-        Assert.assertEquals("ITRF-2000", ITRFVersion.ITRF_2000.getName());
-        Assert.assertEquals("ITRF-1997", ITRFVersion.ITRF_1997.getName());
-        Assert.assertEquals("ITRF-1996", ITRFVersion.ITRF_1996.getName());
-        Assert.assertEquals("ITRF-1994", ITRFVersion.ITRF_1994.getName());
-        Assert.assertEquals("ITRF-1993", ITRFVersion.ITRF_1993.getName());
-        Assert.assertEquals("ITRF-1992", ITRFVersion.ITRF_1992.getName());
-        Assert.assertEquals("ITRF-1991", ITRFVersion.ITRF_1991.getName());
-        Assert.assertEquals("ITRF-1990", ITRFVersion.ITRF_1990.getName());
-        Assert.assertEquals("ITRF-1989", ITRFVersion.ITRF_1989.getName());
-        Assert.assertEquals("ITRF-1988", ITRFVersion.ITRF_1988.getName());
+        Assertions.assertEquals("ITRF-2014", ITRFVersion.ITRF_2014.getName());
+        Assertions.assertEquals("ITRF-2008", ITRFVersion.ITRF_2008.getName());
+        Assertions.assertEquals("ITRF-2005", ITRFVersion.ITRF_2005.getName());
+        Assertions.assertEquals("ITRF-2000", ITRFVersion.ITRF_2000.getName());
+        Assertions.assertEquals("ITRF-1997", ITRFVersion.ITRF_1997.getName());
+        Assertions.assertEquals("ITRF-1996", ITRFVersion.ITRF_1996.getName());
+        Assertions.assertEquals("ITRF-1994", ITRFVersion.ITRF_1994.getName());
+        Assertions.assertEquals("ITRF-1993", ITRFVersion.ITRF_1993.getName());
+        Assertions.assertEquals("ITRF-1992", ITRFVersion.ITRF_1992.getName());
+        Assertions.assertEquals("ITRF-1991", ITRFVersion.ITRF_1991.getName());
+        Assertions.assertEquals("ITRF-1990", ITRFVersion.ITRF_1990.getName());
+        Assertions.assertEquals("ITRF-1989", ITRFVersion.ITRF_1989.getName());
+        Assertions.assertEquals("ITRF-1988", ITRFVersion.ITRF_1988.getName());
     }
 
     @Test
     public void testBuildFromYear() {
-        Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion(2014));
-        Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion(2008));
-        Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion(2005));
-        Assert.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion(2000));
-        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion(1997));
-        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion(1996));
-        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion(1994));
-        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion(1993));
-        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion(1992));
-        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion(1991));
-        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion(1990));
-        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion(1989));
-        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion(1988));
-        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion(  97));
-        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion(  96));
-        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion(  94));
-        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion(  93));
-        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion(  92));
-        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion(  91));
-        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion(  90));
-        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion(  89));
-        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion(  88));
+        Assertions.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion(2014));
+        Assertions.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion(2008));
+        Assertions.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion(2005));
+        Assertions.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion(2000));
+        Assertions.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion(1997));
+        Assertions.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion(1996));
+        Assertions.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion(1994));
+        Assertions.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion(1993));
+        Assertions.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion(1992));
+        Assertions.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion(1991));
+        Assertions.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion(1990));
+        Assertions.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion(1989));
+        Assertions.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion(1988));
+        Assertions.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion(  97));
+        Assertions.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion(  96));
+        Assertions.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion(  94));
+        Assertions.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion(  93));
+        Assertions.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion(  92));
+        Assertions.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion(  91));
+        Assertions.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion(  90));
+        Assertions.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion(  89));
+        Assertions.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion(  88));
     }
 
     @Test
     public void testInexistantYear() {
         try {
             ITRFVersion.getITRFVersion(1999);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
-            Assert.assertEquals(1999, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
+            Assertions.assertEquals(1999, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
     @Test
     public void testBuildFromName() {
-        Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion("ITRF-2014"));
-        Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion("ItRf-2008"));
-        Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion("iTrF-2005"));
-        Assert.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion("itrf_2000"));
-        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion("itrf 1997"));
-        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion("itrf1996"));
-        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion("itrf-1994"));
-        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion("itrf-1993"));
-        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion("itrf-1992"));
-        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion("itrf-1991"));
-        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion("itrf-1990"));
-        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion("itrf-1989"));
-        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion("itrf-1988"));
-        Assert.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion("ITRF97"));
-        Assert.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion("itrf-96"));
-        Assert.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion("itrf-94"));
-        Assert.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion("itrf-93"));
-        Assert.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion("itrf-92"));
-        Assert.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion("itrf-91"));
-        Assert.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion("itrf-90"));
-        Assert.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion("itrf-89"));
-        Assert.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion("itrf-88"));
+        Assertions.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion("ITRF-2014"));
+        Assertions.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion("ItRf-2008"));
+        Assertions.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion("iTrF-2005"));
+        Assertions.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion("itrf_2000"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion("itrf 1997"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion("itrf1996"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion("itrf-1994"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion("itrf-1993"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion("itrf-1992"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion("itrf-1991"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion("itrf-1990"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion("itrf-1989"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion("itrf-1988"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1997, ITRFVersion.getITRFVersion("ITRF97"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1996, ITRFVersion.getITRFVersion("itrf-96"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1994, ITRFVersion.getITRFVersion("itrf-94"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1993, ITRFVersion.getITRFVersion("itrf-93"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1992, ITRFVersion.getITRFVersion("itrf-92"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1991, ITRFVersion.getITRFVersion("itrf-91"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1990, ITRFVersion.getITRFVersion("itrf-90"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1989, ITRFVersion.getITRFVersion("itrf-89"));
+        Assertions.assertEquals(ITRFVersion.ITRF_1988, ITRFVersion.getITRFVersion("itrf-88"));
     }
 
     @Test
     public void testInexistantName() {
         try {
             ITRFVersion.getITRFVersion("itrf-99");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
-            Assert.assertEquals("itrf-99", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
+            Assertions.assertEquals("itrf-99", oe.getParts()[0]);
         }
     }
 
@@ -147,10 +146,10 @@ public class ITRFVersionTest {
     public void testMalformedName() {
         try {
             ITRFVersion.getITRFVersion("YTRF-2014");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
-            Assert.assertEquals("YTRF-2014", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
+            Assertions.assertEquals("YTRF-2014", oe.getParts()[0]);
         }
     }
 
@@ -166,8 +165,8 @@ public class ITRFVersionTest {
         for (final ITRFVersion origin : ITRFVersion.values()) {
             for (final ITRFVersion destination : ITRFVersion.values()) {
                 ITRFVersion.Converter converter = ITRFVersion.getConverter(origin, destination);
-                Assert.assertEquals(origin,      converter.getOrigin());
-                Assert.assertEquals(destination, converter.getDestination());
+                Assertions.assertEquals(origin,      converter.getOrigin());
+                Assertions.assertEquals(destination, converter.getDestination());
                 Frame originFrame      = origin == last ?
                                          itrfLast :
                                          HelmertTransformation.Predefined.selectPredefined(last.getYear(), origin.getYear()).
@@ -197,17 +196,17 @@ public class ITRFVersionTest {
                         // which would correspond to simply add the offsets, velocities, rotations and rate,
                         // which is what is done in the reference documents.
                         // Anyway, the non-commutativity errors are well below models accuracy
-                        Assert.assertEquals(0, looped.getTranslation().getNorm(),  3.0e-06);
-                        Assert.assertEquals(0, looped.getVelocity().getNorm(),     9.0e-23);
-                        Assert.assertEquals(0, looped.getRotation().getAngle(),    8.0e-13);
-                        Assert.assertEquals(0, looped.getRotationRate().getNorm(), 2.0e-32);
+                        Assertions.assertEquals(0, looped.getTranslation().getNorm(),  3.0e-06);
+                        Assertions.assertEquals(0, looped.getVelocity().getNorm(),     9.0e-23);
+                        Assertions.assertEquals(0, looped.getRotation().getAngle(),    8.0e-13);
+                        Assertions.assertEquals(0, looped.getRotationRate().getNorm(), 2.0e-32);
                     } else {
                         // if we always stay in the ITRF last branch, we do the right conversions
                         // and errors are at numerical noise level
-                        Assert.assertEquals(0, looped.getTranslation().getNorm(),  2.0e-17);
-                        Assert.assertEquals(0, looped.getVelocity().getNorm(),     4.0e-26);
-                        Assert.assertEquals(0, looped.getRotation().getAngle(),    1.0e-50);
-                        Assert.assertEquals(0, looped.getRotationRate().getNorm(), 2.0e-32);
+                        Assertions.assertEquals(0, looped.getTranslation().getNorm(),  2.0e-17);
+                        Assertions.assertEquals(0, looped.getVelocity().getNorm(),     4.0e-26);
+                        Assertions.assertEquals(0, looped.getRotation().getAngle(),    1.0e-50);
+                        Assertions.assertEquals(0, looped.getRotationRate().getNorm(), 2.0e-32);
                     }
                     MatcherAssert.assertThat(
                             sLooped.getTranslation(),
@@ -231,24 +230,24 @@ public class ITRFVersionTest {
                                  // which would correspond to simply add the offsets, velocities, rotations and rate,
                                  // which is what is done in the reference documents.
                                  // Anyway, the non-commutativity errors are well below models accuracy
-                                 Assert.assertEquals(0, looped64.getTranslation().getNorm().getReal(),  3.0e-06);
-                                 Assert.assertEquals(0, looped64.getVelocity().getNorm().getReal(),     9.0e-23);
-                                 Assert.assertEquals(0, looped64.getRotation().getAngle().getReal(),    8.0e-13);
-                                 Assert.assertEquals(0, looped64.getRotationRate().getNorm().getReal(), 2.0e-32);
+                                 Assertions.assertEquals(0, looped64.getTranslation().getNorm().getReal(),  3.0e-06);
+                                 Assertions.assertEquals(0, looped64.getVelocity().getNorm().getReal(),     9.0e-23);
+                                 Assertions.assertEquals(0, looped64.getRotation().getAngle().getReal(),    8.0e-13);
+                                 Assertions.assertEquals(0, looped64.getRotationRate().getNorm().getReal(), 2.0e-32);
                              } else {
                                  // if we always stay in the ITRF last branch, we do the right conversions
                                  // and errors are at numerical noise level
-                                 Assert.assertEquals(0, looped64.getTranslation().getNorm().getReal(),  2.0e-17);
-                                 Assert.assertEquals(0, looped64.getVelocity().getNorm().getReal(),     4.0e-26);
-                                 Assert.assertEquals(0, looped64.getRotation().getAngle().getReal(),    1.0e-50);
-                                 Assert.assertEquals(0, looped64.getRotationRate().getNorm().getReal(), 2.0e-32);
+                                 Assertions.assertEquals(0, looped64.getTranslation().getNorm().getReal(),  2.0e-17);
+                                 Assertions.assertEquals(0, looped64.getVelocity().getNorm().getReal(),     4.0e-26);
+                                 Assertions.assertEquals(0, looped64.getRotation().getAngle().getReal(),    1.0e-50);
+                                 Assertions.assertEquals(0, looped64.getRotationRate().getNorm().getReal(), 2.0e-32);
                              }
                 }
             }
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }

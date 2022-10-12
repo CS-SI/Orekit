@@ -20,9 +20,9 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -82,20 +82,20 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assert.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        Assert.assertEquals("no-shift_START", detector.getStartDriver().getName());
-        Assert.assertEquals("no-shift_STOP", detector.getStopDriver().getName());
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
+        Assertions.assertEquals("no-shift_STOP", detector.getStopDriver().getName());
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(detector));
 
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assert.assertEquals(2, logger.getLoggedEvents().size());
-        Assert.assertEquals(0.0, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(start).getReal(), 1.0e-10);
-        Assert.assertEquals(0.0, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(stop).getReal(), 1.0e-10);
+        Assertions.assertEquals(2, logger.getLoggedEvents().size());
+        Assertions.assertEquals(0.0, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(start).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(stop).getReal(), 1.0e-10);
 
     }
 
@@ -128,11 +128,11 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assert.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        Assert.assertEquals("no-shift_START", detector.getStartDriver().getName());
-        Assert.assertEquals("no-shift_STOP", detector.getStopDriver().getName());
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
+        Assertions.assertEquals("no-shift_STOP", detector.getStopDriver().getName());
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(detector));
@@ -143,9 +143,9 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         detector.getStopDriver().setValue(stopShift);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assert.assertEquals(2, logger.getLoggedEvents().size());
-        Assert.assertEquals(startShift, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(start).getReal(), 1.0e-10);
-        Assert.assertEquals(stopShift,  logger.getLoggedEvents().get(1).getState().getDate().durationFrom(stop).getReal(),  1.0e-10);
+        Assertions.assertEquals(2, logger.getLoggedEvents().size());
+        Assertions.assertEquals(startShift, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(start).getReal(), 1.0e-10);
+        Assertions.assertEquals(stopShift,  logger.getLoggedEvents().get(1).getState().getDate().durationFrom(stop).getReal(),  1.0e-10);
 
     }
 
@@ -178,11 +178,11 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assert.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        Assert.assertEquals("no-shift_START", detector.getStartDriver().getName());
-        Assert.assertEquals("no-shift_STOP", detector.getStopDriver().getName());
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
+        Assertions.assertEquals("no-shift_STOP", detector.getStopDriver().getName());
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(detector));
@@ -193,11 +193,11 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         detector.getStopDriver().setValue(stopShift);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assert.assertEquals(0, logger.getLoggedEvents().size());
+        Assertions.assertEquals(0, logger.getLoggedEvents().size());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

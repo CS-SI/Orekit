@@ -16,16 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
@@ -44,6 +39,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+
 
 public class StreamingAemWriterTest {
 
@@ -51,7 +51,7 @@ public class StreamingAemWriterTest {
     private static final double DATE_PRECISION = 1e-3;
 
     /** Set Orekit data. */
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -131,20 +131,20 @@ public class StreamingAemWriterTest {
             Aem generatedAem = parser.parseMessage(source1);
 
             // There is only one attitude ephemeris block
-            Assert.assertEquals(1, generatedAem.getSegments().size());
+            Assertions.assertEquals(1, generatedAem.getSegments().size());
             AemSegment attitudeBlocks = generatedAem.getSegments().get(0);
             // There are 7 data lines in the attitude ephemeris block
             List<? extends TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
-            Assert.assertEquals(7, ac.size());
+            Assertions.assertEquals(7, ac.size());
 
             // Verify
             for (int i = 0; i < 7; i++) {
-                Assert.assertEquals(step * i, ac.get(i).getDate().durationFrom(ephemerisBlock.getStart()), DATE_PRECISION);
+                Assertions.assertEquals(step * i, ac.get(i).getDate().durationFrom(ephemerisBlock.getStart()), DATE_PRECISION);
                 Rotation rot = ac.get(i).getRotation();
-                Assert.assertEquals(0.68427, rot.getQ0(), QUATERNION_PRECISION);
-                Assert.assertEquals(0.56748, rot.getQ1(), QUATERNION_PRECISION);
-                Assert.assertEquals(0.03146, rot.getQ2(), QUATERNION_PRECISION);
-                Assert.assertEquals(0.45689, rot.getQ3(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.68427, rot.getQ0(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.56748, rot.getQ1(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.03146, rot.getQ2(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.45689, rot.getQ3(), QUATERNION_PRECISION);
             }
 
         }

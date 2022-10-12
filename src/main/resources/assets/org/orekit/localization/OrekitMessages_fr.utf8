@@ -758,3 +758,9 @@ INCONSISTENT_SELECTION = sélection de paramètres incohérents entre les paires
 
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
+
+# no unscented transform configured
+NO_UNSCENTED_TRANSFORM_CONFIGURED = aucune transformation unscented configurée
+
+# transform from {0} to {1} is not implemented
+INVALID_TRANSFORM = la transformation de {0} vers {1} n'est pas implémentée

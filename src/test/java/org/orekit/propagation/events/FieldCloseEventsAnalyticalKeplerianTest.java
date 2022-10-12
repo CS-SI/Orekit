@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -65,7 +65,7 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
         propagator.propagate(epoch.shiftedBy(period));
 
         // verify no events
-        Assert.assertEquals(0, handler.getEvents().size());
+        Assertions.assertEquals(0, handler.getEvents().size());
     }
 
     /** Test Analytic propagators take big steps. #830 */
@@ -88,7 +88,7 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
         propagator.propagate(epoch.shiftedBy(period));
 
         // verify no events
-        Assert.assertEquals(0, handler.getEvents().size());
+        Assertions.assertEquals(0, handler.getEvents().size());
     }
 
 }

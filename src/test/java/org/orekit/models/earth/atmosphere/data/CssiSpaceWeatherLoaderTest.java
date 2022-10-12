@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2020 Clément Jonglez
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,16 +18,12 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.pvCloseTo;
-
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -56,6 +52,10 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.pvCloseTo;
+
 /**
  *
  * @author Clément Jonglez
@@ -63,7 +63,7 @@ import org.orekit.utils.IERSConventions;
 public class CssiSpaceWeatherLoaderTest {
     private TimeScale utc;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
@@ -77,13 +77,13 @@ public class CssiSpaceWeatherLoaderTest {
     @Test
     public void testMinDate() {
         CssiSpaceWeatherData cswl = loadCswl();
-        Assert.assertEquals(new AbsoluteDate("1957-10-01", utc), cswl.getMinDate());
+        Assertions.assertEquals(new AbsoluteDate("1957-10-01", utc), cswl.getMinDate());
     }
 
     @Test
     public void testMaxDate() {
         CssiSpaceWeatherData cswl = loadCswl();
-        Assert.assertEquals(new AbsoluteDate("2044-06-01", utc), cswl.getMaxDate());
+        Assertions.assertEquals(new AbsoluteDate("2044-06-01", utc), cswl.getMaxDate());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class CssiSpaceWeatherLoaderTest {
     @Test
     /**
      * Testing first day of data
-     * Because the Ap up to 57 hours prior to the date are asked, 
+     * Because the Ap up to 57 hours prior to the date are asked,
      * this should return an exception
      */
     public void testThreeHourlyApObservedFirstDay() {
@@ -116,16 +116,16 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
     @Test
     /**
      * Testing second day of data
-     * Because the Ap up to 57 hours prior to the date are asked, 
+     * Because the Ap up to 57 hours prior to the date are asked,
      * this should return an exception
      */
     public void testThreeHourlyApObservedSecondDay() {
@@ -133,16 +133,16 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(1957, 10, 2, 3, 14, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
     @Test
     /**
      * Testing third day of data
-     * Because the Ap up to 57 hours prior to the date are asked, 
+     * Because the Ap up to 57 hours prior to the date are asked,
      * this should return an exception
      */
     public void testThreeHourlyApObservedThirdDay() {
@@ -150,9 +150,9 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(1957, 10, 3, 3, 14, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -172,7 +172,7 @@ public class CssiSpaceWeatherLoaderTest {
 
     @Test
     /**
-     * This test is very approximate, at least to check that the two proper months were used for the interpolation 
+     * This test is very approximate, at least to check that the two proper months were used for the interpolation
      * But the manual interpolation of all 7 coefficients would have been a pain
      */
     public void testThreeHourlyApMonthlyPredicted() {

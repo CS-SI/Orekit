@@ -16,21 +16,11 @@
  */
 package org.orekit.files.general;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -69,16 +59,22 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 public class OrekitEphemerisFileTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
     public void testOrekitEphemerisFile() {
-        assertNotNull(new OrekitEphemerisFile());
+        Assertions.assertNotNull(new OrekitEphemerisFile());
     }
 
     @Test
@@ -87,9 +83,9 @@ public class OrekitEphemerisFileTest {
         final String id2 = "ID2";
         OrekitEphemerisFile file = new OrekitEphemerisFile();
         OrekitSatelliteEphemeris ephem1 = file.addSatellite(id1);
-        assertNotNull(ephem1);
+        Assertions.assertNotNull(ephem1);
         OrekitSatelliteEphemeris ephem2 = file.addSatellite(id2);
-        assertNotNull(ephem2);
+        Assertions.assertNotNull(ephem2);
     }
 
     @Test
@@ -134,15 +130,15 @@ public class OrekitEphemerisFileTest {
         OrekitEphemerisFile ephemerisFile = new OrekitEphemerisFile();
         OrekitSatelliteEphemeris satellite = ephemerisFile.addSatellite(satId);
         satellite.addNewSegment(states);
-        assertEquals(satId, satellite.getId());
-        assertEquals(body.getGM(), satellite.getMu(), muTolerance);
-        assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
-        assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
-        assertEquals(CartesianDerivativesFilter.USE_PV,
+        Assertions.assertEquals(satId, satellite.getId());
+        Assertions.assertEquals(body.getGM(), satellite.getMu(), muTolerance);
+        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_PV,
                      satellite.getSegments().get(0).getAvailableDerivatives());
-        assertEquals("GCRF",
+        Assertions.assertEquals("GCRF",
                      satellite.getSegments().get(0).getFrame().getName());
-        assertEquals(body.getGM(),
+        Assertions.assertEquals(body.getGM(),
                      satellite.getSegments().get(0).getMu(), muTolerance);
 
         String tempOem = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
@@ -159,21 +155,21 @@ public class OrekitEphemerisFileTest {
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
         EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFrom = parser.parse(new DataSource(tempOem));
         Files.delete(Paths.get(tempOem));
-        
+
         EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
-        assertEquals(states.get(0).getDate(), segment.getStart());
-        assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
-        assertEquals(states.size(), segment.getCoordinates().size());
-        assertEquals(frame, segment.getFrame());
-        assertEquals(body.getGM(), segment.getMu(), muTolerance);
-        assertEquals(CartesianDerivativesFilter.USE_PV, segment.getAvailableDerivatives());
-        assertEquals("GCRF", segment.getFrame().getName());
+        Assertions.assertEquals(states.get(0).getDate(), segment.getStart());
+        Assertions.assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
+        Assertions.assertEquals(states.size(), segment.getCoordinates().size());
+        Assertions.assertEquals(frame, segment.getFrame());
+        Assertions.assertEquals(body.getGM(), segment.getMu(), muTolerance);
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_PV, segment.getAvailableDerivatives());
+        Assertions.assertEquals("GCRF", segment.getFrame().getName());
         for (int i = 0; i < states.size(); i++) {
             TimeStampedPVCoordinates expected = states.get(i).getPVCoordinates();
             TimeStampedPVCoordinates actual = segment.getCoordinates().get(i);
-            assertEquals(expected.getDate(), actual.getDate());
-            assertEquals(0.0, Vector3D.distance(expected.getPosition(), actual.getPosition()), positionTolerance);
-            assertEquals(0.0, Vector3D.distance(expected.getVelocity(), actual.getVelocity()), velocityTolerance);
+            Assertions.assertEquals(expected.getDate(), actual.getDate());
+            Assertions.assertEquals(0.0, Vector3D.distance(expected.getPosition(), actual.getPosition()), positionTolerance);
+            Assertions.assertEquals(0.0, Vector3D.distance(expected.getVelocity(), actual.getVelocity()), velocityTolerance);
         }
 
         // test ingested ephemeris generates access intervals
@@ -198,12 +194,12 @@ public class OrekitEphemerisFileTest {
         ephemerisSegmentPropagator.propagate(segment.getStart(), segment.getStop());
 
         final double dateEpsilon = 4.2e-5;
-        assertTrue(referenceLogger.getLoggedEvents().size() > 0);
-        assertEquals(referenceLogger.getLoggedEvents().size(), lookupLogger.getLoggedEvents().size());
+        Assertions.assertTrue(referenceLogger.getLoggedEvents().size() > 0);
+        Assertions.assertEquals(referenceLogger.getLoggedEvents().size(), lookupLogger.getLoggedEvents().size());
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {
             LoggedEvent reference = referenceLogger.getLoggedEvents().get(i);
             LoggedEvent actual = lookupLogger.getLoggedEvents().get(i);
-            assertEquals(0.0,
+            Assertions.assertEquals(0.0,
                          FastMath.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
                          dateEpsilon);
         }
@@ -212,14 +208,14 @@ public class OrekitEphemerisFileTest {
         final EventsLogger embeddedPropLogger = new EventsLogger();
         embeddedPropagator.addEventDetector(embeddedPropLogger.monitorDetector(elevationDetector));
         embeddedPropagator.propagate(segment.getStart(), segment.getStop());
-        assertEquals(referenceLogger.getLoggedEvents().size(), embeddedPropLogger.getLoggedEvents().size());
+        Assertions.assertEquals(referenceLogger.getLoggedEvents().size(), embeddedPropLogger.getLoggedEvents().size());
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {
             LoggedEvent reference = referenceLogger.getLoggedEvents().get(i);
             LoggedEvent actual = embeddedPropLogger.getLoggedEvents().get(i);
-            assertEquals(0.0,
+            Assertions.assertEquals(0.0,
                          FastMath.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
                          dateEpsilon);
-                 
+
         }
 
         final List<SpacecraftState> readInStates = new ArrayList<SpacecraftState>();
@@ -227,20 +223,20 @@ public class OrekitEphemerisFileTest {
             try {
                 readInStates.add(new SpacecraftState(new CartesianOrbit(c, frame, mu)));
             } catch (IllegalArgumentException | OrekitException e) {
-                fail(e.getLocalizedMessage());
+                Assertions.fail(e.getLocalizedMessage());
             }
         });
-        
+
         final int interpolationPoints = 5;
         Ephemeris directEphemProp = new Ephemeris(readInStates, interpolationPoints);
         final EventsLogger directEphemPropLogger = new EventsLogger();
         directEphemProp.addEventDetector(directEphemPropLogger.monitorDetector(elevationDetector));
         directEphemProp.propagate(segment.getStart(), segment.getStop());
-        assertEquals(referenceLogger.getLoggedEvents().size(), directEphemPropLogger.getLoggedEvents().size());
+        Assertions.assertEquals(referenceLogger.getLoggedEvents().size(), directEphemPropLogger.getLoggedEvents().size());
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {
             LoggedEvent reference = referenceLogger.getLoggedEvents().get(i);
             LoggedEvent actual = directEphemPropLogger.getLoggedEvents().get(i);
-            assertEquals(0.0,
+            Assertions.assertEquals(0.0,
                          FastMath.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
                          dateEpsilon);
         }

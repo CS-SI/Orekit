@@ -30,9 +30,9 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CR3BPFactory;
 import org.orekit.bodies.CR3BPSystem;
@@ -53,13 +53,13 @@ import org.orekit.utils.PVCoordinates;
 public class CR3BPForceModelTest {
 
     private CR3BPSystem syst;
-    
+
     @Test
     public void testModel() {
-                
+
         final double mu = new CR3BPForceModel(syst).getParameters()[0];
-        Assert.assertEquals(0.0121, mu, 1E-3);
-        
+        Assertions.assertEquals(0.0121, mu, 1E-3);
+
      // Time settings
         final AbsoluteDate initialDate =
             new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
@@ -69,14 +69,14 @@ public class CR3BPForceModelTest {
             new PVCoordinates(new Vector3D(0.8, 0.2, 0.0),
                               new Vector3D(0.0, 0.0, 0.1));
         //final Frame Frame = syst.getRotatingFrame();
-        final Frame Frame = FramesFactory.getGCRF();      
+        final Frame Frame = FramesFactory.getGCRF();
         final AbsolutePVCoordinates initialAbsPV =
             new AbsolutePVCoordinates(Frame, initialDate, initialConditions);
 
         // Creating the initial spacecraftstate that will be given to the
         // propagator
         final SpacecraftState initialState = new SpacecraftState(initialAbsPV);
-        
+
         // Integration parameters
         // These parameters are used for the Dormand-Prince integrator, a
         // variable step integrator,
@@ -106,7 +106,7 @@ public class CR3BPForceModelTest {
             new DormandPrince853Integrator(minStep, maxstep,
                                            vecAbsoluteTolerances,
                                            vecRelativeTolerances);
-        
+
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
@@ -114,10 +114,10 @@ public class CR3BPForceModelTest {
         propagator.setInitialState(initialState);
         propagator.clearStepHandlers();
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
-        
-        Assert.assertNotEquals(initialState.getPVCoordinates().getPosition().getX(), finalState.getPVCoordinates().getPosition().getX(), 1E-2);  
+
+        Assertions.assertNotEquals(initialState.getPVCoordinates().getPosition().getX(), finalState.getPVCoordinates().getPosition().getX(), 1E-2);
     }
-    
+
     /**Testing if the propagation between the FieldPropagation and the propagation
      * is equivalent.
      * Also testing if propagating X+dX with the propagation is equivalent to
@@ -132,19 +132,19 @@ public class CR3BPForceModelTest {
         DerivativeStructure fvx = factory.variable(3, 0.0);
         DerivativeStructure fvy = factory.variable(4, 0.0);
         DerivativeStructure fvz = factory.variable(5, 0.1);
-        
+
         final FieldPVCoordinates<DerivativeStructure> initialConditions =
                         new FieldPVCoordinates<>(new FieldVector3D<>(fpx, fpy, fpz),
                                           new FieldVector3D<>(fvx, fvy, fvz));
-        
+
         Field<DerivativeStructure> field = fpx.getField();
         DerivativeStructure zero = field.getZero();
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         //final Frame frame = syst.getRotatingFrame();
-        final Frame frame = FramesFactory.getGCRF();  
-        
-        // PVCoordinates linked to a Frame and a Date                
+        final Frame frame = FramesFactory.getGCRF();
+
+        // PVCoordinates linked to a Frame and a Date
         final FieldAbsolutePVCoordinates<DerivativeStructure> initialAbsPV =
             new FieldAbsolutePVCoordinates<>(frame, J2000, initialConditions);
 
@@ -152,7 +152,7 @@ public class CR3BPForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(initialAbsPV);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
+
         ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator = new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(1.0));
 
         ClassicalRungeKuttaIntegrator RIntegrator = new ClassicalRungeKuttaIntegrator(1.0);
@@ -171,7 +171,7 @@ public class CR3BPForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
 
         FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
@@ -179,10 +179,10 @@ public class CR3BPForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
-        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
         GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
@@ -206,17 +206,17 @@ public class CR3BPForceModelTest {
             double vx_shift = vx_R + rand_next[3];
             double vy_shift = vy_R + rand_next[4];
             double vz_shift = vz_R + rand_next[5];
-            
+
             final PVCoordinates shiftedConditions =
                             new PVCoordinates(new Vector3D(px_shift, py_shift, pz_shift),
                                               new Vector3D(vx_shift, vy_shift, vz_shift));
-            // PVCoordinates linked to a Frame and a Date                
+            // PVCoordinates linked to a Frame and a Date
             final AbsolutePVCoordinates shiftedAbsPV =
                 new AbsolutePVCoordinates(frame, J2000.toAbsoluteDate(), shiftedConditions);
-            
+
             SpacecraftState shift_iSR = new SpacecraftState(shiftedAbsPV);
-            
-            
+
+
 
             NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
 
@@ -225,7 +225,7 @@ public class CR3BPForceModelTest {
             shift_NP.setOrbitType(null);
             shift_NP.setIgnoreCentralAttraction(true);
             shift_NP.addForceModel(forceModel);
-            
+
 
             SpacecraftState finalState_shift = shift_NP.propagate(target.toAbsoluteDate());
 
@@ -264,25 +264,25 @@ public class CR3BPForceModelTest {
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            if (ax != 0 || ay !=0 || az != 0) { 
+            if (ax != 0 || ay !=0 || az != 0) {
                 maxA = FastMath.max(maxA, FastMath.abs((ax_DS - ax) / ax));
                 maxA = FastMath.max(maxA, FastMath.abs((ay_DS - ay) / ay));
                 maxA = FastMath.max(maxA, FastMath.abs((az_DS - az) / az));
-            } else { 
+            } else {
                 maxA = 0;
             }
         }
-        Assert.assertEquals(0, maxP, 4.2e-11);
-        Assert.assertEquals(0, maxV, 1.4e-12);
-        Assert.assertEquals(0, maxA, 8.5e-12);
+        Assertions.assertEquals(0, maxP, 4.2e-11);
+        Assertions.assertEquals(0, maxV, 1.4e-12);
+        Assertions.assertEquals(0, maxA, 8.5e-12);
     }
-    
-    
-    
-    @Before
-    public void setUp() { 
+
+
+
+    @BeforeEach
+    public void setUp() {
         Utils.setDataRoot("regular-data");
-       
+
         this.syst = CR3BPFactory.getEarthMoonCR3BP();
     }
 }

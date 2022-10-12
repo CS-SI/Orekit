@@ -17,8 +17,8 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
@@ -29,12 +29,12 @@ public class EventHandlerTest {
     public void testEnums() {
         // this test is here only for test coverage ...
 
-        Assert.assertEquals(5, Action.values().length);
-        Assert.assertSame(Action.STOP,              Action.valueOf("STOP"));
-        Assert.assertSame(Action.RESET_STATE,       Action.valueOf("RESET_STATE"));
-        Assert.assertSame(Action.RESET_DERIVATIVES, Action.valueOf("RESET_DERIVATIVES"));
-        Assert.assertSame(Action.RESET_EVENTS,      Action.valueOf("RESET_EVENTS"));
-        Assert.assertSame(Action.CONTINUE,          Action.valueOf("CONTINUE"));
+        Assertions.assertEquals(5, Action.values().length);
+        Assertions.assertSame(Action.STOP,              Action.valueOf("STOP"));
+        Assertions.assertSame(Action.RESET_STATE,       Action.valueOf("RESET_STATE"));
+        Assertions.assertSame(Action.RESET_DERIVATIVES, Action.valueOf("RESET_DERIVATIVES"));
+        Assertions.assertSame(Action.RESET_EVENTS,      Action.valueOf("RESET_EVENTS"));
+        Assertions.assertSame(Action.CONTINUE,          Action.valueOf("CONTINUE"));
 
     }
 
@@ -43,12 +43,12 @@ public class EventHandlerTest {
 
         // Create detector
         final Detector detector = new Detector();
-        Assert.assertFalse(detector.isInitialized());
+        Assertions.assertFalse(detector.isInitialized());
 
         // Create handler
         final Handler handler = new Handler();
         handler.init(null, null, detector);
-        Assert.assertTrue(detector.isInitialized());
+        Assertions.assertTrue(detector.isInitialized());
 
     }
 
@@ -59,7 +59,7 @@ public class EventHandlerTest {
         public Detector() {
             this.initialized = false;
         }
- 
+
         public boolean isInitialized() {
             return initialized;
         }

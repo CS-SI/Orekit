@@ -22,9 +22,9 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -50,7 +50,7 @@ public class StateCovarianceMatrixProviderTest {
     private SpacecraftState initialState;
     private double[][]      initCov;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -87,7 +87,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCov = StateCovarianceMatrixProvider.changeCovarianceFrame(initialState.getOrbit(), frameA, frameB, referenceCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Second transformation
-        transformedCov = StateCovarianceMatrixProvider.changeCovarianceFrame(initialState.getOrbit(), frameB, frameA, transformedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        transformedCov = StateCovarianceMatrixProvider.changeCovarianceFrame(initialState.getOrbit(), frameB, frameA, transformedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(referenceCov, transformedCov, 5.2e-15);
@@ -113,7 +113,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Second transformation
         transformedCov = StateCovarianceMatrixProvider.changeCovarianceType(initialState.getOrbit(), kep, PositionAngle.MEAN,
-                                                                            cart, PositionAngle.MEAN, transformedCov); 
+                                                                            cart, PositionAngle.MEAN, transformedCov);
 
         // Verify
         compareCovariance(referenceCov, transformedCov, 3.5e-12);
@@ -173,7 +173,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 4.0e-7);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -186,7 +186,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovA = provider.getStateCovariance(propagated, frameB);
 
         // Second transformation
-        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(transformedCovA, transformedCovB, 1.0e-15);
@@ -203,7 +203,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType);
 
         // Second transformation
-        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov); 
+        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -260,8 +260,8 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 3.0e-5);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
-        
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+
         ///////////
         // Test the frame transformation
         ///////////
@@ -273,7 +273,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovA = provider.getStateCovariance(propagated, frameB);
 
         // Second transformation
-        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(transformedCovA, transformedCovB, 1.0e-15);
@@ -286,7 +286,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType);
 
         // Second transformation
-        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov); 
+        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -336,7 +336,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(referenceCov, propagatedCov, 5.0e-4);
-        Assert.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -349,7 +349,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovA = provider.getStateCovariance(propagated, frameB);
 
         // Second transformation
-        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN); 
+        RealMatrix transformedCovB = StateCovarianceMatrixProvider.changeCovarianceFrame(propagated.getOrbit(), propagated.getFrame(), frameB, propagatedCov, OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         // Verify
         compareCovariance(transformedCovA, transformedCovB, 1.0e-15);
@@ -362,7 +362,7 @@ public class StateCovarianceMatrixProviderTest {
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType);
 
         // Second transformation
-        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov); 
+        RealMatrix transformedCovD = StateCovarianceMatrixProvider.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, outOrbitType, outAngleType, propagatedCov);
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -378,7 +378,7 @@ public class StateCovarianceMatrixProviderTest {
     private void compareCovariance(final RealMatrix reference, final RealMatrix computed, final double threshold) {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
-                Assert.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column), FastMath.abs(threshold * reference.getEntry(row, column)));
+                Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column), FastMath.abs(threshold * reference.getEntry(row, column)));
             }
         }
     }

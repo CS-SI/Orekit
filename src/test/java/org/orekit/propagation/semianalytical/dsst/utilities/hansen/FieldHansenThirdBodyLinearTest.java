@@ -16,16 +16,16 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class FieldHansenThirdBodyLinearTest {
-    
+
 
     private static <T extends CalculusFieldElement<T>> T hansen(int n, int s, T chi, final Field<T> field) {
         final T zero = field.getZero();
@@ -41,7 +41,7 @@ public class FieldHansenThirdBodyLinearTest {
             return hansen(s - 1, s, chi, field).multiply( (2 * (double)s + 1) / ((double)s + 1) );
         } else {
             return hansen(n - 1, s, chi, field).multiply((2 * (double)n + 1) / ((double)n + 1)).
-                   subtract(hansen(n - 2, s, chi, field).multiply(((chi.multiply(chi).multiply((double)n + 1).multiply((double)n)).divide(((double)n + (double)s) * ((double)n - (double)s))).reciprocal())); 
+                   subtract(hansen(n - 2, s, chi, field).multiply(((chi.multiply(chi).multiply((double)n + 1).multiply((double)n)).divide(((double)n + (double)s) * ((double)n - (double)s))).reciprocal()));
         }
     }
 
@@ -109,7 +109,7 @@ public class FieldHansenThirdBodyLinearTest {
         final T zero = field.getZero();
         final int N = 22;
         final T chi = FastMath.sqrt(ecc.multiply(ecc.negate()).add(1.)).reciprocal();
-        
+
         @SuppressWarnings("unchecked")
         final FieldHansenThirdBodyLinear<T>[] htbl = new FieldHansenThirdBodyLinear[N + 1];
 
@@ -125,11 +125,11 @@ public class FieldHansenThirdBodyLinearTest {
                 final T hansenLin = htbl[s].getValue(n, chi.reciprocal());
                 final T relativeError = FastMath.abs((hansenLin.subtract(hansenRec)).divide(hansenRec));
                 maxRelativeError = FastMath.max(maxRelativeError, relativeError);
-            } 
+            }
         }
-        Assert.assertEquals(0.0, maxRelativeError.getReal(), tol.getReal());
+        Assertions.assertEquals(0.0, maxRelativeError.getReal(), tol.getReal());
 
     }
 
-    
+
 }

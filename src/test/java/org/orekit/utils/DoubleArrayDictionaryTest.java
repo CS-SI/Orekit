@@ -16,19 +16,18 @@
  */
 package org.orekit.utils;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 public class DoubleArrayDictionaryTest {
 
     @Test
     public void testEmpty() {
-        Assert.assertTrue(new DoubleArrayDictionary().getData().isEmpty());
+        Assertions.assertTrue(new DoubleArrayDictionary().getData().isEmpty());
     }
 
     @Test
@@ -39,11 +38,11 @@ public class DoubleArrayDictionaryTest {
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
 
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
-        Assert.assertArrayEquals(new double[] { 4.0 },           dictionary.get("b"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 4.0 },           dictionary.get("b"),       1.0e-15);
 
-        Assert.assertNull(dictionary.get("not-a-key"));
+        Assertions.assertNull(dictionary.get("not-a-key"));
 
     }
 
@@ -56,11 +55,11 @@ public class DoubleArrayDictionaryTest {
 
         DoubleArrayDictionary copy = new DoubleArrayDictionary(original);
 
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, copy.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] { 17.0 },          copy.get("another"), 1.0e-15);
-        Assert.assertArrayEquals(new double[] { 4.0 },           copy.get("b"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, copy.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 17.0 },          copy.get("another"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 4.0 },           copy.get("b"),       1.0e-15);
 
-        Assert.assertNull(copy.get("not-a-key"));
+        Assertions.assertNull(copy.get("not-a-key"));
 
     }
 
@@ -73,11 +72,11 @@ public class DoubleArrayDictionaryTest {
 
         DoubleArrayDictionary dictionary = new DoubleArrayDictionary(map);
 
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
-        Assert.assertArrayEquals(new double[] { 4.0 },           dictionary.get("b"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 4.0 },           dictionary.get("b"),       1.0e-15);
 
-        Assert.assertNull(dictionary.get("not-a-key"));
+        Assertions.assertNull(dictionary.get("not-a-key"));
 
     }
 
@@ -87,8 +86,8 @@ public class DoubleArrayDictionaryTest {
         double[] original = new double[] { 1.0, 2.0, 3.0 };
         dictionary.put("a", original);
         double[] retrieved = dictionary.get("a");
-        Assert.assertArrayEquals(original, retrieved, 1.0e-15);
-        Assert.assertNotSame(original, retrieved);
+        Assertions.assertArrayEquals(original, retrieved, 1.0e-15);
+        Assertions.assertNotSame(original, retrieved);
     }
 
     @Test
@@ -96,7 +95,7 @@ public class DoubleArrayDictionaryTest {
         DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.getEntry("a").increment(new double[] { 2.0, 4.0, 8.0 });
-        Assert.assertArrayEquals(new double[] { 3.0, 6.0, 11.0 }, dictionary.get("a"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 3.0, 6.0, 11.0 }, dictionary.get("a"), 1.0e-15);
     }
 
     @Test
@@ -106,7 +105,7 @@ public class DoubleArrayDictionaryTest {
         DoubleArrayDictionary other = new DoubleArrayDictionary();
         other.put("aDot",       new double[] { 3.0, 2.0, 1.0 });
         dictionary.getEntry("a").scaledIncrement(2.0, other.getEntry("aDot"));
-        Assert.assertArrayEquals(new double[] { 7.0, 6.0, 5.0 }, dictionary.get("a"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 7.0, 6.0, 5.0 }, dictionary.get("a"), 1.0e-15);
     }
 
     @Test
@@ -114,14 +113,14 @@ public class DoubleArrayDictionaryTest {
         DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.getEntry("a").zero();
-        Assert.assertArrayEquals(new double[] { 0.0, 0.0, 0.0 }, dictionary.get("a"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 0.0, 0.0, 0.0 }, dictionary.get("a"), 1.0e-15);
     }
 
     @Test
     public void testSize() {
         DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
-         Assert.assertEquals(3, dictionary.getEntry("a").size(), 1.0e-15);
+         Assertions.assertEquals(3, dictionary.getEntry("a").size(), 1.0e-15);
     }
 
     @Test
@@ -131,19 +130,19 @@ public class DoubleArrayDictionaryTest {
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
 
-        Assert.assertEquals(3, dictionary.size());
-        Assert.assertEquals("{a[3], b[1], another[1]}", dictionary.toString());
+        Assertions.assertEquals(3, dictionary.size());
+        Assertions.assertEquals("{a[3], b[1], another[1]}", dictionary.toString());
 
-        Assert.assertTrue(dictionary.remove("another"));
-        Assert.assertEquals(2, dictionary.size());
-        Assert.assertFalse(dictionary.remove("not-a-key"));
-        Assert.assertEquals(2, dictionary.size());
+        Assertions.assertTrue(dictionary.remove("another"));
+        Assertions.assertEquals(2, dictionary.size());
+        Assertions.assertFalse(dictionary.remove("not-a-key"));
+        Assertions.assertEquals(2, dictionary.size());
 
-        Assert.assertEquals("a", dictionary.getData().get(0).getKey());
-        Assert.assertEquals("b", dictionary.getData().get(1).getKey());
+        Assertions.assertEquals("a", dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("b", dictionary.getData().get(1).getKey());
 
         dictionary.clear();
-        Assert.assertTrue(dictionary.getData().isEmpty());
+        Assertions.assertTrue(dictionary.getData().isEmpty());
 
     }
 
@@ -154,17 +153,17 @@ public class DoubleArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         dictionary.put("b",       new double[] { -1.0, -1.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
-        Assert.assertArrayEquals(new double[] { -1.0, -1.0 },    dictionary.get("b"),       1.0e-15);
-        Assert.assertEquals("a",       dictionary.getData().get(0).getKey());
-        Assert.assertEquals("another", dictionary.getData().get(1).getKey());
-        Assert.assertEquals("b",       dictionary.getData().get(2).getKey());
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { -1.0, -1.0 },    dictionary.get("b"),       1.0e-15);
+        Assertions.assertEquals("a",       dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("another", dictionary.getData().get(1).getKey());
+        Assertions.assertEquals("b",       dictionary.getData().get(2).getKey());
 
     }
 
@@ -175,7 +174,7 @@ public class DoubleArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         final Map<String, double[]> map = new HashMap<>();
         map.put("f", new double[] {  12.0 });
@@ -183,13 +182,13 @@ public class DoubleArrayDictionaryTest {
         map.put("b", new double[] {  19.0 });
 
         dictionary.putAll(map);
-        Assert.assertEquals(5, dictionary.size());
+        Assertions.assertEquals(5, dictionary.size());
 
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {  19.0 },         dictionary.get("b"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {  17.0 },         dictionary.get("another"), 1.0e-15);
-        Assert.assertArrayEquals(new double[] {  12.0 },         dictionary.get("f"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] { -12.0 },         dictionary.get("g"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  19.0 },         dictionary.get("b"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  17.0 },         dictionary.get("another"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  12.0 },         dictionary.get("f"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { -12.0 },         dictionary.get("g"),       1.0e-15);
 
     }
 
@@ -200,7 +199,7 @@ public class DoubleArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         DoubleArrayDictionary other = new DoubleArrayDictionary();
         other.put("f", new double[] {  12.0 });
@@ -208,13 +207,13 @@ public class DoubleArrayDictionaryTest {
         other.put("b", new double[] {  19.0 });
 
         dictionary.putAll(other);
-        Assert.assertEquals(5, dictionary.size());
+        Assertions.assertEquals(5, dictionary.size());
 
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {  19.0 },         dictionary.get("b"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {  17.0 },         dictionary.get("another"), 1.0e-15);
-        Assert.assertArrayEquals(new double[] {  12.0 },         dictionary.get("f"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] { -12.0 },         dictionary.get("g"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  19.0 },         dictionary.get("b"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  17.0 },         dictionary.get("another"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  12.0 },         dictionary.get("f"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] { -12.0 },         dictionary.get("g"),       1.0e-15);
 
     }
 
@@ -224,22 +223,22 @@ public class DoubleArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         Map<String, double[]> map = dictionary.toMap();
-        Assert.assertEquals(3, map.size());
+        Assertions.assertEquals(3, map.size());
 
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, map.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {   4.0 },         map.get("b"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {  17.0 },         map.get("another"), 1.0e-15);
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, map.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {   4.0 },         map.get("b"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  17.0 },         map.get("another"), 1.0e-15);
 
         dictionary.clear();
-        Assert.assertEquals(0, dictionary.size());
-        Assert.assertEquals(3, map.size());
+        Assertions.assertEquals(0, dictionary.size());
+        Assertions.assertEquals(3, map.size());
         map.put("z", new double[] {});
-        Assert.assertEquals(4, map.size());
-        Assert.assertEquals(0, dictionary.size());
-       
+        Assertions.assertEquals(4, map.size());
+        Assertions.assertEquals(0, dictionary.size());
+
     }
 
     @Test
@@ -250,16 +249,16 @@ public class DoubleArrayDictionaryTest {
         dictionary.put("another", new double[] { 17.0 });
 
         DoubleArrayDictionary view = dictionary.unmodifiableView();
-        Assert.assertEquals(3, view.size());
-        Assert.assertEquals(3, view.getData().size());
-        Assert.assertEquals(3, view.toMap().size());
-        Assert.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, view.get("a"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {   4.0 },         view.get("b"),       1.0e-15);
-        Assert.assertArrayEquals(new double[] {  17.0 }, view.getEntry("another").getValue(), 1.0e-15);
+        Assertions.assertEquals(3, view.size());
+        Assertions.assertEquals(3, view.getData().size());
+        Assertions.assertEquals(3, view.toMap().size());
+        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, view.get("a"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {   4.0 },         view.get("b"),       1.0e-15);
+        Assertions.assertArrayEquals(new double[] {  17.0 }, view.getEntry("another").getValue(), 1.0e-15);
 
         dictionary.put("z", new double[] { 25.0 });
-        Assert.assertEquals(4, view.size());
-        Assert.assertArrayEquals(new double[] { 25.0 },         view.get("z"), 1.0e-15);
+        Assertions.assertEquals(4, view.size());
+        Assertions.assertArrayEquals(new double[] { 25.0 },         view.get("z"), 1.0e-15);
 
         checkUnsupported(view, v -> v.clear());
         checkUnsupported(view, v -> v.put("t", new double[1]));
@@ -272,7 +271,7 @@ public class DoubleArrayDictionaryTest {
     private void checkUnsupported(DoubleArrayDictionary d, Consumer<DoubleArrayDictionary> c) {
         try {
             c.accept(d);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (UnsupportedOperationException uoe) {
             // expected
         }

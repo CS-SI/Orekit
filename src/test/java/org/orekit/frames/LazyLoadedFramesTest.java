@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.orekit.data.ClasspathCrawler;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.time.LazyLoadedTimeScales;

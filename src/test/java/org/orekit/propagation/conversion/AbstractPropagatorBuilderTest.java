@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.CartesianOrbit;
@@ -34,12 +34,12 @@ public class AbstractPropagatorBuilderTest {
     public void testResetOrbit() {
         // Load a context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Use a Cartesian orbit so the parameters are changed sufficiently when shifting the orbit of a minute
         final Orbit initialOrbit = new CartesianOrbit(context.initialOrbit);
-        
+
         final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngle.TRUE, 10., true) {
-            
+
             @Override
             public Propagator buildPropagator(double[] normalizedParameters) {
                 // Dummy function "buildPropagator", copied from KeplerianPropagatorBuilder
@@ -47,21 +47,21 @@ public class AbstractPropagatorBuilderTest {
                 return new KeplerianPropagator(createInitialOrbit());
             }
         };
-        
+
         // Shift the orbit of a minute
         // Reset the builder and check the orbits value
         final Orbit newOrbit = initialOrbit.shiftedBy(60.);
         propagatorBuilder.resetOrbit(newOrbit);
-        
-        // Check that the new orbit was properly set in the builder and 
-        Assert.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
+
+        // Check that the new orbit was properly set in the builder and
+        Assertions.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
         final double[] stateVector = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit, PositionAngle.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             final double expectedValue = stateVector[i++];
-            Assert.assertEquals(expectedValue, driver.getValue(), 0.);
-            Assert.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
+            Assertions.assertEquals(expectedValue, driver.getValue(), 0.);
+            Assertions.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
         }
     }
 }

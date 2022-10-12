@@ -758,3 +758,9 @@ INCONSISTENT_SELECTION = selección de parámetros inconsistente entre los pares
 
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
+
+# no unscented transform configured
+NO_UNSCENTED_TRANSFORM_CONFIGURED = <MISSING TRANSLATION>
+
+# transform from {0} to {1} is not implemented
+INVALID_TRANSFORM = <MISSING TRANSLATION>
