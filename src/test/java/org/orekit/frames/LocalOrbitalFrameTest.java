@@ -115,7 +115,7 @@ public class LocalOrbitalFrameTest {
 
     @Test
     @DisplayName("Test transformFromLOFInToLOFOut method")
-    void Should_return_expected_transform_from_LOFIn_To_LOFOut() {
+    void should_return_expected_transform_from_LOFIn_To_LOFOut() {
         // Given
         final AbsoluteDate date = new AbsoluteDate();
         final PVCoordinates pv = new PVCoordinates(new Vector3D(6378000 + 400000, 0, 0),
@@ -144,17 +144,17 @@ public class LocalOrbitalFrameTest {
 
     @Test
     @DisplayName("Test transformFromLOFInToLOFOut (field version) method")
-    void Should_return_expected_field_transform_from_LOFIn_To_LOFOut() {
+    void should_return_expected_field_transform_from_LOFIn_To_LOFOut() {
         // Given
         final Field<Decimal64> field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<Decimal64>(field);
+        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field);
         final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(new Decimal64(6378000 + 400000),
-                                                                               new Decimal64(0),
-                                                                               new Decimal64(0)),
-                                                  new FieldVector3D<Decimal64>(new Decimal64(0),
-                                                                               new Decimal64(7669),
-                                                                               new Decimal64(0)));
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
+                                                             new Decimal64(0),
+                                                             new Decimal64(0)),
+                                         new FieldVector3D<>(new Decimal64(0),
+                                                             new Decimal64(7669),
+                                                             new Decimal64(0)));
 
         // When
         final FieldTransform<Decimal64> transformFromTNWToQSW =
@@ -164,9 +164,9 @@ public class LocalOrbitalFrameTest {
         final FieldTransform<Decimal64> transformFromNTWToTNW =
                 LOFType.transformFromLOFInToLOFOut(field, LOFType.NTW, LOFType.TNW, date, pv);
         final FieldTransform<Decimal64> composedTransform = composeFieldTransform(date,
-                                                                             transformFromTNWToQSW,
-                                                                             transformFromQSWToNTW,
-                                                                             transformFromNTWToTNW);
+                                                                                  transformFromTNWToQSW,
+                                                                                  transformFromQSWToNTW,
+                                                                                  transformFromNTWToTNW);
 
         final FieldVector3D<Decimal64>    computedTranslation = composedTransform.getTranslation();
         final BlockFieldMatrix<Decimal64> computedRotation    =
@@ -183,7 +183,7 @@ public class LocalOrbitalFrameTest {
 
     @Test
     @DisplayName("Test transformFromInertial method")
-    void Should_return_expected_transform_from_inertial() {
+    void should_return_expected_transform_from_inertial() {
         // Given
         final AbsoluteDate date = new AbsoluteDate();
         final PVCoordinates pv = new PVCoordinates(new Vector3D(6378000 + 400000, 0, 0),
@@ -210,17 +210,17 @@ public class LocalOrbitalFrameTest {
 
     @Test
     @DisplayName("Test transformFromInertial (field version) method")
-    void Should_return_expected_field_transform_from_inertial() {
+    void should_return_expected_field_transform_from_inertial() {
         // Given
         final Field<Decimal64>             field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<Decimal64>(field);
+        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<>(field);
         final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(new Decimal64(6378000 + 400000),
-                                                                               new Decimal64(0),
-                                                                               new Decimal64(0)),
-                                                  new FieldVector3D<Decimal64>(new Decimal64(0),
-                                                                               new Decimal64(7669),
-                                                                               new Decimal64(0)));
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
+                                                             new Decimal64(0),
+                                                             new Decimal64(0)),
+                                         new FieldVector3D<>(new Decimal64(0),
+                                                             new Decimal64(7669),
+                                                             new Decimal64(0)));
 
         // When
         final FieldTransform<Decimal64> transformFromInertialToLOF = LOFType.TNW.transformFromInertial(date, pv);
@@ -243,7 +243,7 @@ public class LocalOrbitalFrameTest {
 
     @Test
     @DisplayName("Tests all rotation methods")
-    void Should_return_initial_value_after_multiple_rotations() {
+    void should_return_initial_value_after_multiple_rotations() {
         // Given
         final PVCoordinates pv = new PVCoordinates(new Vector3D(6378000 + 400000, 0, 0),
                                                    new Vector3D(0, 5422.8, 5422.8));
@@ -280,17 +280,16 @@ public class LocalOrbitalFrameTest {
 
     @Test
     @DisplayName("Tests all rotation methods (field version)")
-    void Should_return_initial_value_after_multiple_field_rotations() {
+    void should_return_initial_value_after_multiple_field_rotations() {
         // Given
         final Decimal64Field               field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<Decimal64>(field);
         final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(new Decimal64(6378000 + 400000),
-                                                                               new Decimal64(0),
-                                                                               new Decimal64(0)),
-                                                  new FieldVector3D<Decimal64>(new Decimal64(0),
-                                                                               new Decimal64(5422.8),
-                                                                               new Decimal64(5422.8)));
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
+                                                             new Decimal64(0),
+                                                             new Decimal64(0)),
+                                         new FieldVector3D<>(new Decimal64(0),
+                                                             new Decimal64(5422.8),
+                                                             new Decimal64(5422.8)));
 
         // When
         final FieldRotation<Decimal64> rotationFromTNWToQSW =
@@ -321,7 +320,7 @@ public class LocalOrbitalFrameTest {
                                       rotationFromEQWToTNW);
 
         final FieldMatrix<Decimal64> rotationMatrixFromTNWToTNW =
-                new BlockFieldMatrix<Decimal64>(rotationFromTNWToTNW.getMatrix());
+                new BlockFieldMatrix<>(rotationFromTNWToTNW.getMatrix());
 
         // Then
         final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
@@ -397,7 +396,7 @@ public class LocalOrbitalFrameTest {
         return composedRotations;
     }
 
-    private <T extends CalculusFieldElement<T>> FieldRotation<T> composeFieldRotations(
+    @SafeVarargs private final <T extends CalculusFieldElement<T>> FieldRotation<T> composeFieldRotations(
             final FieldRotation<T>... rotations) {
 
         FieldRotation<T> composedRotations = null;
@@ -429,8 +428,10 @@ public class LocalOrbitalFrameTest {
         return composedTransform;
     }
 
-    private <T extends CalculusFieldElement<T>> FieldTransform<T> composeFieldTransform(final FieldAbsoluteDate<T> date,
-                                                                                        final FieldTransform<T>... transforms) {
+    @SafeVarargs
+    private final <T extends CalculusFieldElement<T>> FieldTransform<T> composeFieldTransform(
+            final FieldAbsoluteDate<T> date,
+            final FieldTransform<T>... transforms) {
         FieldTransform<T> composedTransform = null;
 
         for (FieldTransform<T> transform : transforms) {
@@ -438,7 +439,7 @@ public class LocalOrbitalFrameTest {
                 composedTransform = transform;
             }
             else {
-                composedTransform = new FieldTransform<T>(date, composedTransform, transform);
+                composedTransform = new FieldTransform<>(date, composedTransform, transform);
             }
         }
 
