@@ -86,8 +86,8 @@ public class Range2Test {
         double refErrorsPMean   = 4.2e-09;
         double refErrorsPMax    = 2.8e-07;
         double refErrorsVMedian = 1.4e-04;
-        double refErrorsVMean   = 5.0e-04;
-        double refErrorsVMax    = 1.3e-02;
+        double refErrorsVMean   = 9.6e-04;
+        double refErrorsVMax    = 5.2e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -110,8 +110,8 @@ public class Range2Test {
         double refErrorsPMean   = 4.2e-09;
         double refErrorsPMax    = 2.4e-07;
         double refErrorsVMedian = 1.4e-04;
-        double refErrorsVMean   = 5.0e-04;
-        double refErrorsVMax    = 1.3e-02;
+        double refErrorsVMean   = 9.6e-04;
+        double refErrorsVMax    = 5.2e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);

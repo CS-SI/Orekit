@@ -216,7 +216,7 @@ public class TurnAroundRangeTest {
             Assertions.assertEquals(5, participants.length);
             Assertions.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[4].getDate().durationFrom(participants[0].getDate()),
                                 estimated.getEstimatedValue()[0],
-                                2.0e-8);
+                                2.3e-8);
 
             absoluteErrors[index] = TARestimated-TARobserved;
             relativeErrors[index] = FastMath.abs(absoluteErrors[index])/FastMath.abs(TARobserved);
@@ -255,10 +255,10 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assertions.assertEquals(0.0, absErrorsMedian, 1.4e-7);
+        Assertions.assertEquals(0.0, absErrorsMedian, 1.5e-7);
         Assertions.assertEquals(0.0, absErrorsMin, 5.0e-7);
         Assertions.assertEquals(0.0, absErrorsMax, 4.9e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 8.9e-15);
+        Assertions.assertEquals(0.0, relErrorsMedian, 9.2e-15);
         Assertions.assertEquals(0.0, relErrorsMax , 2.9e-14);
         
         // Test measurement type
