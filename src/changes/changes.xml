@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="974">
+        Use Véronique Dehant table for station displacements due to tides.
+      </action>  
       <action dev="luc" type="fix" issue="973">
         Avoid losing last measurements in Kalman filter.
       </action>  

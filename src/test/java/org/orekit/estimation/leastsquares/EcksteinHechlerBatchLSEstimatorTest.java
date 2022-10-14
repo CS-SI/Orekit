@@ -164,7 +164,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 10,
                                                     0.0, 1.1e-6,
                                                     0.0, 3.0e-6,
-                                                    0.0, 5.6e-8,
+                                                    0.0, 5.7e-8,
                                                     0.0, 5.4e-11);
 
     }

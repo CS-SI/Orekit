@@ -124,11 +124,11 @@ public class GroundStationTest {
         changed.getZenithOffsetDriver().setSelected(false);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 6.7e-7,
-                                     0.0, 1.8e-6,
-                                     0.0, 1.3e-7,
+                                     0.0, 6.8e-7,
+                                     0.0, 2.0e-6,
+                                     0.0, 1.7e-7,
                                      0.0, 5.9e-11);
-        Assertions.assertEquals(deltaClock, changed.getClockOffsetDriver().getValue(), 8.2e-11);
+        Assertions.assertEquals(deltaClock, changed.getClockOffsetDriver().getValue(), 9.6e-11);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -214,7 +214,7 @@ public class GroundStationTest {
         GeodeticPoint result = moved.getOffsetGeodeticPoint(null);
 
         GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
-        Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  1.4e-14);
+        Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  3.3e-14);
         Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), 2.9e-14);
         Assertions.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.6e-7);
 
@@ -370,7 +370,7 @@ public class GroundStationTest {
         Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.7e-9);
         Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.3e-9);
         Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      1.1e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 6.2e-11);
+        Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 1.1e-10);
 
         // thresholds to use if orbit is estimated
         // (i.e. when commenting out the loop above that sets orbital parameters drivers to "not selected")
