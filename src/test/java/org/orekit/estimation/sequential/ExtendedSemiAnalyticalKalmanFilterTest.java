@@ -154,9 +154,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final StreamingStatistics statX = observer.getXStatistics();
         final StreamingStatistics statY = observer.getYStatistics();
         final StreamingStatistics statZ = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.09e-4);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.03e-4);
-        Assertions.assertEquals(0.0, statZ.getMean(), 1.12e-4);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.26e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.18e-4);
+        Assertions.assertEquals(0.0, statZ.getMean(), 1.29e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
         Assertions.assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
         Assertions.assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value

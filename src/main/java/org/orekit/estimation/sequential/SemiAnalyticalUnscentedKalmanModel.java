@@ -267,11 +267,15 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Sort the measurement
         observedMeasurements.sort(new ChronologicalComparator());
+        final AbsoluteDate tStart             = observedMeasurements.get(0).getDate();
+        final AbsoluteDate tEnd               = observedMeasurements.get(observedMeasurements.size() - 1).getDate();
+        final double       overshootTimeRange = FastMath.nextAfter(tEnd.durationFrom(tStart),
+                                                Double.POSITIVE_INFINITY);
 
         // Initialize step handler and set it to a parallelized propagator
         final SemiAnalyticalMeasurementHandler  stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
         dsstPropagator.getMultiplexer().add(stepHandler);
-        dsstPropagator.propagate(observedMeasurements.get(0).getDate(), observedMeasurements.get(observedMeasurements.size() - 1).getDate());
+        dsstPropagator.propagate(tStart, tStart.shiftedBy(overshootTimeRange));
 
         // Return the last estimated propagator
         return getEstimatedPropagator();
