@@ -41,7 +41,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * Flight Dynamics Operations</i> by David A. SVallado.
  * <p>
  * Finally, covariance orbit type can be changed using the
- * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle) changeCovarianceType(Orbit, OrbitType, PositionAngle)
+ * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle) changeCovarianceType(Orbit, OrbitType, PositionAngle)}
  * method.
  * </p>
  * @author Bryan Cazabonne
