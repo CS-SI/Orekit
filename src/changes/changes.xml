@@ -27,6 +27,12 @@
       <action dev="bryan" type="add" issue="971">
         Added new class to handle covariance matrix.
       </action>
+      <action dev="luc" type="fix" issue="974">
+        Use Véronique Dehant table for station displacements due to tides.
+      </action>  
+      <action dev="luc" type="fix" issue="973">
+        Avoid losing last measurements in Kalman filter.
+      </action>
       <action dev="gc" type="add" issue="940">
         Accept new fields in CCSDS CDM files.
       </action>

@@ -78,7 +78,7 @@ public class BistaticRangeTest {
         }
 
         // Mean and std errors check
-        Assertions.assertEquals(0.0, diffStat.getMean(), 1.58e-7);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 1.59e-7);
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1.3e-7);
 
         // Test measurement type

@@ -63,8 +63,6 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     private static final double c = Constants.SPEED_OF_LIGHT;
     /** arbitrary date */
     private static final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-    /** inertial frame */
-    private static final Frame frame = FramesFactory.getGCRF();
 
     @Override
     protected FieldVector3D<DerivativeStructure>
@@ -146,6 +144,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     public void testSmallEffectOnOrbit() {
         // Setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
+	final Frame frame = FramesFactory.getGCRF();
         Orbit orbit =
                 new KeplerianOrbit(7000000.0, 0.01, FastMath.toRadians(80.), FastMath.toRadians(80.), FastMath.toRadians(20.),
                                    FastMath.toRadians(40.), PositionAngle.MEAN,
@@ -286,7 +285,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(
                 new PVCoordinates(p, v),
-                frame,
+                FramesFactory.getGCRF(),
                 date,
                 gm
         ));
@@ -304,7 +303,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(
                 new PVCoordinates(p, v),
-                frame,
+                FramesFactory.getGCRF(),
                 date,
                 gm
         ));

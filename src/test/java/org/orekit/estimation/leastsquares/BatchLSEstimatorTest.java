@@ -672,11 +672,11 @@ public class BatchLSEstimatorTest {
                           before.getPVCoordinates().getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           before.getPVCoordinates().getVelocity()), 1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 6,
+        EstimationTestUtils.checkFit(context, estimator, 4, 5,
                                      0.0, 4.7e-06,
                                      0.0, 1.4e-05,
-                                     0.0, 4.7e-07,
-                                     0.0, 2.0e-10);
+                                     0.0, 8.8e-07,
+                                     0.0, 3.6e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -689,9 +689,9 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                          determined.getPVCoordinates().getPosition()), 1.3e-6);
+                          determined.getPVCoordinates().getPosition()), 2.7e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                          determined.getPVCoordinates().getVelocity()), 1.2e-9);
+                          determined.getPVCoordinates().getVelocity()), 2.9e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one

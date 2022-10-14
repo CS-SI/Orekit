@@ -477,10 +477,10 @@ public class DSSTBatchLSEstimatorTest {
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         DSSTEstimationTestUtils.checkFit(context, estimator, 1, 3,
-                                     0.0, 4.8e-7,
+                                     0.0, 4.9e-7,
                                      0.0, 1.6e-6,
                                      0.0, 4.4e-8,
-                                     0.0, 1.9e-11);
+                                     0.0, 2.0e-11);
     }
 
     @Test

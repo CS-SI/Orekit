@@ -102,7 +102,7 @@ public class RangeTest {
         // Run test
         boolean isModifier = true;
         double refErrorsPMedian = 6.2e-10;
-        double refErrorsPMean   = 3.5e-09;
+        double refErrorsPMean   = 3.8e-09;
         double refErrorsPMax    = 1.6e-07;
         double refErrorsVMedian = 2.2e-04;
         double refErrorsVMean   = 6.2e-04;
@@ -127,7 +127,7 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsMedian = 5.7e-9;
+        double refErrorsMedian = 5.8e-9;
         double refErrorsMean   = 6.4e-8;
         double refErrorsMax    = 5.1e-6;
         this.genericTestParameterDerivatives(isModifier, printResults,

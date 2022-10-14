@@ -288,12 +288,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 8.17e-7;
+        final double   posEps            = 8.35e-7;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 3.37e-10;
-        final double[] expectedsigmasPos = {0.2011887E-8, 13.7470082E-8, 16.8912923E-8};
+        final double[] expectedsigmasPos = {0.1938703E-8, 12.7585598E-8, 17.0372647E-8};
         final double   sigmaPosEps       = 1.0e-15;
-        final double[] expectedSigmasVel = {3.2012E-11, 0.6991E-11, 7.5811E-11};
+        final double[] expectedSigmasVel = {3.3325E-11, 0.3787E-11, 7.9849E-11};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -310,7 +310,7 @@ public class UnscentedKalmanEstimatorTest {
         Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
         Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
     }
-    
+
     /**
      * Perfect Range measurements with a perfect start.
      */
@@ -452,9 +452,9 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 3.05e-6;
+        final double   posEps            = 5.43e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.16e-9;
+        final double   velEps            = 1.96e-9;
         final double[] expectedSigmasPos = {0.324407, 1.347014, 1.743326};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
