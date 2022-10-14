@@ -34,7 +34,7 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
     private boolean altCovFlag;
 
     /** Simple constructor.
-     * <p> The Sigma/Eigenvectors Covariance data is only provided if {@link CdmMetadataKey.ALT_COV_TYPE} is {@link AltCovarianceType.CSIG3EIGVEC3}, otherwise
+     * <p> The Sigma/Eigenvectors Covariance data is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is {@link AltCovarianceType#CSIG3EIGVEC3}, otherwise
      * its terms will return NaN. </p>
      * @param altCovFlag Flag indicating whether the alternate covariance type set in the CDM Object metadata section is Sigma/Eigenvectors Covariance.
      */
@@ -66,7 +66,7 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
 
     /**
      * Get the Sigma/Eigenvectors Covariance data.
-     * <p> The Sigma/Eigenvectors Covariance data is only provided if {@link CdmMetadataKey.ALT_COV_TYPE} is {@link AltCovarianceType.CSIG3EIGVEC3}, otherwise
+     * <p> The Sigma/Eigenvectors Covariance data is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is {@link AltCovarianceType#CSIG3EIGVEC3}, otherwise
      * its terms will return NaN. </p>
      * @return covarianceData the covariance data in the Sigma/Eigenvectors format.
      */
