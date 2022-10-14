@@ -35,6 +35,8 @@ import org.orekit.utils.CartesianDerivativesFilter;
 
 /** This class is the representation of a covariance matrix at a given date.
  * <p>
+ * Currently, the covariance only represents the orbital elements.
+ * <p>
  * It is possible to change the covariance frame by using the
  * {@link #changeCovarianceFrame(Orbit, Frame)} or {@link #changeCovarianceFrame(Orbit, LOFType)} method.
  * These methods are based on Equations (18) and (20) of <i>Covariance Transformations for Satellite
@@ -192,28 +194,36 @@ public class StateCovariance implements TimeStamped {
 
     /**
      * Get the covariance matrix in another orbit type.
-     * <p> Note that the covariance matrix must be expressed in <b>cartesian</b> elements
-     * and that its orbit type <b>cannot</b> be changed if the covariance matrix is expressed in a
-     * {@link LOFType commonly used local orbital frame} or a non-pseudo inertial frame.
+     * <p>
+     * The covariance orbit type <b>cannot</b> be changed if the covariance
+     * matrix is expressed in a {@link LOFType local orbital frame} or a
+     * non-pseudo inertial frame.
      * </p>
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param outOrbitType target orbit type of the state covariance matrix
      * @param outAngleType target position angle type of the state covariance matrix
      * @return a new covariance state, expressed in the target orbit type with the target position angle
+     * @see #changeCovarianceFrame(Orbit, Frame)
      */
     public StateCovariance changeCovarianceType(final Orbit orbit, final OrbitType outOrbitType,
                                                 final PositionAngle outAngleType) {
 
+        // Check if the covariance expressed in a celestial body frame
         if (frame != null) {
+
+            // Check if the covarianc is defined in inertial frame
             if (frame.isPseudoInertial()) {
                 return changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType, outOrbitType, outAngleType,
                                            orbitalCovariance);
             }
 
+            // The covariance is not defined in inertial frame. The orbit type cannot be changes
             throw new OrekitException(OrekitMessages.CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME);
+
         }
 
+        // The covariance is not expressed in a celestial body frame. The orbit type cannot be changed
         throw new OrekitException(OrekitMessages.CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF);
 
     }
@@ -227,7 +237,7 @@ public class StateCovariance implements TimeStamped {
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final LOFType lofOut) {
 
-        // Verify covariance frame
+        // Verify current covariance frame
         if (lofType != null) {
 
             // Change the covariance local orbital frame
@@ -251,7 +261,7 @@ public class StateCovariance implements TimeStamped {
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final Frame frameOut) {
 
-        // Verify covariance frame
+        // Verify current covariance frame
         if (lofType != null) {
 
             // Covariance is expressed in local orbital frame
@@ -389,10 +399,6 @@ public class StateCovariance implements TimeStamped {
      * <p>
      * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
-     * <p>
-     * As this method transforms from and to a {@link LOFType local orbital frame}, it necessarily takes
-     * in a covariance matrix expressed in <b>cartesian elements</b> and output a covariance matrix also
-     * expressed in <b>cartesian elements</b>.
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param date covariance epoch
@@ -422,7 +428,7 @@ public class StateCovariance implements TimeStamped {
     }
 
     /**
-     * Convert the covariance matrix from a {@link Frame frame} to a {@link LOFType commonly used local orbital frame}.
+     * Convert the covariance matrix from a {@link Frame frame} to a {@link LOFType local orbital frame}.
      * <p>
      * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
@@ -430,7 +436,7 @@ public class StateCovariance implements TimeStamped {
      * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
      * and position angle types of the input covariance must be provided.
      * <p>
-     * <b>The output covariance matrix will necessarily be expressed in cartesian elements and not converted back to
+     * <b>The output covariance matrix will provided in cartesian orbit type and not converted back to
      * its original expression (if input different from cartesian elements).</b>
      * <p>
      *
@@ -479,36 +485,30 @@ public class StateCovariance implements TimeStamped {
 
         // Input frame is not inertial so the covariance matrix is expected to be in cartesian elements
         else {
-            if (covOrbitType.equals(OrbitType.CARTESIAN)) {
-                final Frame orbitInertialFrame = orbit.getFrame();
 
-                // Compute rotation matrix from frameIn to orbit inertial frame
-                final RealMatrix cartesianCovarianceInOrbitFrame =
-                       changeFrameAndCreate(orbit, date, frameIn, orbitInertialFrame, inputCov,
-                                             OrbitType.CARTESIAN, PositionAngle.MEAN).getMatrix();
+            // Method checkInputConsistency already verify that input covariance is defined in CARTESIAN type
+            final Frame orbitInertialFrame = orbit.getFrame();
 
-                // Convert from orbit inertial frame to lofOut
-                return changeFrameAndCreate(orbit, date, orbitInertialFrame, lofOut, cartesianCovarianceInOrbitFrame,
-                                            OrbitType.CARTESIAN, PositionAngle.MEAN);
+            // Compute rotation matrix from frameIn to orbit inertial frame
+            final RealMatrix cartesianCovarianceInOrbitFrame =
+                   changeFrameAndCreate(orbit, date, frameIn, orbitInertialFrame, inputCov,
+                                         OrbitType.CARTESIAN, PositionAngle.MEAN).getMatrix();
 
-            }
-            else {
-                throw new OrekitException(OrekitMessages.WRONG_ORBIT_PARAMETERS_TYPE, covOrbitType,
-                                          OrbitType.CARTESIAN);
-
-            }
+            // Convert from orbit inertial frame to lofOut
+            return changeFrameAndCreate(orbit, date, orbitInertialFrame, lofOut, cartesianCovarianceInOrbitFrame,
+                                        OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         }
 
     }
 
     /**
-     * Convert the covariance matrix from a {@link LOFType commonly used local orbital frame} to a {@link Frame frame}.
+     * Convert the covariance matrix from a {@link LOFType  local orbital frame} to a {@link Frame frame}.
      * <p>
      * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      * <p>
-     * The <u>input</u> covariance matrix is necessarily expressed in <b>cartesian elements</b>.
+     * The <u>input</u> covariance matrix is necessarily provided in <b>cartesian orbit type</b>.
      * <p>
      * The <u>output</u> covariance matrix will be expressed in <b>cartesian elements</b>.
      *
@@ -643,21 +643,13 @@ public class StateCovariance implements TimeStamped {
         // Input frame is not pseudo-inertial
         else {
 
-            // Covariance is expressed in cartesian elements
-            if (covOrbitType.equals(OrbitType.CARTESIAN)) {
+            // Method checkInputConsistency already verify that input covariance is defined in CARTESIAN type
 
-                // Convert covariance matrix to frameOut
-                final RealMatrix covInFrameOut = j.multiply(inputCov.multiplyTransposed(j));
+            // Convert covariance matrix to frameOut
+            final RealMatrix covInFrameOut = j.multiply(inputCov.multiplyTransposed(j));
 
-                // Output the Cartesian covariance matrix converted to frameOut
-                return new StateCovariance(covInFrameOut, date, frameOut, OrbitType.CARTESIAN, DEFAULT_POSITION_ANGLE);
-
-            }
-            // Covariance is not expressed in cartesian elements
-            else {
-                throw new OrekitException(OrekitMessages.WRONG_ORBIT_PARAMETERS_TYPE, covOrbitType,
-                                          OrbitType.CARTESIAN);
-            }
+            // Output the Cartesian covariance matrix converted to frameOut
+            return new StateCovariance(covInFrameOut, date, frameOut, OrbitType.CARTESIAN, DEFAULT_POSITION_ANGLE);
 
         }
 

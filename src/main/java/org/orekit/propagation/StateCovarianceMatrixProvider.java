@@ -187,7 +187,6 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngle)
      */
     public StateCovariance getStateCovariance(final SpacecraftState state, final Frame frame) {
-
         // Return the converted covariance
         return getStateCovariance(state).changeCovarianceFrame(state.getOrbit(), frame);
     }

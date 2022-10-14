@@ -694,7 +694,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test shiftedBy method of StateCovariance")
-    void Should_return_expected_shifted_state_covariance() {
+    public void should_return_expected_shifted_state_covariance() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -825,7 +825,13 @@ public class StateCovarianceTest {
                                 () -> {
                                     new StateCovariance(randomCovarianceMatrix, initialDate, LOFType.QSW).changeCovarianceType(initialOrbit, OrbitType.KEPLERIAN, PositionAngle.MEAN);
                                 });
+        
+        Assertions.assertThrows(OrekitException.class,
+                                () -> {
+                                    new StateCovariance(randomCovarianceMatrix, initialDate, nonInertialFrame, OrbitType.CARTESIAN, PositionAngle.MEAN).changeCovarianceType(initialOrbit, OrbitType.KEPLERIAN, PositionAngle.MEAN);
+                                });
 
     }
+
 
 }
