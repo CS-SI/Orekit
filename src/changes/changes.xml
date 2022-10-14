@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="973">
+        Avoid losing last measurements in Kalman filter.
+      </action>  
       <action dev="gc" type="add" issue="940">
         Accept new fields in CCSDS CDM files.
       </action>  

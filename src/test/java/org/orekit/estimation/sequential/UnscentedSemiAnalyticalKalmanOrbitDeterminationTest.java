@@ -166,8 +166,8 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 7.46e-5);
-        Assertions.assertEquals(0.0, statY.getMean(), 2.96e-5);
+        Assertions.assertEquals(0.0, statX.getMean(), 7.85e-5);
+        Assertions.assertEquals(0.0, statY.getMean(), 3.34e-5);
         Assertions.assertEquals(0.0, statZ.getMean(), 2.07e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.0016); // Value is negative
         Assertions.assertEquals(0.0, statY.getMin(),  0.0021); // Value is negative

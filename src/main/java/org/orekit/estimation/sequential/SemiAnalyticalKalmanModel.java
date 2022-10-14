@@ -33,6 +33,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -313,11 +314,15 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
             // Sort the measurement
             observedMeasurements.sort(new ChronologicalComparator());
+            final AbsoluteDate tStart             = observedMeasurements.get(0).getDate();
+            final AbsoluteDate tEnd               = observedMeasurements.get(observedMeasurements.size() - 1).getDate();
+            final double       overshootTimeRange = FastMath.nextAfter(tEnd.durationFrom(tStart),
+                                                    Double.POSITIVE_INFINITY);
 
             // Initialize step handler and set it to the propagator
             final SemiAnalyticalMeasurementHandler stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
             dsstPropagator.getMultiplexer().add(stepHandler);
-            dsstPropagator.propagate(observedMeasurements.get(0).getDate(), observedMeasurements.get(observedMeasurements.size() - 1).getDate());
+            dsstPropagator.propagate(tStart, tStart.shiftedBy(overshootTimeRange));
 
             // Return the last estimated propagator
             return getEstimatedPropagator();
