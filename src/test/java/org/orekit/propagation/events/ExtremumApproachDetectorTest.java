@@ -60,8 +60,6 @@ public class ExtremumApproachDetectorTest {
         final double anomaly = FastMath.toRadians(0); //rad
         final Orbit orbit =
                 new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
-        System.out.println("Keplerian period is : ");
-        System.out.println(orbit.getKeplerianPeriod());
 
         // Will detect extremum approaches with Earth
         final PVCoordinatesProvider earthPVProvider = CelestialBodyFactory.getEarth();
