@@ -188,15 +188,8 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      */
     public StateCovariance getStateCovariance(final SpacecraftState state, final Frame frame) {
 
-        // Get the current propagated covariance
-        final RealMatrix covarianceMatrix = toRealMatrix(state.getAdditionalState(additionalName));
-
-        // State covariance
-        final StateCovariance covariance = new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitType, covAngleType);
-
         // Return the converted covariance
-        return covariance.changeCovarianceFrame(state.getOrbit(), frame);
-
+        return getStateCovariance(state).changeCovarianceFrame(state.getOrbit(), frame);
     }
 
     /**
@@ -211,16 +204,8 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      */
     public StateCovariance getStateCovariance(final SpacecraftState state, final OrbitType orbitType,
                                               final PositionAngle angleType) {
-
-        // Get the current propagated covariance
-        final RealMatrix covarianceMatrix = toRealMatrix(state.getAdditionalState(additionalName));
-
-        // State covariance
-        final StateCovariance covariance = new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitType, covAngleType);
-
         // Return the converted covariance
-        return covariance.changeCovarianceType(state.getOrbit(), orbitType, angleType);
-
+        return getStateCovariance(state).changeCovarianceType(state.getOrbit(), orbitType, angleType);
     }
 
     /**
