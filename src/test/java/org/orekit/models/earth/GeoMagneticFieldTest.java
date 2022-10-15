@@ -16,6 +16,15 @@
  */
 package org.orekit.models.earth;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.StringTokenizer;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -31,15 +40,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.StringTokenizer;
 
 public class GeoMagneticFieldTest {
 
@@ -385,7 +385,7 @@ public class GeoMagneticFieldTest {
 
             final GeoMagneticField field = GeoMagneticFieldFactory.getField(type, year);
 
-            double height = Double.valueOf(heightStr.substring(1));
+            double height = Double.parseDouble(heightStr.substring(1));
             if (heightStr.startsWith("K")) {
                 // convert from km to m
                 height *= 1000d;
@@ -417,7 +417,7 @@ public class GeoMagneticFieldTest {
             final String d = st.nextToken();
             return GeoMagneticField.getDecimalYear(Integer.valueOf(d), Integer.valueOf(m), Integer.valueOf(y));
         } else {
-            return Double.valueOf(yearStr);
+            return Double.parseDouble(yearStr);
         }
     }
 
@@ -437,13 +437,13 @@ public class GeoMagneticFieldTest {
             }
             return FastMath.toRadians(deg);
         } else {
-            return FastMath.toRadians(Double.valueOf(str));
+            return FastMath.toRadians(Double.parseDouble(str));
         }
     }
 
     private double getRadians(final String degree, final String minute) {
-        double result = Double.valueOf(degree.substring(0, degree.length() - 1));
-        final double min = Double.valueOf(minute.substring(0, minute.length() - 1)) / 60d;
+        double result = Double.parseDouble(degree.substring(0, degree.length() - 1));
+        final double min = Double.parseDouble(minute.substring(0, minute.length() - 1)) / 60d;
         result += (result < 0) ? -min : min;
         return FastMath.toRadians(result);
     }
@@ -464,11 +464,11 @@ public class GeoMagneticFieldTest {
         final double dec = getRadians(st.nextToken(), st.nextToken());
         final double inc = getRadians(st.nextToken(), st.nextToken());
 
-        final double h = Double.valueOf(st.nextToken());
-        final double x = Double.valueOf(st.nextToken());
-        final double y = Double.valueOf(st.nextToken());
-        final double z = Double.valueOf(st.nextToken());
-        final double f = Double.valueOf(st.nextToken());
+        final double h = Double.parseDouble(st.nextToken());
+        final double x = Double.parseDouble(st.nextToken());
+        final double y = Double.parseDouble(st.nextToken());
+        final double z = Double.parseDouble(st.nextToken());
+        final double f = Double.parseDouble(st.nextToken());
 
         final double eps = 1e-1;
         Assertions.assertEquals(h, ge.getHorizontalIntensity(), eps);

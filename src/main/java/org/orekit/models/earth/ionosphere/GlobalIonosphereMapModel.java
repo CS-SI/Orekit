@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -621,7 +621,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                         line = line.trim();
                                         final String[] readLine = SEPARATOR.split(line);
                                         for (final String s : readLine) {
-                                            values.add(Double.valueOf(s));
+                                            values.add(Double.parseDouble(s));
                                         }
                                     }
                                 }
@@ -634,7 +634,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                             line = line.trim();
                             final String[] readLine = SEPARATOR.split(line);
                             for (final String s : readLine) {
-                                values.add(Double.valueOf(s));
+                                values.add(Double.parseDouble(s));
                             }
                         }
                     }

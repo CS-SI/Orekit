@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -756,7 +756,7 @@ public class NeQuickModel implements IonosphericModel {
                     if (line.length() > 0) {
                         final String[] modip_line = SEPARATOR.split(line);
                         for (int column = 0; column < modip_line.length; column++) {
-                            array[lineNumber - 1][column] = Double.valueOf(modip_line[column]);
+                            array[lineNumber - 1][column] = Double.parseDouble(modip_line[column]);
                         }
                     }
 
@@ -912,7 +912,7 @@ public class NeQuickModel implements IonosphericModel {
                                     currentColumnF2 = 0;
                                     currentRowF2++;
                                 }
-                                f2Temp[currentRowF2][currentColumnF2][currentDepthF2++] = Double.valueOf(ccir_line[i]);
+                                f2Temp[currentRowF2][currentColumnF2][currentDepthF2++] = Double.parseDouble(ccir_line[i]);
                                 index++;
                             } else {
                                 // Parse Fm3 coefficients
@@ -924,7 +924,7 @@ public class NeQuickModel implements IonosphericModel {
                                     currentColumnFm3 = 0;
                                     currentRowFm3++;
                                 }
-                                fm3Temp[currentRowFm3][currentColumnFm3][currentDepthFm3++] = Double.valueOf(ccir_line[i]);
+                                fm3Temp[currentRowFm3][currentColumnFm3][currentDepthFm3++] = Double.parseDouble(ccir_line[i]);
                                 index++;
                             }
 
