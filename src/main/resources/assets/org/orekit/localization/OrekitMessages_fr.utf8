@@ -764,3 +764,9 @@ NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
 WRONG_ORBIT_PARAMETERS_TYPE = Le type de paramètres orbitaux: {0} est différent du type de paramètres orbitaux attendus: {1}
+
+# cannot change covariance type if defined in a local orbital frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = impossible de changer le type de la covariance si celle-ci est définie dans un repère orbital local
+
+# cannot change covariance type if defined in a non pseudo-inertial reference frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = impossible de changer le type de la covariance si celle-ci est définie dans un référentiel non pseudo-inertiel
