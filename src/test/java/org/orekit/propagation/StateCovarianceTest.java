@@ -134,10 +134,6 @@ public class StateCovarianceTest {
         }
     }
 
-    /**
-     * In that particular case, the RTN local orbital frame is perfectly aligned with the inertial frame. Hence, the
-     * frame conversion should return the same covariance matrix as input.
-     */
     @Test
     @DisplayName("Test conversion from inertial frame to RTN local orbital frame")
     public void should_return_same_covariance_matrix() {
@@ -168,15 +164,15 @@ public class StateCovarianceTest {
 
         // Then
         final RealMatrix expectedMatrixInRTN = new BlockRealMatrix(new double[][] {
-                { 1, 0, 0, 0, 1e-5, 1e-4 },
-                { 0, 1, 0, 0, 0, 1e-5 },
-                { 0, 0, 1, 0, 0, 0 },
-                { 0, 0, 0, 1e-3, 0, 0 },
-                { 1e-5, 0, 0, 0, 1e-3, 0 },
-                { 1e-4, 1e-5, 0, 0, 0, 1e-3 }
+        	{ 1.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, -1.121400e-03,  1.000000e-04 },
+        	{ 0.000000e+00, 1.000000e+00, 0.000000e+00, 1.131400e-03,  0.000000e+00,  1.000000e-05 },
+        	{ 0.000000e+00, 0.000000e+00, 1.000000e+00, 0.000000e+00,  0.000000e+00,  0.000000e+00 },
+        	{ 0.000000e+00, 1.131400e-03, 0.000000e+00, 1.001280e-03,  0.000000e+00,  1.131400e-08 },
+        	{-1.121400e-03, 0.000000e+00, 0.000000e+00, 0.000000e+00,  1.001257e-03, -1.131400e-07 },
+        	{ 1.000000e-04, 1.000000e-05, 0.000000e+00, 1.131400e-08, -1.131400e-07,  1.000000e-03 },
         });
 
-        compareCovariance(covarianceMatrixInRTN, expectedMatrixInRTN, 1e-20);
+        compareCovariance(covarianceMatrixInRTN, expectedMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
 
     }
 
@@ -239,15 +235,15 @@ public class StateCovarianceTest {
         // Then
         // Expected covariance matrix obtained by rotation initial covariance matrix by 90 degrees
         final RealMatrix expectedMatrixInRTN = new BlockRealMatrix(new double[][] {
-                { 1, 0, 0, 0, 0, 0 },
-                { 0, 1, 0, 0, 0, -1e-5 },
-                { 0, 0, 1, 0, 0, 0 },
-                { 0, 0, 0, 1e-3, 0, 0 },
-                { 0, 0, 0, 0, 1e-3, 0 },
-                { 0, -1e-5, 0, 0, 0, 1e-3 }
+        	{ 1.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00, -1.131400e-03,  0.000000e+00 },
+        	{ 0.000000e+00,  1.000000e+00, 0.000000e+00,  1.131400e-03,  0.000000e+00, -1.000000e-05 },
+        	{ 0.000000e+00,  0.000000e+00, 1.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00 },
+        	{ 0.000000e+00,  1.131400e-03, 0.000000e+00,  1.001280e-03,  0.000000e+00, -1.131400e-08 },
+        	{-1.131400e-03,  0.000000e+00, 0.000000e+00,  0.000000e+00,  1.001280e-03,  0.000000e+00 },
+        	{ 0.000000e+00, -1.000000e-05, 0.000000e+00, -1.131400e-08,  0.000000e+00,  1.000000e-03 },
         });
 
-        compareCovariance(expectedMatrixInRTN, convertedCovarianceMatrixInRTN, 1e-20);
+        compareCovariance(expectedMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
     }
 
     @Test
@@ -283,15 +279,15 @@ public class StateCovarianceTest {
 
         // Expected covariance matrix obtained by rotation initial covariance matrix by -90 degrees
         final RealMatrix expectedMatrixInInertialFrame = new BlockRealMatrix(new double[][] {
-                { 1, 0, 0, 0, 0, 1e-5 },
-                { 0, 1, 0, 0, 0, 0 },
-                { 0, 0, 1, 0, 0, 0 },
-                { 0, 0, 0, 1e-3, 0, 0 },
-                { 0, 0, 0, 0, 1e-3, 0 },
-                { 1e-5, 0, 0, 0, 0, 1e-3 }
+        	{1.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00, 1.131400e-03, 1.000000e-05 },
+        	{0.000000e+00,  1.000000e+00, 0.000000e+00, -1.131400e-03, 0.000000e+00, 0.000000e+00 },
+        	{0.000000e+00,  0.000000e+00, 1.000000e+00,  0.000000e+00, 0.000000e+00, 0.000000e+00 },
+        	{0.000000e+00, -1.131400e-03, 0.000000e+00,  1.001280e-03, 0.000000e+00, 0.000000e+00 },
+        	{1.131400e-03,  0.000000e+00, 0.000000e+00,  0.000000e+00, 1.001280e-03, 1.131400e-08 },
+        	{1.000000e-05,  0.000000e+00, 0.000000e+00,  0.000000e+00, 1.131400e-08, 1.000000e-03 },
         });
 
-        compareCovariance(expectedMatrixInInertialFrame, convertedCovarianceMatrixInInertialFrame, 1e-20);
+        compareCovariance(expectedMatrixInInertialFrame, convertedCovarianceMatrixInInertialFrame, DEFAULT_VALLADO_THRESHOLD);
 
     }
 
@@ -301,6 +297,9 @@ public class StateCovarianceTest {
      * <p>
      * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
      * cartesian covariance in RSW from p.19.
+     * <p>
+     * Orekit applies the full frame transformation while Vallado's paper only take into account the rotation part.
+     * Therefore, some values are different with respect to the reference ones in the paper.
      * <p>
      * Note that the followings local orbital frame are equivalent RSW=RTN=QSW.
      */
@@ -326,12 +325,12 @@ public class StateCovarianceTest {
 
         // Then
         final RealMatrix expectedCovarianceMatrixInRTN = new BlockRealMatrix(new double[][] {
-                { 9.918921e-001, 6.700644e-003, -2.878187e-003, 1.892086e-005, 6.700644e-005, -2.878187e-005 },
-                { 6.700644e-003, 1.013730e+000, -1.019283e-002, 6.700644e-005, 2.372970e-004, -1.019283e-004 },
-                { -2.878187e-003, -1.019283e-002, 9.943782e-001, -2.878187e-005, -1.019283e-004, 4.378217e-005 },
-                { 1.892086e-005, 6.700644e-005, -2.878187e-005, 1.892086e-007, 6.700644e-007, -2.878187e-007 },
-                { 6.700644e-005, 2.372970e-004, -1.019283e-004, 6.700644e-007, 2.372970e-006, -1.019283e-006 },
-                { -2.878187e-005, -1.019283e-004, 4.378217e-005, -2.878187e-007, -1.019283e-006, 4.378217e-007 }
+        	{ 9.918921e-01,  6.700644e-03, -2.878187e-03,  2.637186e-05, -1.035961e-03, -2.878187e-05 },
+        	{ 6.700644e-03,  1.013730e+00, -1.019283e-02,  1.194257e-03,  2.298460e-04, -1.019283e-04 },
+        	{-2.878187e-03, -1.019283e-02,  9.943782e-01, -4.011613e-05, -9.872780e-05,  4.378217e-05 },
+        	{ 2.637186e-05,  1.194257e-03, -4.011613e-05,  1.591713e-06,  9.046096e-07, -4.011613e-07 },
+        	{-1.035961e-03,  2.298460e-04, -9.872780e-05,  9.046096e-07,  3.450431e-06, -9.872780e-07 },
+        	{-2.878187e-05, -1.019283e-04,  4.378217e-05, -4.011613e-07, -9.872780e-07,  4.378217e-07 }
         });
 
         compareCovariance(expectedCovarianceMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
@@ -369,6 +368,10 @@ public class StateCovarianceTest {
      * <p>
      * More specifically, we're using the initial covariance matrix from p.14 and compare the computed result with the
      * cartesian covariance in NTW from p.19.
+     * <p>
+     * Orekit applies the full frame transformation while Vallado's paper only take into account the rotation part.
+     * Therefore, some values are different with respect to the reference ones in the paper.
+     * <p>
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to NTW")
@@ -393,12 +396,12 @@ public class StateCovarianceTest {
 
         // Then
         final RealMatrix expectedCovarianceMatrixInNTW = new BlockRealMatrix(new double[][] {
-                { 9.918792e-001, 6.679546e-003, -2.868345e-003, 1.879167e-005, 6.679546e-005, -2.868345e-005 },
-                { 6.679546e-003, 1.013743e+000, -1.019560e-002, 6.679546e-005, 2.374262e-004, -1.019560e-004 },
-                { -2.868345e-003, -1.019560e-002, 9.943782e-001, -2.868345e-005, -1.019560e-004, 4.378217e-005 },
-                { 1.879167e-005, 6.679546e-005, -2.868345e-005, 1.879167e-007, 6.679546e-007, -2.868345e-007 },
-                { 6.679546e-005, 2.374262e-004, -1.019560e-004, 6.679546e-007, 2.374262e-006, -1.019560e-006 },
-                { -2.868345e-005, -1.019560e-004, 4.378217e-005, -2.868345e-007, -1.019560e-006, 4.378217e-007 }
+        	{ 9.918792e-01,  6.679546e-03, -2.868345e-03,  2.621921e-05, -1.036158e-03, -2.868345e-05 },
+        	{ 6.679546e-03,  1.013743e+00, -1.019560e-02,  1.194061e-03,  2.299986e-04, -1.019560e-04 },
+        	{-2.868345e-03, -1.019560e-02,  9.943782e-01, -4.002079e-05, -9.876648e-05,  4.378217e-05 },
+        	{ 2.621921e-05,  1.194061e-03, -4.002079e-05,  1.589968e-06,  9.028133e-07, -4.002079e-07 },
+        	{-1.036158e-03,  2.299986e-04, -9.876648e-05,  9.028133e-07,  3.452177e-06, -9.876648e-07 },
+        	{-2.868345e-05, -1.019560e-04,  4.378217e-05, -4.002079e-07, -9.876648e-07,  4.378217e-07 },
         });
 
         compareCovariance(expectedCovarianceMatrixInNTW, convertedCovarianceMatrixInNTW, DEFAULT_VALLADO_THRESHOLD);

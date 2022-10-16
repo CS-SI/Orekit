@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation;
 
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -411,16 +410,13 @@ public class StateCovariance implements TimeStamped {
                                                         final LOFType lofIn, final LOFType lofOut,
                                                         final RealMatrix inputCartesianCov) {
 
-        // Compute rotation matrix from lofIn to lofOut
-        final Rotation rotationFromLofInToLofOut =
-                LOFType.rotationFromLOFInToLOFOut(lofIn, lofOut, orbit.getPVCoordinates());
-
         // Builds the matrix to perform covariance transformation
-        final RealMatrix transformationMatrix = buildTransformationMatrixFromRotation(rotationFromLofInToLofOut);
+        final RealMatrix jacobianFromLofInToLofOut =
+                        getJacobian(LOFType.transformFromLOFInToLOFOut(lofIn, lofOut, date, orbit.getPVCoordinates()));
 
         // Get the Cartesian covariance matrix converted to frameOut
         final RealMatrix cartesianCovarianceOut =
-                transformationMatrix.multiply(inputCartesianCov.multiplyTransposed(transformationMatrix));
+                jacobianFromLofInToLofOut.multiply(inputCartesianCov.multiplyTransposed(jacobianFromLofInToLofOut));
 
         // Output converted covariance
         return new StateCovariance(cartesianCovarianceOut, date, lofOut);
@@ -468,15 +464,13 @@ public class StateCovariance implements TimeStamped {
                                         OrbitType.CARTESIAN, PositionAngle.MEAN,
                                         inputCov).getMatrix();
 
-            // Compute rotation matrix from frameIn to lofOut
-            final Rotation rotationFromFrameInToLofOut = lofOut.rotationFromInertial(orbit.getPVCoordinates(frameIn));
-
             // Builds the matrix to perform covariance transformation
-            final RealMatrix transformationMatrix = buildTransformationMatrixFromRotation(rotationFromFrameInToLofOut);
+            final RealMatrix jacobianFromFrameInToLofOut =
+                            getJacobian(lofOut.transformFromInertial(date, orbit.getPVCoordinates(frameIn)));
 
             // Get the Cartesian covariance matrix converted to frameOut
             final RealMatrix cartesianCovarianceOut =
-                    transformationMatrix.multiply(cartesianCovarianceIn.multiplyTransposed(transformationMatrix));
+                    jacobianFromFrameInToLofOut.multiply(cartesianCovarianceIn.multiplyTransposed(jacobianFromFrameInToLofOut));
 
             // Return converted covariance matrix expressed in cartesian elements
             return new StateCovariance(cartesianCovarianceOut, date, lofOut);
@@ -526,17 +520,13 @@ public class StateCovariance implements TimeStamped {
         // Output frame is pseudo-inertial
         if (frameOut.isPseudoInertial()) {
 
-            // Compute rotation matrix from lofIn to frameOut
-            final Rotation rotationFromLofInToFrameOut =
-                    lofIn.rotationFromInertial(orbit.getPVCoordinates(frameOut)).revert();
-
             // Builds the matrix to perform covariance transformation
-            final RealMatrix transformationMatrix =
-                    buildTransformationMatrixFromRotation(rotationFromLofInToFrameOut);
+            final RealMatrix jacobianFromLofInToFrameOut =
+                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates(frameOut)).getInverse());
 
             // Transform covariance
             final RealMatrix transformedCovariance =
-                    transformationMatrix.multiply(inputCartesianCov.multiplyTransposed(transformationMatrix));
+                    jacobianFromLofInToFrameOut.multiply(inputCartesianCov.multiplyTransposed(jacobianFromLofInToFrameOut));
 
             // Get the Cartesian covariance matrix converted to frameOut
             return new StateCovariance(transformedCovariance, date, frameOut, OrbitType.CARTESIAN,
@@ -547,17 +537,13 @@ public class StateCovariance implements TimeStamped {
         // Output frame is not pseudo-inertial
         else {
 
-            // Compute rotation matrix from lofIn to orbit inertial frame
-            final Rotation rotationFromLofInToOrbitFrame =
-                    lofIn.rotationFromInertial(orbit.getPVCoordinates()).revert();
-
             // Builds the matrix to perform covariance transformation
-            final RealMatrix transformationMatrixFromLofInToOrbitFrame =
-                    buildTransformationMatrixFromRotation(rotationFromLofInToOrbitFrame);
+            final RealMatrix jacobianFromLofInToOrbitFrame =
+                    getJacobian(lofIn.transformFromInertial(date, orbit.getPVCoordinates()).getInverse());
 
             // Get the Cartesian covariance matrix converted to orbit inertial frame
-            final RealMatrix cartesianCovarianceInOrbitFrame = transformationMatrixFromLofInToOrbitFrame.multiply(
-                    inputCartesianCov.multiplyTransposed(transformationMatrixFromLofInToOrbitFrame));
+            final RealMatrix cartesianCovarianceInOrbitFrame = jacobianFromLofInToOrbitFrame.multiply(
+                    inputCartesianCov.multiplyTransposed(jacobianFromLofInToOrbitFrame));
 
             // Get the Cartesian covariance matrix converted to frameOut
             return changeFrameAndCreate(orbit, date, orbit.getFrame(), frameOut, cartesianCovarianceInOrbitFrame,
@@ -602,12 +588,8 @@ public class StateCovariance implements TimeStamped {
         // Get the transform from the covariance frame to the output frame
         final Transform inToOut = frameIn.getTransformTo(frameOut, orbit.getDate());
 
-        // Get the Jacobian of the transform
-        final double[][] jacobian = new double[STATE_DIMENSION][STATE_DIMENSION];
-        inToOut.getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
-
         // Matrix to perform the covariance transformation
-        final RealMatrix j = new Array2DRowRealMatrix(jacobian, false);
+        final RealMatrix j = getJacobian(inToOut);
 
         // Input frame pseudo-inertial
         if (frameIn.isPseudoInertial()) {
@@ -656,22 +638,16 @@ public class StateCovariance implements TimeStamped {
     }
 
     /**
-     * Builds the matrix to perform covariance transformation.
-     * @param rotation input rotation
-     * @return the matrix to perform the covariance transformation
+     * Builds the matrix to perform covariance frame transformation.
+     * @param transform input transformation
+     * @return the matrix to perform the covariance frame transformation
      */
-    private static RealMatrix buildTransformationMatrixFromRotation(final Rotation rotation) {
-
-        // Rotation
-        final double[][] rotationMatrixData = rotation.getMatrix();
-
-        // Fills in the upper left and lower right blocks with the rotation
-        final RealMatrix transformationMatrix = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
-        transformationMatrix.setSubMatrix(rotationMatrixData, 0, 0);
-        transformationMatrix.setSubMatrix(rotationMatrixData, 3, 3);
-
+    private static RealMatrix getJacobian(final Transform transform) {
+        // Get the Jacobian of the transform
+        final double[][] jacobian = new double[STATE_DIMENSION][STATE_DIMENSION];
+        transform.getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
         // Return
-        return transformationMatrix;
+        return new Array2DRowRealMatrix(jacobian, false);
 
     }
 
