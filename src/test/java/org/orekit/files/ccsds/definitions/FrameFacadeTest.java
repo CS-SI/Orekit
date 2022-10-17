@@ -163,6 +163,7 @@ public class FrameFacadeTest {
     @Test
     @DisplayName("Test that an exception is thrown if the frame facade is defined using a SpacecraftBodyFrame or a CelestialBodyFrame")
     void Should_throw_exception_when_given_unsupported_frame_facade() {
+
         // Given
         final AbsoluteDate          dateMock       = Mockito.mock(AbsoluteDate.class);
         final Frame                 pivot          = FramesFactory.getGCRF();
@@ -193,6 +194,7 @@ public class FrameFacadeTest {
     @Test
     @DisplayName("Test that an exception is thrown if the frame facade is defined using an orbit relative frame returning a null LOFType")
     void Should_throw_exception_when_given_null_LOFType() {
+
         // Given
         final AbsoluteDate          dateMock       = Mockito.mock(AbsoluteDate.class);
         final Frame                 pivot          = FramesFactory.getGCRF();

@@ -188,18 +188,16 @@ public class FrameFacade {
      * In case both input and output frames are {@link OrbitRelativeFrame orbit relative frame}, the returned transform
      * will only be composed of a {@link Rotation rotation}. Only {@link LOFType commonly used orbit relative frames}
      * will be recognized.
-     * </p>
      * <p>
-     * Note that if the input/output {@link FrameFacade CCSDS frame} is defined using a :<ul>
+     * Note that if the input/output {@link FrameFacade CCSDS frame} is defined using a :
+     * <ul>
      * <li><b>{@link CelestialBodyFrame celestial body frame}</b></li>
      * <li><b>{@link SpacecraftBodyFrame spacecraft body frame}</b></li>
      * </ul>
      * then <b>an exception will be thrown</b> (currently not supported).
-     * </p>
      * <p>
      * Note that the pivot frame provided <b>must be inertial</b> and <b>consistent</b> to what you are working with
      * (i.e GCRF if around Earth for example).
-     * </p>
      *
      * @param frameIn the input {@link FrameFacade CCSDS frame} to convert from
      * @param frameOut the output {@link FrameFacade CCSDS frame} to convert to
