@@ -35,7 +35,7 @@
 			new methods to convert from/to Orekit frames and CCSDS frames,
 			improvements of CCSDS CDM (Collision Data Message) parsers,
 			improvements in date handling and aggregate bounded propagators,
-			several bug fixes and documentation improvements
+			several bug fixes and documentation improvements.
             See the list below for a full description of the changes.">
       <action dev="bryan" type="add" issue="972">
         Added shiftedBy method for covariance matrix.
