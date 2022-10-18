@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.3" date="TBD"
+    <release version="11.3" date="2022-10-25"
 			description="Version 11.3 is a minor release of Orekit.
             It includes both new features and bug fixes. New features introduced in 11.3 are:
             the unscented Kalman filter (numerical version), the semi-analytical unscented Kalman filter (DSST version),

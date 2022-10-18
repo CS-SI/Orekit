@@ -65,7 +65,8 @@
 
   * Covariance
 
-    * covariance propagation
+    * covariance propagation using the state transition matrix
+	* covariance extrapolation using a Keplerian model
     * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
     * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
 
@@ -169,6 +170,7 @@
         * ground at night
         * impulse maneuvers occurrence
         * geomagnetic intensity
+		* extremum approach for TCA (Time of Closest Approach) computing
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
@@ -305,6 +307,7 @@
     * displacement of ground points due to tides
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
+	* construction of trajectories using loxodromes (commonly, a rhum line)
 
   * Collisions
 

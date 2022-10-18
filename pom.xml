@@ -44,7 +44,7 @@
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.0.0-M6</orekit.maven-surefire-report-plugin.version>
-    <orekit.mockito-core.version>4.8.0</orekit.mockito-core.version>
+    <orekit.mockito-core.version>4.8.1</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.3.0</orekit.build-helper-maven-plugin.version>
     <orekit.nexus-staging-maven-plugin.version>1.6.13</orekit.nexus-staging-maven-plugin.version>
@@ -434,7 +434,7 @@
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
+      <artifactId>hamcrest</artifactId>
       <version>${orekit.hamcrest.version}</version>
       <optional>false</optional>
       <scope>test</scope>

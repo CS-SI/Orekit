@@ -26,34 +26,28 @@
   <property name="hipparchus.filtering.jar"        value="hipparchus-filtering-${hipparchus.version}.jar"    />
   <property name="hipparchus.stat.jar"             value="hipparchus-stat-${hipparchus.version}.jar"         />
   <property name="hipparchus.maven.path"           value="org/hipparchus"                                    />
-  <property name="junit-jupiter.version"           value="5.9.1"                                             />
-  <property name="junit-jupiter-api.jar"           value="junit-jupiter-api-${junit-jupiter.version}.jar"    />
-  <property name="junit-jupiter-api.maven.path"    value="org/junit/jupiter/junit-jupiter-api"               />
-  <property name="junit-jupiter-engine.jar"        value="junit-jupiter-engine-${junit-jupiter.version}.jar" />
-  <property name="junit-jupiter-engine.maven.path" value="org/junit/jupiter/junit-jupiter-engine"            />
-  <property name="mockito.version"                 value="4.8.0"                                             />
+  <property name="junit.platform.version"          value="1.9.1"                                             />
+  <property name="junit.platform.sa.jar"           value="junit-platform-console-standalone-${junit.platform.version}.jar"/>
+  <property name="junit.platform.sa.maven.path"    value="org/junit/platform/junit-platform-console-standalone" />
+  <property name="mockito.version"                 value="4.8.1"                                             />
   <property name="mockito.jar"                     value="mockito-core-${mockito.version}.jar"               />
   <property name="mockito.maven.path"              value="org/mockito/mockito-core"                          />
-  <property name="bytebuddy.version"               value="1.9.10"                                            />
+  <property name="bytebuddy.version"               value="1.12.16"                                            />
   <property name="bytebuddy.jar"                   value="byte-buddy-${bytebuddy.version}.jar"               />
   <property name="bytebuddy.maven.path"            value="net/bytebuddy/byte-buddy"                          />
   <property name="bytebuddy.agent.jar"             value="byte-buddy-agent-${bytebuddy.version}.jar"         />
   <property name="bytebuddy.agent.maven.path"      value="net/bytebuddy/byte-buddy-agent"                    />
-  <property name="objenesis.version"               value="2.6"                                               />
+  <property name="objenesis.version"               value="3.2"                                               />
   <property name="objenesis.jar"                   value="objenesis-${objenesis.version}.jar"                />
   <property name="objenesis.maven.path"            value="org/objenesis/objenesis"                           />
-  <property name="hamcrest.version"                value="2.2"                                               />
-  <property name="hamcrest-core.jar"               value="hamcrest-core-${hamcrest.version}.jar"             />
-  <property name="hamcrest-library.jar"            value="hamcrest-library-${hamcrest.version}.jar"          />
-  <property name="hamcrest-core.maven.path"        value="org/hamcrest/hamcrest-core"                        />
-  <property name="hamcrest-library.maven.path"     value="org/hamcrest/hamcrest-library"                     />
   <property name="maven.repository"                value="https://repo1.maven.org/maven2"                    />
   <!-- Path to $JAVA_HOME/lib/tools.jar for compiler plugin -->
   <property name="tools.jar"                       value="tools.jar"                                         />
   <property name="tools.path"                      value="lib"                                               />
-	
 
   <property name="copyright"                  value="2002-2022 CS GROUP" />
+	
+  <property environment="env"/>
 
   <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 
@@ -89,14 +83,8 @@
          dest="${lib.dir}/${hipparchus.filtering.jar}"/>
     <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-stat/${hipparchus.version}/${hipparchus.stat.jar}"
          dest="${lib.dir}/${hipparchus.stat.jar}"/>
-    <get src="${maven.repository}/${junit-jupiter-api.maven.path}/${junit-jupiter.version}/${junit-jupiter-api.jar}"
-         dest="${lib.dir}/${junit-jupiter-api.jar}"/>
-  	<get src="${maven.repository}/${junit-jupiter-engine.maven.path}/${junit-jupiter.version}/${junit-jupiter-engine.jar}"
-  	         dest="${lib.dir}/${junit-jupiter-engine.jar}"/>
-    <get src="${maven.repository}/${hamcrest-core.maven.path}/${hamcrest.version}/${hamcrest-core.jar}"
-         dest="${lib.dir}/${hamcrest-core.jar}"/>
-    <get src="${maven.repository}/${hamcrest-library.maven.path}/${hamcrest.version}/${hamcrest-library.jar}"
-         dest="${lib.dir}/${hamcrest-library.jar}"/>
+  	<get src="${maven.repository}/${junit.platform.sa.maven.path}/${junit.platform.version}/${junit.platform.sa.jar}"
+  	  	  	 dest="${lib.dir}/${junit.platform.sa.jar}"/>
     <get src="${maven.repository}/${mockito.maven.path}/${mockito.version}/${mockito.jar}"
          dest="${lib.dir}/${mockito.jar}"/>
     <get src="${maven.repository}/${bytebuddy.maven.path}/${bytebuddy.version}/${bytebuddy.jar}"
@@ -105,15 +93,15 @@
          dest="${lib.dir}/${bytebuddy.agent.jar}"/>
     <get src="${maven.repository}/${objenesis.maven.path}/${objenesis.version}/${objenesis.jar}"
          dest="${lib.dir}/${objenesis.jar}"/>
-  	<!--<get src="${JAVA_HOME}${tools.path}/${tools.jar}"
-  	         dest="${lib.dir}/${tools.jar}"/>-->
+  	<copy file="${env.JAVA_HOME}/${tools.path}/${tools.jar}"
+	      tofile="${lib.dir}/${tools.jar}"/>
   </target>
 
   <target name="compile" depends="get-libs" description="Compile the code">
     <mkdir dir="${main.classes.dir}"/>
     <javac srcdir="${main.src.dir}" destdir="${main.classes.dir}" includeantruntime="false"
-           classpath="${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.stat.jar}:${lib.dir}/${hipparchus.filtering.jar}"
-           deprecation="true" target="1.8" source="1.8" encoding="utf-8">
+           classpath="${lib.dir}/${tools.jar}:${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.stat.jar}:${lib.dir}/${hipparchus.filtering.jar}"
+           deprecation="true" target="1.8" source="1.8" encoding="UTF-8">
     </javac>
     <copy todir="${main.classes.dir}">
       <fileset dir="${main.resources.dir}"/>
@@ -123,8 +111,8 @@
   <target name="compile-tests" depends="compile" description="Compile the test code" >
     <mkdir dir="${test.classes.dir}"/>
     <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" includeantruntime="false"
-           classpath="${main.classes.dir}:${lib.dir}/${junit-jupiter-api.jar}:${lib.dir}/${junit-jupiter-engine.jar}:${lib.dir}/${hamcrest-core.jar}:${lib.dir}/${hamcrest-library.jar}${lib.dir}/:${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.filtering.jar}:${lib.dir}/${hipparchus.stat.jar}:${lib.dir}/${mockito.jar}"
-           deprecation="true" target="1.8" source="1.8">
+    	classpath="${main.classes.dir}:${lib.dir}/${tools.jar}:${lib.dir}/${junit.platform.sa.jar}:${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.filtering.jar}:${lib.dir}/${hipparchus.stat.jar}:${lib.dir}/${mockito.jar}"
+           deprecation="true" target="1.8" source="1.8" encoding="UTF-8">
     </javac>
     <copy todir="${test.classes.dir}">
       <fileset dir="${test.resources.dir}"/>
@@ -132,6 +120,38 @@
   </target>
 
   <target name="test" depends="compile-tests" description="Run the tests">
+    <mkdir dir="${tests.reports}"/>
+	<java jar="${lib.dir}/${junit.platform.sa.jar}" fork="true">
+	  <arg line="--class-path ${main.classes.dir}"/>
+	  <arg line="--class-path ${test.classes.dir}"/>
+	  <arg line="--class-path ${lib.dir}/${hipparchus.core.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${hipparchus.geometry.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${hipparchus.ode.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${hipparchus.fitting.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${hipparchus.optim.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${hipparchus.stat.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${hipparchus.filtering.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${mockito.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${objenesis.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${bytebuddy.jar}"/>
+	  <arg line="--class-path ${lib.dir}/${bytebuddy.agent.jar}"/>
+  	  <arg line="--class-path ${lib.dir}/${tools.jar}"/>
+	  <arg line="--scan-class-path"/>
+	  <arg line="--include-classname ^.*Test.*$"/>
+	  <arg line="--fail-if-no-tests"/>
+	  <arg line="--reports-dir ${tests.reports}"/>
+	  <arg line="--details verbose"/>
+	  <arg line="--exclude-engine junit-vintage"/>
+	</java>
+	<junitreport todir="${tests.reports}">
+	  <fileset dir="${tests.reports}">
+	    <include name="TEST-*.xml"/>
+	  </fileset>
+	  <report format="frames" todir="${tests.reports}/html"/>
+	</junitreport>
+  </target>
+	
+  <!--<target name="test" depends="compile-tests" description="Run the tests">
     <mkdir dir="${tests.reports}"/>
     <junit fork="yes" haltonerror="yes" haltonfailure="yes">
       <classpath>
@@ -143,16 +163,16 @@
         <pathelement location="${lib.dir}/${hipparchus.fitting.jar}"  />
         <pathelement location="${lib.dir}/${hipparchus.optim.jar}"    />
         <pathelement location="${lib.dir}/${hipparchus.stat.jar}"     />
+      	<pathelement location="${lib.dir}/${hipparchus.filtering.jar}"/>
         <pathelement location="${lib.dir}/${junit-jupiter-api.jar}"   />
       	<pathelement location="${lib.dir}/${junit-jupiter-engine.jar}"/>
-        <pathelement location="${lib.dir}/${hamcrest-core.jar}"       />
-      	<pathelement location="${lib.dir}/${hamcrest-library.jar}"    />
-        <pathelement location="${lib.dir}/${hipparchus.filtering.jar}"/>
+      	<pathelement location="${lib.dir}/${junit.platform.jar}"      />
+        <pathelement location="${lib.dir}/${hamcrest.jar}"            />
+      	<pathelement location="${lib.dir}/${apiguardian-api.jar}"     />
         <pathelement location="${lib.dir}/${mockito.jar}"             />
         <pathelement location="${lib.dir}/${objenesis.jar}"           />
         <pathelement location="${lib.dir}/${bytebuddy.jar}"           />
         <pathelement location="${lib.dir}/${bytebuddy.agent.jar}"     />
-      	<pathelement location="${lib.dir}/${tools.jar}"               />
       </classpath>
       <formatter type="plain" usefile="false"/>
       <batchtest todir="${tests.reports}">
@@ -162,7 +182,7 @@
         </fileset>
       </batchtest>
     </junit>
-  </target>
+  </target>-->
 
   <target name="jar" depends="compile,test" description="create the jar file">
     <jar jarfile="${build.dir}/${ant.project.name}-${project.version}.jar"
