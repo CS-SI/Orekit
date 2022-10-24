@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
@@ -41,6 +42,12 @@ public class CRD {
 
     /** Value of 'not available' or 'not applicable' or 'no information'. */
     public static final String STR_VALUE_NOT_AVAILABLE = "na";
+
+    /** String of "NaN". */
+    public static final String STR_NAN = "NaN";
+
+    /** Pattern of "NaN". */
+    public static final Pattern PATTERN_NAN = Pattern.compile(STR_NAN);
 
     /** List of comments contained in the file. */
     private List<String> comments;
@@ -75,7 +82,7 @@ public class CRD {
      * @since 11.3
      */
     public static String handleNaN(final String crdString) {
-        return crdString.replaceAll(" NaN", " na");
+        return PATTERN_NAN.matcher(crdString).replaceAll(STR_VALUE_NOT_AVAILABLE);
     }
 
     /**
@@ -129,8 +136,8 @@ public class CRD {
         /** RangeSupplement records. */
         private List<RangeSupplement> rangeSupplementData;
 
-        /** Session statistic record(s). */
-        private List<SessionStatistic> statisticData;
+        /** Session statistics record(s). */
+        private List<SessionStatistics> sessionStatisticsData;
 
         /** Calibration Record(s). */
         private List<Calibration> calibrationData;
@@ -147,7 +154,7 @@ public class CRD {
             this.meteoData  = new TreeSet<>(new ChronologicalComparator());
             this.anglesData = new ArrayList<>();
             this.rangeSupplementData = new ArrayList<>();
-            this.statisticData = new ArrayList<>();
+            this.sessionStatisticsData = new ArrayList<>();
             this.calibrationData = new ArrayList<>();
             this.calibrationDetailData = new ArrayList<>();
         }
@@ -234,11 +241,11 @@ public class CRD {
 
         /**
          * Add an entry to the list of range supplement data.
-         * @param stat entry to add
+         * @param rangeSupplement entry to add
          * @since 11.3
          */
-        public void addRangeSupplementData(final RangeSupplement stat) {
-            rangeSupplementData.add(stat);
+        public void addRangeSupplementData(final RangeSupplement rangeSupplement) {
+            rangeSupplementData.add(rangeSupplement);
         }
 
         /**
@@ -252,11 +259,11 @@ public class CRD {
 
         /**
          * Add an entry to the list of session statistics data.
-         * @param stat entry to add
+         * @param sessionStatistics entry to add
          * @since 11.3
          */
-        public void addSessionStatisticData(final SessionStatistic stat) {
-            statisticData.add(stat);
+        public void addSessionStatisticsData(final SessionStatistics sessionStatistics) {
+            sessionStatisticsData.add(sessionStatistics);
         }
 
         /**
@@ -264,39 +271,39 @@ public class CRD {
          * @return an unmodifiable list of session statistics data
          * @since 11.3
          */
-        public List<SessionStatistic> getSessionStatisticData() {
-            return Collections.unmodifiableList(statisticData);
+        public List<SessionStatistics> getSessionStatisticsData() {
+            return Collections.unmodifiableList(sessionStatisticsData);
         }
 
         /**
          * Get the default (the first if there are many records) SessionStat record.
-         * @return the default (the first if there are many records) SessionStat record
+         * @return the default (the first if there are many records) session statistics record
          * @since 11.3
          */
-        public SessionStatistic getSessionStatisticRecord() {
-            return getSessionStatisticRecord(null);
+        public SessionStatistics getSessionStatisticsRecord() {
+            return getSessionStatisticsRecord(null);
         }
 
         /**
-         * Get the SessionStat record related to the systemConfigurationId.
+         * Get the session statistics record related to the systemConfigurationId.
          * @param systemConfigurationId system configuration ID
-         * @return the SessionStat record
+         * @return the session statistics record
          * @since 11.3
          */
-        public SessionStatistic getSessionStatisticRecord(final String systemConfigurationId) {
-            if (statisticData.isEmpty()) {
+        public SessionStatistics getSessionStatisticsRecord(final String systemConfigurationId) {
+            if (sessionStatisticsData.isEmpty()) {
                 return null;
             }
 
             if (systemConfigurationId == null) {
                 // default (the first one)
-                return statisticData.get(0);
+                return sessionStatisticsData.get(0);
             }
 
             // Loop to find the appropriate one
-            for (SessionStatistic stat : statisticData) {
-                if (systemConfigurationId.equalsIgnoreCase(stat.getSystemConfigurationId())) {
-                    return stat;
+            for (SessionStatistics sessionStatistics : sessionStatisticsData) {
+                if (systemConfigurationId.equalsIgnoreCase(sessionStatistics.getSystemConfigurationId())) {
+                    return sessionStatistics;
                 }
             }
 
@@ -322,38 +329,42 @@ public class CRD {
         }
 
         /**
-         * Get the default (the first if there are many records) Calibration record.
-         * @return the default (the first if there are many records) Calibration record
+         * Get the Calibration record(s) related to the default system configuration id.
+         * @return the Calibration record(s) related to the default system configuration id
          * @since 11.3
          */
-        public Calibration getCalibrationRecord() {
-            return getCalibrationRecord(null);
+        public List<Calibration> getCalibrationRecords() {
+            return getCalibrationRecords(null);
         }
 
         /**
-         * Get the Calibration record related to the systemConfigurationId.
+         * Get the Calibration record(s) related to the given systemConfigurationId.
          * @param systemConfigurationId system configuration ID
-         * @return the Calibration record
+         * @return the Calibration record(s)
          * @since 11.3
          */
-        public Calibration getCalibrationRecord(final String systemConfigurationId) {
+        public List<Calibration> getCalibrationRecords(final String systemConfigurationId) {
             if (calibrationData.isEmpty()) {
                 return null;
             }
 
+            final String systemConfigId;
             if (systemConfigurationId == null) {
-                // default (the first one)
-                return calibrationData.get(0);
+                // use the default systemConfigurationId
+                systemConfigId = getConfigurationRecords().getSystemRecord().getConfigurationId();
+            } else {
+                systemConfigId = systemConfigurationId;
             }
 
+            final List<Calibration> list = new ArrayList<Calibration>();
             // Loop to find the appropriate one
-            for (Calibration cal : calibrationData) {
-                if (systemConfigurationId.equalsIgnoreCase(cal.getSystemConfigurationId())) {
-                    return cal;
+            for (Calibration calibration : calibrationData) {
+                if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
+                    list.add(calibration);
                 }
             }
 
-            return null;
+            return list;
         }
 
         /**
@@ -1382,6 +1393,7 @@ public class CRD {
 
         /**
          * Type of data.
+         *
          * 0=station combined transmit and receive calibration (“normal” SLR/LLR)
          * 1=station transmit calibration (e.g., one-way ranging to transponders)
          * 2=station receive calibration
@@ -1423,6 +1435,7 @@ public class CRD {
 
         /**
          * Calibration Type Indicator.
+         *
          * 0=not used or undefined
          * 1=nominal (from once off assessment)
          * 2=external calibrations
@@ -1435,6 +1448,7 @@ public class CRD {
 
         /**
          * Calibration Shift Type Indicator.
+         *
          * 0=not used or undefined
          * 1=nominal (from once off assessment)
          * 2=pre- to post- Shift
@@ -1443,11 +1457,17 @@ public class CRD {
          */
         private final int shiftTypeIndicator;
 
-        /** Detector Channel. */
+        /** Detector Channel.
+         *
+         * 0=not applicable or “all”
+         * 1-4 for quadrant
+         * 1-n for many channels
+         */
         private final int detectorChannel;
 
         /**
-         * Calibration Span
+         * Calibration Span.
+         *
          * 0 = not applicable (e.g. Calibration type indicator is “nominal”)
          * 1 = Pre-calibration only
          * 2 = Post-calibration only
@@ -1521,6 +1541,15 @@ public class CRD {
 
         /**
          * Get the type of data.
+         *
+         * <ul>
+         * <li>0=station combined transmit and receive calibration (“normal” SLR/LLR)
+         * <li>1=station transmit calibration (e.g., one-way ranging to transponders)
+         * <li>2=station receive calibration
+         * <li>3=target combined transmit and receive calibrations
+         * <li>4=target transmit calibration
+         * <li>5=target receive calibration
+         * </ul>
          * @return the type of data
          */
         public int getTypeOfData() {
@@ -1609,6 +1638,16 @@ public class CRD {
 
         /**
          * Get the calibration type indicator.
+         *
+         * <ul>
+         * <li>0=not used or undefined
+         * <li>1=nominal (from once off assessment)
+         * <li>2=external calibrations
+         * <li>3=internal calibrations – telescope
+         * <li>4=internal calibrations – building
+         * <li>5=burst calibrations
+         * <li>6=other
+         * </ul>
          * @return the calibration type indicator
          */
         public int getTypeIndicator() {
@@ -1617,6 +1656,14 @@ public class CRD {
 
         /**
          * Get the calibration shift type indicator.
+         *
+         * <ul>
+         * <li>0=not used or undefined
+         * <li>1=nominal (from once off assessment)
+         * <li>2=pre- to post- Shift
+         * <li>3=minimum to maximum
+         * <li>4=other
+         * </ul>
          * @return the calibration shift type indicator
          */
         public int getShiftTypeIndicator() {
@@ -1625,6 +1672,12 @@ public class CRD {
 
         /**
          * Get the detector channel.
+         *
+         * <ul>
+         * <li>0=not applicable or “all”
+         * <li>1-4 for quadrant
+         * <li>1-n for many channels
+         * </ul>
          * @return the detector channel
          */
         public int getDetectorChannel() {
@@ -1633,6 +1686,14 @@ public class CRD {
 
         /**
          * Get the calibration span.
+         *
+         * <ul>
+         * <li>0 = not applicable (e.g. Calibration type indicator is “nominal”)
+         * <li>1 = Pre-calibration only
+         * <li>2 = Post-calibration only
+         * <li>3 = Combined (pre- and post-calibrations or multiple)
+         * <li>4 = Real-time calibration (data taken while ranging to a satellite)
+         * </ul>
          * @return the calibration span
          */
         public int getSpan() {
@@ -1735,7 +1796,7 @@ public class CRD {
      * Session (Pass) Statistics Record.
      * @since 11.3
      */
-    public static class SessionStatistic {
+    public static class SessionStatistics {
 
         /** System configuration ID. */
         private final String systemConfigurationId;
@@ -1776,11 +1837,11 @@ public class CRD {
          * @param peakMinusMean session peak – mean value
          * @param dataQulityIndicator data quality assessment indicator
          */
-        public SessionStatistic(final String systemConfigurationId,
-                                final double rms, final double skewness,
-                                final double kurtosis,
-                                final double peakMinusMean,
-                                final int dataQulityIndicator) {
+        public SessionStatistics(final String systemConfigurationId,
+                                 final double rms, final double skewness,
+                                 final double kurtosis,
+                                 final double peakMinusMean,
+                                 final int dataQulityIndicator) {
             this.systemConfigurationId = systemConfigurationId;
             this.rms                   = rms;
             this.skewness              = skewness;

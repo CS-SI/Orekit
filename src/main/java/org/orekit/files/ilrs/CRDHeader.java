@@ -18,6 +18,7 @@ package org.orekit.files.ilrs;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -38,6 +39,9 @@ public class CRDHeader extends ILRSHeader {
 
     /** Space. */
     private static final String SPACE = " ";
+
+    /** Pattern of delimiter of datetime. */
+    public static final Pattern PATTERN_DATETIME_DELIMITER_REGEX = Pattern.compile(DATETIME_DELIMITER_REGEX);
 
     /** Station name from official list. */
     private String stationName;
@@ -479,9 +483,11 @@ public class CRDHeader extends ILRSHeader {
     public String getH4CrdString() {
         // "2006-11-13T15:23:52" -- > "2006 11 13 15 23 52"
         final TimeScale utc = TimeScalesFactory.getUTC();
+        final String startEpoch = getStartEpoch().toStringWithoutUtcOffset(utc, 0);
+        final String endEpoch = getEndEpoch().toStringWithoutUtcOffset(utc, 0);
         return String.format("H4 %2d %s %s %d %d %d %d %d %d %d %d", getDataType(),
-                getStartEpoch().toStringWithoutUtcOffset(utc, 0).replaceAll(DATETIME_DELIMITER_REGEX, SPACE),
-                getEndEpoch().toStringWithoutUtcOffset(utc, 0).replaceAll(DATETIME_DELIMITER_REGEX, SPACE),
+                PATTERN_DATETIME_DELIMITER_REGEX.matcher(startEpoch).replaceAll(SPACE),
+                PATTERN_DATETIME_DELIMITER_REGEX.matcher(endEpoch).replaceAll(SPACE),
                 dataReleaseFlag, isTroposphericRefractionApplied ? 1 : 0,
                 isCenterOfMassCorrectionApplied ? 1 : 0,
                 isReceiveAmplitudeCorrectionApplied ? 1 : 0,

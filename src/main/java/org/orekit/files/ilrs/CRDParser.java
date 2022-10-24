@@ -38,7 +38,7 @@ import org.orekit.files.ilrs.CRD.NptRangeMeasurement;
 import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRD.RangeSupplement;
-import org.orekit.files.ilrs.CRD.SessionStatistic;
+import org.orekit.files.ilrs.CRD.SessionStatistics;
 import org.orekit.files.ilrs.CRDConfiguration.CalibrationTargetConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.DetectorConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.LaserConfiguration;
@@ -100,6 +100,9 @@ public class CRDParser {
     /** Identifier of comment record. */
     private static final String COMMENTS_IDENTIFIER = "00";
 
+    /** Pattern of "[-]?na". */
+    private static final Pattern PATTERN_NA = Pattern.compile("[-]?" + CRD.STR_VALUE_NOT_AVAILABLE);
+
     /** Time scale used to define epochs in CPF file. */
     private final TimeScale timeScale;
 
@@ -158,7 +161,7 @@ public class CRDParser {
                         // Note: since crd v2.01.
                         // The literal “na” is used instead of “-1” for fields that are not applicable or not avaiable.
                         // And there may be "-na".
-                        line = line.replaceAll("[ -]na", " NaN");
+                        line = PATTERN_NA.matcher(line).replaceAll(CRD.STR_NAN);
 
                         selected.get().parse(line, pi);
                     } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
@@ -182,14 +185,16 @@ public class CRDParser {
 
     /**
      * Make sure the epoch is 'right' by doing a day shift if it is required by comparing the current and session start epoch.
-     * The duration of a session must be less than one day.
+     * According to the CRD document, the duration of a session must be less than one day.
      * @param epoch current epoch
      * @param startEpoch start epoch of session
      * @return epoch with rollover is handled.
      */
     private static AbsoluteDate checkRollover(final AbsoluteDate epoch, final AbsoluteDate startEpoch) {
         // If the current epoch is before the start epoch of a session, the epoch should be shifted by 1 day.
-        return epoch.isBefore(startEpoch) ? epoch.shiftedBy(Constants.JULIAN_DAY) : epoch;
+        // For METEO(20) data, the epoch may be a 'little' (10 hours?) before the session start epoch.
+        // And also for CALIB(40) and CALIB_DETAILS(41)
+        return epoch.durationFrom(startEpoch) < -36000 ? epoch.shiftedBy(Constants.JULIAN_DAY) : epoch;
     }
 
     /** Transient data used for parsing a CRD file. The data is kept in a
@@ -1161,9 +1166,9 @@ public class CRDParser {
                 final double peakMinusMean     = PS.toSI(Double.parseDouble(values[5]));
                 final int dataQualityIndicator = Integer.parseInt(values[6]);
 
-                final SessionStatistic stat = new SessionStatistic(systemConfigId, rms, skewness, kurtosis, peakMinusMean,
+                final SessionStatistics stat = new SessionStatistics(systemConfigId, rms, skewness, kurtosis, peakMinusMean,
                         dataQualityIndicator);
-                pi.dataBlock.addSessionStatisticData(stat);
+                pi.dataBlock.addSessionStatisticsData(stat);
 
             }
 
@@ -1387,7 +1392,7 @@ public class CRDParser {
          * @return the corresponding integer value
          */
         private static int readIntegerWithNaN(final String value, final int defaultValue) {
-            return "NaN".equalsIgnoreCase(value) ? defaultValue : Integer.parseInt(value);
+            return CRD.STR_NAN.equalsIgnoreCase(value) ? defaultValue : Integer.parseInt(value);
         }
     }
 

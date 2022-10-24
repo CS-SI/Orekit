@@ -27,10 +27,14 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CRD.AnglesMeasurement;
 import org.orekit.files.ilrs.CRD.CRDDataBlock;
+import org.orekit.files.ilrs.CRD.Calibration;
+import org.orekit.files.ilrs.CRD.FrRangeMeasurement;
 import org.orekit.files.ilrs.CRD.Meteo;
 import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRD.NptRangeMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
+import org.orekit.files.ilrs.CRD.RangeSupplement;
+import org.orekit.files.ilrs.CRD.SessionStatistics;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -640,7 +644,7 @@ public class CRDParserTest {
     }
     
     @Test
-    public void testIssue938() throws IOException {        
+    public void testIssue938() throws IOException {
         final String ex = "/ilrs/crd201_all_samples";
         final CRD file = new CRDParser().parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
@@ -659,7 +663,8 @@ public class CRDParserTest {
         String h2 = "H2 MLRS 7080 24 19  4 NASA";
         String h3 = "H3 LAGEOS2 9207002 5986 22195 0 1  1";
         String h4 = "H4  0 2006 11 13 15 23 52 2006 11 13 15 45 35 1 1 1 1 0 0 2 0";
-
+        String ten1 = "10 55435.642974600000     0.047926839980 std1 2 0 0 0    na    na";
+        
         Assertions.assertEquals(h1, block.getHeader().getH1CrdString());
         Assertions.assertEquals(h2, block.getHeader().getH2CrdString());
         Assertions.assertEquals(h3, block.getHeader().getH3CrdString());
@@ -669,7 +674,20 @@ public class CRDParserTest {
         Assertions.assertEquals(ten0, block.getRangeData().get(0).toCrdString());
         Assertions.assertEquals(meteo0, block.getMeteoData().getData().get(0).toCrdString());
         Assertions.assertEquals(angles0, block.getAnglesData().get(0).toCrdString());
-        Assertions.assertEquals(cal, block.getCalibrationRecord().toCrdString());
+        Assertions.assertEquals(1, block.getCalibrationData().size());
+        Assertions.assertEquals(cal, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(0, block.getSessionStatisticsData().size());
+        Assertions.assertEquals(null, block.getSessionStatisticsRecord());
+        
+        RangeMeasurement range =  block.getRangeData().get(1);
+        Assertions.assertEquals(ten1, range.toCrdString());
+        FrRangeMeasurement fr = (FrRangeMeasurement)range;
+        Assertions.assertEquals(ten1, fr.toCrdString());
+        Assertions.assertEquals(0, fr.getFilterFlag());
+        Assertions.assertEquals(0, fr.getDetectorChannel());
+        Assertions.assertEquals(0, fr.getStopNumber());
+        Assertions.assertEquals(-1, fr.getReceiveAmplitude());
+        Assertions.assertEquals(-1, fr.getTransmitAmplitude());
 
         // Block 2
         block = file.getDataBlocks().get(1);
@@ -681,7 +699,13 @@ public class CRDParserTest {
         Assertions.assertEquals(eleven0, block.getRangeData().get(0).toCrdString());
         Assertions.assertEquals(eleven7, block.getRangeData().get(7).toCrdString());
         Assertions.assertEquals(meteo0, block.getMeteoData().getData().get(0).toCrdString());
-        Assertions.assertEquals(stat, block.getSessionStatisticRecord().toCrdString());
+        Assertions.assertEquals(stat, block.getSessionStatisticsRecord().toCrdString());
+        
+        // Block 3
+        block = file.getDataBlocks().get(2);
+        Assertions.assertEquals(0, block.getCalibrationData().size());
+        Assertions.assertEquals(null, block.getCalibrationRecords());
+        Assertions.assertEquals(null, block.getCalibrationRecords("std"));
         
         // Block 4
         block = file.getDataBlocks().get(3);
@@ -702,11 +726,16 @@ public class CRDParserTest {
         Assertions.assertEquals(eleven0, block.getRangeData().get(0).toCrdString());
         Assertions.assertEquals(eleven1, block.getRangeData().get(1).toCrdString());
         Assertions.assertEquals(meteo0, block.getMeteoData().getData().get(0).toCrdString());
-        Assertions.assertEquals(stat_std1, block.getSessionStatisticRecord().toCrdString());
-        Assertions.assertEquals(stat_std1, block.getSessionStatisticRecord("std1").toCrdString());
-        Assertions.assertEquals(stat_std2, block.getSessionStatisticRecord("std2").toCrdString());
-        Assertions.assertEquals(cal_std1, block.getCalibrationRecord().toCrdString());
-        Assertions.assertEquals(cal_std1, block.getCalibrationRecord("std1").toCrdString());
+        Assertions.assertEquals(2, block.getSessionStatisticsData().size());
+        Assertions.assertEquals(stat_std1, block.getSessionStatisticsRecord().toCrdString());
+        Assertions.assertEquals(stat_std1, block.getSessionStatisticsRecord("std1").toCrdString());
+        Assertions.assertEquals(stat_std2, block.getSessionStatisticsRecord("std2").toCrdString());
+        Assertions.assertEquals(null, block.getSessionStatisticsRecord("std3"));
+        Assertions.assertEquals(1, block.getCalibrationData().size());
+        Assertions.assertEquals(cal_std1, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(cal_std1, block.getCalibrationRecords("std1").get(0).toCrdString());
+        Assertions.assertEquals(cal_std1, block.getCalibrationRecords(null).get(0).toCrdString());
+        Assertions.assertEquals(0, block.getCalibrationRecords("std2").size());
 
         // Block 5
         block = file.getDataBlocks().get(4);
@@ -722,7 +751,9 @@ public class CRDParserTest {
         String c5 = "C5 0 swv Monitor,Sattrk 2.000Bm,2.00Cm conpro,crd_cal,PoissonCRD,gnp 2.4a,1.7,2.2a,CM-2.01a";
         String c6 = "C6 0 met Paroscientific Met4 123456 Paroscientific Met4 123456 Paroscientific Met4 123456";
         cal = "40  2716.000000000000 0  std       67       58     na     -883.3      0.0   96.4   0.718  -0.126  364.4 3 3 0 3  14.5";
-        String meteo1 = "20  3151.000  801.73 286.16   35 0";
+        meteo0 = "20  2716.000  801.73 286.76   35 0";
+        String meteo1 = "20  2822.000  801.73 286.56   35 0";
+        String meteo2 = "20  3151.000  801.73 286.16   35 0";
         stat = "50  std   72.7   1.494  -0.536  -32.4 0";
         eleven0 = "11  2726.697640514675     0.013737698432  std 2   15.0      1      72.7   1.494  -0.536     -32.4  0.67 0  20.7";
         eleven7 = "11  3124.950255557618     0.011244819341  std 2   15.0     14      65.2   1.635   0.207       4.5  9.33 0  71.5";
@@ -738,20 +769,23 @@ public class CRDParserTest {
         Assertions.assertEquals(c3, block.getConfigurationRecords().getTimingRecord().toCrdString());
         Assertions.assertEquals(c5, block.getConfigurationRecords().getSoftwareRecord().toCrdString());
         Assertions.assertEquals(c6, block.getConfigurationRecords().getMeteorologicalRecord().toCrdString());
-        Assertions.assertEquals(cal, block.getCalibrationRecord().toCrdString());
+        Assertions.assertEquals(cal, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(meteo0, block.getMeteoData().getData().get(0).toCrdString());
         Assertions.assertEquals(meteo1, block.getMeteoData().getData().get(1).toCrdString());
-        Assertions.assertEquals(stat, block.getSessionStatisticRecord().toCrdString());
+        Assertions.assertEquals(meteo2, block.getMeteoData().getData().get(2).toCrdString());
+        Assertions.assertEquals(stat, block.getSessionStatisticsRecord().toCrdString());
         Assertions.assertEquals(11, block.getRangeData().size());
         Assertions.assertEquals(eleven0, block.getRangeData().get(0).toCrdString());
         NptRangeMeasurement npt = (NptRangeMeasurement)block.getRangeData().get(7);
         Assertions.assertEquals(eleven7, npt.toCrdString());
         Assertions.assertEquals(15.0, npt.getWindowLength());
         Assertions.assertEquals(14, npt.getNumberOfRawRanges());
-        Assertions.assertEquals(65.2e-12, npt.getBinRms());
-        Assertions.assertEquals(1.635, npt.getBinSkew());
-        Assertions.assertEquals(0.207, npt.getBinKurtosis());
-        Assertions.assertEquals(4.5e-12, npt.getBinPeakMinusMean());
+        Assertions.assertEquals(65.2e-12, npt.getBinRms(), 0.1e-12);
+        Assertions.assertEquals(1.635, npt.getBinSkew(), 1e-3);
+        Assertions.assertEquals(0.207, npt.getBinKurtosis(), 1e-3);
+        Assertions.assertEquals(4.5e-12, npt.getBinPeakMinusMean(), 0.1e-12);
         Assertions.assertEquals(9.33, npt.getReturnRate());
+        Assertions.assertEquals(0, npt.getDetectorChannel());
         Assertions.assertEquals(71.5, npt.getSnr());
         
         // Block 6
@@ -772,6 +806,7 @@ public class CRDParserTest {
         Assertions.assertEquals(calDetails1, block.getCalibrationDetailData().get(1).toCrdString());
         
         // Block 7
+        // TODO:
         block = file.getDataBlocks().get(6);
         c0 = "C0 0    532.000 std ml1 mcp_with_amp mt1";
         c1 = "C1 0 ml1 Nd-Yag 1064.00 10.00 100.00 200.0 na 1";
@@ -784,8 +819,10 @@ public class CRDParserTest {
         Assertions.assertEquals(c1, block.getConfigurationRecords().getLaserRecord().toCrdString());
         Assertions.assertEquals(c2, block.getConfigurationRecords().getDetectorRecord().toCrdString());
         Assertions.assertEquals(c3, block.getConfigurationRecords().getTimingRecord().toCrdString());
-        Assertions.assertEquals(cal, block.getCalibrationRecord().toCrdString());
-        Assertions.assertEquals(stat, block.getSessionStatisticRecord().toCrdString());
+        Assertions.assertEquals(stat, block.getSessionStatisticsRecord().toCrdString());
+        Assertions.assertEquals(2, block.getCalibrationData().size());
+        Assertions.assertEquals(cal, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(cal, block.getCalibrationRecords("std").get(0).toCrdString());
 
         // Block 8
         block = file.getDataBlocks().get(7);
@@ -801,11 +838,105 @@ public class CRDParserTest {
         Assertions.assertEquals(c1, block.getConfigurationRecords().getLaserRecord().toCrdString());
         Assertions.assertEquals(c2, block.getConfigurationRecords().getDetectorRecord().toCrdString());
         Assertions.assertEquals(c3, block.getConfigurationRecords().getTimingRecord().toCrdString());
-        Assertions.assertEquals(cal, block.getCalibrationRecord().toCrdString());
+        Assertions.assertEquals(3, block.getCalibrationData().size());
+        Assertions.assertEquals(3, block.getCalibrationRecords().size());
+        Assertions.assertEquals(cal, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(cal, block.getCalibrationRecords("ES").get(0).toCrdString());
+        Assertions.assertEquals(3, block.getCalibrationRecords(null).size());
+        Assertions.assertEquals(cal, block.getCalibrationRecords(null).get(0).toCrdString());
+        Assertions.assertEquals(0, block.getCalibrationRecords("std").size());
         Assertions.assertEquals(eleven0, block.getRangeData().get(0).toCrdString());
         Assertions.assertEquals(12, block.getRangeData().size());
         Assertions.assertEquals(eleven10, block.getRangeData().get(10).toCrdString());
         
+        meteo1 = "20 19923.840 1015.23 277.70   98 0";
+        List<MeteorologicalMeasurement> meteorologicalMeasurements = block.getMeteoData().getData();
+        Assertions.assertEquals(4, meteorologicalMeasurements.size());
+        final MeteorologicalMeasurement meteorologicalMeasurement = meteorologicalMeasurements.get(1);
+        Assertions.assertEquals(meteo1, meteorologicalMeasurement.toCrdString());
+        Assertions.assertEquals(0, meteorologicalMeasurement.getOriginOfValues());
+
+        Calibration calibration = block.getCalibrationRecords().get(0);
+        Assertions.assertEquals(cal, calibration.toCrdString());
+        Assertions.assertEquals(0, calibration.getTypeOfData());
+        Assertions.assertEquals(-1, calibration.getNumberOfPointsRecorded());
+        Assertions.assertEquals(-1, calibration.getNumberOfPointsUsed());
+        Assertions.assertEquals(122.977, calibration.getOneWayDistance(), 1e-3);
+        Assertions.assertEquals(105423.9e-12, calibration.getSystemDelay(), 0.1e-12);
+        Assertions.assertEquals(0.0, calibration.getDelayShift());
+        Assertions.assertEquals(35.4e-12, calibration.getRms(), 0.1e-12);
+        Assertions.assertEquals(0.2, calibration.getSkew());
+        Assertions.assertEquals(2.8, calibration.getKurtosis());
+        Assertions.assertEquals(0.0, calibration.getPeakMinusMean());
+        Assertions.assertEquals(2, calibration.getTypeIndicator());
+        Assertions.assertEquals(2, calibration.getShiftTypeIndicator());
+        Assertions.assertEquals(0, calibration.getDetectorChannel());
+        Assertions.assertEquals(0, calibration.getSpan());
+        Assertions.assertEquals(Double.NaN, calibration.getReturnRate());
+        
+        // test rangesupplementdata
+        block = file.getDataBlocks().get(0);
+        String twelve1 = "12 55435.642974600000 std1 20697.0 1601.0000  0.00   0.0000 0.000000";
+        List<RangeSupplement> rangeSupplementData = block.getRangeSupplementData();
+        Assertions.assertEquals(3, rangeSupplementData.size());
+        RangeSupplement rangeSupplement = rangeSupplementData.get(1);
+        Assertions.assertEquals(twelve1, rangeSupplement.toCrdString());        
+        Assertions.assertEquals("std1", rangeSupplement.getSystemConfigurationId());
+        Assertions.assertEquals(20697.0e-12, rangeSupplement.getTroposphericRefractionCorrection(), 0.1e-12);
+        Assertions.assertEquals(1601.0, rangeSupplement.getCenterOfMassCorrection());
+        Assertions.assertEquals(0.0, rangeSupplement.getNdFilterValue());
+        Assertions.assertEquals(0.0, rangeSupplement.getTimeBiasApplied());
+        Assertions.assertEquals(0.0, rangeSupplement.getRangeRate());
+
+        // Block 9
+        block = file.getDataBlocks().get(8);
+        String cal0 = "40 83974.000000000000 0 0902    10000     7894   1.742   112201.6      3.8   16.0   0.045  -0.644   -1.0 2 2 0 0   na";
+        String cal1 = "40   410.000000000000 0 0902    10000     8073   1.742   112205.4      3.8   16.0   0.043  -0.665   -1.0 2 2 0 0   na";
+        Assertions.assertEquals(2, block.getCalibrationData().size());
+        Assertions.assertEquals(2, block.getCalibrationRecords().size());
+        Assertions.assertEquals(cal0, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(cal1, block.getCalibrationRecords().get(1).toCrdString());
+        
+        calibration = block.getCalibrationRecords().get(0);
+        Assertions.assertEquals("0902", calibration.getSystemConfigurationId());
+        Assertions.assertEquals(0, calibration.getTypeOfData());
+        Assertions.assertEquals(10000, calibration.getNumberOfPointsRecorded());
+        Assertions.assertEquals(7894, calibration.getNumberOfPointsUsed());
+        Assertions.assertEquals(1.742, calibration.getOneWayDistance(), 1e-3);
+        Assertions.assertEquals(112201.6e-12, calibration.getSystemDelay(), 0.1e-12);
+        Assertions.assertEquals(3.8e-12, calibration.getDelayShift(), 0.1e-12);
+        Assertions.assertEquals(16.0e-12, calibration.getRms(), 0.1e-12);
+        Assertions.assertEquals(0.045, calibration.getSkew(), 1e-3);
+        Assertions.assertEquals(-0.644, calibration.getKurtosis(), 1e-3);
+        Assertions.assertEquals(-1.0e-12, calibration.getPeakMinusMean(), 0.1e-12);
+        Assertions.assertEquals(2, calibration.getTypeIndicator());
+        Assertions.assertEquals(2, calibration.getShiftTypeIndicator());
+        Assertions.assertEquals(0, calibration.getDetectorChannel());
+        Assertions.assertEquals(0, calibration.getSpan());
+        Assertions.assertEquals(Double.NaN, calibration.getReturnRate());
+        
+        Assertions.assertEquals("2022-03-25T23:19:34", block.getCalibrationRecords().get(0).getDate().toStringWithoutUtcOffset(TimeScalesFactory.getUTC(), 0));
+        Assertions.assertEquals("2022-03-26T00:06:50", block.getCalibrationRecords().get(1).getDate().toStringWithoutUtcOffset(TimeScalesFactory.getUTC(), 0));
+        
+        final List<RangeMeasurement> rangeData = block.getRangeData();
+        Assertions.assertEquals(10, rangeData.size());
+        
+        Assertions.assertEquals("2022-03-25T23:59:06.020064", rangeData.get(7).getDate().toStringWithoutUtcOffset(TimeScalesFactory.getUTC(), 6));
+        Assertions.assertEquals("2022-03-26T00:05:45.645164", rangeData.get(8).getDate().toStringWithoutUtcOffset(TimeScalesFactory.getUTC(), 6));
+
+        final SessionStatistics sessionStatistics = block.getSessionStatisticsRecord();
+        Assertions.assertEquals(34.0e-12, sessionStatistics.getRms(), 0.1e-12);
+        Assertions.assertEquals(0.258, sessionStatistics.getSkewness(), 1e-3);
+        Assertions.assertEquals(-0.949, sessionStatistics.getKurtosis(), 1e-3);
+        Assertions.assertEquals(-18.6e-12, sessionStatistics.getPeakMinusMean(), 0.1e-12);
+        Assertions.assertEquals(1, sessionStatistics.getDataQulityIndicator());
+        
+        final CRDConfiguration configurations = block.getConfigurationRecords();
+        Assertions.assertEquals("0902", configurations.getSystemRecord().getConfigurationId());
+        Assertions.assertEquals("0902", configurations.getSystemRecord(null).getConfigurationId());
+        
+        Assertions.assertEquals(1420522549, configurations.getSystemRecord().hashCode());
+
     }
 
     @BeforeEach

@@ -342,11 +342,15 @@ public class CRDConfiguration {
 
         @Override
         public int hashCode() {
-            return 0;
+            return toString().hashCode();
         }
 
         @Override
         public boolean equals(final Object record) {
+            if (record == null) {
+                return false;
+            }
+
             if (record == this) {
                 return true;
             }
