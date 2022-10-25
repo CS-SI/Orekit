@@ -16,10 +16,6 @@
  */
 package org.orekit.forces;
 
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -35,7 +31,7 @@ import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -59,6 +55,9 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public abstract class AbstractForceModelTest {
@@ -96,17 +95,17 @@ public abstract class AbstractForceModelTest {
         double hParam = hFactor * p0;
         drivers.get(selected).setValue(p0 - 1 * hParam);
         parameters[selected] = drivers.get(selected).getValue();
-        Assert.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
+        Assertions.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaM1h = forceModel.acceleration(state, parameters);
         drivers.get(selected).setValue(p0 + 1 * hParam);
         parameters[selected] = drivers.get(selected).getValue();
-        Assert.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
+        Assertions.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaP1h = forceModel.acceleration(state, parameters);
         drivers.get(selected).setValue(p0);
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
-        Assert.assertEquals(0., delta.getNorm(), tol * reference.getNorm());
+        Assertions.assertEquals(0., delta.getNorm(), tol * reference.getNorm());
 
     }
 
@@ -143,17 +142,17 @@ public abstract class AbstractForceModelTest {
         double hParam = hFactor * p0;
         drivers.get(selected).setValue(p0 - 1 * hParam);
         parameters[selected] = drivers.get(selected).getValue();
-        Assert.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
+        Assertions.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaM1h = forceModel.acceleration(state, parameters);
         drivers.get(selected).setValue(p0 + 1 * hParam);
         parameters[selected] = drivers.get(selected).getValue();
-        Assert.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
+        Assertions.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaP1h = forceModel.acceleration(state, parameters);
         drivers.get(selected).setValue(p0);
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
-        Assert.assertEquals(0, delta.getNorm(), tol * reference.getNorm());
+        Assertions.assertEquals(0, delta.getNorm(), tol * reference.getNorm());
 
     }
 
@@ -413,9 +412,9 @@ public abstract class AbstractForceModelTest {
         if (reference.getNorm() == 0) {
             // if dF/dP is exactly zero (i.e. no dependency between F and P),
             // then the result should also be exactly zero
-            Assert.assertEquals(0, result.getNorm(), Precision.SAFE_MIN);
+            Assertions.assertEquals(0, result.getNorm(), Precision.SAFE_MIN);
         } else {
-            Assert.assertEquals(0, Vector3D.distance(reference, result), checkTolerance * reference.getNorm());
+            Assertions.assertEquals(0, Vector3D.distance(reference, result), checkTolerance * reference.getNorm());
         }
     }
 
@@ -457,13 +456,13 @@ public abstract class AbstractForceModelTest {
         for (int j = 0; j < 6; ++j) {
             for (int k = 0; k < 6; ++k) {
                 double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
-                Assert.assertEquals(reference[j][k], dYdY0.get().getEntry(j, k), checkTolerance * scale);
+                Assertions.assertEquals(reference[j][k], dYdY0.get().getEntry(j, k), checkTolerance * scale);
             }
         }
 
     }
-    
-    
+
+
     /** Compare field numerical propagation with numerical propagation.
      *  - First compare the positions after a given propagation duration
      *  - Then shift initial state of numerical propagator and compare its final propagated state
@@ -490,22 +489,22 @@ public abstract class AbstractForceModelTest {
                                              final double accelerationRelativeToleranceTaylor,
                                              final int nbTests,
                                              final boolean print) {
-        
+
         // First test: Check the position after integration are the same for numerical and
         // field numerical propagators
         // ---------------------------
-        
+
         // Propagate numerical and field numerical propagators
         FieldAbsoluteDate<DerivativeStructure> target = initialOrbit.getDate().shiftedBy(duration);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = fieldpropagator.propagate(target);
         SpacecraftState finalState_R = propagator.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
-        
+
         // Compare final positions
         final Vector3D finPosition_DS   = finPVC_DS.toPVCoordinates().getPosition();
         final Vector3D finPosition_R    = finPVC_R.getPosition();
-        final double   finPositionDelta = Vector3D.distance(finPosition_DS, finPosition_R); 
+        final double   finPositionDelta = Vector3D.distance(finPosition_DS, finPosition_R);
         final double   propagPosTol     = finPosition_R.getNorm() * positionRelativeTolerancePropag;
         if (print) {
             System.out.println("1 - Check ΔP after propagation");
@@ -515,13 +514,13 @@ public abstract class AbstractForceModelTest {
             System.out.println("\t            εP = " + propagPosTol);
             System.out.println("\tΔPf / ||Pf_R|| = " + finPositionDelta / finPosition_R.getNorm());
         }
-        Assert.assertEquals(0.,  finPositionDelta, propagPosTol);
-        
+        Assertions.assertEquals(0.,  finPositionDelta, propagPosTol);
+
         // Second test: Compare
         // - A spacecraft state (pos, vel, acc) obtained with classical numerical propagation with a randomly shifted initial state
         // - With the Taylor expansion of the field spacecraft state obtained after propagation with the field numerical propagator
         // ----------------------------
-        
+
         // Set up random generator
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
@@ -536,15 +535,15 @@ public abstract class AbstractForceModelTest {
         double R_R = initialOrbit.getPerigeeArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
         double n_R = initialOrbit.getAnomaly(positionAngle).getReal();
-        
+
         // Max P, V, A values initialization
         double maxP = 0.;
         double maxV = 0.;
         double maxA = 0.;
-        
+
         // Loop on the number of tests
         for (int ii = 0; ii < nbTests; ii++){
-            
+
             // Shift Keplerian parameters
             double[] rand_next = URVG.nextVector();
             double a_shift = a_R + rand_next[0];
@@ -553,7 +552,7 @@ public abstract class AbstractForceModelTest {
             double R_shift = R_R + rand_next[3];
             double O_shift = O_R + rand_next[4];
             double n_shift = n_R + rand_next[5];
-            
+
             KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
                                                            PositionAngle.MEAN,
                                                            initialOrbit.getFrame(),
@@ -562,7 +561,7 @@ public abstract class AbstractForceModelTest {
                                                            );
             // Shifted initial spacecraft state
             SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
-            
+
             // Propagate to duration
             propagator.setInitialState(shift_iSR);
             SpacecraftState finalState_shift = propagator.propagate(target.toAbsoluteDate());
@@ -571,7 +570,7 @@ public abstract class AbstractForceModelTest {
 
             // Position check
             // --------------
-            
+
             // Taylor expansion of position
             FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
             double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
@@ -582,7 +581,7 @@ public abstract class AbstractForceModelTest {
             double x = finPVC_shift.getPosition().getX();
             double y = finPVC_shift.getPosition().getY();
             double z = finPVC_shift.getPosition().getZ();
-            
+
             // Compute maximum delta pos
             maxP = FastMath.max(maxP, FastMath.abs((x_DS - x) / (x - pos_DS.getX().getReal())));
             maxP = FastMath.max(maxP, FastMath.abs((y_DS - y) / (y - pos_DS.getY().getReal())));
@@ -591,18 +590,18 @@ public abstract class AbstractForceModelTest {
 
             // Velocity check
             // --------------
-            
+
             // Taylor expansion of velocity
             FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
             double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            
+
             // Reference velocity
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
-            
+
             // Compute maximum delta vel
             maxV = FastMath.max(maxV, FastMath.abs((vx_DS - vx) / vx));
             maxV = FastMath.max(maxV, FastMath.abs((vy_DS - vy) / vy));
@@ -611,18 +610,18 @@ public abstract class AbstractForceModelTest {
 
             // Acceleration check
             // ------------------
-            
+
             // Taylor expansion of acceleration
             FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
             double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            
+
             // Reference acceleration
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            
+
             // Compute max accelerations
             maxA = FastMath.max(maxA, FastMath.abs((ax_DS - ax) / ax));
             maxA = FastMath.max(maxA, FastMath.abs((ay_DS - ay) / ay));
@@ -636,9 +635,9 @@ public abstract class AbstractForceModelTest {
             System.out.println("\tMax ΔV = " + maxV);
             System.out.println("\tMax ΔA = " + maxA);
         }
-        Assert.assertEquals(0, maxP, positionRelativeToleranceTaylor);
-        Assert.assertEquals(0, maxV, velocityRelativeToleranceTaylor);
-        Assert.assertEquals(0, maxA, accelerationRelativeToleranceTaylor);
+        Assertions.assertEquals(0, maxP, positionRelativeToleranceTaylor);
+        Assertions.assertEquals(0, maxV, velocityRelativeToleranceTaylor);
+        Assertions.assertEquals(0, maxA, accelerationRelativeToleranceTaylor);
     }
 
     /** Compare field numerical propagation with numerical propagation.
@@ -667,22 +666,22 @@ public abstract class AbstractForceModelTest {
                                                      final double accelerationRelativeToleranceTaylor,
                                                      final int nbTests,
                                                      final boolean print) {
-        
+
         // First test: Check the position after integration are the same for numerical and
         // field numerical propagators
         // ---------------------------
-        
+
         // Propagate numerical and field numerical propagators
         FieldAbsoluteDate<Gradient> target = initialOrbit.getDate().shiftedBy(duration);
         FieldSpacecraftState<Gradient> finalState_G = fieldpropagator.propagate(target);
         SpacecraftState finalState_R = propagator.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<Gradient> finPVC_G = finalState_G.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
-        
+
         // Compare final positions
         final Vector3D finPosition_G   = finPVC_G.toPVCoordinates().getPosition();
         final Vector3D finPosition_R    = finPVC_R.getPosition();
-        final double   finPositionDelta = Vector3D.distance(finPosition_G, finPosition_R); 
+        final double   finPositionDelta = Vector3D.distance(finPosition_G, finPosition_R);
         final double   propagPosTol     = finPosition_R.getNorm() * positionRelativeTolerancePropag;
         if (print) {
             System.out.println("1 - Check ΔP after propagation");
@@ -692,13 +691,13 @@ public abstract class AbstractForceModelTest {
             System.out.println("\t            εP = " + propagPosTol);
             System.out.println("\tΔPf / ||Pf_R|| = " + finPositionDelta / finPosition_R.getNorm());
         }
-        Assert.assertEquals(0.,  finPositionDelta, propagPosTol);
-        
+        Assertions.assertEquals(0.,  finPositionDelta, propagPosTol);
+
         // Second test: Compare
         // - A spacecraft state (pos, vel, acc) obtained with classical numerical propagation with a randomly shifted initial state
         // - With the Taylor expansion of the field spacecraft state obtained after propagation with the field numerical propagator
         // ----------------------------
-        
+
         // Set up random generator
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
@@ -713,15 +712,15 @@ public abstract class AbstractForceModelTest {
         double R_R = initialOrbit.getPerigeeArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
         double n_R = initialOrbit.getAnomaly(positionAngle).getReal();
-        
+
         // Max P, V, A values initialization
         double maxP = 0.;
         double maxV = 0.;
         double maxA = 0.;
-        
+
         // Loop on the number of tests
         for (int ii = 0; ii < nbTests; ii++){
-            
+
             // Shift Keplerian parameters
             double[] rand_next = URVG.nextVector();
             double a_shift = a_R + rand_next[0];
@@ -730,7 +729,7 @@ public abstract class AbstractForceModelTest {
             double R_shift = R_R + rand_next[3];
             double O_shift = O_R + rand_next[4];
             double n_shift = n_R + rand_next[5];
-            
+
             KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
                                                            PositionAngle.MEAN,
                                                            initialOrbit.getFrame(),
@@ -739,7 +738,7 @@ public abstract class AbstractForceModelTest {
                                                            );
             // Shifted initial spacecraft state
             SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
-            
+
             // Propagate to duration
             propagator.setInitialState(shift_iSR);
             SpacecraftState finalState_shift = propagator.propagate(target.toAbsoluteDate());
@@ -748,7 +747,7 @@ public abstract class AbstractForceModelTest {
 
             // Position check
             // --------------
-            
+
             // Taylor expansion of position
             FieldVector3D<Gradient> pos_DS = finPVC_G.getPosition();
             double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
@@ -759,7 +758,7 @@ public abstract class AbstractForceModelTest {
             double x = finPVC_shift.getPosition().getX();
             double y = finPVC_shift.getPosition().getY();
             double z = finPVC_shift.getPosition().getZ();
-            
+
             // Compute maximum delta pos
             maxP = FastMath.max(maxP, FastMath.abs((x_DS - x) / (x - pos_DS.getX().getReal())));
             maxP = FastMath.max(maxP, FastMath.abs((y_DS - y) / (y - pos_DS.getY().getReal())));
@@ -768,18 +767,18 @@ public abstract class AbstractForceModelTest {
 
             // Velocity check
             // --------------
-            
+
             // Taylor expansion of velocity
             FieldVector3D<Gradient> vel_G = finPVC_G.getVelocity();
             double vx_G = vel_G.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double vy_G = vel_G.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double vz_G = vel_G.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            
+
             // Reference velocity
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
-            
+
             // Compute maximum delta vel
             maxV = FastMath.max(maxV, FastMath.abs((vx_G - vx) / vx));
             maxV = FastMath.max(maxV, FastMath.abs((vy_G - vy) / vy));
@@ -788,18 +787,18 @@ public abstract class AbstractForceModelTest {
 
             // Acceleration check
             // ------------------
-            
+
             // Taylor expansion of acceleration
             FieldVector3D<Gradient> acc_G = finPVC_G.getAcceleration();
             double ax_G = acc_G.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double ay_G = acc_G.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double az_G = acc_G.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            
+
             // Reference acceleration
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            
+
             // Compute max accelerations
             maxA = FastMath.max(maxA, FastMath.abs((ax_G - ax) / ax));
             maxA = FastMath.max(maxA, FastMath.abs((ay_G - ay) / ay));
@@ -813,9 +812,9 @@ public abstract class AbstractForceModelTest {
             System.out.println("\tMax ΔV = " + maxV);
             System.out.println("\tMax ΔA = " + maxA);
         }
-        Assert.assertEquals(0, maxP, positionRelativeToleranceTaylor);
-        Assert.assertEquals(0, maxV, velocityRelativeToleranceTaylor);
-        Assert.assertEquals(0, maxA, accelerationRelativeToleranceTaylor);
+        Assertions.assertEquals(0, maxP, positionRelativeToleranceTaylor);
+        Assertions.assertEquals(0, maxV, velocityRelativeToleranceTaylor);
+        Assertions.assertEquals(0, maxA, accelerationRelativeToleranceTaylor);
     }
 
     private double[] jacobianColumn(final NumericalPropagator propagator, final SpacecraftState state0,

@@ -16,6 +16,8 @@
  */
 package org.orekit.errors;
 
+import org.hipparchus.exception.Localizable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,8 +28,6 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
-
-import org.hipparchus.exception.Localizable;
 
 /**
  * Enumeration for localized messages formats.
@@ -330,12 +330,18 @@ public enum OrekitMessages implements Localizable {
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
     MISSING_VELOCITY("missing velocity data"),
     ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error"),
-    FIND_ROOT("{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})"),
+    FIND_ROOT(
+            "{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})"),
     BACKWARD_PROPAGATION_NOT_ALLOWED("backward propagation not allowed here"),
-    NO_STATION_ECCENTRICITY_FOR_EPOCH("no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}"),
+    NO_STATION_ECCENTRICITY_FOR_EPOCH(
+            "no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}"),
     INCONSISTENT_SELECTION("inconsistent parameters selection between pairs {0}/{1} and {2}/{3}"),
-    NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}");
-
+    NO_UNSCENTED_TRANSFORM_CONFIGURED("no unscented transform configured"),
+    NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
+    UNSUPPORTED_TRANSFORM("transform from {0} to {1} is not implemented"),
+    WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}"),
+    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF("cannot change covariance type if defined in a local orbital frame"),
+    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME("cannot change covariance type if defined in a non pseudo-inertial reference frame");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */

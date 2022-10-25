@@ -16,18 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -55,11 +49,17 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class DSSTSolarRadiationPressureTest {
-    
+
     @Test
     public void testGetMeanElementRate() throws IllegalArgumentException {
-        
+
         final Frame earthFrame = FramesFactory.getGCRF();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 9, 16, 0, 0, 0, TimeScalesFactory.getUTC());
         final double mu = 3.986004415E14;
@@ -97,11 +97,11 @@ public class DSSTSolarRadiationPressureTest {
                                                                                       rotationRate,
                                                                                       rotationAcceleration);
         final Attitude att = new Attitude(earthFrame, orientation);
-        
+
         // Spacecraft state
         final SpacecraftState state = new SpacecraftState(orbit, att, 1000.0);
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
-        
+
         // Force model parameters
         final double[] parameters = srp.getParameters();
         // Initialize force model
@@ -110,7 +110,7 @@ public class DSSTSolarRadiationPressureTest {
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
         srp.registerAttitudeProvider(attitudeProvider );
-        
+
         // Compute the mean element rate
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -118,19 +118,19 @@ public class DSSTSolarRadiationPressureTest {
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-        
-        Assert.assertEquals(6.843966348263062E-8, elements[0], 1.e-23);
-        Assert.assertEquals(-2.990913371084091E-11, elements[1], 1.-26);
-        Assert.assertEquals(-2.538374405334012E-10, elements[2], 1.e-25);
-        Assert.assertEquals(2.0384702426501394E-13, elements[3], 1.e-28);
-        Assert.assertEquals(-2.3346333406116967E-14, elements[4], 1.e-29);
-        Assert.assertEquals(1.6087485237156322E-11, elements[5], 1.e-26);
+
+        Assertions.assertEquals(6.843966348263062E-8, elements[0], 1.e-23);
+        Assertions.assertEquals(-2.990913371084091E-11, elements[1], 1.e-26);
+        Assertions.assertEquals(-2.538374405334012E-10, elements[2], 1.e-25);
+        Assertions.assertEquals(2.0384702426501394E-13, elements[3], 1.e-28);
+        Assertions.assertEquals(-2.3346333406116967E-14, elements[4], 1.e-29);
+        Assertions.assertEquals(1.6087485237156322E-11, elements[5], 1.e-26);
 
     }
- 
+
     @Test
     public void testShortPeriodTerms() throws IllegalArgumentException {
- 
+
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(7069219.9806427825,
@@ -162,7 +162,7 @@ public class DSSTSolarRadiationPressureTest {
                                                                   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                   boxAndWing,
                                                                   meanState.getMu());
-        
+
         //Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
 
@@ -180,16 +180,16 @@ public class DSSTSolarRadiationPressureTest {
                 y[i] += shortPeriodic[i];
             }
         }
-        
-        Assert.assertEquals(0.36637346843285684,     y[0], 1.e-15);
-        Assert.assertEquals(-2.4294913010512626E-10, y[1], 1.e-25);
-        Assert.assertEquals(-3.858954680824408E-9,   y[2], 1.e-24);
-        Assert.assertEquals(-3.0648619902684686E-9,  y[3], 1.e-24);
-        Assert.assertEquals(-4.9023731169635814E-9,  y[4], 1.e-24);
-        Assert.assertEquals(-2.385357916413363E-9,   y[5], 1.e-24);
+
+        Assertions.assertEquals(0.36637346843285684,     y[0], 1.e-15);
+        Assertions.assertEquals(-2.4294913010512626E-10, y[1], 1.e-25);
+        Assertions.assertEquals(-3.858954680824408E-9,   y[2], 1.e-24);
+        Assertions.assertEquals(-3.0648619902684686E-9,  y[3], 1.e-24);
+        Assertions.assertEquals(-4.9023731169635814E-9,  y[4], 1.e-24);
+        Assertions.assertEquals(-2.385357916413363E-9,   y[5], 1.e-24);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }

@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
-import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -86,20 +85,6 @@ public class KeplerianOrbit extends Orbit {
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
-
-    /** First coefficient to compute Kepler equation solver starter. */
-    private static final double A;
-
-    /** Second coefficient to compute Kepler equation solver starter. */
-    private static final double B;
-
-    static {
-        final double k1 = 3 * FastMath.PI + 2;
-        final double k2 = FastMath.PI - 1;
-        final double k3 = 6 * FastMath.PI - 1;
-        A  = 3 * k2 * k2 / k1;
-        B  = k3 * k3 / (6 * k1);
-    }
 
     /** Semi-major axis (m). */
     private final double a;
@@ -223,13 +208,13 @@ public class KeplerianOrbit extends Orbit {
             switch (type) {
                 case MEAN :
                     vUD = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(anomalyUD, eUD), eUD) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(anomalyUD, eUD), eUD);
+                          FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, anomalyUD) :
+                          FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, anomalyUD);
                     break;
                 case ECCENTRIC :
                     vUD = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(anomalyUD, eUD) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(anomalyUD, eUD);
+                          FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD, anomalyUD) :
+                          FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD, anomalyUD);
                     break;
                 case TRUE :
                     vUD = anomalyUD;
@@ -243,13 +228,13 @@ public class KeplerianOrbit extends Orbit {
             switch (type) {
                 case MEAN :
                     this.v = (a < 0) ?
-                             hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e), e) :
-                             ellipticEccentricToTrue(meanToEllipticEccentric(anomaly, e), e);
+                             KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly) :
+                             KeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
                     break;
                 case ECCENTRIC :
                     this.v = (a < 0) ?
-                             hyperbolicEccentricToTrue(anomaly, e) :
-                             ellipticEccentricToTrue(anomaly, e);
+                             KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly) :
+                             KeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
                     break;
                 case TRUE :
                     this.v = anomaly;
@@ -339,13 +324,13 @@ public class KeplerianOrbit extends Orbit {
             final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
             final double eCE = rV2OnMu - 1;
             e = FastMath.sqrt(eSE * eSE + eCE * eCE);
-            v = ellipticEccentricToTrue(FastMath.atan2(eSE, eCE), e);
+            v = KeplerianAnomalyUtility.ellipticEccentricToTrue(e, FastMath.atan2(eSE, eCE));
         } else {
             // hyperbolic orbit
             final double eSH = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(-muA);
             final double eCH = rV2OnMu - 1;
             e = FastMath.sqrt(1 - m2 / muA);
-            v = hyperbolicEccentricToTrue(FastMath.log((eCH + eSH) / (eCH - eSH)) / 2, e);
+            v = KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, FastMath.log((eCH + eSH) / (eCH - eSH)) / 2);
         }
 
         // Checking eccentricity range
@@ -383,8 +368,8 @@ public class KeplerianOrbit extends Orbit {
             final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
             final UnivariateDerivative1 MUD = new UnivariateDerivative1(getMeanAnomaly(), MDot);
             final UnivariateDerivative1 vUD = (a < 0) ?
-                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MUD, eUD), eUD) :
-                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MUD, eUD), eUD);
+                                            FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
+                                            FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
             vDot = vUD.getDerivative(1);
 
         } else {
@@ -518,7 +503,9 @@ public class KeplerianOrbit extends Orbit {
      * @return eccentric anomaly (rad)
      */
     public double getEccentricAnomaly() {
-        return (a < 0) ? trueToHyperbolicEccentric(v, e) : trueToEllipticEccentric(v, e);
+        return (a < 0) ?
+               KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, v) :
+               KeplerianAnomalyUtility.ellipticTrueToEccentric(e, v);
     }
 
     /** Get the eccentric anomaly derivative.
@@ -529,8 +516,8 @@ public class KeplerianOrbit extends Orbit {
         final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
         final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
         final UnivariateDerivative1 EUD = (a < 0) ?
-                                        FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD) :
-                                        FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD);
+                                        FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
+                                        FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
         return EUD.getDerivative(1);
     }
 
@@ -539,8 +526,8 @@ public class KeplerianOrbit extends Orbit {
      */
     public double getMeanAnomaly() {
         return (a < 0) ?
-               hyperbolicEccentricToMean(trueToHyperbolicEccentric(v, e), e) :
-               ellipticEccentricToMean(trueToEllipticEccentric(v, e), e);
+               KeplerianAnomalyUtility.hyperbolicTrueToMean(e, v) :
+               KeplerianAnomalyUtility.ellipticTrueToMean(e, v);
     }
 
     /** Get the mean anomaly derivative.
@@ -551,8 +538,8 @@ public class KeplerianOrbit extends Orbit {
         final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
         final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
         final UnivariateDerivative1 MUD = (a < 0) ?
-                                        FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD), eUD) :
-                                        FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD), eUD);
+                                        FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD, vUD) :
+                                        FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD, vUD);
         return MUD.getDerivative(1);
     }
 
@@ -581,207 +568,70 @@ public class KeplerianOrbit extends Orbit {
      * @param E eccentric anomaly (rad)
      * @param e eccentricity
      * @return v the true anomaly
-     * @since 9.0
+     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticEccentricToTrue(double, double)}.
      */
     public static double ellipticEccentricToTrue(final double E, final double e) {
-        final double beta = e / (1 + FastMath.sqrt((1 - e) * (1 + e)));
-        final SinCos scE = FastMath.sinCos(E);
-        return E + 2 * FastMath.atan(beta * scE.sin() / (1 - beta * scE.cos()));
+        return KeplerianAnomalyUtility.ellipticEccentricToTrue(e, E);
     }
 
     /** Computes the elliptic eccentric anomaly from the true anomaly.
      * @param v true anomaly (rad)
      * @param e eccentricity
      * @return E the elliptic eccentric anomaly
-     * @since 9.0
+     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticTrueToEccentric(double, double)}.
      */
     public static double trueToEllipticEccentric(final double v, final double e) {
-        final double beta = e / (1 + FastMath.sqrt(1 - e * e));
-        final SinCos scv = FastMath.sinCos(v);
-        return v - 2 * FastMath.atan(beta * scv.sin() / (1 + beta * scv.cos()));
+        return KeplerianAnomalyUtility.ellipticTrueToEccentric(e, v);
     }
 
     /** Computes the true anomaly from the hyperbolic eccentric anomaly.
      * @param H hyperbolic eccentric anomaly (rad)
      * @param e eccentricity
      * @return v the true anomaly
+     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#hyperbolicEccentricToTrue(double, double)}.
      */
     public static double hyperbolicEccentricToTrue(final double H, final double e) {
-        return 2 * FastMath.atan(FastMath.sqrt((e + 1) / (e - 1)) * FastMath.tanh(H / 2));
+        return KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, H);
     }
 
     /** Computes the hyperbolic eccentric anomaly from the true anomaly.
      * @param v true anomaly (rad)
      * @param e eccentricity
      * @return H the hyperbolic eccentric anomaly
-     * @since 9.0
+     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#hyperbolicTrueToEccentric(double, double)}.
      */
     public static double trueToHyperbolicEccentric(final double v, final double e) {
-        final SinCos scv = FastMath.sinCos(v);
-        final double sinhH = FastMath.sqrt(e * e - 1) * scv.sin() / (1 + e * scv.cos());
-        return FastMath.asinh(sinhH);
+        return KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, v);
     }
 
     /** Computes the elliptic eccentric anomaly from the mean anomaly.
-     * <p>
-     * The algorithm used here for solving Kepler equation has been published
-     * in: "Procedures for  solving Kepler's Equation", A. W. Odell and
-     * R. H. Gooding, Celestial Mechanics 38 (1986) 307-334
-     * </p>
      * @param M mean anomaly (rad)
      * @param e eccentricity
      * @return E the eccentric anomaly
+     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticMeanToEccentric(double, double)}.
      */
     public static double meanToEllipticEccentric(final double M, final double e) {
-
-        // reduce M to [-PI PI) interval
-        final double reducedM = MathUtils.normalizeAngle(M, 0.0);
-
-        // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-        double E;
-        if (FastMath.abs(reducedM) < 1.0 / 6.0) {
-            E = reducedM + e * (FastMath.cbrt(6 * reducedM) - reducedM);
-        } else {
-            if (reducedM < 0) {
-                final double w = FastMath.PI + reducedM;
-                E = reducedM + e * (A * w / (B - w) - FastMath.PI - reducedM);
-            } else {
-                final double w = FastMath.PI - reducedM;
-                E = reducedM + e * (FastMath.PI - A * w / (B - w) - reducedM);
-            }
-        }
-
-        final double e1 = 1 - e;
-        final boolean noCancellationRisk = (e1 + E * E / 6) >= 0.1;
-
-        // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
-        for (int j = 0; j < 2; ++j) {
-            final double f;
-            double fd;
-            final SinCos sc   = FastMath.sinCos(E);
-            final double fdd  = e * sc.sin();
-            final double fddd = e * sc.cos();
-            if (noCancellationRisk) {
-                f  = (E - fdd) - reducedM;
-                fd = 1 - fddd;
-            } else {
-                f  = eMeSinE(E, e) - reducedM;
-                final double s = FastMath.sin(0.5 * E);
-                fd = e1 + 2 * e * s * s;
-            }
-            final double dee = f * fd / (0.5 * f * fdd - fd * fd);
-
-            // update eccentric anomaly, using expressions that limit underflow problems
-            final double w = fd + 0.5 * dee * (fdd + dee * fddd / 3);
-            fd += dee * (fdd + 0.5 * dee * fddd);
-            E  -= (f - dee * (fd - w)) / fd;
-
-        }
-
-        // expand the result back to original range
-        E += M - reducedM;
-
-        return E;
-
-    }
-
-    /** Accurate computation of E - e sin(E).
-     * <p>
-     * This method is used when E is close to 0 and e close to 1,
-     * i.e. near the perigee of almost parabolic orbits
-     * </p>
-     * @param E eccentric anomaly
-     * @param e eccentricity
-     * @return E - e sin(E)
-     */
-    private static double eMeSinE(final double E, final double e) {
-        double x = (1 - e) * FastMath.sin(E);
-        final double mE2 = -E * E;
-        double term = E;
-        double d    = 0;
-        // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (double x0 = Double.NaN; !Double.valueOf(x).equals(Double.valueOf(x0));) {
-            d += 2;
-            term *= mE2 / (d * (d + 1));
-            x0 = x;
-            x = x - term;
-        }
-        return x;
-    }
-
-    /** Computes the hyperbolic eccentric anomaly from the mean anomaly.
-     * <p>
-     * The algorithm used here for solving hyperbolic Kepler equation is
-     * Danby's iterative method (3rd order) with Vallado's initial guess.
-     * </p>
-     * @param M mean anomaly (rad)
-     * @param ecc eccentricity
-     * @return H the hyperbolic eccentric anomaly
-     */
-    public static double meanToHyperbolicEccentric(final double M, final double ecc) {
-
-        // Resolution of hyperbolic Kepler equation for Keplerian parameters
-
-        // Initial guess
-        double H;
-        if (ecc < 1.6) {
-            if (-FastMath.PI < M && M < 0. || M > FastMath.PI) {
-                H = M - ecc;
-            } else {
-                H = M + ecc;
-            }
-        } else {
-            if (ecc < 3.6 && FastMath.abs(M) > FastMath.PI) {
-                H = M - FastMath.copySign(ecc, M);
-            } else {
-                H = M / (ecc - 1.);
-            }
-        }
-
-        // Iterative computation
-        int iter = 0;
-        do {
-            final double f3  = ecc * FastMath.cosh(H);
-            final double f2  = ecc * FastMath.sinh(H);
-            final double f1  = f3 - 1.;
-            final double f0  = f2 - H - M;
-            final double f12 = 2. * f1;
-            final double d   = f0 / f12;
-            final double fdf = f1 - d * f2;
-            final double ds  = f0 / fdf;
-
-            final double shift = f0 / (fdf + ds * ds * f3 / 6.);
-
-            H -= shift;
-
-            if (FastMath.abs(shift) <= 1.0e-12) {
-                return H;
-            }
-
-        } while (++iter < 50);
-
-        throw new MathIllegalStateException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
-                                            iter);
+        return KeplerianAnomalyUtility.ellipticEccentricToMean(e, M);
     }
 
     /** Computes the mean anomaly from the elliptic eccentric anomaly.
      * @param E eccentric anomaly (rad)
      * @param e eccentricity
      * @return M the mean anomaly
-     * @since 9.0
+     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticEccentricToMean(double, double)}.
      */
     public static double ellipticEccentricToMean(final double E, final double e) {
-        return E - e * FastMath.sin(E);
+        return KeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
     }
 
     /** Computes the mean anomaly from the hyperbolic eccentric anomaly.
      * @param H hyperbolic eccentric anomaly (rad)
      * @param e eccentricity
      * @return M the mean anomaly
-     * @since 9.0
+     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#hyperbolicEccentricToMean(double, double)}.
      */
     public static double hyperbolicEccentricToMean(final double H, final double e) {
-        return e * FastMath.sinh(H) - H;
+        return KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, H);
     }
 
     /** {@inheritDoc} */

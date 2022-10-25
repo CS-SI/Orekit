@@ -16,15 +16,15 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CR3BPFactory;
 import org.orekit.bodies.CR3BPSystem;
@@ -69,7 +69,7 @@ public class CR3BPRotatingTransformProviderTest {
         Vector3D posBary   = baryFrame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Moon are aligned as seen from Earth
-        Assert.assertEquals(0.0, Vector3D.angle(posMoon, posBary), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.angle(posMoon, posBary), 1.0e-10);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class CR3BPRotatingTransformProviderTest {
         FieldVector3D<T> posBary   = baryFrame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Moon are aligned as seen from Earth
-        Assert.assertEquals(0.0, FieldVector3D.angle(posMoon, posBary).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, FieldVector3D.angle(posMoon, posBary).getReal(), 1.0e-10);
     }
 
 
@@ -134,7 +134,7 @@ public class CR3BPRotatingTransformProviderTest {
         Vector3D posBary   = baryFrame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Earth are aligned as seen from Sun
-        Assert.assertEquals(0.0, Vector3D.angle(posEarth, posBary), 3.0e-5);
+        Assertions.assertEquals(0.0, Vector3D.angle(posEarth, posBary), 3.0e-5);
     }
 
     @Test
@@ -169,7 +169,7 @@ public class CR3BPRotatingTransformProviderTest {
         FieldVector3D<T> posBary   = baryFrame.getTransformTo(sunFrame,date).transformPosition(FieldVector3D.getZero(field));
 
         // check L2 and Earth are aligned as seen from Sun
-        Assert.assertEquals(0.0, FieldVector3D.angle(posEarth, posBary).getReal(), 3.0e-5);
+        Assertions.assertEquals(0.0, FieldVector3D.angle(posEarth, posBary).getReal(), 3.0e-5);
     }
 
     @Test
@@ -200,7 +200,7 @@ public class CR3BPRotatingTransformProviderTest {
         Vector3D posBary   = baryFrame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Jupiter are aligned as seen from Sun
-        Assert.assertEquals(0.0, Vector3D.angle(posJupiter, posBary), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.angle(posJupiter, posBary), 1.0e-10);
     }
 
     @Test
@@ -235,7 +235,7 @@ public class CR3BPRotatingTransformProviderTest {
         FieldVector3D<T> posBary   = baryFrame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Jupiter are aligned as seen from Sun
-        Assert.assertEquals(0.0, FieldVector3D.angle(posJupiter, posBary).getReal(), 1.0e-10);
+        Assertions.assertEquals(0.0, FieldVector3D.angle(posJupiter, posBary).getReal(), 1.0e-10);
     }
 
     @Test
@@ -252,8 +252,8 @@ public class CR3BPRotatingTransformProviderTest {
             final AbsoluteDate date              = date0.shiftedBy(dt);
             final Vector3D     sunPositionInBary   = sun.getPVCoordinates(date, baryFrame).getPosition();
             final Vector3D     earthPositionInBary = earth.getPVCoordinates(date, baryFrame).getPosition();
-            Assert.assertEquals(0.0, Vector3D.angle(sunPositionInBary,   Vector3D.MINUS_I), 1.0e-10);
-            Assert.assertEquals(FastMath.PI, Vector3D.angle(earthPositionInBary, Vector3D.MINUS_I), 1.0e-4);
+            Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInBary,   Vector3D.MINUS_I), 1.0e-10);
+            Assertions.assertEquals(FastMath.PI, Vector3D.angle(earthPositionInBary, Vector3D.MINUS_I), 1.0e-4);
         }
     }
 
@@ -275,12 +275,12 @@ public class CR3BPRotatingTransformProviderTest {
             final FieldAbsoluteDate<T> date              = date0.shiftedBy(dt);
             final FieldVector3D<T>     sunPositionInBary   = sun.getPVCoordinates(date, baryFrame).getPosition();
             final FieldVector3D<T>     earthPositionInBary = earth.getPVCoordinates(date, baryFrame).getPosition();
-            Assert.assertEquals(0.0, FieldVector3D.angle(sunPositionInBary,   Vector3D.MINUS_I).getReal(), 1.0e-10);
-            Assert.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInBary, Vector3D.MINUS_I).getReal(), 1.0e-4);
+            Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInBary,   Vector3D.MINUS_I).getReal(), 1.0e-10);
+            Assertions.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInBary, Vector3D.MINUS_I).getReal(), 1.0e-4);
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

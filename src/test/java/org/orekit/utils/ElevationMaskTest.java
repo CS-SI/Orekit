@@ -17,20 +17,20 @@
 package org.orekit.utils;
 
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 public class ElevationMaskTest {
 
-    @Before
+    @BeforeEach
     public void setUp()
         throws Exception {
     }
 
-    @After
+    @AfterEach
     public void tearDown()
         throws Exception {
     }
@@ -43,15 +43,17 @@ public class ElevationMaskTest {
 
         ElevationMask mask = new ElevationMask(masqueData);
 
-        Assert.assertNotNull(mask);
+        Assertions.assertNotNull(mask);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void testMaskException() {
-        double [][] masque = {{FastMath.toRadians(   0), FastMath.toRadians(5)},
-                              {FastMath.toRadians( 360), FastMath.toRadians(4)}};
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            double [][] masque = {{FastMath.toRadians(   0), FastMath.toRadians(5)},
+                    {FastMath.toRadians( 360), FastMath.toRadians(4)}};
 
-        new ElevationMask(masque);
+            new ElevationMask(masque);
+        });
     }
 
     @Test
@@ -63,7 +65,7 @@ public class ElevationMaskTest {
 
         double azimuth = FastMath.toRadians(90);
         double elevation = mask.getElevation(azimuth);
-        Assert.assertEquals(FastMath.toRadians(4), elevation, 1.0e-15);
+        Assertions.assertEquals(FastMath.toRadians(4), elevation, 1.0e-15);
     }
 
 }

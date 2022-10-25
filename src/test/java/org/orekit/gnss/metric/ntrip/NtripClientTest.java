@@ -16,6 +16,12 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -23,21 +29,15 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
-import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-
 public class NtripClientTest {
 
     @Test
     public void testProxy() {
         NtripClient client = new NtripClient("ntrip.example.org", NtripClient.DEFAULT_PORT);
         client.setProxy(Proxy.Type.SOCKS, "localhost", 1080);
-        Assert.assertEquals(Proxy.Type.SOCKS, client.getProxy().type());
-        Assert.assertEquals("localhost", ((InetSocketAddress) client.getProxy().address()).getHostName());
-        Assert.assertEquals(1080, ((InetSocketAddress) client.getProxy().address()).getPort());
+        Assertions.assertEquals(Proxy.Type.SOCKS, client.getProxy().type());
+        Assertions.assertEquals("localhost", ((InetSocketAddress) client.getProxy().address()).getHostName());
+        Assertions.assertEquals(1080, ((InetSocketAddress) client.getProxy().address()).getPort());
     }
 
     @Test
@@ -46,13 +46,13 @@ public class NtripClientTest {
         try {
             NtripClient client = new NtripClient("ntrip.example.org", NtripClient.DEFAULT_PORT);
             client.setProxy(Proxy.Type.SOCKS, nonExistant, 1080);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException me) {
-            Assert.assertEquals(OrekitMessages.UNKNOWN_HOST, me.getSpecifier());
-            Assert.assertEquals(nonExistant, me.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNKNOWN_HOST, me.getSpecifier());
+            Assertions.assertEquals(nonExistant, me.getParts()[0]);
         }
     }
-    
+
     @Test
     public void testUnknownCaster() {
         final String nonExistant = "caster.invalid";
@@ -60,10 +60,10 @@ public class NtripClientTest {
             NtripClient client = new NtripClient(nonExistant, NtripClient.DEFAULT_PORT);
             client.setTimeout(100);
             client.getSourceTable();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException me) {
-            Assert.assertEquals(OrekitMessages.CANNOT_PARSE_SOURCETABLE, me.getSpecifier());
-            Assert.assertEquals(nonExistant, me.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.CANNOT_PARSE_SOURCETABLE, me.getSpecifier());
+            Assertions.assertEquals(nonExistant, me.getParts()[0]);
         }
     }
 
@@ -75,10 +75,10 @@ public class NtripClientTest {
             NtripClient client = new NtripClient("localhost", server.getServerPort());
             client.setTimeout(500);
             client.getSourceTable();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException me) {
-            Assert.assertEquals(OrekitMessages.UNEXPECTED_CONTENT_TYPE, me.getSpecifier());
-            Assert.assertEquals("text/html", me.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNEXPECTED_CONTENT_TYPE, me.getSpecifier());
+            Assertions.assertEquals("text/html", me.getParts()[0]);
         }
     }
 
@@ -98,10 +98,10 @@ public class NtripClientTest {
                 // ignored
             }
             client.stopStreaming(100);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException me) {
-            Assert.assertEquals(OrekitMessages.UNEXPECTED_CONTENT_TYPE, me.getSpecifier());
-            Assert.assertEquals("text/html", me.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNEXPECTED_CONTENT_TYPE, me.getSpecifier());
+            Assertions.assertEquals("text/html", me.getParts()[0]);
         }
     }
 
@@ -121,11 +121,11 @@ public class NtripClientTest {
                 // ignored
             }
             client.stopStreaming(100);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException me) {
-            Assert.assertEquals(OrekitMessages.CONNECTION_ERROR, me.getSpecifier());
-            Assert.assertEquals("localhost", me.getParts()[0]);
-            Assert.assertEquals("Gone", me.getParts()[1]);
+            Assertions.assertEquals(OrekitMessages.CONNECTION_ERROR, me.getSpecifier());
+            Assertions.assertEquals("localhost", me.getParts()[0]);
+            Assertions.assertEquals("Gone", me.getParts()[1]);
         }
     }
 
@@ -137,12 +137,12 @@ public class NtripClientTest {
             NtripClient client = new NtripClient("localhost", server.getServerPort());
             client.setTimeout(500);
             client.getSourceTable();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException me) {
-            Assert.assertEquals(OrekitMessages.SOURCETABLE_PARSE_ERROR, me.getSpecifier());
-            Assert.assertEquals("localhost", me.getParts()[0]);
-            Assert.assertEquals(7,           me.getParts()[1]);
-            Assert.assertEquals("BCE;CLK01;BRDC_CoM_ITRF;RTCM 3.1;1057(60),1058(5),1059(5),1063(60),1064(5);0;GPS+GLO;MISC;DEU;50.09;8.66;0;1;RTNet;none;B;N;1400;BKG",       me.getParts()[2]);
+            Assertions.assertEquals(OrekitMessages.SOURCETABLE_PARSE_ERROR, me.getSpecifier());
+            Assertions.assertEquals("localhost", me.getParts()[0]);
+            Assertions.assertEquals(7,           me.getParts()[1]);
+            Assertions.assertEquals("BCE;CLK01;BRDC_CoM_ITRF;RTCM 3.1;1057(60),1058(5),1059(5),1063(60),1064(5);0;GPS+GLO;MISC;DEU;50.09;8.66;0;1;RTNet;none;B;N;1400;BKG",       me.getParts()[2]);
         }
     }
 
@@ -152,14 +152,14 @@ public class NtripClientTest {
         server.run();
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(500);
-        Assert.assertEquals("localhost", client.getHost());
-        Assert.assertEquals(server.getServerPort(), client.getPort());
+        Assertions.assertEquals("localhost", client.getHost());
+        Assertions.assertEquals(server.getServerPort(), client.getPort());
         SourceTable table = client.getSourceTable();
-        Assert.assertEquals("st_filter,st_auth,st_match,st_strict,rtsp,plain_rtp", table.getNtripFlags());
-        Assert.assertEquals( 2, table.getCasters().size());
-        Assert.assertEquals( 2, table.getNetworks().size());
-        Assert.assertEquals(42, table.getDataStreams().size());
-        Assert.assertSame(table, client.getSourceTable());
+        Assertions.assertEquals("st_filter,st_auth,st_match,st_strict,rtsp,plain_rtp", table.getNtripFlags());
+        Assertions.assertEquals( 2, table.getCasters().size());
+        Assertions.assertEquals( 2, table.getNetworks().size());
+        Assertions.assertEquals(42, table.getDataStreams().size());
+        Assertions.assertSame(table, client.getSourceTable());
     }
 
     @Test
@@ -182,10 +182,10 @@ public class NtripClientTest {
         Thread.sleep(1000);
         try {
             client.stopStreaming(100);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, oe.getSpecifier());
-            Assert.assertEquals("1046", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, oe.getSpecifier());
+            Assertions.assertEquals("1046", oe.getParts()[0]);
         }
     }
 
@@ -200,10 +200,10 @@ public class NtripClientTest {
         client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
         try {
             client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.MOUNPOINT_ALREADY_CONNECTED, oe.getSpecifier());
-            Assert.assertEquals("RTCM3EPH01", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.MOUNPOINT_ALREADY_CONNECTED, oe.getSpecifier());
+            Assertions.assertEquals("RTCM3EPH01", oe.getParts()[0]);
         }
     }
 
@@ -222,7 +222,7 @@ public class NtripClientTest {
             // ignored
         }
         client.stopStreaming(100);
-        Assert.assertEquals("$GPGGA,024213.456,4330.0000,N,0115.0000,W,1,04,1.0,317.5,M,12.2,M,,*7A",
+        Assertions.assertEquals("$GPGGA,024213.456,4330.0000,N,0115.0000,W,1,04,1.0,317.5,M,12.2,M,,*7A",
                             server.getRequestProperty("Ntrip-GGA"));
     }
 
@@ -241,7 +241,7 @@ public class NtripClientTest {
             // ignored
         }
         client.stopStreaming(100);
-        Assert.assertEquals("$GPGGA,024213.456,4330.0000,S,0115.0000,E,1,04,1.0,317.5,M,12.2,M,,*75",
+        Assertions.assertEquals("$GPGGA,024213.456,4330.0000,S,0115.0000,E,1,04,1.0,317.5,M,12.2,M,,*75",
                             server.getRequestProperty("Ntrip-GGA"));
     }
 
@@ -261,7 +261,7 @@ public class NtripClientTest {
             }
             client.stopStreaming(100);
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.STREAM_REQUIRES_NMEA_FIX, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.STREAM_REQUIRES_NMEA_FIX, oe.getSpecifier());
         }
     }
 
@@ -280,10 +280,10 @@ public class NtripClientTest {
                 // ignored
             }
             client.stopStreaming(100);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.FAILED_AUTHENTICATION, oe.getSpecifier());
-            Assert.assertEquals("RTCM3EPH01", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.FAILED_AUTHENTICATION, oe.getSpecifier());
+            Assertions.assertEquals("RTCM3EPH01", oe.getParts()[0]);
         }
     }
 
@@ -301,10 +301,10 @@ public class NtripClientTest {
                 // ignored
             }
             client.stopStreaming(100);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.FAILED_AUTHENTICATION, oe.getSpecifier());
-            Assert.assertEquals("caster", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.FAILED_AUTHENTICATION, oe.getSpecifier());
+            Assertions.assertEquals("caster", oe.getParts()[0]);
         }
     }
 
@@ -322,11 +322,11 @@ public class NtripClientTest {
                 // ignored
             }
             client.stopStreaming(100);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CONNECTION_ERROR, oe.getSpecifier());
-            Assert.assertEquals("localhost", oe.getParts()[0]);
-            Assert.assertEquals("Forbidden", oe.getParts()[1]);
+            Assertions.assertEquals(OrekitMessages.CONNECTION_ERROR, oe.getSpecifier());
+            Assertions.assertEquals("localhost", oe.getParts()[0]);
+            Assertions.assertEquals("Forbidden", oe.getParts()[1]);
         }
     }
 
@@ -344,11 +344,11 @@ public class NtripClientTest {
                 // ignored
             }
             client.stopStreaming(100);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.MISSING_HEADER, oe.getSpecifier());
-            Assert.assertEquals("localhost", oe.getParts()[0]);
-            Assert.assertEquals("Ntrip-Flags", oe.getParts()[1]);
+            Assertions.assertEquals(OrekitMessages.MISSING_HEADER, oe.getSpecifier());
+            Assertions.assertEquals("localhost", oe.getParts()[0]);
+            Assertions.assertEquals("Ntrip-Flags", oe.getParts()[1]);
         }
     }
 
@@ -361,7 +361,7 @@ public class NtripClientTest {
             }
             server = new DummyServer(fileNames);
         } catch (URISyntaxException | IOException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
         }
         return server;
     }

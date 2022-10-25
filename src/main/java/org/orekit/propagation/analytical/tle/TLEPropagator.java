@@ -594,7 +594,12 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
-        return new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Create the harvester
+        final TLEHarvester harvester = new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Update the list of additional state provider
+        addAdditionalStateProvider(harvester);
+        // Return the configured harvester
+        return harvester;
     }
 
     /**

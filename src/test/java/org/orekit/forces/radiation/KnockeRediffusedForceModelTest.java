@@ -26,9 +26,9 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.forces.AbstractForceModelTest;
@@ -56,7 +56,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 
-/** 
+/**
  * This force model was developed according to "EARTH RADIATION PRESSURE EFFECTS ON SATELLITES", 1988, by P. C. Knocke, J. C. Ries, and B. D. Tapley.
  * It was confronted to the results that are presented in this paper and reached satisfying performances.
  * However, the complete reproduction of the LAGEOS-1 test case is much too long for it to be implemented in test class.
@@ -64,12 +64,12 @@ import org.orekit.utils.PVCoordinates;
  */
 public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
-    
-    
+
+
     @Test
     public void testJacobianVsFiniteDifferences() {
 
@@ -86,14 +86,14 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Sun
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        
+
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
 
         // Set up the force model to test
-        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun, 
-                                                                                     radiationSensitive, 
-                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, 
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun,
+                                                                                     radiationSensitive,
+                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
 
         SpacecraftState state = new SpacecraftState(orbit,
@@ -101,7 +101,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         checkStateJacobianVsFiniteDifferences(state, forceModel, Utils.defaultLaw(), 1.0, 5.5e-9, false);
 
     }
-    
+
     @Test
     public void testParameterIsotropicSingle() {
 
@@ -115,20 +115,20 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Sun
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        
+
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
 
         // Set up the force model to test
-        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun, 
-                                                                                     radiationSensitive, 
-                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, 
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun,
+                                                                                     radiationSensitive,
+                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
 
         checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 1.8e-16);
 
     }
-    
+
     @Test
     public void testGlobalStateJacobianIsotropicSingle()
         {
@@ -150,17 +150,17 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
-        
+
         // Sun
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        
+
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
 
         // Set up the force model to test
-        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun, 
-                                                                                     radiationSensitive, 
-                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, 
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun,
+                                                                                     radiationSensitive,
+                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -169,10 +169,10 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                            1e3, tolerances[0], 3.2e-8);
 
     }
-    
+
     @Test
     public void testRealField() {
-        
+
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
         DSFactory factory = new DSFactory(6, 4);
@@ -188,7 +188,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Initial date = J2000 epoch
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
-        
+
         // J2000 frame
         Frame EME = FramesFactory.getEME2000();
 
@@ -198,7 +198,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
-        
+
         // Initial field and classical S/Cs
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
         SpacecraftState iSR = initialState.toSpacecraftState();
@@ -209,7 +209,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
         OrbitType type = OrbitType.KEPLERIAN;
-        
+
         // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
@@ -221,29 +221,29 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Sun
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        
+
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
 
         // Set up the force model to test
-        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun, 
-                                                                                     radiationSensitive, 
-                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, 
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun,
+                                                                                     radiationSensitive,
+                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 300., NP, FNP,
                                   1.0e-30, 1.3e-8, 6.7e-11, 1.4e-10,
                                   1, false);
     }
-    
-    
+
+
     @Test
     public void testRealFieldGradient() {
-        
+
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
         final Gradient a           = Gradient.variable(6, 0, 7e6);
@@ -252,13 +252,13 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final Gradient pa          = Gradient.variable(6, 3, 0.7);
         final Gradient raan        = Gradient.variable(6, 4, 0.5);
         final Gradient meanAnomaly = Gradient.variable(6, 5, 0.1);
-        
+
         final Field<Gradient> field = a.getField();
         final Gradient zero = field.getZero();
 
         // Initial date = J2000 epoch
         final FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
-        
+
         // J2000 frame
         final Frame EME = FramesFactory.getEME2000();
 
@@ -268,7 +268,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                                             EME,
                                                                             J2000,
                                                                             zero.add(Constants.EIGEN5C_EARTH_MU));
-        
+
         // Initial field and classical S/Cs
         final FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
         final SpacecraftState iSR = initialState.toSpacecraftState();
@@ -279,7 +279,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
         final OrbitType type = OrbitType.KEPLERIAN;
-        
+
         // Field and classical numerical propagators
         final FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
@@ -288,28 +288,28 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
-        
+
         // Sun
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        
+
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
 
         // Set up the force model to test
-        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun, 
-                                                                                     radiationSensitive, 
-                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, 
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun,
+                                                                                     radiationSensitive,
+                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 300., NP, FNP,
                                           1.0e-30, 1.3e-2, 9.6e-5, 1.4e-4,
                                           1, false);
     }
-    
+
     /** Roughtly compare Knocke model accelerations against results from "EARTH RADIATION PRESSURE EFFECTS ON SATELLITES",
      *  1988, by P. C. Knocke, J. C. Ries, and B. D. Tapley.
      *  The case is as close as possible from what it might be in the paper. Orbit and date have been artifically set so that the angle between
@@ -317,15 +317,15 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
      */
     @Test
     public void testRoughtAcceleration() {
-        
+
         // LAGEOS-1
         final double mass = 406.9;
         final double crossSection = 7E-4 * mass;
         final double K = 1 + 0.13;
-        
-        final TLE tle = new TLE ("1 08820U 76039  A 77047.52561960  .00000002 +00000-0 +00000-0 0  9994", 
+
+        final TLE tle = new TLE ("1 08820U 76039  A 77047.52561960  .00000002 +00000-0 +00000-0 0  9994",
                                  "2 08820 109.8332 127.3884 0044194 201.3006 158.6132 06.38663945018402");
-        
+
         // Orbit
         final KeplerianOrbit keplerianTLE = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(TLEPropagator.selectExtrapolator(tle).
                                                                                       propagate(tle.getDate()).getOrbit());
@@ -335,23 +335,23 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final double pa   = keplerianTLE.getPerigeeArgument();
         final double raan = keplerianTLE.getRightAscensionOfAscendingNode();
         final double nu   = keplerianTLE.getTrueAnomaly();
-        
-        // Date 
+
+        // Date
         final AbsoluteDate date0 = new AbsoluteDate(new DateComponents(1970, 1, 18),
                                                     new TimeComponents(0, 0, 0.0),
                                                     TimeScalesFactory.getUTC());
-        
+
         // Frame
         final Frame frame = FramesFactory.getTEME();
-        
+
         final KeplerianOrbit keplerian = new KeplerianOrbit(a, e, i, pa, raan, nu, PositionAngle.TRUE, frame, date0, Constants.IERS2010_EARTH_MU);
         final SpacecraftState initState = new SpacecraftState(keplerian, mass);
-        
+
         // Celestial objects
-        
+
         // Sun
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        
+
         // Earth
         final double equatorialRadius = Constants.EGM96_EARTH_EQUATORIAL_RADIUS;
 
@@ -359,73 +359,73 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         // Earth Radiation model
         final double angularResolution = FastMath.toRadians(15);
         final RadiationSensitive radiationSensitive  = new IsotropicRadiationSingleCoefficient(crossSection, K);
-        final KnockeRediffusedForceModel knockeModel = new KnockeRediffusedForceModel(sun, radiationSensitive, 
-                                                                                      equatorialRadius, 
+        final KnockeRediffusedForceModel knockeModel = new KnockeRediffusedForceModel(sun, radiationSensitive,
+                                                                                      equatorialRadius,
                                                                                       angularResolution);
-        
+
         // Propagation time
         final double duration = keplerian.getKeplerianPeriod();
-        
+
         // Creation of the propagator
         final double minStep = duration * 0.01;
         final double maxStep = duration * 0.5;
-        final double handlerStep = duration / 20; 
+        final double handlerStep = duration / 20;
         final double positionTolerance = 1e-3;
         final double[][] tolerances =
                         NumericalPropagator.tolerances(positionTolerance, keplerian, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator =
             new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
-        
+
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
 
         propagator.setInitialState(initState);
         propagator.addForceModel(knockeModel);
         propagator.setStepHandler(handlerStep, new KnockeStepHandler(knockeModel));
-        
+
         final SpacecraftState finalState = propagator.propagate(date0.shiftedBy(duration));
-        
-        Assert.assertTrue(finalState.getDate().equals(date0.shiftedBy(duration)));
+
+        Assertions.assertTrue(finalState.getDate().equals(date0.shiftedBy(duration)));
     }
-    
+
     /** Knocke model specialized step handler. */
     private static class KnockeStepHandler implements OrekitFixedStepHandler {
-        
+
         /** Knocke model. */
         private final KnockeRediffusedForceModel knockeModel;
-        
-        
+
+
         /** Simple constructor. */
         KnockeStepHandler(final KnockeRediffusedForceModel knockeModel) {
-            
+
             this.knockeModel = knockeModel;
         }
-        
+
         @Override
         public void handleStep(SpacecraftState currentState) {
-            
+
             // Get Knocke model acceleration
             final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters());
-            
+
             // Get radial direction
             final Vector3D radialUnit = currentState.getOrbit().getPVCoordinates().getPosition().normalize();
-            
+
             // Get along track direction
             final Vector3D velocity = currentState.getOrbit().getPVCoordinates().getVelocity();
             final Vector3D alongTrackUnit = velocity.subtract(radialUnit.scalarMultiply(velocity.dotProduct(radialUnit))).normalize();
-            
+
             // Get cross track direction
             final Vector3D crossTrackUnit = radialUnit.crossProduct(alongTrackUnit);
-            
+
             // Get projected Knocke model acceleration values on 3 dimensions
             final double radialAcceleration     = knockeAcceleration.dotProduct(radialUnit);
             final double alongTrackAcceleration = knockeAcceleration.dotProduct(alongTrackUnit);
             final double crossTrackAcceleration = knockeAcceleration.dotProduct(crossTrackUnit);
-            
+
             // Check values
-            Assert.assertEquals(2.5e-10, radialAcceleration, 1.5e-10);
-            Assert.assertEquals(0.0, alongTrackAcceleration, 5e-11);
-            Assert.assertEquals(0.0, crossTrackAcceleration, 5e-12);
+            Assertions.assertEquals(2.5e-10, radialAcceleration, 1.5e-10);
+            Assertions.assertEquals(0.0, alongTrackAcceleration, 5e-11);
+            Assertions.assertEquals(0.0, crossTrackAcceleration, 5e-12);
         }
-        
+
     }
 }

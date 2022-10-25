@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -39,12 +40,17 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * @author Evan Ward
  * @see #AggregateBoundedPropagator(Collection)
+ * @since 9.0
  */
 public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
     /** Constituent propagators. */
-    private final NavigableMap<AbsoluteDate, BoundedPropagator> propagators;
+    private final NavigableMap<AbsoluteDate, ? extends Propagator> propagators;
+    /** Minimum date for {@link #getMinDate()}. */
+    private final AbsoluteDate min;
+    /** Maximum date for {@link #getMaxDate()}. */
+    private final AbsoluteDate max;
 
     /**
      * Create a propagator by concatenating several {@link BoundedPropagator}s.
@@ -54,7 +60,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      *                    between the {@link BoundedPropagator#getMaxDate()} of one
      *                    propagator and the {@link BoundedPropagator#getMinDate()} of the
      *                    next propagator an exception may be thrown by any method of this
-     *                    class at any time. If there are overlaps between the the {@link
+     *                    class at any time. If there are overlaps between the {@link
      *                    BoundedPropagator#getMaxDate()} of one propagator and the {@link
      *                    BoundedPropagator#getMinDate()} of the next propagator then the
      *                    propagator with the latest {@link BoundedPropagator#getMinDate()}
@@ -63,10 +69,37 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     public AggregateBoundedPropagator(
             final Collection<? extends BoundedPropagator> propagators) {
         super(defaultAttitude(propagators));
-        this.propagators = new TreeMap<>();
+        final NavigableMap<AbsoluteDate, BoundedPropagator> map =
+                new TreeMap<>();
         for (final BoundedPropagator propagator : propagators) {
-            this.propagators.put(propagator.getMinDate(), propagator);
+            map.put(propagator.getMinDate(), propagator);
         }
+        this.propagators = map;
+        this.min = map.firstEntry().getValue().getMinDate();
+        this.max = map.lastEntry().getValue().getMaxDate();
+        super.resetInitialState(
+                this.propagators.firstEntry().getValue().getInitialState());
+    }
+
+    /**
+     * Create a propagator from several constituent propagators.
+     *
+     * @param propagators that provide the backing data for this instance. Each
+     *                    propagator is used from the date of it's key in the
+     *                    map until the date of the next key. The first
+     *                    propagator is also used before the first key and the
+     *                    last propagator after the last key.
+     * @param min         the value for {@link #getMinDate()}.
+     * @param max         the value for {@link #getMaxDate()}.
+     */
+    public AggregateBoundedPropagator(
+            final NavigableMap<AbsoluteDate, ? extends Propagator> propagators,
+            final AbsoluteDate min,
+            final AbsoluteDate max) {
+        super(defaultAttitude(propagators.values()));
+        this.propagators = propagators;
+        this.min = min;
+        this.max = max;
         super.resetInitialState(
                 this.propagators.firstEntry().getValue().getInitialState());
     }
@@ -77,7 +110,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      * @return attitude provider.
      */
     private static AttitudeProvider defaultAttitude(
-            final Collection<? extends BoundedPropagator> propagators) {
+            final Collection<? extends Propagator> propagators) {
         // this check is needed here because it can't be before the super() call in the
         // constructor.
         if (propagators.isEmpty()) {
@@ -123,12 +156,12 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
 
     @Override
     public AbsoluteDate getMinDate() {
-        return propagators.firstEntry().getValue().getMinDate();
+        return min;
     }
 
     @Override
     public AbsoluteDate getMaxDate() {
-        return propagators.lastEntry().getValue().getMaxDate();
+        return max;
     }
 
     @Override
@@ -158,8 +191,9 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      * @param date of query
      * @return propagator to use on date.
      */
-    private BoundedPropagator getPropagator(final AbsoluteDate date) {
-        final Entry<AbsoluteDate, BoundedPropagator> entry = propagators.floorEntry(date);
+    private Propagator getPropagator(final AbsoluteDate date) {
+        final Entry<AbsoluteDate, ? extends Propagator> entry =
+                propagators.floorEntry(date);
         if (entry != null) {
             return entry.getValue();
         } else {

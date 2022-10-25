@@ -16,13 +16,13 @@
  */
 package org.orekit.errors;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class OrekitMessagesTest {
 
@@ -30,7 +30,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(253, OrekitMessages.values().length);
+        Assertions.assertEquals(258, OrekitMessages.values().length);
     }
 
     @Test
@@ -44,9 +44,9 @@ public class OrekitMessagesTest {
                 for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                     keyPresent |= messageKey.equals(keys.nextElement());
                 }
-                Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language, keyPresent);
+                Assertions.assertTrue(keyPresent,"missing key \"" + message.name() + "\" for language " + language);
             }
-            Assert.assertEquals(language, bundle.getLocale().getLanguage());
+            Assertions.assertEquals(language, bundle.getLocale().getLanguage());
         }
 
     }
@@ -59,12 +59,12 @@ public class OrekitMessagesTest {
             for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                 final String propertyKey = keys.nextElement();
                 try {
-                    Assert.assertNotNull(OrekitMessages.valueOf(propertyKey));
+                    Assertions.assertNotNull(OrekitMessages.valueOf(propertyKey));
                 } catch (IllegalArgumentException iae) {
-                    Assert.fail("unknown key \"" + propertyKey + "\" in language " + language);
+                    Assertions.fail("unknown key \"" + propertyKey + "\" in language " + language);
                 }
             }
-            Assert.assertEquals(language, bundle.getLocale().getLanguage());
+            Assertions.assertEquals(language, bundle.getLocale().getLanguage());
         }
 
     }
@@ -75,20 +75,20 @@ public class OrekitMessagesTest {
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.FRENCH);
             // To detect a missing translation, check if the returned string is the original text in English.
-            Assert.assertNotEquals(message.name(), translated, message.getSourceString());
+            Assertions.assertNotEquals(message.name(), translated, message.getSourceString());
          }
     }
-    
+
     @Test
     public void testNoOpEnglishTranslation() {
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.ENGLISH);
-            
+
             // Check that the original message is not empty.
-            Assert.assertFalse(message.name(), message.getSourceString().length() == 0);  
-            
+            Assertions.assertFalse(message.getSourceString().length() == 0,message.name());
+
             // Check that both texts are the same
-            Assert.assertEquals(message.name(), message.getSourceString(), translated);                 
+            Assertions.assertEquals(message.getSourceString(), translated,message.name());
 
         }
     }
@@ -100,8 +100,8 @@ public class OrekitMessagesTest {
             for (OrekitMessages message : OrekitMessages.values()) {
                 MessageFormat source = new MessageFormat(message.getSourceString());
                 MessageFormat translated = new MessageFormat(message.getLocalizedString(locale));
-                Assert.assertEquals(message.name() + " (" + language + ")", source.getFormatsByArgumentIndex().length,
-                        translated.getFormatsByArgumentIndex().length);
+                Assertions.assertEquals(source.getFormatsByArgumentIndex().length,
+                        translated.getFormatsByArgumentIndex().length,message.name() + " (" + language + ")");
             }
         }
     }

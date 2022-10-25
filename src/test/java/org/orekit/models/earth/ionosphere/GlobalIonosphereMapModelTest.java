@@ -16,19 +16,13 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -48,6 +42,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class GlobalIonosphereMapModelTest {
 
     private static double epsilonParser = 1.0e-16;
@@ -56,7 +56,7 @@ public class GlobalIonosphereMapModelTest {
     private OneAxisEllipsoid earth;
     private GlobalIonosphereMapModel model;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:ionex");
         model = new GlobalIonosphereMapModel("gpsg0150.19i");
@@ -74,10 +74,10 @@ public class GlobalIonosphereMapModelTest {
     @Test
     public void testTEC() {
         final double latitude  = FastMath.toRadians(30.0);
-        final double longitude = FastMath.toRadians(-130.0); 
+        final double longitude = FastMath.toRadians(-130.0);
         final double tec = model.getTEC(new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
                                         new GeodeticPoint(latitude, longitude, 0.0));
-        Assert.assertEquals(9.592, tec, epsilonDelay);
+        Assertions.assertEquals(9.592, tec, epsilonDelay);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class GlobalIonosphereMapModelTest {
         final double longitude = FastMath.toRadians(-130.0);
         final T tec = model.getTEC(new FieldAbsoluteDate<>(field, 2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
                                    new GeodeticPoint(latitude, longitude, 0.0));
-        Assert.assertEquals(9.592, tec.getReal(), epsilonDelay);
+        Assertions.assertEquals(9.592, tec.getReal(), epsilonDelay);
     }
 
     @Test
@@ -100,7 +100,7 @@ public class GlobalIonosphereMapModelTest {
         final double delay = model.pathDelay(new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
                                              new GeodeticPoint(latitude, longitude, 0.0),
                                              0.5 * FastMath.PI, Frequency.G01.getMHzFrequency() * 1.0e6);
-        Assert.assertEquals(1.557, delay, epsilonDelay);
+        Assertions.assertEquals(1.557, delay, epsilonDelay);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class GlobalIonosphereMapModelTest {
                                         new GeodeticPoint(latitude, longitude, 0.0),
                                         zero.add(0.5 * FastMath.PI),
                                         Frequency.G01.getMHzFrequency() * 1.0e6);
-        Assert.assertEquals(1.557, delay.getReal(), epsilonDelay);
+        Assertions.assertEquals(1.557, delay.getReal(), epsilonDelay);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class GlobalIonosphereMapModelTest {
         // Commons parameters
         AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC());
         final double latitude = FastMath.toRadians(45.0);
-        
+
         double longitude1;
         double longitude2;
 
@@ -133,19 +133,19 @@ public class GlobalIonosphereMapModelTest {
         longitude1 = FastMath.toRadians(181.0);
         longitude2 = FastMath.toRadians(-179.0);
 
-        Assert.assertEquals(model.getTEC(date, new GeodeticPoint(latitude, longitude1, 0.0)), model.getTEC(date, new GeodeticPoint(latitude, longitude2, 0.0)), epsilonParser);
+        Assertions.assertEquals(model.getTEC(date, new GeodeticPoint(latitude, longitude1, 0.0)), model.getTEC(date, new GeodeticPoint(latitude, longitude2, 0.0)), epsilonParser);
 
         // Test longitude = 180° and longitude = -180°
         longitude1 = FastMath.toRadians(180.0);
         longitude2 = FastMath.toRadians(-180.0);
 
-        Assert.assertEquals(model.getTEC(date, new GeodeticPoint(latitude, longitude1, 0.0)), model.getTEC(date, new GeodeticPoint(latitude, longitude2, 0.0)), epsilonParser);
+        Assertions.assertEquals(model.getTEC(date, new GeodeticPoint(latitude, longitude1, 0.0)), model.getTEC(date, new GeodeticPoint(latitude, longitude2, 0.0)), epsilonParser);
 
         // Test longitude = 0° and longitude = 360°
         longitude1 =  FastMath.toRadians(0.);
         longitude2 =  FastMath.toRadians(360.0);
 
-        Assert.assertEquals(model.getTEC(date, new GeodeticPoint(latitude, longitude1, 0.0)), model.getTEC(date, new GeodeticPoint(latitude, longitude2, 0.0)), epsilonParser);
+        Assertions.assertEquals(model.getTEC(date, new GeodeticPoint(latitude, longitude1, 0.0)), model.getTEC(date, new GeodeticPoint(latitude, longitude2, 0.0)), epsilonParser);
 
     }
 
@@ -154,15 +154,15 @@ public class GlobalIonosphereMapModelTest {
         final String fileName = "corrupted-bad-data-gpsg0150.19i";
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
-          
+
         try {
             GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
             corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
                          new GeodeticPoint(latitude, longitude, 0.0));
-            Assert.fail("An exception should have been thrown");
-            
+            Assertions.fail("An exception should have been thrown");
+
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
 
@@ -176,9 +176,9 @@ public class GlobalIonosphereMapModelTest {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
                             model.getParameters());
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
         }
     }
 
@@ -196,9 +196,9 @@ public class GlobalIonosphereMapModelTest {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
                             model.getParameters(field));
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
         }
     }
 
@@ -212,9 +212,9 @@ public class GlobalIonosphereMapModelTest {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
                             model.getParameters());
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
         }
 
     }
@@ -232,9 +232,9 @@ public class GlobalIonosphereMapModelTest {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
                             model.getParameters(field));
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
         }
 
     }
@@ -253,10 +253,10 @@ public class GlobalIonosphereMapModelTest {
             GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
             corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
                          new GeodeticPoint(latitude, longitude, 0.0));
-            Assert.fail("An exception should have been thrown");
-            
+            Assertions.fail("An exception should have been thrown");
+
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
         }
     }
 
@@ -270,10 +270,10 @@ public class GlobalIonosphereMapModelTest {
             GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
             corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
                          new GeodeticPoint(latitude, longitude, 0.0));
-            Assert.fail("An exception should have been thrown");
-            
+            Assertions.fail("An exception should have been thrown");
+
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, oe.getSpecifier());
         }
 
     }
@@ -286,8 +286,8 @@ public class GlobalIonosphereMapModelTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(original);
 
-        Assert.assertTrue(bos.size() > 150);
-        Assert.assertTrue(bos.size() < 200);
+        Assertions.assertTrue(bos.size() > 150);
+        Assertions.assertTrue(bos.size() < 200);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -295,7 +295,7 @@ public class GlobalIonosphereMapModelTest {
 
         AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC());
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(30.0), FastMath.toRadians(-130.0), 0.0);
-        Assert.assertEquals(original.getTEC(date, point), deserialized.getTEC(date, point), 1.0e-12);
+        Assertions.assertEquals(original.getTEC(date, point), deserialized.getTEC(date, point), 1.0e-12);
     }
 
 }

@@ -17,11 +17,10 @@
 
 package org.orekit.estimation.iod;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Test;
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularRaDec;
@@ -35,6 +34,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.List;
 
 /**
  *
@@ -117,13 +118,13 @@ public class IodGoodingTest {
                                                   lineOfSight2, date2,
                                                   lineOfSight3, date3,
                                                   r1 * 1.0, r3 * 1.0);
-        Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
-        Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
-        Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());
+        Assertions.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
+        Assertions.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
+        Assertions.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());
 
-        Assert.assertEquals(13127847.99808, iod.getRange1(), 1.0e-3);
-        Assert.assertEquals(13375711.51931, iod.getRange2(), 1.0e-3);
-        Assert.assertEquals(13950296.64852, iod.getRange3(), 1.0e-3);
+        Assertions.assertEquals(13127847.99808, iod.getRange1(), 1.0e-3);
+        Assertions.assertEquals(13375711.51931, iod.getRange2(), 1.0e-3);
+        Assertions.assertEquals(13950296.64852, iod.getRange3(), 1.0e-3);
 
     }
 
@@ -160,7 +161,7 @@ public class IodGoodingTest {
         final IodGooding iod = new IodGooding(mu);
 
         // TODO convert angular to line of sight and compare both computations
-        
+
         final KeplerianOrbit orbit1 = iod.estimate(frame, raDec1, raDec2, raDec3, rhoInit1, rhoInit3);
         final KeplerianOrbit orbit2 = iod.estimate(frame,
                                                    stationPosition(frame, raDec1),
@@ -171,12 +172,12 @@ public class IodGoodingTest {
                                                    IodGooding.lineOfSight(raDec3), raDec3.getDate(),
                                                    rhoInit1, rhoInit3);
 
-        Assert.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
-        Assert.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
-        Assert.assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
-        Assert.assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
-        Assert.assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), 1.0e-6 * orbit2.getPerigeeArgument());
-        Assert.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        Assertions.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
+        Assertions.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
+        Assertions.assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
+        Assertions.assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
+        Assertions.assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
+        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
 
     }
 

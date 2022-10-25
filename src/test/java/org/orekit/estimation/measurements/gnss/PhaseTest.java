@@ -26,8 +26,8 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -88,12 +88,12 @@ public class PhaseTest {
             System.out.println("\nTest Range Phase Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 5.2e-10;
-        double refErrorsPMean   = 3.5e-09;
-        double refErrorsPMax    = 1.5e-07;
+        double refErrorsPMedian = 5.7e-10;
+        double refErrorsPMean   = 4.0e-09;
+        double refErrorsPMax    = 2.4e-07;
         double refErrorsVMedian = 2.0e-05;
-        double refErrorsVMean   = 5.8e-05;
-        double refErrorsVMax    = 2.1e-03;
+        double refErrorsVMean   = 8.3e-05;
+        double refErrorsVMax    = 4.6e-03;
         this.genericTestStateDerivatives(printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -111,12 +111,12 @@ public class PhaseTest {
             System.out.println("\nTest Phase State Derivatives with Modifier - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 5.2e-10;
-        double refErrorsPMean   = 3.5e-09;
-        double refErrorsPMax    = 1.5e-07;
+        double refErrorsPMedian = 5.7e-10;
+        double refErrorsPMean   = 4.0e-09;
+        double refErrorsPMax    = 2.4e-07;
         double refErrorsVMedian = 2.0e-05;
-        double refErrorsVMean   = 5.8e-05;
-        double refErrorsVMax    = 2.1e-03;
+        double refErrorsVMean   = 8.3e-05;
+        double refErrorsVMax    = 4.6e-03;
         this.genericTestStateDerivatives(printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -202,9 +202,9 @@ public class PhaseTest {
                     final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-                    Assert.assertEquals(2, participants.length);
+                    Assertions.assertEquals(2, participants.length);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assert.assertEquals(1.0e6 * Frequency.E01.getMHzFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
+                    Assertions.assertEquals(1.0e6 * Frequency.E01.getMHzFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
 
@@ -267,13 +267,14 @@ public class PhaseTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 1.4e-7);
-        Assert.assertEquals(0.0, absErrorsMin,    1.3e-6);
-        Assert.assertEquals(0.0, absErrorsMax,    1.5e-6);
-        Assert.assertEquals(0.0, relErrorsMedian, 9.1e-15);
-        Assert.assertEquals(0.0, relErrorsMax,    2.8e-14);
+        Assertions.assertEquals(0.0, absErrorsMedian, 1.4e-7);
+        Assertions.assertEquals(0.0, absErrorsMin,    1.3e-6);
+        Assertions.assertEquals(0.0, absErrorsMax,    1.5e-6);
+        Assertions.assertEquals(0.0, relErrorsMedian, 9.1e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    2.8e-14);
 
-
+        // Test measurement type
+        Assertions.assertEquals(Phase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults,
@@ -340,8 +341,8 @@ public class PhaseTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
-                    Assert.assertEquals(jacobianRef.length, jacobian.length);
-                    Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
+                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -415,12 +416,12 @@ public class PhaseTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean printResults,
@@ -495,8 +496,8 @@ public class PhaseTest {
 
                     for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                        Assert.assertEquals(1, measurement.getDimension());
-                        Assert.assertEquals(1, gradient.length);
+                        Assertions.assertEquals(1, measurement.getDimension());
+                        Assertions.assertEquals(1, gradient.length);
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
@@ -515,7 +516,7 @@ public class PhaseTest {
 
                         final double relError = FastMath.abs((ref-gradient[0])/ref);
                         relErrorList.add(relError);
-//                        Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
+//                        Assertions.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");
@@ -561,9 +562,9 @@ public class PhaseTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assert.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
+        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 
@@ -572,11 +573,11 @@ public class PhaseTest {
 
         final boolean printResults     = false;
         final double  refErrorsPMedian = 5.9e-10;
-        final double  refErrorsPMean   = 3.5e-9;
-        final double  refErrorsPMax    = 1.1e-7;
+        final double  refErrorsPMean   = 4.3e-9;
+        final double  refErrorsPMax    = 3.8e-7;
         final double  refErrorsVMedian = 2.0e-5;
-        final double  refErrorsVMean   = 5.8e-5;
-        final double  refErrorsVMax    = 2.1e-3;
+        final double  refErrorsVMean   = 8.3e-5;
+        final double  refErrorsVMax    = 4.6e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -649,8 +650,8 @@ public class PhaseTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
-                    Assert.assertEquals(jacobianRef.length, jacobian.length);
-                    Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
+                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -723,12 +724,12 @@ public class PhaseTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     @Test
@@ -736,11 +737,11 @@ public class PhaseTest {
 
         final boolean printResults = false;
         final double refErrorsPMedian = 5.1e-10;
-        final double refErrorsPMean = 2.6e-9;
-        final double refErrorsPMax = 7.8e-8;
+        final double refErrorsPMean = 5.6e-9;
+        final double refErrorsPMax = 3.8e-7;
         final double refErrorsVMedian = 2.0e-5;
-        final double refErrorsVMean = 6.0e-5;
-        final double refErrorsVMax = 2.1e-3;
+        final double refErrorsVMean = 8.4e-5;
+        final double refErrorsVMax = 4.6e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -811,8 +812,8 @@ public class PhaseTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
-                    Assert.assertEquals(jacobianRef.length, jacobian.length);
-                    Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
+                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -885,12 +886,12 @@ public class PhaseTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     @Test
@@ -910,21 +911,21 @@ public class PhaseTest {
         final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060, Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
 
         // First check
-        Assert.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-        Assert.assertFalse(phase.getAmbiguityDriver().isSelected());
+        Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assertions.assertFalse(phase.getAmbiguityDriver().isSelected());
 
         // Perform some changes in ambiguity driver
         phase.getAmbiguityDriver().setValue(1234.0);
         phase.getAmbiguityDriver().setSelected(true);
 
         // Second check
-        Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-        Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
+        Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
             if (driver.getName() == Phase.AMBIGUITY_NAME) {
-                Assert.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-                Assert.assertTrue(phase.getAmbiguityDriver().isSelected());
+                Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+                Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
             }
         }
 

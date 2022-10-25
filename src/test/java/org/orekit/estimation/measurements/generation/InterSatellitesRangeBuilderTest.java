@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.SortedSet;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
@@ -25,9 +23,9 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
@@ -48,6 +46,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.SortedSet;
 
 public class InterSatellitesRangeBuilderTest {
 
@@ -126,13 +126,13 @@ public class InterSatellitesRangeBuilderTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assert.assertTrue(date.compareTo(tInf) >= 0);
-            Assert.assertTrue(date.compareTo(tSup) <= 0);
+            Assertions.assertTrue(date.compareTo(tInf) >= 0);
+            Assertions.assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 // measurements are always chronological, even with backward propagation,
                 // due to the SortedSet (which is intended for combining several
                 // measurements types with different builders and schedulers)
-                Assert.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
             }
             previous = date;
             double[] e = measurement.estimate(0, 0,
@@ -144,10 +144,10 @@ public class InterSatellitesRangeBuilderTest {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }
         }
-        Assert.assertEquals(0.0, maxError, tolerance);
+        Assertions.assertEquals(0.0, maxError, tolerance);
      }
 
-     @Before
+     @BeforeEach
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

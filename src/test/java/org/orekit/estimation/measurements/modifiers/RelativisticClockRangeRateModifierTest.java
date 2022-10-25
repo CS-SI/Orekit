@@ -16,13 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -40,6 +38,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.Arrays;
 
 public class RelativisticClockRangeRateModifierTest {
 
@@ -86,19 +86,19 @@ public class RelativisticClockRangeRateModifierTest {
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(rangeRate.getObservedValue()[0]);
-        Assert.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
         final RelativisticClockRangeRateModifier modifier = new RelativisticClockRangeRateModifier(Constants.WGS84_EARTH_MU);
         modifier.modify(estimated);
-        Assert.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assert.assertEquals(1.68e-3, estimated.getEstimatedValue()[0] - estimated.getObservedValue()[0], 1.0e-5);
+        Assertions.assertEquals(1.68e-3, estimated.getEstimatedValue()[0] - estimated.getObservedValue()[0], 1.0e-5);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

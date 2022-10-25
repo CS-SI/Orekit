@@ -1,7 +1,5 @@
 package org.orekit.propagation.analytical;
 
-import java.io.IOException;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -15,10 +13,10 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -59,6 +57,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
+import java.io.IOException;
+
 public class FieldBrouwerLyddanePropagatorTest {
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
@@ -66,13 +66,13 @@ public class FieldBrouwerLyddanePropagatorTest {
     public void sameDateCartesian() {
         doSameDateCartesian(Decimal64Field.getInstance());
     }
-	private <T extends CalculusFieldElement<T>> void doSameDateCartesian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doSameDateCartesian(Field<T> field) {
 
-		T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
-		// e = 0.04152500499523033   and   i = 1.705015527659039
+        // e = 0.04152500499523033   and   i = 1.705015527659039
 
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6149822.));
@@ -84,56 +84,56 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Extrapolation at the initial date
         // ---------------------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
-	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
 
         // positions  velocity and semi major axis match perfectly
-        Assert.assertEquals(0.0,
-        		FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
+        Assertions.assertEquals(0.0,
+                FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                        finalOrbit.getPVCoordinates().getPosition()).getReal(),
                             5.3e-9);
 
-        Assert.assertEquals(0.0,
-        		FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
+        Assertions.assertEquals(0.0,
+                FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                        finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             4.6e-12);
-        Assert.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
+        Assertions.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
 
-	}
+    }
 
 
-	@Test
+    @Test
     public void sameDateKeplerian() {
         doSameDateKeplerian(Decimal64Field.getInstance());
     }
-	private <T extends CalculusFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
 
-		T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-		// Definition of initial conditions with position and velocity
+        // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-        FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(6767924.41), zero.add(.005),  zero.add(1.7),zero.add( 2.1), 
-        		                                               zero.add(2.9), zero.add(6.2), PositionAngle.TRUE,
+        FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(6767924.41), zero.add(.005),  zero.add(1.7),zero.add( 2.1),
+                                                               zero.add(2.9), zero.add(6.2), PositionAngle.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> extrapolator =
-	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
 
         // positions  velocity and semi major axis match perfectly
-        Assert.assertEquals(0.0,
-        		FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
+        Assertions.assertEquals(0.0,
+                FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()).getReal(),
                             3.5e-9);
 
-        Assert.assertEquals(0.0,
-        		FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
+        Assertions.assertEquals(0.0,
+                FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             5.1e-12);
-        Assert.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
-	}
+        Assertions.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
+    }
 
 
     @Test
@@ -142,18 +142,18 @@ public class FieldBrouwerLyddanePropagatorTest {
     }
     private <T extends CalculusFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
 
-    	T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions
         // ---------------------------------
         // with e around e = 1.4e-4 and i = 1.7 rad
-    	FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(8449822.));
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(8449822.));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-    	
-    	
 
-    	FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-    	FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
+
+
+        FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
+        FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                                  FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         // Initialisation to simulate a Keplerian extrapolation
@@ -185,28 +185,28 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldSpacecraftState<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate);
         FieldSpacecraftState<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate);
 
-        Assert.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), 0.0,
+        Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), 0.0,
                      Utils.epsilonTest);
         // comparison of each orbital parameters
-        Assert.assertEquals(finalOrbitAna.getA().getReal(), finalOrbitKep.getA().getReal(), 10
+        Assertions.assertEquals(finalOrbitAna.getA().getReal(), finalOrbitKep.getA().getReal(), 10
                      * Utils.epsilonTest * finalOrbitKep.getA().getReal());
-        Assert.assertEquals(finalOrbitAna.getEquinoctialEx().getReal(), finalOrbitKep.getEquinoctialEx().getReal(), Utils.epsilonE
+        Assertions.assertEquals(finalOrbitAna.getEquinoctialEx().getReal(), finalOrbitKep.getEquinoctialEx().getReal(), Utils.epsilonE
                      * finalOrbitKep.getE().getReal());
-        Assert.assertEquals(finalOrbitAna.getEquinoctialEy().getReal(), finalOrbitKep.getEquinoctialEy().getReal(), Utils.epsilonE
+        Assertions.assertEquals(finalOrbitAna.getEquinoctialEy().getReal(), finalOrbitKep.getEquinoctialEy().getReal(), Utils.epsilonE
                      * finalOrbitKep.getE().getReal());
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx().getReal(), finalOrbitKep.getHx().getReal()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx().getReal(), finalOrbitKep.getHx().getReal()),
                      finalOrbitKep.getHx().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy().getReal(), finalOrbitKep.getHy().getReal()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy().getReal(), finalOrbitKep.getHy().getReal()),
                      finalOrbitKep.getHy().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv().getReal(), finalOrbitKep.getLv().getReal()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv().getReal(), finalOrbitKep.getLv().getReal()),
                      finalOrbitKep.getLv().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLv().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE().getReal(), finalOrbitKep.getLE().getReal()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE().getReal(), finalOrbitKep.getLE().getReal()),
                      finalOrbitKep.getLE().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLE().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM().getReal(), finalOrbitKep.getLM().getReal()),
+        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM().getReal(), finalOrbitKep.getLM().getReal()),
                      finalOrbitKep.getLM().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLM().getReal()));
 
@@ -219,7 +219,7 @@ public class FieldBrouwerLyddanePropagatorTest {
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagation(Field<T> field) {
 
-    	T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final Frame inertialFrame = FramesFactory.getEME2000();
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
@@ -232,10 +232,10 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
-        		                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
+                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
-        
+
         // Initial state definition
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
 
@@ -273,22 +273,22 @@ public class FieldBrouwerLyddanePropagatorTest {
         //_______________________________________________________________________________________________
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator =
-	            new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         FieldSpacecraftState<T> BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit().toOrbit());
 
 
-	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.070);
-	    Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-	    Assert.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000000053);
-	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0021);
-	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0000013);
-	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.0021);
-	}
+        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.070);
+        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
+        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000000053);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0021);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0000013);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.0021);
+    }
 
     @Test
     public void compareToNumericalPropagationWithDrag() {
@@ -372,8 +372,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaBefore = 20.44;
         final double deltaEccBefore = 1.0125e-4;
-        Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaBefore);
-        Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccBefore);
+        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaBefore);
+        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccBefore);
 
         //_______________________________________________________________________________________________
         // SET UP A BROUWER LYDDANE PROPAGATION WITH DRAG
@@ -387,11 +387,11 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaAfter = 15.66;
         final double deltaEccAfter = 1.0121e-4;
-        Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaAfter);
-        Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
-        Assert.assertTrue(deltaSmaAfter < deltaSmaBefore);
-        Assert.assertTrue(deltaEccAfter < deltaEccBefore);
-        Assert.assertEquals(M2, BLextrapolator.getM2(), Double.MIN_VALUE);
+        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaAfter);
+        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
+        Assertions.assertTrue(deltaSmaAfter < deltaSmaBefore);
+        Assertions.assertTrue(deltaEccAfter < deltaEccBefore);
+        Assertions.assertEquals(M2, BLextrapolator.getM2(), Double.MIN_VALUE);
 
     }
 
@@ -401,7 +401,7 @@ public class FieldBrouwerLyddanePropagatorTest {
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationMeanInitialOrbit(Field<T> field) {
 
-    	T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final Frame inertialFrame = FramesFactory.getEME2000();
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
@@ -415,13 +415,13 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
-        		                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
+                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator =
-	            new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider),
-	            		                     PropagationType.MEAN, BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider),
+                                             PropagationType.MEAN, BrouwerLyddanePropagator.M2);
         FieldSpacecraftState<T> initialOsculatingState = BLextrapolator.propagate(initDate);
         final KeplerianOrbit InitOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialOsculatingState.getOrbit().toOrbit());
 
@@ -462,25 +462,25 @@ public class FieldBrouwerLyddanePropagatorTest {
         // SET UP A BROUWER LYDDANE PROPAGATION
         //_______________________________________________________________________________________________
 
-	    Assert.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.17);
-	    Assert.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-	    Assert.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000004);
-	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.197);
-	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.00072);
-	    Assert.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.12);
-	}
+        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.17);
+        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
+        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000004);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.197);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.00072);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.12);
+    }
 
 
     @Test
     public void compareToNumericalPropagationResetInitialIntermediate() {
         doCompareToNumericalPropagationResetInitialIntermediate(Decimal64Field.getInstance());
     }
-	private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationResetInitialIntermediate(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationResetInitialIntermediate(Field<T> field) {
 
-    	T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final Frame inertialFrame = FramesFactory.getEME2000();
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
@@ -493,8 +493,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
-        		                                      zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
+                                                      zero.add(raan), zero.add(lM), PositionAngle.TRUE,
                                                       inertialFrame, initDate, zero.add(provider.getMu()));
         // Initial state definition
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
@@ -504,48 +504,48 @@ public class FieldBrouwerLyddanePropagatorTest {
         //_______________________________________________________________________________________________
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator1 =
-	            new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW, zero.add(Propagator.DEFAULT_MASS), GravityFieldFactory.getUnnormalizedProvider(provider),
-	            		                     PropagationType.OSCULATING, BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW, zero.add(Propagator.DEFAULT_MASS), GravityFieldFactory.getUnnormalizedProvider(provider),
+                                             PropagationType.OSCULATING, BrouwerLyddanePropagator.M2);
         //_______________________________________________________________________________________________
         // SET UP ANOTHER BROUWER LYDDANE PROPAGATOR
         //_______________________________________________________________________________________________
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator2 =
-	            new FieldBrouwerLyddanePropagator<>( new FieldKeplerianOrbit<>(zero.add(a + 3000), zero.add(e + 0.001), 
-	            		                                                       zero.add(i - FastMath.toRadians(12.0)), zero.add(omega),
-	            		                                                       zero.add(raan), zero.add(lM), PositionAngle.TRUE,
-                                                     inertialFrame, initDate, zero.add(provider.getMu())),DEFAULT_LAW, 
-	            		                             zero.add(Propagator.DEFAULT_MASS), 
-	            		                             GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+                new FieldBrouwerLyddanePropagator<>( new FieldKeplerianOrbit<>(zero.add(a + 3000), zero.add(e + 0.001),
+                                                                               zero.add(i - FastMath.toRadians(12.0)), zero.add(omega),
+                                                                               zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                     inertialFrame, initDate, zero.add(provider.getMu())),DEFAULT_LAW,
+                                                     zero.add(Propagator.DEFAULT_MASS),
+                                                     GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
         // Reset BL2 with BL1 initial state
         BLextrapolator2.resetInitialState(initialState);
 
         FieldSpacecraftState<T> BLFinalState1 = BLextrapolator1.propagate(initDate.shiftedBy(timeshift));
-	    final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState1.getOrbit().toOrbit());
-	    FieldSpacecraftState<T> BLFinalState2 = BLextrapolator2.propagate(initDate.shiftedBy(timeshift));
+        final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState1.getOrbit().toOrbit());
+        FieldSpacecraftState<T> BLFinalState2 = BLextrapolator2.propagate(initDate.shiftedBy(timeshift));
         BLextrapolator2.resetIntermediateState(BLFinalState1, true);
-	    final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState2.getOrbit().toOrbit());
+        final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState2.getOrbit().toOrbit());
 
-	    Assert.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
-	    Assert.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
-	    Assert.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit2.getTrueAnomaly(), FastMath.PI), 0.0);
+        Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
+        Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
+        Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getTrueAnomaly(), FastMath.PI), 0.0);
 
-	}
+    }
 
 
-	@Test
+    @Test
     public void compareConstructors() {
         doCompareConstructors(Decimal64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareConstructors(Field<T> field) {
 
-	    T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final Frame inertialFrame = FramesFactory.getEME2000();
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
@@ -558,121 +558,121 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
                                                                      zero.add(raan), zero.add(lM), PositionAngle.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
 
         FieldBrouwerLyddanePropagator<T> BLPropagator1 = new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW,
-        		provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
+                provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
         FieldBrouwerLyddanePropagator<T> BLPropagator2 = new FieldBrouwerLyddanePropagator<>(initialOrbit,
-        		provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
-        FieldBrouwerLyddanePropagator<T> BLPropagator3 = new FieldBrouwerLyddanePropagator<>(initialOrbit, 
-        		zero.add(Propagator.DEFAULT_MASS), provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 
-        		2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
+                provider.getAe(), zero.add(provider.getMu()), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
+        FieldBrouwerLyddanePropagator<T> BLPropagator3 = new FieldBrouwerLyddanePropagator<>(initialOrbit,
+                zero.add(Propagator.DEFAULT_MASS), provider.getAe(), zero.add(provider.getMu()), -1.08263e-3,
+                2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
 
         FieldSpacecraftState<T> BLFinalState1 = BLPropagator1.propagate(initDate.shiftedBy(timeshift));
-	    final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState1.getOrbit().toOrbit());
-	    FieldSpacecraftState<T> BLFinalState2 = BLPropagator2.propagate(initDate.shiftedBy(timeshift));
-	    final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState2.getOrbit().toOrbit());
-	    FieldSpacecraftState<T> BLFinalState3 = BLPropagator3.propagate(initDate.shiftedBy(timeshift));
-	    final KeplerianOrbit BLOrbit3 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState3.getOrbit().toOrbit());
+        final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState1.getOrbit().toOrbit());
+        FieldSpacecraftState<T> BLFinalState2 = BLPropagator2.propagate(initDate.shiftedBy(timeshift));
+        final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState2.getOrbit().toOrbit());
+        FieldSpacecraftState<T> BLFinalState3 = BLPropagator3.propagate(initDate.shiftedBy(timeshift));
+        final KeplerianOrbit BLOrbit3 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState3.getOrbit().toOrbit());
 
 
-	    Assert.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
-	    Assert.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
-	    Assert.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit2.getTrueAnomaly(), FastMath.PI), 0.0);
-	    Assert.assertEquals(BLOrbit1.getA(), BLOrbit3.getA(), 0.0);
-	    Assert.assertEquals(BLOrbit1.getE(), BLOrbit3.getE(), 0.0);
-	    Assert.assertEquals(BLOrbit1.getI(), BLOrbit3.getI(), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit3.getPerigeeArgument(), FastMath.PI), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit3.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
-	    Assert.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
-	    		MathUtils.normalizeAngle(BLOrbit3.getTrueAnomaly(), FastMath.PI), 0.0);
+        Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
+        Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
+        Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getTrueAnomaly(), FastMath.PI), 0.0);
+        Assertions.assertEquals(BLOrbit1.getA(), BLOrbit3.getA(), 0.0);
+        Assertions.assertEquals(BLOrbit1.getE(), BLOrbit3.getE(), 0.0);
+        Assertions.assertEquals(BLOrbit1.getI(), BLOrbit3.getI(), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit3.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit3.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit3.getTrueAnomaly(), FastMath.PI), 0.0);
 
-	}
+    }
 
 
-	@Test
+    @Test
     public void undergroundOrbit() {
         doUndergroundOrbit(Decimal64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
 
-	    T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-        
+
         // for a semi major axis < equatorial radius
-    	FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-    	FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(800.0), zero.add(100.0));
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(800.0), zero.add(100.0));
 
         FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<T>(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
         // Extrapolator definition
         // -----------------------
         try {
-        	
+
             FieldBrouwerLyddanePropagator<T> extrapolator =
                 new FieldBrouwerLyddanePropagator<>(initialOrbit, DEFAULT_LAW, provider.getAe(), zero.add(provider.getMu()),
-                		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
-            
+                        -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
+
             // Extrapolation at the initial date
             // ---------------------------------
             double delta_t = 0.0;
             FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
             extrapolator.propagate(extrapDate);
-        
+
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, oe.getSpecifier());
         }
     }
 
 
-	@Test
+    @Test
     public void tooEllipticalOrbit() {
         doTooEllipticalOrbit(Decimal64Field.getInstance());
     }
-	private <T extends CalculusFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
         // for an eccentricity too big for the model
-		T zero = field.getZero();
+        T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-        FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(67679244.0), zero.add(1.0), zero.add(1.85850), 
-        		                                               zero.add(2.1), zero.add(2.9), zero.add(6.2), PositionAngle.TRUE, 
-        		                                               FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
+        FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(67679244.0), zero.add(1.0), zero.add(1.85850),
+                                                               zero.add(2.1), zero.add(2.9), zero.add(6.2), PositionAngle.TRUE,
+                                                               FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
         try {
         // Extrapolator definition
         // -----------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
             new FieldBrouwerLyddanePropagator<>(initialOrbit, provider.getAe(), zero.add(provider.getMu()),
-            		-1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
+                    -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
 
         // Extrapolation at the initial date
         // ---------------------------------
         double delta_t = 0.0;
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
         extrapolator.propagate(extrapDate);
-        
+
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, oe.getSpecifier());
         }
     }
 
 
-	@Test
+    @Test
     public void criticalInclination() {
         doCriticalInclination(Decimal64Field.getInstance());
     }
-	private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
 
@@ -686,7 +686,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field);
-        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
                                                                      zero.add(raan), zero.add(lM), PositionAngle.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
@@ -700,23 +700,25 @@ public class FieldBrouwerLyddanePropagatorTest {
         final FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
 
         // Verify
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                                    finalOrbit.getPVCoordinates().getPosition()).getReal(),
                             7.0e-8);
 
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                    finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             1.2e-11);
 
-        Assert.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
+        Assertions.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
 
     }
 
-    @Test(expected = OrekitException.class)
+    @Test
     public void testUnableToComputeBLMeanParameters() {
-        doTestUnableToComputeBLMeanParameters(Decimal64Field.getInstance());
+        Assertions.assertThrows(OrekitException.class, () -> {
+            doTestUnableToComputeBLMeanParameters(Decimal64Field.getInstance());
+        });
     }
 
     private <T extends CalculusFieldElement<T>> void doTestUnableToComputeBLMeanParameters(Field<T> field) {
@@ -733,7 +735,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
-        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
                                                                      zero.add(raan), zero.add(lM), PositionAngle.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
@@ -748,111 +750,111 @@ public class FieldBrouwerLyddanePropagatorTest {
         blField.propagate(extrapDate);
 
     }
-    
-	@Test
-	public void testMeanComparisonWithNonField() {
-	    doTestMeanComparisonWithNonField(Decimal64Field.getInstance());
-	}
 
-	private <T extends CalculusFieldElement<T>> void doTestMeanComparisonWithNonField(Field<T> field) {
+    @Test
+    public void testMeanComparisonWithNonField() {
+        doTestMeanComparisonWithNonField(Decimal64Field.getInstance());
+    }
 
-	    T zero = field.getZero();
-	    FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-	    final Frame inertialFrame = FramesFactory.getEME2000();
-	    FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-	    double timeshift = -60000.0;
+    private <T extends CalculusFieldElement<T>> void doTestMeanComparisonWithNonField(Field<T> field) {
 
-	    // Initial orbit
-	    final double a = 24396159; // semi major axis in meters
-	    final double e = 0.9; // eccentricity
-	    final double i = FastMath.toRadians(7); // inclination
-	    final double omega = FastMath.toRadians(180); // perigee argument
-	    final double raan = FastMath.toRadians(261); // right ascention of ascending node
-	    final double lM = FastMath.toRadians(0); // mean anomaly
-	    final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
-	                                                                 zero.add(raan), zero.add(lM), PositionAngle.TRUE,
-	                                                                 inertialFrame, initDate, zero.add(provider.getMu()));
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        final Frame inertialFrame = FramesFactory.getEME2000();
+        FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
+        double timeshift = -60000.0;
 
-	    // Initial state definition
-	    final FieldSpacecraftState<T> initialStateField = new FieldSpacecraftState<>(initialOrbit);
-	    final SpacecraftState         initialState      = initialStateField.toSpacecraftState();
+        // Initial orbit
+        final double a = 24396159; // semi major axis in meters
+        final double e = 0.9; // eccentricity
+        final double i = FastMath.toRadians(7); // inclination
+        final double omega = FastMath.toRadians(180); // perigee argument
+        final double raan = FastMath.toRadians(261); // right ascention of ascending node
+        final double lM = FastMath.toRadians(0); // mean anomaly
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
+                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     inertialFrame, initDate, zero.add(provider.getMu()));
 
-	    // Field propagation
-	    final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialStateField.getOrbit(),
-	                                                                                         GravityFieldFactory.getUnnormalizedProvider(provider),
-	                                                                                         PropagationType.MEAN, BrouwerLyddanePropagator.M2);
-	    final FieldSpacecraftState<T> finalStateField     = blField.propagate(initialStateField.getDate().shiftedBy(timeshift));
-	    final FieldKeplerianOrbit<T>  finalOrbitField     = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(finalStateField.getOrbit());
-	    final KeplerianOrbit          finalOrbitFieldReal = finalOrbitField.toOrbit();
+        // Initial state definition
+        final FieldSpacecraftState<T> initialStateField = new FieldSpacecraftState<>(initialOrbit);
+        final SpacecraftState         initialState      = initialStateField.toSpacecraftState();
 
-	    // Classical propagation
-	    final BrouwerLyddanePropagator bl = new BrouwerLyddanePropagator(initialState.getOrbit(),
-	                                                                     GravityFieldFactory.getUnnormalizedProvider(provider),
-	                                                                     PropagationType.MEAN, BrouwerLyddanePropagator.M2);
-	    final SpacecraftState finalState = bl.propagate(initialState.getDate().shiftedBy(timeshift));
-	    final KeplerianOrbit  finalOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(finalState.getOrbit());
+        // Field propagation
+        final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialStateField.getOrbit(),
+                                                                                             GravityFieldFactory.getUnnormalizedProvider(provider),
+                                                                                             PropagationType.MEAN, BrouwerLyddanePropagator.M2);
+        final FieldSpacecraftState<T> finalStateField     = blField.propagate(initialStateField.getDate().shiftedBy(timeshift));
+        final FieldKeplerianOrbit<T>  finalOrbitField     = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(finalStateField.getOrbit());
+        final KeplerianOrbit          finalOrbitFieldReal = finalOrbitField.toOrbit();
 
-	    Assert.assertEquals(finalOrbitFieldReal.getA(), finalOrbit.getA(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
-	    Assert.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
-	    Assert.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
-	}
+        // Classical propagation
+        final BrouwerLyddanePropagator bl = new BrouwerLyddanePropagator(initialState.getOrbit(),
+                                                                         GravityFieldFactory.getUnnormalizedProvider(provider),
+                                                                         PropagationType.MEAN, BrouwerLyddanePropagator.M2);
+        final SpacecraftState finalState = bl.propagate(initialState.getDate().shiftedBy(timeshift));
+        final KeplerianOrbit  finalOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(finalState.getOrbit());
 
-	@Test
-	public void testOsculatingComparisonWithNonField() {
-	    doTestOsculatingComparisonWithNonField(Decimal64Field.getInstance());
-	}
+        Assertions.assertEquals(finalOrbitFieldReal.getA(), finalOrbit.getA(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
+    }
 
-	private <T extends CalculusFieldElement<T>> void doTestOsculatingComparisonWithNonField(Field<T> field) {
+    @Test
+    public void testOsculatingComparisonWithNonField() {
+        doTestOsculatingComparisonWithNonField(Decimal64Field.getInstance());
+    }
 
-	    T zero = field.getZero();
-	    FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-	    final Frame inertialFrame = FramesFactory.getEME2000();
-	    FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-	    double timeshift = 60000.0;
+    private <T extends CalculusFieldElement<T>> void doTestOsculatingComparisonWithNonField(Field<T> field) {
 
-	    // Initial orbit
-	    final double a = 24396159; // semi major axis in meters
-	    final double e = 0.01; // eccentricity
-	    final double i = FastMath.toRadians(7); // inclination
-	    final double omega = FastMath.toRadians(180); // perigee argument
-	    final double raan = FastMath.toRadians(261); // right ascention of ascending node
-	    final double lM = FastMath.toRadians(0); // mean anomaly
-	    final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega), 
-	                                                                 zero.add(raan), zero.add(lM), PositionAngle.TRUE,
-	                                                                 inertialFrame, initDate, zero.add(provider.getMu()));
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        final Frame inertialFrame = FramesFactory.getEME2000();
+        FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
+        double timeshift = 60000.0;
 
-	    // Initial state definition
-	    final FieldSpacecraftState<T> initialStateField = new FieldSpacecraftState<>(initialOrbit);
-	    final SpacecraftState         initialState      = initialStateField.toSpacecraftState();
+        // Initial orbit
+        final double a = 24396159; // semi major axis in meters
+        final double e = 0.01; // eccentricity
+        final double i = FastMath.toRadians(7); // inclination
+        final double omega = FastMath.toRadians(180); // perigee argument
+        final double raan = FastMath.toRadians(261); // right ascention of ascending node
+        final double lM = FastMath.toRadians(0); // mean anomaly
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
+                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     inertialFrame, initDate, zero.add(provider.getMu()));
 
-	    // Field propagation
-	    final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialStateField.getOrbit(),
-	                                                                                         GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
-	    final FieldSpacecraftState<T> finalStateField     = blField.propagate(initialStateField.getDate().shiftedBy(timeshift));
-	    final FieldKeplerianOrbit<T>  finalOrbitField     = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(finalStateField.getOrbit());
-	    final KeplerianOrbit          finalOrbitFieldReal = finalOrbitField.toOrbit();
+        // Initial state definition
+        final FieldSpacecraftState<T> initialStateField = new FieldSpacecraftState<>(initialOrbit);
+        final SpacecraftState         initialState      = initialStateField.toSpacecraftState();
 
-	    // Classical propagation
-	    final BrouwerLyddanePropagator bl = new BrouwerLyddanePropagator(initialState.getOrbit(),
-	                                                                     GravityFieldFactory.getUnnormalizedProvider(provider),
-	                                                                     BrouwerLyddanePropagator.M2);
-	    final SpacecraftState finalState = bl.propagate(initialState.getDate().shiftedBy(timeshift));
-	    final KeplerianOrbit  finalOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(finalState.getOrbit());
+        // Field propagation
+        final FieldBrouwerLyddanePropagator<T> blField = new FieldBrouwerLyddanePropagator<>(initialStateField.getOrbit(),
+                                                                                             GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
+        final FieldSpacecraftState<T> finalStateField     = blField.propagate(initialStateField.getDate().shiftedBy(timeshift));
+        final FieldKeplerianOrbit<T>  finalOrbitField     = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(finalStateField.getOrbit());
+        final KeplerianOrbit          finalOrbitFieldReal = finalOrbitField.toOrbit();
 
-	    Assert.assertEquals(finalOrbitFieldReal.getA(), finalOrbit.getA(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
-	    Assert.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
-	    Assert.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
-	    Assert.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
-	}
+        // Classical propagation
+        final BrouwerLyddanePropagator bl = new BrouwerLyddanePropagator(initialState.getOrbit(),
+                                                                         GravityFieldFactory.getUnnormalizedProvider(provider),
+                                                                         BrouwerLyddanePropagator.M2);
+        final SpacecraftState finalState = bl.propagate(initialState.getDate().shiftedBy(timeshift));
+        final KeplerianOrbit  finalOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(finalState.getOrbit());
+
+        Assertions.assertEquals(finalOrbitFieldReal.getA(), finalOrbit.getA(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
+    }
 
     @Test
     public void testMeanOrbit() throws IOException {
@@ -895,19 +897,19 @@ public class FieldBrouwerLyddanePropagatorTest {
         });
         num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assert.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
-        Assert.assertEquals(  55.540, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+        Assertions.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
+        Assertions.assertEquals(  55.540, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
 
     }
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
         provider = GravityFieldFactory.getNormalizedProvider(5, 0);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         provider = null;
     }

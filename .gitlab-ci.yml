@@ -127,6 +127,8 @@ deploy:site:
 # similar to Jenkins' "build after a snapshot dependency is built"
 performance:
   stage: deploy
+  # don't fail the build if this doesn't work
+  allow_failure: true
   needs:
     - job: deploy:artifacts
       artifacts: false

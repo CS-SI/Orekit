@@ -16,9 +16,9 @@
  */
 package org.orekit.data;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 public class CompositeDataContextTest {
@@ -31,14 +31,14 @@ public class CompositeDataContextTest {
                                                                     defaultcontext.getCelestialBodies(),
                                                                     defaultcontext.getGravityFields(),
                                                                     defaultcontext.getGeoMagneticFields());
-        Assert.assertSame(defaultcontext.getTimeScales(),        composite.getTimeScales());
-        Assert.assertSame(defaultcontext.getFrames(),            composite.getFrames());
-        Assert.assertSame(defaultcontext.getCelestialBodies(),   composite.getCelestialBodies());
-        Assert.assertSame(defaultcontext.getGravityFields(),     composite.getGravityFields());
-        Assert.assertSame(defaultcontext.getGeoMagneticFields(), composite.getGeoMagneticFields());
+        Assertions.assertSame(defaultcontext.getTimeScales(),        composite.getTimeScales());
+        Assertions.assertSame(defaultcontext.getFrames(),            composite.getFrames());
+        Assertions.assertSame(defaultcontext.getCelestialBodies(),   composite.getCelestialBodies());
+        Assertions.assertSame(defaultcontext.getGravityFields(),     composite.getGravityFields());
+        Assertions.assertSame(defaultcontext.getGeoMagneticFields(), composite.getGeoMagneticFields());
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

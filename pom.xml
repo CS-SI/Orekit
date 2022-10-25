@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.2.1</version>
+  <version>11.3</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -20,38 +20,41 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.spotbugs-maven-plugin.version>4.1.4</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.7</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-bundle-plugin.version>5.1.2</orekit.maven-bundle-plugin.version>
+	<!-- Spotbugs version higher than 4.2.3 will trigger numerous EI_EXPOSE_REP errors not handled by Orekit yet -->
+    <orekit.spotbugs-maven-plugin.version>4.2.3</orekit.spotbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.8</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-bundle-plugin.version>5.1.8</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.1.2</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>9.0</orekit.checkstyle.version>
-    <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>3.3.0</orekit.maven-javadoc-plugin.version>
-    <orekit.maven-jar-plugin.version>3.2.0</orekit.maven-jar-plugin.version>
-    <orekit.maven-jxr-plugin.version>3.1.1</orekit.maven-jxr-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>3.2.0</orekit.maven-checkstyle-plugin.version>
+	<!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
+    <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
+    <orekit.maven-clean-plugin.version>3.2.0</orekit.maven-clean-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.10.1</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.4.1</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-jar-plugin.version>3.3.0</orekit.maven-jar-plugin.version>
+    <orekit.maven-jxr-plugin.version>3.3.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2021.10</orekit.plantuml.version>
-    <orekit.maven-project-info-reports-plugin.version>3.2.1</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-resources-plugin.version>3.2.0</orekit.maven-resources-plugin.version>
-    <orekit.maven-site-plugin.version>3.9.1</orekit.maven-site-plugin.version>
-    <orekit.maven-wagon-ssh-plugin.version>3.4.1</orekit.maven-wagon-ssh-plugin.version>
+    <orekit.plantuml.version>1.2022.8</orekit.plantuml.version>
+    <orekit.maven-project-info-reports-plugin.version>3.4.1</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-resources-plugin.version>3.3.0</orekit.maven-resources-plugin.version>
+    <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
+    <orekit.maven-wagon-ssh-plugin.version>3.5.2</orekit.maven-wagon-ssh-plugin.version>
     <orekit.maven-source-plugin.version>3.2.1</orekit.maven-source-plugin.version>
     <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>3.0.0-M5</orekit.maven-surefire-report-plugin.version>
-    <orekit.mockito-core.version>3.12.4</orekit.mockito-core.version>
-    <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
-    <orekit.build-helper-maven-plugin.version>3.2.0</orekit.build-helper-maven-plugin.version>
-    <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>3.0.0-M6</orekit.maven-surefire-report-plugin.version>
+    <orekit.mockito-core.version>4.8.1</orekit.mockito-core.version>
+    <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
+    <orekit.build-helper-maven-plugin.version>3.3.0</orekit.build-helper-maven-plugin.version>
+    <orekit.nexus-staging-maven-plugin.version>1.6.13</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>3.0.1</orekit.maven-gpg-plugin.version>
-    <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
+    <orekit.maven-install-plugin.version>3.0.1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>2.1</orekit.hipparchus.version>
-    <orekit.junit.version>4.13.2</orekit.junit.version>
+    <orekit.hipparchus.version>2.3</orekit.hipparchus.version>
+    <orekit.junit.version>5.9.1</orekit.junit.version>
+    <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
@@ -88,6 +91,13 @@
     <developer>
       <name>Thierry Ceolin</name>
       <id>thierry</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Vincent Cucchietti</name>
+      <id>vincent</id>
       <roles>
         <role>developer</role>
       </roles>
@@ -163,6 +173,13 @@
     <developer>
       <name>Thomas Neidhart</name>
       <id>thomas</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Romain Serra</name>
+      <id>serrof</id>
       <roles>
         <role>developer</role>
       </roles>
@@ -279,7 +296,13 @@
       <name>Thomas Paulet</name>
     </contributor>
     <contributor>
+      <name>Ga&#235;tan Pierre</name>
+    </contributor>
+    <contributor>
       <name>Steven Ports</name>
+    </contributor>
+    <contributor>
+      <name>Joseph Reed</name>
     </contributor>
     <contributor>
       <name>Silvia R&#237;os Berganti&#241;os</name>
@@ -396,12 +419,25 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
       <version>${orekit.junit.version}</version>
-      <type>jar</type>
-      <scope>test</scope>
       <optional>false</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${orekit.junit.version}</version>
+      <optional>false</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>${orekit.hamcrest.version}</version>
+      <optional>false</optional>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -881,7 +917,7 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>ru.concerteza.buildnumber</groupId>
+            <groupId>org.bidib.buildnumber</groupId>
             <artifactId>maven-jgit-buildnumber-plugin</artifactId>
             <version>${orekit.jgit.buildnumber.version}</version>
             <executions>

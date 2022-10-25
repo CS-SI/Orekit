@@ -16,17 +16,16 @@
  */
 package org.orekit.data;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
-
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class ZipJarCrawlerTest {
 
@@ -35,7 +34,7 @@ public class ZipJarCrawlerTest {
         CountingLoader crawler = new CountingLoader();
         new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler,
                                                            DataContext.getDefault().getDataProvidersManager());
-        Assert.assertEquals(6, crawler.getCount());
+        Assertions.assertEquals(6, crawler.getCount());
     }
 
     @Test
@@ -45,7 +44,7 @@ public class ZipJarCrawlerTest {
         CountingLoader crawler = new CountingLoader();
         new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler,
                                                                 DataContext.getDefault().getDataProvidersManager());
-        Assert.assertEquals(6, crawler.getCount());
+        Assertions.assertEquals(6, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {

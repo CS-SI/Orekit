@@ -16,15 +16,12 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -43,11 +40,14 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GalileoPropagatorTest {
 
     private GalileoNavigationMessage goe;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         goe = new GalileoNavigationMessage();
         goe.setPRN(4);
@@ -70,8 +70,8 @@ public class GalileoPropagatorTest {
         goe.setCis(-1.862645149230957E-8);
         goe.setDate(new GNSSDate(goe.getWeek(), 1000. * goe.getTime(), SatelliteSystem.GALILEO).getDate());
     }
-    
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
     }
@@ -99,14 +99,14 @@ public class GalileoPropagatorTest {
         almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.GALILEO).getDate());
 
         // Intermediate verification
-        Assert.assertEquals(1,                   almanac.getPRN());
-        Assert.assertEquals(1024,                almanac.getWeek());
-        Assert.assertEquals(4,                   almanac.getIOD());
-        Assert.assertEquals(0,                   almanac.getHealthE1());
-        Assert.assertEquals(0,                   almanac.getHealthE5a());
-        Assert.assertEquals(0,                   almanac.getHealthE5b());
-        Assert.assertEquals(-0.0006141662597,    almanac.getAf0(), 1.0e-15);
-        Assert.assertEquals(-7.275957614183E-12, almanac.getAf1(), 1.0e-15);
+        Assertions.assertEquals(1,                   almanac.getPRN());
+        Assertions.assertEquals(1024,                almanac.getWeek());
+        Assertions.assertEquals(4,                   almanac.getIOD());
+        Assertions.assertEquals(0,                   almanac.getHealthE1());
+        Assertions.assertEquals(0,                   almanac.getHealthE5a());
+        Assertions.assertEquals(0,                   almanac.getHealthE5b());
+        Assertions.assertEquals(-0.0006141662597,    almanac.getAf0(), 1.0e-15);
+        Assertions.assertEquals(-7.275957614183E-12, almanac.getAf1(), 1.0e-15);
 
         // Builds the GalileoPropagator from the almanac
         GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
@@ -118,15 +118,15 @@ public class GalileoPropagatorTest {
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
         // Checks
-        Assert.assertEquals(0., p0.distance(p1), 0.);
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
     }
 
     @Test
     public void testFrames() {
         // Builds the GalileoPropagator from the ephemeris
         GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
-        Assert.assertEquals("EME2000", propagator.getFrame().getName());
-        Assert.assertEquals(3.986004418e+14, goe.getMu(), 1.0e6);
+        Assertions.assertEquals("EME2000", propagator.getFrame().getName());
+        Assertions.assertEquals(3.986004418e+14, goe.getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -135,8 +135,8 @@ public class GalileoPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.4e-8);
-        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.8e-12);
+        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.4e-8);
+        Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.8e-12);
     }
 
     @Test
@@ -144,16 +144,16 @@ public class GalileoPropagatorTest {
         try {
             GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
             propagator.resetInitialState(propagator.getInitialState());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
             GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
@@ -183,9 +183,9 @@ public class GalileoPropagatorTest {
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
-        Assert.assertEquals(0.0, errorP, 1.5e-11);
-        Assert.assertEquals(0.0, errorV, 2.2e-7);
-        Assert.assertEquals(0.0, errorA, 4.9e-8);
+        Assertions.assertEquals(0.0, errorP, 1.5e-11);
+        Assertions.assertEquals(0.0, errorV, 2.2e-7);
+        Assertions.assertEquals(0.0, errorA, 4.9e-8);
 
     }
 
@@ -201,7 +201,7 @@ public class GalileoPropagatorTest {
         final Vector3D computedPos = pv.getPosition();
         // Expected position (reference from IGS file WUM0MGXULA_20191010500_01D_15M_ORB.sp3)
         final Vector3D expectedPos = new Vector3D(10487480.721, 17867448.753, -21131462.002);
-        Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.1);
+        Assertions.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.1);
     }
 
     @Test
@@ -212,8 +212,8 @@ public class GalileoPropagatorTest {
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
-        Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
-        Assert.assertEquals(Vector3D.NaN, pv0.getVelocity()); 
+        Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
+        Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
     }
 
 }

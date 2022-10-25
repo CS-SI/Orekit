@@ -18,10 +18,10 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -85,7 +85,7 @@ public class BackAndForthDetectorTest {
         propagator.propagate(date1);
         propagator.propagate(date0);
 
-        Assert.assertEquals(4, visi.getVisiNb());
+        Assertions.assertEquals(4, visi.getVisiNb());
 
     }
 
@@ -107,12 +107,12 @@ public class BackAndForthDetectorTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

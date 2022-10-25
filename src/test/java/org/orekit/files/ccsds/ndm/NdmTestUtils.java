@@ -16,19 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Stream;
-
 import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -59,13 +53,19 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.units.Unit;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Stream;
+
 public class NdmTestUtils {
 
     private static final int ULPS = 3;
 
     public static void checkEquals(final NdmConstituent<?, ?> original, final NdmConstituent<?, ?> rebuilt) {
         checkContainer(original.getHeader(), rebuilt.getHeader());
-        Assert.assertEquals(original.getSegments().size(), rebuilt.getSegments().size());
+        Assertions.assertEquals(original.getSegments().size(), rebuilt.getSegments().size());
         for (int i = 0; i < original.getSegments().size(); ++i) {
             checkContainer(original.getSegments().get(i).getMetadata(), rebuilt.getSegments().get(i).getMetadata());
             checkContainer(original.getSegments().get(i).getData(), rebuilt.getSegments().get(i).getData());
@@ -163,7 +163,7 @@ public class NdmTestUtils {
     }
 
     public static void checkContainer(final Object original, final Object rebuilt) {
-        Assert.assertEquals(original.getClass(), rebuilt.getClass());
+        Assertions.assertEquals(original.getClass(), rebuilt.getClass());
         final Class<?> cls = original.getClass();
         Stream.of(cls.getMethods()).
         filter(m -> m.getName().startsWith("get")              &&
@@ -176,7 +176,7 @@ public class NdmTestUtils {
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
-                Assert.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
+                Assertions.assertTrue(recurseCheck(getter.invoke(original), getter.invoke(rebuilt)));
             } catch (InvocationTargetException e) {
                 if (!((getter.getName().equals("getFrame") ||
                        getter.getName().equals("getReferenceFrame") ||
@@ -184,88 +184,88 @@ public class NdmTestUtils {
                       e.getCause() instanceof OrekitException &&
                       (((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY ||
                        ((OrekitException) e.getCause()).getSpecifier() == OrekitMessages.CCSDS_INVALID_FRAME))) {
-                    Assert.fail(e.getCause().getLocalizedMessage());
+                    Assertions.fail(e.getCause().getLocalizedMessage());
                 }
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                Assert.fail(e.getLocalizedMessage());
+                Assertions.fail(e.getLocalizedMessage());
             }
         });
     }
 
     public static void checkIntArray(final int[] original, final int[] rebuilt) {
-        Assert.assertEquals(original.length, rebuilt.length);
+        Assertions.assertEquals(original.length, rebuilt.length);
         for (int i = 0; i < original.length; ++i) {
-            Assert.assertEquals(original[i], rebuilt[i]);
+            Assertions.assertEquals(original[i], rebuilt[i]);
         }
     }
 
     public static void checkDoubleArray(final double[] original, final double[] rebuilt) {
-        Assert.assertEquals(original.length, rebuilt.length);
+        Assertions.assertEquals(original.length, rebuilt.length);
         for (int i = 0; i < original.length; ++i) {
-            Assert.assertTrue(Precision.equalsIncludingNaN(original[i], rebuilt[i], 1));
+            Assertions.assertTrue(Precision.equalsIncludingNaN(original[i], rebuilt[i], 1));
         }
     }
 
     public static void checkList(final List<?> original, final List<?> rebuilt) {
-        Assert.assertEquals(original.size(), rebuilt.size());
+        Assertions.assertEquals(original.size(), rebuilt.size());
         for (int i = 0; i < original.size(); ++i) {
-            Assert.assertTrue(recurseCheck(original.get(i), rebuilt.get(i)));
+            Assertions.assertTrue(recurseCheck(original.get(i), rebuilt.get(i)));
         }
     }
 
     public static void checkMap(final Map<?, ?> original, final Map<?, ?> rebuilt) {
-        Assert.assertEquals(original.size(), rebuilt.size());
+        Assertions.assertEquals(original.size(), rebuilt.size());
         for (final Map.Entry<?, ?> entry : original.entrySet()) {
-            Assert.assertTrue(rebuilt.containsKey(entry.getKey()));
-            Assert.assertTrue(recurseCheck(entry.getValue(), rebuilt.get(entry.getKey())));
+            Assertions.assertTrue(rebuilt.containsKey(entry.getKey()));
+            Assertions.assertTrue(recurseCheck(entry.getValue(), rebuilt.get(entry.getKey())));
         }
     }
 
     public static void checkFrameFacade(final FrameFacade original, final FrameFacade rebuilt) {
         if (original.asFrame() == null) {
-            Assert.assertNull(rebuilt.asFrame());
+            Assertions.assertNull(rebuilt.asFrame());
         } else {
-            Assert.assertEquals(original.asFrame().getName(),
+            Assertions.assertEquals(original.asFrame().getName(),
                                 rebuilt.asFrame().getName());
         }
-        Assert.assertEquals(original.asCelestialBodyFrame(),
+        Assertions.assertEquals(original.asCelestialBodyFrame(),
                             rebuilt.asCelestialBodyFrame());
         if (original.asOrbitRelativeFrame() == null) {
-            Assert.assertNull(rebuilt.asOrbitRelativeFrame());
+            Assertions.assertNull(rebuilt.asOrbitRelativeFrame());
         } else {
-            Assert.assertEquals(original.asOrbitRelativeFrame().getLofType(),
+            Assertions.assertEquals(original.asOrbitRelativeFrame().getLofType(),
                                 rebuilt.asOrbitRelativeFrame().getLofType());
         }
         if (original.asSpacecraftBodyFrame() == null) {
-            Assert.assertNull(rebuilt.asSpacecraftBodyFrame());
+            Assertions.assertNull(rebuilt.asSpacecraftBodyFrame());
         } else {
-            Assert.assertEquals(original.asSpacecraftBodyFrame().getBaseEquipment(),
+            Assertions.assertEquals(original.asSpacecraftBodyFrame().getBaseEquipment(),
                                 rebuilt.asSpacecraftBodyFrame().getBaseEquipment());
-            Assert.assertEquals(original.asSpacecraftBodyFrame().getLabel(),
+            Assertions.assertEquals(original.asSpacecraftBodyFrame().getLabel(),
                                 rebuilt.asSpacecraftBodyFrame().getLabel());
         }
-        Assert.assertEquals(original.getName(), rebuilt.getName());
+        Assertions.assertEquals(original.getName(), rebuilt.getName());
     }
 
     public static void checkBodyFacade(final BodyFacade original, final BodyFacade rebuilt) {
         if (original.getBody() == null) {
-            Assert.assertNull(rebuilt.getBody());
+            Assertions.assertNull(rebuilt.getBody());
         } else {
-            Assert.assertEquals(original.getBody().getName(),
+            Assertions.assertEquals(original.getBody().getName(),
                                 rebuilt.getBody().getName());
         }
-        Assert.assertEquals(original.getName().toUpperCase(Locale.US), rebuilt.getName().toUpperCase(Locale.US));
+        Assertions.assertEquals(original.getName().toUpperCase(Locale.US), rebuilt.getName().toUpperCase(Locale.US));
     }
 
     public static void checkOdMethodFacade(final OdMethodFacade original, final OdMethodFacade rebuilt) {
-        Assert.assertEquals(original.getName(), rebuilt.getName());
-        Assert.assertEquals(original.getType(), rebuilt.getType());
-        Assert.assertEquals(original.getTool(), rebuilt.getTool());
+        Assertions.assertEquals(original.getName(), rebuilt.getName());
+        Assertions.assertEquals(original.getType(), rebuilt.getType());
+        Assertions.assertEquals(original.getTool(), rebuilt.getTool());
     }
 
     public static void checkPocMethodFacade(final PocMethodFacade original, final PocMethodFacade rebuilt) {
-        Assert.assertEquals(original.getName(), rebuilt.getName());
-        Assert.assertEquals(original.getType(), rebuilt.getType());
+        Assertions.assertEquals(original.getName(), rebuilt.getName());
+        Assertions.assertEquals(original.getType(), rebuilt.getType());
     }
 
     public static void checkOrbitStateHistory(final TrajectoryStateHistory original, final TrajectoryStateHistory rebuilt) {
@@ -273,53 +273,53 @@ public class NdmTestUtils {
         // with embedded metadata and states, and because the getFrame() method
         // that would be called automatically may trhow an exception
         // so we just jump down to metadata and states
-        Assert.assertTrue(recurseCheck(original.getMetadata(), rebuilt.getMetadata()));
+        Assertions.assertTrue(recurseCheck(original.getMetadata(), rebuilt.getMetadata()));
         checkList(original.getTrajectoryStates(), rebuilt.getTrajectoryStates());
     }
 
     public static void checkDate(final AbsoluteDate original, final AbsoluteDate rebuilt) {
-        Assert.assertEquals(0.0, rebuilt.durationFrom(original), 1.0e-14);
+        Assertions.assertEquals(0.0, rebuilt.durationFrom(original), 1.0e-14);
     }
 
     public static void checkUnit(final Unit original, final Unit rebuilt) {
-        Assert.assertTrue(Precision.equals(original.getScale(), rebuilt.getScale(), 1));
-        Assert.assertTrue(rebuilt.sameDimension(original));
+        Assertions.assertTrue(Precision.equals(original.getScale(), rebuilt.getScale(), 1));
+        Assertions.assertTrue(rebuilt.sameDimension(original));
     }
 
     public static void checkFrame(final Frame original, final Frame rebuilt) {
-        Assert.assertEquals(original.getName(), rebuilt.getName());
+        Assertions.assertEquals(original.getName(), rebuilt.getName());
     }
 
     public static void checkVector3D(final Vector3D original, final Vector3D rebuilt) {
         double eps = ULPS * FastMath.ulp(original.getNorm());
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getX(), rebuilt.getX(), eps));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), eps));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getZ(), rebuilt.getZ(), eps));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.getX(), rebuilt.getX(), eps));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), eps));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.getZ(), rebuilt.getZ(), eps));
     }
 
     public static void checkQuaternion(final Quaternion original, final Quaternion rebuilt) {
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ0(), rebuilt.getQ0(), ULPS));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ1(), rebuilt.getQ1(), ULPS));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ2(), rebuilt.getQ2(), ULPS));
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ3(), rebuilt.getQ3(), ULPS));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.getQ0(), rebuilt.getQ0(), ULPS));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.getQ1(), rebuilt.getQ1(), ULPS));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.getQ2(), rebuilt.getQ2(), ULPS));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.getQ3(), rebuilt.getQ3(), ULPS));
     }
 
     public static void checkRealMatrix(final RealMatrix original, final RealMatrix rebuilt) {
-        Assert.assertEquals(original.getRowDimension(), rebuilt.getRowDimension());
-        Assert.assertEquals(original.getColumnDimension(), rebuilt.getColumnDimension());
+        Assertions.assertEquals(original.getRowDimension(), rebuilt.getRowDimension());
+        Assertions.assertEquals(original.getColumnDimension(), rebuilt.getColumnDimension());
         for (int i = 0; i < original.getRowDimension(); ++i) {
             for (int j = 0; j < original.getColumnDimension(); ++j) {
-                Assert.assertTrue(Precision.equalsIncludingNaN(original.getEntry(i, j), rebuilt.getEntry(i, j), ULPS));
+                Assertions.assertTrue(Precision.equalsIncludingNaN(original.getEntry(i, j), rebuilt.getEntry(i, j), ULPS));
             }
         }
     }
 
     public static void checkRotation(final Rotation original, final Rotation rebuilt) {
-        Assert.assertEquals(0.0, Rotation.distance(original, rebuilt), 1.0e-12);
+        Assertions.assertEquals(0.0, Rotation.distance(original, rebuilt), 1.0e-12);
     }
 
     public static void checkDouble(final Double original, final Double rebuilt) {
-        Assert.assertTrue(Precision.equalsIncludingNaN(original.doubleValue(), rebuilt.doubleValue(), ULPS));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original.doubleValue(), rebuilt.doubleValue(), ULPS));
     }
 
 

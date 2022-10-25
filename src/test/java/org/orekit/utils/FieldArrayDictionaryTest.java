@@ -16,17 +16,16 @@
  */
 package org.orekit.utils;
 
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class FieldArrayDictionaryTest {
 
@@ -116,7 +115,7 @@ public class FieldArrayDictionaryTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEmpty(Field<T> field) {
-        Assert.assertTrue(new FieldArrayDictionary<>(field).getData().isEmpty());
+        Assertions.assertTrue(new FieldArrayDictionary<>(field).getData().isEmpty());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPutGet(Field<T> field) {
@@ -130,7 +129,7 @@ public class FieldArrayDictionaryTest {
         checkArray(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
         checkArray(new double[] { 4.0 },           dictionary.get("b"),       1.0e-15);
 
-        Assert.assertNull(dictionary.get("not-a-key"));
+        Assertions.assertNull(dictionary.get("not-a-key"));
 
     }
 
@@ -146,7 +145,7 @@ public class FieldArrayDictionaryTest {
         checkArray(new double[] { 17.0 },          copy.get("another"), 1.0e-15);
         checkArray(new double[] { 4.0 },           copy.get("b"),       1.0e-15);
 
-        Assert.assertNull(copy.get("not-a-key"));
+        Assertions.assertNull(copy.get("not-a-key"));
 
     }
 
@@ -162,7 +161,7 @@ public class FieldArrayDictionaryTest {
         checkArray(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
         checkArray(new double[] { 4.0 },           dictionary.get("b"),       1.0e-15);
 
-        Assert.assertNull(dictionary.get("not-a-key"));
+        Assertions.assertNull(dictionary.get("not-a-key"));
 
     }
 
@@ -172,7 +171,7 @@ public class FieldArrayDictionaryTest {
         dictionary.put("a", original);
         T[] retrieved = dictionary.get("a");
         checkArray(new double[] { 1.0, 2.0, 3.0 }, retrieved, 1.0e-15);
-        Assert.assertNotSame(original, retrieved);
+        Assertions.assertNotSame(original, retrieved);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIncrementField(Field<T> field) {
@@ -217,7 +216,7 @@ public class FieldArrayDictionaryTest {
     private <T extends CalculusFieldElement<T>> void doTestSize(Field<T> field) {
         FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<>(field);
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
-         Assert.assertEquals(3, dictionary.getEntry("a").size(), 1.0e-15);
+         Assertions.assertEquals(3, dictionary.getEntry("a").size(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDataManagement(Field<T> field) {
@@ -226,21 +225,21 @@ public class FieldArrayDictionaryTest {
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
 
-        Assert.assertEquals(3, dictionary.size());
-        Assert.assertEquals("{a[3], b[1], another[1]}", dictionary.toString());
+        Assertions.assertEquals(3, dictionary.size());
+        Assertions.assertEquals("{a[3], b[1], another[1]}", dictionary.toString());
 
-        Assert.assertTrue(dictionary.remove("another"));
-        Assert.assertEquals(2, dictionary.size());
-        Assert.assertFalse(dictionary.remove("not-a-key"));
-        Assert.assertEquals(2, dictionary.size());
+        Assertions.assertTrue(dictionary.remove("another"));
+        Assertions.assertEquals(2, dictionary.size());
+        Assertions.assertFalse(dictionary.remove("not-a-key"));
+        Assertions.assertEquals(2, dictionary.size());
 
-        Assert.assertEquals("a", dictionary.getData().get(0).getKey());
-        Assert.assertEquals("b", dictionary.getData().get(1).getKey());
+        Assertions.assertEquals("a", dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("b", dictionary.getData().get(1).getKey());
 
         dictionary.clear();
-        Assert.assertTrue(dictionary.getData().isEmpty());
+        Assertions.assertTrue(dictionary.getData().isEmpty());
 
-        Assert.assertSame(field, dictionary.getField());
+        Assertions.assertSame(field, dictionary.getField());
 
     }
 
@@ -250,17 +249,17 @@ public class FieldArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         dictionary.put("b",       new double[] { -1.0, -1.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         checkArray(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
         checkArray(new double[] { 17.0 },          dictionary.get("another"), 1.0e-15);
         checkArray(new double[] { -1.0, -1.0 },    dictionary.get("b"),       1.0e-15);
-        Assert.assertEquals("a",       dictionary.getData().get(0).getKey());
-        Assert.assertEquals("another", dictionary.getData().get(1).getKey());
-        Assert.assertEquals("b",       dictionary.getData().get(2).getKey());
+        Assertions.assertEquals("a",       dictionary.getData().get(0).getKey());
+        Assertions.assertEquals("another", dictionary.getData().get(1).getKey());
+        Assertions.assertEquals("b",       dictionary.getData().get(2).getKey());
 
     }
 
@@ -270,7 +269,7 @@ public class FieldArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         final Map<String, T[]> map = new HashMap<>();
         map.put("f", convert(field, new double[] {  12.0 }));
@@ -278,7 +277,7 @@ public class FieldArrayDictionaryTest {
         map.put("b", convert(field, new double[] {  19.0 }));
 
         dictionary.putAll(map);
-        Assert.assertEquals(5, dictionary.size());
+        Assertions.assertEquals(5, dictionary.size());
 
         checkArray(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
         checkArray(new double[] {  19.0 },         dictionary.get("b"),       1.0e-15);
@@ -294,7 +293,7 @@ public class FieldArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         FieldArrayDictionary<T> other = new FieldArrayDictionary<>(field);
         other.put("f", new double[] {  12.0 });
@@ -302,7 +301,7 @@ public class FieldArrayDictionaryTest {
         other.put("b", new double[] {  19.0 });
 
         dictionary.putAll(other);
-        Assert.assertEquals(5, dictionary.size());
+        Assertions.assertEquals(5, dictionary.size());
 
         checkArray(new double[] { 1.0, 2.0, 3.0 }, dictionary.get("a"),       1.0e-15);
         checkArray(new double[] {  19.0 },         dictionary.get("b"),       1.0e-15);
@@ -317,22 +316,22 @@ public class FieldArrayDictionaryTest {
         dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
         dictionary.put("b",       new double[] { 4.0 });
         dictionary.put("another", new double[] { 17.0 });
-        Assert.assertEquals(3, dictionary.size());
+        Assertions.assertEquals(3, dictionary.size());
 
         Map<String, T[]> map = dictionary.toMap();
-        Assert.assertEquals(3, map.size());
+        Assertions.assertEquals(3, map.size());
 
         checkArray(new double[] { 1.0, 2.0, 3.0 }, map.get("a"),       1.0e-15);
         checkArray(new double[] {   4.0 },         map.get("b"),       1.0e-15);
         checkArray(new double[] {  17.0 },         map.get("another"), 1.0e-15);
 
         dictionary.clear();
-        Assert.assertEquals(0, dictionary.size());
-        Assert.assertEquals(3, map.size());
+        Assertions.assertEquals(0, dictionary.size());
+        Assertions.assertEquals(3, map.size());
         map.put("z", MathArrays.buildArray(field, 0));
-        Assert.assertEquals(4, map.size());
-        Assert.assertEquals(0, dictionary.size());
-       
+        Assertions.assertEquals(4, map.size());
+        Assertions.assertEquals(0, dictionary.size());
+
     }
 
     private <T extends CalculusFieldElement<T>> void doTestView(Field<T> field) {
@@ -342,15 +341,15 @@ public class FieldArrayDictionaryTest {
         dictionary.put("another", new double[] { 17.0 });
 
         FieldArrayDictionary<T> view = dictionary.unmodifiableView();
-        Assert.assertEquals(3, view.size());
-        Assert.assertEquals(3, view.getData().size());
-        Assert.assertEquals(3, view.toMap().size());
+        Assertions.assertEquals(3, view.size());
+        Assertions.assertEquals(3, view.getData().size());
+        Assertions.assertEquals(3, view.toMap().size());
         checkArray(new double[] { 1.0, 2.0, 3.0 }, view.get("a"),       1.0e-15);
         checkArray(new double[] {   4.0 },         view.get("b"),       1.0e-15);
         checkArray(new double[] {  17.0 }, view.getEntry("another").getValue(), 1.0e-15);
 
         dictionary.put("z", new double[] { 25.0 });
-        Assert.assertEquals(4, view.size());
+        Assertions.assertEquals(4, view.size());
         checkArray(new double[] { 25.0 },         view.get("z"), 1.0e-15);
 
         checkUnsupported(view, v -> v.clear());
@@ -363,9 +362,9 @@ public class FieldArrayDictionaryTest {
     }
 
     private <T extends CalculusFieldElement<T>> void checkArray(final double[] expected, final T[] actual, final double eps) {
-        Assert.assertEquals(expected.length, actual.length);
+        Assertions.assertEquals(expected.length, actual.length);
         for (int i = 0; i < expected.length; ++i) {
-            Assert.assertEquals(expected[i], actual[i].getReal(), eps);
+            Assertions.assertEquals(expected[i], actual[i].getReal(), eps);
         }
     }
 
@@ -380,7 +379,7 @@ public class FieldArrayDictionaryTest {
     private <T extends CalculusFieldElement<T>> void checkUnsupported(FieldArrayDictionary<T> d, Consumer<FieldArrayDictionary<T>> c) {
         try {
             c.accept(d);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (UnsupportedOperationException uoe) {
             // expected
         }

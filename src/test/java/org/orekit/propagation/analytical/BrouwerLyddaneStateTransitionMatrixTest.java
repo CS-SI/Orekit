@@ -3,9 +3,9 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
@@ -31,29 +31,31 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
     /** Drag parameter. */
     private double M2;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
         provider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
         M2 = BrouwerLyddanePropagator.M2;
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNullStmName() {
-        // Definition of initial conditions with position and velocity
-        // ------------------------------------------------------------
-        // e = 0.04152500499523033   and   i = 1.705015527659039
+        Assertions.assertThrows(OrekitException.class, () -> {
+            // Definition of initial conditions with position and velocity
+            // ------------------------------------------------------------
+            // e = 0.04152500499523033   and   i = 1.705015527659039
 
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        Vector3D position = new Vector3D(3220103., 69623., 6149822.);
-        Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
+            AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+            Vector3D position = new Vector3D(3220103., 69623., 6149822.);
+            Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Orbit initialOrbit = new CartesianOrbit(new PVCoordinates(position, velocity),
-                                                FramesFactory.getEME2000(), initDate, provider.getMu());
+            Orbit initialOrbit = new CartesianOrbit(new PVCoordinates(position, velocity),
+                    FramesFactory.getEME2000(), initDate, provider.getMu());
 
-        final BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(initialOrbit, provider, M2);
+            final BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(initialOrbit, provider, M2);
 
-        propagator.setupMatricesComputation(null, null, null);
+            propagator.setupMatricesComputation(null, null, null);
+        });
     }
 
     @Test
@@ -109,7 +111,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, 1.42e-13);
+                    Assertions.assertEquals(0, error, 1.42e-13);
                 }
             }
         }
@@ -148,7 +150,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
                             state.getMu(), state.getAttitude());
 
     }
-    
+
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
 
@@ -156,7 +158,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
           return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, 
+    private SpacecraftState arrayToState(double[][] array,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);

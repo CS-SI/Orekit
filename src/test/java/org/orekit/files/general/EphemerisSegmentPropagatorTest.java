@@ -16,17 +16,12 @@
  */
 package org.orekit.files.general;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -42,6 +37,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Unit tests for {@link EphemerisSegmentPropagator}.
  *
@@ -50,7 +50,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class EphemerisSegmentPropagatorTest {
 
     /** Set Orekit data. */
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -146,9 +146,9 @@ public class EphemerisSegmentPropagatorTest {
         SpacecraftState ic = propagator.propagate(start);
         try {
             propagator.resetInitialState(ic);
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
             Method reset = EphemerisSegmentPropagator.class.getDeclaredMethod("resetIntermediateState",
@@ -156,10 +156,10 @@ public class EphemerisSegmentPropagatorTest {
                                                                               Boolean.TYPE);
             reset.setAccessible(true);
             reset.invoke(propagator, ic, true);
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (InvocationTargetException ite) {
             OrekitException oe = (OrekitException) ite.getCause();
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
 
     }

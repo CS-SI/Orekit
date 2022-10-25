@@ -16,10 +16,13 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.BistaticRangeTroposphericDelayModifier;
@@ -34,9 +37,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class BistaticRangeTest {
 
@@ -78,8 +78,11 @@ public class BistaticRangeTest {
         }
 
         // Mean and std errors check
-        Assert.assertEquals(0.0, diffStat.getMean(), 1.58e-7);
-        Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 1.3e-7);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 1.59e-7);
+        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1.3e-7);
+
+        // Test measurement type
+        Assertions.assertEquals(BistaticRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /**
@@ -110,7 +113,7 @@ public class BistaticRangeTest {
             final SpacecraftState state = propagator.propagate(date);
 
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assert.assertEquals(3, estimated.getParticipants().length);
+            Assertions.assertEquals(3, estimated.getParticipants().length);
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
@@ -121,8 +124,8 @@ public class BistaticRangeTest {
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -134,7 +137,7 @@ public class BistaticRangeTest {
             }
         }
 
-        Assert.assertEquals(0, maxRelativeError, 4.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 4.2e-6);
 
     }
 
@@ -144,9 +147,9 @@ public class BistaticRangeTest {
      */
     @Test
     public void testStateDerivativesWithModifier() {
-    
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-    
+
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -163,19 +166,19 @@ public class BistaticRangeTest {
                                                                new BistaticRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
-    
+
         final BistaticRangeTroposphericDelayModifier modifier = new BistaticRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
-    
+
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
-    
+
             ((BistaticRange) measurement).addModifier(modifier);
-    
+
             final AbsoluteDate    date  = measurement.getDate().shiftedBy(1);
             final SpacecraftState state = propagator.propagate(date);
-    
+
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
-    
+
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
@@ -183,10 +186,10 @@ public class BistaticRangeTest {
                 }
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
-    
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
-    
+
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
@@ -197,8 +200,8 @@ public class BistaticRangeTest {
             }
         }
 
-        Assert.assertEquals(0, maxRelativeError, 1.6e-5);
-    
+        Assertions.assertEquals(0, maxRelativeError, 1.6e-5);
+
     }
 
     /**
@@ -260,8 +263,8 @@ public class BistaticRangeTest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -276,7 +279,7 @@ public class BistaticRangeTest {
             }
         }
 
-        Assert.assertEquals(0, maxRelativeError, 1.9e-7);
+        Assertions.assertEquals(0, maxRelativeError, 1.9e-7);
 
     }
 
@@ -347,8 +350,8 @@ public class BistaticRangeTest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -363,7 +366,7 @@ public class BistaticRangeTest {
             }
         }
 
-        Assert.assertEquals(0, maxRelativeError, 2.9e-6);
+        Assertions.assertEquals(0, maxRelativeError, 2.9e-6);
 
     }
 

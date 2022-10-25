@@ -16,17 +16,6 @@
  */
 package org.orekit.bodies;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -42,9 +31,9 @@ import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -64,6 +53,16 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 
 public class OneAxisEllipsoidTest {
@@ -145,7 +144,7 @@ public class OneAxisEllipsoidTest {
         GeodeticPoint gp = earthShape.transform(surfacePoint, earthShape.getBodyFrame(),
                                                    AbsoluteDate.J2000_EPOCH);
         Vector3D rebuilt = earthShape.transform(gp);
-        Assert.assertEquals(0, rebuilt.distance(surfacePoint), 3.0e-9);
+        Assertions.assertEquals(0, rebuilt.distance(surfacePoint), 3.0e-9);
     }
 
     @Test
@@ -177,9 +176,9 @@ public class OneAxisEllipsoidTest {
         GeodeticPoint nsp =
             new GeodeticPoint(0.852479154923577, 0.0423149994747243, 111.6);
         Vector3D p = model.transform(nsp);
-        Assert.assertEquals(4201866.69291890, p.getX(), 1.0e-6);
-        Assert.assertEquals(177908.184625686, p.getY(), 1.0e-6);
-        Assert.assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
+        Assertions.assertEquals(4201866.69291890, p.getX(), 1.0e-6);
+        Assertions.assertEquals(177908.184625686, p.getY(), 1.0e-6);
+        Assertions.assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
     }
 
     @Test
@@ -204,13 +203,13 @@ public class OneAxisEllipsoidTest {
             Vector3D groundP = model.projectToGround(pv.getPosition(), pv.getDate(), eme2000);
 
             // check methods projectToGround and transform are consistent with each other
-            Assert.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLatitude(),
+            Assertions.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLatitude(),
                                 model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLatitude(),
                                 1.0e-10);
-            Assert.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLongitude(),
+            Assertions.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLongitude(),
                                 model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLongitude(),
                                 1.0e-10);
-            Assert.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15 * groundP.getNorm());
+            Assertions.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15 * groundP.getNorm());
 
         }
 
@@ -233,9 +232,9 @@ public class OneAxisEllipsoidTest {
         Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
 
         double[] errors = derivativesErrors(orbit, orbit.getDate(), eme2000, model);
-        Assert.assertEquals(0, errors[0], 1.0e-16);
-        Assert.assertEquals(0, errors[1], 2.0e-12);
-        Assert.assertEquals(0, errors[2], 2.0e-4);
+        Assertions.assertEquals(0, errors[0], 1.0e-16);
+        Assertions.assertEquals(0, errors[1], 2.0e-12);
+        Assertions.assertEquals(0, errors[2], 2.0e-4);
 
     }
 
@@ -256,9 +255,9 @@ public class OneAxisEllipsoidTest {
         TimeStampedPVCoordinates body = itrf.getTransformTo(eme2000, initPV.getDate()).transformPVCoordinates(initPV);
         TimeStampedPVCoordinates ground1 = model.projectToGround(body,    itrf);
         TimeStampedPVCoordinates ground2 = model.projectToGround(ground1, itrf);
-        Assert.assertEquals(0.0, Vector3D.distance(ground1.getPosition(),     ground2.getPosition()),     1.0e-12);
-        Assert.assertEquals(0.0, Vector3D.distance(ground1.getVelocity(),     ground2.getVelocity()),     2.0e-12);
-        Assert.assertEquals(0.0, Vector3D.distance(ground1.getAcceleration(), ground2.getAcceleration()), 1.0e-12);
+        Assertions.assertEquals(0.0, Vector3D.distance(ground1.getPosition(),     ground2.getPosition()),     1.0e-12);
+        Assertions.assertEquals(0.0, Vector3D.distance(ground1.getVelocity(),     ground2.getVelocity()),     2.0e-12);
+        Assertions.assertEquals(0.0, Vector3D.distance(ground1.getAcceleration(), ground2.getAcceleration()), 1.0e-12);
 
     }
 
@@ -326,9 +325,9 @@ public class OneAxisEllipsoidTest {
             Vector3D refP    = model.projectToGround(orbit.getPVCoordinates(date, model.getBodyFrame()).getPosition(),
                                                      date, model.getBodyFrame());
             Vector3D delta = taylorP.subtract(refP);
-            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, alongTrack),  0.0015);
-            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, acrossTrack), 0.0007);
-            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, zenith),      0.00002);
+            Assertions.assertEquals(0.0, Vector3D.dotProduct(delta, alongTrack),  0.0015);
+            Assertions.assertEquals(0.0, Vector3D.dotProduct(delta, acrossTrack), 0.0007);
+            Assertions.assertEquals(0.0, Vector3D.dotProduct(delta, zenith),      0.00002);
         }
 
     }
@@ -343,42 +342,42 @@ public class OneAxisEllipsoidTest {
         Vector3D direction     = new Vector3D(0.0, 1.0, 1.0);
         Line line = new Line(point, point.add(direction), 1.0e-10);
         GeodeticPoint gp = model.getIntersectionPoint(line, point, frame, date);
-        Assert.assertEquals(gp.getAltitude(), 0.0, 1.0e-12);
-        Assert.assertTrue(line.contains(model.transform(gp)));
+        Assertions.assertEquals(gp.getAltitude(), 0.0, 1.0e-12);
+        Assertions.assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
         point = new Vector3D(0.0, -93.7139699, -3.5930796);
         direction = new Vector3D(0.0, -1.0, -1.0);
         line = new Line(point, point.add(direction), 1.0e-10).revert();
         gp = model.getIntersectionPoint(line, point, frame, date);
-        Assert.assertTrue(line.contains(model.transform(gp)));
+        Assertions.assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
         point = new Vector3D(0.0, -93.7139699, 3.5930796);
         direction = new Vector3D(0.0, -1.0, 1.0);
         line = new Line(point, point.add(direction), 1.0e-10);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        Assert.assertTrue(line.contains(model.transform(gp)));
+        Assertions.assertTrue(line.contains(model.transform(gp)));
 
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
         point = new Vector3D(-93.7139699, 0.0, 3.5930796);
         direction = new Vector3D(-1.0, 0.0, 1.0);
         line = new Line(point, point.add(direction), 1.0e-10);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        Assert.assertTrue(line.contains(model.transform(gp)));
-        Assert.assertFalse(line.contains(new Vector3D(0, 0, 7000000)));
+        Assertions.assertTrue(line.contains(model.transform(gp)));
+        Assertions.assertFalse(line.contains(new Vector3D(0, 0, 7000000)));
 
         point = new Vector3D(0.0, 0.0, 110);
         direction = new Vector3D(0.0, 0.0, 1.0);
         line = new Line(point, point.add(direction), 1.0e-10);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        Assert.assertEquals(gp.getLatitude(), FastMath.PI/2, 1.0e-12);
+        Assertions.assertEquals(gp.getLatitude(), FastMath.PI/2, 1.0e-12);
 
         point = new Vector3D(0.0, 110, 0);
         direction = new Vector3D(0.0, 1.0, 0.0);
         line = new Line(point, point.add(direction), 1.0e-10);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        Assert.assertEquals(gp.getLatitude(), 0, 1.0e-12);
+        Assertions.assertEquals(gp.getLatitude(), 0, 1.0e-12);
 
     }
 
@@ -390,7 +389,7 @@ public class OneAxisEllipsoidTest {
         Vector3D point     = new Vector3D(0.0, 93.7139699, 3.5930796);
         Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
         Line line = new Line(point, point.add(direction), 1.0e-10);
-        Assert.assertNull(model.getIntersectionPoint(line, point, frame, date));
+        Assertions.assertNull(model.getIntersectionPoint(line, point, frame, date));
     }
 
     @Test
@@ -401,7 +400,7 @@ public class OneAxisEllipsoidTest {
         Vector3D point     = new Vector3D(140.0, 0.0, -30.0);
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
-        Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-10);
+        Assertions.assertEquals(0.0, rebuilt.distance(point), 1.0e-10);
     }
 
     @Test
@@ -417,7 +416,7 @@ public class OneAxisEllipsoidTest {
         Vector3D point     = new Vector3D(100.001, 0.0, 1.0);
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
-        Assert.assertEquals(0.0, rebuilt.distance(point), 8.0e-12);
+        Assertions.assertEquals(0.0, rebuilt.distance(point), 8.0e-12);
     }
 
     @Test
@@ -429,7 +428,7 @@ public class OneAxisEllipsoidTest {
             Vector3D point     = new Vector3D(rho, 0.0, 0.0);
             GeodeticPoint gp = model.transform(point, frame, date);
             Vector3D rebuilt = model.transform(gp);
-            Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-10);
+            Assertions.assertEquals(0.0, rebuilt.distance(point), 1.0e-10);
         }
     }
 
@@ -441,7 +440,7 @@ public class OneAxisEllipsoidTest {
         Vector3D point     = new Vector3D(1.0e15, 2.0e15, -1.0e12);
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
-        Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());
+        Assertions.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());
     }
 
     @Test
@@ -454,7 +453,7 @@ public class OneAxisEllipsoidTest {
         Vector3D point     = new Vector3D(-6838696.282102453, -2148321.403361013, -0.011907944179711194);
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
-        Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());
+        Assertions.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());
     }
 
     @Test
@@ -467,14 +466,14 @@ public class OneAxisEllipsoidTest {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(original);
-        Assert.assertTrue(bos.size() > 250);
-        Assert.assertTrue(bos.size() < 350);
+        Assertions.assertTrue(bos.size() > 250);
+        Assertions.assertTrue(bos.size() < 350);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         OneAxisEllipsoid deserialized  = (OneAxisEllipsoid) ois.readObject();
-        Assert.assertEquals(original.getEquatorialRadius(), deserialized.getEquatorialRadius(), 1.0e-12);
-        Assert.assertEquals(original.getFlattening(), deserialized.getFlattening(), 1.0e-12);
+        Assertions.assertEquals(original.getEquatorialRadius(), deserialized.getEquatorialRadius(), 1.0e-12);
+        Assertions.assertEquals(original.getFlattening(), deserialized.getFlattening(), 1.0e-12);
 
     }
 
@@ -505,16 +504,16 @@ public class OneAxisEllipsoidTest {
         Vector3D pointItrf     = earth.transform(geoPoint);
         Line line = new Line(pSatItrf, pointItrf, 1.0e-10);
         GeodeticPoint geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
 
         // Test second visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(65.), FastMath.toRadians(-120.), 0.);
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf, 1.0e-10);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
 
         // Test non visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(30.), FastMath.toRadians(60.), 0.);
@@ -524,8 +523,8 @@ public class OneAxisEllipsoidTest {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
 
         // For polar satellite position, intersection point is at the same longitude but different latitude
-        Assert.assertEquals(1.04437199, geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(1.36198012, geoInter.getLatitude(),  Utils.epsilonAngle);
+        Assertions.assertEquals(1.04437199, geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(1.36198012, geoInter.getLatitude(),  Utils.epsilonAngle);
 
         // Satellite on equatorial position
         // ********************************
@@ -543,31 +542,31 @@ public class OneAxisEllipsoidTest {
         geoPoint = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf, 1.0e-10);
-        Assert.assertTrue(line.toSubSpace(pSatItrf).getX() < 0);
+        Assertions.assertTrue(line.toSubSpace(pSatItrf).getX() < 0);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
 
         // With the point opposite to satellite point along the line
         GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.toSpace(new Vector1D(-line.toSubSpace(pSatItrf).getX())), frame, date);
-        Assert.assertTrue(FastMath.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > FastMath.toRadians(0.1));
-        Assert.assertTrue(FastMath.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > FastMath.toRadians(0.1));
+        Assertions.assertTrue(FastMath.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > FastMath.toRadians(0.1));
+        Assertions.assertTrue(FastMath.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > FastMath.toRadians(0.1));
 
         // Test second visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(-5.), FastMath.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf, 1.0e-10);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
 
         // Test non visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(40.), FastMath.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf, 1.0e-10);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(-0.00768481, geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals( 0.32180410, geoInter.getLatitude(),  Utils.epsilonAngle);
+        Assertions.assertEquals(-0.00768481, geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals( 0.32180410, geoInter.getLatitude(),  Utils.epsilonAngle);
 
 
         // Satellite on any position
@@ -587,24 +586,24 @@ public class OneAxisEllipsoidTest {
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf, 1.0e-10);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
 
         // Test second visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(60.), FastMath.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf, 1.0e-10);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
 
         // Test non visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(0.), FastMath.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf, 1.0e-10);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        Assert.assertEquals(FastMath.toRadians(89.5364061088196), geoInter.getLongitude(), Utils.epsilonAngle);
-        Assert.assertEquals(FastMath.toRadians(35.555543683351125), geoInter.getLatitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(FastMath.toRadians(89.5364061088196), geoInter.getLongitude(), Utils.epsilonAngle);
+        Assertions.assertEquals(FastMath.toRadians(35.555543683351125), geoInter.getLatitude(), Utils.epsilonAngle);
 
     }
 
@@ -631,15 +630,15 @@ public class OneAxisEllipsoidTest {
         // direct computation of position, velocity and acceleration
         PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<>(latDS, lonDS, altDS)));
         FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(), null);
-        Assert.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
-        Assert.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
-        Assert.assertEquals(lat2, rebuilt.getLatitude().getPartialDerivative(2),  5.0e-14);
-        Assert.assertEquals(lon0, rebuilt.getLongitude().getReal(),               1.0e-16);
-        Assert.assertEquals(lon1, rebuilt.getLongitude().getPartialDerivative(1), 5.0e-19);
-        Assert.assertEquals(lon2, rebuilt.getLongitude().getPartialDerivative(2), 1.0e-20);
-        Assert.assertEquals(alt0, rebuilt.getAltitude().getReal(),                2.0e-11);
-        Assert.assertEquals(alt1, rebuilt.getAltitude().getPartialDerivative(1),  6.0e-13);
-        Assert.assertEquals(alt2, rebuilt.getAltitude().getPartialDerivative(2),  2.0e-14);
+        Assertions.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
+        Assertions.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
+        Assertions.assertEquals(lat2, rebuilt.getLatitude().getPartialDerivative(2),  5.0e-14);
+        Assertions.assertEquals(lon0, rebuilt.getLongitude().getReal(),               1.0e-16);
+        Assertions.assertEquals(lon1, rebuilt.getLongitude().getPartialDerivative(1), 5.0e-19);
+        Assertions.assertEquals(lon2, rebuilt.getLongitude().getPartialDerivative(2), 1.0e-20);
+        Assertions.assertEquals(alt0, rebuilt.getAltitude().getReal(),                2.0e-11);
+        Assertions.assertEquals(alt1, rebuilt.getAltitude().getPartialDerivative(1),  6.0e-13);
+        Assertions.assertEquals(alt2, rebuilt.getAltitude().getPartialDerivative(2),  2.0e-14);
 
     }
 
@@ -697,23 +696,23 @@ public class OneAxisEllipsoidTest {
         DerivativeStructure xDS    = fx.value(dtZero);
         DerivativeStructure yDS    = fy.value(dtZero);
         DerivativeStructure zDS    = fz.value(dtZero);
-        Assert.assertEquals(xDS.getValue(),              pv.getPosition().getX(),
+        Assertions.assertEquals(xDS.getValue(),              pv.getPosition().getX(),
                             2.0e-20 * FastMath.abs(xDS.getValue()));
-        Assert.assertEquals(xDS.getPartialDerivative(1), pv.getVelocity().getX(),
+        Assertions.assertEquals(xDS.getPartialDerivative(1), pv.getVelocity().getX(),
                             2.0e-12 * FastMath.abs(xDS.getPartialDerivative(1)));
-        Assert.assertEquals(xDS.getPartialDerivative(2), pv.getAcceleration().getX(),
+        Assertions.assertEquals(xDS.getPartialDerivative(2), pv.getAcceleration().getX(),
                             2.0e-9  * FastMath.abs(xDS.getPartialDerivative(2)));
-        Assert.assertEquals(yDS.getValue(),              pv.getPosition().getY(),
+        Assertions.assertEquals(yDS.getValue(),              pv.getPosition().getY(),
                             2.0e-20 * FastMath.abs(yDS.getValue()));
-        Assert.assertEquals(yDS.getPartialDerivative(1), pv.getVelocity().getY(),
+        Assertions.assertEquals(yDS.getPartialDerivative(1), pv.getVelocity().getY(),
                             2.0e-12 * FastMath.abs(yDS.getPartialDerivative(1)));
-        Assert.assertEquals(yDS.getPartialDerivative(2), pv.getAcceleration().getY(),
+        Assertions.assertEquals(yDS.getPartialDerivative(2), pv.getAcceleration().getY(),
                             2.0e-9  * FastMath.abs(yDS.getPartialDerivative(2)));
-        Assert.assertEquals(zDS.getValue(),              pv.getPosition().getZ(),
+        Assertions.assertEquals(zDS.getValue(),              pv.getPosition().getZ(),
                             2.0e-20 * FastMath.abs(zDS.getValue()));
-        Assert.assertEquals(zDS.getPartialDerivative(1), pv.getVelocity().getZ(),
+        Assertions.assertEquals(zDS.getPartialDerivative(1), pv.getVelocity().getZ(),
                             2.0e-12 * FastMath.abs(zDS.getPartialDerivative(1)));
-        Assert.assertEquals(zDS.getPartialDerivative(2), pv.getAcceleration().getZ(),
+        Assertions.assertEquals(zDS.getPartialDerivative(2), pv.getAcceleration().getZ(),
                             2.0e-9  * FastMath.abs(zDS.getPartialDerivative(2)));
     }
 
@@ -726,28 +725,28 @@ public class OneAxisEllipsoidTest {
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
-        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
-        Assert.assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
-        Assert.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
+        Assertions.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
+        Assertions.assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
+        Assertions.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
-        Assert.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
+        Assertions.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
 
         FieldGeodeticPoint<Decimal64> gp64 = model.transform(new FieldVector3D<Decimal64>(new Decimal64(x),
                                                                                           new Decimal64(y),
                                                                                           new Decimal64(z)),
                                                              frame,
                                                              new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
-        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp64.getLongitude().getReal(), longitude), 1.0e-10);
-        Assert.assertEquals(latitude,  gp64.getLatitude().getReal(),  1.0e-10);
-        Assert.assertEquals(altitude,  gp64.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
+        Assertions.assertEquals(longitude, MathUtils.normalizeAngle(gp64.getLongitude().getReal(), longitude), 1.0e-10);
+        Assertions.assertEquals(latitude,  gp64.getLatitude().getReal(),  1.0e-10);
+        Assertions.assertEquals(altitude,  gp64.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
         FieldVector3D<Decimal64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
-        Assert.assertEquals(0, rebuiltNadir64.subtract(gp64.getNadir()).getNorm().getReal(), 1.0e-15);
+        Assertions.assertEquals(0, rebuiltNadir64.subtract(gp64.getNadir()).getNorm().getReal(), 1.0e-15);
 
         // project to ground
         gp = model.transform(model.projectToGround(new Vector3D(x, y, z), date, frame), frame, date);
-        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
-        Assert.assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
-        Assert.assertEquals(0.0,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
+        Assertions.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
+        Assertions.assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
+        Assertions.assertEquals(0.0,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
 
         // project pv to ground
         FieldGeodeticPoint<DerivativeStructure> gpDs = model.transform(
@@ -759,9 +758,9 @@ public class OneAxisEllipsoidTest {
                         frame),
                 frame,
                 date);
-        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gpDs.getLongitude().getReal(), longitude), 1.0e-10);
-        Assert.assertEquals(latitude,  gpDs.getLatitude().getReal(),  1.0e-10);
-        Assert.assertEquals(0.0,  gpDs.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
+        Assertions.assertEquals(longitude, MathUtils.normalizeAngle(gpDs.getLongitude().getReal(), longitude), 1.0e-10);
+        Assertions.assertEquals(latitude,  gpDs.getLatitude().getReal(),  1.0e-10);
+        Assertions.assertEquals(0.0,  gpDs.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
 
         }
 
@@ -803,7 +802,104 @@ public class OneAxisEllipsoidTest {
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1./298.257223563, ecef);
         final Vector3D         sunPos = new Vector3D(-149757851422.23358, 8410610314.781021, 14717269835.161688 );
         final GeodeticPoint    sunGP  = earth.transform(sunPos, ecef, null);
-        Assert.assertEquals(5.603878, FastMath.toDegrees(sunGP.getLatitude()), 1.0e-6);
+        Assertions.assertEquals(5.603878, FastMath.toDegrees(sunGP.getLatitude()), 1.0e-6);
+    }
+
+    @Test
+    public void testIsometricLatitude() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        Assertions.assertEquals(0., earth.geodeticToIsometricLatitude(0), 1.0e-9);
+        Assertions.assertEquals(0., earth.geodeticToIsometricLatitude(2.0e-13), 1.0e-9);
+
+        for (final double lat: new double[] {
+                FastMath.toRadians(10),
+                FastMath.toRadians(-45),
+                FastMath.toRadians(80),
+                FastMath.toRadians(-90)}) {
+            final double eSinLat = earth.getEccentricity() * FastMath.sin(lat);
+            final double term1 = FastMath.log(FastMath.tan(FastMath.PI / 4. + lat / 2.));
+            final double term2 = (earth.getEccentricity() / 2.) * FastMath.log((1. - eSinLat) / (1 + eSinLat));
+
+            Assertions.assertEquals(term1 + term2, earth.geodeticToIsometricLatitude(lat), 1.0e-12);
+        }
+    }
+
+    @Test
+    public void testFieldIsometricLatitude() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        final Decimal64Field field = Decimal64Field.getInstance();
+        Assertions.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(0.)));
+        Assertions.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(2.0e-13)));
+
+        final Decimal64 ecc = field.getZero().newInstance(earth.getEccentricity());
+        for (final Decimal64 lat: new Decimal64[] {
+                    field.getOne().newInstance(FastMath.toRadians(10)),
+                    field.getOne().newInstance(FastMath.toRadians(-45)),
+                    field.getOne().newInstance(FastMath.toRadians(80)),
+                    field.getOne().newInstance(FastMath.toRadians(-90))}) {
+            final Decimal64 eSinLat = ecc.multiply(FastMath.sin(lat));
+            final Decimal64 term1 = FastMath.log(FastMath.tan(lat.getPi().divide(4.).add(lat.divide(2.))));
+            final Decimal64 term2 = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
+
+            Assertions.assertEquals(term1.add(term2), earth.geodeticToIsometricLatitude(lat));
+        }
+    }
+
+    @Test
+    public void testAzimuthBetweenPoints() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        // values from https://distance.to
+        final GeodeticPoint newYork = new GeodeticPoint(FastMath.toRadians(40.71427), FastMath.toRadians(-74.00597), 0);
+        final GeodeticPoint chicago = new GeodeticPoint(FastMath.toRadians(41.85003), FastMath.toRadians(-87.65005), 0);
+        final GeodeticPoint london = new GeodeticPoint(FastMath.toRadians(51.5), FastMath.toRadians(-0.16667), 0);
+        final GeodeticPoint berlin = new GeodeticPoint(FastMath.toRadians(52.523403), FastMath.toRadians(13.4114), 0);
+        final GeodeticPoint perth = new GeodeticPoint(FastMath.toRadians(-31.952712), FastMath.toRadians(115.8604796), 0);
+
+        // answers verified against RhumbSolve lib https://geographiclib.sourceforge.io/cgi-bin/RhumbSolve
+        Assertions.assertEquals(276.297499, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, chicago)), 1.0e-6);
+        Assertions.assertEquals(78.0854898, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, london)), 1.0e-6);
+        Assertions.assertEquals(83.0357553, FastMath.toDegrees(earth.azimuthBetweenPoints(london, berlin)), 1.0e-6);
+        Assertions.assertEquals(132.894864, FastMath.toDegrees(earth.azimuthBetweenPoints(berlin, perth)), 1.0e-6);
+        Assertions.assertEquals(65.3853195, FastMath.toDegrees(earth.azimuthBetweenPoints(perth, newYork)), 1.0e-6);
+    }
+
+    @Test
+    public void testAzimuthBetweenFieldPoints() {
+        final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
+
+        final Decimal64Field field = Decimal64Field.getInstance();
+
+        // values from https://distance.to
+        final FieldGeodeticPoint<Decimal64> newYork = new FieldGeodeticPoint<>(
+                FastMath.toRadians(field.getZero().add(40.71427)),
+                FastMath.toRadians(field.getZero().add(-74.00597)), field.getZero());
+        final FieldGeodeticPoint<Decimal64> chicago = new FieldGeodeticPoint<>(
+                FastMath.toRadians(field.getZero().add(41.85003)),
+                FastMath.toRadians(field.getZero().add(-87.65005)), field.getZero());
+
+        final FieldGeodeticPoint<Decimal64> london = new FieldGeodeticPoint<>(
+            FastMath.toRadians(field.getZero().add(51.5)),
+            FastMath.toRadians(field.getZero().add(-0.16667)), field.getZero());
+        final FieldGeodeticPoint<Decimal64> berlin = new FieldGeodeticPoint<>(
+            FastMath.toRadians(field.getZero().add(52.523403)),
+            FastMath.toRadians(field.getZero().add(13.4114)), field.getZero());
+        final FieldGeodeticPoint<Decimal64> perth = new FieldGeodeticPoint<>(
+            FastMath.toRadians(field.getZero().add(-31.952712)),
+            FastMath.toRadians(field.getZero().add(115.8604796)), field.getZero());
+
+        // answers verified against RhumbSolve lib https://geographiclib.sourceforge.io/cgi-bin/RhumbSolve
+        Assertions.assertEquals(276.297499, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, chicago)).getReal(), 1.0e-6);
+        Assertions.assertEquals(78.0854898, FastMath.toDegrees(earth.azimuthBetweenPoints(newYork, london)).getReal(), 1.0e-6);
+        Assertions.assertEquals(83.0357553, FastMath.toDegrees(earth.azimuthBetweenPoints(london, berlin)).getReal(), 1.0e-6);
+        Assertions.assertEquals(132.894864, FastMath.toDegrees(earth.azimuthBetweenPoints(berlin, perth)).getReal(), 1.0e-6);
+        Assertions.assertEquals(65.3853195, FastMath.toDegrees(earth.azimuthBetweenPoints(perth, newYork)).getReal(), 1.0e-6);
     }
 
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
@@ -814,11 +910,11 @@ public class OneAxisEllipsoidTest {
             try {
                 GeodeticPoint reference = transformOldIterative(model, point, model.getBodyFrame(), null);
                 GeodeticPoint result    = model.transform(point, model.getBodyFrame(), null);
-                Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  latitudeTolerance);
-                Assert.assertEquals(reference.getLongitude(), result.getLongitude(), longitudeTolerance);
-                Assert.assertEquals(reference.getAltitude(),  result.getAltitude(),  altitudeTolerance);
+                Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  latitudeTolerance);
+                Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), longitudeTolerance);
+                Assertions.assertEquals(reference.getAltitude(),  result.getAltitude(),  altitudeTolerance);
             } catch (OrekitException oe) {
-                Assert.fail(oe.getLocalizedMessage());
+                Assertions.fail(oe.getLocalizedMessage());
             }
         });
 
@@ -872,7 +968,7 @@ public class OneAxisEllipsoidTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

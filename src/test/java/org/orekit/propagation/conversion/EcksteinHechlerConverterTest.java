@@ -16,13 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -40,6 +37,9 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EcksteinHechlerConverterTest {
 
@@ -97,35 +97,35 @@ public class EcksteinHechlerConverterTest {
 
         fitter.convert(sample, positionOnly);
 
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
+        Assertions.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
         EcksteinHechlerPropagator prop = (EcksteinHechlerPropagator)fitter.getAdaptedPropagator();
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assert.assertEquals(modified.getPVCoordinates().getPosition().getX(),
+        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getX(),
                             fitted.getPVCoordinates().getPosition().getX(),
                             eps * modified.getPVCoordinates().getPosition().getX());
-        Assert.assertEquals(modified.getPVCoordinates().getPosition().getY(),
+        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getY(),
                             fitted.getPVCoordinates().getPosition().getY(),
                             eps * modified.getPVCoordinates().getPosition().getY());
-        Assert.assertEquals(modified.getPVCoordinates().getPosition().getZ(),
+        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getZ(),
                             fitted.getPVCoordinates().getPosition().getZ(),
                             eps * modified.getPVCoordinates().getPosition().getZ());
 
-        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
+        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
                             eps * modified.getPVCoordinates().getVelocity().getX());
-        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getY(),
+        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
                             -eps * modified.getPVCoordinates().getVelocity().getY());
-        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
+        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
                             -eps * modified.getPVCoordinates().getVelocity().getZ());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 

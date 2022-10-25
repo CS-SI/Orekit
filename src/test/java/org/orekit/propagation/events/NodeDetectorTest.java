@@ -19,9 +19,9 @@ package org.orekit.propagation.events;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -73,8 +73,8 @@ public class NodeDetectorTest {
         // First propagation
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(finalDate);
-        Assert.assertEquals(2, logger1.getLoggedEvents().size());
-        Assert.assertEquals(2, logger2.getLoggedEvents().size());
+        Assertions.assertEquals(2, logger1.getLoggedEvents().size());
+        Assertions.assertEquals(2, logger2.getLoggedEvents().size());
         logger1.clearLoggedEvents();
         logger2.clearLoggedEvents();
 
@@ -84,8 +84,8 @@ public class NodeDetectorTest {
         postpro.addEventDetector(node1);
         postpro.addEventDetector(node2);
         postpro.propagate(finalDate);
-        Assert.assertEquals(2, logger1.getLoggedEvents().size());
-        Assert.assertEquals(2, logger2.getLoggedEvents().size());
+        Assertions.assertEquals(2, logger1.getLoggedEvents().size());
+        Assertions.assertEquals(2, logger2.getLoggedEvents().size());
 
     }
 
@@ -108,15 +108,15 @@ public class NodeDetectorTest {
                 new KeplerianOrbit(a, e1, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
         EventDetector detector1 = new NodeDetector(orbit1, orbit1.getFrame());
         double t1 = orbit1.getKeplerianPeriod();
-        Assert.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval(), t1 / 10000);
+        Assertions.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval(), t1 / 10000);
 
         // nearly circular, inclined orbit
         final KeplerianOrbit orbit2 =
                 new KeplerianOrbit(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
         EventDetector detector2 = new NodeDetector(orbit2, orbit2.getFrame());
         double t2 = orbit2.getKeplerianPeriod();
-        Assert.assertEquals(t1, t2, t1 / 10000);
-        Assert.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
+        Assertions.assertEquals(t1, t2, t1 / 10000);
+        Assertions.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
 
     }
 
@@ -124,16 +124,16 @@ public class NodeDetectorTest {
     public void testIssue728() {
 
         NodeDetector detector1 = new NodeDetector(FramesFactory.getEME2000());
-        Assert.assertEquals(1800.0, detector1.getMaxCheckInterval(), 1.0e-3);
-        Assert.assertEquals(1.0e-3, detector1.getThreshold(), 1.0e-12);
+        Assertions.assertEquals(1800.0, detector1.getMaxCheckInterval(), 1.0e-3);
+        Assertions.assertEquals(1.0e-3, detector1.getThreshold(), 1.0e-12);
 
         NodeDetector detector2 = detector1.withMaxCheck(3000.0).withThreshold(1.0e-6);
-        Assert.assertEquals(3000.0, detector2.getMaxCheckInterval(), 1.0e-3);
-        Assert.assertEquals(1.0e-6, detector2.getThreshold(), 1.0e-12);
+        Assertions.assertEquals(3000.0, detector2.getMaxCheckInterval(), 1.0e-3);
+        Assertions.assertEquals(1.0e-6, detector2.getThreshold(), 1.0e-12);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

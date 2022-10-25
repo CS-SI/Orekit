@@ -16,18 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -42,10 +30,10 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.ode.nonstiff.LutherIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
@@ -110,6 +98,18 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 public class NumericalPropagatorTest {
 
     private double               mu;
@@ -139,7 +139,7 @@ public class NumericalPropagatorTest {
         AbsoluteDate target = initDate.shiftedBy(dt);
         propagator.propagate(initDate.shiftedBy(1.0), target);
 
-        Assert.assertEquals(1, counter.intValue());
+        Assertions.assertEquals(1, counter.intValue());
 
     }
 
@@ -184,7 +184,7 @@ public class NumericalPropagatorTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //verify
-        Assert.assertTrue(states.size() > 10); // got some data
+        Assertions.assertTrue(states.size() > 10); // got some data
         for (SpacecraftState state : states) {
             PVCoordinates actual =
                     ephemeris.propagate(state.getDate()).getPVCoordinates();
@@ -213,8 +213,8 @@ public class NumericalPropagatorTest {
         SpacecraftState actual = ephemeris.propagate(end);
 
         //verify
-        Assert.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
-        Assert.assertEquals(1, handler.eventCount);
+        Assertions.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
+        Assertions.assertEquals(1, handler.eventCount);
     }
 
     /** test for issue #238 */
@@ -238,10 +238,10 @@ public class NumericalPropagatorTest {
 
         // action + verify
         // propagate forward
-        Assert.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end), 0.0, 0.0);
+        Assertions.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end), 0.0, 0.0);
         // propagate backward
-        Assert.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0, 0.0);
-        Assert.assertEquals(2, handler.eventCount);
+        Assertions.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0, 0.0);
+        Assertions.assertEquals(2, handler.eventCount);
     }
 
     /** Counts the number of events that have occurred. */
@@ -288,7 +288,7 @@ public class NumericalPropagatorTest {
         SpacecraftState actual = propagator.propagate(end);
 
         //verify
-        Assert.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
+        Assertions.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
     }
 
     @Test
@@ -327,7 +327,7 @@ public class NumericalPropagatorTest {
                 OrekitMatchers.closeTo(0, 0));
         //test date
         AbsoluteDate date = endDate.shiftedBy(-0.11);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 ephemeris.propagate(date).getDate().durationFrom(date), 0, 0);
     }
 
@@ -367,7 +367,7 @@ public class NumericalPropagatorTest {
                 OrekitMatchers.closeTo(0, 0));
         //test date
         AbsoluteDate date = endDate.shiftedBy(-0.11);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 ephemeris.propagate(date).getDate().durationFrom(date), 0, 0);
     }
 
@@ -386,27 +386,31 @@ public class NumericalPropagatorTest {
         final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
-        Assert.assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
-        Assert.assertEquals(initialPosition.getY(), finalPosition.getY(), 1.0e-10);
-        Assert.assertEquals(initialPosition.getZ(), finalPosition.getZ(), 1.0e-10);
-        Assert.assertEquals(initialVelocity.getX(), finalVelocity.getX(), 1.0e-10);
-        Assert.assertEquals(initialVelocity.getY(), finalVelocity.getY(), 1.0e-10);
-        Assert.assertEquals(initialVelocity.getZ(), finalVelocity.getZ(), 1.0e-10);
+        Assertions.assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
+        Assertions.assertEquals(initialPosition.getY(), finalPosition.getY(), 1.0e-10);
+        Assertions.assertEquals(initialPosition.getZ(), finalPosition.getZ(), 1.0e-10);
+        Assertions.assertEquals(initialVelocity.getX(), finalVelocity.getX(), 1.0e-10);
+        Assertions.assertEquals(initialVelocity.getY(), finalVelocity.getY(), 1.0e-10);
+        Assertions.assertEquals(initialVelocity.getZ(), finalVelocity.getZ(), 1.0e-10);
 
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNotInitialised1() {
-        final AbstractIntegratedPropagator notInitialised =
-            new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
-        notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final AbstractIntegratedPropagator notInitialised =
+                    new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
+            notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNotInitialised2() {
-        final AbstractIntegratedPropagator notInitialised =
-            new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
-        notInitialised.propagate(AbsoluteDate.J2000_EPOCH, AbsoluteDate.J2000_EPOCH.shiftedBy(3600));
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final AbstractIntegratedPropagator notInitialised =
+                    new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
+            notInitialised.propagate(AbsoluteDate.J2000_EPOCH, AbsoluteDate.J2000_EPOCH.shiftedBy(3600));
+        });
     }
 
     @Test
@@ -419,12 +423,12 @@ public class NumericalPropagatorTest {
 
         // Check results
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 2.0e-9);
+        Assertions.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        Assertions.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        Assertions.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        Assertions.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        Assertions.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        Assertions.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 2.0e-9);
 
     }
 
@@ -443,8 +447,8 @@ public class NumericalPropagatorTest {
         final PVCoordinates reference = initialState.shiftedBy(dt).getPVCoordinates();
         final Vector3D pRef = reference.getPosition();
         final Vector3D vRef = reference.getVelocity();
-        Assert.assertEquals(0, pRef.subtract(pFin).getNorm(), 2e-4);
-        Assert.assertEquals(0, vRef.subtract(vFin).getNorm(), 7e-8);
+        Assertions.assertEquals(0, pRef.subtract(pFin).getNorm(), 2e-4);
+        Assertions.assertEquals(0, vRef.subtract(vFin).getNorm(), 7e-8);
 
     }
 
@@ -495,30 +499,30 @@ public class NumericalPropagatorTest {
         final PVCoordinates pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
         final PVCoordinates pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.TRUE);
 
-        Assert.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
-        Assert.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
-        Assert.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.6);
-        Assert.assertEquals(0, pviM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.4);
-        Assert.assertEquals(0, pvkM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.5);
-        Assert.assertEquals(0, pvkM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.3);
-        Assert.assertEquals(0, pveM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.2);
-        Assert.assertEquals(0, pveM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
+        Assertions.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
+        Assertions.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
+        Assertions.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.6);
+        Assertions.assertEquals(0, pviM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.4);
+        Assertions.assertEquals(0, pvkM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.5);
+        Assertions.assertEquals(0, pvkM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.3);
+        Assertions.assertEquals(0, pveM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.2);
+        Assertions.assertEquals(0, pveM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
 
-        Assert.assertEquals(0, pvcE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
-        Assert.assertEquals(0, pvcE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
-        Assert.assertEquals(0, pviE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.03);
-        Assert.assertEquals(0, pviE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.04);
-        Assert.assertEquals(0, pvkE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
-        Assert.assertEquals(0, pvkE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.3);
-        Assert.assertEquals(0, pveE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.2);
-        Assert.assertEquals(0, pveE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.07);
+        Assertions.assertEquals(0, pvcE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
+        Assertions.assertEquals(0, pvcE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
+        Assertions.assertEquals(0, pviE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.03);
+        Assertions.assertEquals(0, pviE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.04);
+        Assertions.assertEquals(0, pvkE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
+        Assertions.assertEquals(0, pvkE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.3);
+        Assertions.assertEquals(0, pveE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.2);
+        Assertions.assertEquals(0, pveE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.07);
 
-        Assert.assertEquals(0, pvcT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
-        Assert.assertEquals(0, pvcT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
-        Assert.assertEquals(0, pviT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.3);
-        Assert.assertEquals(0, pviT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
-        Assert.assertEquals(0, pvkT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
-        Assert.assertEquals(0, pvkT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
+        Assertions.assertEquals(0, pvcT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
+        Assertions.assertEquals(0, pvcT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
+        Assertions.assertEquals(0, pviT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.3);
+        Assertions.assertEquals(0, pviT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
+        Assertions.assertEquals(0, pvkT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
+        Assertions.assertEquals(0, pvkT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
 
     }
 
@@ -551,18 +555,18 @@ public class NumericalPropagatorTest {
         final PVCoordinates pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.TRUE);
         final PVCoordinates pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.TRUE);
 
-        Assert.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
-        Assert.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
-        Assert.assertEquals(0, pvkM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.2);
-        Assert.assertEquals(0, pvkM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.3);
+        Assertions.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
+        Assertions.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
+        Assertions.assertEquals(0, pvkM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.2);
+        Assertions.assertEquals(0, pvkM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.3);
 
-        Assert.assertEquals(0, pvcE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
-        Assert.assertEquals(0, pvcE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
-        Assert.assertEquals(0, pvkE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.009);
-        Assert.assertEquals(0, pvkE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.006);
+        Assertions.assertEquals(0, pvcE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
+        Assertions.assertEquals(0, pvcE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
+        Assertions.assertEquals(0, pvkE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.009);
+        Assertions.assertEquals(0, pvkE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.006);
 
-        Assert.assertEquals(0, pvcT.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
-        Assert.assertEquals(0, pvcT.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
+        Assertions.assertEquals(0, pvcT.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
+        Assertions.assertEquals(0, pvcT.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
 
     }
 
@@ -588,23 +592,25 @@ public class NumericalPropagatorTest {
 
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testException() {
-        propagator.setStepHandler(new OrekitStepHandler() {
-            private int countDown = 3;
-            private AbsoluteDate previousCall = null;
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-            public void handleStep(OrekitStepInterpolator interpolator) {
-                if (previousCall != null) {
-                    Assert.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            propagator.setStepHandler(new OrekitStepHandler() {
+                private int countDown = 3;
+                private AbsoluteDate previousCall = null;
+                public void init(SpacecraftState s0, AbsoluteDate t) {
                 }
-                if (--countDown == 0) {
-                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");
+                public void handleStep(OrekitStepInterpolator interpolator) {
+                    if (previousCall != null) {
+                        Assertions.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
+                    }
+                    if (--countDown == 0) {
+                        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");
+                    }
                 }
-            }
+            });
+            propagator.propagate(initDate.shiftedBy(-3600));
         });
-        propagator.propagate(initDate.shiftedBy(-3600));
     }
 
     @Test
@@ -612,13 +618,13 @@ public class NumericalPropagatorTest {
         final AbsoluteDate stopDate = initDate.shiftedBy(1000);
         CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.STOP);
         propagator.addEventDetector(new DateDetector(stopDate).withHandler(checking));
-        Assert.assertEquals(1, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(1, propagator.getEventsDetectors().size());
         checking.assertEvent(false);
         final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(3200));
         checking.assertEvent(true);
-        Assert.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
+        Assertions.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
         propagator.clearEventsDetectors();
-        Assert.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
 
     }
 
@@ -634,7 +640,7 @@ public class NumericalPropagatorTest {
         checking.assertEvent(false);
         final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(3200));
         checking.assertEvent(true);
-        Assert.assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
+        Assertions.assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
     }
 
     @Test
@@ -644,19 +650,19 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
-        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
+        Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         propagator.setResetAtEnd(true);
         final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
-        Assert.assertEquals(dt, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
+        Assertions.assertEquals(dt, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         checking.assertEvent(true);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+        Assertions.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        Assertions.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        Assertions.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        Assertions.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        Assertions.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        Assertions.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
     @Test
@@ -666,19 +672,19 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
-        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
+        Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         propagator.setResetAtEnd(false);
         final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
-        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
+        Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         checking.assertEvent(true);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+        Assertions.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
+        Assertions.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
+        Assertions.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
+        Assertions.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
+        Assertions.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
+        Assertions.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
     @Test
@@ -722,9 +728,9 @@ public class NumericalPropagatorTest {
                 }
 
             });
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
             propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
@@ -744,9 +750,9 @@ public class NumericalPropagatorTest {
                    return new CombinedDerivatives(new double[1], null);
                }
             });
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() {
@@ -757,10 +763,10 @@ public class NumericalPropagatorTest {
                 return new double[] { 1.0 };
             }
         });
-        Assert.assertTrue(propagator.isAdditionalStateManaged("linear"));
-        Assert.assertTrue(propagator.isAdditionalStateManaged("constant"));
-        Assert.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
-        Assert.assertEquals(2, propagator.getManagedAdditionalStates().length);
+        Assertions.assertTrue(propagator.isAdditionalStateManaged("linear"));
+        Assertions.assertTrue(propagator.isAdditionalStateManaged("constant"));
+        Assertions.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
+        Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
         CheckingHandler<AdditionalStateLinearDetector> checking =
@@ -772,8 +778,8 @@ public class NumericalPropagatorTest {
         final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
         checking.assertEvent(true);
-        Assert.assertEquals(3.0, finalState.getAdditionalState("linear")[0], 1.0e-8);
-        Assert.assertEquals(1.5, finalState.getDate().durationFrom(initDate), 1.0e-8);
+        Assertions.assertEquals(3.0, finalState.getAdditionalState("linear")[0], 1.0e-8);
+        Assertions.assertEquals(1.5, finalState.getDate().durationFrom(initDate), 1.0e-8);
 
     }
 
@@ -836,8 +842,8 @@ public class NumericalPropagatorTest {
         checking.assertEvent(false);
         final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(dt));
         checking.assertEvent(true);
-        Assert.assertEquals(dt + 4.5, finalState.getAdditionalState("linear")[0], 1.0e-8);
-        Assert.assertEquals(dt, finalState.getDate().durationFrom(initDate), 1.0e-8);
+        Assertions.assertEquals(dt + 4.5, finalState.getAdditionalState("linear")[0], 1.0e-8);
+        Assertions.assertEquals(dt, finalState.getDate().durationFrom(initDate), 1.0e-8);
 
     }
 
@@ -898,7 +904,7 @@ public class NumericalPropagatorTest {
         SpacecraftState finalState = propagator.propagate(endDate);
 
         // we should stop long before endDate
-        Assert.assertTrue(endDate.durationFrom(finalState.getDate()) > 40000.0);
+        Assertions.assertTrue(endDate.durationFrom(finalState.getDate()) > 40000.0);
     }
 
     @Test
@@ -912,23 +918,23 @@ public class NumericalPropagatorTest {
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
         final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
-        Assert.assertEquals(initDate, ephemeris1.getMinDate());
-        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+        Assertions.assertEquals(initDate, ephemeris1.getMinDate());
+        Assertions.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
         propagator.getPVCoordinates(initDate.shiftedBy( 2 * dt), FramesFactory.getEME2000());
         propagator.getPVCoordinates(initDate.shiftedBy(-2 * dt), FramesFactory.getEME2000());
 
         // the new propagations should not have changed ephemeris1
-        Assert.assertEquals(initDate, ephemeris1.getMinDate());
-        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+        Assertions.assertEquals(initDate, ephemeris1.getMinDate());
+        Assertions.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
         final BoundedPropagator ephemeris2 = generator.getGeneratedEphemeris();
-        Assert.assertEquals(initDate.shiftedBy(-2 * dt), ephemeris2.getMinDate());
-        Assert.assertEquals(initDate.shiftedBy( 2 * dt), ephemeris2.getMaxDate());
+        Assertions.assertEquals(initDate.shiftedBy(-2 * dt), ephemeris2.getMinDate());
+        Assertions.assertEquals(initDate.shiftedBy( 2 * dt), ephemeris2.getMaxDate());
 
         // generating ephemeris2 should not have changed ephemeris1
-        Assert.assertEquals(initDate, ephemeris1.getMinDate());
-        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+        Assertions.assertEquals(initDate, ephemeris1.getMinDate());
+        Assertions.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
     }
 
@@ -967,34 +973,34 @@ public class NumericalPropagatorTest {
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
         final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
-        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMinDate());
-        Assert.assertEquals(initDate, ephemeris1.getMaxDate());
+        Assertions.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMinDate());
+        Assertions.assertEquals(initDate, ephemeris1.getMaxDate());
         try {
             ephemeris1.propagate(ephemeris1.getMinDate().shiftedBy(-10.0));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, pe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, pe.getSpecifier());
         }
         try {
             ephemeris1.propagate(ephemeris1.getMaxDate().shiftedBy(+10.0));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, pe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, pe.getSpecifier());
         }
 
         double shift = -60;
         SpacecraftState s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assert.assertEquals(2, s.getAdditionalStatesValues().size());
-        Assert.assertTrue(s.hasAdditionalState("squaredA"));
-        Assert.assertTrue(s.hasAdditionalState("extra"));
-        Assert.assertEquals(s.getA() * s.getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
-        Assert.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0], 1.0e-10);
+        Assertions.assertEquals(2, s.getAdditionalStatesValues().size());
+        Assertions.assertTrue(s.hasAdditionalState("squaredA"));
+        Assertions.assertTrue(s.hasAdditionalState("extra"));
+        Assertions.assertEquals(s.getA() * s.getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
+        Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0], 1.0e-10);
 
         try {
             ephemeris1.resetInitialState(s);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
 
     }
@@ -1007,9 +1013,9 @@ public class NumericalPropagatorTest {
                                              new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                              Constants.EIGEN5C_EARTH_MU);
             NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
-            Assert.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, pe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, pe.getSpecifier());
         }
     }
 
@@ -1032,14 +1038,14 @@ public class NumericalPropagatorTest {
         final double[][] tolCart1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
         final double[][] tolCart2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
         for (int i = 0; i < tolCart1.length; i++) {
-            Assert.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
+            Assertions.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
         }
 
         // Verify: Non cartesian case
         final double[][] tolKep1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
         final double[][] tolKep2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
         for (int i = 0; i < tolCart1.length; i++) {
-            Assert.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
+            Assertions.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
         }
 
     }
@@ -1055,7 +1061,7 @@ public class NumericalPropagatorTest {
         }
 
         public void assertEvent(boolean expected) {
-            Assert.assertEquals(expected, gotHere);
+            Assertions.assertEquals(expected, gotHere);
         }
 
         public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
@@ -1104,12 +1110,12 @@ public class NumericalPropagatorTest {
                 final int startIndex = states.indexOf(point);
                 double[] errors = recomputeFollowing(startIndex, states);
                 for (int k = 0; k < errors.length; ++k) {
-                    Assert.assertEquals(startIndex + " to " + (startIndex + k + 1),
+                    Assertions.assertEquals(
                                         referenceErrors[startIndex][k], errors[k],
-                                        1.0e-9);
+                                        1.0e-9,startIndex + " to " + (startIndex + k + 1));
                 }
             } catch (OrekitException oe) {
-                Assert.fail(oe.getLocalizedMessage());
+                Assertions.fail(oe.getLocalizedMessage());
             }
         };
 
@@ -1417,23 +1423,23 @@ public class NumericalPropagatorTest {
                                                        s.getPVCoordinates().getPosition());
                 switch ((int) FastMath.rint(dt)) {
                     case 60 :
-                        Assert.assertEquals(error60s,  error, 0.01 * error60s);
+                        Assertions.assertEquals(error60s,  error, 0.01 * error60s);
                         break;
                     case 120 :
-                        Assert.assertEquals(error120s, error, 0.01 * error120s);
+                        Assertions.assertEquals(error120s, error, 0.01 * error120s);
                         break;
                     case 300 :
-                        Assert.assertEquals(error300s, error, 0.01 * error300s);
+                        Assertions.assertEquals(error300s, error, 0.01 * error300s);
                         break;
                     case 600 :
-                        Assert.assertEquals(error600s, error, 0.01 * error600s);
+                        Assertions.assertEquals(error600s, error, 0.01 * error600s);
                         break;
                     case 900 :
-                        Assert.assertEquals(error900s, error, 0.01 * error900s);
+                        Assertions.assertEquals(error900s, error, 0.01 * error900s);
                         break;
                     default :
                         // this should never happen
-                        Assert.fail("no error set for dt = " + dt);
+                        Assertions.fail("no error set for dt = " + dt);
                         break;
                 }
             }
@@ -1444,7 +1450,7 @@ public class NumericalPropagatorTest {
 
     /** Test de-activation of event detection and step handling.
      *  When propagating out of start and target date in propagate(startDate, targetDate)
-     *  <p>See issue 449 in Orekit forge and 
+     *  <p>See issue 449 in Orekit forge and
      *  {@link org.orekit.propagation.Propagator#propagate(AbsoluteDate, AbsoluteDate)}.
      *  </p>
      */
@@ -1460,10 +1466,10 @@ public class NumericalPropagatorTest {
                         .withHandler(recordAndContinue);
 
         propagator.addEventDetector(dateDetector);
-        
+
         final AbsoluteDate startDate = initDate.shiftedBy(30.);
         final AbsoluteDate finalDate = initDate.shiftedBy(40.);
-        
+
         final DateRecorderHandler dateRecorderHandler = new DateRecorderHandler(startDate, finalDate);
         propagator.setStepHandler(1.0, dateRecorderHandler);
 
@@ -1472,10 +1478,10 @@ public class NumericalPropagatorTest {
 
         // Verify
         // No event is detected
-        Assert.assertEquals(0, recordAndContinue.getEvents().size());
-        
+        Assertions.assertEquals(0, recordAndContinue.getEvents().size());
+
         // Handler is deactivated (no dates recorded between start and stop date)
-        Assert.assertEquals(0, dateRecorderHandler.handledDatesOutOfInterval.size());
+        Assertions.assertEquals(0, dateRecorderHandler.handledDatesOutOfInterval.size());
     }
 
     @Test
@@ -1502,9 +1508,9 @@ public class NumericalPropagatorTest {
         propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isBefore(maneuverDate)) {
-                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+                Assertions.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
             } else {
-                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+                Assertions.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
             }
         });
 
@@ -1536,9 +1542,9 @@ public class NumericalPropagatorTest {
         propagator.setStepHandler(60.0, state -> {
             final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
             if (state.getDate().isAfter(maneuverDate)) {
-                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+                Assertions.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
             } else {
-                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+                Assertions.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
             }
         });
 
@@ -1568,13 +1574,13 @@ public class NumericalPropagatorTest {
         propagator.propagate(initialOrbit.getDate().shiftedBy(600));
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final SpacecraftState finalState = ephemeris.propagate(initialOrbit.getDate().shiftedBy(300));
-        Assert.assertEquals(2,    finalState.getAdditionalStatesValues().size());
-        Assert.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
-        Assert.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0], 1.0e-15);
-        Assert.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1], 1.0e-15);
-        Assert.assertEquals(2,    finalState.getAdditionalState("test_provider_1").length);
-        Assert.assertEquals(10.0, finalState.getAdditionalState("test_provider_1")[0], 1.0e-15);
-        Assert.assertEquals(20.0, finalState.getAdditionalState("test_provider_1")[1], 1.0e-15);
+        Assertions.assertEquals(2,    finalState.getAdditionalStatesValues().size());
+        Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
+        Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0], 1.0e-15);
+        Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1], 1.0e-15);
+        Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_1").length);
+        Assertions.assertEquals(10.0, finalState.getAdditionalState("test_provider_1")[0], 1.0e-15);
+        Assertions.assertEquals(20.0, finalState.getAdditionalState("test_provider_1")[1], 1.0e-15);
     }
 
     private void addDerivativeProvider(NumericalPropagator propagator, EmptyDerivativeProvider provider) {
@@ -1626,13 +1632,13 @@ public class NumericalPropagatorTest {
 
         /** Start date of the propagation. */
         private final AbsoluteDate startDate;
-        
+
         /** Final date of the propagation. */
         private final AbsoluteDate finalDate;
-        
+
         /** List of handled date. Recorded only if they are out of the propagation interval. */
         public final List<AbsoluteDate> handledDatesOutOfInterval;
-        
+
         DateRecorderHandler(final AbsoluteDate startDate, final AbsoluteDate finalDate) {
           this.startDate = startDate;
           this.finalDate = finalDate;
@@ -1648,12 +1654,11 @@ public class NumericalPropagatorTest {
           }
         }
       }
-    
+
     /**
      * Assume we have 5 epochs, we will propagate from the input epoch to all the following epochs.
      *   If we have [0, 1, 2, 3, 4], and input is 2, then we will do 2->3, 2->4.
      * @param startIndex index of start state
-     * @param states all states
      * @return position error for recomputed following points
      */
     private static double[] recomputeFollowing(final int startIndex, List<SpacecraftState> allPoints)
@@ -1738,7 +1743,7 @@ public class NumericalPropagatorTest {
         return new CartesianOrbit(pv, frame, mu);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -1757,7 +1762,7 @@ public class NumericalPropagatorTest {
         propagator.setInitialState(initialState);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         initDate = null;
         initialState = null;

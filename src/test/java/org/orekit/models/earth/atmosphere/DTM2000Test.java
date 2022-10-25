@@ -16,17 +16,14 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-
-import java.util.TimeZone;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.SolarInputs97to05;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -40,6 +37,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.util.TimeZone;
 
 public class DTM2000Test {
 
@@ -75,27 +74,27 @@ public class DTM2000Test {
 
         // Computation and results
         myRo = atm.getDensity(185, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 //      IDEM., day=275
 
         roTestCase=    2.8524195214905e-17* 1000;
 
         myRo = atm.getDensity(275, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 //      IDEM., day=355
 
         roTestCase=    1.7343324462212e-17* 1000;
 
         myRo = atm.getDensity(355, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(roTestCase, myRo , roTestCase * 2e-14);
+        Assertions.assertEquals(roTestCase, myRo , roTestCase * 2e-14);
 //      IDEM., day=85
 
         roTestCase=    2.9983740796297e-17* 1000;
 
         myRo = atm.getDensity(85, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 
 //      alt=500.
@@ -124,7 +123,7 @@ public class DTM2000Test {
         roTestCase =    1.5699108952425600E-016* 1000;
 
         myRo = atm.getDensity(15, 500*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
-        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 //      IDEM., alt=800.
 //      ro=    1.9556768571305D-18
@@ -139,7 +138,7 @@ public class DTM2000Test {
         // the best approach. Indeed, we are able to get the same results as original fortran
         roTestCase =    2.4123751406975562E-018* 1000;
         myRo = atm.getDensity(15, 800*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
-        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
     }
 
@@ -164,7 +163,7 @@ public class DTM2000Test {
         final double actual = atm.getDensity(date, pFrame, frame);
 
         //verify
-        Assert.assertEquals(atm.getDensity(date, pEcef, ecef), actual, 0.0);
+        Assertions.assertEquals(atm.getDensity(date, pEcef, ecef), actual, 0.0);
     }
 
     @Test
@@ -185,29 +184,29 @@ public class DTM2000Test {
                         Decimal64 rho64 = atm.getDensity(185, new Decimal64(alti*1000),
                                                          new Decimal64(lon), new Decimal64(lat),
                                                          new Decimal64(hl), 50, 150, 0, 0);
-                        Assert.assertEquals(rhoD, rho64.getReal(), rhoD * 1e-14);
+                        Assertions.assertEquals(rhoD, rho64.getReal(), rhoD * 1e-14);
                     }
                 }
             }
         }
 
     }
-    
+
     /** Test issue 539. Density computation should be independent of user's default time zone.
      * See <a href="https://gitlab.orekit.org/orekit/orekit/issues/539"> issue 539 on Orekit forge.</a>
      */
     @Test
     public void testTimeZoneIndependantIssue539() {
-        
+
         // Prepare input: Choose a date in summer time for "GMT+1" time zone.
         // So that after 22h in GMT we are in the next day in local time
         TimeScale utc     = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate("2000-04-01T22:30:00.000", utc);
-        
+
         // LEO random position, in GCRF
         Vector3D position = new Vector3D(-1038893.194, -4654348.144, 5021579.14);
         Frame gcrf = FramesFactory.getGCRF();
-        
+
         // Get ITRF and Earth ellipsoid
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -216,26 +215,26 @@ public class DTM2000Test {
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
         DTM2000 atm = new DTM2000(in, sun, earth);
-        
+
         // Store user time zone
         TimeZone defaultTZ = TimeZone.getDefault();
-        
+
         // Set default time zone to UTC & get density
-        TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));        
+        TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
         double rhoUtc = atm.getDensity(date, position, gcrf);
-        
+
         // Set default time zone to GMT+1 & get density
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Paris"));
         double rhoParis = atm.getDensity(date, position, gcrf);
-        
+
         // Check that the 2 densities are equal
-        Assert.assertEquals(0., rhoUtc - rhoParis, 0.);
-        
+        Assertions.assertEquals(0., rhoUtc - rhoParis, 0.);
+
         // Set back default time zone to what it was before the test, to avoid any interference with another routine
         TimeZone.setDefault(defaultTZ);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

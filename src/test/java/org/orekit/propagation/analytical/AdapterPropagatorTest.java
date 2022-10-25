@@ -16,17 +16,13 @@
  */
 package org.orekit.propagation.analytical;
 
-
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -55,6 +51,9 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+
+import java.io.IOException;
+import java.text.ParseException;
 
 public class AdapterPropagatorTest {
 
@@ -102,9 +101,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assert.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -112,10 +111,10 @@ public class AdapterPropagatorTest {
             PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, leo.getFrame());
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, leo.getFrame());
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
-            Assert.assertEquals(0, revertError, 0.45);
-            Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
-            Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
-            Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
+            Assertions.assertEquals(0, revertError, 0.45);
+            Assertions.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            Assertions.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            Assertions.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
 
     }
@@ -164,9 +163,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assert.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -174,10 +173,10 @@ public class AdapterPropagatorTest {
             PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, heo.getFrame());
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, heo.getFrame());
             double revertError       = Vector3D.distance(pvWithout.getPosition(), pvReverted.getPosition());
-            Assert.assertEquals(0, revertError, 2.5e-5 * heo.getA());
-            Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
-            Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
-            Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
+            Assertions.assertEquals(0, revertError, 2.5e-5 * heo.getA());
+            Assertions.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            Assertions.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            Assertions.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
 
     }
@@ -236,9 +235,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assert.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         double maxDelta = 0;
         double maxNominal = 0;
@@ -252,12 +251,12 @@ public class AdapterPropagatorTest {
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             maxDelta = FastMath.max(maxDelta, revertError);
             maxNominal = FastMath.max(maxNominal, nominal);
-            Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
-            Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
-            Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
+            Assertions.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            Assertions.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            Assertions.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
-        Assert.assertTrue(maxDelta   < 120);
-        Assert.assertTrue(maxNominal > 2800);
+        Assertions.assertTrue(maxDelta   < 120);
+        Assertions.assertTrue(maxNominal > 2800);
 
     }
 
@@ -323,18 +322,18 @@ public class AdapterPropagatorTest {
 
         // both the initial propagator and generated ephemeris manage one of the two
         // additional states, but they also contain unmanaged copies of the other one
-        Assert.assertFalse(propagator.isAdditionalStateManaged("dummy 1"));
-        Assert.assertTrue(propagator.isAdditionalStateManaged("dummy 2"));
-        Assert.assertFalse(ephemeris.isAdditionalStateManaged("dummy 1"));
-        Assert.assertTrue(ephemeris.isAdditionalStateManaged("dummy 2"));
-        Assert.assertEquals(2, ephemeris.getInitialState().getAdditionalState("dummy 1").length);
-        Assert.assertEquals(1, ephemeris.getInitialState().getAdditionalState("dummy 2").length);
+        Assertions.assertFalse(propagator.isAdditionalStateManaged("dummy 1"));
+        Assertions.assertTrue(propagator.isAdditionalStateManaged("dummy 2"));
+        Assertions.assertFalse(ephemeris.isAdditionalStateManaged("dummy 1"));
+        Assertions.assertTrue(ephemeris.isAdditionalStateManaged("dummy 2"));
+        Assertions.assertEquals(2, ephemeris.getInitialState().getAdditionalState("dummy 1").length);
+        Assertions.assertEquals(1, ephemeris.getInitialState().getAdditionalState("dummy 2").length);
 
         return ephemeris;
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
     }

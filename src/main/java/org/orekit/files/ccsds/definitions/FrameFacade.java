@@ -16,13 +16,21 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Facade in front of several frames types in CCSDS messages.
+ *
  * @author Luc Maisonobe
+ * @author Vincent Cucchietti
  * @since 11.0
  */
 public class FrameFacade {
@@ -42,12 +50,13 @@ public class FrameFacade {
     /** Name of the frame. */
     private final String name;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
      * <p>
-     * At most one of {@code celestialBodyFrame}, {@code orbitRelativeFrame}
-     * or {@code spacecraftBodyFrame} may be non null. They may all be null
-     * if frame is unknown, in which case only the name will be available.
+     * At most one of {@code celestialBodyFrame}, {@code orbitRelativeFrame} or {@code spacecraftBodyFrame} may be non
+     * null. They may all be null if frame is unknown, in which case only the name will be available.
      * </p>
+     *
      * @param frame reference to node in Orekit frames tree (may be null)
      * @param celestialBodyFrame reference to celestial body centered frame (may be null)
      * @param orbitRelativeFrame reference to orbit-relative frame (may be null)
@@ -59,65 +68,75 @@ public class FrameFacade {
                        final OrbitRelativeFrame orbitRelativeFrame,
                        final SpacecraftBodyFrame spacecraftBodyFrame,
                        final String name) {
-        this.frame               = frame;
-        this.celestialBodyFrame  = celestialBodyFrame;
-        this.orbitRelativeFrame  = orbitRelativeFrame;
+        this.frame = frame;
+        this.celestialBodyFrame = celestialBodyFrame;
+        this.orbitRelativeFrame = orbitRelativeFrame;
         this.spacecraftBodyFrame = spacecraftBodyFrame;
-        this.name                = name;
+        this.name = name;
     }
 
     /**
      * Get the associated frame tree node.
+     *
      * @return associated frame tree node, or null if none exists
      */
     public Frame asFrame() {
         return frame;
     }
 
-    /** Get the associated {@link CelestialBodyFrame celestial body frame}.
-     * @return associated celestial body frame, or null if frame is
-     * associated to a {@link #asOrbitRelativeFrame() orbit},
-     * a {@link #asSpacecraftBodyFrame spacecraft} or is not supported
+    /**
+     * Get the associated {@link CelestialBodyFrame celestial body frame}.
+     *
+     * @return associated celestial body frame, or null if frame is associated to a
+     * {@link #asOrbitRelativeFrame() orbit}, a {@link #asSpacecraftBodyFrame spacecraft} or is not supported
      */
     public CelestialBodyFrame asCelestialBodyFrame() {
         return celestialBodyFrame;
     }
 
-    /** Get the associated {@link OrbitRelativeFrame orbit relative frame}.
-     * @return associated orbit relative frame, or null if frame is
-     * associated to a {@link #asCelestialBodyFrame() celestial body},
-     * a {@link #asSpacecraftBodyFrame spacecraft} or is not supported
+    /**
+     * Get the associated {@link OrbitRelativeFrame orbit relative frame}.
+     *
+     * @return associated orbit relative frame, or null if frame is associated to a
+     * {@link #asCelestialBodyFrame() celestial body}, a {@link #asSpacecraftBodyFrame spacecraft} or is not supported
      */
     public OrbitRelativeFrame asOrbitRelativeFrame() {
         return orbitRelativeFrame;
     }
 
-    /** Get the associated {@link SpacecraftBodyFrame spacecraft body frame}.
-     * @return associated spacecraft body frame, or null if frame is
-     * associated to a {@link #asCelestialBodyFrame() celestial body},
-     * an {@link #asOrbitRelativeFrame orbit} or is not supported
+    /**
+     * Get the associated {@link SpacecraftBodyFrame spacecraft body frame}.
+     *
+     * @return associated spacecraft body frame, or null if frame is associated to a
+     * {@link #asCelestialBodyFrame() celestial body}, an {@link #asOrbitRelativeFrame orbit} or is not supported
      */
     public SpacecraftBodyFrame asSpacecraftBodyFrame() {
         return spacecraftBodyFrame;
     }
 
-    /** Get the CCSDS name for the frame.
+    /**
+     * Get the CCSDS name for the frame.
+     *
      * @return CCSDS name
      */
     public String getName() {
         return name;
     }
 
-    /** Map an Orekit frame to a CCSDS frame facade.
+    /**
+     * Map an Orekit frame to a CCSDS frame facade.
+     *
      * @param frame a reference frame.
-     * @return the CCSDSFrame corresponding to the Orekit frame
+     * @return the CCSDS frame corresponding to the Orekit frame
      */
     public static FrameFacade map(final Frame frame) {
         final CelestialBodyFrame cbf = CelestialBodyFrame.map(frame);
         return new FrameFacade(frame, cbf, null, null, cbf.getName());
     }
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
      * @param name name of the frame
      * @param conventions IERS conventions to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -161,6 +180,98 @@ public class FrameFacade {
         // we don't know any frame with this name, just store the name itself
         return new FrameFacade(null, null, null, null, name);
 
+    }
+
+    /**
+     * Get the transform between {@link FrameFacade CCSDS frames}.
+     * <p>
+     * In case both input and output frames are {@link OrbitRelativeFrame orbit relative frame}, the returned transform
+     * will only be composed of a {@link Rotation rotation}. Only {@link LOFType commonly used orbit relative frames}
+     * will be recognized.
+     * <p>
+     * Note that if the input/output {@link FrameFacade CCSDS frame} is defined using a :
+     * <ul>
+     * <li><b>{@link CelestialBodyFrame celestial body frame}</b></li>
+     * <li><b>{@link SpacecraftBodyFrame spacecraft body frame}</b></li>
+     * </ul>
+     * then <b>an exception will be thrown</b> (currently not supported).
+     * <p>
+     * Note that the pivot frame provided <b>must be inertial</b> and <b>consistent</b> to what you are working with
+     * (i.e GCRF if around Earth for example).
+     *
+     * @param frameIn the input {@link FrameFacade CCSDS frame} to convert from
+     * @param frameOut the output {@link FrameFacade CCSDS frame} to convert to
+     * @param inertialPivotFrame <b>inertial</b> frame used as a pivot to create the transform
+     * @param date the date for the transform
+     * @param pv the position and velocity coordinates provider (required in case one of the frames is an
+     * {@link OrbitRelativeFrame orbit relative frame})
+     * @return the transform between {@link FrameFacade CCSDS frames}.
+     */
+    public static Transform getTransform(final FrameFacade frameIn, final FrameFacade frameOut,
+                                         final Frame inertialPivotFrame,
+                                         final AbsoluteDate date, final PVCoordinatesProvider pv) {
+
+        if (inertialPivotFrame.isPseudoInertial()) {
+            final Transform frameInToPivot = getTransformToPivot(frameIn, inertialPivotFrame, date, pv);
+
+            final Transform pivotToFrameOut = getTransformToPivot(frameOut, inertialPivotFrame, date, pv).getInverse();
+
+            return new Transform(date, frameInToPivot, pivotToFrameOut);
+        }
+        else {
+            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, inertialPivotFrame.getName());
+        }
+
+    }
+
+    /**
+     * Get the transform between input {@link FrameFacade CCSDS frame} and an <b>inertial</b>
+     * {@link Frame Orekit frame}.
+     *
+     * @param frameIn the input {@link FrameFacade CCSDS frame} to convert from
+     * @param inertialPivotFrame <b>inertial</b> {@link Frame Orekit frame} to convert to
+     * @param date the date for the transform
+     * @param pv the position and velocity coordinates provider (required in case the input
+     * {@link FrameFacade CCSDS frame} is an {@link OrbitRelativeFrame orbit relative frame})
+     * @return the transform between input {@link FrameFacade CCSDS frame} and an inertial {@link Frame Orekit frame}
+     */
+    private static Transform getTransformToPivot(final FrameFacade frameIn, final Frame inertialPivotFrame,
+                                                 final AbsoluteDate date, final PVCoordinatesProvider pv) {
+        final Transform frameInToPivot;
+
+        // Orekit frame
+        if (frameIn.asFrame() != null) {
+            frameInToPivot = frameIn.asFrame().getTransformTo(inertialPivotFrame, date);
+        }
+
+        // Local orbital frame
+        else if (frameIn.asOrbitRelativeFrame() != null) {
+
+            final LOFType lofIn = frameIn.asOrbitRelativeFrame().getLofType();
+
+            if (lofIn != null) {
+                frameInToPivot =
+                        lofIn.transformFromInertial(date, pv.getPVCoordinates(date, inertialPivotFrame)).getInverse();
+            }
+            else {
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_TRANSFORM, frameIn.getName(),
+                                          inertialPivotFrame.getName());
+            }
+        }
+
+        //Celestial body frame
+        else if (frameIn.asCelestialBodyFrame() != null) {
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_TRANSFORM, frameIn.asCelestialBodyFrame().getName(),
+                                      inertialPivotFrame.getName());
+        }
+
+        // Spacecraft body frame
+        else {
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_TRANSFORM, frameIn.getName(),
+                                      inertialPivotFrame.getName());
+        }
+
+        return frameInToPivot;
     }
 
 }

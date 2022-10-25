@@ -16,19 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -39,13 +31,21 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Test class for CCSDS Navigation Data Message writing.<p>
  * @author Luc Maisonobe
  */
 public class NdmWriterTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -96,10 +96,10 @@ public class NdmWriterTest {
             }
             try {
                 writer.writeComment(generator, "we are not allowed to put comments after constituents");
-                Assert.fail("an exception should have been thrown");
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.ATTEMPT_TO_GENERATE_MALFORMED_FILE, oe.getSpecifier());
-                Assert.assertEquals("dummy.xml", oe.getParts()[0]);
+                Assertions.assertEquals(OrekitMessages.ATTEMPT_TO_GENERATE_MALFORMED_FILE, oe.getSpecifier());
+                Assertions.assertEquals("dummy.xml", oe.getParts()[0]);
             }
         }
     }

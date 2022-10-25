@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.SignalInSpaceAccuracy;
 
@@ -28,28 +28,28 @@ public class SignalInSpaceAccuracyTest {
     @Test
     public void testAccuracy() {
         AccuracyProvider ura;
-        
+
         // Index = 0
         ura = new SignalInSpaceAccuracy(0);
-        Assert.assertEquals(0.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(0.0, ura.getAccuracy(), eps);
         // Index = 25
         ura = new SignalInSpaceAccuracy(25);
-        Assert.assertEquals(0.25, ura.getAccuracy(), eps);
+        Assertions.assertEquals(0.25, ura.getAccuracy(), eps);
         // Index = 50
         ura = new SignalInSpaceAccuracy(50);
-        Assert.assertEquals(0.50, ura.getAccuracy(), eps);
+        Assertions.assertEquals(0.50, ura.getAccuracy(), eps);
         // Index = 60
         ura = new SignalInSpaceAccuracy(60);
-        Assert.assertEquals(0.70, ura.getAccuracy(), eps);
+        Assertions.assertEquals(0.70, ura.getAccuracy(), eps);
         // Index = 90
         ura = new SignalInSpaceAccuracy(90);
-        Assert.assertEquals(1.60, ura.getAccuracy(), eps);
+        Assertions.assertEquals(1.60, ura.getAccuracy(), eps);
         // Index = 115
         ura = new SignalInSpaceAccuracy(115);
-        Assert.assertEquals(4.40, ura.getAccuracy(), eps);
+        Assertions.assertEquals(4.40, ura.getAccuracy(), eps);
         // Index = 126
         ura = new SignalInSpaceAccuracy(126);
-        Assert.assertEquals(-1.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(-1.0, ura.getAccuracy(), eps);
     }
 
 }

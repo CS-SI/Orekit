@@ -16,15 +16,12 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -44,6 +41,9 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class KeplerianBatchLSEstimatorTest {
 
@@ -83,10 +83,10 @@ public class KeplerianBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
 
     }
 
@@ -125,11 +125,11 @@ public class KeplerianBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.0,     physicalCovariances.getEntry(0, 0), 1.7e-15);
+        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(0.0,     physicalCovariances.getEntry(0, 0), 1.7e-15);
 
     }
 
@@ -162,16 +162,16 @@ public class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 5,
+        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 4,
                                                    0.0, 8.4e-7,
                                                    0.0, 2.0e-6,
-                                                   0.0, 7.7e-9,
-                                                   0.0, 4.9e-12);
+                                                   0.0, 1.9e-8,
+                                                   0.0, 8.3e-12);
 
     }
 
     /**
-     * Perfect range measurements with a perfect start and an on-board antenna range offset 
+     * Perfect range measurements with a perfect start and an on-board antenna range offset
      */
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() {
@@ -203,7 +203,7 @@ public class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 11,
+        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 12,
                                                    0.0, 5.9e-5,
                                                    0.0, 1.5e-4,
                                                    0.0, 7.2e-9,
@@ -299,7 +299,7 @@ public class KeplerianBatchLSEstimatorTest {
                                                        0.0, 3.2e-6,
                                                        0.0, 3.8e-7,
                                                        0.0, 1.5e-10);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
         }

@@ -828,7 +828,12 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
-        return new BrouwerLyddaneHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Create the harvester
+        final BrouwerLyddaneHarvester harvester = new BrouwerLyddaneHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Update the list of additional state provider
+        addAdditionalStateProvider(harvester);
+        // Return the configured harvester
+        return harvester;
     }
 
     /**

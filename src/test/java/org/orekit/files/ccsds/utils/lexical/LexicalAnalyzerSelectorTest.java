@@ -16,19 +16,19 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.data.DataSource;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.FileFormat;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.data.DataSource;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.FileFormat;
 
 public class LexicalAnalyzerSelectorTest {
 
@@ -126,10 +126,10 @@ public class LexicalAnalyzerSelectorTest {
     public void testNullBinary() throws IOException {
         try {
             LexicalAnalyzerSelector.select(new DataSource("empty", (DataSource.StreamOpener) () -> null));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals("empty", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals("empty", oe.getParts()[0]);
         }
     }
 
@@ -137,10 +137,10 @@ public class LexicalAnalyzerSelectorTest {
     public void testNullCharacters() throws IOException {
         try {
             LexicalAnalyzerSelector.select(new DataSource("empty", (DataSource.ReaderOpener) () -> null));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals("empty", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals("empty", oe.getParts()[0]);
         }
     }
 
@@ -165,9 +165,9 @@ public class LexicalAnalyzerSelectorTest {
     private void checkFormat(FileFormat expected, DataSource source) {
         try {
             final LexicalAnalyzer analyzer = LexicalAnalyzerSelector.select(source);
-            Assert.assertEquals(expected, analyzer instanceof XmlLexicalAnalyzer ? FileFormat.XML : FileFormat.KVN);
+            Assertions.assertEquals(expected, analyzer instanceof XmlLexicalAnalyzer ? FileFormat.XML : FileFormat.KVN);
         } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
+            Assertions.fail(ioe.getLocalizedMessage());
         }
     }
 }

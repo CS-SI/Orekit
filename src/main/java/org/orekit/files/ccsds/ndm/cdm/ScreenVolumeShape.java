@@ -28,4 +28,7 @@ public enum ScreenVolumeShape {
     /** Box. */
     BOX,
 
+    /** Sphere. */
+    SPHERE,
+
 }

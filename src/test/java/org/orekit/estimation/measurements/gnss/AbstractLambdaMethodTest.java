@@ -16,11 +16,6 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
 import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
@@ -30,14 +25,19 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathArrays.Position;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public abstract class AbstractLambdaMethodTest {
 
     protected abstract AbstractLambdaMethod buildReducer();
     protected abstract RealMatrix buildCovariance(AbstractLambdaMethod reducer);
-    
+
    @Test
     public void testSimpleFullDecomposition() {
         final RealMatrix refLow = MatrixUtils.createRealMatrix(new double[][] {
@@ -54,8 +54,8 @@ public abstract class AbstractLambdaMethodTest {
         AbstractLambdaMethod reducer = buildReducer();
         initializeProblem(reducer, new double[indirection.length], indirection, covariance, 2);
         reducer.ltdlDecomposition();
-        Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm1(), 9.9e-13 * refLow.getNorm1());
-        Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm1(), 6.7e-13 * refDiag.getNorm1());
+        Assertions.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm1(), 9.9e-13 * refLow.getNorm1());
+        Assertions.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm1(), 6.7e-13 * refDiag.getNorm1());
     }
 
     @Test
@@ -103,15 +103,15 @@ public abstract class AbstractLambdaMethodTest {
         IntegerLeastSquareSolution[] solutions = reducer.solveILS(2, floatAmbiguities, indirection, covariance);
 
 
-        Assert.assertEquals(2, solutions.length);
-        Assert.assertEquals(0.2183310953369383, solutions[0].getSquaredDistance(), 1.0e-15);
-        Assert.assertEquals(5l, solutions[0].getSolution()[0]);
-        Assert.assertEquals(3l, solutions[0].getSolution()[1]);
-        Assert.assertEquals(4l, solutions[0].getSolution()[2]);
-        Assert.assertEquals(0.3072725757902666, solutions[1].getSquaredDistance(), 1.0e-12);
-        Assert.assertEquals(6l, solutions[1].getSolution()[0]);
-        Assert.assertEquals(4l, solutions[1].getSolution()[1]);
-        Assert.assertEquals(4l, solutions[1].getSolution()[2]);
+        Assertions.assertEquals(2, solutions.length);
+        Assertions.assertEquals(0.2183310953369383, solutions[0].getSquaredDistance(), 1.0e-15);
+        Assertions.assertEquals(5l, solutions[0].getSolution()[0]);
+        Assertions.assertEquals(3l, solutions[0].getSolution()[1]);
+        Assertions.assertEquals(4l, solutions[0].getSolution()[2]);
+        Assertions.assertEquals(0.3072725757902666, solutions[1].getSquaredDistance(), 1.0e-12);
+        Assertions.assertEquals(6l, solutions[1].getSolution()[0]);
+        Assertions.assertEquals(4l, solutions[1].getSolution()[1]);
+        Assertions.assertEquals(4l, solutions[1].getSolution()[2]);
 
     }
 
@@ -126,12 +126,12 @@ public abstract class AbstractLambdaMethodTest {
             }
         }
         final RealMatrix rebuilt = buildCovariance(reducer);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             rebuilt.subtract(extracted).getNorm1(),
                             2.5e-13 * extracted.getNorm1());
 
     }
-    
+
 
     private void doTestILS(final RandomGenerator random,
                            final int[] indirection, final RealMatrix covariance) {
@@ -149,9 +149,9 @@ public abstract class AbstractLambdaMethodTest {
                         reducer.solveILS(nbSol, floatAmbiguities, indirection, covariance);
 
         // check solutions are consistent
-        Assert.assertEquals(nbSol, solutions.length);
+        Assertions.assertEquals(nbSol, solutions.length);
         for (int i = 0; i < nbSol - 1; ++i) {
-            Assert.assertTrue(solutions[i].getSquaredDistance() <= solutions[i + 1].getSquaredDistance());
+            Assertions.assertTrue(solutions[i].getSquaredDistance() <= solutions[i + 1].getSquaredDistance());
         }
         for (int i = 0; i < nbSol; ++i) {
             final RealMatrix a = MatrixUtils.createRealMatrix(floatAmbiguities.length, 1);
@@ -159,7 +159,7 @@ public abstract class AbstractLambdaMethodTest {
                 a.setEntry(k, 0, solutions[i].getSolution()[k]);
             }
             final double squaredNorm = a.subtract(aHat).transposeMultiply(invCov).multiply(a.subtract(aHat)).getEntry(0, 0);
-            Assert.assertEquals(squaredNorm, solutions[i].getSquaredDistance(), 6.0e-10 * squaredNorm);
+            Assertions.assertEquals(squaredNorm, solutions[i].getSquaredDistance(), 6.0e-10 * squaredNorm);
         }
 
         // check we can't find a better solution than the first one in the array
@@ -169,11 +169,11 @@ public abstract class AbstractLambdaMethodTest {
             for (int k = 0; k < a.getRowDimension(); ++k) {
                 long close = FastMath.round(floatAmbiguities[k]);
                 a.setEntry(k, 0, close + random.nextInt(11) - 5);
-            }            
+            }
             final double squaredNorm = a.subtract(aHat).transposeMultiply(invCov).multiply(a.subtract(aHat)).getEntry(0, 0);
             min = FastMath.min(min, (squaredNorm - solutions[0].getSquaredDistance()) / solutions[0].getSquaredDistance());
         }
-        Assert.assertTrue(min > -1.6e-10);
+        Assertions.assertTrue(min > -1.6e-10);
 
     }
 
@@ -183,7 +183,7 @@ public abstract class AbstractLambdaMethodTest {
             nField.setAccessible(true);
             return ((Integer) nField.get(reducer)).intValue();
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return -1;
         }
     }
@@ -204,7 +204,7 @@ public abstract class AbstractLambdaMethodTest {
             }
             return lowM;
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }
@@ -215,7 +215,7 @@ public abstract class AbstractLambdaMethodTest {
             diagField.setAccessible(true);
             return new DiagonalMatrix((double[]) diagField.get(reducer));
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }
@@ -243,25 +243,25 @@ public abstract class AbstractLambdaMethodTest {
             }
             return zM;
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }
-  
+
     protected double[] getDecorrelated(final AbstractLambdaMethod reducer) {
         try {
             final Field decorrelatedField = AbstractLambdaMethod.class.getDeclaredField("decorrelated");
             decorrelatedField.setAccessible(true);
             return (double[]) decorrelatedField.get(reducer);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }
 
     protected RealMatrix createRandomSymmetricPositiveDefiniteMatrix(final int n, final RandomGenerator random) {
         final RealMatrix matrix = MatrixUtils.createRealMatrix(n, n);
-        for (int i = 0; i < n; ++i) {                
+        for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
                 matrix.setEntry(i, j, 20 * random.nextDouble() - 10);
             }
@@ -291,7 +291,7 @@ public abstract class AbstractLambdaMethodTest {
             i = j;
             j = tmp;
         }
-        return new IntegerGaussTransformation(n, i, j, (int) FastMath.rint(low.getEntry(i, j))); 
+        return new IntegerGaussTransformation(n, i, j, (int) FastMath.rint(low.getEntry(i, j)));
     }
 
     protected static class IntegerGaussTransformation {
@@ -314,7 +314,7 @@ public abstract class AbstractLambdaMethodTest {
         final double dk0   = diag.getEntry(i, i);
         final double dk1   = diag.getEntry(i + 1, i + 1);
         final double lk1k0 = low.getEntry(i + 1, i);
-        return new Permutation(n, i, dk0 + lk1k0 * lk1k0 * dk1); 
+        return new Permutation(n, i, dk0 + lk1k0 * lk1k0 * dk1);
     }
 
     protected void initializeProblem(final AbstractLambdaMethod method,
@@ -330,7 +330,7 @@ public abstract class AbstractLambdaMethodTest {
             initializeMethod.invoke(method, floatAmbiguities, indirection, globalCovariance, nbSol);
         } catch (NoSuchMethodException | IllegalAccessException |
                  IllegalArgumentException | InvocationTargetException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
         }
     }
 

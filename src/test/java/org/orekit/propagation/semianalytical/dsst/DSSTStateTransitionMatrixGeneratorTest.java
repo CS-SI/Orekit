@@ -16,16 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-import java.util.Collections;
-
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -55,10 +51,14 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.util.Collections;
+
 /** Unit tests for {@link DSSTStateTransitionMatrixGenerator}. */
 public class DSSTStateTransitionMatrixGeneratorTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -125,8 +125,8 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
 
         // intermediate state has really different matrices, they are still building up
-        Assert.assertEquals(0.158482, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-6);
-        Assert.assertEquals(0.499959, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-6);
+        Assertions.assertEquals(0.158482, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-6);
+        Assertions.assertEquals(0.499959, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-6);
 
         // restarting propagation where we left it
         final SpacecraftState     state2       = propagator2.propagate(t0.shiftedBy(dt));
@@ -134,8 +134,8 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
-        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
-        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-10 * jacobian1.getNorm1());
+        Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
+        Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-10 * jacobian1.getNorm1());
 
     }
 
@@ -148,7 +148,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
     public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
         doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
     }
-    
+
     private void doTestPropagation(PropagationType type, double tolerance)
         throws FileNotFoundException, UnsupportedEncodingException {
 
@@ -199,7 +199,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, tolerance);
+                    Assertions.assertEquals(0, error, tolerance);
                 }
             }
         }
@@ -256,18 +256,18 @@ public class DSSTStateTransitionMatrixGeneratorTest {
 
         final double minStep = 6000.0;
         final double maxStep = 86400.0;
-        
+
         Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        
+
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
-        
+
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
 
         Orbit initialOrbit =
@@ -293,7 +293,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         // Mean orbit
         final SpacecraftState initial = propagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(propagator.getInitialState(), propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
-                    	   propagator.getInitialState();
+                           propagator.getInitialState();
         ((DSSTHarvester) harvester).initializeFieldShortPeriodTerms(initial); // Initial state is MEAN
     }
 
@@ -304,9 +304,9 @@ public class DSSTStateTransitionMatrixGeneratorTest {
     @Test
     public void testIssue713() {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        
+
         double dP = 0.001;
-        
+
         // Test MEAN case
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN,  dP, provider);
         propagatorMEAN.setMu(provider.getMu());
@@ -323,15 +323,15 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         SpacecraftState finalMEAN = propagatorMEAN.propagate(initialStateMEAN.getDate()); // dummy zero duration propagation, to ensure haverster initialization
         RealMatrix dYdY0MEAN = harvesterMEAN.getStateTransitionMatrix(finalMEAN);
         for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) { 
-                Assert.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
+            for (int j = 0; j < 6; ++j) {
+                Assertions.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
             }
         }
         RealMatrix dYdPMEAN = harvesterMEAN.getParametersJacobian(finalMEAN);
-        Assert.assertEquals(6, dYdPMEAN.getRowDimension());
-        Assert.assertEquals(1, dYdPMEAN.getColumnDimension());
+        Assertions.assertEquals(6, dYdPMEAN.getRowDimension());
+        Assertions.assertEquals(1, dYdPMEAN.getColumnDimension());
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(0.0, dYdPMEAN.getEntry(i, 0), 1e-9);
+            Assertions.assertEquals(0.0, dYdPMEAN.getEntry(i, 0), 1e-9);
         }
 
         // FIXME With the addition of the Extended Semi-analytical Kalman Filter, the following
@@ -355,17 +355,17 @@ public class DSSTStateTransitionMatrixGeneratorTest {
 //        final double[] refLine1 = new double[] {1.0000, -5750.3478, 15270.6488, -2707.1208, -2165.0148, -178.3653};
 //        final double[] refLine6 = new double[] {0.0000, 0.0035, 0.0013, -0.0005, 0.0005, 1.0000};
 //        for (int i = 0; i < 6; ++i) {
-//            Assert.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);
-//            Assert.assertEquals(refLine6[i], dYdY0OSC.getEntry(5, i), 1e-4);
+//            Assertions.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);
+//            Assertions.assertEquals(refLine6[i], dYdY0OSC.getEntry(5, i), 1e-4);
 //        }
 //        RealMatrix dYdPOSC = harvesterOSC.getParametersJacobian(finalOSC);
 //        final double[] refCol = new double[] { 0.813996593833, -16.479e-9, -2.901e-9, 7.801e-9, 1.901e-9, -26.769e-9};
-//        Assert.assertEquals(6, dYdPOSC.getRowDimension());
-//        Assert.assertEquals(1, dYdPOSC.getColumnDimension());
+//        Assertions.assertEquals(6, dYdPOSC.getRowDimension());
+//        Assertions.assertEquals(1, dYdPOSC.getColumnDimension());
 //        for (int i = 0; i < 6; ++i) {
-//            Assert.assertEquals(refCol[i], dYdPOSC.getEntry(i, 0), 1e-12);
+//            Assertions.assertEquals(refCol[i], dYdPOSC.getEntry(i, 0), 1e-12);
 //        }
-        
+
     }
 
 }

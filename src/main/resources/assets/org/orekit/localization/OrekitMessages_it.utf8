@@ -754,7 +754,22 @@ BACKWARD_PROPAGATION_NOT_ALLOWED = la propagazione all'indietro non è consentit
 NO_STATION_ECCENTRICITY_FOR_EPOCH = nessun valore di eccentricità stazione per la data inserita {0}, intervallo di validità tra {1} e {2}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
-INCONSISTENT_SELECTION = scelta di parametri discordante per le coppie {0}/{1} e {2}/{3}
+INCONSISTENT_SELECTION = <MISSING TRANSLATION>
+
+# no unscented transform configured
+NO_UNSCENTED_TRANSFORM_CONFIGURED = <MISSING TRANSLATION>
 
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
+
+# transform from {0} to {1} is not implemented
+UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
+
+# orbital parameters type: {0} is different from expected orbital type : {1}
+WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
+
+# cannot change covariance type if defined in a local orbital frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>
+
+# cannot change covariance type if defined in a non pseudo-inertial reference frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSLATION>

@@ -20,9 +20,9 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
@@ -58,7 +58,7 @@ public class InterSatDirectViewDetectorTest {
                                                    o1.getAlphaM() + 2.2e-6, PositionAngle.MEAN, o1.getFrame(),
                                                    o1.getDate(),
                                                    Constants.EIGEN5C_EARTH_MU);
-        Assert.assertEquals(o1.getKeplerianPeriod(), o2.getKeplerianPeriod(), 1.0e-10);
+        Assertions.assertEquals(o1.getKeplerianPeriod(), o2.getKeplerianPeriod(), 1.0e-10);
         final Propagator p = new KeplerianPropagator(o1);
         final EventsLogger logger = new EventsLogger();
         p.addEventDetector(logger.monitorDetector(new InterSatDirectViewDetector(earth, o2).
@@ -66,11 +66,11 @@ public class InterSatDirectViewDetectorTest {
         p.setStepHandler(10.0, state -> {
             Vector3D pos1 = state.getPVCoordinates().getPosition();
             Vector3D pos2 = o2.getPVCoordinates(state.getDate(), state.getFrame()).getPosition();
-            Assert.assertTrue(Vector3D.distance(pos1, pos2) >  8100.0);
-            Assert.assertTrue(Vector3D.distance(pos1, pos2) < 16400.0);
+            Assertions.assertTrue(Vector3D.distance(pos1, pos2) >  8100.0);
+            Assertions.assertTrue(Vector3D.distance(pos1, pos2) < 16400.0);
         });
         p.propagate(o1.getDate().shiftedBy(o1.getKeplerianPeriod()));
-        Assert.assertEquals(0, logger.getLoggedEvents().size());
+        Assertions.assertEquals(0, logger.getLoggedEvents().size());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class InterSatDirectViewDetectorTest {
                                                   withMaxCheck(10.0).
                                                   withHandler(new GrazingHandler())));
         pA.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
-        Assert.assertEquals(7, loggerA.getLoggedEvents().size());
+        Assertions.assertEquals(7, loggerA.getLoggedEvents().size());
 
         // LEO as secondary, MEO as primary
         Propagator pB = new KeplerianPropagator(o2);
@@ -106,7 +106,7 @@ public class InterSatDirectViewDetectorTest {
                                                   withMaxCheck(10.0).
                                                   withHandler(new GrazingHandler())));
         pB.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
-        Assert.assertEquals(7, loggerB.getLoggedEvents().size());
+        Assertions.assertEquals(7, loggerB.getLoggedEvents().size());
 
     }
 
@@ -127,9 +127,9 @@ public class InterSatDirectViewDetectorTest {
                                                                          pPrimary, frame, grazingDate);
             final TopocentricFrame topo = new TopocentricFrame(earth, earth.transform(grazing, frame, grazingDate),
                                                                "grazing");
-            Assert.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(pPrimary, frame, grazingDate)), 2.0e-4);
-            Assert.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(psecondary,  frame, grazingDate)), 2.0e-4);
-            Assert.assertEquals(180.0,
+            Assertions.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(pPrimary, frame, grazingDate)), 2.0e-4);
+            Assertions.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(psecondary,  frame, grazingDate)), 2.0e-4);
+            Assertions.assertEquals(180.0,
                                 FastMath.abs(FastMath.toDegrees(topo.getAzimuth(psecondary,  frame, grazingDate) -
                                                                 topo.getAzimuth(pPrimary, frame, grazingDate))),
                                 6.0e-14);
@@ -137,7 +137,7 @@ public class InterSatDirectViewDetectorTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

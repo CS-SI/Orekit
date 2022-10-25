@@ -55,6 +55,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "OneWayGNSSPhase";
+
     /** Name for ambiguity driver. */
     public static final String AMBIGUITY_NAME = "ambiguity";
 

@@ -16,18 +16,10 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -55,8 +47,16 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPropagatorBuilder> {
-    
+
     /** Initial TLE. */
     public TLE templateTLE;
 
@@ -140,7 +140,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "SRP not implemented in TLE Propagator");
     }
-    
+
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
@@ -178,7 +178,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     public void testGNSS()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
-        
+
         // input in resources directory
         final String inputPath = TLEOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
@@ -186,7 +186,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-        
+
         // initiate TLE (from Celestrak)
         final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
@@ -195,7 +195,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
-        
+
         //test
 
         //definition of the accuracy for the test
@@ -204,32 +204,32 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         //test on the convergence
         final int numberOfIte  = 2;
         final int numberOfEval = 3;
-        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
-        
+        Assertions.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
+        Assertions.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
+
         //test on the estimated position (reference from file esa18836.sp3)
         TimeStampedPVCoordinates odPV = odGNSS.getEstimatedPV();
         final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), odPV.getDate());
         odPV = transform.transformPVCoordinates(odPV);
         final Vector3D estimatedPos = odPV.getPosition();
-        
+
         // Reference position from GPS ephemeris (esa18836.sp3)
-        final Vector3D refPos = new Vector3D(13848957.285213307, -22916266.10257542, -23458.8341713716);  
+        final Vector3D refPos = new Vector3D(13848957.285213307, -22916266.10257542, -23458.8341713716);
 
         //test on the estimated position
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        
+        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -14.448, 18.736, 0.132, 6.323 };        
-        Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
-        
+        final double[] RefStatRange = { -14.448, 18.736, 0.132, 6.323 };
+        Assertions.assertEquals(nbRange, odGNSS.getRangeStat().getN());
+        Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
+        Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
+        Assertions.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
+        Assertions.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
+
     }
-    
+
     @Test
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
@@ -242,13 +242,13 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-        
+
         // initiate TLE
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
         templateTLE.getParametersDrivers().get(0).setSelected(false);
-        
+
         //orbit determination run.
         ResultBatchLeastSquares odLageos2 = runBLS(input, false);
 
@@ -261,8 +261,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final int numberOfIte  = 4;
         final int numberOfEval = 4;
 
-        Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
-        Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
+        Assertions.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
+        Assertions.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
 
         //test on the estimated position and velocity
         PVCoordinates odPV = odLageos2.getEstimatedPV();
@@ -273,17 +273,17 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
         final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+        Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 95;
         final double[] RefStatRange = { -67.331, 79.823, 6.668E-8, 32.296 };
-        Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
+        Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
+        Assertions.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
+        Assertions.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
+        Assertions.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
+        Assertions.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
 

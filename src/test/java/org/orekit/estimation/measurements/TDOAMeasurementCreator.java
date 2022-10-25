@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -30,6 +28,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Arrays;
 
 /**
  * Creates a list of {@link TDOA} measurements.
@@ -48,7 +48,7 @@ public class TDOAMeasurementCreator extends MeasurementCreator {
         this.secondary = context.TDOAstations.getValue();
         this.satellite = new ObservableSatellite(0);
     }
-    
+
     public ObservableSatellite getSatellite() {
         return satellite;
     }

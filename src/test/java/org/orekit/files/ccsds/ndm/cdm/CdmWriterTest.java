@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;

@@ -1,14 +1,11 @@
 package org.orekit.estimation.sequential;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.DSSTForce;
@@ -27,32 +24,35 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SemiAnalyticalKalmanModelTest {
 
     /** Orbit type for propagation. */
     private final OrbitType orbitType = OrbitType.EQUINOCTIAL;
-    
+
     /** Position angle for propagation. */
     private final PositionAngle positionAngle = PositionAngle.MEAN;
-    
+
     /** Initial orbit. */
     private Orbit orbit0;
-    
+
     /** Propagator builder. */
     private DSSTPropagatorBuilder propagatorBuilder;
-    
+
     /** Covariance matrix provider. */
     private CovarianceMatrixProvider covMatrixProvider;
-    
+
     /** Estimated measurement parameters list. */
     private ParameterDriversList estimatedMeasurementsParameters;
-    
+
     /** Kalman extended estimator containing models. */
     private SemiAnalyticalKalmanEstimator kalman;
-    
+
     /** Kalman observer. */
     private ModelLogger modelLogger;
-    
+
     /** State size. */
     private int M;
 
@@ -61,30 +61,30 @@ public class SemiAnalyticalKalmanModelTest {
 
     /** Driver for satellite range bias. */
     private ParameterDriver satRangeBiasDriver;
-    
+
     /** Driver for SRP coefficient. */
     private ParameterDriver srpCoefDriver;
-    
+
     /** Tolerance for the test. */
     private final double tol = 1e-16;
-    
-    @Before
+
+    @BeforeEach
     public void setup() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Initial orbit and date
         this.orbit0 = context.initialOrbit;
         ObservableSatellite sat = new ObservableSatellite(0);
-        
+
         // Create propagator builder
         this.propagatorBuilder = context.createBuilder(PropagationType.MEAN, PropagationType.OSCULATING, true,
                                                        1.0e-6, 60.0, 10., DSSTForce.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
-        
+
         // Create one 0m range measurement at t0 + 10s
         final AbsoluteDate date  = date0.shiftedBy(10.);
         final GroundStation station = context.stations.get(0);
@@ -117,7 +117,7 @@ public class SemiAnalyticalKalmanModelTest {
                         findByName(RadiationSensitive.REFLECTION_COEFFICIENT);
         srpCoefDriver.setReferenceDate(date);
         srpCoefDriver.setSelected(true);
-        
+
         // Create a covariance matrix using the scales of the estimated parameters
         final double[] scales = getParametersScale(propagatorBuilder, estimatedMeasurementsParameters);
         this.M = scales.length;
@@ -134,7 +134,7 @@ public class SemiAnalyticalKalmanModelTest {
 
     @Test
     public void ModelPhysicalOutputsTest() {
-        
+
         // Check model at t0 before any measurement is added
         // -------------------------------------------------
         checkModelAtT0();
@@ -149,21 +149,25 @@ public class SemiAnalyticalKalmanModelTest {
                                                   covMatrixProvider,
                                                   estimatedMeasurementsParameters,
                                                   null);
+        model.setObserver(modelLogger);
 
         // Evaluate at t0
         // --------------
-        
+
+        // Observer
+        Assertions.assertNotNull(model.getObserver());
+
         // Time
-        Assert.assertEquals(0., model.getEstimate().getTime(), 0.);
-        Assert.assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
-        
+        Assertions.assertEquals(0., model.getEstimate().getTime(), 0.);
+        Assertions.assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
+
         // Measurement number
-        Assert.assertEquals(0, model.getCurrentMeasurementNumber());
-        
+        Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
+
         // Normalized state - is zeros
         final RealVector stateN = model.getEstimate().getState();
-        Assert.assertArrayEquals(new double[M], stateN.toArray(), tol);
-        
+        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
+
         // Physical state - = initialized
         final RealVector x = model.getPhysicalEstimatedState();
         final RealVector expX = MatrixUtils.createRealVector(M);
@@ -173,8 +177,8 @@ public class SemiAnalyticalKalmanModelTest {
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
         final double[] dX = x.subtract(expX).toArray();
-        Assert.assertArrayEquals(new double[M], dX, tol);
-        
+        Assertions.assertArrayEquals(new double[M], dX, tol);
+
         // Normalized covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
         final double[][] expPn = new double[M][M];
@@ -182,28 +186,28 @@ public class SemiAnalyticalKalmanModelTest {
             for (int j = 0; j < M; j++) {
                 expPn[i][j] = 1.;
             }
-            Assert.assertArrayEquals("Failed on line " + i, expPn[i], Pn[i], tol);
+            Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
-        
+
         // Physical covariance = initialized
         final RealMatrix P   = model.getPhysicalEstimatedCovarianceMatrix();
         final RealMatrix expP = covMatrixProvider.getInitialCovarianceMatrix(new SpacecraftState(orbit0));
         final double[][] dP = P.subtract(expP).getData();
         for (int i = 0; i < M; i++) {
-            Assert.assertArrayEquals("Failed on line " + i, new double[M], dP[i], tol);
+            Assertions.assertArrayEquals(new double[M], dP[i], tol, "Failed on line " + i);
         }
-        
+
         // Check that other "physical" matrices are null
-        Assert.assertNull(model.getEstimate().getInnovationCovariance());
-        Assert.assertNull(model.getPhysicalInnovationCovarianceMatrix());
-        Assert.assertNull(model.getEstimate().getKalmanGain());
-        Assert.assertNull(model.getPhysicalKalmanGain());
-        Assert.assertNull(model.getEstimate().getMeasurementJacobian());
-        Assert.assertNull(model.getPhysicalMeasurementJacobian());
-        Assert.assertNull(model.getEstimate().getStateTransitionMatrix());
-        Assert.assertNull(model.getPhysicalStateTransitionMatrix());
+        Assertions.assertNull(model.getEstimate().getInnovationCovariance());
+        Assertions.assertNull(model.getPhysicalInnovationCovarianceMatrix());
+        Assertions.assertNull(model.getEstimate().getKalmanGain());
+        Assertions.assertNull(model.getPhysicalKalmanGain());
+        Assertions.assertNull(model.getEstimate().getMeasurementJacobian());
+        Assertions.assertNull(model.getPhysicalMeasurementJacobian());
+        Assertions.assertNull(model.getEstimate().getStateTransitionMatrix());
+        Assertions.assertNull(model.getPhysicalStateTransitionMatrix());
     }
-    
+
     /** Get an array of the scales of the estimated parameters.
      * @param builder propagator builder
      * @param estimatedMeasurementsParameters estimated measurements parameters
@@ -212,35 +216,35 @@ public class SemiAnalyticalKalmanModelTest {
     private double[] getParametersScale(final DSSTPropagatorBuilder builder,
                                         final ParameterDriversList estimatedMeasurementsParameters) {
         final List<Double> scaleList = new ArrayList<>();
-        
+
         // Orbital parameters
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
         }
-        
+
         // Propagation parameters
         for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
         }
-        
+
         // Measurement parameters
         for (ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
         }
-        
+
         final double[] scales = new double[scaleList.size()];
         for (int i = 0; i < scaleList.size(); i++) {
             scales[i] = scaleList.get(i);
         }
         return scales;
     }
-    
+
     /** Create a covariance matrix provider with initial and process noise matrix constant and identical.
      * Each element Pij of the initial covariance matrix equals:
      * Pij = scales[i]*scales[j]
@@ -256,10 +260,10 @@ public class SemiAnalyticalKalmanModelTest {
                 cov.setEntry(i, j, scales[i] * scales[j]);
             }
         }
-        return new ConstantProcessNoise(cov); 
+        return new ConstantProcessNoise(cov);
     }
-    
-    
+
+
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
     public class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;

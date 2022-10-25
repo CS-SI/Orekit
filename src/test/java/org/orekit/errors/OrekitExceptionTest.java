@@ -17,14 +17,14 @@
 
 package org.orekit.errors;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.DummyLocalizable;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * Unit tests for {@link OrekitException}.
@@ -40,7 +40,7 @@ public class OrekitExceptionTest {
         OrekitException exception = new OrekitException(new DummyLocalizable(null));
 
         // verify
-        Assert.assertEquals(exception.getMessage(), "");
+        Assertions.assertEquals(exception.getMessage(), "");
     }
 
     /**

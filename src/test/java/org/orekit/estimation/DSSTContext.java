@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
@@ -38,6 +35,9 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.List;
+import java.util.Map;
 
 public class DSSTContext implements StationDataProvider {
 
