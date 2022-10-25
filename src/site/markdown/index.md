@@ -307,7 +307,7 @@
     * displacement of ground points due to tides
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
-	* construction of trajectories using loxodromes (commonly, a rhum line)
+	* construction of trajectories using loxodromes (commonly, a rhumb line)
 
   * Collisions
 
