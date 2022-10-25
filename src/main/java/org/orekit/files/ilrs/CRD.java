@@ -1728,7 +1728,7 @@ public class CRD {
                     .getSecondsInLocalDay();
 
             final String str = String.format(
-                    "%18.12f %1d %4s %8s %8s %7.3f %10.1f %8.1f %6.1f %7.3f %7.3f %6.1f %1d %1d %1d %1d %5.1f",
+                    "%18.12f %1d %4s %8s %8s %8.4f %10.1f %8.1f %6.1f %7.3f %7.3f %6.1f %1d %1d %1d %1d %5.1f",
                     sod, typeOfData, systemConfigurationId,
                     formatIntegerOrNaN(numberOfPointsRecorded, -1),
                     formatIntegerOrNaN(numberOfPointsUsed, -1), oneWayDistance,

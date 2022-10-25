@@ -35,6 +35,10 @@ import org.orekit.files.ilrs.CRD.NptRangeMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRD.RangeSupplement;
 import org.orekit.files.ilrs.CRD.SessionStatistics;
+import org.orekit.files.ilrs.CRDConfiguration.CalibrationTargetConfiguration;
+import org.orekit.files.ilrs.CRDConfiguration.DetectorConfiguration;
+import org.orekit.files.ilrs.CRDConfiguration.MeteorologicalConfiguration;
+import org.orekit.files.ilrs.CRDConfiguration.SystemConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -657,7 +661,7 @@ public class CRDParserTest {
         String ten0 = "10 55432.041433800000     0.047960587856 std1 2 0 0 0    na    na";
         String meteo0 = "20 55432.041  801.80  28.21   39 0";
         String angles0 = "30 55432.041 297.2990  38.6340 0 2 1        na        na";
-        String cal = "40 55432.041433800000 0 std1       na       na   0.000     -913.0      0.0   56.0     na     na    na 3 3 0 4   na";
+        String cal = "40 55432.041433800000 0 std1       na       na   0.0000     -913.0      0.0   56.0     na     na    na 3 3 0 4   na";
         
         String h1 = "H1 CRD  2 2007 03 20 14";
         String h2 = "H2 MLRS 7080 24 19  4 NASA";
@@ -717,7 +721,7 @@ public class CRDParserTest {
         meteo0 = "20 27334.108  923.30 275.40   43 1";
         String stat_std1 = "50 std1  165.0     na     na    na 0";
         String stat_std2 = "50 std2   78.0     na     na    na 0";
-        String cal_std1 = "40 27334.108089000000 0 std1       na       na   0.000   113069.0      0.0  138.0     na     na    na 2 2 0 1   na";
+        String cal_std1 = "40 27334.108089000000 0 std1       na       na   0.0000   113069.0      0.0  138.0     na     na    na 2 2 0 1   na";
 
         Assertions.assertEquals(c0s, block.getConfigurationRecords().getSystemConfigurationRecords().toString());
         Assertions.assertEquals(c0_std1, block.getConfigurationRecords().getSystemRecord().toCrdString());
@@ -750,7 +754,7 @@ public class CRDParserTest {
         String c3 = "C3 0 mt1 TAC TAC MLRS_CMOS_TMRB_TD811 na 445.9";
         String c5 = "C5 0 swv Monitor,Sattrk 2.000Bm,2.00Cm conpro,crd_cal,PoissonCRD,gnp 2.4a,1.7,2.2a,CM-2.01a";
         String c6 = "C6 0 met Paroscientific Met4 123456 Paroscientific Met4 123456 Paroscientific Met4 123456";
-        cal = "40  2716.000000000000 0  std       67       58     na     -883.3      0.0   96.4   0.718  -0.126  364.4 3 3 0 3  14.5";
+        cal = "40  2716.000000000000 0  std       67       58      na     -883.3      0.0   96.4   0.718  -0.126  364.4 3 3 0 3  14.5";
         meteo0 = "20  2716.000  801.73 286.76   35 0";
         String meteo1 = "20  2822.000  801.73 286.56   35 0";
         String meteo2 = "20  3151.000  801.73 286.16   35 0";
@@ -790,29 +794,40 @@ public class CRDParserTest {
         
         // Block 6
         block = file.getDataBlocks().get(5);
+        String c4 = "C4 0 mc1 0.000 0.00 1234567890123456.800 0.00 0.000000000000 0 0 0";
         String c7 = "C7 0 spi SpiderCCR na na 0.0000 80.00 crdcal 1.7";
         ten0 = "10  2726.697640514675     0.013737698432  std 2 2 0 0    na    na";
         angles0 = "30  2717.996 326.8923  32.9177 0 1 1        na        na";
         String angles3 = "30  2742.799 325.9195  36.4168 0 1 1        na        na";
-        String calDetails0 = "41  1016.000000000000 0  std       37       28     na     -883.2      0.0   96.2   0.715  -0.125  364.3 3 3 0 1  15.5";
-        String calDetails1 = "41  4416.000000000000 0  std       30       30     na     -883.4      0.0   96.6   0.721  -0.127  364.4 3 3 0 2  13.7";
+        String calDetails0 = "41  1016.000000000000 0  std       37       28      na     -883.2      0.0   96.2   0.715  -0.125  364.3 3 3 0 1  15.5";
+        String calDetails1 = "41  4416.000000000000 0  std       30       30      na     -883.4      0.0   96.6   0.721  -0.127  364.4 3 3 0 2  13.7";
 
         Assertions.assertEquals(2, block.getHeader().getVersion());
-        Assertions.assertEquals(c7, block.getConfigurationRecords().getCalibrationTargetRecord().toCrdString());
         Assertions.assertEquals(ten0, block.getRangeData().get(0).toCrdString());
         Assertions.assertEquals(angles0, block.getAnglesData().get(0).toCrdString());
         Assertions.assertEquals(angles3, block.getAnglesData().get(3).toCrdString());
         Assertions.assertEquals(calDetails0, block.getCalibrationDetailData().get(0).toCrdString());
         Assertions.assertEquals(calDetails1, block.getCalibrationDetailData().get(1).toCrdString());
+        Assertions.assertEquals(c4, block.getConfigurationRecords().getTransponderRecord().toCrdString());
+
+        CalibrationTargetConfiguration calibrationTargetConfig = block.getConfigurationRecords().getCalibrationTargetRecord();
+        Assertions.assertEquals(c7, calibrationTargetConfig.toCrdString());
+        Assertions.assertEquals("spi", calibrationTargetConfig.getConfigurationId());
+        Assertions.assertEquals("SpiderCCR", calibrationTargetConfig.getTargetName());
+        Assertions.assertEquals(Double.NaN, calibrationTargetConfig.getSurveyedTargetDistance());
+        Assertions.assertEquals(Double.NaN, calibrationTargetConfig.getSurveyError());
+        Assertions.assertEquals(0.0, calibrationTargetConfig.getSumOfAllConstantDelays());
+        Assertions.assertEquals(80.0, calibrationTargetConfig.getPulseEnergy(), 0.1);
+        Assertions.assertEquals("crdcal", calibrationTargetConfig.getProcessingSoftwareName());
+        Assertions.assertEquals("1.7", calibrationTargetConfig.getProcessingSoftwareVersion());
         
         // Block 7
-        // TODO:
         block = file.getDataBlocks().get(6);
         c0 = "C0 0    532.000 std ml1 mcp_with_amp mt1";
         c1 = "C1 0 ml1 Nd-Yag 1064.00 10.00 100.00 200.0 na 1";
         c2 = "C2 0 mcp_with_amp mcp_and_avantek_amp 532.000 na 3800.0 0.0 unknown na 0.00 na 0.0 none 5.0 10.0 0";
-        c3 = "C3 0 mt1 TAC TAC MLRS_CMOS_TMRB_TD811 na 439.4";
-        cal = "40 34823.000000000000 0  std      398      190     na      402.3      0.0  131.1   0.168  -0.130  494.4 3 3 0 4   na";
+        c3 = "C3 0 mt1 TAC TAC MLRS_CMOS_TMRB_TD811 na 439.5";
+        cal = "40 34823.000000000000 0  std      398      190      na      402.3      0.0  131.1   0.168  -0.130  494.4 3 3 0 4   na";
         stat = "50  std  178.8   1.711   0.451 -128.2 0";
         
         Assertions.assertEquals(c0, block.getConfigurationRecords().getSystemRecord().toCrdString());
@@ -820,17 +835,38 @@ public class CRDParserTest {
         Assertions.assertEquals(c2, block.getConfigurationRecords().getDetectorRecord().toCrdString());
         Assertions.assertEquals(c3, block.getConfigurationRecords().getTimingRecord().toCrdString());
         Assertions.assertEquals(stat, block.getSessionStatisticsRecord().toCrdString());
-        Assertions.assertEquals(2, block.getCalibrationData().size());
+        Assertions.assertEquals(1, block.getCalibrationData().size());
         Assertions.assertEquals(cal, block.getCalibrationRecords().get(0).toCrdString());
         Assertions.assertEquals(cal, block.getCalibrationRecords("std").get(0).toCrdString());
 
+        Assertions.assertEquals(439.45e-6, block.getConfigurationRecords().getTimingRecord().getEpochDelayCorrection(), 0.01e-6);
+        Assertions.assertEquals(3, block.getRangeData().size());
+
         // Block 8
         block = file.getDataBlocks().get(7);
+        c0 = "C0 0    532.000 std ml1 mcp mt1";
+        c2 = "C2 0 mcp mcp 532.000 na 3800.0 0.0 unknown na 0.00 na 0.0 none 5.0 10.0 0";
+        c3 = "C3 0 mt1 TAC TAC MLRS_CMOS_TMRB_TD811 na 439.4";
+        cal = "40 34823.000000000000 0  std      398      190      na      402.3      0.0  131.1   0.168  -0.130  494.4 3 3 0 4   1.0";
+        Assertions.assertEquals(c0, block.getConfigurationRecords().getSystemRecord().toCrdString());
+        Assertions.assertEquals(c1, block.getConfigurationRecords().getLaserRecord().toCrdString());
+        Assertions.assertEquals(c2, block.getConfigurationRecords().getDetectorRecord().toCrdString());
+        Assertions.assertEquals(c3, block.getConfigurationRecords().getTimingRecord().toCrdString());
+        Assertions.assertEquals(stat, block.getSessionStatisticsRecord().toCrdString());
+        Assertions.assertEquals(1, block.getCalibrationData().size());
+        Assertions.assertEquals(cal, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(cal, block.getCalibrationRecords("std").get(0).toCrdString());
+
+        Assertions.assertEquals(439.4e-6, block.getConfigurationRecords().getTimingRecord().getEpochDelayCorrection(), 0.1e-6);
+        Assertions.assertEquals(3, block.getRangeData().size());
+        
+        // Block 9
+        block = file.getDataBlocks().get(8);
         c0 = "C0 0    532.080 ES 10hz SPD5 GPS NA";
         c1 = "C1 0 10hz Nd-Yag 1064.16 10.00 20.00 100.0 20.00 4";
         c2 = "C2 0 SPD5 SPAD5 532.000 20.00 0.0 0.0 +0.7v 0.0 0.15 20.0 0.0 Single_fot na na na";
         c3 = "C3 0 GPS Radiocode_GPS_8000 Radiocode_GPS_8000 HxET_=_3x_dassault No_Sn 0.0";
-        cal = "40 19185.120000000000 0   ES       na       na 122.977   105423.9      0.0   35.4   0.200   2.800    0.0 2 2 0 0   na";
+        cal = "40 19185.120000000000 0   ES       na       na 122.9770   105423.9      0.0   35.4   0.200   2.800    0.0 2 2 0 0   na";
         eleven0 = "11 19755.563535300000     0.015411425559   ES 2   30.0     42     217.0   0.000   0.000       0.0  5.40 0   na";
         String eleven10 = "11 20053.092679200000     0.015489205740   ES 2   30.0     59     185.0   0.000   0.000       0.0  7.60 0   na";
         
@@ -873,7 +909,7 @@ public class CRDParserTest {
         Assertions.assertEquals(0, calibration.getDetectorChannel());
         Assertions.assertEquals(0, calibration.getSpan());
         Assertions.assertEquals(Double.NaN, calibration.getReturnRate());
-        
+                
         // test rangesupplementdata
         block = file.getDataBlocks().get(0);
         String twelve1 = "12 55435.642974600000 std1 20697.0 1601.0000  0.00   0.0000 0.000000";
@@ -888,10 +924,10 @@ public class CRDParserTest {
         Assertions.assertEquals(0.0, rangeSupplement.getTimeBiasApplied());
         Assertions.assertEquals(0.0, rangeSupplement.getRangeRate());
 
-        // Block 9
-        block = file.getDataBlocks().get(8);
-        String cal0 = "40 83974.000000000000 0 0902    10000     7894   1.742   112201.6      3.8   16.0   0.045  -0.644   -1.0 2 2 0 0   na";
-        String cal1 = "40   410.000000000000 0 0902    10000     8073   1.742   112205.4      3.8   16.0   0.043  -0.665   -1.0 2 2 0 0   na";
+        // Block 10
+        block = file.getDataBlocks().get(9);
+        String cal0 = "40 83974.000000000000 0 0902    10000     7894   1.7420   112201.6      3.8   16.0   0.045  -0.644   -1.0 2 2 0 0   na";
+        String cal1 = "40   410.000000000000 0 0902    10000     8073   1.7420   112205.4      3.8   16.0   0.043  -0.665   -1.0 2 2 0 0   na";
         Assertions.assertEquals(2, block.getCalibrationData().size());
         Assertions.assertEquals(2, block.getCalibrationRecords().size());
         Assertions.assertEquals(cal0, block.getCalibrationRecords().get(0).toCrdString());
@@ -936,7 +972,59 @@ public class CRDParserTest {
         Assertions.assertEquals("0902", configurations.getSystemRecord(null).getConfigurationId());
         
         Assertions.assertEquals(1420522549, configurations.getSystemRecord().hashCode());
+        
+        // Block 11
+        block = file.getDataBlocks().get(10);
+        c7 = "C7 0 cac B 150.42450 1.00 0.1651 na HPLDP 9.11.3";
+        cal = "40 10888.300576549955 0  new     1853     1842 150.4245    96814.3      9.0   18.0     na     na    na 2 2 0 3   na";
+        calDetails0 = "41  7907.550577400252 0  new      822      819 150.4245    96809.6      na   18.0     na     na    na 2 2 0 1   na";
+        calDetails1 = "41 13872.550578089431 0  new     1031     1020 150.4245    96819.0      na   16.7     na     na    na 2 2 0 2   na";
 
+        Assertions.assertEquals(2, block.getHeader().getVersion());
+        Assertions.assertEquals(cal, block.getCalibrationRecords().get(0).toCrdString());
+        Assertions.assertEquals(calDetails0, block.getCalibrationDetailData().get(0).toCrdString());
+        Assertions.assertEquals(calDetails1, block.getCalibrationDetailData().get(1).toCrdString());
+
+        calibrationTargetConfig = block.getConfigurationRecords().getCalibrationTargetRecord();
+        Assertions.assertEquals(c7, calibrationTargetConfig.toCrdString());
+        Assertions.assertEquals("cac", calibrationTargetConfig.getConfigurationId());
+        Assertions.assertEquals("B", calibrationTargetConfig.getTargetName());
+        Assertions.assertEquals(150.4245, calibrationTargetConfig.getSurveyedTargetDistance(), 0.1e-3);
+        Assertions.assertEquals(1.0e-3, calibrationTargetConfig.getSurveyError(), 0.1e-3);
+        Assertions.assertEquals(0.1651, calibrationTargetConfig.getSumOfAllConstantDelays(), 0.1e-3);
+        Assertions.assertEquals(Double.NaN, calibrationTargetConfig.getPulseEnergy(), 0.1);
+        Assertions.assertEquals("HPLDP", calibrationTargetConfig.getProcessingSoftwareName());
+        Assertions.assertEquals("9.11.3", calibrationTargetConfig.getProcessingSoftwareVersion());
+
+        final SystemConfiguration systemConfig = block.getConfigurationRecords().getSystemRecord();
+        final SystemConfiguration systemConfig_new = new SystemConfiguration();
+        systemConfig_new.setConfigurationId(systemConfig.getConfigurationId());
+        systemConfig_new.setWavelength(systemConfig.getWavelength());
+        systemConfig_new.setComponents((String[])systemConfig.getComponents().toArray());
+        Assertions.assertEquals(false, systemConfig.equals(null));
+        Assertions.assertEquals(true, systemConfig.equals(systemConfig));
+        Assertions.assertEquals(true, systemConfig.equals(systemConfig_new));
+
+        final CRDConfiguration config = block.getConfigurationRecords();
+        Assertions.assertEquals("[met, mcp, ti1, new, cac, swm, la1]", config.getSystemConfigurationIds().toString());
+        Assertions.assertEquals(null, config.getConfigurationRecord("std"));
+        Assertions.assertInstanceOf(SystemConfiguration.class, config.getConfigurationRecord("new"));
+        Assertions.assertInstanceOf(DetectorConfiguration.class, config.getConfigurationRecord("mcp"));
+        Assertions.assertInstanceOf(MeteorologicalConfiguration.class, config.getConfigurationRecord("met"));
+        Assertions.assertEquals("C6 0 met Paroscientific MET-4 106772 Paroscientific MET-4 106772 Paroscientific MET-4 106772", 
+                config.getConfigurationRecord("met").toCrdString());
+        Assertions.assertEquals("C2 0 mcp MCP-PMT 532.000 15.00 3488.3 31.0 analog 400.0 1.00 80.0 30.0 none na na 0", 
+                config.getConfigurationRecord("mcp").toCrdString());
+        Assertions.assertEquals("C3 0 ti1 Truetime_XLDC Truetime_XLDC Cybi_ETM na 0.0", 
+                config.getConfigurationRecord("ti1").toCrdString());
+        Assertions.assertEquals("C0 0    532.000 new la1 mcp ti1 swm met cac", 
+                config.getConfigurationRecord("new").toCrdString());
+        Assertions.assertEquals("C7 0 cac B 150.42450 1.00 0.1651 na HPLDP 9.11.3", 
+                config.getConfigurationRecord("cac").toCrdString());
+        Assertions.assertEquals("C5 0 swm sattrk 6.10 HPLDP,GNP 9.11.3,2.8.3", 
+                config.getConfigurationRecord("swm").toCrdString());
+        Assertions.assertEquals("C1 0 la1 Nd:Yag 1064.00 5.00 100.00 150.0 15.00 1", 
+                config.getConfigurationRecord("la1").toCrdString());
     }
 
     @BeforeEach

@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Container for Consolidated laser ranging Data Format (CDR) configuration records.
@@ -55,8 +57,12 @@ public class CRDConfiguration {
 
     /**
      * Set the system configuration record.
+     *
+     * @deprecated
+     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
      * @param systemRecord the record to set
      */
+    @Deprecated
     public void setSystemRecord(final SystemConfiguration systemRecord) {
         // NOTE: The systemRecord is the one and only one SystemConfiguration.
         // So clear the list systemConfigurationRecords firstly.
@@ -74,8 +80,12 @@ public class CRDConfiguration {
 
     /**
      * Set the laser configuration record.
+     *
+     * @deprecated
+     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
      * @param laserRecord the record to set
      */
+    @Deprecated
     public void setLaserRecord(final LaserConfiguration laserRecord) {
         addConfigurationRecord(laserRecord);
     }
@@ -90,8 +100,12 @@ public class CRDConfiguration {
 
     /**
      * Set the detector configuration record.
+     *
+     * @deprecated
+     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
      * @param detectorRecord the record to set
      */
+    @Deprecated
     public void setDetectorRecord(final DetectorConfiguration detectorRecord) {
         addConfigurationRecord(detectorRecord);
     }
@@ -106,8 +120,12 @@ public class CRDConfiguration {
 
     /**
      * Set the timing system configuration record.
+     *
+     * @deprecated
+     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
      * @param timingRecord the record to set
      */
+    @Deprecated
     public void setTimingRecord(final TimingSystemConfiguration timingRecord) {
         addConfigurationRecord(timingRecord);
     }
@@ -122,8 +140,12 @@ public class CRDConfiguration {
 
     /**
      * Set the transponder configuration record.
+     *
+     * @deprecated
+     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
      * @param transponderRecord the record to set
      */
+    @Deprecated
     public void setTransponderRecord(final TransponderConfiguration transponderRecord) {
         addConfigurationRecord(transponderRecord);
     }
@@ -138,8 +160,12 @@ public class CRDConfiguration {
 
     /**
      * Set the software configuration record.
+     *
+     * @deprecated
+     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
      * @param softwareRecord the record to set
      */
+    @Deprecated
     public void setSoftwareRecord(final SoftwareConfiguration softwareRecord) {
         addConfigurationRecord(softwareRecord);
     }
@@ -154,8 +180,12 @@ public class CRDConfiguration {
 
     /**
      * Set the meteorological record.
+     *
+     * @deprecated
+     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
      * @param meteorologicalRecord the meteorological record to set
      */
+    @Deprecated
     public void setMeteorologicalRecord(final MeteorologicalConfiguration meteorologicalRecord) {
         addConfigurationRecord(meteorologicalRecord);
     }
@@ -185,8 +215,17 @@ public class CRDConfiguration {
     }
 
     /**
-     * Get a list of system configuration.
-     * @return an unmodifiable list of system configuration
+     * Get a set of configuration ids.
+     * @return an unmodifiable set of configuration ids
+     * @since 11.3
+     */
+    public Set<String> getSystemConfigurationIds() {
+        return Collections.unmodifiableSet(mapConfigurationRecords.keySet());
+    }
+
+    /**
+     * Get a list of system configurations.
+     * @return an unmodifiable list of system configurations
      * @since 11.3
      */
     public List<SystemConfiguration> getSystemConfigurationRecords() {
@@ -319,7 +358,7 @@ public class CRDConfiguration {
      * Base class for configuration record.
      * @since 11.3
      */
-    private abstract static class BaseConfiguration {
+    public abstract static class BaseConfiguration {
 
         /** Configuration ID. */
         private String configurationId;
@@ -1263,12 +1302,15 @@ public class CRDConfiguration {
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
+            // stationUTCOffset, transpUTCOffset: s --> ns
             final String str = String.format(
                     "%s %.3f %.2f %.3f %.2f %.12f %d %d %d",
-                    getConfigurationId(), stationUTCOffset, stationOscDrift,
-                    transpUTCOffset, transpOscDrift, transpClkRefTime,
+                    getConfigurationId(),
+                    stationUTCOffset * 1e9, stationOscDrift,
+                    transpUTCOffset * 1e9, transpOscDrift,
+                    transpClkRefTime,
                     stationClockAndDriftApplied, spacecraftClockAndDriftApplied,
-                    isSpacecraftTimeSimplified);
+                    isSpacecraftTimeSimplified ? 1 : 0);
             return CRD.handleNaN(str);
         }
 
@@ -1276,6 +1318,9 @@ public class CRDConfiguration {
 
     /** Container for software configuration record. */
     public static class SoftwareConfiguration extends BaseConfiguration {
+
+        /** Pattern of "[\\s+\\[\\]]". */
+        private static final Pattern PATTERN_WHITESPACE_OR_SQUAREBRACKET = Pattern.compile("[\\s+\\[\\]]");
 
         /** Tracking software in measurement path. */
         private String[] trackingSoftwares;
@@ -1371,8 +1416,10 @@ public class CRDConfiguration {
 
         private static String formatArray(final String[] arr) {
             // comma delimited
+            // "[Monitor, Sattrk]" ==> "Monitor,Sattrk"
+            // "[conpro, crd_cal, PoissonCRD, gnp]" ==> "conpro,crd_cal,PoissonCRD,gnp"
             final String s = Arrays.toString(arr);
-            return s.substring(1, s.length() - 1).replaceAll("\\s+", "");
+            return PATTERN_WHITESPACE_OR_SQUAREBRACKET.matcher(s).replaceAll("");
         }
 
         /** {@inheritDoc} */

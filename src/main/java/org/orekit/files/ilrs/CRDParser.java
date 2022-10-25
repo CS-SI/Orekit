@@ -82,6 +82,9 @@ public class CRDParser {
     /** Microseconds units. */
     private static final Unit US = Unit.parse("µs");
 
+    /** Nanoseconds units. */
+    private static final Unit NS = Unit.parse("ns");
+
     /** Picoseconds units. */
     private static final Unit PS = Unit.parse("ps");
 
@@ -645,9 +648,9 @@ public class CRDParser {
 
                 // Estimated offsets and drifts
                 transponderRecord.setTransponderId(values[2]);
-                transponderRecord.setStationUTCOffset(NM.toSI(Double.parseDouble(values[3])));
+                transponderRecord.setStationUTCOffset(NS.toSI(Double.parseDouble(values[3])));
                 transponderRecord.setStationOscDrift(Double.parseDouble(values[4]));
-                transponderRecord.setTranspUTCOffset(NM.toSI(Double.parseDouble(values[5])));
+                transponderRecord.setTranspUTCOffset(NS.toSI(Double.parseDouble(values[5])));
                 transponderRecord.setTranspOscDrift(Double.parseDouble(values[6]));
 
                 // Transponder clock reference time
