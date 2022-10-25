@@ -20,7 +20,23 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.3" date="TBD" description="TBD">
+    <release version="11.3" date="2022-10-25"
+			description="Version 11.3 is a minor release of Orekit.
+            It includes both new features and bug fixes. New features introduced in 11.3 are:
+            the unscented Kalman filter (numerical version), the semi-analytical unscented Kalman filter (DSST version),
+			a new PVCoordinatesProvider modelling waypoints on an ellipsoid following a loxodrome (commonly, a rhum bline),
+			a new method to compute hyperbolic anomaly based on Gooding and Odell algorithm,
+			a new built-in additional state for covariance propagation (linear method based on the state transition matrix computation),
+			with a new state covariance object allowing covariance transformation between frames and orbit types,
+			the extrapolation of the state covariance matrix using a Keplerian model,
+			a new ExtremumApproachDetector for close encounter computation,
+			the migration of all JUnit tests from JUnit 4 to JUnit 5,
+			the ability to estimate measurement parameters (station position or clock biases) from an ephemeris,
+			new methods to convert from/to Orekit frames and CCSDS frames,
+			improvements of CCSDS CDM (Collision Data Message) parsers,
+			improvements in date handling and aggregate bounded propagators,
+			several bug fixes and documentation improvements.
+            See the list below for a full description of the changes.">
       <action dev="bryan" type="add" issue="972">
         Added shiftedBy method for covariance matrix.
       </action>
