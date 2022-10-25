@@ -20,13 +20,13 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	<!-- Spotbugs version higher than 4.2.3 will trigger numerous EI_EXPOSE_REP errors not handled by Orekit yet -->
+    <!-- Spotbugs version higher than 4.2.3 will trigger numerous EI_EXPOSE_REP errors not handled by Orekit yet -->
     <orekit.spotbugs-maven-plugin.version>4.2.3</orekit.spotbugs-maven-plugin.version>
     <orekit.jacoco-maven-plugin.version>0.8.8</orekit.jacoco-maven-plugin.version>
     <orekit.maven-bundle-plugin.version>5.1.8</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.2.0</orekit.maven-checkstyle-plugin.version>
-	<!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
+    <!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
     <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.2.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.10.1</orekit.maven-compiler-plugin.version>
