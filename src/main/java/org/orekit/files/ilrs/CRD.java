@@ -386,6 +386,45 @@ public class CRD {
         }
 
         /**
+         * Get the CalibrationDetail record(s) related to the default system configuration id.
+         * @return the CalibrationDetail record(s) related to the default system configuration id
+         * @since 11.3
+         */
+        public List<CalibrationDetail> getCalibrationDetailRecords() {
+            return getCalibrationDetailRecords(null);
+        }
+
+        /**
+         * Get the CalibrationDetail record(s) related to the given systemConfigurationId.
+         * @param systemConfigurationId system configuration ID
+         * @return the CalibrationDetail record(s)
+         * @since 11.3
+         */
+        public List<CalibrationDetail> getCalibrationDetailRecords(final String systemConfigurationId) {
+            if (calibrationDetailData.isEmpty()) {
+                return null;
+            }
+
+            final String systemConfigId;
+            if (systemConfigurationId == null) {
+                // use the default systemConfigurationId
+                systemConfigId = getConfigurationRecords().getSystemRecord().getConfigurationId();
+            } else {
+                systemConfigId = systemConfigurationId;
+            }
+
+            final List<CalibrationDetail> list = new ArrayList<CalibrationDetail>();
+            // Loop to find the appropriate one
+            for (CalibrationDetail calibration : calibrationDetailData) {
+                if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
+                    list.add(calibration);
+                }
+            }
+
+            return list;
+        }
+
+        /**
          * Get the wavelength related to the given RangeMeasurement.
          *
          * @param range a RangeMeasurement

@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CRD.AnglesMeasurement;
 import org.orekit.files.ilrs.CRD.CRDDataBlock;
 import org.orekit.files.ilrs.CRD.Calibration;
+import org.orekit.files.ilrs.CRD.CalibrationDetail;
 import org.orekit.files.ilrs.CRD.FrRangeMeasurement;
 import org.orekit.files.ilrs.CRD.Meteo;
 import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
@@ -681,6 +682,7 @@ public class CRDParserTest {
 
         Assertions.assertEquals(2, block0.getHeader().getVersion());
         Assertions.assertEquals(3, b0_rangeData.size());
+        Assertions.assertEquals(0, block0.getHeader().getDataType());  // 0=full rate
         Assertions.assertInstanceOf(FrRangeMeasurement.class, b0_rangeData.get(0));
         final FrRangeMeasurement b0_fr0 = (FrRangeMeasurement)b0_rangeData.get(0);
         Assertions.assertEquals(0.047960587856, b0_fr0.getTimeOfFlight(), DELTA_PS);
@@ -749,11 +751,16 @@ public class CRDParserTest {
         Assertions.assertEquals("40 55432.041433800000 0 std1       na       na   0.0000     -913.0      0.0   56.0     na     na    na 3 3 0 4   na", 
                 b0_calibration0.toCrdString());
 
+        // There is no SessionStatisticsRecord.
+        Assertions.assertEquals(0, block0.getSessionStatisticsData().size());
+        Assertions.assertEquals(null, block0.getSessionStatisticsRecord());
+
         // block1: Normal Point
         final CRDDataBlock block1 = dataBlocks.get(1);
         final List<RangeMeasurement> b1_rangeData = block1.getRangeData();
         Assertions.assertEquals(2, block1.getHeader().getVersion());
         Assertions.assertEquals(8, b1_rangeData.size());
+        Assertions.assertEquals(1, block1.getHeader().getDataType());  // 1=normal point
         Assertions.assertInstanceOf(NptRangeMeasurement.class, b1_rangeData.get(0));
         final NptRangeMeasurement b1_npt3 = (NptRangeMeasurement)b1_rangeData.get(3);
         Assertions.assertEquals(0.044605221903, b1_npt3.getTimeOfFlight(), DELTA_PS);
@@ -783,13 +790,23 @@ public class CRDParserTest {
 
         final List<MeteorologicalMeasurement> b1_meteorologicalMeasurementData = block1.getMeteoData().getData();
         Assertions.assertEquals(5, b1_meteorologicalMeasurementData.size());
-        
+
+        // There is only one SessionStatisticsRecord related to "std1".
+        Assertions.assertEquals(null, block1.getSessionStatisticsRecord("std2"));
+
         // block2: Sampled Engineering (Quicklook)
-        
+        final CRDDataBlock block2 = dataBlocks.get(2);
+        Assertions.assertEquals(2, block2.getHeader().getDataType());  // 2=sampled engineering
+        // There is no CalibrationRecords.
+        Assertions.assertEquals(0, block2.getCalibrationData().size());
+        Assertions.assertEquals(null, block2.getCalibrationRecords());
         
         // block3: Sample 2-Color Normal Point file
         final CRDDataBlock block3 = dataBlocks.get(3);
         final CRDConfiguration b3_config = block3.getConfigurationRecords();
+        final List<SystemConfiguration> b3_systemConfigurations = b3_config.getSystemConfigurationRecords();
+        Assertions.assertEquals(2, b3_systemConfigurations.size());
+        Assertions.assertSame(b3_config.getSystemRecord(), b3_config.getSystemRecord(null));
         final Set<String> b3_config_systemIds = b3_config.getSystemConfigurationIds();
         Assertions.assertEquals(2, b3_config_systemIds.size());
         final String b3_systemConfigId_std1 = "std1";
@@ -943,6 +960,15 @@ public class CRDParserTest {
 
         Assertions.assertEquals(null, b4_transponderConfig);
 
+        Assertions.assertEquals(false, b4_systemConfig.equals(null));
+        Assertions.assertEquals(true, b4_systemConfig.equals(b4_systemConfig));
+        Assertions.assertEquals(-766950339, b4_systemConfig.hashCode());
+
+        // block5: c4
+        final CRDDataBlock block5 = dataBlocks.get(5);
+        final TransponderConfiguration b5_transponderConfig = block5.getConfigurationRecords().getTransponderRecord();
+        Assertions.assertEquals("C4 0 mc1 0.000 0.00 1234567890123456.800 0.00 0.000000000000 0 0 0", b5_transponderConfig.toCrdString());
+
         // block9: real npt, rollover
         final CRDDataBlock block9 = dataBlocks.get(9);
         Assertions.assertEquals(1, block9.getHeader().getVersion());
@@ -1018,6 +1044,16 @@ public class CRDParserTest {
         Assertions.assertEquals(-18.6e-12, b9_sessionStatistics.getPeakMinusMean(), DELTA_TENTH_PS);
         Assertions.assertEquals(1, b9_sessionStatistics.getDataQulityIndicator());
         Assertions.assertEquals("50  std   72.7   1.494  -0.536  -32.4 0", b4_sessionStatistics.toCrdString());
+
+        final List<Calibration> b9_calibrationData = block9.getCalibrationData();
+        Assertions.assertEquals(2, b9_calibrationData.size());
+
+        final CRDHeader b9_header = block9.getHeader();
+        Assertions.assertEquals("H1 CRD  1 2022 03 26 20", b9_header.getH1CrdString());
+        Assertions.assertEquals("H2 GRZL 7839 34 02  4 na", b9_header.getH2CrdString());
+        Assertions.assertEquals("H3 lageos1 7603901 1155 08820 0 1  1", b9_header.getH3CrdString());
+        Assertions.assertEquals("H4  1 2022 03 25 23 10 20 2022 03 26 00 14 20 0 0 0 0 1 0 2 0", b9_header.getH4CrdString());
+        Assertions.assertEquals("H5  0 00 null null     0", b9_header.getH5CrdString());
 
        // block10: real npt, c7
         final CRDDataBlock block10 = dataBlocks.get(10);
@@ -1113,6 +1149,20 @@ public class CRDParserTest {
         Assertions.assertEquals("9.11.3", b10_calibrationTargetConfig.getProcessingSoftwareVersion());
         Assertions.assertEquals("C7 0 cac B 150.42450 1.00 0.1651 na HPLDP 9.11.3", b10_calibrationTargetConfig.toCrdString());
 
+        final List<CalibrationDetail> b10_calibrationDetailData = block10.getCalibrationDetailData();
+        Assertions.assertEquals(2, b10_calibrationDetailData.size());
+        final List<CalibrationDetail> b10_calibrationDetails = block10.getCalibrationDetailRecords();
+        Assertions.assertEquals(2, b10_calibrationDetails.size());
+        final CalibrationDetail b10_calibrationDetail0 = b10_calibrationDetails.get(0);
+        Assertions.assertEquals("41  7907.550577400252 0  new      822      819 150.4245    96809.6      na   18.0     na     na    na 2 2 0 1   na",
+                b10_calibrationDetail0.toCrdString());
+
+        final CRDHeader b10_header = block10.getHeader();
+        Assertions.assertEquals("H1 CRD  2 2022 05 01 03", b10_header.getH1CrdString());
+        Assertions.assertEquals("H2 YARL 7090 05 13  3 ILRS", b10_header.getH2CrdString());
+        Assertions.assertEquals("H3 lageos2 9207002 5986 22195 0 1  1", b10_header.getH3CrdString());
+        Assertions.assertEquals("H4  1 2022 05 01 02 18 58 2022 05 01 02 24 03 0 0 0 0 1 0 2 0", b10_header.getH4CrdString());
+        Assertions.assertEquals("H5  1 22 043000 HTS 12001", b10_header.getH5CrdString());
     }
 
     @BeforeEach

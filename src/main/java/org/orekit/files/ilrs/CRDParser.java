@@ -324,6 +324,8 @@ public class CRDParser {
                 // Station network
                 if (pi.version == 2) {
                     pi.header.setStationNetword(values[6]);
+                } else {
+                    pi.header.setStationNetword(CRD.STR_VALUE_NOT_AVAILABLE);
                 }
 
             }

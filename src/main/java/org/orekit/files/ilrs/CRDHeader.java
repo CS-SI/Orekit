@@ -457,7 +457,7 @@ public class CRDHeader extends ILRSHeader {
      * @since 11.3
      */
     public String getH2CrdString() {
-        return String.format("H2 %s %4d %2d %2d %2d %s", stationName,
+        return String.format("H2 %s %4d %02d %02d %2d %s", stationName,
                 systemIdentifier, systemNumber, systemOccupancy,
                 epochIdentifier, stationNetword);
     }
