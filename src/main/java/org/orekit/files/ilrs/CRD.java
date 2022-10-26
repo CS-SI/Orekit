@@ -385,6 +385,17 @@ public class CRD {
             return Collections.unmodifiableList(calibrationDetailData);
         }
 
+        /**
+         * Get the wavelength related to the given RangeMeasurement.
+         *
+         * @param range a RangeMeasurement
+         * @return the wavelength related to the given RangeMeasurement.
+         * @since 11.3
+         */
+        public double getWavelength(final RangeMeasurement range) {
+            return getConfigurationRecords().getSystemRecord(range.getSystemConfigurationId()).getWavelength();
+        }
+
     }
 
     /** Range record. */

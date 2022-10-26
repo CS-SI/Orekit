@@ -205,6 +205,15 @@ public class CRDConfiguration {
     }
 
     /**
+     * Get the configuration records map.
+     * @return the configuration records map
+     * @since 11.3
+     */
+    public Map<String, BaseConfiguration> getConfigurationRecordMap() {
+        return Collections.unmodifiableMap(mapConfigurationRecords);
+    }
+
+    /**
      * Get configuration record corresponding to the configId.
      * @param configId the id of configuration
      * @return the configuration with configId, or null
@@ -505,7 +514,7 @@ public class CRDConfiguration {
         /** Pulse Energy [mJ]. */
         private double pulseEnergy;
 
-        /** Pulse Width. */
+        /** Pulse Width [ps]. */
         private double pulseWidth;
 
         /** Bean divergence [arcsec]. */
@@ -604,7 +613,7 @@ public class CRDConfiguration {
 
         /**
          * Set the pulse width.
-         * @param pulseWidth the pulse width to set
+         * @param pulseWidth the pulse width to set, ps
          */
         public void setPulseWidth(final double pulseWidth) {
             this.pulseWidth = pulseWidth;

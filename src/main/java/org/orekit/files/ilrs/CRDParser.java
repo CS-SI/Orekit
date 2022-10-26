@@ -103,8 +103,8 @@ public class CRDParser {
     /** Identifier of comment record. */
     private static final String COMMENTS_IDENTIFIER = "00";
 
-    /** Pattern of "[-]?na". */
-    private static final Pattern PATTERN_NA = Pattern.compile("[-]?" + CRD.STR_VALUE_NOT_AVAILABLE);
+    /** Pattern of " [-]?(na)". */
+    private static final Pattern PATTERN_NA = Pattern.compile(" [-]?(na)");
 
     /** Time scale used to define epochs in CPF file. */
     private final TimeScale timeScale;
@@ -164,7 +164,8 @@ public class CRDParser {
                         // Note: since crd v2.01.
                         // The literal “na” is used instead of “-1” for fields that are not applicable or not avaiable.
                         // And there may be "-na".
-                        line = PATTERN_NA.matcher(line).replaceAll(CRD.STR_NAN);
+                        // note: "analog" --> "aNaNlog"
+                        line = PATTERN_NA.matcher(line).replaceAll(" " + CRD.STR_NAN);
 
                         selected.get().parse(line, pi);
                     } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
@@ -616,7 +617,13 @@ public class CRDParser {
                 timingRecord.setTimeSource(values[3]);
                 timingRecord.setFrequencySource(values[4]);
                 timingRecord.setTimer(values[5]);
-                timingRecord.setTimerSerialNumber(values[6]);
+                final String timerSerialNumber = values[6];
+                if (CRD.STR_NAN.equalsIgnoreCase(timerSerialNumber)) {
+                    // The timer serial number may be "na"
+                    timingRecord.setTimerSerialNumber(CRD.STR_VALUE_NOT_AVAILABLE);
+                } else {
+                    timingRecord.setTimerSerialNumber(timerSerialNumber);
+                }
                 timingRecord.setEpochDelayCorrection(US.toSI(Double.parseDouble(values[7])));
 
                 // Add the timing system configuration record
