@@ -567,4 +567,59 @@ public class CRDHeader extends ILRSHeader {
 
     }
 
+    /** Data type for SLR data. */
+    public enum DataType {
+
+        /** Full rate. */
+        FULL_RATE(0),
+
+        /** Normal point. */
+        NORMAL_POINT(1),
+
+        /** Sampled engineering. */
+        SAMPLED_ENGIEERING(2);
+
+        /** Codes map. */
+        private static final Map<Integer, DataType> CODES_MAP = new HashMap<>();
+        static {
+            for (final DataType type : values()) {
+                CODES_MAP.put(type.getIndicator(), type);
+            }
+        }
+
+        /** data type indicator. */
+        private final int indicator;
+
+        /**
+         * Constructor.
+         * @param indicator data type indicator
+         */
+        DataType(final int indicator) {
+            this.indicator = indicator;
+        }
+
+        /**
+         * Get the data type indicator.
+         * @return the data type indicator
+         */
+        public int getIndicator() {
+            return indicator;
+        }
+
+        /**
+         * Get the data type for the given indicator.
+         * @param id indicator
+         * @return the data type corresponding to the indicator
+         */
+        public static DataType getDataType(final int id) {
+            final DataType type = CODES_MAP.get(id);
+            if (type == null) {
+               // Invalid value. An exception is thrown
+                throw new OrekitException(OrekitMessages.INVALID_RANGE_INDICATOR_IN_CRD_FILE, id);
+            }
+            return type;
+        }
+
+    }
+
 }

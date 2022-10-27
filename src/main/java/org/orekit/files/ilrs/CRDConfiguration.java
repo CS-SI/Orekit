@@ -196,6 +196,10 @@ public class CRDConfiguration {
      * @since 11.3
      */
     public void addConfigurationRecord(final BaseConfiguration config) {
+        if (config == null) {
+            return;
+        }
+
         mapConfigurationRecords.put(config.getConfigurationId(), config);
 
         if (config instanceof SystemConfiguration) {

@@ -752,7 +752,7 @@ public class CRDParserTest {
                 b0_calibration0.toCrdString());
 
         // There is no SessionStatisticsRecord.
-        Assertions.assertEquals(0, block0.getSessionStatisticsData().size());
+        Assertions.assertEquals(true, block0.getSessionStatisticsData().isEmpty());
         Assertions.assertEquals(null, block0.getSessionStatisticsRecord());
 
         // block1: Normal Point
@@ -798,7 +798,7 @@ public class CRDParserTest {
         final CRDDataBlock block2 = dataBlocks.get(2);
         Assertions.assertEquals(2, block2.getHeader().getDataType());  // 2=sampled engineering
         // There is no CalibrationRecords.
-        Assertions.assertEquals(0, block2.getCalibrationData().size());
+        Assertions.assertEquals(true, block2.getCalibrationData().isEmpty());
         Assertions.assertEquals(null, block2.getCalibrationRecords());
         
         // block3: Sample 2-Color Normal Point file
@@ -963,6 +963,12 @@ public class CRDParserTest {
         Assertions.assertEquals(false, b4_systemConfig.equals(null));
         Assertions.assertEquals(true, b4_systemConfig.equals(b4_systemConfig));
         Assertions.assertEquals(-766950339, b4_systemConfig.hashCode());
+        Assertions.assertEquals(false, b4_systemConfig.equals(b3_systemConfig_std1));
+        final SystemConfiguration b4_systemConfig_new = new SystemConfiguration();
+        b4_systemConfig_new.setSystemId(b4_systemConfig.getConfigurationId());
+        b4_systemConfig_new.setWavelength(b4_systemConfig.getWavelength());
+        b4_systemConfig_new.setComponents((String[])b4_systemConfig.getComponents().toArray());
+        Assertions.assertEquals(true, b4_systemConfig.equals(b4_systemConfig_new));
 
         // block5: c4
         final CRDDataBlock block5 = dataBlocks.get(5);
@@ -1047,6 +1053,10 @@ public class CRDParserTest {
 
         final List<Calibration> b9_calibrationData = block9.getCalibrationData();
         Assertions.assertEquals(2, b9_calibrationData.size());
+
+        final List<CalibrationDetail> b9_calibrationDetailData = block9.getCalibrationDetailData();
+        Assertions.assertEquals(true, b9_calibrationDetailData.isEmpty());
+        Assertions.assertEquals(null, block9.getCalibrationDetailRecords());
 
         final CRDHeader b9_header = block9.getHeader();
         Assertions.assertEquals("H1 CRD  1 2022 03 26 20", b9_header.getH1CrdString());
@@ -1156,6 +1166,8 @@ public class CRDParserTest {
         final CalibrationDetail b10_calibrationDetail0 = b10_calibrationDetails.get(0);
         Assertions.assertEquals("41  7907.550577400252 0  new      822      819 150.4245    96809.6      na   18.0     na     na    na 2 2 0 1   na",
                 b10_calibrationDetail0.toCrdString());
+        Assertions.assertEquals(true, block10.getCalibrationDetailRecords("std").isEmpty());
+        Assertions.assertEquals(2, block10.getCalibrationDetailRecords("new").size());
 
         final CRDHeader b10_header = block10.getHeader();
         Assertions.assertEquals("H1 CRD  2 2022 05 01 03", b10_header.getH1CrdString());
@@ -1163,6 +1175,65 @@ public class CRDParserTest {
         Assertions.assertEquals("H3 lageos2 9207002 5986 22195 0 1  1", b10_header.getH3CrdString());
         Assertions.assertEquals("H4  1 2022 05 01 02 18 58 2022 05 01 02 24 03 0 0 0 0 1 0 2 0", b10_header.getH4CrdString());
         Assertions.assertEquals("H5  1 22 043000 HTS 12001", b10_header.getH5CrdString());
+
+        final CRDConfiguration config = new CRDConfiguration();
+        Assertions.assertEquals(true, config.getSystemConfigurationRecords().isEmpty());
+        Assertions.assertEquals(null, config.getSystemRecord());
+        
+        config.addConfigurationRecord(b3_systemConfig_std1);
+        config.addConfigurationRecord(b3_systemConfig_std2);
+        Assertions.assertEquals(2, config.getSystemConfigurationRecords().size());
+        Assertions.assertSame(b3_systemConfig_std1, config.getSystemRecord());        
+        config.setSystemRecord(b10_systemConfig);
+        Assertions.assertEquals(1, config.getSystemConfigurationRecords().size());
+        Assertions.assertSame(b10_systemConfig, config.getSystemRecord());
+
+        Assertions.assertSame(null, config.getLaserRecord());
+        config.setLaserRecord(b10_laserConfig);
+        Assertions.assertSame(b10_laserConfig, config.getLaserRecord());
+
+        Assertions.assertSame(null, config.getDetectorRecord());
+        config.setDetectorRecord(b10_detectorConfig);
+        Assertions.assertSame(b10_detectorConfig, config.getDetectorRecord());
+
+        Assertions.assertSame(null, config.getTimingRecord());
+        config.setTimingRecord(b10_timingConfig);
+        Assertions.assertSame(b10_timingConfig, config.getTimingRecord());
+
+        Assertions.assertSame(null, config.getTransponderRecord());
+        Assertions.assertEquals(6, config.getConfigurationRecordMap().size());
+        config.setTransponderRecord(null);
+        Assertions.assertEquals(6, config.getConfigurationRecordMap().size());
+        config.setTransponderRecord(b5_transponderConfig);
+        Assertions.assertEquals(7, config.getConfigurationRecordMap().size());
+        Assertions.assertSame(null, config.getTransponderRecord());
+        Assertions.assertSame(b5_transponderConfig, config.getConfigurationRecord("mc1"));
+
+        Assertions.assertSame(null, config.getSoftwareRecord());
+        config.setSoftwareRecord(b10_softwareConfig);
+        Assertions.assertSame(b10_softwareConfig, config.getSoftwareRecord());
+
+        Assertions.assertSame(null, config.getMeteorologicalRecord());
+        config.setMeteorologicalRecord(b10_meteorologicalConfig);
+        Assertions.assertSame(b10_meteorologicalConfig, config.getMeteorologicalRecord());
+
+        final RangeMeasurement range_new = new RangeMeasurement(b10_npt0.getDate(), 
+                b10_npt0.getTimeOfFlight(), b10_npt0.getEpochEvent());
+        Assertions.assertEquals(0.040190018544,range_new.getTimeOfFlight(), DELTA_PS);
+        Assertions.assertEquals(8357.400568200001, 
+                range_new.getDate().getComponents(utc).getTime().getSecondsInUTCDay(), DELTA_PS);
+        final RangeMeasurement range_new2 = new RangeMeasurement(b10_npt0.getDate(), 
+                b10_npt0.getTimeOfFlight(), b10_npt0.getEpochEvent(), b10_npt0.getSnr());
+        Assertions.assertEquals("00 not supported. use NptRangeMeasurement or FrRangeMeasurement instead.", 
+                range_new2.toCrdString());
+
+
+        final NptRangeMeasurement npt_new = new NptRangeMeasurement(b10_npt0.getDate(), 
+                b10_npt0.getTimeOfFlight(), b10_npt0.getEpochEvent(), b10_npt0.getSnr(),
+                b10_npt0.getSystemConfigurationId());
+        Assertions.assertEquals("11  8357.400568200000     0.040190018544  new 2   -1.0     -1       na     na     na       na   na 0   na", 
+                npt_new.toCrdString());
+
     }
 
     @BeforeEach
