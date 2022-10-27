@@ -44,6 +44,7 @@ import org.orekit.files.ilrs.CRDConfiguration.SoftwareConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.SystemConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.TimingSystemConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.TransponderConfiguration;
+import org.orekit.files.ilrs.CRDHeader.DataType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -683,6 +684,7 @@ public class CRDParserTest {
         Assertions.assertEquals(2, block0.getHeader().getVersion());
         Assertions.assertEquals(3, b0_rangeData.size());
         Assertions.assertEquals(0, block0.getHeader().getDataType());  // 0=full rate
+        Assertions.assertEquals(DataType.FULL_RATE, DataType.getDataType(block0.getHeader().getDataType()));
         Assertions.assertInstanceOf(FrRangeMeasurement.class, b0_rangeData.get(0));
         final FrRangeMeasurement b0_fr0 = (FrRangeMeasurement)b0_rangeData.get(0);
         Assertions.assertEquals(0.047960587856, b0_fr0.getTimeOfFlight(), DELTA_PS);
@@ -761,6 +763,7 @@ public class CRDParserTest {
         Assertions.assertEquals(2, block1.getHeader().getVersion());
         Assertions.assertEquals(8, b1_rangeData.size());
         Assertions.assertEquals(1, block1.getHeader().getDataType());  // 1=normal point
+        Assertions.assertEquals(DataType.NORMAL_POINT, DataType.getDataType(block1.getHeader().getDataType()));
         Assertions.assertInstanceOf(NptRangeMeasurement.class, b1_rangeData.get(0));
         final NptRangeMeasurement b1_npt3 = (NptRangeMeasurement)b1_rangeData.get(3);
         Assertions.assertEquals(0.044605221903, b1_npt3.getTimeOfFlight(), DELTA_PS);
@@ -797,6 +800,7 @@ public class CRDParserTest {
         // block2: Sampled Engineering (Quicklook)
         final CRDDataBlock block2 = dataBlocks.get(2);
         Assertions.assertEquals(2, block2.getHeader().getDataType());  // 2=sampled engineering
+        Assertions.assertEquals(DataType.SAMPLED_ENGIEERING, DataType.getDataType(block2.getHeader().getDataType()));
         // There is no CalibrationRecords.
         Assertions.assertEquals(true, block2.getCalibrationData().isEmpty());
         Assertions.assertEquals(null, block2.getCalibrationRecords());
@@ -1051,6 +1055,8 @@ public class CRDParserTest {
         Assertions.assertEquals(1, b9_sessionStatistics.getDataQulityIndicator());
         Assertions.assertEquals("50  std   72.7   1.494  -0.536  -32.4 0", b4_sessionStatistics.toCrdString());
 
+        Assertions.assertEquals(null, block9.getConfigurationRecords().getCalibrationTargetRecord());
+        
         final List<Calibration> b9_calibrationData = block9.getCalibrationData();
         Assertions.assertEquals(2, b9_calibrationData.size());
 
@@ -1179,6 +1185,8 @@ public class CRDParserTest {
         final CRDConfiguration config = new CRDConfiguration();
         Assertions.assertEquals(true, config.getSystemConfigurationRecords().isEmpty());
         Assertions.assertEquals(null, config.getSystemRecord());
+        Assertions.assertEquals(null, config.getSystemRecord(null));
+        Assertions.assertEquals(null, config.getSystemRecord("std"));
         
         config.addConfigurationRecord(b3_systemConfig_std1);
         config.addConfigurationRecord(b3_systemConfig_std2);
@@ -1233,6 +1241,21 @@ public class CRDParserTest {
                 b10_npt0.getSystemConfigurationId());
         Assertions.assertEquals("11  8357.400568200000     0.040190018544  new 2   -1.0     -1       na     na     na       na   na 0   na", 
                 npt_new.toCrdString());
+
+        Assertions.assertEquals(0, DataType.FULL_RATE.getIndicator());
+        Assertions.assertEquals(1, DataType.NORMAL_POINT.getIndicator());
+        Assertions.assertEquals(2, DataType.SAMPLED_ENGIEERING.getIndicator());
+        Assertions.assertEquals(DataType.FULL_RATE, DataType.getDataType(0));
+        Assertions.assertEquals(DataType.NORMAL_POINT, DataType.getDataType(1));
+        Assertions.assertEquals(DataType.SAMPLED_ENGIEERING, DataType.getDataType(2));
+        try {
+            DataType.getDataType(3);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(
+                    OrekitMessages.INVALID_DATETYPE_INDICATOR_IN_CRD_FILE,
+                    oe.getSpecifier());
+        }
 
     }
 

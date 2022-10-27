@@ -567,7 +567,9 @@ public class CRDHeader extends ILRSHeader {
 
     }
 
-    /** Data type for SLR data. */
+    /** Data type for CRD data.
+     * @since 11.3
+     */
     public enum DataType {
 
         /** Full rate. */
@@ -615,7 +617,7 @@ public class CRDHeader extends ILRSHeader {
             final DataType type = CODES_MAP.get(id);
             if (type == null) {
                // Invalid value. An exception is thrown
-                throw new OrekitException(OrekitMessages.INVALID_RANGE_INDICATOR_IN_CRD_FILE, id);
+                throw new OrekitException(OrekitMessages.INVALID_DATETYPE_INDICATOR_IN_CRD_FILE, id);
             }
             return type;
         }
