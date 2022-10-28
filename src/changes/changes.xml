@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.4" date="TBD" description="TBD">
+      <action dev="vincent" type="add" issue="981">
+        Added ability to consider LOFType as pseudo-inertial frame.
+      </action>
 	</release>
     <release version="11.3" date="2022-10-25"
              description="Version 11.3 is a minor release of Orekit.

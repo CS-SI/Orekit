@@ -158,11 +158,11 @@ public class LocalOrbitalFrameTest {
 
         // When
         final FieldTransform<Decimal64> transformFromTNWToQSW =
-                LOFType.transformFromLOFInToLOFOut(field, LOFType.TNW, LOFType.QSW, date, pv);
+                LOFType.transformFromLOFInToLOFOut(LOFType.TNW, LOFType.QSW, date, pv);
         final FieldTransform<Decimal64> transformFromQSWToNTW =
-                LOFType.transformFromLOFInToLOFOut(field, LOFType.QSW, LOFType.NTW, date, pv);
+                LOFType.transformFromLOFInToLOFOut(LOFType.QSW, LOFType.NTW, date, pv);
         final FieldTransform<Decimal64> transformFromNTWToTNW =
-                LOFType.transformFromLOFInToLOFOut(field, LOFType.NTW, LOFType.TNW, date, pv);
+                LOFType.transformFromLOFInToLOFOut(LOFType.NTW, LOFType.TNW, date, pv);
         final FieldTransform<Decimal64> composedTransform = composeFieldTransform(date,
                                                                                   transformFromTNWToQSW,
                                                                                   transformFromQSWToNTW,
@@ -242,31 +242,74 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    @DisplayName("Tests all rotation methods")
+    @DisplayName("Test all rotation methods")
     void should_return_initial_value_after_multiple_rotations() {
         // Given
         final PVCoordinates pv = new PVCoordinates(new Vector3D(6378000 + 400000, 0, 0),
                                                    new Vector3D(0, 5422.8, 5422.8));
 
         // When
-        final Rotation rotationFromTNWToQSW         = LOFType.QSW.rotationFromLOFType(LOFType.TNW, pv);
-        final Rotation rotationFromQSWToLVLH        = LOFType.LVLH.rotationFromLOFType(LOFType.QSW, pv);
-        final Rotation rotationFromLVLHToLVLH_CCSDS = LOFType.LVLH_CCSDS.rotationFromLOFType(LOFType.LVLH, pv);
-        final Rotation rotationFromLVLH_CCSDSToVVLH = LOFType.VVLH.rotationFromLOFType(LOFType.LVLH_CCSDS, pv);
-        final Rotation rotationFromVVLHToVNC        = LOFType.VNC.rotationFromLOFType(LOFType.VVLH, pv);
-        final Rotation rotationFromVNCToNTW         = LOFType.NTW.rotationFromLOFType(LOFType.VNC, pv);
-        final Rotation rotationFromNTWToEQW         = LOFType.EQW.rotationFromLOFType(LOFType.NTW, pv);
-        final Rotation rotationFromEQWToTNW         = LOFType.TNW.rotationFromLOFType(LOFType.EQW, pv);
+        final Rotation rotationFromTNWToTNWInertial =
+                LOFType.TNW_INERTIAL.rotationFromLOFType(LOFType.TNW, pv);
+
+        final Rotation rotationFromTNWInertialToQSW =
+                LOFType.QSW.rotationFromLOFType(LOFType.TNW_INERTIAL, pv);
+
+        final Rotation rotationFromQSWToQSWInertial =
+                LOFType.QSW_INERTIAL.rotationFromLOFType(LOFType.QSW, pv);
+
+        final Rotation rotationFromQSWInertialToLVLH =
+                LOFType.LVLH.rotationFromLOFType(LOFType.QSW_INERTIAL, pv);
+
+        final Rotation rotationFromLVLHToLVLHInertial =
+                LOFType.LVLH_INERTIAL.rotationFromLOFType(LOFType.LVLH, pv);
+
+        final Rotation rotationFromLVLHInertialToLVLH_CCSDS =
+                LOFType.LVLH_CCSDS.rotationFromLOFType(LOFType.LVLH_INERTIAL, pv);
+
+        final Rotation rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOFType(LOFType.LVLH_CCSDS, pv);
+
+        final Rotation rotationFromLVLH_CCSDSInertialToVVLH =
+                LOFType.VVLH.rotationFromLOFType(LOFType.LVLH_CCSDS_INERTIAL, pv);
+
+        final Rotation rotationFromVVLHToVVLHInertial =
+                LOFType.VVLH_INERTIAL.rotationFromLOFType(LOFType.VVLH, pv);
+
+        final Rotation rotationFromVVLHInertialToVNC =
+                LOFType.VNC.rotationFromLOFType(LOFType.VVLH_INERTIAL, pv);
+
+        final Rotation rotationFromVNCToVNCInertial =
+                LOFType.VNC_INERTIAL.rotationFromLOFType(LOFType.VNC, pv);
+
+        final Rotation rotationFromVNCInertialToNTW =
+                LOFType.NTW.rotationFromLOFType(LOFType.VNC_INERTIAL, pv);
+
+        final Rotation rotationFromNTWToNTWInertial =
+                LOFType.NTW_INERTIAL.rotationFromLOFType(LOFType.NTW, pv);
+
+        final Rotation rotationFromNTWInertialToEQW =
+                LOFType.EQW.rotationFromLOFType(LOFType.NTW_INERTIAL, pv);
+
+        final Rotation rotationFromEQWToTNW =
+                LOFType.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, pv);
 
         final Rotation rotationFromTNWToTNW =
-                composeRotations(rotationFromTNWToQSW,
-                                 rotationFromQSWToLVLH,
-                                 rotationFromLVLHToLVLH_CCSDS,
-                                 rotationFromLVLH_CCSDSToVVLH,
-                                 rotationFromVVLHToVNC,
-                                 rotationFromVNCToNTW,
-                                 rotationFromNTWToEQW,
-                                 rotationFromEQWToTNW);
+                composeRotations(rotationFromTNWToTNWInertial,
+                        rotationFromTNWInertialToQSW,
+                        rotationFromQSWToQSWInertial,
+                        rotationFromQSWInertialToLVLH,
+                        rotationFromLVLHToLVLHInertial,
+                        rotationFromLVLHInertialToLVLH_CCSDS,
+                        rotationFromLVLH_CCSDSToLVLH_CCSDSInertial,
+                        rotationFromLVLH_CCSDSInertialToVVLH,
+                        rotationFromVVLHToVVLHInertial,
+                        rotationFromVVLHInertialToVNC,
+                        rotationFromVNCToVNCInertial,
+                        rotationFromVNCInertialToNTW,
+                        rotationFromNTWToNTWInertial,
+                        rotationFromNTWInertialToEQW,
+                        rotationFromEQWToTNW);
 
         final RealMatrix rotationMatrixFromTNWToTNW =
                 new BlockRealMatrix(rotationFromTNWToTNW.getMatrix());
@@ -279,7 +322,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    @DisplayName("Tests all rotation methods (field version)")
+    @DisplayName("Test all rotation methods (field version)")
     void should_return_initial_value_after_multiple_field_rotations() {
         // Given
         final Decimal64Field               field = Decimal64Field.getInstance();
@@ -292,31 +335,66 @@ public class LocalOrbitalFrameTest {
                                                              new Decimal64(5422.8)));
 
         // When
-        final FieldRotation<Decimal64> rotationFromTNWToQSW =
-                LOFType.QSW.rotationFromLOFType(field, LOFType.TNW, pv);
-        final FieldRotation<Decimal64> rotationFromQSWToLVLH =
-                LOFType.LVLH.rotationFromLOFType(field, LOFType.QSW, pv);
-        final FieldRotation<Decimal64> rotationFromLVLHToLVLH_CCSDS =
-                LOFType.LVLH_CCSDS.rotationFromLOFType(field, LOFType.LVLH, pv);
-        final FieldRotation<Decimal64> rotationFromLVLH_CCSDSToVVLH =
-                LOFType.VVLH.rotationFromLOFType(field, LOFType.LVLH_CCSDS, pv);
-        final FieldRotation<Decimal64> rotationFromVVLHToVNC =
-                LOFType.VNC.rotationFromLOFType(field, LOFType.VVLH, pv);
-        final FieldRotation<Decimal64> rotationFromVNCToNTW =
-                LOFType.NTW.rotationFromLOFType(field, LOFType.VNC, pv);
-        final FieldRotation<Decimal64> rotationFromNTWToEQW =
-                LOFType.EQW.rotationFromLOFType(field, LOFType.NTW, pv);
+        final FieldRotation<Decimal64> rotationFromTNWToTNWInertial =
+                LOFType.TNW_INERTIAL.rotationFromLOFType(field, LOFType.TNW, pv);
+
+        final FieldRotation<Decimal64> rotationFromTNWInertialToQSW =
+                LOFType.QSW.rotationFromLOFType(field, LOFType.TNW_INERTIAL, pv);
+
+        final FieldRotation<Decimal64> rotationFromQSWToQSWInertial =
+                LOFType.QSW_INERTIAL.rotationFromLOFType(field, LOFType.QSW, pv);
+
+        final FieldRotation<Decimal64> rotationFromQSWInertialToLVLH =
+                LOFType.LVLH.rotationFromLOFType(field, LOFType.QSW_INERTIAL, pv);
+
+        final FieldRotation<Decimal64> rotationFromLVLHToLVLHInertial =
+                LOFType.LVLH_INERTIAL.rotationFromLOFType(field, LOFType.LVLH, pv);
+
+        final FieldRotation<Decimal64> rotationFromLVLHInertialToLVLH_CCSDS =
+                LOFType.LVLH_CCSDS.rotationFromLOFType(field, LOFType.LVLH_INERTIAL, pv);
+
+        final FieldRotation<Decimal64> rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOFType(field, LOFType.LVLH_CCSDS, pv);
+
+        final FieldRotation<Decimal64> rotationFromLVLH_CCSDSInertialToVVLH =
+                LOFType.VVLH.rotationFromLOFType(field, LOFType.LVLH_CCSDS_INERTIAL, pv);
+
+        final FieldRotation<Decimal64> rotationFromVVLHToVVLHInertial =
+                LOFType.VVLH_INERTIAL.rotationFromLOFType(field, LOFType.VVLH, pv);
+
+        final FieldRotation<Decimal64> rotationFromVVLHInertialToVNC =
+                LOFType.VNC.rotationFromLOFType(field, LOFType.VVLH_INERTIAL, pv);
+
+        final FieldRotation<Decimal64> rotationFromVNCToVNCInertial =
+                LOFType.VNC_INERTIAL.rotationFromLOFType(field, LOFType.VNC, pv);
+
+        final FieldRotation<Decimal64> rotationFromVNCInertialToNTW =
+                LOFType.NTW.rotationFromLOFType(field, LOFType.VNC_INERTIAL, pv);
+
+        final FieldRotation<Decimal64> rotationFromNTWToNTWInertial =
+                LOFType.NTW_INERTIAL.rotationFromLOFType(field, LOFType.NTW, pv);
+
+        final FieldRotation<Decimal64> rotationFromNTWInertialToEQW =
+                LOFType.EQW.rotationFromLOFType(field, LOFType.NTW_INERTIAL, pv);
+
         final FieldRotation<Decimal64> rotationFromEQWToTNW =
-                LOFType.TNW.rotationFromLOFType(field, LOFType.EQW, pv);
+                                       LOFType.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, pv);
 
         final FieldRotation<Decimal64> rotationFromTNWToTNW =
-                composeFieldRotations(rotationFromTNWToQSW,
-                                      rotationFromQSWToLVLH,
-                                      rotationFromLVLHToLVLH_CCSDS,
-                                      rotationFromLVLH_CCSDSToVVLH,
-                                      rotationFromVVLHToVNC,
-                                      rotationFromVNCToNTW,
-                                      rotationFromNTWToEQW,
+                composeFieldRotations(rotationFromTNWToTNWInertial,
+                                      rotationFromTNWInertialToQSW,
+                                      rotationFromQSWToQSWInertial,
+                                      rotationFromQSWInertialToLVLH,
+                                      rotationFromLVLHToLVLHInertial,
+                                      rotationFromLVLHInertialToLVLH_CCSDS,
+                                      rotationFromLVLH_CCSDSToLVLH_CCSDSInertial,
+                                      rotationFromLVLH_CCSDSInertialToVVLH,
+                                      rotationFromVVLHToVVLHInertial,
+                                      rotationFromVVLHInertialToVNC,
+                                      rotationFromVNCToVNCInertial,
+                                      rotationFromVNCInertialToNTW,
+                                      rotationFromNTWToNTWInertial,
+                                      rotationFromNTWInertialToEQW,
                                       rotationFromEQWToTNW);
 
         final FieldMatrix<Decimal64> rotationMatrixFromTNWToTNW =
@@ -326,6 +404,31 @@ public class LocalOrbitalFrameTest {
         final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
 
         validateFieldMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
+
+    }
+
+    @Test
+    @DisplayName("Test isQuasiInertialMethod")
+    void should_return_expected_boolean() {
+
+        // Local orbital frame considered as pseudo-inertial
+        Assertions.assertTrue(LOFType.TNW_INERTIAL.isQuasiInertial());
+        Assertions.assertTrue(LOFType.NTW_INERTIAL.isQuasiInertial());
+        Assertions.assertTrue(LOFType.QSW_INERTIAL.isQuasiInertial());
+        Assertions.assertTrue(LOFType.VNC_INERTIAL.isQuasiInertial());
+        Assertions.assertTrue(LOFType.LVLH_INERTIAL.isQuasiInertial());
+        Assertions.assertTrue(LOFType.LVLH_CCSDS_INERTIAL.isQuasiInertial());
+        Assertions.assertTrue(LOFType.EQW.isQuasiInertial());
+        Assertions.assertTrue(LOFType.VVLH_INERTIAL.isQuasiInertial());
+
+        // Local orbital frame considered as non pseudo-inertial
+        Assertions.assertFalse(LOFType.TNW.isQuasiInertial());
+        Assertions.assertFalse(LOFType.NTW.isQuasiInertial());
+        Assertions.assertFalse(LOFType.QSW.isQuasiInertial());
+        Assertions.assertFalse(LOFType.VNC.isQuasiInertial());
+        Assertions.assertFalse(LOFType.LVLH.isQuasiInertial());
+        Assertions.assertFalse(LOFType.LVLH_CCSDS.isQuasiInertial());
+        Assertions.assertFalse(LOFType.VVLH.isQuasiInertial());
 
     }
 

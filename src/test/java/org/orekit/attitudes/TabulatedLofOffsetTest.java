@@ -110,7 +110,7 @@ public class TabulatedLofOffsetTest {
                                                                                                Vector3D.ZERO)),
                                                2, AngularDerivativesFilter.USE_R);
                 Rotation rebuilt = tabulated.getAttitude(orbit, orbit.getDate(), orbit.getFrame()).getRotation();
-                Assertions.assertEquals(0.0, Rotation.distance(offsetAtt, rebuilt), 1.2e-15);
+                Assertions.assertEquals(0.0, Rotation.distance(offsetAtt, rebuilt), 1.48e-15);
                 Assertions.assertEquals(3, tabulated.getTable().size());
             }
         }
