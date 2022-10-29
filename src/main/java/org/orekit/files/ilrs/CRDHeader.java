@@ -617,7 +617,7 @@ public class CRDHeader extends ILRSHeader {
             final DataType type = CODES_MAP.get(id);
             if (type == null) {
                // Invalid value. An exception is thrown
-                throw new OrekitException(OrekitMessages.INVALID_DATETYPE_INDICATOR_IN_CRD_FILE, id);
+                throw new RuntimeException(String.format("Invalid data type indicator {0} in CRD file header", id));
             }
             return type;
         }

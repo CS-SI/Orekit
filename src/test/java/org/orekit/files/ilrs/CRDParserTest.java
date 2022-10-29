@@ -1251,10 +1251,7 @@ public class CRDParserTest {
         try {
             DataType.getDataType(3);
             Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(
-                    OrekitMessages.INVALID_DATETYPE_INDICATOR_IN_CRD_FILE,
-                    oe.getSpecifier());
+        } catch (RuntimeException oe) {
         }
 
     }
