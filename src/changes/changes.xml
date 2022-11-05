@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.4" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="931">
+        Added Zeis model for DSST J2-squared second order terms.
+      </action>
       <action dev="vincent" type="add" issue="981">
         Added ability to consider LOFType as pseudo-inertial frame.
       </action>
