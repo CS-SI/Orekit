@@ -17,18 +17,24 @@
 package org.orekit.files.ccsds.utils.parsing;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzerSelector;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.files.ccsds.utils.lexical.MessageVersionXmlTokenBuilder;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 
 /** Parser for CCSDS messages.
@@ -47,6 +53,11 @@ import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
  */
 public abstract class AbstractMessageParser<T> implements MessageParser<T> {
 
+    /** Comment key.
+     * @since 12.0
+     */
+    private static final String COMMENT = "COMMENT";
+
     /** Safety limit for loop over processing states. */
     private static final int MAX_LOOP = 100;
 
@@ -55,6 +66,9 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
 
     /** Key for format version. */
     private final String formatVersionKey;
+
+    /** Filters for parse tokens. */
+    private final List<Function<ParseToken, List<ParseToken>>> filters;
 
     /** Anticipated next processing state. */
     private ProcessingState next;
@@ -78,6 +92,7 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
     protected AbstractMessageParser(final String root, final String formatVersionKey) {
         this.root             = root;
         this.formatVersionKey = formatVersionKey;
+        this.filters          = new ArrayList<>();
         this.current          = null;
         setFallback(new ErrorState());
     }
@@ -134,6 +149,12 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
 
     /** {@inheritDoc} */
     @Override
+    public void addFilter(final Function<ParseToken, List<ParseToken>> filter) {
+        filters.add(filter);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public T parseMessage(final DataSource source) {
         try {
             return LexicalAnalyzerSelector.select(source).accept(this);
@@ -175,13 +196,47 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
     @Override
     public void process(final ParseToken token) {
 
-        // loop over the various states until one really processes the token
-        for (int i = 0; i < MAX_LOOP; ++i) {
-            if (current.processToken(token)) {
-                return;
+        // loop over the filters
+        List<ParseToken> filtered = Collections.singletonList(token);
+        for (Function<ParseToken, List<ParseToken>> filter : filters) {
+            final ArrayList<ParseToken> newFiltered = new ArrayList<>();
+            for (final ParseToken original : filtered) {
+                newFiltered.addAll(filter.apply(original));
             }
-            current = next;
-            next    = fallback;
+            filtered = newFiltered;
+        }
+        if (filtered.isEmpty()) {
+            return;
+        }
+
+        int remaining = filtered.size();
+        for (final ParseToken filteredToken : filtered) {
+
+            if (filteredToken.getType() == TokenType.ENTRY &&
+                !COMMENT.equals(filteredToken.getName()) &&
+                filteredToken.getRawContent().isEmpty()) {
+                // value is empty, which is forbidden by CCSDS standards
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, filteredToken.getName());
+            }
+
+            // loop over the various states until one really processes the token
+            for (int i = 0; i < MAX_LOOP; ++i) {
+                if (current.processToken(filteredToken)) {
+                    // filtered token was properly processed
+                    if (--remaining == 0) {
+                        // we have processed all filtered tokens
+                        return;
+                    } else {
+                        // we need to continue processing the remaining filtered tokens
+                        break;
+                    }
+                } else {
+                    // filtered token was not processed by current processing state, switch to next one
+                    current = next;
+                    next    = fallback;
+                }
+            }
+
         }
 
         // this should never happen
