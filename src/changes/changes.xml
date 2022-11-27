@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="11.4" date="TBD" description="TBD">
+    <release version="12.0" date="TBD" description="TBD">
       <action dev="bryan" type="add" issue="931">
         Added Zeis model for DSST J2-squared second order terms.
       </action>
