@@ -385,6 +385,15 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = found {0} epochs in file {1}, expected {2}
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = unexpected end of sp3 file (after line {0})
 
+# STK coordinate system "{0}" is invalid or not yet supported
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = STK coordinate system "{0}" is invalid or not yet supported
+
+# STK coordinate system "{0}" has not been mapped to an Orekit frame
+STK_UNMAPPED_COORDINATE_SYSTEM = STK coordinate system "{0}" has not been mapped to an Orekit frame
+
+# unexpected end of STK file (after line {0})
+STK_UNEXPECTED_END_OF_FILE = unexpected end of STK file (after line {0})
+
 # unsupported clock file version {0}
 CLOCK_FILE_UNSUPPORTED_VERSION = unsupported clock file version {0}
 
