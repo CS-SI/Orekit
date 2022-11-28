@@ -227,7 +227,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
 
         // Convert to current orbit type and position angle
         final StateCovariance inertialOrbitalProcessNoiseCov =
-                        inertialCartesianProcessNoiseCov.changeCovarianceType(current.getOrbit(), //new CartesianOrbit(current.getOrbit()),
+                        inertialCartesianProcessNoiseCov.changeCovarianceType(current.getOrbit(),
                                                                               current.getOrbit().getType(), positionAngle);
         // Return inertial orbital covariance matrix
         return inertialOrbitalProcessNoiseCov.getMatrix();
