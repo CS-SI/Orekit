@@ -22,7 +22,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.propagation.StateCovariance;
 
 /** Provider for a temporal evolution of the process noise matrix.
  * All parameters (orbital or propagation) are time dependent and provided as {@link UnivariateFunction}.
@@ -217,26 +217,20 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         // Form the diagonal matrix in LOF frame and Cartesian formalism
         final RealMatrix lofCartesianProcessNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(lofOrbitalProcessNoiseValues);
 
-        // Get the Jacobian from LOF to Inertial
-        final double[][] dLofdInertial = new double[6][6];
-        lofType.transformFromInertial(current.getDate(),
-                                      current.getPVCoordinates()).getInverse().getJacobian(CartesianDerivativesFilter.USE_PV,
-                                                                                           dLofdInertial);
-        final RealMatrix jacLofToInertial = MatrixUtils.createRealMatrix(dLofdInertial);
+        // Create state covariance object in LOF
+        final StateCovariance lofCartesianProcessNoiseCov =
+                        new StateCovariance(lofCartesianProcessNoiseMatrix, current.getDate(), lofType);
 
-        // Jacobian of orbit parameters with respect to Cartesian parameters
-        final double[][] dYdC = new double[6][6];
-        current.getOrbit().getJacobianWrtCartesian(positionAngle, dYdC);
-        final RealMatrix jacOrbitWrtCartesian = MatrixUtils.createRealMatrix(dYdC);
+        // Convert to Cartesian in orbital frame
+        final StateCovariance inertialCartesianProcessNoiseCov =
+                        lofCartesianProcessNoiseCov.changeCovarianceFrame(current.getOrbit(), current.getFrame());
 
-        // Complete Jacobian of the transformation
-        final RealMatrix jacobian = jacOrbitWrtCartesian.multiply(jacLofToInertial);
-
-        // Return the orbital process noise matrix in inertial frame and proper orbit type
-        final RealMatrix inertialOrbitalProcessNoiseMatrix = jacobian.
-                         multiply(lofCartesianProcessNoiseMatrix).
-                         multiplyTransposed(jacobian);
-        return inertialOrbitalProcessNoiseMatrix;
+        // Convert to current orbit type and position angle
+        final StateCovariance inertialOrbitalProcessNoiseCov =
+                        inertialCartesianProcessNoiseCov.changeCovarianceType(current.getOrbit(), //new CartesianOrbit(current.getOrbit()),
+                                                                              current.getOrbit().getType(), positionAngle);
+        // Return inertial orbital covariance matrix
+        return inertialOrbitalProcessNoiseCov.getMatrix();
     }
 
     /** Get the process noise for the propagation parameters.

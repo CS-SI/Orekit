@@ -614,7 +614,7 @@ public class UnivariateprocessNoiseTest {
         final LOFType lofType  = LOFType.LVLH_CCSDS;
 
         // Relative tolerance
-        final double relativeTolerance = 1.10e-6;
+        final double relativeTolerance = 1.13e-6;
 
         // Do the test
         doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngle, lofType,
@@ -664,7 +664,7 @@ public class UnivariateprocessNoiseTest {
         final LOFType lofType  = LOFType.NTW;
 
         // Relative tolerance
-        final double relativeTolerance = 6.01e-11;
+        final double relativeTolerance = 1.43e-10;
 
         // Do the test
         doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngle, lofType,
