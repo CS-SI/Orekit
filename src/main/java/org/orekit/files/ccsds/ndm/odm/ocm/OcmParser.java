@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
@@ -130,10 +131,14 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param mu gravitational coefficient
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public OcmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final double mu, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu, parsedUnitsBehavior);
+                     final double mu, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null,
+              mu, parsedUnitsBehavior, filters);
     }
 
     /** {@inheritDoc} */

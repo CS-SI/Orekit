@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
@@ -122,10 +123,13 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
+                     final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
         this.doRelativeMetadata = true;
         this.isDatafinished = false;
     }

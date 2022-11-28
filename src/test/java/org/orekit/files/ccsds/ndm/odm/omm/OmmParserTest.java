@@ -337,18 +337,23 @@ public class OmmParserTest {
         }
 
         final String replacement = "replacement-object-id";
-        parser.addFilter(token -> {
-            if ("OBJECT_ID".equals(token.getName()) &&
-                (token.getRawContent() == null || token.getRawContent().isEmpty())) {
-                // replace null/empty entries with "unknown"
-                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
-                                                                replacement, token.getUnits(),
-                                                                token.getLineNumber(), token.getFileName()));
-            } else {
-                return Collections.singletonList(token);
-            }
-        });
-        final Omm omm = parser.parseMessage(source);
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("OBJECT_ID".equals(token.getName()) &&
+                                            (token.getRawContent() == null || token.getRawContent().isEmpty())) {
+                                // replace null/empty entries with "unknown"
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                replacement, token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
         // note that object id is always converted to uppercase during parsing
         Assertions.assertEquals(replacement.toUpperCase(), omm.getMetadata().getObjectID());
 
@@ -359,19 +364,19 @@ public class OmmParserTest {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
-        final OmmParser parser = new ParserBuilder().
+        final Omm omm = new ParserBuilder().
                         withMu(Constants.EIGEN5C_EARTH_MU).
                         withMissionReferenceDate(missionReferenceDate).
                         withDefaultMass(1000.0).
-                        buildOmmParser();
-        parser.addFilter(token -> {
-            if (token.getName().startsWith("USER_DEFINED")) {
-                return Collections.emptyList();
-            } else {
-                return Collections.singletonList(token);
-            }
-        });
-        final Omm omm = parser.parseMessage(source);
+                        withFilter(token -> {
+                            if (token.getName().startsWith("USER_DEFINED")) {
+                                return Collections.emptyList();
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
         Assertions.assertNull(omm.getData().getUserDefinedBlock());
     }
 
@@ -380,34 +385,34 @@ public class OmmParserTest {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
-        final OmmParser parser = new ParserBuilder().
+        final String myMessageId = "custom-message-id";
+        final Omm omm = new ParserBuilder().
                         withMu(Constants.EIGEN5C_EARTH_MU).
                         withMissionReferenceDate(missionReferenceDate).
                         withDefaultMass(1000.0).
-                        buildOmmParser();
-        final String myMessageId = "custom-message-id";
-        parser.addFilter(token -> {
-            if ("CCSDS_OMM_VERS".equals(token.getName())) {
-                // enforce ODM V3
-                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
-                                                                "3.0", token.getUnits(),
-                                                                token.getLineNumber(), token.getFileName()));
-            } else {
-                return Collections.singletonList(token);
-            }
-        });
-        parser.addFilter(token -> {
-            if ("ORIGINATOR".equals(token.getName())) {
-                // add generated message ID after ORIGINATOR entry
-                return Arrays.asList(token,
-                                     new ParseToken(TokenType.ENTRY, "MESSAGE_ID",
-                                                    myMessageId, null,
-                                                    -1, token.getFileName()));
-            } else {
-                return Collections.singletonList(token);
-            }
-        });
-        final Omm omm = parser.parseMessage(source);
+                        withFilter(token -> {
+                            if ("CCSDS_OMM_VERS".equals(token.getName())) {
+                                // enforce ODM V3
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                "3.0", token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        withFilter(token -> {
+                            if ("ORIGINATOR".equals(token.getName())) {
+                                // add generated message ID after ORIGINATOR entry
+                                return Arrays.asList(token,
+                                                     new ParseToken(TokenType.ENTRY, "MESSAGE_ID",
+                                                                    myMessageId, null,
+                                                                    -1, token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
         Assertions.assertEquals(3.0, omm.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals("NOAA/USA", omm.getHeader().getOriginator());
         Assertions.assertEquals(myMessageId.toUpperCase(), omm.getHeader().getMessageId());

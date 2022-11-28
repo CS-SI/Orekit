@@ -68,7 +68,7 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
     private final String formatVersionKey;
 
     /** Filters for parse tokens. */
-    private final List<Function<ParseToken, List<ParseToken>>> filters;
+    private final Function<ParseToken, List<ParseToken>>[] filters;
 
     /** Anticipated next processing state. */
     private ProcessingState next;
@@ -88,11 +88,14 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
     /** Simple constructor.
      * @param root root element for XML files
      * @param formatVersionKey key for format version
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
-    protected AbstractMessageParser(final String root, final String formatVersionKey) {
+    protected AbstractMessageParser(final String root, final String formatVersionKey,
+                                    final Function<ParseToken, List<ParseToken>>[] filters) {
         this.root             = root;
         this.formatVersionKey = formatVersionKey;
-        this.filters          = new ArrayList<>();
+        this.filters          = filters.clone();
         this.current          = null;
         setFallback(new ErrorState());
     }
@@ -145,12 +148,6 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
      */
     protected FileFormat getFileFormat() {
         return format;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void addFilter(final Function<ParseToken, List<ParseToken>> filter) {
-        filters.add(filter);
     }
 
     /** {@inheritDoc} */
