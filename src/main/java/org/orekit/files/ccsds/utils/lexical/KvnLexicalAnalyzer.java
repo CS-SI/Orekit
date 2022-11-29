@@ -86,7 +86,7 @@ public class KvnLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Regular expression matching non-comment entry with optional units.
      * <p>
-     * Note than since 2.0, we allow empty values at lexical analysis level and detect them at parsing level
+     * Note than since 12.0, we allow empty values at lexical analysis level and detect them at parsing level
      * </p>
      */
     private static final Pattern NON_COMMENT_ENTRY = Pattern.compile(LINE_START + NON_COMMENT_KEY + OPTIONAL_VALUE + UNITS + LINE_END);

@@ -344,7 +344,7 @@ public class OmmParserTest {
                         withFilter(token -> {
                             if ("OBJECT_ID".equals(token.getName()) &&
                                             (token.getRawContent() == null || token.getRawContent().isEmpty())) {
-                                // replace null/empty entries with "unknown"
+                                // replace null/empty entries with specified value
                                 return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
                                                                                 replacement, token.getUnits(),
                                                                                 token.getLineNumber(), token.getFileName()));
@@ -357,6 +357,47 @@ public class OmmParserTest {
         // note that object id is always converted to uppercase during parsing
         Assertions.assertEquals(replacement.toUpperCase(), omm.getMetadata().getObjectID());
 
+    }
+
+    @Test
+    public void testEmptyObjectIDXml() throws URISyntaxException {
+        // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
+        String name = "/ccsds/odm/omm/OMM-empty-object-id.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OmmParser parser = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        buildOmmParser();
+        try {
+            parser.parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            oe.printStackTrace();
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals("OBJECT_ID", oe.getParts()[0]);
+        }
+
+        final String replacement = "replacement-object-id";
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("OBJECT_ID".equals(token.getName()) &&
+                                (token.getRawContent() == null || token.getRawContent().isEmpty())) {
+                                // replace null/empty entries with specified value
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                replacement, token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        // note that object id is always converted to uppercase during parsing
+        Assertions.assertEquals(replacement.toUpperCase(), omm.getMetadata().getObjectID());
     }
 
     @Test

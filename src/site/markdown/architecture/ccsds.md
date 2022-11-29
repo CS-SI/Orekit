@@ -41,7 +41,7 @@ one segment whereas `Oem` may contain several segments).
 There are as many sub-packages as there are CCSDS message types, with
 intermediate sub-packages for each officially published recommendation:
 `org.orekit.files.ccsds.ndm.adm.apm`, `org.orekit.files.ccsds.ndm.adm.aem`,
-`org.orekit.files.ccsds.ndm.cdm.`, `org.orekit.files.ccsds.ndm.odm.opm`,
+`org.orekit.files.ccsds.ndm.cdm`, `org.orekit.files.ccsds.ndm.odm.opm`,
 `org.orekit.files.ccsds.ndm.odm.oem`, `org.orekit.files.ccsds.ndm.odm.omm`,
 `org.orekit.files.ccsds.ndm.odm.ocm`, and `org.orekit.files.ccsds.ndm.tdm`.
 Each contain the logical structures
@@ -162,7 +162,7 @@ the parsers. There are several use cases for this feature.
       the development of this feature) is OMM files in XML format that had an empty `OBJECT_ID`,
       which is forbidden by CCSDS standard. These non compliant messages could be fixed by
       setting a filter that recognizes `OBJECT_ID` entries with empty value and replace them
-      with a value set to `unknown' before passing the changed token back to the parser
+      with a value set to `unknown` before passing the changed token back to the parser
    2) remove unwanted data, for example removing all user-defined data is done by setting
       a filter that returns an empty list of tokens when presented with a user-defined entry
    3) add data not originally present in the file. For example one could add generated ODM

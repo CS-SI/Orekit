@@ -211,7 +211,7 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
 
             if (filteredToken.getType() == TokenType.ENTRY &&
                 !COMMENT.equals(filteredToken.getName()) &&
-                filteredToken.getRawContent().isEmpty()) {
+                (filteredToken.getRawContent() == null || filteredToken.getRawContent().isEmpty())) {
                 // value is empty, which is forbidden by CCSDS standards
                 throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, filteredToken.getName());
             }
