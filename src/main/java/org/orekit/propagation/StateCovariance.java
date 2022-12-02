@@ -197,13 +197,18 @@ public class StateCovariance implements TimeStamped {
      * The covariance orbit type <b>cannot</b> be changed if the covariance
      * matrix is expressed in a {@link LOFType local orbital frame} or a
      * non-pseudo inertial frame.
-     * </p>
+     * <p>
+     * As this type change uses the jacobian matrix of the transformation, it introduces a linear approximation.
+     * Hence, the current covariance matrix <b>will not exactly match</b> the new linearized case and the
+     * distribution will not follow a generalized Gaussian distribution anymore.
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param outOrbitType target orbit type of the state covariance matrix
      * @param outAngleType target position angle type of the state covariance matrix
      * @return a new covariance state, expressed in the target orbit type with the target position angle
      * @see #changeCovarianceFrame(Orbit, Frame)
+     * @see <a href="https://www.semanticscholar.org/paper/Covariance-Transformations-for-Satellite-Flight-*-Vallado/f9118ca19a00eab2841c06789cca2b269be461d4">
+     *     Vallado, D. A. (2004). Covariance transformations for satellite flight dynamics operations.</a>
      */
     public StateCovariance changeCovarianceType(final Orbit orbit, final OrbitType outOrbitType,
                                                 final PositionAngle outAngleType) {
@@ -229,10 +234,15 @@ public class StateCovariance implements TimeStamped {
 
     /**
      * Get the covariance in a given local orbital frame.
+     * <p>
+     * Unlike {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle) changeCovarianceType},
+     * changing the covariance frame is actually a linear process so no approximation is introduced.
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param lofOut output local orbital frame
      * @return a new covariance state, expressed in the output local orbital frame
+     * @see <a href="https://www.semanticscholar.org/paper/Covariance-Transformations-for-Satellite-Flight-*-Vallado/f9118ca19a00eab2841c06789cca2b269be461d4">
+     *     Vallado, D. A. (2004). Covariance transformations for satellite flight dynamics operations.</a>
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final LOFType lofOut) {
 
@@ -253,10 +263,15 @@ public class StateCovariance implements TimeStamped {
 
     /**
      * Get the covariance in the output frame.
+     * <p>
+     * Unlike {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle) changeCovarianceType},
+     * changing the covariance frame is actually a linear process so no approximation is introduced.
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param frameOut output frame
      * @return a new covariance state, expressed in the output frame
+     * @see <a href="https://www.semanticscholar.org/paper/Covariance-Transformations-for-Satellite-Flight-*-Vallado/f9118ca19a00eab2841c06789cca2b269be461d4">
+     *     Vallado, D. A. (2004). Covariance transformations for satellite flight dynamics operations.</a>
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final Frame frameOut) {
 
