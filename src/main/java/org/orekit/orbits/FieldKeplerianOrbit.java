@@ -622,10 +622,10 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param <T> type of the field elements
      * @return v the true anomaly
      * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#ellipticEccentricToMean(CalculusFieldElement, CalculusFieldElement)}.
+     * {@link FieldKeplerianAnomalyUtility#ellipticEccentricToTrue(CalculusFieldElement, CalculusFieldElement)}.
      */
     public static <T extends CalculusFieldElement<T>> T ellipticEccentricToTrue(final T E, final T e) {
-        return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
+        return FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, E);
     }
 
     /** Computes the elliptic eccentric anomaly from the true anomaly.
