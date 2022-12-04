@@ -116,7 +116,7 @@ public class OrbitDetermination extends CommentsContainer {
 
     /** Simple constructor.
      */
-    OrbitDetermination() {
+    public OrbitDetermination() {
         solveStates        = Collections.emptyList();
         considerParameters = Collections.emptyList();
         sensors            = Collections.emptyList();

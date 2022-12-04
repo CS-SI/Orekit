@@ -99,7 +99,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * @param epochT0 T0 epoch from file metadata
      * @param dataContext data context
      */
-    TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
+    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         trajBasis           = "PREDICTED";

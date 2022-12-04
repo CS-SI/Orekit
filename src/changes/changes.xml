@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.4" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="992">
+        Make several OCM sub-components constructors public to allow building an OCM from scratch.
+      </action>
       <action dev="bryan" type="add" issue="931">
         Added Zeis model for DSST J2-squared second order terms.
       </action>

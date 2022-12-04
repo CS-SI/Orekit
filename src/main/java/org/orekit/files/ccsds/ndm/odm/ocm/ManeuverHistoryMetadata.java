@@ -131,7 +131,7 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      */
-    ManeuverHistoryMetadata(final AbsoluteDate epochT0) {
+    public ManeuverHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         manBasis            = ManBasis.PLANNED;
