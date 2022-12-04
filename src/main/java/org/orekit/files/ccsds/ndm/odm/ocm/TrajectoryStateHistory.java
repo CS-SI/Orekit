@@ -49,9 +49,9 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
      * @param states orbital states
      * @param mu gravitational parameter in m³/s²
      */
-    TrajectoryStateHistory(final TrajectoryStateHistoryMetadata metadata,
-                      final List<TrajectoryState> states,
-                      final double mu) {
+    public TrajectoryStateHistory(final TrajectoryStateHistoryMetadata metadata,
+                                  final List<TrajectoryState> states,
+                                  final double mu) {
         this.metadata = metadata;
         this.states   = states;
         this.mu       = mu;
