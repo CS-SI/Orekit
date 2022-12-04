@@ -111,7 +111,7 @@ public class Ocm extends NdmConstituent<Header, Segment<OcmMetadata, OcmData>>
         } else {
             name = UNKNOWN_OBJECT;
         }
-        final List<TrajectoryStateHistory> histories = getSegments().get(0).getData().getOTrajectoryBlocks();
+        final List<TrajectoryStateHistory> histories = getSegments().get(0).getData().getTrajectoryBlocks();
         final OcmSatelliteEphemeris        ose       = new OcmSatelliteEphemeris(name, mu, histories);
         return Collections.singletonMap(name, ose);
     }

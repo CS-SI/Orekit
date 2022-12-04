@@ -241,7 +241,7 @@ public class OcmParserTest {
                                   parseMessage(source);
         Assertions.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
         Assertions.assertEquals("728b0d2a-01fc-4d0e-9f0a-370c6930ea84", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
-        final TrajectoryStateHistory h = ocm.getData().getOTrajectoryBlocks().get(0);
+        final TrajectoryStateHistory h = ocm.getData().getTrajectoryBlocks().get(0);
         Assertions.assertEquals("ZZRF", h.getMetadata().getTrajReferenceFrame().getName());
         List<TimeStampedPVCoordinates> l = h.getCoordinates();
         Assertions.assertEquals( 3.0e6, l.get(0).getPosition().getX(), 1.0e-9);
@@ -251,7 +251,7 @@ public class OcmParserTest {
         Assertions.assertEquals(-2.0e3, l.get(0).getVelocity().getY(), 1.0e-12);
         Assertions.assertEquals(-3.0e3, l.get(0).getVelocity().getZ(), 1.0e-1);
         try {
-            ocm.getData().getOTrajectoryBlocks().get(0).getFrame();
+            ocm.getData().getTrajectoryBlocks().get(0).getFrame();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
@@ -269,7 +269,7 @@ public class OcmParserTest {
                                   parseMessage(source);
         Assertions.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
         Assertions.assertEquals("b77d785c-f7a8-4a80-a9b1-a540eac19d7a", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
-        Assertions.assertNull(ocm.getData().getOTrajectoryBlocks());
+        Assertions.assertNull(ocm.getData().getTrajectoryBlocks());
         Assertions.assertEquals(1, ocm.getData().getUserDefinedBlock().getComments().size());
         Assertions.assertEquals("some user data", ocm.getData().getUserDefinedBlock().getComments().get(0));
         Assertions.assertEquals(1, ocm.getData().getUserDefinedBlock().getParameters().size());
@@ -305,8 +305,8 @@ public class OcmParserTest {
         Assertions.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
 
         // trajectory data
-        Assertions.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
-        TrajectoryStateHistory history = file.getData().getOTrajectoryBlocks().get(0);
+        Assertions.assertEquals(1, file.getData().getTrajectoryBlocks().size());
+        TrajectoryStateHistory history = file.getData().getTrajectoryBlocks().get(0);
         Assertions.assertEquals("intervening data records omitted between DT=20.0 and DT=500.0",
                             history.getMetadata().getComments().get(0));
         Assertions.assertEquals("OSCULATING", history.getMetadata().getOrbAveraging());
@@ -404,8 +404,8 @@ public class OcmParserTest {
         Assertions.assertEquals(0.357,                                 file.getMetadata().getUt1mutcT0(),       1.0e-15);
 
         // check trajectory data
-        Assertions.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
-        final TrajectoryStateHistory orb = file.getData().getOTrajectoryBlocks().get(0);
+        Assertions.assertEquals(1, file.getData().getTrajectoryBlocks().size());
+        final TrajectoryStateHistory orb = file.getData().getTrajectoryBlocks().get(0);
         Assertions.assertEquals(2, orb.getMetadata().getComments().size());
         Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", orb.getMetadata().getComments().get(0));
         Assertions.assertEquals("THIS IS MY SECOND COMMENT LINE",     orb.getMetadata().getComments().get(1));
@@ -560,8 +560,8 @@ public class OcmParserTest {
         Assertions.assertEquals(0.357,                                 file.getMetadata().getUt1mutcT0(), 1.0e-15);
 
         // check trajectory data
-        Assertions.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
-        final TrajectoryStateHistory orb = file.getData().getOTrajectoryBlocks().get(0);
+        Assertions.assertEquals(1, file.getData().getTrajectoryBlocks().size());
+        final TrajectoryStateHistory orb = file.getData().getTrajectoryBlocks().get(0);
         Assertions.assertEquals(2, orb.getMetadata().getComments().size());
         Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", orb.getMetadata().getComments().get(0));
         Assertions.assertEquals("THIS IS MY SECOND COMMENT LINE",     orb.getMetadata().getComments().get(1));
@@ -658,8 +658,8 @@ public class OcmParserTest {
         Assertions.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
 
         // check trajectory data
-        Assertions.assertEquals(1, file.getData().getOTrajectoryBlocks().size());
-        final TrajectoryStateHistory orb = file.getData().getOTrajectoryBlocks().get(0);
+        Assertions.assertEquals(1, file.getData().getTrajectoryBlocks().size());
+        final TrajectoryStateHistory orb = file.getData().getTrajectoryBlocks().get(0);
         Assertions.assertEquals(2, orb.getMetadata().getComments().size());
         Assertions.assertEquals("ORBIT EPHEMERIS INCORPORATING DEPLOYMENTS AND MANEUVERS (BELOW)", orb.getMetadata().getComments().get(0));
         Assertions.assertEquals("intervening data records omitted after DT=20.0",     orb.getMetadata().getComments().get(1));
@@ -947,8 +947,8 @@ public class OcmParserTest {
         Assertions.assertEquals("JPL DE 430",                          file.getMetadata().getCelestialSource());
 
         // check trajectory data
-        Assertions.assertEquals(3, file.getData().getOTrajectoryBlocks().size());
-        TrajectoryStateHistory osh0 = file.getData().getOTrajectoryBlocks().get(0);
+        Assertions.assertEquals(3, file.getData().getTrajectoryBlocks().size());
+        TrajectoryStateHistory osh0 = file.getData().getTrajectoryBlocks().get(0);
         Assertions.assertEquals("this is number 1 ORB comment", osh0.getMetadata().getComments().get(0));
         Assertions.assertEquals("orbit 1",       osh0.getMetadata().getTrajID());
         Assertions.assertEquals("orbit 0",       osh0.getMetadata().getTrajPrevID());
@@ -983,7 +983,7 @@ public class OcmParserTest {
         Assertions.assertEquals( 3.0e3, osh0.getCoordinates().get(1).getVelocity().getY(), 1.0e-10);
         Assertions.assertEquals( 600.0, osh0.getCoordinates().get(2).getDate().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals(  -6.0, osh0.getCoordinates().get(2).getAcceleration().getZ(), 1.0e-10);
-        TrajectoryStateHistory osh1 = file.getData().getOTrajectoryBlocks().get(1);
+        TrajectoryStateHistory osh1 = file.getData().getTrajectoryBlocks().get(1);
         Assertions.assertEquals("this is number 2 ORB comment", osh1.getMetadata().getComments().get(0));
         Assertions.assertEquals("orbit 2",    osh1.getMetadata().getTrajID());
         Assertions.assertEquals("orbit 1",    osh1.getMetadata().getTrajPrevID());
@@ -996,7 +996,7 @@ public class OcmParserTest {
         Assertions.assertEquals(1800.0, osh1.getCoordinates().get(0).getDate().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals(2100.0, osh1.getCoordinates().get(1).getDate().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals(2400.0, osh1.getCoordinates().get(2).getDate().durationFrom(epoch), 1.0e-10);
-        TrajectoryStateHistory osh2 = file.getData().getOTrajectoryBlocks().get(2);
+        TrajectoryStateHistory osh2 = file.getData().getTrajectoryBlocks().get(2);
         Assertions.assertEquals("this is number 3 ORB comment", osh2.getMetadata().getComments().get(0));
         Assertions.assertEquals("orbit 3",    osh2.getMetadata().getTrajID());
         Assertions.assertEquals("orbit 2",    osh2.getMetadata().getTrajPrevID());

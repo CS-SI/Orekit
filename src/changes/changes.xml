@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.4" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="994">
+        Fixed typo in method name OcmData.getTrajectoryBlocks().
+      </action>
       <action dev="luc" type="fix" issue="992">
         Make several OCM sub-components constructors public to allow building an OCM from scratch.
       </action>
