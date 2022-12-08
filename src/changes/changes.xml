@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.4" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="997">
+        Fixed longitude crossing detection in stepless propagators.
+      </action>
       <action dev="luc" type="fix" issue="994">
         Fixed typo in method name OcmData.getTrajectoryBlocks().
       </action>

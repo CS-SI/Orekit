@@ -16,12 +16,16 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.NadirPointing;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -33,6 +37,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
@@ -140,6 +146,45 @@ public class LongitudeCrossingDetectorTest {
                                                earth.getBodyFrame(), null);
             Assertions.assertEquals(expectedLatitudes[i], FastMath.toDegrees(gp.getLatitude()),  1.0e-10);
             Assertions.assertEquals(-100.0,               FastMath.toDegrees(gp.getLongitude()), 1.2e-9);
+        }
+
+    }
+
+    @Test
+    public void testIssue997() {
+
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
+        TLE orekitTle = new TLE("1 25544U 98067A   22257.49623145  .00008872  00000-0  16209-3 0  9998",
+                                "2 25544  51.6424 254.1285 0002269 232.3655 233.3422 15.50204391359035");
+        AttitudeProvider attitudeProvider = new NadirPointing(FramesFactory.getTEME(), earth);
+        TLEPropagator sgp4 = TLEPropagator.selectExtrapolator(orekitTle, attitudeProvider, 466615.0);
+
+        final double startLon = FastMath.toRadians(0.0);
+        EventDetector lonEntryDetector = new LongitudeCrossingDetector(earth, startLon).
+                                         withHandler(new ContinueOnEvent<>());
+        final double endLon = FastMath.toRadians(10.0);
+        EventDetector lonExitDetector  = new LongitudeCrossingDetector(earth, endLon).
+                                         withHandler(new ContinueOnEvent<>());
+        EventsLogger logger= new EventsLogger();
+        sgp4.addEventDetector(logger.monitorDetector(lonEntryDetector));
+        sgp4.addEventDetector(logger.monitorDetector(lonExitDetector));
+
+        sgp4.propagate(new AbsoluteDate("2022-09-14T21:54:34.39728Z", TimeScalesFactory.getUTC()));
+        List<EventsLogger.LoggedEvent> loggedEvents = logger.getLoggedEvents();
+        Assertions.assertEquals(12, loggedEvents.size());
+        for (int i = 0; i < loggedEvents.size(); ++i) {
+            final SpacecraftState s  = loggedEvents.get(i).getState();
+            final GeodeticPoint   gp = earth.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+            if (i % 2 == 0) {
+                Assertions.assertSame(lonEntryDetector, loggedEvents.get(i).getEventDetector());
+                Assertions.assertEquals(startLon, gp.getLongitude(), 1.0e-9);
+            } else {
+                Assertions.assertSame(lonExitDetector, loggedEvents.get(i).getEventDetector());
+                Assertions.assertEquals(endLon, gp.getLongitude(), 1.0e-9);
+            }
         }
 
     }
