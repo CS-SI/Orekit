@@ -16,13 +16,12 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
@@ -50,14 +49,10 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class EclipseDetector extends AbstractDetector<EclipseDetector> {
 
-    /** Occulting body. */
-    private final OneAxisEllipsoid occulting;
-
-    /** Occulted body. */
-    private final PVCoordinatesProvider occulted;
-
-    /** Occulted body radius (m). */
-    private final double occultedRadius;
+    /** Occultation engine.
+     * @since 12.0
+     */
+    private final OccultationEngine occultationEngine;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
     private final boolean totalEclipse;
@@ -69,13 +64,24 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occulted the body to be occulted
      * @param occultedRadius the radius of the body to be occulted (m)
      * @param occulting the occulting body
-     * @since 10.0
+     * @since 12.0
      */
     public EclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final OneAxisEllipsoid occulting) {
+        this(new OccultationEngine(occulted, occultedRadius, occulting));
+    }
+
+    /** Build a new eclipse detector.
+     * <p>The new instance is a total eclipse (umbra) detector with default
+     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
+     * @param occultationEngine occultation engine
+     * @since 12.0
+     */
+    public EclipseDetector(final OccultationEngine occultationEngine) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing<EclipseDetector>(),
-             occulted, occultedRadius, occulting, true);
+             occultationEngine, true);
     }
 
     /** Private constructor with full parameters.
@@ -88,21 +94,16 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
-     * @param occulted the body to be occulted
-     * @param occultedRadius the radius of the body to be occulted in meters
-     * @param occulting the occulting body
+     * @param occultationEngine occultation engine
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @since 10.0
+     * @since 12.0
      */
     private EclipseDetector(final double maxCheck, final double threshold,
                             final int maxIter, final EventHandler<? super EclipseDetector> handler,
-                            final PVCoordinatesProvider occulted,  final double occultedRadius,
-                            final OneAxisEllipsoid occulting, final boolean totalEclipse) {
+                            final OccultationEngine occultationEngine, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
-        this.occulted       = occulted;
-        this.occultedRadius = FastMath.abs(occultedRadius);
-        this.occulting      = occulting;
-        this.totalEclipse   = totalEclipse;
+        this.occultationEngine = occultationEngine;
+        this.totalEclipse      = totalEclipse;
     }
 
     /** {@inheritDoc} */
@@ -110,7 +111,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
                                      final int nawMaxIter, final EventHandler<? super EclipseDetector> newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                   occulted, occultedRadius, occulting, totalEclipse);
+                                   occultationEngine, totalEclipse);
     }
 
     /**
@@ -124,7 +125,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withUmbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, true);
+                                   occultationEngine, true);
     }
 
     /**
@@ -138,28 +139,15 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withPenumbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, false);
+                                   occultationEngine, false);
     }
 
-    /** Getter for the occulting body.
-     * @return the occulting body
+    /** Get the occultation engine.
+     * @return occultation engine
+     * @since 12.0
      */
-    public OneAxisEllipsoid getOcculting() {
-        return occulting;
-    }
-
-    /** Getter for the occulted body.
-     * @return the occulted body
-     */
-    public PVCoordinatesProvider getOcculted() {
-        return occulted;
-    }
-
-    /** Getter for the occultedRadius.
-     * @return the occultedRadius
-     */
-    public double getOccultedRadius() {
-        return occultedRadius;
+    public OccultationEngine getOccultationEngine() {
+        return occultationEngine;
     }
 
     /** Get the total eclipse detection flag.
@@ -177,17 +165,10 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        final Vector3D pted  = occulted.getPVCoordinates(s.getDate(), occulting.getBodyFrame()).getPosition();
-        final Vector3D psat  = s.getPVCoordinates(occulting.getBodyFrame()).getPosition();
-        final Vector3D plimb = occulting.pointOnLimb(psat, pted);
-        final Vector3D ps    = psat.subtract(pted);
-        final Vector3D pi    = psat.subtract(plimb);
-        final double angle   = Vector3D.angle(ps, psat);
-        final double rs      = FastMath.asin(occultedRadius / ps.getNorm());
-        if (Double.isNaN(rs)) {
-            return FastMath.PI;
-        }
-        final double ro = Vector3D.angle(pi, psat);
-        return totalEclipse ? (angle - ro + rs) : (angle - ro - rs);
+        final OccultationEngine.OccultationAngles angles = occultationEngine.angles(s);
+        return totalEclipse ?
+               (angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius()) :
+               (angles.getSeparation() - angles.getLimbRadius() - angles.getOccultedApparentRadius());
     }
+
 }
