@@ -200,14 +200,15 @@ public class StateCovariance implements TimeStamped {
      * As this type change uses the jacobian matrix of the transformation, it introduces a linear approximation.
      * Hence, the current covariance matrix <b>will not exactly match</b> the new linearized case and the
      * distribution will not follow a generalized Gaussian distribution anymore.
+     * <p>
+     * This is based on equation (1) to (6) from "Vallado, D. A. (2004). Covariance transformations for satellite flight
+     * dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param outOrbitType target orbit type of the state covariance matrix
      * @param outAngleType target position angle type of the state covariance matrix
      * @return a new covariance state, expressed in the target orbit type with the target position angle
      * @see #changeCovarianceFrame(Orbit, Frame)
-     * @see <a href="https://www.semanticscholar.org/paper/Covariance-Transformations-for-Satellite-Flight-*-Vallado/f9118ca19a00eab2841c06789cca2b269be461d4">
-     *     Vallado, D. A. (2004). Covariance transformations for satellite flight dynamics operations.</a>
      */
     public StateCovariance changeCovarianceType(final Orbit orbit, final OrbitType outOrbitType,
                                                 final PositionAngle outAngleType) {
@@ -234,14 +235,15 @@ public class StateCovariance implements TimeStamped {
     /**
      * Get the covariance in a given local orbital frame.
      * <p>
-     * Unlike {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle)}, changing the covariance frame is actually
-     * a linear process so no approximation is introduced.
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
+     * <p>
+     * This is based on equation (18) to (20) "from Vallado, D. A. (2004). Covariance transformations for satellite
+     * flight dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param lofOut output local orbital frame
      * @return a new covariance state, expressed in the output local orbital frame
-     * @see <a href="https://www.semanticscholar.org/paper/Covariance-Transformations-for-Satellite-Flight-*-Vallado/f9118ca19a00eab2841c06789cca2b269be461d4">
-     *     Vallado, D. A. (2004). Covariance transformations for satellite flight dynamics operations.</a>
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final LOFType lofOut) {
 
@@ -263,14 +265,15 @@ public class StateCovariance implements TimeStamped {
     /**
      * Get the covariance in the output frame.
      * <p>
-     * Unlike {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle)}, changing the covariance frame is actually
-     * a linear process so no approximation is introduced.
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
+     * <p>
+     * This is based on equation (18) to (20) "from Vallado, D. A. (2004). Covariance transformations for satellite
+     * flight dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param frameOut output frame
      * @return a new covariance state, expressed in the output frame
-     * @see <a href="https://www.semanticscholar.org/paper/Covariance-Transformations-for-Satellite-Flight-*-Vallado/f9118ca19a00eab2841c06789cca2b269be461d4">
-     *     Vallado, D. A. (2004). Covariance transformations for satellite flight dynamics operations.</a>
      */
     public StateCovariance changeCovarianceFrame(final Orbit orbit, final Frame frameOut) {
 
@@ -365,6 +368,9 @@ public class StateCovariance implements TimeStamped {
      * As this type change uses the jacobian matrix of the transformation, it introduces a linear approximation.
      * Hence, the input covariance matrix <b>will not exactly match</b> the new linearized case and the
      * distribution will not follow a generalized Gaussian distribution anymore.
+     * <p>
+     * This is based on equation (1) to (6) from "Vallado, D. A. (2004). Covariance transformations for satellite flight
+     * dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param date covariance epoch
@@ -414,10 +420,9 @@ public class StateCovariance implements TimeStamped {
      * Create a covariance matrix from a {@link LOFType local orbital frame} to another
      * {@link LOFType local orbital frame}.
      * <p>
-     * Unlike {@link #changeTypeAndCreate}, changing the covariance frame is actually a linear process so no
-     * approximation is introduced.
+     * Changing the covariance frame is a linear process, this method does not introduce approximation.
      * <p>
-     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * The transformation is based on Equation (18) to (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      *
      * @param orbit orbit to which the covariance matrix should correspond
@@ -447,10 +452,10 @@ public class StateCovariance implements TimeStamped {
     /**
      * Convert the covariance matrix from a {@link Frame frame} to a {@link LOFType local orbital frame}.
      * <p>
-     * Unlike {@link #changeTypeAndCreate}, changing the covariance frame is actually a linear process so no
-     * approximation is introduced.
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
      * <p>
-     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * The transformation is based on Equation (18) to (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      * <p>
      * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
@@ -522,10 +527,9 @@ public class StateCovariance implements TimeStamped {
     /**
      * Convert the covariance matrix from a {@link LOFType  local orbital frame} to a {@link Frame frame}.
      * <p>
-     * Unlike {@link #changeTypeAndCreate}, changing the covariance frame is actually a linear process so no
-     * approximation is introduced.
+     * Changing the covariance frame is a linear process, this method does not introduce approximation.
      * <p>
-     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * The transformation is based on Equation (18) to (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      * <p>
      * The <u>input</u> covariance matrix is necessarily provided in <b>Cartesian orbit type</b>.
@@ -584,8 +588,8 @@ public class StateCovariance implements TimeStamped {
      * The transformation is based on Equation (18) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      * <p>
-     * Unlike {@link #changeTypeAndCreate}, changing the covariance frame is actually a linear process so no
-     * approximation is introduced.
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
      * <p>
      * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
      * and position angle types of the input covariance must be provided.
