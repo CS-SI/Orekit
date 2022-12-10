@@ -19,7 +19,6 @@ package org.orekit.bodies;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.twod.FieldVector2D;
-import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.frames.Frame;
@@ -34,7 +33,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * <p>
  * Instances of this class are guaranteed to be immutable.
  * </p>
- * @see Ellipsoid#getPlaneSection(FieldFieldVector3D<T>, FieldFieldVector3D<T>)
+ * @see Ellipsoid#getPlaneSection(FieldVector3D, FieldVector3D)
  * @param <T> the type of the field elements
  * @since 12.0
  * @author Luc Maisonobe
@@ -163,7 +162,7 @@ public class FieldEllipse<T extends CalculusFieldElement<T>> {
     /** Create a point from its ellipse-relative coordinates.
      * @param p point defined with respect to ellipse
      * @return point defined with respect to 3D frame
-     * @see #toPlane(FieldVector3D<T>)
+     * @see #toPlane(FieldVector3D)
      */
     public FieldVector3D<T> toSpace(final FieldVector2D<T> p) {
         return new FieldVector3D<T>(a.getField().getOne(), center, p.getX(), u, p.getY(), v);
@@ -172,7 +171,7 @@ public class FieldEllipse<T extends CalculusFieldElement<T>> {
     /** Project a point to the ellipse plane.
      * @param p point defined with respect to 3D frame
      * @return point defined with respect to ellipse
-     * @see #toSpace(Vector2D)
+     * @see #toSpace(FieldVector2D)
      */
     public FieldVector2D<T> toPlane(final FieldVector3D<T> p) {
         final FieldVector3D<T> delta = p.subtract(center);
