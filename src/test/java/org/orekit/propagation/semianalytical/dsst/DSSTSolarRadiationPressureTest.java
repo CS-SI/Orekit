@@ -119,12 +119,12 @@ public class DSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(6.843966348263062E-8, elements[0], 1.e-23);
+        Assertions.assertEquals(6.843966348246992E-8, elements[0], 1.e-23);
         Assertions.assertEquals(-2.990913371084091E-11, elements[1], 1.e-26);
         Assertions.assertEquals(-2.538374405334012E-10, elements[2], 1.e-25);
-        Assertions.assertEquals(2.0384702426501394E-13, elements[3], 1.e-28);
-        Assertions.assertEquals(-2.3346333406116967E-14, elements[4], 1.e-29);
-        Assertions.assertEquals(1.6087485237156322E-11, elements[5], 1.e-26);
+        Assertions.assertEquals(2.038470242650138E-13, elements[3], 1.e-28);
+        Assertions.assertEquals(-2.3346333406116976E-14, elements[4], 1.e-29);
+        Assertions.assertEquals(1.6087485237156315E-11, elements[5], 1.e-26);
 
     }
 
@@ -181,12 +181,12 @@ public class DSSTSolarRadiationPressureTest {
             }
         }
 
-        Assertions.assertEquals(0.36637346843285684,     y[0], 1.e-15);
-        Assertions.assertEquals(-2.4294913010512626E-10, y[1], 1.e-25);
-        Assertions.assertEquals(-3.858954680824408E-9,   y[2], 1.e-24);
-        Assertions.assertEquals(-3.0648619902684686E-9,  y[3], 1.e-24);
-        Assertions.assertEquals(-4.9023731169635814E-9,  y[4], 1.e-24);
-        Assertions.assertEquals(-2.385357916413363E-9,   y[5], 1.e-24);
+        Assertions.assertEquals(0.3663734684331176,      y[0], 1.e-15);
+        Assertions.assertEquals(-2.4294913013345554E-10, y[1], 1.e-25);
+        Assertions.assertEquals(-3.858954680850322E-9,   y[2], 1.e-24);
+        Assertions.assertEquals(-3.064861990272758E-9,   y[3], 1.e-24);
+        Assertions.assertEquals(-4.902373116965701E-9,   y[4], 1.e-24);
+        Assertions.assertEquals(-2.385357916407006E-9,   y[5], 1.e-24);
     }
 
     @BeforeEach

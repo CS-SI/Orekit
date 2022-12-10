@@ -26,6 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -116,7 +118,7 @@ public class ECOM2 extends AbstractRadiationForceModel {
      */
     public ECOM2(final int nD, final int nB, final double value,
                  final ExtendedPVCoordinatesProvider sun, final double equatorialRadius) {
-        super(sun, equatorialRadius);
+        super(sun, new OneAxisEllipsoid(equatorialRadius, 0.0, FramesFactory.getGCRF()));
         this.nB = nB;
         this.nD = nD;
         this.coefficients = new ArrayList<>(2 * (nD + nB) + 3);

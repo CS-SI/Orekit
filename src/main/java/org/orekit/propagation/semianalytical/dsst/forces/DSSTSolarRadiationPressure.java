@@ -26,9 +26,12 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -171,19 +174,48 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param spacecraft spacecraft model
      * @param mu central attraction coefficient
      * @since 9.2
+     * @deprecated as of 12.0, replaced by {@link #DSSTSolarRadiationPressure(double, double,
+     * ExtendedPVCoordinatesProvider, OneAxisEllipsoid, RadiationSensitive, double)
      */
+    @Deprecated
+    @DefaultDataContext
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
                                       final ExtendedPVCoordinatesProvider sun,
                                       final double equatorialRadius,
                                       final RadiationSensitive spacecraft,
                                       final double mu) {
+        this(dRef, pRef, sun, new OneAxisEllipsoid(equatorialRadius, 0.0, FramesFactory.getGCRF()), spacecraft, mu);
+    }
+
+    /**
+     * Complete constructor.
+     * <p>
+     * Note that reference solar radiation pressure <code>pRef</code> in N/m² is linked
+     * to solar flux SF in W/m² using formula pRef = SF/c where c is the speed of light
+     * (299792458 m/s). So at 1UA a 1367 W/m² solar flux is a 4.56 10<sup>-6</sup>
+     * N/m² solar radiation pressure.
+     * </p>
+     *
+     * @param dRef reference distance for the solar radiation pressure (m)
+     * @param pRef reference solar radiation pressure at dRef (N/m²)
+     * @param sun Sun model
+     * @param centralBody central body shape model (for umbra/penumbra computation)
+     * @param spacecraft spacecraft model
+     * @param mu central attraction coefficient
+     * @since 12.0
+     */
+    public DSSTSolarRadiationPressure(final double dRef, final double pRef,
+                                      final ExtendedPVCoordinatesProvider sun,
+                                      final OneAxisEllipsoid centralBody,
+                                      final RadiationSensitive spacecraft,
+                                      final double mu) {
 
         //Call to the constructor from superclass using the numerical SRP model as ForceModel
         super(PREFIX, GAUSS_THRESHOLD,
-              new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft), mu);
+              new SolarRadiationPressure(dRef, pRef, sun, centralBody, spacecraft), mu);
 
         this.sun  = sun;
-        this.ae   = equatorialRadius;
+        this.ae   = centralBody.getEquatorialRadius();
         this.spacecraft = spacecraft;
     }
 
