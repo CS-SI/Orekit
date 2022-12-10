@@ -61,7 +61,7 @@ public class OccultationEngine {
     /** Getter for the occulted body.
      * @return the occulted body
      */
-    public PVCoordinatesProvider getOcculted() {
+    public ExtendedPVCoordinatesProvider getOcculted() {
         return occulted;
     }
 
