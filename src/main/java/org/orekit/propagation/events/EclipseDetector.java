@@ -58,6 +58,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     /** Umbra, if true, or penumbra, if false, detection flag. */
     private final boolean totalEclipse;
 
+    /** Margin to apply to eclipse angle. */
+    private final double margin;
+
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
      * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
@@ -82,7 +85,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     public EclipseDetector(final OccultationEngine occultationEngine) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing<EclipseDetector>(),
-             occultationEngine, true);
+             occultationEngine, 0.0, true);
     }
 
     /** Private constructor with full parameters.
@@ -96,14 +99,16 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param occultationEngine occultation engine
+     * @param margin to apply to eclipse angle (rad)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      * @since 12.0
      */
     private EclipseDetector(final double maxCheck, final double threshold,
                             final int maxIter, final EventHandler<? super EclipseDetector> handler,
-                            final OccultationEngine occultationEngine, final boolean totalEclipse) {
+                            final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
         this.occultationEngine = occultationEngine;
+        this.margin            = margin;
         this.totalEclipse      = totalEclipse;
     }
 
@@ -112,7 +117,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
                                      final int nawMaxIter, final EventHandler<? super EclipseDetector> newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                   occultationEngine, totalEclipse);
+                                   occultationEngine, margin, totalEclipse);
     }
 
     /**
@@ -126,7 +131,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withUmbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occultationEngine, true);
+                                   occultationEngine, margin, true);
     }
 
     /**
@@ -140,7 +145,30 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withPenumbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occultationEngine, false);
+                                   occultationEngine, margin, false);
+    }
+
+    /**
+     * Setup a margin to angle detection.
+     * <p>
+     * A positive margin implies eclipses are "larger" hence entry occurs earlier and exit occurs later
+     * than a detector with 0 margin.
+     * </p>
+     * @param newMargin angular margin to apply to eclipse detection (rad)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public EclipseDetector withMargin(final double newMargin) {
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                   occultationEngine, newMargin, totalEclipse);
+    }
+
+    /** Get the angular margin used for eclipse detection.
+     * @return angular margin used for eclipse detection (rad)
+     * @since 12.0
+     */
+    public double getMargin() {
+        return margin;
     }
 
     /** Get the occultation engine.
@@ -168,8 +196,8 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     public double g(final SpacecraftState s) {
         final OccultationEngine.OccultationAngles angles = occultationEngine.angles(s);
         return totalEclipse ?
-               (angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius()) :
-               (angles.getSeparation() - angles.getLimbRadius() - angles.getOccultedApparentRadius());
+               (angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius() + margin) :
+               (angles.getSeparation() - angles.getLimbRadius() - angles.getOccultedApparentRadius() + margin);
     }
 
 }

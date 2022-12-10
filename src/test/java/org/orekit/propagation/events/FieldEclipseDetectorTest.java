@@ -118,6 +118,7 @@ public class FieldEclipseDetectorTest {
         Assertions.assertEquals(60.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
+        Assertions.assertEquals(0.0, e.getMargin().getReal(), 1.0e-15);
         Assertions.assertSame(sun, e.getOccultationEngine().getOcculted());
         Assertions.assertEquals(sunRadius, e.getOccultationEngine().getOccultedRadius(), 1.0);
         Assertions.assertSame(earth, e.getOccultationEngine().getOcculting());
@@ -183,13 +184,14 @@ public class FieldEclipseDetectorTest {
                                     withMaxCheck(zero.newInstance(120.)).
                                     withThreshold(zero.newInstance(1e-4)).
                                     withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
-                                    withMaxIter(12);
+                                    withMaxIter(12).
+                                    withMargin(zero.newInstance(0.001));
         Assertions.assertEquals(120.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assertions.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-3);
+        Assertions.assertEquals(2304.188978, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-4);
 
     }
 

@@ -47,6 +47,9 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     /** Umbra, if true, or penumbra, if false, detection flag. */
     private boolean totalEclipse;
 
+    /** Margin to apply to eclipse angle. */
+    private final T margin;
+
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
      * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
@@ -74,7 +77,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
         this(field.getZero().newInstance(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<FieldEclipseDetector<T>, T>(),
-             occultationEngine, true);
+             occultationEngine, field.getZero(), true);
     }
 
     /** Private constructor with full parameters.
@@ -88,14 +91,16 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param occultationEngine occultation engine
+     * @param margin to apply to eclipse angle (rad)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      * @since 12.0
      */
     private FieldEclipseDetector(final T maxCheck, final T threshold,
                                  final int maxIter, final FieldEventHandler<? super FieldEclipseDetector<T>, T> handler,
-                                 final OccultationEngine occultationEngine, final boolean totalEclipse) {
+                                 final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
         this.occultationEngine = occultationEngine;
+        this.margin            = margin;
         this.totalEclipse      = totalEclipse;
     }
 
@@ -104,7 +109,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     protected FieldEclipseDetector<T> create(final T newMaxCheck, final T newThreshold, final int nawMaxIter,
                                              final FieldEventHandler<? super FieldEclipseDetector<T>, T> newHandler) {
         return new FieldEclipseDetector<>(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                          occultationEngine, totalEclipse);
+                                          occultationEngine, margin, totalEclipse);
     }
 
     /**
@@ -118,7 +123,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      */
     public FieldEclipseDetector<T> withUmbra() {
         return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                          occultationEngine, true);
+                                          occultationEngine, margin, true);
     }
 
     /**
@@ -132,7 +137,30 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      */
     public FieldEclipseDetector<T> withPenumbra() {
         return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                          occultationEngine, false);
+                                          occultationEngine, margin, false);
+    }
+
+    /**
+     * Setup a margin to angle detection.
+     * <p>
+     * A positive margin implies eclipses are "larger" hence entry occurs earlier and exit occurs later
+     * than a detector with 0 margin.
+     * </p>
+     * @param newMargin angular margin to apply to eclipse detection (rad)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public FieldEclipseDetector<T> withMargin(final T newMargin) {
+        return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                          occultationEngine, newMargin, totalEclipse);
+    }
+
+    /** Get the angular margin used for eclipse detection.
+     * @return angular margin used for eclipse detection (rad)
+     * @since 12.0
+     */
+    public T getMargin() {
+        return margin;
     }
 
     /** Get the occultation engine.
@@ -160,8 +188,8 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     public T g(final FieldSpacecraftState<T> s) {
         final OccultationEngine.FieldOccultationAngles<T> angles = occultationEngine.angles(s);
         return totalEclipse ?
-               angles.getSeparation().subtract(angles.getLimbRadius()).add(angles.getOccultedApparentRadius()) :
-               angles.getSeparation().subtract(angles.getLimbRadius()).subtract(angles.getOccultedApparentRadius());
+               angles.getSeparation().subtract(angles.getLimbRadius()).add(angles.getOccultedApparentRadius().add(margin)) :
+               angles.getSeparation().subtract(angles.getLimbRadius()).subtract(angles.getOccultedApparentRadius().add(margin));
     }
 
 }
