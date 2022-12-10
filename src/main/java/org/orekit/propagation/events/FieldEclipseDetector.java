@@ -23,8 +23,8 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.OccultationEngine;
-import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
@@ -33,11 +33,11 @@ import org.orekit.utils.PVCoordinatesProvider;
  * propagation when entering the eclipse and to {@link Action#STOP stop} propagation
  * when exiting the eclipse. This can be changed by calling {@link
  * #withHandler(FieldEventHandler)} after construction.</p>
+ * @param <T> the type of the field elements
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Pascal Parraud
  */
 public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldEclipseDetector<T>, T> {
-
 
     /** Occultation engine.
      * @since 12.0
@@ -58,7 +58,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field,
-                                final PVCoordinatesProvider occulted, final double occultedRadius,
+                                final ExtendedPVCoordinatesProvider occulted, final double occultedRadius,
                                 final OneAxisEllipsoid occulting) {
         this(field, new OccultationEngine(occulted, occultedRadius, occulting));
     }
@@ -158,11 +158,10 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @return value of the switching function
      */
     public T g(final FieldSpacecraftState<T> s) {
-        final T zero = s.getDate().getField().getZero();
-        final OccultationEngine.OccultationAngles angles = occultationEngine.angles(s.toSpacecraftState());
+        final OccultationEngine.FieldOccultationAngles<T> angles = occultationEngine.angles(s);
         return totalEclipse ?
-               zero.newInstance(angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius()) :
-                   zero.newInstance(angles.getSeparation() - angles.getLimbRadius() - angles.getOccultedApparentRadius());
+               angles.getSeparation().subtract(angles.getLimbRadius()).add(angles.getOccultedApparentRadius()) :
+               angles.getSeparation().subtract(angles.getLimbRadius()).subtract(angles.getOccultedApparentRadius());
     }
 
 }

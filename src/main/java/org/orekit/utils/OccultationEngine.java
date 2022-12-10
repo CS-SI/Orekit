@@ -16,9 +16,12 @@
  */
 package org.orekit.utils;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 
 /** Computation engine for occultation events.
@@ -31,7 +34,7 @@ public class OccultationEngine {
     private final OneAxisEllipsoid occulting;
 
     /** Occulted body. */
-    private final PVCoordinatesProvider occulted;
+    private final ExtendedPVCoordinatesProvider occulted;
 
     /** Occulted body radius (m). */
     private final double occultedRadius;
@@ -41,8 +44,8 @@ public class OccultationEngine {
      * @param occultedRadius the radius of the body to be occulted (m)
      * @param occulting the occulting body
      */
-    public OccultationEngine(final PVCoordinatesProvider occulted,  final double occultedRadius,
-                           final OneAxisEllipsoid occulting) {
+    public OccultationEngine(final ExtendedPVCoordinatesProvider occulted,  final double occultedRadius,
+                             final OneAxisEllipsoid occulting) {
         this.occulted       = occulted;
         this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting      = occulting;
@@ -94,6 +97,33 @@ public class OccultationEngine {
 
     }
 
+    /** Compute the occultation angles as seen from a spacecrat.
+     * @param state the current state information: date, kinematics, attitude
+     * @param <T> the type of the field elements
+      * @return occultation angles
+     */
+    public <T extends CalculusFieldElement<T>> FieldOccultationAngles<T> angles(final FieldSpacecraftState<T> state) {
+
+        final FieldVector3D<T> psat  = state.getPVCoordinates(occulting.getBodyFrame()).getPosition();
+        final FieldVector3D<T> pted  = occulted.getPVCoordinates(state.getDate(), occulting.getBodyFrame()).getPosition();
+        final FieldVector3D<T> plimb = occulting.pointOnLimb(psat, pted);
+        final FieldVector3D<T> ps    = psat.subtract(pted);
+        final FieldVector3D<T> pi    = psat.subtract(plimb);
+        final T                angle = FieldVector3D.angle(ps, psat);
+        final T                rs    = FastMath.asin(ps.getNorm().reciprocal().multiply(occultedRadius));
+        final T                ro    = FieldVector3D.angle(pi, psat);
+        if (rs.isNaN()) {
+            // we are inside the occulted body…
+            // set up dummy values consistent with full lighting (assuming occulted is the Sun)
+            final T zero = rs.getField().getZero();
+            return new FieldOccultationAngles<>(zero.newInstance(FastMath.PI), zero, zero);
+        } else {
+            // regular case, we can compute limit angles as seen from spacecraft
+            return new FieldOccultationAngles<>(angle, ro, rs);
+        }
+
+    }
+
     /** Container for occultation angles.
      * @since 12.0
      */
@@ -137,6 +167,55 @@ public class OccultationEngine {
          * @return apparent radius of occulted body (rad)
          */
         public double getOccultedApparentRadius() {
+            return occultedApparentRadius;
+        }
+
+    }
+
+    /** Container for occultation angles.
+     * @param <T> the type of the field elements
+     * @since 12.0
+     */
+    public static class FieldOccultationAngles<T extends CalculusFieldElement<T>> {
+
+        /** Apparent separation between occulting and occulted directions. */
+        private final T separation;
+
+        /** Limb radius in occulting/occulted plane. */
+        private final T limbRadius;
+
+        /** Apparent radius of occulted body. */
+        private final T occultedApparentRadius;
+
+        /** Simple constructor.
+         * @param separation apparent separation between occulting and occulted directions (rad)
+         * @param limbRadius limb radius in occulting/occulted plane (rad)
+         * @param occultedApparentRadius apparent radius of occulted body (rad)
+         */
+        FieldOccultationAngles(final T separation, final T limbRadius, final T occultedApparentRadius) {
+            this.separation             = separation;
+            this.limbRadius             = limbRadius;
+            this.occultedApparentRadius = occultedApparentRadius;
+        }
+
+        /** Get apparent separation between occulting and occulted directions.
+         * @return apparent separation between occulting and occulted directions (rad)
+         */
+        public T getSeparation() {
+            return separation;
+        }
+
+        /** Get limb radius in occulting/occulted plane.
+         * @return limb radius in occulting/occulted plane (rad)
+         */
+        public T getLimbRadius() {
+            return limbRadius;
+        }
+
+        /** Get apparent radius of occulted body.
+         * @return apparent radius of occulted body (rad)
+         */
+        public T getOccultedApparentRadius() {
             return occultedApparentRadius;
         }
 
