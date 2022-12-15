@@ -25,27 +25,21 @@ import java.util.stream.Stream;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.AbstractForceModel;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.StaticTransform;
-import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEclipseDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProviderAdapter;
 import org.orekit.utils.OccultationEngine;
 
 /**
@@ -213,16 +207,18 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
      */
     public void addOccultingBody(final ExtendedPVCoordinatesProvider provider, final double radius) {
 
-        // as defining frame, we select the first inertial frame in central body hierarchy
-        Frame defining = occultingBodies.get(0).getOcculting().getBodyFrame();
-        while (!defining.isPseudoInertial()) {
-            defining = defining.getParent();
+        // as parent frame for occulting body frame,
+        // we select the first inertial frame in central body hierarchy
+        Frame parent = occultingBodies.get(0).getOcculting().getBodyFrame();
+        while (!parent.isPseudoInertial()) {
+            parent = parent.getParent();
         }
 
         // as the occulting body will be spherical, we can use an inertially oriented body frame
-        final Frame inertiallyOrientedBodyFrame = new Frame(defining,
-                                                            new OccultingTransformProvider(defining, provider),
-                                                            OCCULTING_PREFIX + occultingBodies.size());
+        final Frame inertiallyOrientedBodyFrame =
+                        new ExtendedPVCoordinatesProviderAdapter(parent,
+                                                                 provider,
+                                                                 OCCULTING_PREFIX + occultingBodies.size());
 
         // create the spherical occulting body
         final OneAxisEllipsoid sphericalOccultingBody =
@@ -268,48 +264,4 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         return Collections.unmodifiableList(occultingBodies);
     }
 
-    /** Local provider for occulting bodies defined only from their basic elements.
-     * @since 12.0
-     */
-    private static class OccultingTransformProvider implements TransformProvider {
-
-        /** Serializable UDI. */
-        private static final long serialVersionUID = 20221211L;
-
-        /** Defining frame. */
-        private final Frame defining;
-
-        /** Provider for body origin. */
-        private final ExtendedPVCoordinatesProvider provider;
-
-        /** Simple constructor.
-         * @param defining defining frame
-         * @param provider provider for body origin
-         */
-        OccultingTransformProvider(final Frame defining, final ExtendedPVCoordinatesProvider provider) {
-            this.defining = defining;
-            this.provider = provider;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Transform getTransform(final AbsoluteDate date) {
-            return new Transform(date, provider.getPVCoordinates(date, defining).negate());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-            return new FieldTransform<>(date, provider.getPVCoordinates(date, defining).negate());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public StaticTransform getStaticTransform(final AbsoluteDate date) {
-            return StaticTransform.of(date,
-                                      provider.getPVCoordinates(date, defining).getPosition().negate(),
-                                      Rotation.IDENTITY);
-        }
-
-    }
 }

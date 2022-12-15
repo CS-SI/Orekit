@@ -34,11 +34,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.FrameAdapter;
 import org.orekit.utils.OccultationEngine;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Solar radiation pressure force model.
  * <p>
@@ -226,7 +224,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
                 } else if (lightingRatioJ != 1) {
                     // Secondary body partially occults Sun
 
-                    final OccultationEngine oij = new OccultationEngine(toProvider(oi.getOcculting().getBodyFrame()),
+                    final OccultationEngine oij = new OccultationEngine(new FrameAdapter(oi.getOcculting().getBodyFrame()),
                                                                         oi.getOcculting().getEquatorialRadius(),
                                                                         oj.getOcculting());
                     final OccultationEngine.OccultationAngles aij = oij.angles(state);
@@ -348,7 +346,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
                 } else if (lightingRatioJ.getReal() != 1) {
                     // Secondary body partially occults Sun
 
-                    final OccultationEngine oij = new OccultationEngine(toProvider(oi.getOcculting().getBodyFrame()),
+                    final OccultationEngine oij = new OccultationEngine(new FrameAdapter(oi.getOcculting().getBodyFrame()),
                                                                         oi.getOcculting().getEquatorialRadius(),
                                                                         oj.getOcculting());
                     final OccultationEngine.FieldOccultationAngles<T> aij = oij.angles(state);
@@ -445,36 +443,6 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      */
     private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {
         return (f.getReal() <= d) ? f.getField().getZero().newInstance(d) : f;
-    }
-
-    /** Convert a frame to an extended provider for coordinates.
-     * @param originFrame frame to convert
-     * @return provider for frame origin coordinates
-     * @since 12.0
-     */
-    private ExtendedPVCoordinatesProvider toProvider(final Frame originFrame) {
-        return new ExtendedPVCoordinatesProvider() {
-
-            /** {@inheritDoc} */
-            @Override
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-                return new TimeStampedPVCoordinates(date,
-                                                    originFrame.
-                                                    getTransformTo(frame, date).
-                                                    transformPVCoordinates(PVCoordinates.ZERO));
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-                return new TimeStampedFieldPVCoordinates<>(date,
-                                                           originFrame.
-                                                           getTransformTo(frame, date).
-                                                           transformPVCoordinates(PVCoordinates.ZERO));
-            }
-
-        };
     }
 
 }
