@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.4" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1002">
+        Added adapters in both directions between ExtendedPVCoordinatesProvider and Frame.
+      </action>
       <action dev="luc" type="fix" issue="997">
         Fixed longitude crossing detection in stepless propagators.
       </action>
