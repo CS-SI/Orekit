@@ -18,8 +18,8 @@ package org.orekit.gnss.metric.messages.rtcm;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.SignalInSpaceAccuracy;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
+import org.orekit.gnss.metric.messages.common.SignalInSpaceAccuracy;
 
 public class SignalInSpaceAccuracyTest {
 

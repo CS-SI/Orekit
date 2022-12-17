@@ -412,22 +412,34 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
     /** {@inheritDoc} */
     @Override
     public Ocm build() {
+
         // OCM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
         if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
             userDefinedBlock = null;
         }
-        if (perturbationsBlock != null) {
-            // this may be Double.NaN, but it will be handled correctly
-            setMuParsed(perturbationsBlock.getGm());
+
+        // the mu is needed only if there are trajectories
+        final double mu;
+        if (trajectoryBlocks == null) {
+            mu = Double.NaN;
+        } else {
+            if (perturbationsBlock != null) {
+                // this may be Double.NaN, but it will be handled correctly
+                setMuParsed(perturbationsBlock.getGm());
+            }
+            mu = getSelectedMu();
         }
+
         final OcmData data = new OcmData(trajectoryBlocks, physicBlock, covarianceBlocks,
                                          maneuverBlocks, perturbationsBlock,
                                          orbitDeterminationBlock, userDefinedBlock);
         data.validate(header.getFormatVersion());
+
         return new Ocm(header, Collections.singletonList(new Segment<>(metadata, data)),
-                           getConventions(), getDataContext(), getSelectedMu());
+                           getConventions(), getDataContext(), mu);
+
     }
 
     /** Process one metadata token.
@@ -553,7 +565,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
-                final int n = currentCovarianceHistoryMetadata.getCovUnits().size();
+                final int n = currentCovarianceHistoryMetadata.getCovType().getUnits().size();
                 if (fields.length - 1 != currentCovarianceHistoryMetadata.getCovOrdering().nbElements(n)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());

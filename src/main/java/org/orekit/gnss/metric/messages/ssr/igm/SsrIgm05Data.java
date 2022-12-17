@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.orekit.gnss.metric.messages.common.CodeBias;
+
 /**
  * Container for SSR IGM05 data.
  * @author Bryan Cazabonne

@@ -158,8 +158,8 @@ public class CRDParser {
      * Computes if a day shift has happened comparing the current and past epoch, described by seconds in the day.
      * This is useful as the data is sorted in the chronological order inside the file.
      *
-     * @param lastSecOfDay
-     * @param secOfDay
+     * @param lastSecOfDay past number of seconds per day
+     * @param secOfDay current number of seconds per day
      * @return Boolean true if change in day.
      */
     private static int checkRollover(final double lastSecOfDay, final double secOfDay) {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.rtcm.ephemeris.utils;
+package org.orekit.gnss.metric.messages.common;
 
 /** Enumerate for GLONASS User Range Accuracy.
  * @see "ICD L1, L2 GLONASS, Edition 5.1, Table 4.4, 2008"

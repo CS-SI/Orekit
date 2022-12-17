@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.rtcm.ephemeris.utils;
+package org.orekit.gnss.metric.messages.common;
 
 import org.hipparchus.util.FastMath;
 
