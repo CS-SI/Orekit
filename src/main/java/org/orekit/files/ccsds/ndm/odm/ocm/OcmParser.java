@@ -565,7 +565,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
-                final int n = currentCovarianceHistoryMetadata.getCovUnits().size();
+                final int n = currentCovarianceHistoryMetadata.getCovType().getUnits().size();
                 if (fields.length - 1 != currentCovarianceHistoryMetadata.getCovOrdering().nbElements(n)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
