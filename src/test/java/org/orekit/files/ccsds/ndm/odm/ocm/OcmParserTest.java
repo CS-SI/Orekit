@@ -874,13 +874,13 @@ public class OcmParserTest {
         Assertions.assertEquals(2, file.getHeader().getComments().size());
         Assertions.assertEquals("This file is a dummy example with inconsistent data", file.getHeader().getComments().get(0));
         Assertions.assertEquals("it is used to exercise all possible keys in Key-Value Notation", file.getHeader().getComments().get(1));
+        Assertions.assertEquals("dummy-classification",                file.getHeader().getClassification());
+        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 31.576, TimeScalesFactory.getUTC()),
+                                file.getHeader().getCreationDate());
         Assertions.assertEquals("JPL",                                 file.getHeader().getOriginator());
         Assertions.assertEquals("ABC-12 34",                           file.getHeader().getMessageId());
 
         // Check metadata
-        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 31.576, TimeScalesFactory.getUTC()),
-                            file.getHeader().getCreationDate());
-
         Assertions.assertEquals(1,                                                    file.getMetadata().getComments().size());
         Assertions.assertEquals("Metadata comment",                                   file.getMetadata().getComments().get(0));
         Assertions.assertEquals("FOUO",                                               file.getMetadata().getClassification());
