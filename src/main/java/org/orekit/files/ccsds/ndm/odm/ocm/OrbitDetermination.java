@@ -122,6 +122,7 @@ public class OrbitDetermination extends CommentsContainer {
     /** Simple constructor.
      */
     public OrbitDetermination() {
+        sedr               = Double.NaN;
         solveStates        = Collections.emptyList();
         considerParameters = Collections.emptyList();
         sensors            = Collections.emptyList();

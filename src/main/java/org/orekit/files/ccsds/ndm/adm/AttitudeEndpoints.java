@@ -51,7 +51,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class AttitudeEndoints implements AttitudeBuilder {
+public class AttitudeEndpoints implements AttitudeBuilder {
 
     /** Constant for A → B diraction. */
     public static final String A2B = "A2B";
@@ -200,7 +200,7 @@ public class AttitudeEndoints implements AttitudeBuilder {
      * @param other other endpoints to check against
      * @return true if both endpoints are compatible with each other
      */
-    public boolean isCompatibleWith(final AttitudeEndoints other) {
+    public boolean isCompatibleWith(final AttitudeEndpoints other) {
         return frameA.getName().equals(other.frameA.getName()) &&
                frameB.getName().equals(other.frameB.getName()) &&
                a2b.equals(other.a2b);

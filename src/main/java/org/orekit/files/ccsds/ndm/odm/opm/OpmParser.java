@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -120,13 +121,16 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
      * @param mu gravitational coefficient
      * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public OpmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Opm.ROOT, Opm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu, parsedUnitsBehavior);
+              missionReferenceDate, mu, parsedUnitsBehavior, filters);
         this.defaultMass = defaultMass;
     }
 
