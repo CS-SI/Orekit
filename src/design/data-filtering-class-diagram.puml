@@ -38,8 +38,8 @@
       }
 
       class DataSource {
-      	+String getName()
-      	+DataSource.Opener getOpener()
+        +String getName()
+        +DataSource.Opener getOpener()
       }
 
       interface DataFilter {

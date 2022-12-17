@@ -16,8 +16,8 @@
  */
 package org.orekit.utils.units;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -31,18 +31,18 @@ public class UnitsConverterTest {
     @Test
     public void testTime() {
         final UnitsConverter day2second = new UnitsConverter(Unit.DAY, Unit.SECOND);
-        Assert.assertEquals(388800.0, day2second.convert(4.5), 1.0e-9);
+        Assertions.assertEquals(388800.0, day2second.convert(4.5), 1.0e-9);
     }
 
     @Test
     public void testAngle() {
         final UnitsConverter rev2deg = new UnitsConverter(Unit.REVOLUTION, Unit.DEGREE);
-        Assert.assertEquals(360.0, rev2deg.convert(1.0), 1.0e-12);
+        Assertions.assertEquals(360.0, rev2deg.convert(1.0), 1.0e-12);
     }
 
     @Test
     public void testRotationRate() {
-        
+
     }
 
     @Test
@@ -51,18 +51,18 @@ public class UnitsConverterTest {
         final Unit mbar = Unit.parse("mbar");
         final Unit hPa  = Unit.parse("hPa");
         final UnitsConverter mbar2hPa = new UnitsConverter(mbar, hPa);
-        Assert.assertEquals(atm, mbar2hPa.convert(atm), 1.0e-12);
+        Assertions.assertEquals(atm, mbar2hPa.convert(atm), 1.0e-12);
     }
 
     @Test
     public void testIncompatibleUnits() {
         try {
             new UnitsConverter(Unit.parse("km³/s²"), Unit.parse("MΩ"));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
-            Assert.assertEquals("km³/s²", oe.getParts()[0]);
-            Assert.assertEquals("MΩ", oe.getParts()[1]);
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assertions.assertEquals("km³/s²", oe.getParts()[0]);
+            Assertions.assertEquals("MΩ", oe.getParts()[1]);
         }
     }
 

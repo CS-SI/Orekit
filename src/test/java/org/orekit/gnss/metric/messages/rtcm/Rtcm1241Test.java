@@ -18,9 +18,9 @@ package org.orekit.gnss.metric.messages.rtcm;
 
 import java.util.ArrayList;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1241;
 import org.orekit.gnss.metric.messages.rtcm.correction.RtcmClockCorrectionData;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
@@ -35,7 +35,7 @@ public class Rtcm1241Test {
 
     private ArrayList<Integer> messages;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         final String m = "010011011001" +                       // Message Number: 1241
@@ -64,24 +64,24 @@ public class Rtcm1241Test {
         final Rtcm1241 rtcm1241 = (Rtcm1241) new RtcmMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assert.assertEquals(1,                            rtcm1241.getData().size());
+        Assertions.assertEquals(1,                            rtcm1241.getData().size());
 
         // Verify header
-        Assert.assertEquals(1241,                         rtcm1241.getTypeCode());
-        Assert.assertEquals(64711.0,                      rtcm1241.getHeader().getEpochTime1s(), eps);
-        Assert.assertEquals(30.0,                         rtcm1241.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
-        Assert.assertEquals(0,                            rtcm1241.getHeader().getMultipleMessageIndicator());
-        Assert.assertEquals(7,                            rtcm1241.getHeader().getIodSsr());
-        Assert.assertEquals(3951,                         rtcm1241.getHeader().getSsrProviderId());
-        Assert.assertEquals(1,                            rtcm1241.getHeader().getSsrSolutionId());
-        Assert.assertEquals(1,                            rtcm1241.getHeader().getNumberOfSatellites());
+        Assertions.assertEquals(1241,                         rtcm1241.getTypeCode());
+        Assertions.assertEquals(64711.0,                      rtcm1241.getHeader().getEpochTime1s(), eps);
+        Assertions.assertEquals(30.0,                         rtcm1241.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        Assertions.assertEquals(0,                            rtcm1241.getHeader().getMultipleMessageIndicator());
+        Assertions.assertEquals(7,                            rtcm1241.getHeader().getIodSsr());
+        Assertions.assertEquals(3951,                         rtcm1241.getHeader().getSsrProviderId());
+        Assertions.assertEquals(1,                            rtcm1241.getHeader().getSsrSolutionId());
+        Assertions.assertEquals(1,                            rtcm1241.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
         final RtcmClockCorrectionData e01 = rtcm1241.getDataMap().get("E01").get(0);
-        Assert.assertEquals(1,                            e01.getSatelliteID());
-        Assert.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(),            eps);
-        Assert.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(),            eps);
-        Assert.assertEquals(0.61857734,                   e01.getClockCorrection().getDeltaClockC2(),            eps);
+        Assertions.assertEquals(1,                            e01.getSatelliteID());
+        Assertions.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(),            eps);
+        Assertions.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(),            eps);
+        Assertions.assertEquals(0.61857734,                   e01.getClockCorrection().getDeltaClockC2(),            eps);
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

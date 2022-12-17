@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.measurements.filtering;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedSet;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -29,9 +25,9 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -64,10 +60,14 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class ResidualsFilteringTest {
-    
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
 
-    @Before
+public class ResidualsFilteringTest {
+
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -79,7 +79,7 @@ public class ResidualsFilteringTest {
         propa.resetInitialState(new SpacecraftState(orbit));
         return propa;
     }
-    
+
     private MeasurementBuilder<Range> getBuilder(final RandomGenerator random,
                                                    final GroundStation groundStation,
                                                    final ObservableSatellite satellite, final double noise) {
@@ -89,14 +89,14 @@ public class ResidualsFilteringTest {
                                          groundStation, false, 1.0, 1.0, satellite);
         return rb;
     }
-    
+
     private ElevationDetector getElvetaionDetector(final TopocentricFrame topo, final double minElevation) {
         ElevationDetector detector =
                         new ElevationDetector(topo).
                         withConstantElevation(FastMath.toRadians(5.0));
         return detector;
     }
-    
+
     private Generator getGenerator(final Orbit orbit, final GroundStation station, final ObservableSatellite satellite, final TopocentricFrame topo, final double noise) {
         Generator generator = new Generator();
         Propagator propagator = buildPropagator(orbit);
@@ -109,11 +109,11 @@ public class ResidualsFilteringTest {
         generator.addScheduler(scheduler);
         return generator;
     }
-    
-    
+
+
     @Test
     public void testFilterWithoutRejection() {
-        
+
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
         final Vector3D pos = new Vector3D(17427070, -1841865, 20201040);
@@ -121,7 +121,7 @@ public class ResidualsFilteringTest {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel),
                                   FramesFactory.getEME2000(), date,
                                   Constants.EGM96_EARTH_MU);
-        
+
         //Create the measurements generator.
         final Frame bodyFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final double equatorialRadius = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
@@ -131,7 +131,7 @@ public class ResidualsFilteringTest {
         final TopocentricFrame topo = new TopocentricFrame(body, position, "SBCH");
         final ObservableSatellite satellite = new ObservableSatellite(0);
         final GroundStation station = new GroundStation(topo);
-        
+
         final double noise      = 1;
         final double threshold  = 2.7;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
@@ -148,12 +148,12 @@ public class ResidualsFilteringTest {
                 processMeasurements.add(meas);
             }
         }
-        Assert.assertEquals(processMeasurements.size(), measurements.size());
+        Assertions.assertEquals(processMeasurements.size(), measurements.size());
     }
-    
+
     @Test
     public void testFilterWithRejection() {
-        
+
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
         final Vector3D pos = new Vector3D(17427070, -1841865, 20201040);
@@ -161,7 +161,7 @@ public class ResidualsFilteringTest {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel),
                                   FramesFactory.getEME2000(), date,
                                   Constants.EGM96_EARTH_MU);
-        
+
         //Create the measurements generator.
         final Frame bodyFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final double equatorialRadius = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
@@ -171,7 +171,7 @@ public class ResidualsFilteringTest {
         final TopocentricFrame topo = new TopocentricFrame(body, position, "SBCH");
         final ObservableSatellite satellite = new ObservableSatellite(0);
         final GroundStation station = new GroundStation(topo);
-        
+
         final double noise = 20;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
         SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
@@ -179,7 +179,7 @@ public class ResidualsFilteringTest {
 
         final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
         for (ObservedMeasurement<?> meas : measurements) {
-        	final Range range = (Range) meas;
+            final Range range = (Range) meas;
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
             filter.filter(range, currentSC);
@@ -187,6 +187,6 @@ public class ResidualsFilteringTest {
                 processMeasurements.add(meas);
             }
         }
-        Assert.assertEquals(2, measurements.size()-processMeasurements.size());
+        Assertions.assertEquals(2, measurements.size()-processMeasurements.size());
     }
 }

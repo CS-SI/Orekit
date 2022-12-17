@@ -16,19 +16,13 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
@@ -60,6 +54,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class EphemerisTest {
 
     private AbsoluteDate initDate;
@@ -85,7 +85,7 @@ public class EphemerisTest {
 
         int numInterpolationPoints = 2;
         Ephemeris ephemPropagator = new Ephemeris(states, numInterpolationPoints);
-        Assert.assertEquals(0, ephemPropagator.getManagedAdditionalStates().length);
+        Assertions.assertEquals(0, ephemPropagator.getManagedAdditionalStates().length);
 
         //First test that we got position, velocity and attitude nailed
         int numberEphemTestIntervals = 2880;
@@ -97,9 +97,9 @@ public class EphemerisTest {
             double positionDelta = calculatePositionDelta(ephemState, keplerState);
             double velocityDelta = calculateVelocityDelta(ephemState, keplerState);
             double attitudeDelta = calculateAttitudeDelta(ephemState, keplerState);
-            Assert.assertEquals("LVLH_CCSDS Unmatched Position at: " + currentDate, 0.0, positionDelta, positionTolerance);
-            Assert.assertEquals("LVLH_CCSDS Unmatched Velocity at: " + currentDate, 0.0, velocityDelta, velocityTolerance);
-            Assert.assertEquals("LVLH_CCSDS Unmatched Attitude at: " + currentDate, 0.0, attitudeDelta, attitudeTolerance);
+            Assertions.assertEquals(0.0, positionDelta, positionTolerance,"LVLH_CCSDS Unmatched Position at: " + currentDate);
+            Assertions.assertEquals(0.0, velocityDelta, velocityTolerance,"LVLH_CCSDS Unmatched Velocity at: " + currentDate);
+            Assertions.assertEquals(0.0, attitudeDelta, attitudeTolerance,"LVLH_CCSDS Unmatched Attitude at: " + currentDate);
         }
 
         //Now force an override on the attitude and check it against a Keplerian propagator
@@ -116,24 +116,24 @@ public class EphemerisTest {
             double positionDelta = calculatePositionDelta(ephemState, keplerState);
             double velocityDelta = calculateVelocityDelta(ephemState, keplerState);
             double attitudeDelta = calculateAttitudeDelta(ephemState, keplerState);
-            Assert.assertEquals("QSW Unmatched Position at: " + currentDate, 0.0, positionDelta, positionTolerance);
-            Assert.assertEquals("QSW Unmatched Velocity at: " + currentDate, 0.0, velocityDelta, velocityTolerance);
-            Assert.assertEquals("QSW Unmatched Attitude at: " + currentDate, 0.0, attitudeDelta, attitudeTolerance);
+            Assertions.assertEquals(0.0, positionDelta, positionTolerance,"QSW Unmatched Position at: " + currentDate);
+            Assertions.assertEquals(0.0, velocityDelta, velocityTolerance,"QSW Unmatched Velocity at: " + currentDate);
+            Assertions.assertEquals(0.0, attitudeDelta, attitudeTolerance,"QSW Unmatched Attitude at: " + currentDate);
         }
 
     }
-    
+
     @Test
     public void testAttitudeSequenceTransition() {
-    	        
+
         // Initialize the orbit
-    	final AbsoluteDate initialDate = new AbsoluteDate(2003, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(2003, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
         final Vector3D velocity  = new Vector3D(1151.00321021175, -2851.14864755189, -2.02133248357321);
         final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                                       FramesFactory.getGCRF(), initialDate,
                                                       Constants.WGS84_EARTH_MU);
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit);        
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
         // Define attitude laws
         AttitudeProvider before = new CelestialBodyPointed(FramesFactory.getICRF(), CelestialBodyFactory.getSun(), Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
@@ -150,7 +150,7 @@ public class EphemerisTest {
 
         NumericalPropagator propagator = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 1e-9, 1e-9));
         propagator.setInitialState(initialState);
-        
+
         // Propagate and build ephemeris
         final List<SpacecraftState> propagatedStates = new ArrayList<>();
 
@@ -167,34 +167,34 @@ public class EphemerisTest {
         SpacecraftState stateBefore = ephemeris.getInitialState();
         ephemeris.propagate(switchDate.shiftedBy(transitionTime/2));
         SpacecraftState stateAfter = ephemeris.propagate(endDate);
-        
-        
-        // Check that the attitudes are correct
-        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ0(),
-        		stateBefore.getAttitude().getRotation().getQ0(),
-        		1.0E-16);
-        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ1(),
-        		stateBefore.getAttitude().getRotation().getQ1(),
-        		1.0E-16);
-        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ2(),
-        		stateBefore.getAttitude().getRotation().getQ2(),
-        		1.0E-16);
-        Assert.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ3(),
-        		stateBefore.getAttitude().getRotation().getQ3(),
-        		1.0E-16);
 
-        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ0(),
-        		stateAfter.getAttitude().getRotation().getQ0(),
-        		1.0E-16);
-        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ1(),
-        		stateAfter.getAttitude().getRotation().getQ1(),
-        		1.0E-16);
-        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ2(),
-        		stateAfter.getAttitude().getRotation().getQ2(),
-        		1.0E-16);
-        Assert.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
-        		stateAfter.getAttitude().getRotation().getQ3(),
-        		1.0E-16);
+
+        // Check that the attitudes are correct
+        Assertions.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ0(),
+                stateBefore.getAttitude().getRotation().getQ0(),
+                1.0E-16);
+        Assertions.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ1(),
+                stateBefore.getAttitude().getRotation().getQ1(),
+                1.0E-16);
+        Assertions.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ2(),
+                stateBefore.getAttitude().getRotation().getQ2(),
+                1.0E-16);
+        Assertions.assertEquals(before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ3(),
+                stateBefore.getAttitude().getRotation().getQ3(),
+                1.0E-16);
+
+        Assertions.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ0(),
+                stateAfter.getAttitude().getRotation().getQ0(),
+                1.0E-16);
+        Assertions.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ1(),
+                stateAfter.getAttitude().getRotation().getQ1(),
+                1.0E-16);
+        Assertions.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ2(),
+                stateAfter.getAttitude().getRotation().getQ2(),
+                1.0E-16);
+        Assertions.assertEquals(after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
+                stateAfter.getAttitude().getRotation().getQ3(),
+                1.0E-16);
     }
 
     @Test
@@ -208,9 +208,9 @@ public class EphemerisTest {
             }
 
             new Ephemeris(states, 2).resetInitialState(propagator.getInitialState());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
@@ -239,16 +239,16 @@ public class EphemerisTest {
 
         final String[] additional = ephem.getManagedAdditionalStates();
         Arrays.sort(additional);
-        Assert.assertEquals(2, additional.length);
-        Assert.assertEquals(name1, ephem.getManagedAdditionalStates()[0]);
-        Assert.assertEquals(name2, ephem.getManagedAdditionalStates()[1]);
-        Assert.assertTrue(ephem.isAdditionalStateManaged(name1));
-        Assert.assertTrue(ephem.isAdditionalStateManaged(name2));
-        Assert.assertFalse(ephem.isAdditionalStateManaged("not managed"));
+        Assertions.assertEquals(2, additional.length);
+        Assertions.assertEquals(name1, ephem.getManagedAdditionalStates()[0]);
+        Assertions.assertEquals(name2, ephem.getManagedAdditionalStates()[1]);
+        Assertions.assertTrue(ephem.isAdditionalStateManaged(name1));
+        Assertions.assertTrue(ephem.isAdditionalStateManaged(name2));
+        Assertions.assertFalse(ephem.isAdditionalStateManaged("not managed"));
 
         SpacecraftState s = ephem.propagate(initDate.shiftedBy(-270.0));
-        Assert.assertEquals(-270.0,   s.getAdditionalState(name1)[0], 1.0e-15);
-        Assert.assertEquals(-86670.0, s.getAdditionalState(name2)[0], 1.0e-15);
+        Assertions.assertEquals(-270.0,   s.getAdditionalState(name1)[0], 1.0e-15);
+        Assertions.assertEquals(-86670.0, s.getAdditionalState(name2)[0], 1.0e-15);
 
     }
 
@@ -276,11 +276,11 @@ public class EphemerisTest {
         SpacecraftState s = ephem.propagate(initDate.shiftedBy(-270.0));
         Orbit  o = (Orbit) propagateOrbit.invoke(ephem, s.getDate());
         double m = ((Double) getMass.invoke(ephem, s.getDate())).doubleValue();
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(s.getPVCoordinates().getPosition(),
                                               o.getPVCoordinates().getPosition()),
                             1.0e-15);
-        Assert.assertEquals(s.getMass(), m, 1.0e-15);
+        Assertions.assertEquals(s.getMass(), m, 1.0e-15);
 
     }
 
@@ -296,7 +296,7 @@ public class EphemerisTest {
 
         final int interpolationPoints = 5;
         Ephemeris ephemeris = new Ephemeris(states, interpolationPoints);
-        Assert.assertEquals(finalDate, ephemeris.getMaxDate());
+        Assertions.assertEquals(finalDate, ephemeris.getMaxDate());
 
         double tolerance = ephemeris.getExtrapolationThreshold();
 
@@ -307,14 +307,14 @@ public class EphemerisTest {
 
         try {
             ephemeris.propagate(ephemeris.getMinDate().shiftedBy(-2.0 * tolerance));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (TimeStampedCacheException e) {
             //supposed to fail since out of bounds
         }
 
         try {
             ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(2.0 * tolerance));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (TimeStampedCacheException e) {
             //supposed to fail since out of bounds
         }
@@ -340,16 +340,16 @@ public class EphemerisTest {
 
         // State before adding an attitude provider
         SpacecraftState stateBefore = ephemPropagator.propagate(ephemPropagator.getMaxDate().shiftedBy(-60.0));
-        Assert.assertEquals(1,               stateBefore.getAdditionalState(additionalName).length);
-        Assert.assertEquals(additionalValue, stateBefore.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
+        Assertions.assertEquals(1,               stateBefore.getAdditionalState(additionalName).length);
+        Assertions.assertEquals(additionalValue, stateBefore.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
 
         // Set an attitude provider
         ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
         // State after adding an attitude provider
         SpacecraftState stateAfter = ephemPropagator.propagate(ephemPropagator.getMaxDate().shiftedBy(-60.0));
-        Assert.assertEquals(1,               stateAfter.getAdditionalState(additionalName).length);
-        Assert.assertEquals(additionalValue, stateAfter.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
+        Assertions.assertEquals(1,               stateAfter.getAdditionalState(additionalName).length);
+        Assertions.assertEquals(additionalValue, stateAfter.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
 
     }
 
@@ -376,20 +376,20 @@ public class EphemerisTest {
 
         // Get initial state without attitude provider
         SpacecraftState withoutAttitudeProvider = ephemPropagator.getInitialState();
-        Assert.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
-        Assert.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
 
         // Set an attitude provider
         ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
         // Get initial state with attitude provider
         SpacecraftState withAttitudeProvider = ephemPropagator.getInitialState();
-        Assert.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
-        Assert.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IllegalArgumentException, OrekitException {
         Utils.setDataRoot("regular-data");
 

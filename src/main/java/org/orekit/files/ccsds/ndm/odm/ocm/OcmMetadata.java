@@ -184,7 +184,7 @@ public class OcmMetadata extends OdmMetadata {
     /** Create a new meta-data.
      * @param dataContext data context
      */
-    OcmMetadata(final DataContext dataContext) {
+    public OcmMetadata(final DataContext dataContext) {
 
         // set up the few fields that have default values as per CCSDS standard
         super(TimeSystem.UTC);

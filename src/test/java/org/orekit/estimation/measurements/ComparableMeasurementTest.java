@@ -18,8 +18,8 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -30,17 +30,17 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /** This test class is only used to test the <i>compareTo</i> default method of interface <i>ComparableMeasurement</i>.<br>
- * This is done to test the resolution of  <a href="https://gitlab.orekit.org/orekit/orekit/issues/538"> issue #538</a> on Orekit forge. 
+ * This is done to test the resolution of  <a href="https://gitlab.orekit.org/orekit/orekit/issues/538"> issue #538</a> on Orekit forge.
  */
 public class ComparableMeasurementTest {
 
     /** Test default method compareTo, see <a href="https://gitlab.orekit.org/orekit/orekit/issues/538"> issue #538</a> on Orekit forge. */
     @Test
     public void testDefaultCompareToIssue538() {
-        
+
         // Print on console ?
         boolean print = false;
-        
+
         // Setup data
         Utils.setDataRoot("regular-data");
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
@@ -58,7 +58,7 @@ public class ComparableMeasurementTest {
         PV pv = new PV(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,7,7), 1., 1e-3, 1., satellite);
         PV pv2 = new PV(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,7,7), 1., 1e-3, 1., satellite);
         PV pv3 = new PV(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,8,7), 1., 1e-3, 1., satellite);
-        
+
         // Print out results
         if (print) {
             System.out.println("azel.compareTo(azel)  = " + azel.compareTo(azel));
@@ -71,25 +71,25 @@ public class ComparableMeasurementTest {
             System.out.println("pv.compareTo(pv2)     = " + pv.compareTo(pv2));
             System.out.println("pv2.compareTo(pv)     = " + pv.compareTo(pv2));
         }
-        
+
         // Same object, only case when compareTo returns 0
-        Assert.assertEquals(azel.compareTo(azel), 0);
-        
+        Assertions.assertEquals(azel.compareTo(azel), 0);
+
         // Sorted by date by default
-        Assert.assertEquals(pv.compareTo(azel), -1);
-        Assert.assertEquals(range.compareTo(pv2), +1);
-        
+        Assertions.assertEquals(pv.compareTo(azel), -1);
+        Assertions.assertEquals(range.compareTo(pv2), +1);
+
         // Same date but different measurement - "bigger" measurement after "smaller" one
-        Assert.assertEquals(range.compareTo(azel), -1);
-        Assert.assertEquals(azel.compareTo(range), +1);
-        
+        Assertions.assertEquals(range.compareTo(azel), -1);
+        Assertions.assertEquals(azel.compareTo(range), +1);
+
         // Same date, same size, but different values, "bigger" measurement after "smaller" one
-        Assert.assertEquals(pv.compareTo(pv3), -1);
-        Assert.assertEquals(pv3.compareTo(pv), +1);
-        
+        Assertions.assertEquals(pv.compareTo(pv3), -1);
+        Assertions.assertEquals(pv3.compareTo(pv), +1);
+
         // Same date, same size, same values - Arbitrary order, always return -1
-        Assert.assertEquals(pv.compareTo(pv2), -1);
-        Assert.assertEquals(pv2.compareTo(pv), -1);
-        
+        Assertions.assertEquals(pv.compareTo(pv2), -1);
+        Assertions.assertEquals(pv2.compareTo(pv), -1);
+
     }
 }

@@ -53,6 +53,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class BistaticRange extends AbstractMeasurement<BistaticRange> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "BistaticRange";
+
     /**
      * Ground station from which transmission is made.
      */
@@ -105,10 +108,16 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
         this.receiver = receiver;
     }
 
+    /** Get the emitter ground station.
+     * @return emitter ground station
+     */
     public GroundStation getEmitterStation() {
         return emitter;
     }
 
+    /** Get the receiver ground station.
+     * @return receiver ground station
+     */
     public GroundStation getReceiverStation() {
         return receiver;
     }

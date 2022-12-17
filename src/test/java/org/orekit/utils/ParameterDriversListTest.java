@@ -16,11 +16,10 @@
  */
 package org.orekit.utils;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class ParameterDriversListTest {
 
@@ -51,83 +50,83 @@ public class ParameterDriversListTest {
 
         // Value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setValue(0.5);
-        Assert.assertEquals(0.5, p1A.getValue(),          1.0e-15);
-        Assert.assertEquals(0.5, p1B.getValue(),          1.0e-15);
-        Assert.assertEquals(0.5, delegating12.getValue(), 1.0e-15);
+        Assertions.assertEquals(0.5, p1A.getValue(),          1.0e-15);
+        Assertions.assertEquals(0.5, p1B.getValue(),          1.0e-15);
+        Assertions.assertEquals(0.5, delegating12.getValue(), 1.0e-15);
 
         // Value: upward settings, starting from raw drivers
         p2A.setValue(-0.5);
-        Assert.assertEquals(-0.5, p2B.getValue(),          1.0e-15);
-        Assert.assertEquals(-0.5, delegating21.getValue(), 1.0e-15);
-        Assert.assertEquals(-0.5, delegating22.getValue(), 1.0e-15);
+        Assertions.assertEquals(-0.5, p2B.getValue(),          1.0e-15);
+        Assertions.assertEquals(-0.5, delegating21.getValue(), 1.0e-15);
+        Assertions.assertEquals(-0.5, delegating22.getValue(), 1.0e-15);
 
         // Name: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setName("q1");
-        Assert.assertEquals("q1", p1A.getName());
-        Assert.assertEquals("q1", p1B.getName());
-        Assert.assertEquals("q1", delegating12.getName());
+        Assertions.assertEquals("q1", p1A.getName());
+        Assertions.assertEquals("q1", p1B.getName());
+        Assertions.assertEquals("q1", delegating12.getName());
 
         // Name: upward settings, starting from raw drivers
         p2A.setName("q2");
-        Assert.assertEquals("q2", p2B.getName());
-        Assert.assertEquals("q2", delegating21.getName());
-        Assert.assertEquals("q2", delegating22.getName());
-        
+        Assertions.assertEquals("q2", p2B.getName());
+        Assertions.assertEquals("q2", delegating21.getName());
+        Assertions.assertEquals("q2", delegating22.getName());
+
         // Reference value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setReferenceValue(0.5);
-        Assert.assertEquals(0.5, p1A.getReferenceValue(),          1.0e-15);
-        Assert.assertEquals(0.5, p1B.getReferenceValue(),          1.0e-15);
-        Assert.assertEquals(0.5, delegating12.getReferenceValue(), 1.0e-15);
+        Assertions.assertEquals(0.5, p1A.getReferenceValue(),          1.0e-15);
+        Assertions.assertEquals(0.5, p1B.getReferenceValue(),          1.0e-15);
+        Assertions.assertEquals(0.5, delegating12.getReferenceValue(), 1.0e-15);
 
         // Reference value: upward settings, starting from raw drivers
         p2A.setReferenceValue(-0.5);
-        Assert.assertEquals(-0.5, p2B.getReferenceValue(),          1.0e-15);
-        Assert.assertEquals(-0.5, delegating21.getReferenceValue(), 1.0e-15);
-        Assert.assertEquals(-0.5, delegating22.getReferenceValue(), 1.0e-15);
-        
+        Assertions.assertEquals(-0.5, p2B.getReferenceValue(),          1.0e-15);
+        Assertions.assertEquals(-0.5, delegating21.getReferenceValue(), 1.0e-15);
+        Assertions.assertEquals(-0.5, delegating22.getReferenceValue(), 1.0e-15);
+
         // Scale: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setScale(2.);
-        Assert.assertEquals(2., p1A.getScale(),          1.0e-15);
-        Assert.assertEquals(2., p1B.getScale(),          1.0e-15);
-        Assert.assertEquals(2., delegating12.getScale(), 1.0e-15);
+        Assertions.assertEquals(2., p1A.getScale(),          1.0e-15);
+        Assertions.assertEquals(2., p1B.getScale(),          1.0e-15);
+        Assertions.assertEquals(2., delegating12.getScale(), 1.0e-15);
 
         // Scale: upward settings, starting from raw drivers
         p2A.setScale(3.);
-        Assert.assertEquals(3., p2B.getScale(),          1.0e-15);
-        Assert.assertEquals(3., delegating21.getScale(), 1.0e-15);
-        Assert.assertEquals(3., delegating22.getScale(), 1.0e-15);
-        
+        Assertions.assertEquals(3., p2B.getScale(),          1.0e-15);
+        Assertions.assertEquals(3., delegating21.getScale(), 1.0e-15);
+        Assertions.assertEquals(3., delegating22.getScale(), 1.0e-15);
+
         // Min value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setMinValue(-2.);
-        Assert.assertEquals(-2., p1A.getMinValue(),          1.0e-15);
-        Assert.assertEquals(-2., p1B.getMinValue(),          1.0e-15);
-        Assert.assertEquals(-2., delegating12.getMinValue(), 1.0e-15);
-        
+        Assertions.assertEquals(-2., p1A.getMinValue(),          1.0e-15);
+        Assertions.assertEquals(-2., p1B.getMinValue(),          1.0e-15);
+        Assertions.assertEquals(-2., delegating12.getMinValue(), 1.0e-15);
+
         // Min value: upward settings, starting from raw drivers
         p2A.setMinValue(-0.25);
-        Assert.assertEquals(-0.25, p2B.getMinValue(),          1.0e-15);
-        Assert.assertEquals(-0.25, delegating21.getMinValue(), 1.0e-15);
-        Assert.assertEquals(-0.25, delegating22.getMinValue(), 1.0e-15);
+        Assertions.assertEquals(-0.25, p2B.getMinValue(),          1.0e-15);
+        Assertions.assertEquals(-0.25, delegating21.getMinValue(), 1.0e-15);
+        Assertions.assertEquals(-0.25, delegating22.getMinValue(), 1.0e-15);
         // Check that value is set to min as it was out of boundaries
-        Assert.assertEquals(-0.25, p2B.getValue(),          1.0e-15);
-        Assert.assertEquals(-0.25, delegating21.getValue(), 1.0e-15);
-        Assert.assertEquals(-0.25, delegating22.getValue(), 1.0e-15);
-        
+        Assertions.assertEquals(-0.25, p2B.getValue(),          1.0e-15);
+        Assertions.assertEquals(-0.25, delegating21.getValue(), 1.0e-15);
+        Assertions.assertEquals(-0.25, delegating22.getValue(), 1.0e-15);
+
         // Max value: downward settings, from top delegating driver to raw drivers and back to other list top
         delegating11.setMaxValue(0.25);
-        Assert.assertEquals(0.25, p1A.getMaxValue(),          1.0e-15);
-        Assert.assertEquals(0.25, p1B.getMaxValue(),          1.0e-15);
-        Assert.assertEquals(0.25, delegating12.getMaxValue(), 1.0e-15);
+        Assertions.assertEquals(0.25, p1A.getMaxValue(),          1.0e-15);
+        Assertions.assertEquals(0.25, p1B.getMaxValue(),          1.0e-15);
+        Assertions.assertEquals(0.25, delegating12.getMaxValue(), 1.0e-15);
         // Check that value is set to max as it was out of boundaries
-        Assert.assertEquals(0.25, p1A.getValue(),          1.0e-15);
-        Assert.assertEquals(0.25, p1B.getValue(),          1.0e-15);
-        Assert.assertEquals(0.25, delegating12.getValue(), 1.0e-15);
-        
+        Assertions.assertEquals(0.25, p1A.getValue(),          1.0e-15);
+        Assertions.assertEquals(0.25, p1B.getValue(),          1.0e-15);
+        Assertions.assertEquals(0.25, delegating12.getValue(), 1.0e-15);
+
         // Max value: upward settings, starting from raw drivers
         p2A.setMaxValue(2.);
-        Assert.assertEquals(2., p2B.getMaxValue(),          1.0e-15);
-        Assert.assertEquals(2., delegating21.getMaxValue(), 1.0e-15);
-        Assert.assertEquals(2., delegating22.getMaxValue(), 1.0e-15);
+        Assertions.assertEquals(2., p2B.getMaxValue(),          1.0e-15);
+        Assertions.assertEquals(2., delegating21.getMaxValue(), 1.0e-15);
+        Assertions.assertEquals(2., delegating22.getMaxValue(), 1.0e-15);
     }
 
     @Test
@@ -150,41 +149,41 @@ public class ParameterDriversListTest {
 
         pA1.setValue(0.5);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
-            Assert.assertEquals(0.5, pd.getValue(), 1.0e-15);
-            Assert.assertTrue(pd.isSelected());
+            Assertions.assertEquals(0.5, pd.getValue(), 1.0e-15);
+            Assertions.assertTrue(pd.isSelected());
         }
 
         pB2.setValue(-0.5);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
-            Assert.assertEquals(-0.5, pd.getValue(), 1.0e-15);
+            Assertions.assertEquals(-0.5, pd.getValue(), 1.0e-15);
         }
 
         for (final ParameterDriversList list : new ParameterDriversList[] { listA, listB }) {
-            Assert.assertEquals(1, list.getNbParams());
-            Assert.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
-            Assert.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
-            Assert.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
-            Assert.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
-            Assert.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
-            Assert.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
+            Assertions.assertEquals(1, list.getNbParams());
+            Assertions.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
+            Assertions.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
+            Assertions.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
+            Assertions.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
+            Assertions.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
+            Assertions.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
         }
 
         // this should be a no-op
         listB.add(listA.getDrivers().get(0));
 
         for (final ParameterDriversList list : new ParameterDriversList[] { listA, listB }) {
-            Assert.assertEquals(1, list.getNbParams());
-            Assert.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
-            Assert.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
-            Assert.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
-            Assert.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
-            Assert.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
-            Assert.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
+            Assertions.assertEquals(1, list.getNbParams());
+            Assertions.assertEquals(5, list.getDrivers().get(0).getRawDrivers().size());
+            Assertions.assertSame(pA1, list.getDrivers().get(0).getRawDrivers().get(0));
+            Assertions.assertSame(pA2, list.getDrivers().get(0).getRawDrivers().get(1));
+            Assertions.assertSame(pA3, list.getDrivers().get(0).getRawDrivers().get(2));
+            Assertions.assertSame(pB1, list.getDrivers().get(0).getRawDrivers().get(3));
+            Assertions.assertSame(pB2, list.getDrivers().get(0).getRawDrivers().get(4));
         }
 
         listB.findByName("p").setValue(0.0);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2 }) {
-            Assert.assertEquals(0.0, pd.getValue(), 1.0e-15);
+            Assertions.assertEquals(0.0, pd.getValue(), 1.0e-15);
         }
 
     }
@@ -225,43 +224,43 @@ public class ParameterDriversListTest {
 
         pA1.setValue(0.5);
         for (ParameterDriver pd : new ParameterDriver[] { pA1, pA2, pA3, pB1, pB2, pC1 }) {
-            Assert.assertEquals(0.5, pd.getValue(), 1.0e-15);
-            Assert.assertTrue(pd.isSelected());
+            Assertions.assertEquals(0.5, pd.getValue(), 1.0e-15);
+            Assertions.assertTrue(pd.isSelected());
         }
         qA2.setValue(0.25);
         for (ParameterDriver pd : new ParameterDriver[] { qA1, qA2, qB1 }) {
-            Assert.assertEquals(0.25, pd.getValue(), 1.0e-15);
-            Assert.assertFalse(pd.isSelected());
+            Assertions.assertEquals(0.25, pd.getValue(), 1.0e-15);
+            Assertions.assertFalse(pd.isSelected());
         }
-        Assert.assertTrue(called.get());
+        Assertions.assertTrue(called.get());
 
         listB.filter(false);
-        Assert.assertEquals(2, listA.getNbParams());
-        Assert.assertEquals(6, listA.getDrivers().get(0).getRawDrivers().size());
-        Assert.assertSame(pA1, listA.getDrivers().get(0).getRawDrivers().get(0));
-        Assert.assertSame(pA2, listA.getDrivers().get(0).getRawDrivers().get(1));
-        Assert.assertSame(pA3, listA.getDrivers().get(0).getRawDrivers().get(2));
-        Assert.assertSame(pB1, listA.getDrivers().get(0).getRawDrivers().get(3));
-        Assert.assertSame(pB2, listA.getDrivers().get(0).getRawDrivers().get(4));
-        Assert.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
-        Assert.assertEquals(3, listA.getDrivers().get(1).getRawDrivers().size());
-        Assert.assertSame(qA1, listA.getDrivers().get(1).getRawDrivers().get(0));
-        Assert.assertSame(qA2, listA.getDrivers().get(1).getRawDrivers().get(1));
-        Assert.assertSame(qB1, listA.getDrivers().get(1).getRawDrivers().get(2));
-        Assert.assertEquals(1, listB.getNbParams());
-        Assert.assertEquals(3, listB.getDrivers().get(0).getRawDrivers().size());
-        Assert.assertSame(qA1, listB.getDrivers().get(0).getRawDrivers().get(0));
-        Assert.assertSame(qA2, listB.getDrivers().get(0).getRawDrivers().get(1));
-        Assert.assertSame(qB1, listB.getDrivers().get(0).getRawDrivers().get(2));
+        Assertions.assertEquals(2, listA.getNbParams());
+        Assertions.assertEquals(6, listA.getDrivers().get(0).getRawDrivers().size());
+        Assertions.assertSame(pA1, listA.getDrivers().get(0).getRawDrivers().get(0));
+        Assertions.assertSame(pA2, listA.getDrivers().get(0).getRawDrivers().get(1));
+        Assertions.assertSame(pA3, listA.getDrivers().get(0).getRawDrivers().get(2));
+        Assertions.assertSame(pB1, listA.getDrivers().get(0).getRawDrivers().get(3));
+        Assertions.assertSame(pB2, listA.getDrivers().get(0).getRawDrivers().get(4));
+        Assertions.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
+        Assertions.assertEquals(3, listA.getDrivers().get(1).getRawDrivers().size());
+        Assertions.assertSame(qA1, listA.getDrivers().get(1).getRawDrivers().get(0));
+        Assertions.assertSame(qA2, listA.getDrivers().get(1).getRawDrivers().get(1));
+        Assertions.assertSame(qB1, listA.getDrivers().get(1).getRawDrivers().get(2));
+        Assertions.assertEquals(1, listB.getNbParams());
+        Assertions.assertEquals(3, listB.getDrivers().get(0).getRawDrivers().size());
+        Assertions.assertSame(qA1, listB.getDrivers().get(0).getRawDrivers().get(0));
+        Assertions.assertSame(qA2, listB.getDrivers().get(0).getRawDrivers().get(1));
+        Assertions.assertSame(qB1, listB.getDrivers().get(0).getRawDrivers().get(2));
 
-        Assert.assertNotSame(oldDelegating, listB.getDrivers().get(0));
-        Assert.assertEquals(6, oldDelegating.getRawDrivers().size());
-        Assert.assertSame(pA1, oldDelegating.getRawDrivers().get(0));
-        Assert.assertSame(pA2, oldDelegating.getRawDrivers().get(1));
-        Assert.assertSame(pA3, oldDelegating.getRawDrivers().get(2));
-        Assert.assertSame(pB1, oldDelegating.getRawDrivers().get(3));
-        Assert.assertSame(pB2, oldDelegating.getRawDrivers().get(4));
-        Assert.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
+        Assertions.assertNotSame(oldDelegating, listB.getDrivers().get(0));
+        Assertions.assertEquals(6, oldDelegating.getRawDrivers().size());
+        Assertions.assertSame(pA1, oldDelegating.getRawDrivers().get(0));
+        Assertions.assertSame(pA2, oldDelegating.getRawDrivers().get(1));
+        Assertions.assertSame(pA3, oldDelegating.getRawDrivers().get(2));
+        Assertions.assertSame(pB1, oldDelegating.getRawDrivers().get(3));
+        Assertions.assertSame(pB2, oldDelegating.getRawDrivers().get(4));
+        Assertions.assertSame(pC1, listA.getDrivers().get(0).getRawDrivers().get(5));
 
     }
 

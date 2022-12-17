@@ -16,23 +16,34 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
 
 /**
  * Container for additional parameters data block.
  * @author Melina Vanel
  * @since 11.2
  */
-public class AdditionalParameters extends CommentsContainer {
+public class AdditionalParameters extends CommonPhysicalProperties {
 
     /** The actual area of the object. */
     private double areaPC;
+
+    /** The minimum area of the object to be used to compute the collision probability. */
+    private double areaPCMin;
+
+    /** The maximum area of the object to be used to compute the collision probability. */
+    private double areaPCMax;
 
     /** The effective area of the object exposed to atmospheric drag. */
     private double areaDRG;
 
     /** The effective area of the object exposed to solar radiation pressure. */
     private double areaSRP;
+
+    /** The object hard body radius. */
+    private double hbr;
 
     /** The mass of the object. */
     private double mass;
@@ -49,9 +60,30 @@ public class AdditionalParameters extends CommentsContainer {
     /** The amount of energy being removed from the object’s orbit by atmospheric drag. This value is an average calculated during the OD. */
     private double sedr;
 
+    /** The distance of the furthest point in the objects orbit above the equatorial radius of the central body. */
+    private double apoapsisAltitude;
+
+    /** The distance of the closest point in the objects orbit above the equatorial radius of the central body . */
+    private double periapsissAltitude;
+
+    /** The angle between the objects orbit plane and the orbit centers equatorial plane. */
+    private double inclination;
+
+    /** A measure of the confidence in the covariance errors matching reality. */
+    private double covConfidence;
+
+    /** The method used for the calculation of COV_CONFIDENCE. */
+    private String covConfidenceMethod;
+
     /** Simple constructor.
      */
     public AdditionalParameters() {
+
+       // Call to CommonPhysicalProperties constructor
+        super();
+
+        // we don't call the setXxx() methods in order to avoid
+        // calling refuseFurtherComments as a side effect
         areaPC              = Double.NaN;
         areaDRG             = Double.NaN;
         areaSRP             = Double.NaN;
@@ -60,6 +92,11 @@ public class AdditionalParameters extends CommentsContainer {
         crAreaOverMass      = Double.NaN;
         thrustAcceleration  = Double.NaN;
         sedr                = Double.NaN;
+        hbr                 = Double.NaN;
+        apoapsisAltitude      = Double.NaN;
+        periapsissAltitude    = Double.NaN;
+        inclination         = Double.NaN;
+        covConfidence       = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -206,4 +243,127 @@ public class AdditionalParameters extends CommentsContainer {
         this.sedr = SEDR;
     }
 
+    /** Set the minimum area of the object to be used to compute the collision probability.
+     * @return the areaPCMin
+     */
+    public double getAreaPCMin() {
+        return areaPCMin;
+    }
+
+    /** Get the minimum area of the object to be used to compute the collision probability.
+     * @param areaPCMin the areaPCMin to set
+     */
+    public void setAreaPCMin(final double areaPCMin) {
+        this.areaPCMin = areaPCMin;
+    }
+
+    /** Get the maximum area of the object to be used to compute the collision probability.
+     * @return the areaPCMax
+     */
+    public double getAreaPCMax() {
+        return areaPCMax;
+    }
+
+    /** Set the maximum area for the object to be used to compute the collision probability.
+     * @param areaPCMax the areaPCMax to set
+     */
+    public void setAreaPCMax(final double areaPCMax) {
+        this.areaPCMax = areaPCMax;
+    }
+
+     /** Get the object hard body radius.
+     * @return the object hard body radius.
+     */
+    public double getHbr() {
+        return hbr;
+    }
+
+    /** Set the object hard body radius.
+     * @param hbr the object hard body radius.
+     */
+    public void setHbr(final double hbr) {
+        refuseFurtherComments();
+        this.hbr = hbr;
+    }
+
+    /** Get the distance of the furthest point in the objects orbit above the equatorial radius of the central body.
+     * @return the apoapsisAltitude
+     */
+    public double getApoapsisAltitude() {
+        return apoapsisAltitude;
+    }
+
+    /** Set the distance of the furthest point in the objects orbit above the equatorial radius of the central body.
+     * @param apoapsisAltitude the apoapsisHeight to set
+     */
+    public void setApoapsisAltitude(final double apoapsisAltitude) {
+        refuseFurtherComments();
+        this.apoapsisAltitude = apoapsisAltitude;
+    }
+
+    /** Get the distance of the closest point in the objects orbit above the equatorial radius of the central body.
+     * @return the periapsissAltitude
+     */
+    public double getPeriapsissAltitude() {
+        return periapsissAltitude;
+    }
+
+    /** Set the distance of the closest point in the objects orbit above the equatorial radius of the central body.
+     * @param periapsissAltitude the periapsissHeight to set
+     */
+    public void setPeriapsissAltitude(final double periapsissAltitude) {
+        refuseFurtherComments();
+        this.periapsissAltitude = periapsissAltitude;
+    }
+
+    /** Get the angle between the objects orbit plane and the orbit centers equatorial plane.
+     * @return the inclination
+     */
+    public double getInclination() {
+        return inclination;
+    }
+
+    /** Set the angle between the objects orbit plane and the orbit centers equatorial plane.
+     * @param inclination the inclination to set
+     */
+    public void setInclination(final double inclination) {
+        refuseFurtherComments();
+        this.inclination = inclination;
+    }
+
+    /** Get the measure of the confidence in the covariance errors matching reality.
+     * @return the covConfidence
+     */
+    public double getCovConfidence() {
+        return covConfidence;
+    }
+
+    /** Set the measure of the confidence in the covariance errors matching reality.
+     * @param covConfidence the covConfidence to set
+     */
+    public void setCovConfidence(final double covConfidence) {
+        refuseFurtherComments();
+        this.covConfidence = covConfidence;
+    }
+
+    /** Get the method used for the calculation of COV_CONFIDENCE.
+     * @return the covConfidenceMethod
+     */
+    public String getCovConfidenceMethod() {
+        return covConfidenceMethod;
+    }
+
+    /** Set the method used for the calculation of COV_CONFIDENCE.
+     * @param covConfidenceMethod the covConfidenceMethod to set
+     */
+    public void setCovConfidenceMethod(final String covConfidenceMethod) {
+        refuseFurtherComments();
+
+        // Check key condition
+        if (Double.isNaN(getCovConfidence())) {
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, AdditionalParametersKey.COV_CONFIDENCE);
+        }
+
+        this.covConfidenceMethod = covConfidenceMethod;
+    }
 }

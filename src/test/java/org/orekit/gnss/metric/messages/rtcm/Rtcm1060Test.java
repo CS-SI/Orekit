@@ -18,9 +18,9 @@ package org.orekit.gnss.metric.messages.rtcm;
 
 import java.util.ArrayList;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1060;
@@ -37,7 +37,7 @@ public class Rtcm1060Test {
 
     private ArrayList<Integer> messages;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         final String m = "010000100100" +                      // Message number: 1060
@@ -74,31 +74,31 @@ public class Rtcm1060Test {
         final Rtcm1060 rtcm1060 = (Rtcm1060) new RtcmMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assert.assertEquals(1,                            rtcm1060.getData().size());
+        Assertions.assertEquals(1,                            rtcm1060.getData().size());
 
         // Verify header
-        Assert.assertEquals(1060,                         rtcm1060.getTypeCode());
-        Assert.assertEquals(517695.0,                     rtcm1060.getHeader().getEpochTime1s(), eps);
-        Assert.assertEquals(30.0,                         rtcm1060.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
-        Assert.assertEquals(0,                            rtcm1060.getHeader().getMultipleMessageIndicator());
-        Assert.assertEquals(7,                            rtcm1060.getHeader().getIodSsr());
-        Assert.assertEquals(3951,                         rtcm1060.getHeader().getSsrProviderId());
-        Assert.assertEquals(1,                            rtcm1060.getHeader().getSsrSolutionId());
-        Assert.assertEquals(1,                            rtcm1060.getHeader().getNumberOfSatellites());
+        Assertions.assertEquals(1060,                         rtcm1060.getTypeCode());
+        Assertions.assertEquals(517695.0,                     rtcm1060.getHeader().getEpochTime1s(), eps);
+        Assertions.assertEquals(30.0,                         rtcm1060.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        Assertions.assertEquals(0,                            rtcm1060.getHeader().getMultipleMessageIndicator());
+        Assertions.assertEquals(7,                            rtcm1060.getHeader().getIodSsr());
+        Assertions.assertEquals(3951,                         rtcm1060.getHeader().getSsrProviderId());
+        Assertions.assertEquals(1,                            rtcm1060.getHeader().getSsrSolutionId());
+        Assertions.assertEquals(1,                            rtcm1060.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
         final RtcmCombinedCorrectionData g01 = rtcm1060.getDataMap().get("G01").get(0);
-        Assert.assertEquals(1,                            g01.getSatelliteID());
-        Assert.assertEquals(132,                          g01.getGnssIod());
-        Assert.assertEquals(18.0095,                      g01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
-        Assert.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
-        Assert.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
-        Assert.assertEquals(0.090047,                     g01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
-        Assert.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
-        Assert.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
-        Assert.assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
-        Assert.assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
-        Assert.assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
+        Assertions.assertEquals(1,                            g01.getSatelliteID());
+        Assertions.assertEquals(132,                          g01.getGnssIod());
+        Assertions.assertEquals(18.0095,                      g01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
+        Assertions.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
+        Assertions.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
+        Assertions.assertEquals(0.090047,                     g01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
+        Assertions.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assertions.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        Assertions.assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
+        Assertions.assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
+        Assertions.assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
     }
 
     @Test
@@ -109,9 +109,9 @@ public class Rtcm1060Test {
 
             new RtcmMessagesParser(messages).parse(emptyMessage, false);
 
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
         }
 
     }

@@ -42,10 +42,10 @@
     package attitude #DDEBD8 {
 
       class Attitude {
-    	+Attitude withReferenceFrame
-    	+Frame getReferenceFrame
+        +Attitude withReferenceFrame
+        +Frame getReferenceFrame
         +Rotation getRotation
-	    +Vector3D getSpin
+        +Vector3D getSpin
       }
 
       class AttitudesSequence {

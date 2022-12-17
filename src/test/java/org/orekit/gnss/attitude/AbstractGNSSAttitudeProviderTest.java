@@ -16,26 +16,15 @@
  */
 package org.orekit.gnss.attitude;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Stream;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
@@ -59,9 +48,20 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
+
 public abstract class AbstractGNSSAttitudeProviderTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:gnss");
     }
@@ -91,7 +91,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     protected void doTestAxes(final String fileName, final double tolXY, double tolZ, boolean useGenericAttitude) {
 
         if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
-            Assert.fail("file not found: " + fileName);
+            Assertions.fail("file not found: " + fileName);
         }
 
         // the transforms between EME2000 and ITRF will not really be correct here
@@ -116,8 +116,8 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                                                           new GenericGNSS(validityStart, validityEnd, fakedSun, eme2000) :
                                                           dataBlock.get(0).satType.buildAttitudeProvider(validityStart, validityEnd,
                                                                                                          fakedSun, eme2000, prnNumber);
-            Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
-            Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
+            Assertions.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
+            Assertions.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
 
             for (final ParsedLine parsedLine : dataBlock) {
 
@@ -149,9 +149,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
         }
 
-        Assert.assertEquals(0, maxErrorX, tolXY);
-        Assert.assertEquals(0, maxErrorY, tolXY);
-        Assert.assertEquals(0, maxErrorZ, tolZ);
+        Assertions.assertEquals(0, maxErrorX, tolXY);
+        Assertions.assertEquals(0, maxErrorY, tolXY);
+        Assertions.assertEquals(0, maxErrorZ, tolZ);
 
     }
 
@@ -181,7 +181,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             }
 
         } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
+            Assertions.fail(ioe.getLocalizedMessage());
         }
 
         return dataBlocks;

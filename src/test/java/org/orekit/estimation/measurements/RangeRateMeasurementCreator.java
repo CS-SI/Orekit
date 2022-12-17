@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -32,6 +30,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Arrays;
+
 public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     private final StationDataProvider context;
@@ -45,7 +45,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         this.satellite = new ObservableSatellite(0);
         this.satellite.getClockDriftDriver().setValue(satClockDrift);
     }
-    
+
     public ObservableSatellite getSatellite() {
         return satellite;
     }

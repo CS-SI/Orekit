@@ -89,8 +89,8 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
         }
 
         // trajectory history
-        if (segment.getData().getOTrajectoryBlocks() != null && !segment.getData().getOTrajectoryBlocks().isEmpty()) {
-            for (final TrajectoryStateHistory history : segment.getData().getOTrajectoryBlocks()) {
+        if (segment.getData().getTrajectoryBlocks() != null && !segment.getData().getTrajectoryBlocks().isEmpty()) {
+            for (final TrajectoryStateHistory history : segment.getData().getTrajectoryBlocks()) {
                 // write optional trajectory history block
                 new TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
             }

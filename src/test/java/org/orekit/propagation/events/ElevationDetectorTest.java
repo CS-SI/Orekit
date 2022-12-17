@@ -16,15 +16,14 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -54,6 +53,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ElevationMask;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.List;
 
 public class ElevationDetectorTest {
 
@@ -92,10 +93,10 @@ public class ElevationDetectorTest {
                 new ElevationDetector(topo).
                 withConstantElevation(FastMath.toRadians(5.0)).
                 withHandler(checking);
-        Assert.assertNull(detector.getElevationMask());
-        Assert.assertNull(detector.getRefractionModel());
-        Assert.assertSame(topo, detector.getTopocentricFrame());
-        Assert.assertEquals(FastMath.toRadians(5.0), detector.getMinElevation(), 1.0e-15);
+        Assertions.assertNull(detector.getElevationMask());
+        Assertions.assertNull(detector.getRefractionModel());
+        Assertions.assertSame(topo, detector.getTopocentricFrame());
+        Assertions.assertEquals(FastMath.toRadians(5.0), detector.getMinElevation(), 1.0e-15);
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 12, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -130,9 +131,9 @@ public class ElevationDetectorTest {
             double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
 
             if (visible) {
-                Assert.assertTrue(range < 2.45e6);
+                Assertions.assertTrue(range < 2.45e6);
             } else {
-                Assert.assertTrue(range > 2.02e6);
+                Assertions.assertTrue(range > 2.02e6);
             }
         }
 
@@ -180,14 +181,14 @@ public class ElevationDetectorTest {
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)
                                             .withHandler(new StopOnIncreasing<ElevationDetector>());
-        Assert.assertSame(mask, detector.getElevationMask());
+        Assertions.assertSame(mask, detector.getElevationMask());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
         double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(0.065, elevation, 2.0e-5);
+        Assertions.assertEquals(0.065, elevation, 2.0e-5);
 
     }
 
@@ -218,14 +219,14 @@ public class ElevationDetectorTest {
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withRefraction(refractionModel)
                                             .withHandler(new StopOnIncreasing<ElevationDetector>());
-        Assert.assertSame(refractionModel, detector.getRefractionModel());
+        Assertions.assertSame(refractionModel, detector.getRefractionModel());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
         double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(FastMath.toRadians(-0.5746255623877098), elevation, 2.0e-5);
+        Assertions.assertEquals(FastMath.toRadians(-0.5746255623877098), elevation, 2.0e-5);
 
     }
 
@@ -280,8 +281,8 @@ public class ElevationDetectorTest {
                 ++countDecreasing;
             }
         }
-        Assert.assertEquals(314, countIncreasing);
-        Assert.assertEquals(314, countDecreasing);
+        Assertions.assertEquals(314, countIncreasing);
+        Assertions.assertEquals(314, countDecreasing);
 
     }
 
@@ -322,15 +323,16 @@ public class ElevationDetectorTest {
         final AbsoluteDate finalDate = initDate.shiftedBy(30 * 60.);
 
         kProp.propagate(finalDate);
-        Assert.assertEquals(2, logger.getLoggedEvents().size());
-        Assert.assertTrue(logger.getLoggedEvents().get(0).isIncreasing());
-        Assert.assertEquals(478.945, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
-        Assert.assertFalse(logger.getLoggedEvents().get(1).isIncreasing());
-        Assert.assertEquals(665.721, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assertions.assertEquals(2, logger.getLoggedEvents().size());
+        Assertions.assertTrue(logger.getLoggedEvents().get(0).isIncreasing());
+        Assertions.assertEquals(478.945, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assertions.assertFalse(logger.getLoggedEvents().get(1).isIncreasing());
+        Assertions.assertEquals(665.721, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
 
     }
 
-
+    @Disabled
+    @Test
     public void testPresTemp() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -364,7 +366,7 @@ public class ElevationDetectorTest {
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
         double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
-        Assert.assertEquals(FastMath.toRadians(1.7026104902251749), elevation, 2.0e-5);
+        Assertions.assertEquals(FastMath.toRadians(1.7026104902251749), elevation, 2.0e-5);
 
     }
 
@@ -511,17 +513,17 @@ public class ElevationDetectorTest {
         propagator.propagate(start, end);
 
         List<LoggedEvent> events = logger.getLoggedEvents();
-        Assert.assertEquals(6, events.size());
+        Assertions.assertEquals(6, events.size());
 
         // despite the events 2 and 3 are closer to each other than the convergence threshold
         // the second one is not merged into the first one
         AbsoluteDate d2 = events.get(2).getState().getDate();
         AbsoluteDate d3 = events.get(3).getState().getDate();
-        Assert.assertEquals(1.529, d3.durationFrom(d2), 0.01);
+        Assertions.assertEquals(1.529, d3.durationFrom(d2), 0.01);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
@@ -533,7 +535,7 @@ public class ElevationDetectorTest {
         c60 = -5.5e-7;
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         mu   = Double.NaN;
         ae   = Double.NaN;

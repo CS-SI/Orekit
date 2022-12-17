@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,9 +23,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -45,11 +42,14 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 public class GLONASSNumericalPropagatorTest {
 
     private static GLONASSEphemeris ephemeris;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         Utils.setDataRoot("regular-data");
         // Reference values for validation are given into Glonass Interface Control Document v1.0 2016
@@ -85,11 +85,11 @@ public class GLONASSNumericalPropagatorTest {
 
         // Initial verifications
         final GLONASSOrbitalElements poe = propagator.getGLONASSOrbitalElements();
-        Assert.assertEquals(0.0, poe.getXDotDot(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, poe.getYDotDot(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, poe.getZDotDot(), Precision.SAFE_MIN);
-        Assert.assertEquals(5,   poe.getN4());
-        Assert.assertEquals(251, poe.getNa());
+        Assertions.assertEquals(0.0, poe.getXDotDot(), Precision.SAFE_MIN);
+        Assertions.assertEquals(0.0, poe.getYDotDot(), Precision.SAFE_MIN);
+        Assertions.assertEquals(0.0, poe.getZDotDot(), Precision.SAFE_MIN);
+        Assertions.assertEquals(5,   poe.getN4());
+        Assertions.assertEquals(251, poe.getNa());
 
         // Propagation
         final SpacecraftState finalState = propagator.propagate(target);
@@ -103,15 +103,15 @@ public class GLONASSNumericalPropagatorTest {
         final Vector3D computedPosition = pvFinal.getPosition();
         final Vector3D computedVelocity = pvFinal.getVelocity();
 
-        Assert.assertEquals(0.0, computedPosition.distance(expectedPosition), 1.1e-3);
-        Assert.assertEquals(0.0, computedVelocity.distance(expectedVelocity), 3.3e-6);
+        Assertions.assertEquals(0.0, computedPosition.distance(expectedPosition), 1.1e-3);
+        Assertions.assertEquals(0.0, computedVelocity.distance(expectedVelocity), 3.3e-6);
     }
 
     @Test
     public void testFromITRF2008ToPZ90() {
         // Reference for the test
         // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
-        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 
+        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014"
 
         // Position in ITRF-2008
         final Vector3D itrf2008P = new Vector3D(2845455.9753, 2160954.3073, 5265993.2656);
@@ -125,9 +125,9 @@ public class GLONASSNumericalPropagatorTest {
         final Vector3D comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 
         // Check
-        Assert.assertEquals(refPZ90.getX(), comPZ90.getX(), 1.0e-4);
-        Assert.assertEquals(refPZ90.getY(), comPZ90.getY(), 1.0e-4);
-        Assert.assertEquals(refPZ90.getZ(), comPZ90.getZ(), 1.0e-4);
+        Assertions.assertEquals(refPZ90.getX(), comPZ90.getX(), 1.0e-4);
+        Assertions.assertEquals(refPZ90.getY(), comPZ90.getY(), 1.0e-4);
+        Assertions.assertEquals(refPZ90.getZ(), comPZ90.getZ(), 1.0e-4);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class GLONASSNumericalPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {
         // Reference for the test
         // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
-        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014" 
+        //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014"
 
         // Position in ITRF-2008
         final FieldVector3D<T> itrf2008P = new FieldVector3D<>(field,
@@ -154,9 +154,9 @@ public class GLONASSNumericalPropagatorTest {
         final FieldVector3D<T> comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 
         // Check
-        Assert.assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
-        Assert.assertEquals(refPZ90.getY().getReal(), comPZ90.getY().getReal(), 1.0e-4);
-        Assert.assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
+        Assertions.assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
+        Assertions.assertEquals(refPZ90.getY().getReal(), comPZ90.getY().getReal(), 1.0e-4);
+        Assertions.assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
     }
 
     @Test
@@ -191,7 +191,7 @@ public class GLONASSNumericalPropagatorTest {
         // Expected position (reference from IGS file igv20692_06.sp3)
         final Vector3D expectedPos = new Vector3D(-10742801.600, -15247162.619, -17347541.633);
         // Verify
-        Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.8);
+        Assertions.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.8);
     }
 
     @Test
@@ -202,7 +202,7 @@ public class GLONASSNumericalPropagatorTest {
             eMeSinEM.setAccessible(true);
             final double value = (double) eMeSinEM.invoke(null, Double.NaN, Double.NaN);
             // Verify that an infinite loop did not occur
-            Assert.assertTrue(Double.isNaN(value));
+            Assertions.assertTrue(Double.isNaN(value));
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (SecurityException e) {

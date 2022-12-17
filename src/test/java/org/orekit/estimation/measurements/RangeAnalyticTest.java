@@ -26,8 +26,8 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -308,11 +308,15 @@ public class RangeAnalyticTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 3.8e-08);
-        Assert.assertEquals(0.0, absErrorsMin,    2.0e-07);
-        Assert.assertEquals(0.0, absErrorsMax,    2.3e-07);
-        Assert.assertEquals(0.0, relErrorsMedian, 6.5e-15);
-        Assert.assertEquals(0.0, relErrorsMax,    2.4e-14);
+        Assertions.assertEquals(0.0, absErrorsMedian, 4.0e-08);
+        Assertions.assertEquals(0.0, absErrorsMin,    2.0e-07);
+        Assertions.assertEquals(0.0, absErrorsMax,    2.3e-07);
+        Assertions.assertEquals(0.0, relErrorsMedian, 6.5e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    2.4e-14);
+
+        // Test measurement type
+        final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.get(0));
+        Assertions.assertEquals(RangeAnalytic.MEASUREMENT_TYPE, rangeAnalytic.getMeasurementType());
     }
 
     /**
@@ -403,8 +407,8 @@ public class RangeAnalyticTest {
 //                    }
 //                    //Test
 
-                    Assert.assertEquals(jacobianRef.length, jacobian.length);
-                    Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
+                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -479,12 +483,12 @@ public class RangeAnalyticTest {
         }
 
         // Reference comparison with Range class
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     /**
@@ -562,8 +566,8 @@ public class RangeAnalyticTest {
 
                     for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                        Assert.assertEquals(1, measurement.getDimension());
-                        Assert.assertEquals(1, gradient.length);
+                        Assertions.assertEquals(1, measurement.getDimension());
+                        Assertions.assertEquals(1, gradient.length);
 
                         // Compute a reference value using analytical formulas
                         final EstimatedMeasurement<Range> rangeAnalytic =
@@ -579,7 +583,7 @@ public class RangeAnalyticTest {
 
                         final double relError = FastMath.abs((ref-gradient[0])/ref);
                         relErrorList.add(relError);
-//                        Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
+//                        Assertions.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");
@@ -631,8 +635,8 @@ public class RangeAnalyticTest {
         refErrorsMean   = 3.64e-06;
         refErrorsMax    = 6.1e-05;
 
-        Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assert.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
+        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
     }
 }

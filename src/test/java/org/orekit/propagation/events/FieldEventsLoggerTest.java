@@ -16,19 +16,17 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.FramesFactory;
@@ -42,6 +40,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 
+import java.util.List;
+
 public class FieldEventsLoggerTest {
 
     private double               mu;
@@ -52,7 +52,7 @@ public class FieldEventsLoggerTest {
 //    private FieldEventDetector<T>        penumbraDetector;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
             Utils.setDataRoot("regular-data");
             mu  = 3.9860047e14;
@@ -113,14 +113,14 @@ public class FieldEventsLoggerTest {
         @SuppressWarnings("unchecked")
         FieldEventDetector<T> monitored = ((FieldAbstractDetector<FieldEventDetector<T>, T>) logger.monitorDetector(umbraDetector)).
                 withMaxIter(200);
-        Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
-        Assert.assertEquals(200, monitored.getMaxIterationCount());
+        Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
+        Assertions.assertEquals(200, monitored.getMaxIterationCount());
 
         propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assert.assertEquals(11, count);
+        Assertions.assertEquals(11, count);
         checkCounts(logger, 3, 3, 0, 0, umbraDetector, penumbraDetector);
     }
 
@@ -157,7 +157,7 @@ public class FieldEventsLoggerTest {
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assert.assertEquals(11, count);
+        Assertions.assertEquals(11, count);
         checkCounts(logger, 0, 0, 2, 3, umbraDetector, penumbraDetector);
     }
 
@@ -200,7 +200,7 @@ public class FieldEventsLoggerTest {
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
-        Assert.assertEquals(11, count);
+        Assertions.assertEquals(11, count);
         checkCounts(logger, 3, 3, 2, 3, umbraDetector, penumbraDetector);
     }
 
@@ -238,11 +238,11 @@ public class FieldEventsLoggerTest {
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
         List<FieldEventsLogger.FieldLoggedEvent<T>> firstList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
+        Assertions.assertEquals(11, firstList.size());
         propagator.propagate(iniDate.shiftedBy(30000));
         List<FieldEventsLogger.FieldLoggedEvent<T>> secondList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
-        Assert.assertEquals(20, secondList.size());
+        Assertions.assertEquals(11, firstList.size());
+        Assertions.assertEquals(20, secondList.size());
         for (int i = 0; i < firstList.size(); ++i) {
 
             FieldEventsLogger.FieldLoggedEvent<T> e1 = firstList.get(i);
@@ -250,10 +250,10 @@ public class FieldEventsLoggerTest {
             FieldPVCoordinates<T> pv1 = e1.getState().getPVCoordinates();
             FieldPVCoordinates<T> pv2 = e2.getState().getPVCoordinates();
 
-            Assert.assertTrue(e1.getEventDetector() == e2.getEventDetector());
-            Assert.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-10);
-            Assert.assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-10);
-            Assert.assertEquals(e1.isIncreasing(), e2.isIncreasing());
+            Assertions.assertTrue(e1.getEventDetector() == e2.getEventDetector());
+            Assertions.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-10);
+            Assertions.assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-10);
+            Assertions.assertEquals(e1.isIncreasing(), e2.isIncreasing());
 
         }
     }
@@ -296,12 +296,12 @@ public class FieldEventsLoggerTest {
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
         List<FieldEventsLogger.FieldLoggedEvent<T>> firstList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
+        Assertions.assertEquals(11, firstList.size());
         logger.clearLoggedEvents();
         propagator.propagate(iniDate.shiftedBy(30000));
         List<FieldEventsLogger.FieldLoggedEvent<T>> secondList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
-        Assert.assertEquals( 9, secondList.size());
+        Assertions.assertEquals(11, firstList.size());
+        Assertions.assertEquals( 9, secondList.size());
     }
 
     private <T extends CalculusFieldElement<T>> void checkCounts(FieldEventsLogger<T> logger,
@@ -328,10 +328,10 @@ public class FieldEventsLoggerTest {
                 }
             }
         }
-        Assert.assertEquals(expectedUmbraIncreasingCount,    umbraIncreasingCount);
-        Assert.assertEquals(expectedUmbraDecreasingCount,    umbraDecreasingCount);
-        Assert.assertEquals(expectedPenumbraIncreasingCount, penumbraIncreasingCount);
-        Assert.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
+        Assertions.assertEquals(expectedUmbraIncreasingCount,    umbraIncreasingCount);
+        Assertions.assertEquals(expectedUmbraDecreasingCount,    umbraDecreasingCount);
+        Assertions.assertEquals(expectedPenumbraIncreasingCount, penumbraIncreasingCount);
+        Assertions.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
     private <T extends CalculusFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
@@ -359,7 +359,7 @@ public class FieldEventsLoggerTest {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         count = 0;
     }

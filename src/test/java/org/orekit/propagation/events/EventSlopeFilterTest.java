@@ -18,10 +18,10 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -52,17 +52,17 @@ public class EventSlopeFilterTest {
     public void testEnums() {
         // this test is here only for test coverage ...
 
-        Assert.assertEquals(5, Transformer.values().length);
-        Assert.assertSame(Transformer.UNINITIALIZED, Transformer.valueOf("UNINITIALIZED"));
-        Assert.assertSame(Transformer.PLUS,          Transformer.valueOf("PLUS"));
-        Assert.assertSame(Transformer.MINUS,         Transformer.valueOf("MINUS"));
-        Assert.assertSame(Transformer.MIN,           Transformer.valueOf("MIN"));
-        Assert.assertSame(Transformer.MAX,           Transformer.valueOf("MAX"));
+        Assertions.assertEquals(5, Transformer.values().length);
+        Assertions.assertSame(Transformer.UNINITIALIZED, Transformer.valueOf("UNINITIALIZED"));
+        Assertions.assertSame(Transformer.PLUS,          Transformer.valueOf("PLUS"));
+        Assertions.assertSame(Transformer.MINUS,         Transformer.valueOf("MINUS"));
+        Assertions.assertSame(Transformer.MIN,           Transformer.valueOf("MIN"));
+        Assertions.assertSame(Transformer.MAX,           Transformer.valueOf("MAX"));
 
-        Assert.assertEquals(2, FilterType.values().length);
-        Assert.assertSame(FilterType.TRIGGER_ONLY_DECREASING_EVENTS,
+        Assertions.assertEquals(2, FilterType.values().length);
+        Assertions.assertSame(FilterType.TRIGGER_ONLY_DECREASING_EVENTS,
                           FilterType.valueOf("TRIGGER_ONLY_DECREASING_EVENTS"));
-        Assert.assertSame(FilterType.TRIGGER_ONLY_INCREASING_EVENTS,
+        Assertions.assertSame(FilterType.TRIGGER_ONLY_INCREASING_EVENTS,
                           FilterType.valueOf("TRIGGER_ONLY_INCREASING_EVENTS"));
 
     }
@@ -80,14 +80,14 @@ public class EventSlopeFilterTest {
         final EventSlopeFilter<EclipseDetector> filter =
                 new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS).
                 withMaxIter(200);
-        Assert.assertSame(detector, filter.getDetector());
-        Assert.assertEquals(200, filter.getMaxIterationCount());
+        Assertions.assertSame(detector, filter.getDetector());
+        Assertions.assertEquals(200, filter.getMaxIterationCount());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(filter);
         propagator.propagate(iniDate, iniDate.shiftedBy(7 * Constants.JULIAN_DAY));
-        Assert.assertEquals(102, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(102, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -96,7 +96,7 @@ public class EventSlopeFilterTest {
             // and in this example get stuck with Transformer.MAX
             // transformer, hence the g function is always positive
             // in the test range
-            Assert.assertTrue(filter.g(currentState) > 0);
+            Assertions.assertTrue(filter.g(currentState) > 0);
         });
         propagator.propagate(iniDate.shiftedBy(-3600), iniDate.shiftedBy(Constants.JULIAN_DAY + 3600));
     }
@@ -115,13 +115,13 @@ public class EventSlopeFilterTest {
         final EventSlopeFilter<EclipseDetector> filter =
                 new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS).
                 withMaxIter(200);
-        Assert.assertEquals(200, filter.getMaxIterationCount());
+        Assertions.assertEquals(200, filter.getMaxIterationCount());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(filter);
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY), iniDate);
-        Assert.assertEquals(  0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals(102, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(  0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals(102, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -130,7 +130,7 @@ public class EventSlopeFilterTest {
                 // and in this example get stuck with Transformer.MIN
                 // transformer, hence the g function is always negative
                 // in the test range
-                Assert.assertTrue(filter.g(currentState) < 0);
+                Assertions.assertTrue(filter.g(currentState) < 0);
             });
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY + 3600),
                              iniDate.shiftedBy(6 * Constants.JULIAN_DAY + 3600));
@@ -151,22 +151,22 @@ public class EventSlopeFilterTest {
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
 
     }
 
@@ -185,22 +185,22 @@ public class EventSlopeFilterTest {
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
 
     }
 
@@ -356,7 +356,7 @@ public class EventSlopeFilterTest {
                     public Action eventOccurred(SpacecraftState s,
                                                 LatitudeCrossingDetector detector,
                                                 boolean increasing) {
-                        Assert.assertEquals(filter.getTriggeredIncreasing(), increasing);
+                        Assertions.assertEquals(filter.getTriggeredIncreasing(), increasing);
                         count[0]++;
                         return Action.RESET_STATE;
                     }
@@ -369,13 +369,13 @@ public class EventSlopeFilterTest {
                     }
 
                 });
-        Assert.assertSame(earth, detector.getBody());
+        Assertions.assertSame(earth, detector.getBody());
         propagator.addEventDetector(new EventSlopeFilter<EventDetector>(detector, filter));
         AbsoluteDate target = propagator.getInitialState().getDate().shiftedBy(dt);
         SpacecraftState finalState = propagator.propagate(target);
-        Assert.assertEquals(0.0, finalState.getDate().durationFrom(target), 1.0e-10);
-        Assert.assertEquals(expected, count[0]);
-        Assert.assertEquals(expected, count[1]);
+        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(target), 1.0e-10);
+        Assertions.assertEquals(expected, count[0]);
+        Assertions.assertEquals(expected, count[1]);
     }
 
     private static class Counter implements EventHandler<EclipseDetector> {
@@ -412,7 +412,7 @@ public class EventSlopeFilterTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
@@ -428,11 +428,11 @@ public class EventSlopeFilterTest {
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         } catch (OrekitException oe) {
-            Assert.fail(oe.getLocalizedMessage());
+            Assertions.fail(oe.getLocalizedMessage());
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         iniDate    = null;
         propagator = null;

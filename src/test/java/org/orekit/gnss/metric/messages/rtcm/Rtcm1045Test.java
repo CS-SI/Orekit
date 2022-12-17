@@ -16,12 +16,10 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
-import java.util.ArrayList;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
@@ -34,11 +32,13 @@ import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.GNSSDate;
 
+import java.util.ArrayList;
+
 public class Rtcm1045Test {
 
     private double eps = 8.2e-10;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("gnss");
     }
@@ -89,44 +89,44 @@ public class Rtcm1045Test {
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(galileoMessage).build();
-        Assert.assertNotNull(propagator);
-        Assert.assertEquals(0.0, galileoMessage.getDate().
+        Assertions.assertNotNull(propagator);
+        Assertions.assertEquals(0.0, galileoMessage.getDate().
                             durationFrom(new GNSSDate(galileoMessage.getWeek(), 1000.0 * galileoMessage.getTime(), SatelliteSystem.GALILEO).getDate()), eps);
 
         // Verify message number
-        Assert.assertEquals(1045,                   rtcm1045.getTypeCode());
-        Assert.assertEquals(1,                      rtcm1045.getData().size());
+        Assertions.assertEquals(1045,                   rtcm1045.getTypeCode());
+        Assertions.assertEquals(1,                      rtcm1045.getData().size());
 
         // Verify navigation message
-        Assert.assertEquals(12,                     galileoMessage.getPRN());
-        Assert.assertEquals(4079,                   galileoMessage.getWeek());
-        Assert.assertEquals(2.1475894557210572E-9,  galileoMessage.getIDot(),               eps);
-        Assert.assertEquals(528,                    galileoMessage.getIODNav(),             eps);
-        Assert.assertEquals(3.3776428E-17,          galileoMessage.getAf2(),                eps);
-        Assert.assertEquals(1.279588E-9,            galileoMessage.getAf1(),                eps);
-        Assert.assertEquals(0.036617268,            galileoMessage.getAf0(),                eps);
-        Assert.assertEquals(0.0,                    galileoMessage.getCrs(),                eps);
-        Assert.assertEquals(1.4587496546628753E-4,  galileoMessage.getMeanMotion(),         eps);
-        Assert.assertEquals(0.16717753824407455,    galileoMessage.getM0(),                 eps);
-        Assert.assertEquals(0.0,                    galileoMessage.getCuc(),                eps);
-        Assert.assertEquals(0.0389980711042881,     galileoMessage.getE(),                  eps);
-        Assert.assertEquals(0.0,                    galileoMessage.getCus(),                eps);
-        Assert.assertEquals(5153.562498092651,      FastMath.sqrt(galileoMessage.getSma()), eps);
-        Assert.assertEquals(525780.0,               galileoMessage.getTime(),               eps);
-        Assert.assertEquals(0.0,                    galileoMessage.getCic(),                eps);
-        Assert.assertEquals(0.0,                    galileoMessage.getCis(),                eps);
-        Assert.assertEquals(0.9877147247285952,     galileoMessage.getI0(),                 eps);
-        Assert.assertEquals(0.0,                    galileoMessage.getCrc(),                eps);
-        Assert.assertEquals(0.30049130834913723,    galileoMessage.getPa(),                 eps);
-        Assert.assertEquals(-5.855958209879004E-9,  galileoMessage.getOmegaDot(),           eps);
-        Assert.assertEquals(0.6980085400002902,     galileoMessage.getOmega0(),             eps);
-        Assert.assertEquals(2.537854E-8,            galileoMessage.getBGDE1E5a(),           eps);
+        Assertions.assertEquals(12,                     galileoMessage.getPRN());
+        Assertions.assertEquals(4079,                   galileoMessage.getWeek());
+        Assertions.assertEquals(2.1475894557210572E-9,  galileoMessage.getIDot(),               eps);
+        Assertions.assertEquals(528,                    galileoMessage.getIODNav(),             eps);
+        Assertions.assertEquals(3.3776428E-17,          galileoMessage.getAf2(),                eps);
+        Assertions.assertEquals(1.279588E-9,            galileoMessage.getAf1(),                eps);
+        Assertions.assertEquals(0.036617268,            galileoMessage.getAf0(),                eps);
+        Assertions.assertEquals(0.0,                    galileoMessage.getCrs(),                eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  galileoMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(0.16717753824407455,    galileoMessage.getM0(),                 eps);
+        Assertions.assertEquals(0.0,                    galileoMessage.getCuc(),                eps);
+        Assertions.assertEquals(0.0389980711042881,     galileoMessage.getE(),                  eps);
+        Assertions.assertEquals(0.0,                    galileoMessage.getCus(),                eps);
+        Assertions.assertEquals(5153.562498092651,      FastMath.sqrt(galileoMessage.getSma()), eps);
+        Assertions.assertEquals(525780.0,               galileoMessage.getTime(),               eps);
+        Assertions.assertEquals(0.0,                    galileoMessage.getCic(),                eps);
+        Assertions.assertEquals(0.0,                    galileoMessage.getCis(),                eps);
+        Assertions.assertEquals(0.9877147247285952,     galileoMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.0,                    galileoMessage.getCrc(),                eps);
+        Assertions.assertEquals(0.30049130834913723,    galileoMessage.getPa(),                 eps);
+        Assertions.assertEquals(-5.855958209879004E-9,  galileoMessage.getOmegaDot(),           eps);
+        Assertions.assertEquals(0.6980085400002902,     galileoMessage.getOmega0(),             eps);
+        Assertions.assertEquals(2.537854E-8,            galileoMessage.getBGDE1E5a(),           eps);
 
         // Verify other data
-        Assert.assertEquals(12,                     ephemerisData.getSatelliteID());
-        Assert.assertEquals(59220.0,                ephemerisData.getGalileoToc(), eps);
-        Assert.assertEquals(0,                      ephemerisData.getGalileoDataValidityStatus());
-        Assert.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), galileoMessage.getSisa(), eps);
+        Assertions.assertEquals(12,                     ephemerisData.getSatelliteID());
+        Assertions.assertEquals(59220.0,                ephemerisData.getGalileoToc(), eps);
+        Assertions.assertEquals(0,                      ephemerisData.getGalileoDataValidityStatus());
+        Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), galileoMessage.getSisa(), eps);
 
     }
 
@@ -171,7 +171,7 @@ public class Rtcm1045Test {
 
        final Rtcm1045 rtcm1045 = (Rtcm1045) new RtcmMessagesParser(messages).parse(message, false);
 
-       Assert.assertNull(rtcm1045);
+       Assertions.assertNull(rtcm1045);
     }
 
 

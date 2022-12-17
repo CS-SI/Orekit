@@ -18,7 +18,7 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -107,7 +107,7 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
 
     private void checkState(final SpacecraftState state) {
         stmGenerator.combinedDerivatives(state); // just for the side effect of calling partialsComputed
-        Assert.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
+        Assertions.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
         dYdY0 = harvester.getStateTransitionMatrix(state);
         dYdP  = harvester.getParametersJacobian(state); // may be null
         s0    = state;
@@ -118,7 +118,7 @@ class PickUpHandler implements OrekitStepHandler, DSSTStateTransitionMatrixGener
         // Mean orbit
         final SpacecraftState initial = propagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(propagator.getInitialState(), propagator.getAttitudeProvider(), propagator.getAllForceModels()) :
-                    	   propagator.getInitialState();
+                           propagator.getInitialState();
         ((DSSTHarvester) harvester).initializeFieldShortPeriodTerms(initial); // Initial state is MEAN
     }
 

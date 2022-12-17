@@ -36,6 +36,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class Position extends AbstractMeasurement<Position> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "Position";
+
     /** Identity matrix, for states derivatives. */
     private static final double[][] IDENTITY = new double[][] {
         {

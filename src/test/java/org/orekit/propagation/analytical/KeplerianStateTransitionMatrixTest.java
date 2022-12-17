@@ -3,9 +3,9 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
@@ -25,26 +25,28 @@ import org.orekit.utils.PVCoordinates;
 
 public class KeplerianStateTransitionMatrixTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNullStmName() {
-        // Definition of initial conditions with position and velocity
-        //------------------------------------------------------------
-        Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            // Definition of initial conditions with position and velocity
+            //------------------------------------------------------------
+            Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+            Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
 
-        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                                  FramesFactory.getEME2000(), initDate, Constants.WGS84_EARTH_MU);
+            AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+            Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
+                    FramesFactory.getEME2000(), initDate, Constants.WGS84_EARTH_MU);
 
-        // Extrapolator definition
-        // -----------------------
-        KeplerianPropagator extrapolator = new KeplerianPropagator(initialOrbit);
-        extrapolator.setupMatricesComputation(null, null, null);
+            // Extrapolator definition
+            // -----------------------
+            KeplerianPropagator extrapolator = new KeplerianPropagator(initialOrbit);
+            extrapolator.setupMatricesComputation(null, null, null);
+        });
     }
 
     @Test
@@ -99,7 +101,7 @@ public class KeplerianStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, 4.51e-14);
+                    Assertions.assertEquals(0, error, 4.51e-14);
                 }
             }
         }
@@ -138,7 +140,7 @@ public class KeplerianStateTransitionMatrixTest {
                             state.getMu(), state.getAttitude());
 
     }
-    
+
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
 
@@ -146,7 +148,7 @@ public class KeplerianStateTransitionMatrixTest {
           return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, 
+    private SpacecraftState arrayToState(double[][] array,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
         CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);

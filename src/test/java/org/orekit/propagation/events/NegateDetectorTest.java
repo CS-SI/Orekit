@@ -18,8 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -90,6 +90,6 @@ public class NegateDetectorTest {
 
         //verify
         MatcherAssert.assertThat(actual.getMaxCheckInterval(), CoreMatchers.is(100.0));
-        Assert.assertTrue(actual.getOriginal() == a);
+        Assertions.assertTrue(actual.getOriginal() == a);
     }
 }

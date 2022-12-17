@@ -16,17 +16,15 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.maneuvers.Maneuver;
@@ -44,16 +42,18 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.DoubleArrayDictionary;
 
+import java.util.List;
+
 public class NumericalPropagationHarvesterTest {
 
     @Test
     public void testNullStmName() {
          try {
             propagator.setupMatricesComputation(null, null, null);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NULL_ARGUMENT, oe.getSpecifier());
-            Assert.assertEquals("stmName", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.NULL_ARGUMENT, oe.getSpecifier());
+            Assertions.assertEquals("stmName", oe.getParts()[0]);
         }
     }
 
@@ -63,7 +63,7 @@ public class NumericalPropagationHarvesterTest {
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assert.assertNull(harvester.getStateTransitionMatrix(propagator.getInitialState()));
+        Assertions.assertNull(harvester.getStateTransitionMatrix(propagator.getInitialState()));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class NumericalPropagationHarvesterTest {
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assert.assertNull(harvester.getParametersJacobian(propagator.getInitialState()));
+        Assertions.assertNull(harvester.getParametersJacobian(propagator.getInitialState()));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class NumericalPropagationHarvesterTest {
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assert.assertNotNull(harvester.getInitialJacobianColumn("xyz"));
+        Assertions.assertNotNull(harvester.getInitialJacobianColumn("xyz"));
     }
 
     @Test
@@ -111,19 +111,19 @@ public class NumericalPropagationHarvesterTest {
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assert.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+        Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
 
         DateBasedManeuverTriggers triggers = new DateBasedManeuverTriggers("apogee_boost", propagator.getInitialState().getDate().shiftedBy(60.0), 120.0);
         PropulsionModel propulsion = new BasicConstantThrustPropulsionModel(400.0, 350.0, Vector3D.PLUS_I, "ABM-");
         propagator.addForceModel(new Maneuver(null, triggers, propulsion));
-        Assert.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+        Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
 
         triggers.getParametersDrivers().get(1).setSelected(true);
         propulsion.getParametersDrivers().get(0).setSelected(true);
         List<String> columnsNames = harvester.getJacobiansColumnsNames();
-        Assert.assertEquals(2, columnsNames.size());
-        Assert.assertEquals("ABM-" + BasicConstantThrustPropulsionModel.THRUST, columnsNames.get(0));
-        Assert.assertEquals("apogee_boost_STOP", columnsNames.get(1));
+        Assertions.assertEquals(2, columnsNames.size());
+        Assertions.assertEquals("ABM-" + BasicConstantThrustPropulsionModel.THRUST, columnsNames.get(0));
+        Assertions.assertEquals("apogee_boost_STOP", columnsNames.get(1));
 
     }
 
@@ -138,10 +138,10 @@ public class NumericalPropagationHarvesterTest {
         }
         SpacecraftState s = propagator.getInitialState().addAdditionalState(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
-        Assert.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
+        Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Orbit initialOrbit =
                         new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
@@ -156,7 +156,7 @@ public class NumericalPropagationHarvesterTest {
         propagator.setInitialState(new SpacecraftState(initialOrbit));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         propagator = null;
     }

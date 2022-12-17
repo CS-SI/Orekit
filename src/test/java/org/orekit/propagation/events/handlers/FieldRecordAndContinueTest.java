@@ -16,13 +16,11 @@
  */
 package org.orekit.propagation.events.handlers;
 
-import java.util.List;
-
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -34,6 +32,8 @@ import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+
+import java.util.List;
 
 /**
  * Unit tests for {@link FieldRecordAndContinue}.
@@ -65,38 +65,38 @@ public class FieldRecordAndContinueTest {
         FieldSpacecraftState<Decimal64> s4 = s3.shiftedBy(1);
 
         // actions
-        Assert.assertEquals(Action.CONTINUE, handler.eventOccurred(s1, detector, true));
-        Assert.assertEquals(Action.CONTINUE, handler.eventOccurred(s2, detector, true));
-        Assert.assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
+        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s1, detector, true));
+        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s2, detector, true));
+        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
 
         // verify
         List<Event<FieldDateDetector<Decimal64>, Decimal64>> events = handler.getEvents();
-        Assert.assertEquals(3, events.size());
-        Assert.assertEquals(s1, events.get(0).getState());
-        Assert.assertEquals(s2, events.get(1).getState());
-        Assert.assertEquals(s3, events.get(2).getState());
-        Assert.assertEquals(true, events.get(0).isIncreasing());
-        Assert.assertEquals(true, events.get(1).isIncreasing());
-        Assert.assertEquals(false, events.get(2).isIncreasing());
+        Assertions.assertEquals(3, events.size());
+        Assertions.assertEquals(s1, events.get(0).getState());
+        Assertions.assertEquals(s2, events.get(1).getState());
+        Assertions.assertEquals(s3, events.get(2).getState());
+        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        Assertions.assertEquals(false, events.get(2).isIncreasing());
         for (Event<FieldDateDetector<Decimal64>, Decimal64> event : events) {
-            Assert.assertEquals(detector, event.getDetector());
+            Assertions.assertEquals(detector, event.getDetector());
         }
 
         // action: clear
         handler.clear();
 
         // verify is empty
-        Assert.assertEquals(0, handler.getEvents().size());
+        Assertions.assertEquals(0, handler.getEvents().size());
 
         // action add more
-        Assert.assertEquals(Action.CONTINUE, handler.eventOccurred(s4, detector, false));
+        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s4, detector, false));
 
         // verify new events
         events = handler.getEvents();
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(s4, events.get(0).getState());
-        Assert.assertEquals(false, events.get(0).isIncreasing());
-        Assert.assertEquals(detector, events.get(0).getDetector());
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(s4, events.get(0).getState());
+        Assertions.assertEquals(false, events.get(0).isIncreasing());
+        Assertions.assertEquals(detector, events.get(0).getDetector());
     }
 
     /**

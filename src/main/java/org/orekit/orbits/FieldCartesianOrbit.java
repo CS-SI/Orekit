@@ -20,8 +20,8 @@ package org.orekit.orbits;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -32,7 +32,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -554,7 +553,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // compute shifted eccentric anomaly
         final T M1      = M0.add(getKeplerianMeanMotion().multiply(dt));
-        final T H1      = meanToHyperbolicEccentric(M1, e);
+        final T H1      = FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, M1);
 
         // compute shifted in-plane Cartesian coordinates
         final T cH     = H1.cosh();
@@ -631,64 +630,6 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         throw new MathIllegalStateException(LocalizedCoreFormats.CONVERGENCE_FAILED);
 
-    }
-
-    /** Computes the hyperbolic eccentric anomaly from the mean anomaly.
-     * <p>
-     * The algorithm used here for solving hyperbolic Kepler equation is
-     * Danby's iterative method (3rd order) with Vallado's initial guess.
-     * </p>
-     * @param M mean anomaly (rad)
-     * @param ecc eccentricity
-     * @return the hyperbolic eccentric anomaly
-     */
-    private T meanToHyperbolicEccentric(final T M, final T ecc) {
-
-        // Resolution of hyperbolic Kepler equation for Keplerian parameters
-
-        // Field value of pi
-        final T pi = ecc.getPi();
-
-        // Initial guess
-        T H;
-        if (ecc.getReal() < 1.6) {
-            if (-pi.getReal() < M.getReal() && M.getReal() < 0. || M.getReal() > pi.getReal()) {
-                H = M.subtract(ecc);
-            } else {
-                H = M.add(ecc);
-            }
-        } else {
-            if (ecc.getReal() < 3.6 && FastMath.abs(M.getReal()) > pi.getReal()) {
-                H = M.subtract(ecc.copySign(M));
-            } else {
-                H = M.divide(ecc.subtract(1.));
-            }
-        }
-
-        // Iterative computation
-        int iter = 0;
-        do {
-            final T f3  = ecc.multiply(H.cosh());
-            final T f2  = ecc.multiply(H.sinh());
-            final T f1  = f3.subtract(1.);
-            final T f0  = f2.subtract(H).subtract(M);
-            final T f12 = f1.multiply(2);
-            final T d   = f0.divide(f12);
-            final T fdf = f1.subtract(d.multiply(f2));
-            final T ds  = f0.divide(fdf);
-
-            final T shift = f0.divide(fdf.add(ds.multiply(ds).multiply(f3.divide(6.))));
-
-            H = H.subtract(shift);
-
-            if (FastMath.abs(shift.getReal()) <= 1.0e-12) {
-                return H;
-            }
-
-        } while (++iter < 50);
-
-        throw new MathIllegalStateException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
-                                            iter);
     }
 
     /** Create a 6x6 identity matrix.

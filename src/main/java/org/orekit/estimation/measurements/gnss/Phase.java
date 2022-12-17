@@ -54,6 +54,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class Phase extends AbstractMeasurement<Phase> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "Phase";
+
     /** Name for ambiguity driver. */
     public static final String AMBIGUITY_NAME = "ambiguity";
 

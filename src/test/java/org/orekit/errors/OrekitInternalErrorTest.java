@@ -16,23 +16,22 @@
  */
 package org.orekit.errors;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class OrekitInternalErrorTest {
 
     @Test
     public void testMessage() {
         OrekitInternalError e = new OrekitInternalError(null);
-        Assert.assertEquals(OrekitMessages.INTERNAL_ERROR, e.getSpecifier());
-        Assert.assertEquals(1, e.getParts().length);
-        Assert.assertEquals("https://forum.orekit.org", e.getParts()[0]);
-        Assert.assertTrue(e.getMessage().contains("https://forum.orekit.org"));
-        Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("erreur interne, merci de signaler le problème en ouvrant une nouvelle discussion sur https://forum.orekit.org",
+        Assertions.assertEquals(OrekitMessages.INTERNAL_ERROR, e.getSpecifier());
+        Assertions.assertEquals(1, e.getParts().length);
+        Assertions.assertEquals("https://forum.orekit.org", e.getParts()[0]);
+        Assertions.assertTrue(e.getMessage().contains("https://forum.orekit.org"));
+        Assertions.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
+        Assertions.assertEquals("erreur interne, merci de signaler le problème en ouvrant une nouvelle discussion sur https://forum.orekit.org",
                             e.getMessage(Locale.FRENCH));
     }
 

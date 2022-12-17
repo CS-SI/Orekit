@@ -17,9 +17,9 @@
 package org.orekit.models.earth.weather;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -31,7 +31,7 @@ import org.orekit.utils.IERSConventions;
 
 public class GlobalPressureTemperatureModelTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -73,16 +73,16 @@ public class GlobalPressureTemperatureModelTest {
         final double computedTemperature = model.getTemperature() - 273.15;
         final double computedPressure    = model.getPressure();
 
-        Assert.assertEquals(expectedPressure,    computedPressure,    0.1);
-        Assert.assertEquals(expectedTemperature, computedTemperature, 0.1);
+        Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
+        Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);
 
         // Real weather conditions
         final double realTemperature = 7.3;
         final double realPressure    = 1027.5;
-        
+
         // We test the model accuracy (10°C and 20 hPa)
-        Assert.assertEquals(realTemperature, computedTemperature,    10);
-        Assert.assertEquals(realPressure,    computedPressure,       20);
+        Assertions.assertEquals(realTemperature, computedTemperature,    10);
+        Assertions.assertEquals(realPressure,    computedPressure,       20);
     }
 
     @Test
@@ -121,16 +121,16 @@ public class GlobalPressureTemperatureModelTest {
         final double computedTemperature = model.getTemperature() - 273.15;
         final double computedPressure    = model.getPressure();
 
-        Assert.assertEquals(expectedPressure,    computedPressure,    0.1);
-        Assert.assertEquals(expectedTemperature, computedTemperature, 0.1);
+        Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
+        Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);
 
         // Real weather conditions
         final double realTemperature = -8.3;
         final double realPressure    = 717.9;
-        
+
         // We test the model accuracy (10°C and 20 hPa)
-        Assert.assertEquals(realTemperature, computedTemperature,    10);
-        Assert.assertEquals(realPressure,    computedPressure,       20);
+        Assertions.assertEquals(realTemperature, computedTemperature,    10);
+        Assertions.assertEquals(realPressure,    computedPressure,       20);
     }
 
 }

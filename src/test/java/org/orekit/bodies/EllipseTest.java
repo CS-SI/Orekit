@@ -16,16 +16,12 @@
  */
 package org.orekit.bodies;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -33,6 +29,9 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class EllipseTest {
@@ -45,16 +44,16 @@ public class EllipseTest {
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Ellipse e = model.getPlaneSection(new Vector3D(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0),
                                           Vector3D.PLUS_J);
-        Assert.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                             e.getA(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        Assert.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS * (1 - Constants.WGS84_EARTH_FLATTENING),
+        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS * (1 - Constants.WGS84_EARTH_FLATTENING),
                             e.getB(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        Assert.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getU()), 1.0e-15);
-        Assert.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_K, e.getU()), 1.0e-15);
-        Assert.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_I, e.getV()), 1.0e-15);
-        Assert.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getV()), 1.0e-15);
+        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getU()), 1.0e-15);
+        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_K, e.getU()), 1.0e-15);
+        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_I, e.getV()), 1.0e-15);
+        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getV()), 1.0e-15);
     }
 
     @Test
@@ -65,10 +64,10 @@ public class EllipseTest {
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Ellipse e = model.getPlaneSection(new Vector3D(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0),
                                           Vector3D.PLUS_K);
-        Assert.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                             e.getA(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        Assert.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                             e.getB(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
     }
@@ -90,13 +89,13 @@ public class EllipseTest {
         TimeStampedPVCoordinates ref = TimeStampedPVCoordinates.interpolate(g0.getDate(),
                                                                             CartesianDerivativesFilter.USE_P,
                                                                             sample);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             Vector3D.distance(g0.getPosition(), ref.getPosition()) / ref.getPosition().getNorm(),
                             1.0e-15);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             Vector3D.distance(g0.getVelocity(), ref.getVelocity()) / ref.getVelocity().getNorm(),
                             6.0e-12);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             Vector3D.distance(g0.getAcceleration(), ref.getAcceleration()) / ref.getAcceleration().getNorm(),
                             8.0e-8);
 
@@ -109,7 +108,7 @@ public class EllipseTest {
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                 a, b, FramesFactory.getGCRF());
         Vector2D point = new Vector2D(10 * a, 0.0);
-        Assert.assertEquals(b * b / a,
+        Assertions.assertEquals(b * b / a,
                            Vector2D.distance(e.projectToEllipse(point), e.getCenterOfCurvature(point)),
                            1.0e-15);
     }
@@ -121,7 +120,7 @@ public class EllipseTest {
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                 a, b, FramesFactory.getGCRF());
         Vector2D point = new Vector2D(0.0, 10 * b);
-        Assert.assertEquals(a * a / b,
+        Assertions.assertEquals(a * a / b,
                            Vector2D.distance(e.projectToEllipse(point), e.getCenterOfCurvature(point)),
                            1.0e-15);
     }
@@ -133,12 +132,12 @@ public class EllipseTest {
         final Ellipse  ellipse   = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                a, b, FramesFactory.getGCRF());
         final Vector2D close = ellipse.projectToEllipse(new Vector2D(2.0, 4.0));
-        Assert.assertEquals(1.0,
+        Assertions.assertEquals(1.0,
                             close.getX() * close.getX() / (a * a) + close.getY() * close.getY() / (b * b),
                             1.0e-15);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

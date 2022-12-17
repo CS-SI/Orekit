@@ -16,17 +16,10 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -61,6 +54,13 @@ import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
@@ -210,12 +210,12 @@ public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDete
         // input in resources directory
         final String inputPathModel = NumericalSequentialOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/sequential_od_test_Lageos.in").toURI().getPath();
         final File inputModel  = new File(inputPathModel);
-        
+
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
-        
+
         //orbit determination run.
         final boolean print = false;
         ResultSequentialBatchLeastSquares odLageos2 = runSequentialBLS(inputModel, print);
@@ -229,26 +229,26 @@ public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDete
         final int numberOfIte  = 4;
         final int numberOfEval = 4;
 
-        Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
-        Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
-        
+        Assertions.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
+        Assertions.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
+
         //test on the convergence SBLS
         final int numberOfIteS  = 5;
         final int numberOfEvalS = 5;
 
-        Assert.assertEquals(numberOfIteS, odLageos2.getNumberOfIterationSequential());
-        Assert.assertEquals(numberOfEvalS, odLageos2.getNumberOfEvaluationSequential());
+        Assertions.assertEquals(numberOfIteS, odLageos2.getNumberOfIterationSequential());
+        Assertions.assertEquals(numberOfEvalS, odLageos2.getNumberOfEvaluationSequential());
 
         //test on the estimated position
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
         final Vector3D estimatedPosSequential = odLageos2.getEstimatedPVSequential().getPosition();
-        
+
         // Ref position from "sequential_least_squares_lageos2_cpf_160213_5441.sgf"
         // Position in the file is given in ITRF. It is converted in EME2000 here
         final Vector3D refPos = new Vector3D(-8470598.591629019, -656367.1112940479, 8683152.425956512);
-        
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracyBLS);
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPosSequential), distanceAccuracySBLS);
+
+        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracyBLS);
+        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPosSequential), distanceAccuracySBLS);
 
        }
 }

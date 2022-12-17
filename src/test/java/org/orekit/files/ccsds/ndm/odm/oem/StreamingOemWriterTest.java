@@ -16,20 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -57,6 +49,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Check {@link StreamingOemWriter}.
  *
@@ -69,7 +68,7 @@ public class StreamingOemWriterTest {
     private static final double VELOCITY_PRECISION = 1e-2; //in m/s
 
     /** Set Orekit data. */
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -263,35 +262,35 @@ public class StreamingOemWriterTest {
                                                   double p_tol,
                                                   double v_tol) {
         compareOemEphemerisBlocksMetadata(block1.getMetadata(), block2.getMetadata());
-        assertEquals(block1.getStart(), block2.getStart());
-        assertEquals(block1.getStop(), block2.getStop());
-        assertEquals(block1.getData().getEphemeridesDataLines().size(), block2.getData().getEphemeridesDataLines().size());
+        Assertions.assertEquals(block1.getStart(), block2.getStart());
+        Assertions.assertEquals(block1.getStop(), block2.getStop());
+        Assertions.assertEquals(block1.getData().getEphemeridesDataLines().size(), block2.getData().getEphemeridesDataLines().size());
         for (int i = 0; i < block1.getData().getEphemeridesDataLines().size(); i++) {
             TimeStampedPVCoordinates c1 = block1.getData().getEphemeridesDataLines().get(i);
             TimeStampedPVCoordinates c2 = block2.getData().getEphemeridesDataLines().get(i);
-            assertEquals("" + i, c1.getDate(), c2.getDate());
-            assertEquals(c1.getPosition() + " -> " + c2.getPosition(), 0.0,
-                    Vector3D.distance(c1.getPosition(), c2.getPosition()), p_tol);
-            assertEquals(c1.getVelocity() + " -> " + c2.getVelocity(), 0.0,
-                    Vector3D.distance(c1.getVelocity(), c2.getVelocity()), v_tol);
+            Assertions.assertEquals(c1.getDate(), c2.getDate(),"" + i);
+            Assertions.assertEquals(0.0,
+                    Vector3D.distance(c1.getPosition(), c2.getPosition()), p_tol,c1.getPosition() + " -> " + c2.getPosition());
+            Assertions.assertEquals(0.0,
+                    Vector3D.distance(c1.getVelocity(), c2.getVelocity()), v_tol,c1.getVelocity() + " -> " + c2.getVelocity());
         }
 
     }
 
     private static void compareOemEphemerisBlocksMetadata(OemMetadata meta1, OemMetadata meta2) {
-        assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
-        assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
-        assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
-        assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
-        assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
-        assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
-        assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
-        assertEquals(meta1.getTimeSystem().name(),    meta2.getTimeSystem().name());
+        Assertions.assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
+        Assertions.assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
+        Assertions.assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
+        Assertions.assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
+        Assertions.assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
+        Assertions.assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
+        Assertions.assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
+        Assertions.assertEquals(meta1.getTimeSystem().name(),    meta2.getTimeSystem().name());
     }
 
     static void compareOems(Oem file1, Oem file2, double p_tol, double v_tol) {
-        assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
-        assertEquals(file1.getSegments().size(), file2.getSegments().size());
+        Assertions.assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
+        Assertions.assertEquals(file1.getSegments().size(), file2.getSegments().size());
         for (int i = 0; i < file1.getSegments().size(); i++) {
             compareOemEphemerisBlocks(file1.getSegments().get(i), file2.getSegments().get(i), p_tol, v_tol);
         }

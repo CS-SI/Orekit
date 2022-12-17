@@ -17,9 +17,6 @@
 
 package org.orekit.estimation.common;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.gnss.Frequency;
@@ -29,6 +26,9 @@ import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** Ionospheric modifiers.
  * @author Bryan Cazabonne

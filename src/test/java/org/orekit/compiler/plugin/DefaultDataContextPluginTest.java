@@ -16,6 +16,9 @@
  */
 package org.orekit.compiler.plugin;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.ByteArrayOutputStream;
@@ -29,9 +32,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Unit test for {@link DefaultDataContextPlugin}.
@@ -71,9 +71,9 @@ public class DefaultDataContextPluginTest {
         long count = Arrays.stream(actual.split("\n"))
                 .filter(s -> s.contains(DefaultDataContextPlugin.MESSAGE))
                 .count();
-        Assert.assertEquals(actual, count, 30);
-        Assert.assertFalse(actual, actual.contains(" error:"));
-        Assert.assertEquals(actual, 0, retVal);
+        Assertions.assertEquals(count, 30, actual);
+        Assertions.assertFalse(actual.contains(" error:"),actual);
+        Assertions.assertEquals(0, retVal, actual);
     }
 
     /**

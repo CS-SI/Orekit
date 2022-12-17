@@ -17,8 +17,8 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.linear.ArrayRealVector;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
@@ -40,7 +40,7 @@ import org.orekit.utils.ParameterDriversList;
 public class FiniteDifferencePropagatorConverterTest {
 
     /** Set Orekit data . */
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         Utils.setDataRoot("regular-data");
     }

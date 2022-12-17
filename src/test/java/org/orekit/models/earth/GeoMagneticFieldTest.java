@@ -27,9 +27,9 @@ import java.util.StringTokenizer;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -100,7 +100,7 @@ public class GeoMagneticFieldTest {
      *
      * @throws Exception on error.
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpBefore() throws Exception {
         Utils.setDataRoot("earth:geoid:regular-data");
         GravityFieldFactory.clearPotentialCoefficientsReaders();
@@ -113,12 +113,12 @@ public class GeoMagneticFieldTest {
         double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2005);
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
         GeoMagneticElements e = field.calculateField(FastMath.toRadians(1.2), FastMath.toRadians(0.7), -2500);
-        Assert.assertEquals(FastMath.toRadians(-6.0032), e.getDeclination(), 1.0e-4);
+        Assertions.assertEquals(FastMath.toRadians(-6.0032), e.getDeclination(), 1.0e-4);
 
         decimalYear = GeoMagneticField.getDecimalYear(2, 1, 2005);
         field = GeoMagneticFieldFactory.getIGRF(decimalYear);
         e = field.calculateField(FastMath.toRadians(1.2), FastMath.toRadians(0.7), -2500);
-        Assert.assertEquals(FastMath.toRadians(-6.0029), e.getDeclination(), 1.0e-4);
+        Assertions.assertEquals(FastMath.toRadians(-6.0029), e.getDeclination(), 1.0e-4);
     }
 
     @Test
@@ -127,13 +127,13 @@ public class GeoMagneticFieldTest {
         GeoMagneticField field1 = GeoMagneticFieldFactory.getIGRF(decimalYear);
         GeoMagneticField field2 = GeoMagneticFieldFactory.getIGRF(2010.0);
 
-        Assert.assertNotEquals(field1.getEpoch(), field2.getEpoch());
+        Assertions.assertNotEquals(field1.getEpoch(), field2.getEpoch());
 
         GeoMagneticElements e1 = field1.calculateField(0, 0, 0);
-        Assert.assertEquals(FastMath.toRadians(-6.1068), e1.getDeclination(), 1.0e-4);
+        Assertions.assertEquals(FastMath.toRadians(-6.1068), e1.getDeclination(), 1.0e-4);
 
         GeoMagneticElements e2 = field2.calculateField(0, 0, 0);
-        Assert.assertEquals(FastMath.toRadians(-6.1064), e2.getDeclination(), 1.0e-4);
+        Assertions.assertEquals(FastMath.toRadians(-6.1064), e2.getDeclination(), 1.0e-4);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class GeoMagneticFieldTest {
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
 
         GeoMagneticElements e = field.calculateField(0, 0, 0);
-        Assert.assertEquals(FastMath.toRadians(-4.7446), e.getDeclination(), 1.0e-4);
+        Assertions.assertEquals(FastMath.toRadians(-4.7446), e.getDeclination(), 1.0e-4);
     }
 
     @Test
@@ -152,17 +152,19 @@ public class GeoMagneticFieldTest {
 
         GeoMagneticElements eClose = field.calculateField(FastMath.toRadians(89.999999), 0, 0);
         GeoMagneticElements ePole  = field.calculateField(FastMath.toRadians(90.0),      0, 0);
-        Assert.assertEquals("" + (eClose.getDeclination()-         ePole.getDeclination()),         eClose.getDeclination(),         ePole.getDeclination(),         7.0e-7);
-        Assert.assertEquals("" + (eClose.getInclination()-         ePole.getInclination()),         eClose.getInclination(),         ePole.getInclination(),         3.0e-7);
-        Assert.assertEquals("" + (eClose.getTotalIntensity()-      ePole.getTotalIntensity()),      eClose.getTotalIntensity(),      ePole.getTotalIntensity(),      2.0e-4);
-        Assert.assertEquals("" + (eClose.getHorizontalIntensity()- ePole.getHorizontalIntensity()), eClose.getHorizontalIntensity(), ePole.getHorizontalIntensity(), 3.0e-4);
+        Assertions.assertEquals(eClose.getDeclination(),         ePole.getDeclination(),         7.0e-7, "" + (eClose.getDeclination()-         ePole.getDeclination()));
+        Assertions.assertEquals(eClose.getInclination(),         ePole.getInclination(),         3.0e-7, "" + (eClose.getInclination()-         ePole.getInclination()));
+        Assertions.assertEquals(eClose.getTotalIntensity(),      ePole.getTotalIntensity(),      2.0e-4, "" + (eClose.getTotalIntensity()-      ePole.getTotalIntensity()));
+        Assertions.assertEquals(eClose.getHorizontalIntensity(), ePole.getHorizontalIntensity(), 3.0e-4, "" + (eClose.getHorizontalIntensity()- ePole.getHorizontalIntensity()));
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testTransformationOutsideValidityPeriod() {
-        double decimalYear = GeoMagneticField.getDecimalYear(10, 1, 2020);
-        @SuppressWarnings("unused")
-        GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            double decimalYear = GeoMagneticField.getDecimalYear(10, 1, 2020);
+            @SuppressWarnings("unused")
+            GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
+        });
     }
 
     @Test
@@ -184,19 +186,19 @@ public class GeoMagneticFieldTest {
                                                                     wmmTestValues[i][1]);
 
             // X
-            Assert.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
+            Assertions.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
             // Y
-            Assert.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
+            Assertions.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
             // Z
-            Assert.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
+            Assertions.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
             // H
-            Assert.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
             // F
-            Assert.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
             // inclination
-            Assert.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
+            Assertions.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
             // declination
-            Assert.assertEquals(wmmTestValues[i][10], result.getDeclination(), degreeEps);
+            Assertions.assertEquals(wmmTestValues[i][10], result.getDeclination(), degreeEps);
         }
     }
 
@@ -229,19 +231,19 @@ public class GeoMagneticFieldTest {
                                                                     testValues[i][1] + undulation);
 
             // X
-            Assert.assertEquals(testValues[i][4], result.getFieldVector().getX(), eps);
+            Assertions.assertEquals(testValues[i][4], result.getFieldVector().getX(), eps);
             // Y
-            Assert.assertEquals(testValues[i][5], result.getFieldVector().getY(), eps);
+            Assertions.assertEquals(testValues[i][5], result.getFieldVector().getY(), eps);
             // Z
-            Assert.assertEquals(testValues[i][6], result.getFieldVector().getZ(), eps);
+            Assertions.assertEquals(testValues[i][6], result.getFieldVector().getZ(), eps);
             // H
-            Assert.assertEquals(testValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(testValues[i][7], result.getHorizontalIntensity(), eps);
             // F
-            Assert.assertEquals(testValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(testValues[i][8], result.getTotalIntensity(), eps);
             // inclination
-            Assert.assertEquals(testValues[i][9], result.getInclination(), degreeEps);
+            Assertions.assertEquals(testValues[i][9], result.getInclination(), degreeEps);
             // declination
-            Assert.assertEquals(testValues[i][10], result.getDeclination(), degreeEps);
+            Assertions.assertEquals(testValues[i][10], result.getDeclination(), degreeEps);
         }
     }
 
@@ -266,50 +268,54 @@ public class GeoMagneticFieldTest {
             final Vector3D b = result.getFieldVector();
 
             // X
-            Assert.assertEquals(igrfTestValues[i][4], b.getX(), eps);
+            Assertions.assertEquals(igrfTestValues[i][4], b.getX(), eps);
             // Y
-            Assert.assertEquals(igrfTestValues[i][5], b.getY(), eps);
+            Assertions.assertEquals(igrfTestValues[i][5], b.getY(), eps);
             // Z
-            Assert.assertEquals(igrfTestValues[i][6], b.getZ(), eps);
+            Assertions.assertEquals(igrfTestValues[i][6], b.getZ(), eps);
             // H
-            Assert.assertEquals(igrfTestValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(igrfTestValues[i][7], result.getHorizontalIntensity(), eps);
             // F
-            Assert.assertEquals(igrfTestValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(igrfTestValues[i][8], result.getTotalIntensity(), eps);
             // inclination
-            Assert.assertEquals(igrfTestValues[i][9], result.getInclination(), degreeEps);
+            Assertions.assertEquals(igrfTestValues[i][9], result.getInclination(), degreeEps);
             // declination
-            Assert.assertEquals(igrfTestValues[i][10], result.getDeclination(), degreeEps);
+            Assertions.assertEquals(igrfTestValues[i][10], result.getDeclination(), degreeEps);
         }
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testUnsupportedTransform() throws Exception {
-        final GeoMagneticField model = GeoMagneticFieldFactory.getIGRF(1910);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final GeoMagneticField model = GeoMagneticFieldFactory.getIGRF(1910);
 
-        // the IGRF model of 1910 does not have secular variation, thus time transformation is not supported
-        model.transformModel(1950);
+            // the IGRF model of 1910 does not have secular variation, thus time transformation is not supported
+            model.transformModel(1950);
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testOutsideValidityTransform() throws Exception {
-        final GeoMagneticField model1 = GeoMagneticFieldFactory.getIGRF(2005);
-        final GeoMagneticField model2 = GeoMagneticFieldFactory.getIGRF(2010);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final GeoMagneticField model1 = GeoMagneticFieldFactory.getIGRF(2005);
+            final GeoMagneticField model2 = GeoMagneticFieldFactory.getIGRF(2010);
 
-        // the interpolation transformation is only allowed between 2005 and 2010
-        model1.transformModel(model2, 2012);
+            // the interpolation transformation is only allowed between 2005 and 2010
+            model1.transformModel(model2, 2012);
+        });
     }
 
     @Test
     public void testValidTransform() throws Exception {
         final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(2015);
 
-        Assert.assertTrue(model.supportsTimeTransform());
+        Assertions.assertTrue(model.supportsTimeTransform());
 
         final GeoMagneticField transformedModel = model.transformModel(2017);
 
-        Assert.assertEquals(2015, transformedModel.validFrom(), 1e0);
-        Assert.assertEquals(2020, transformedModel.validTo(), 1e0);
-        Assert.assertEquals(2017, transformedModel.getEpoch(), 1e0);
+        Assertions.assertEquals(2015, transformedModel.validFrom(), 1e0);
+        Assertions.assertEquals(2020, transformedModel.validTo(), 1e0);
+        Assertions.assertEquals(2017, transformedModel.getEpoch(), 1e0);
     }
 
     @Test
@@ -320,12 +326,12 @@ public class GeoMagneticFieldTest {
         loader.loadData(input, "WMM2015.COF");
 
         Collection<GeoMagneticField> models = loader.getModels();
-        Assert.assertNotNull(models);
-        Assert.assertEquals(1, models.size());
+        Assertions.assertNotNull(models);
+        Assertions.assertEquals(1, models.size());
 
         GeoMagneticField wmmModel = models.iterator().next();
-        Assert.assertEquals("WMM-2015", wmmModel.getModelName());
-        Assert.assertEquals(2015, wmmModel.getEpoch(), 1e-9);
+        Assertions.assertEquals("WMM-2015", wmmModel.getModelName());
+        Assertions.assertEquals(2015, wmmModel.getEpoch(), 1e-9);
 
         final double eps = 1e-1;
         final double degreeEps = 1e-2;
@@ -338,19 +344,19 @@ public class GeoMagneticFieldTest {
                                                                        wmmTestValues[i][1]);
 
             // X
-            Assert.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
+            Assertions.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
             // Y
-            Assert.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
+            Assertions.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
             // Z
-            Assert.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
+            Assertions.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
             // H
-            Assert.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
             // F
-            Assert.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
             // inclination
-            Assert.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
+            Assertions.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
             // declination
-            Assert.assertEquals(wmmTestValues[i][10], result.getDeclination(), degreeEps);
+            Assertions.assertEquals(wmmTestValues[i][10], result.getDeclination(), degreeEps);
         }
     }
 
@@ -379,7 +385,7 @@ public class GeoMagneticFieldTest {
 
             final GeoMagneticField field = GeoMagneticFieldFactory.getField(type, year);
 
-            double height = Double.valueOf(heightStr.substring(1));
+            double height = Double.parseDouble(heightStr.substring(1));
             if (heightStr.startsWith("K")) {
                 // convert from km to m
                 height *= 1000d;
@@ -397,8 +403,8 @@ public class GeoMagneticFieldTest {
             }
 
             String geString = ge.toString();
-            Assert.assertNotNull(geString);
-            Assert.assertFalse(geString.isEmpty());
+            Assertions.assertNotNull(geString);
+            Assertions.assertFalse(geString.isEmpty());
         }
     }
 
@@ -411,7 +417,7 @@ public class GeoMagneticFieldTest {
             final String d = st.nextToken();
             return GeoMagneticField.getDecimalYear(Integer.valueOf(d), Integer.valueOf(m), Integer.valueOf(y));
         } else {
-            return Double.valueOf(yearStr);
+            return Double.parseDouble(yearStr);
         }
     }
 
@@ -431,13 +437,13 @@ public class GeoMagneticFieldTest {
             }
             return FastMath.toRadians(deg);
         } else {
-            return FastMath.toRadians(Double.valueOf(str));
+            return FastMath.toRadians(Double.parseDouble(str));
         }
     }
 
     private double getRadians(final String degree, final String minute) {
-        double result = Double.valueOf(degree.substring(0, degree.length() - 1));
-        final double min = Double.valueOf(minute.substring(0, minute.length() - 1)) / 60d;
+        double result = Double.parseDouble(degree.substring(0, degree.length() - 1));
+        final double min = Double.parseDouble(minute.substring(0, minute.length() - 1)) / 60d;
         result += (result < 0) ? -min : min;
         return FastMath.toRadians(result);
     }
@@ -458,20 +464,20 @@ public class GeoMagneticFieldTest {
         final double dec = getRadians(st.nextToken(), st.nextToken());
         final double inc = getRadians(st.nextToken(), st.nextToken());
 
-        final double h = Double.valueOf(st.nextToken());
-        final double x = Double.valueOf(st.nextToken());
-        final double y = Double.valueOf(st.nextToken());
-        final double z = Double.valueOf(st.nextToken());
-        final double f = Double.valueOf(st.nextToken());
+        final double h = Double.parseDouble(st.nextToken());
+        final double x = Double.parseDouble(st.nextToken());
+        final double y = Double.parseDouble(st.nextToken());
+        final double z = Double.parseDouble(st.nextToken());
+        final double f = Double.parseDouble(st.nextToken());
 
         final double eps = 1e-1;
-        Assert.assertEquals(h, ge.getHorizontalIntensity(), eps);
-        Assert.assertEquals(f, ge.getTotalIntensity(), eps);
-        Assert.assertEquals(x, ge.getFieldVector().getX(), eps);
-        Assert.assertEquals(y, ge.getFieldVector().getY(), eps);
-        Assert.assertEquals(z, ge.getFieldVector().getZ(), eps);
-        Assert.assertEquals(dec, ge.getDeclination(), eps);
-        Assert.assertEquals(inc, ge.getInclination(), eps);
+        Assertions.assertEquals(h, ge.getHorizontalIntensity(), eps);
+        Assertions.assertEquals(f, ge.getTotalIntensity(), eps);
+        Assertions.assertEquals(x, ge.getFieldVector().getX(), eps);
+        Assertions.assertEquals(y, ge.getFieldVector().getY(), eps);
+        Assertions.assertEquals(z, ge.getFieldVector().getZ(), eps);
+        Assertions.assertEquals(dec, ge.getDeclination(), eps);
+        Assertions.assertEquals(inc, ge.getInclination(), eps);
     }
 
     private InputStream getResource(final String name) throws FileNotFoundException {

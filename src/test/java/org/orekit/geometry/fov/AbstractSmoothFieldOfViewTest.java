@@ -16,15 +16,13 @@
  */
 package org.orekit.geometry.fov;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.UnitSphereRandomVectorGenerator;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.GeodeticPoint;
@@ -45,11 +43,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import java.util.List;
+
 public abstract class AbstractSmoothFieldOfViewTest {
 
     protected void doTestFOVAwayFromEarth(final SmoothFieldOfView fov, final AttitudeProvider attitude,
                                           final Vector3D expectedCenter) {
-        Assert.assertEquals(0.0, Vector3D.distance(expectedCenter, fov.getCenter()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(expectedCenter, fov.getCenter()), 1.0e-15);
         Propagator propagator = new KeplerianPropagator(orbit);
         propagator.setAttitudeProvider(attitude);
         SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(1000.0));
@@ -58,15 +58,15 @@ public abstract class AbstractSmoothFieldOfViewTest {
                                               state.toTransform().getInverse(),
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
-        Assert.assertTrue(footprint.isEmpty());
+        Assertions.assertTrue(footprint.isEmpty());
     }
 
     protected void doTestNoFootprintInside(final SmoothFieldOfView fov, final Transform fovToBody) {
         try {
             fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
         }
     }
 
@@ -85,7 +85,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
         Vector3D subSat = earth.projectToGround(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                                                 state.getDate(), earth.getBodyFrame());
-        Assert.assertEquals(1, footprint.size());
+        Assertions.assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
         double minOffset = Double.POSITIVE_INFINITY;
         double maxOffset = 0;
@@ -95,7 +95,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
         double maxDist   = 0;
         for (int i = 0; i < loop.size(); ++i) {
 
-            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
+            Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
 
             Vector3D los = fovToBody.getInverse().transformPosition(earth.transform(loop.get(i)));
             double offset = Vector3D.angle(fov.getCenter(), los);
@@ -106,13 +106,13 @@ public abstract class AbstractSmoothFieldOfViewTest {
             final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
                                                        state.getFrame(), state.getDate());
             if (elevation > 0.001) {
-                Assert.assertEquals(-fov.getMargin(),
+                Assertions.assertEquals(-fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                     2.0e-10);
-                Assert.assertEquals(0.1 - fov.getMargin(),
+                Assertions.assertEquals(0.1 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                     2.0e-10);
-                Assert.assertEquals(-0.1 - fov.getMargin(),
+                Assertions.assertEquals(-0.1 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.1, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV),
                                     2.0e-10);
             }
@@ -124,12 +124,12 @@ public abstract class AbstractSmoothFieldOfViewTest {
 
         }
 
-        Assert.assertEquals(expectedMinOffset,     FastMath.toDegrees(minOffset), 0.001);
-        Assert.assertEquals(expectedMaxOffset,     FastMath.toDegrees(maxOffset), 0.001);
-        Assert.assertEquals(expectedMinElevation,  FastMath.toDegrees(minEl),     0.001);
-        Assert.assertEquals(expectedMaxElevation,  FastMath.toDegrees(maxEl),     0.001);
-        Assert.assertEquals(expectedMinDist,       minDist,                       1.0);
-        Assert.assertEquals(expectedMaxDist,       maxDist,                       1.0);
+        Assertions.assertEquals(expectedMinOffset,     FastMath.toDegrees(minOffset), 0.001);
+        Assertions.assertEquals(expectedMaxOffset,     FastMath.toDegrees(maxOffset), 0.001);
+        Assertions.assertEquals(expectedMinElevation,  FastMath.toDegrees(minEl),     0.001);
+        Assertions.assertEquals(expectedMaxElevation,  FastMath.toDegrees(maxEl),     0.001);
+        Assertions.assertEquals(expectedMinDist,       minDist,                       1.0);
+        Assertions.assertEquals(expectedMaxDist,       maxDist,                       1.0);
 
     }
 
@@ -139,13 +139,13 @@ public abstract class AbstractSmoothFieldOfViewTest {
         for (int i = 0; i < 1000; ++i) {
             Vector3D queryLOS = new Vector3D(spGenerator.nextVector());
             Vector3D closest = fov.projectToBoundary(queryLOS);
-            Assert.assertEquals(-fov.getMargin(),
+            Assertions.assertEquals(-fov.getMargin(),
                                 fov.offsetFromBoundary(closest, 0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                 tol);
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -157,7 +157,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
                                    Constants.EIGEN5C_EARTH_MU);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         earth = null;
         orbit = null;
@@ -165,5 +165,5 @@ public abstract class AbstractSmoothFieldOfViewTest {
 
     protected OneAxisEllipsoid earth;
     protected Orbit            orbit;
-    
+
 }

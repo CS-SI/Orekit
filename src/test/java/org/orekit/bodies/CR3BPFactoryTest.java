@@ -16,41 +16,41 @@
  */
 package org.orekit.bodies;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
 public class CR3BPFactoryTest {
-    
+
     @Test
     public void getSunJupiterCR3BP() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
-    	CR3BPSystem sunJupiterCR3BP = CR3BPFactory.getSunJupiterCR3BP(date, timeScale);
-    	Assert.assertNotNull(sunJupiterCR3BP);
+        CR3BPSystem sunJupiterCR3BP = CR3BPFactory.getSunJupiterCR3BP(date, timeScale);
+        Assertions.assertNotNull(sunJupiterCR3BP);
     }
-    
+
     @Test
     public void getEarthMoonCR3BP() {
-    	CR3BPSystem earthMoonCR3BP = CR3BPFactory.getEarthMoonCR3BP();
-    	Assert.assertNotNull(earthMoonCR3BP);
+        CR3BPSystem earthMoonCR3BP = CR3BPFactory.getEarthMoonCR3BP();
+        Assertions.assertNotNull(earthMoonCR3BP);
     }
-    
+
     @Test
     public void getSunEarthCR3BP() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
-    	CR3BPSystem sunEarthCR3BP = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
-    	Assert.assertNotNull(sunEarthCR3BP);
+        CR3BPSystem sunEarthCR3BP = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
+        Assertions.assertNotNull(sunEarthCR3BP);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
-    	Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data");
     }
 
 }

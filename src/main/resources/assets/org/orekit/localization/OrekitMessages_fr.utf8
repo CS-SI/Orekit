@@ -756,5 +756,20 @@ NO_STATION_ECCENTRICITY_FOR_EPOCH = pas d''excentricité station pour la date {0
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = sélection de paramètres incohérents entre les paires {0}/{1} et {2}/{3}
 
+# no unscented transform configured
+NO_UNSCENTED_TRANSFORM_CONFIGURED = aucune transformation unscented configurée
+
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
+
+# transform from {0} to {1} is not implemented
+UNSUPPORTED_TRANSFORM = la transformation de {0} vers {1} n'est pas implémentée
+
+# orbital parameters type: {0} is different from expected orbital type : {1}
+WRONG_ORBIT_PARAMETERS_TYPE = Le type de paramètres orbitaux: {0} est différent du type de paramètres orbitaux attendus: {1}
+
+# cannot change covariance type if defined in a local orbital frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = impossible de changer le type de la covariance si celle-ci est définie dans un repère orbital local
+
+# cannot change covariance type if defined in a non pseudo-inertial reference frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = impossible de changer le type de la covariance si celle-ci est définie dans un référentiel non pseudo-inertiel

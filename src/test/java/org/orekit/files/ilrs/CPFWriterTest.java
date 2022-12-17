@@ -16,29 +16,12 @@
  */
 package org.orekit.files.ilrs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -60,12 +43,25 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 public class CPFWriterTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @Before
+    @TempDir
+    public Path temporaryFolderPath;
+    
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
@@ -78,7 +74,7 @@ public class CPFWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPF file = new CPFParser().parse(source);
 
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
@@ -95,7 +91,7 @@ public class CPFWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPF file = new CPFParser().parse(source);
 
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
@@ -112,7 +108,7 @@ public class CPFWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPF file = new CPFParser().parse(source);
 
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
@@ -130,7 +126,7 @@ public class CPFWriterTest {
         final CPF file = new CPFParser().parse(source);
 
         // Write
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
@@ -141,9 +137,9 @@ public class CPFWriterTest {
             // The testWriteGalileoVersion1() already verify the content of the file
             // The objective here is just the verify the fix of issue #868
             final String line1 = br.readLine();
-            Assert.assertEquals(56, line1.length());
+            Assertions.assertEquals(56, line1.length());
             final String line2 = br.readLine();
-            Assert.assertEquals(82, line2.length());
+            Assertions.assertEquals(82, line2.length());
         }
     }
 
@@ -156,7 +152,7 @@ public class CPFWriterTest {
         final CPF file = new CPFParser().parse(source);
 
         // Write
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
@@ -167,9 +163,9 @@ public class CPFWriterTest {
             // The testWriteLageos1Version2() already verify the content of the file
             // The objective here is just the verify the fix of issue #868
             final String line1 = br.readLine();
-            Assert.assertEquals(58, line1.length());
+            Assertions.assertEquals(58, line1.length());
             final String line2 = br.readLine();
-            Assert.assertEquals(85, line2.length());
+            Assertions.assertEquals(85, line2.length());
         }
     }
 
@@ -181,19 +177,19 @@ public class CPFWriterTest {
         final CPFWriter writer  = new CPFWriter(cpfFile.getHeader(), TimeScalesFactory.getUTC());
         try {
             writer.write((BufferedWriter) null, cpfFile);
-            fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
-            assertEquals("writer", oiae.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
+            Assertions.assertEquals("writer", oiae.getParts()[0]);
         }
     }
 
     @Test
     public void testNullEphemeris() throws IOException {
-        File tempCPFFile = tempFolder.newFile("TestNullEphemeris.cpf");
+        File tempCPFFile = temporaryFolderPath.resolve("TestNullEphemeris.cpf").toFile();
         CPFWriter writer = new CPFWriter(null, TimeScalesFactory.getUTC());
         writer.write(tempCPFFile.toString(), null);
-        assertTrue(tempCPFFile.exists());
+        Assertions.assertTrue(tempCPFFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempCPFFile);
              InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
              BufferedReader    br  = new BufferedReader(isr)) {
@@ -201,7 +197,7 @@ public class CPFWriterTest {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++count;
             }
-            assertEquals(0, count);
+            Assertions.assertEquals(0, count);
         }
     }
 
@@ -232,7 +228,7 @@ public class CPFWriterTest {
         final CPF cpf = new CPF();
 
         // Fast check
-        assertEquals(0, cpf.getSatellites().size());
+        Assertions.assertEquals(0, cpf.getSatellites().size());
 
         // Add coordinates
         final int leap = 0;
@@ -241,14 +237,14 @@ public class CPFWriterTest {
         cpf.addSatelliteCoordinate(header.getIlrsSatelliteId(), new CPFCoordinate(AbsoluteDate.J2000_EPOCH.shiftedBy(300.0),  Vector3D.PLUS_K, leap));
 
         // Write the file
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         writer.write(tempCPFFilePath, cpf);
 
         // Verify
         final List<CPFCoordinate> coordinatesInFile = cpf.getSatellites().get(header.getIlrsSatelliteId()).getCoordinates();
-        assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
-        assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
-        assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
 
     }
 
@@ -279,7 +275,7 @@ public class CPFWriterTest {
         final CPF cpf = new CPF();
 
         // Fast check
-        assertEquals(0, cpf.getSatellites().size());
+        Assertions.assertEquals(0, cpf.getSatellites().size());
 
         // Add coordinates
         final int leap = 0;
@@ -290,23 +286,23 @@ public class CPFWriterTest {
         cpf.addSatelliteCoordinates(header.getIlrsSatelliteId(), coordinates);
 
         // Write the file
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         writer.write(tempCPFFilePath, cpf);
 
         // Verify
         final List<CPFCoordinate> coordinatesInFile = cpf.getSatellites().get(header.getIlrsSatelliteId()).getCoordinates();
-        assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
-        assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
-        assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_I.distance(coordinatesInFile.get(0).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_J.distance(coordinatesInFile.get(1).getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, Vector3D.PLUS_K.distance(coordinatesInFile.get(2).getPosition()), 1.0e-10);
 
     }
-    
-    /** Test for issue #790 (https://gitlab.orekit.org/orekit/orekit/-/issues/790). 
+
+    /** Test for issue #790 (https://gitlab.orekit.org/orekit/orekit/-/issues/790).
      * @throws URISyntaxException */
     @Test
     public void testIssue790() throws IOException, URISyntaxException {
 
-    	 final TimeScale utc = TimeScalesFactory.getUTC();
+         final TimeScale utc = TimeScalesFactory.getUTC();
          final AbsoluteDate date = new AbsoluteDate(2022, 05, 10, 00, 00, 00.000, utc);
 
          // General orbit
@@ -318,12 +314,12 @@ public class CPFWriterTest {
          double lM = 0;                           // mean anomaly
 
          Orbit orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
-         									   FramesFactory.getEME2000(), date, 
-         									   Constants.WGS84_EARTH_MU);
-         
+                                                FramesFactory.getEME2000(), date,
+                                                Constants.WGS84_EARTH_MU);
+
          // First, configure a propagation with the default event handler (expected to stop on event)
          Propagator propagator = new KeplerianPropagator(orbit);
-         
+
          final double propagationDurationSeconds = 86400.0;
          final double stepSizeSeconds = 60.0;
          List<SpacecraftState> states = new ArrayList<SpacecraftState>();
@@ -354,16 +350,16 @@ public class CPFWriterTest {
 
         // First launch the test with velocity flag enabled
         boolean velocityFlag = true;
-        
+
         // Write the CPF file from the generated ephemeris
-        String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
+        String tempCPFFilePath = temporaryFolderPath.resolve("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(headerV1, TimeScalesFactory.getUTC(), velocityFlag);
         writer.write(tempCPFFilePath, ephemerisFile);
-        
+
         // Parse the generated CPF file
         final CPF generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
-        
-        
+
+
         // Extract the coordinates from the generated CPF file
         final CPFEphemeris ephemeris    = generatedCpfFile.getSatellites().get("070595");
         final List<CPFCoordinate> coord = ephemeris.getCoordinates();
@@ -372,33 +368,33 @@ public class CPFWriterTest {
         final AbsoluteDate firstEpoch = AbsoluteDate.createMJDDate(59709, 0.0, generatedCpfFile.getTimeScale());
         final Vector3D firstPos = new Vector3D(1036869.533, 6546536.585, 0.000);
         final Vector3D firstVel = new Vector3D(-9994.355199, 1582.950355, -1242.449125);
-        Assert.assertEquals(0, coord.get(0).getLeap());
-        Assert.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, firstVel.distance(coord.get(0).getVelocity()), 1.0e-15);
-        Assert.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
-        
-        
+        Assertions.assertEquals(0, coord.get(0).getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coord.get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstVel.distance(coord.get(0).getVelocity()), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coord.get(0).getDate()), 1.0e-15);
+
+
         // Repeat without velocity components for regression testing
-        
+
         // Write the CPF file from the generated ephemeris
-        String tempCPFFilePathReg = tempFolder.newFile("TestWriteCPFReg.cpf").toString();
+        String tempCPFFilePathReg = temporaryFolderPath.resolve("TestWriteCPFReg.cpf").toString();
         CPFWriter writerReg = new CPFWriter(headerV1, TimeScalesFactory.getUTC());
         writerReg.write(tempCPFFilePathReg, ephemerisFile);
-        
+
         // Parse the generated CPF file
         final CPF generatedCpfFileReg = new CPFParser().parse(new DataSource(tempCPFFilePathReg));
-        
-        
+
+
         // Extract the coordinates from the generated CPF file
         final CPFEphemeris ephemerisReg    = generatedCpfFileReg.getSatellites().get("070595");
         final List<CPFCoordinate> coordReg = ephemerisReg.getCoordinates();
 
         // Verify first coordinate and that the velocity components are zero
-        Assert.assertEquals(0, coordReg.get(0).getLeap());
-        Assert.assertEquals(0.0, firstPos.distance(coordReg.get(0).getPosition()), 1.0e-15);
-        Assert.assertEquals(0.0, coordReg.get(0).getVelocity().getNorm(), 1.0e-15);
-        Assert.assertEquals(0.0, firstEpoch.durationFrom(coordReg.get(0).getDate()), 1.0e-15);
-        
+        Assertions.assertEquals(0, coordReg.get(0).getLeap());
+        Assertions.assertEquals(0.0, firstPos.distance(coordReg.get(0).getPosition()), 1.0e-15);
+        Assertions.assertEquals(0.0, coordReg.get(0).getVelocity().getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, firstEpoch.durationFrom(coordReg.get(0).getDate()), 1.0e-15);
+
     }
 
     @Test
@@ -409,14 +405,14 @@ public class CPFWriterTest {
         final CPF cpf = new CPF();
 
         // Fast check
-        assertEquals(0, cpf.getSatellites().size());
+        Assertions.assertEquals(0, cpf.getSatellites().size());
 
         // Add coordinates
         final int leap = 0;
         cpf.addSatelliteCoordinate(new CPFCoordinate(AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, leap));
 
         // Verify
-        assertEquals(1, cpf.getSatellites().size());
+        Assertions.assertEquals(1, cpf.getSatellites().size());
 
     }
 
@@ -430,8 +426,8 @@ public class CPFWriterTest {
         final CPFEphemeris ephemeris = cpf.new CPFEphemeris();
 
         // Fast check
-        assertEquals(0, ephemeris.getCoordinates().size());
-        assertEquals(CPF.DEFAULT_ID, ephemeris.getId());
+        Assertions.assertEquals(0, ephemeris.getCoordinates().size());
+        Assertions.assertEquals(CPF.DEFAULT_ID, ephemeris.getId());
 
     }
 
@@ -445,14 +441,14 @@ public class CPFWriterTest {
         // Ephemeris
         final CPFEphemeris eph1 = file1.getSatellites().get(header1.getIlrsSatelliteId());
         final CPFEphemeris eph2 = file2.getSatellites().get(header2.getIlrsSatelliteId());
-        Assert.assertEquals(eph1.getId(), eph2.getId());
-        Assert.assertEquals(eph1.getStart(), eph2.getStart());
-        Assert.assertEquals(eph1.getStop(), eph2.getStop());
+        Assertions.assertEquals(eph1.getId(), eph2.getId());
+        Assertions.assertEquals(eph1.getStart(), eph2.getStart());
+        Assertions.assertEquals(eph1.getStop(), eph2.getStop());
 
         // Coordinates
         final List<CPFCoordinate> coord1 = eph1.getCoordinates();
         final List<CPFCoordinate> coord2 = eph2.getCoordinates();
-        Assert.assertEquals(coord1.size(), coord1.size());
+        Assertions.assertEquals(coord1.size(), coord1.size());
         verifyEphemerisLine(coord1.get(0), coord2.get(0));
         verifyEphemerisLine(coord1.get(1), coord2.get(1));
         verifyEphemerisLine(coord1.get(100), coord2.get(100));
@@ -461,20 +457,20 @@ public class CPFWriterTest {
     }
 
     public static void compareCpfHeader(CPFHeader header1, CPFHeader header2) {
-        Assert.assertEquals(header1.getFormat(), header2.getFormat());
-        Assert.assertEquals(header1.getVersion(), header2.getVersion());
-        Assert.assertEquals(header1.getSource(), header2.getSource());
-        Assert.assertEquals(header1.getProductionEpoch().getYear(), header2.getProductionEpoch().getYear());
-        Assert.assertEquals(header1.getName(), header2.getName());
-        Assert.assertEquals(header1.getIlrsSatelliteId(), header2.getIlrsSatelliteId());
-        Assert.assertEquals(header1.getSic(), header2.getSic());
-        Assert.assertEquals(0.0, header1.getStartEpoch().durationFrom(header2.getStartEpoch()), 1.0e-15);
-        Assert.assertEquals(0.0, header1.getEndEpoch().durationFrom(header2.getEndEpoch()), 1.0e-15);
+        Assertions.assertEquals(header1.getFormat(), header2.getFormat());
+        Assertions.assertEquals(header1.getVersion(), header2.getVersion());
+        Assertions.assertEquals(header1.getSource(), header2.getSource());
+        Assertions.assertEquals(header1.getProductionEpoch().getYear(), header2.getProductionEpoch().getYear());
+        Assertions.assertEquals(header1.getName(), header2.getName());
+        Assertions.assertEquals(header1.getIlrsSatelliteId(), header2.getIlrsSatelliteId());
+        Assertions.assertEquals(header1.getSic(), header2.getSic());
+        Assertions.assertEquals(0.0, header1.getStartEpoch().durationFrom(header2.getStartEpoch()), 1.0e-15);
+        Assertions.assertEquals(0.0, header1.getEndEpoch().durationFrom(header2.getEndEpoch()), 1.0e-15);
     }
 
     public static void verifyEphemerisLine(CPFCoordinate coord1, CPFCoordinate coord2) {
-        Assert.assertEquals(0.0, coord1.getDate().durationFrom(coord2.getDate()), 1.0e-10);
-        Assert.assertEquals(0.0, coord1.getPosition().distance(coord2.getPosition()), 1.0e-10);
+        Assertions.assertEquals(0.0, coord1.getDate().durationFrom(coord2.getDate()), 1.0e-10);
+        Assertions.assertEquals(0.0, coord1.getPosition().distance(coord2.getPosition()), 1.0e-10);
     }
 
 }

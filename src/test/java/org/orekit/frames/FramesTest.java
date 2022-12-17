@@ -16,16 +16,11 @@
  */
 package org.orekit.frames;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.function.Supplier;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.frames.ITRFVersionLoader.ITRFVersionConfiguration;
@@ -35,6 +30,11 @@ import org.orekit.time.TAIUTCDatFilesLoader.Parser;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Unit tests for methods implemented in {@link Frames}.
@@ -51,7 +51,7 @@ public class FramesTest {
      *
      * @throws IOException on error.
      */
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         final String leapPath = "/USNO/tai-utc.dat";
         final String eopPath = "/rapid-data-columns/finals2000A.daily";
@@ -92,29 +92,29 @@ public class FramesTest {
         EOPHistory eopFull = ((ITRFProvider) itrfFull.getTransformProvider()).getEOPHistory();
 
         // verify
-        Assert.assertEquals(eopHistory.getConventions(), IERSConventions.IERS_2010);
-        Assert.assertEquals(eopFull.getConventions(), IERSConventions.IERS_2010);
-        Assert.assertEquals(eopHistory.getTimeScales(), timeScales);
-        Assert.assertEquals(eopFull.getTimeScales(), timeScales);
+        Assertions.assertEquals(eopHistory.getConventions(), IERSConventions.IERS_2010);
+        Assertions.assertEquals(eopFull.getConventions(), IERSConventions.IERS_2010);
+        Assertions.assertEquals(eopHistory.getTimeScales(), timeScales);
+        Assertions.assertEquals(eopFull.getTimeScales(), timeScales);
         // share EOP history when conventions and tidal corrections are the same
-        Assert.assertSame(
+        Assertions.assertSame(
                 timeScales.getUT1(IERSConventions.IERS_2010, true).getEOPHistory(),
                 eopHistory);
-        Assert.assertSame(
+        Assertions.assertSame(
                 eopHistory,
                 ((ITRFProvider) itrfEquinox.getTransformProvider()).getEOPHistory());
         // changing tidal corrections still shares the same data.
-        Assert.assertNotEquals(eopFull, eopHistory);
+        Assertions.assertNotEquals(eopFull, eopHistory);
         final int n = 181;
         List<EOPEntry> entries = eopHistory.getEntries();
         List<EOPEntry> entriesFull = eopFull.getEntries();
-        Assert.assertEquals(n, entries.size());
-        Assert.assertEquals(n, entriesFull.size());
+        Assertions.assertEquals(n, entries.size());
+        Assertions.assertEquals(n, entriesFull.size());
         for (int i = 0; i < n; i++) {
-            Assert.assertSame(entries.get(i), entriesFull.get(i));
+            Assertions.assertSame(entries.get(i), entriesFull.get(i));
         }
         // ICRF
-        Assert.assertEquals(null, frames.getICRF());
+        Assertions.assertEquals(null, frames.getICRF());
     }
 
     /** Check transforms between frames from different data contexts. */
@@ -129,7 +129,7 @@ public class FramesTest {
         AbsoluteDate date = new AbsoluteDate(2011, 5, 1, timeScales.getUTC());
 
         // verify
-        Assert.assertSame(frames.getGCRF(), other.getGCRF());
+        Assertions.assertSame(frames.getGCRF(), other.getGCRF());
         Frame itrf = frames.getITRF(IERSConventions.IERS_2010, true);
         Frame otherItrf = other.getITRF(IERSConventions.IERS_2010, true);
         Transform transform = itrf.getTransformTo(otherItrf, date);
@@ -139,7 +139,7 @@ public class FramesTest {
                 0.2449186 / Constants.JULIAN_DAY * 2 * FastMath.PI,
                 0.341136 * Constants.ARC_SECONDS_TO_RADIANS,
                 0.3e-3 * Constants.ARC_SECONDS_TO_RADIANS).getNorm();
-        Assert.assertEquals(expected, angle, 1e-2 * expected);
+        Assertions.assertEquals(expected, angle, 1e-2 * expected);
     }
 
 }

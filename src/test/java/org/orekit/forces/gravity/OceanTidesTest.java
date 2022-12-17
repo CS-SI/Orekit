@@ -16,15 +16,13 @@
  */
 package org.orekit.forces.gravity;
 
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -49,6 +47,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.util.Map;
 
 public class OceanTidesTest {
 
@@ -85,7 +85,7 @@ public class OceanTidesTest {
                        6, 6, conventions, ut1));
         SpacecraftState interpolated = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                         6, 6, IERSConventions.IERS_2010, ut1));
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             Vector3D.distance(raw.getPVCoordinates().getPosition(),
                                               interpolated.getPVCoordinates().getPosition()),
                             9.9e-6); // threshold would be 3.4e-5 for 30 days propagation
@@ -140,11 +140,11 @@ public class OceanTidesTest {
         SpacecraftState oceanTidesPoleTide = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                           true, SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
                           6, 6, conventions, ut1));
-        Assert.assertEquals(delta1,
+        Assertions.assertEquals(delta1,
                             Vector3D.distance(noTides.getPVCoordinates().getPosition(),
                                               oceanTidesNoPoleTide.getPVCoordinates().getPosition()),
                             0.01);
-        Assert.assertEquals(delta2,
+        Assertions.assertEquals(delta2,
                             Vector3D.distance(oceanTidesNoPoleTide.getPVCoordinates().getPosition(),
                                               oceanTidesPoleTide.getPVCoordinates().getPosition()),
                             0.01);
@@ -166,13 +166,13 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertTrue(fm.dependsOnPositionOnly());
-        Assert.assertEquals(1, fm.getParametersDrivers().size());
+        Assertions.assertTrue(fm.dependsOnPositionOnly());
+        Assertions.assertEquals(1, fm.getParametersDrivers().size());
         try {
             fm.getParameterDriver("unknown");
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException miae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
         }
     }
 
@@ -191,12 +191,12 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertEquals(1, fm.getParametersDrivers().size());
+        Assertions.assertEquals(1, fm.getParametersDrivers().size());
         try {
             fm.getParameterDriver("unknown").setValue(0.0);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException miae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
         }
     }
 
@@ -212,7 +212,7 @@ public class OceanTidesTest {
         return propagator.propagate(target);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format:tides");
     }

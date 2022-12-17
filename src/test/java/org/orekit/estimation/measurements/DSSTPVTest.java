@@ -16,16 +16,12 @@
  */
 package org.orekit.estimation.measurements;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
@@ -38,8 +34,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.StateFunction;
 
+import java.util.List;
+
 public class DSSTPVTest {
-    
+
     @Test
     public void testStateDerivatives() {
 
@@ -77,8 +75,8 @@ public class DSSTPVTest {
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                                                   PositionAngle.TRUE, 1.0, 3).value(state);
 
-            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     final double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
@@ -94,29 +92,29 @@ public class DSSTPVTest {
         }
 
         // median errors
-        Assert.assertEquals(0.0, new Median().evaluate(errorsP), 0.0);
-        Assert.assertEquals(0.0, new Median().evaluate(errorsV), 2.0e-10);
+        Assertions.assertEquals(0.0, new Median().evaluate(errorsP), 0.0);
+        Assertions.assertEquals(0.0, new Median().evaluate(errorsV), 2.0e-10);
 
     }
-    
-    /** Test the PV constructor with standard deviations for position and velocity given as 2 double. 
+
+    /** Test the PV constructor with standard deviations for position and velocity given as 2 double.
      */
     @Test
     public void testPVWithSingleStandardDeviations() {
-        
+
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
-        
+
         // Initialize standard deviations and weight
         final double sigmaP     = 10.;
         final double sigmaV     = 0.1;
         final double baseWeight = 0.5;
-        
+
         // Reference covariance matrix and correlation coefficients
         final double[][] Pref = new double[6][6];
         for (int i = 0; i < 3; i++) {
@@ -124,70 +122,70 @@ public class DSSTPVTest {
             Pref[i+3][i+3] = FastMath.pow(sigmaV, 2);
         }
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(6).getData();
-        
+
         // Reference propagator numbers
         final ObservableSatellite[] sats = {
             new ObservableSatellite(0),
             new ObservableSatellite(2)
         };
-        
+
         // Create PV measurements
         final PV[] pvs = new PV[2];
         pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
         pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
-        
+
         // Tolerance
         final double eps = 1e-25; // tolerance
-        
+
         // Check data
         for (int k = 0; k < pvs.length; k++) {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
-            
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+
             // Weights
             for (int i = 0; i < 6; i++) {
-                assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
+                Assertions.assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                assertEquals(sigmaP, pv.getTheoreticalStandardDeviation()[i]  , eps);
-                assertEquals(sigmaV, pv.getTheoreticalStandardDeviation()[i+3], eps);
+                Assertions.assertEquals(sigmaP, pv.getTheoreticalStandardDeviation()[i]  , eps);
+                Assertions.assertEquals(sigmaV, pv.getTheoreticalStandardDeviation()[i+3], eps);
             }
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            assertEquals(0., normP, eps);
-            
+            Assertions.assertEquals(0., normP, eps);
+
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            assertEquals(0., normCorrCoef, eps);
+            Assertions.assertEquals(0., normCorrCoef, eps);
         }
     }
-    
-    /** Test the PV constructor with standard deviations for position and velocity given as a 6-sized vector. 
+
+    /** Test the PV constructor with standard deviations for position and velocity given as a 6-sized vector.
      */
     @Test
     public void testPVWithVectorStandardDeviations() {
-        
+
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
-        
+
         // Initialize standard deviations and weight
         final double[] sigmaP     = {10., 20., 30.};
         final double[] sigmaV     = {0.1, 0.2, 0.3};
         final double[] sigmaPV    = {10., 20., 30., 0.1, 0.2, 0.3};
         final double baseWeight = 0.5;
-        
+
         // Reference covariance matrix and correlation coefficients
         final double[][] Pref = new double[6][6];
         for (int i = 0; i < 3; i++) {
@@ -195,7 +193,7 @@ public class DSSTPVTest {
             Pref[i+3][i+3] = FastMath.pow(sigmaV[i], 2);
         }
         final double[][] corrCoefRef = MatrixUtils.createRealIdentityMatrix(6).getData();
-        
+
         // Reference propagator numbers
         final ObservableSatellite[] sats = {
             new ObservableSatellite(0),
@@ -203,64 +201,64 @@ public class DSSTPVTest {
             new ObservableSatellite(0),
             new ObservableSatellite(10)
         };
-        
+
         // Create PV measurements
         final PV[] pvs = new PV[4];
         pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
         pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
         pvs[2] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[2]);
         pvs[3] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[3]);
-        
+
         // Tolerance
         final double eps = 1e-25; // tolerance
-        
+
         // Check data
         for (int k = 0; k < pvs.length; k++) {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
-            
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+
             // Weights
             for (int i = 0; i < 6; i++) {
-                assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
+                Assertions.assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                assertEquals(sigmaP[i], pv.getTheoreticalStandardDeviation()[i]  , eps);
-                assertEquals(sigmaV[i], pv.getTheoreticalStandardDeviation()[i+3], eps);
+                Assertions.assertEquals(sigmaP[i], pv.getTheoreticalStandardDeviation()[i]  , eps);
+                Assertions.assertEquals(sigmaV[i], pv.getTheoreticalStandardDeviation()[i+3], eps);
             }
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            assertEquals(0., normP, eps);
-            
+            Assertions.assertEquals(0., normP, eps);
+
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            assertEquals(0., normCorrCoef, eps);
+            Assertions.assertEquals(0., normCorrCoef, eps);
         }
     }
-    
-    /** Test the PV constructor with two 3x3 covariance matrix (one for position, the other for velocity) as input. 
+
+    /** Test the PV constructor with two 3x3 covariance matrix (one for position, the other for velocity) as input.
      */
     @Test
     public void testPVWithTwoCovarianceMatrices() {
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
-        
+
         // Initialize standard deviations and weight
         final double[][] positionP = {{100., 400., 1200.}, {400., 400., 1800.}, {1200., 1800., 900.}};
         final double[][] velocityP = {{0.01, 0.04, 0.12 }, {0.04, 0.04, 0.18 }, {0.12 , 0.18 , 0.09}};
         final double baseWeight = 0.5;
-        
+
         // Reference covariance matrix and correlation coefficients
         final double[][] Pref = new double[6][6];
         for (int i = 0; i < 3; i++) {
@@ -281,68 +279,68 @@ public class DSSTPVTest {
                 corrCoefRef[j+3][i+3] = corrCoefRef3[i][j];
             }
         }
-        
+
         // Reference propagator numbers
         final ObservableSatellite[] sats = {
             new ObservableSatellite(0),
             new ObservableSatellite(2)
         };
-        
+
         // Reference standard deviations
         final double[] sigmaP = {10., 20., 30.};
         final double[] sigmaV = {0.1, 0.2, 0.3};
-        
+
         // Create PV measurements
         final PV[] pvs = new PV[2];
         pvs[0] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[0]);
         pvs[1] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[1]);
-        
+
         // Tolerance
         final double eps = 6.7e-16; // tolerance
-        
+
         // Check data
         for (int k = 0; k < pvs.length; k++) {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
-            
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+
             // Weights
             for (int i = 0; i < 6; i++) {
-                assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
+                Assertions.assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                assertEquals(sigmaP[i], pv.getTheoreticalStandardDeviation()[i]  , eps);
-                assertEquals(sigmaV[i], pv.getTheoreticalStandardDeviation()[i+3], eps);
+                Assertions.assertEquals(sigmaP[i], pv.getTheoreticalStandardDeviation()[i]  , eps);
+                Assertions.assertEquals(sigmaV[i], pv.getTheoreticalStandardDeviation()[i+3], eps);
             }
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            assertEquals(0., normP, eps);
-            
+            Assertions.assertEquals(0., normP, eps);
+
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            assertEquals(0., normCorrCoef, eps);
+            Assertions.assertEquals(0., normCorrCoef, eps);
         }
-        
+
     }
-    
-    /** Test the PV constructor with one 6x6 covariance matrix as input. 
+
+    /** Test the PV constructor with one 6x6 covariance matrix as input.
      */
     @Test
     public void testPVWithCovarianceMatrix() {
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
-        
+
         // Initialize standard deviations, weight and corr coeff
         final double[] sigmaPV = {10., 20., 30., 0.1, 0.2, 0.3};
         final double baseWeight = 0.5;
@@ -356,7 +354,7 @@ public class DSSTPVTest {
                 }
             }
         }
-        
+
         // Reference covariance matrix
         final double[][] Pref = new double[6][6];
         for (int i = 0; i < 6; i++) {
@@ -364,57 +362,57 @@ public class DSSTPVTest {
                 Pref[i][j] = corrCoefRef[i][j]*sigmaPV[i]*sigmaPV[j];
             }
         }
-        
+
         // Reference propagator numbers
         final ObservableSatellite[] sats = {
             new ObservableSatellite(0),
             new ObservableSatellite(2)
         };
-        
+
         // Create PV measurements
         final PV[] pvs = new PV[2];
         pvs[0] = new PV(date, position, velocity, Pref, baseWeight, sats[0]);
         pvs[1] = new PV(date, position, velocity, Pref, baseWeight, sats[1]);
-        
+
         // Tolerance
         final double eps = 1.8e-15; // tolerance
-        
+
         // Check data
         for (int k = 0; k < pvs.length; k++) {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
-            
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+
             // Weights
             for (int i = 0; i < 6; i++) {
-                assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
+                Assertions.assertEquals(baseWeight, pv.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 6; i++) {
-                assertEquals(sigmaPV[i], pv.getTheoreticalStandardDeviation()[i]  , eps);
+                Assertions.assertEquals(sigmaPV[i], pv.getTheoreticalStandardDeviation()[i]  , eps);
             }
             // Covariances
             final double[][] P = pv.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            assertEquals(0., normP, eps);
-            
+            Assertions.assertEquals(0., normP, eps);
+
             // Correlation coef
             final double[][] corrCoef = pv.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            assertEquals(0., normCorrCoef, eps);
+            Assertions.assertEquals(0., normCorrCoef, eps);
         }
-        
+
     }
-    
+
     /** Test exceptions raised if the covariance matrix does not have the proper size. */
     @Test
     public void testExceptions() {
         // Context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        
+
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
@@ -425,32 +423,32 @@ public class DSSTPVTest {
         // Build with two 3-sized vectors
         try {
             new PV(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight, sat);
-            Assert.fail("An OrekitException should have been thrown");
+            Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }
-        
+
         // Build with one 6-sized vector
         try {
             new PV(date, position, velocity, new double[] {0., 0., 0.}, weight, sat);
-            Assert.fail("An OrekitException should have been thrown");
+            Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }
-        
+
         // Build with two 3x3 matrices
         try {
             new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}},
                    new double[][] {{0., 0.}, {0., 0.}}, weight, sat);
-            Assert.fail("An OrekitException should have been thrown");
+            Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }
-        
+
         // Build with one 6x6 matrix
         try {
             new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight, sat);
-            Assert.fail("An OrekitException should have been thrown");
+            Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }

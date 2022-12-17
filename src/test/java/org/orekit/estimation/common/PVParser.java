@@ -17,13 +17,13 @@
 
 package org.orekit.estimation.common;
 
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
+
+import java.util.Map;
 
 /** Parser for PV measurements.
  * @author Luc Maisonobe

@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.common.SsrUpdateInterval;
 
 public class SsrUpdateIntervalTest {
@@ -30,52 +30,52 @@ public class SsrUpdateIntervalTest {
         
         // Index = 0
         sui = new SsrUpdateInterval(0);
-        Assert.assertEquals(1.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(1.0, sui.getUpdateInterval(), eps);
         // Index = 1
         sui = new SsrUpdateInterval(1);
-        Assert.assertEquals(2.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(2.0, sui.getUpdateInterval(), eps);
         // Index = 2
         sui = new SsrUpdateInterval(2);
-        Assert.assertEquals(5.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(5.0, sui.getUpdateInterval(), eps);
         // Index = 3
         sui = new SsrUpdateInterval(3);
-        Assert.assertEquals(10.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(10.0, sui.getUpdateInterval(), eps);
         // Index = 4
         sui = new SsrUpdateInterval(4);
-        Assert.assertEquals(15.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(15.0, sui.getUpdateInterval(), eps);
         // Index = 5
         sui = new SsrUpdateInterval(5);
-        Assert.assertEquals(30.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(30.0, sui.getUpdateInterval(), eps);
         // Index = 6
         sui = new SsrUpdateInterval(6);
-        Assert.assertEquals(60.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(60.0, sui.getUpdateInterval(), eps);
         // Index = 7
         sui = new SsrUpdateInterval(7);
-        Assert.assertEquals(120.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(120.0, sui.getUpdateInterval(), eps);
         // Index = 8
         sui = new SsrUpdateInterval(8);
-        Assert.assertEquals(240.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(240.0, sui.getUpdateInterval(), eps);
         // Index = 9
         sui = new SsrUpdateInterval(9);
-        Assert.assertEquals(300.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(300.0, sui.getUpdateInterval(), eps);
         // Index = 10
         sui = new SsrUpdateInterval(10);
-        Assert.assertEquals(600.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(600.0, sui.getUpdateInterval(), eps);
         // Index = 11
         sui = new SsrUpdateInterval(11);
-        Assert.assertEquals(900.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(900.0, sui.getUpdateInterval(), eps);
         // Index = 12
         sui = new SsrUpdateInterval(12);
-        Assert.assertEquals(1800.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(1800.0, sui.getUpdateInterval(), eps);
         // Index = 13
         sui = new SsrUpdateInterval(13);
-        Assert.assertEquals(3600.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(3600.0, sui.getUpdateInterval(), eps);
         // Index = 14
         sui = new SsrUpdateInterval(14);
-        Assert.assertEquals(7200.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(7200.0, sui.getUpdateInterval(), eps);
         // Index = 15
         sui = new SsrUpdateInterval(15);
-        Assert.assertEquals(10800.0, sui.getUpdateInterval(), eps);
+        Assertions.assertEquals(10800.0, sui.getUpdateInterval(), eps);
     }
 
 }

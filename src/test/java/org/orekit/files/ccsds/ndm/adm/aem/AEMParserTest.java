@@ -16,11 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -28,9 +23,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.BoundedAttitudeProvider;
@@ -61,9 +56,14 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class AEMParserTest {
 
-    @Before
+    @BeforeEach
     public void setUp()
         throws Exception {
         Utils.setDataRoot("regular-data");
@@ -77,42 +77,42 @@ public class AEMParserTest {
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final Segment<AemMetadata, AemData> segment1 = file.getSegments().get(1);
         final AbsoluteDate start = new AbsoluteDate("1996-11-28T22:08:02.5555", TimeScalesFactory.getUTC());
-        Assert.assertEquals(0.0, start.durationFrom(file.getSatellites().get("1996-062A").getStart()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, start.durationFrom(file.getSatellites().get("1996-062A").getStart()), Double.MIN_VALUE);
         final AbsoluteDate end = new AbsoluteDate("1996-12-28T21:23:00.5555", TimeScalesFactory.getUTC());
-        Assert.assertEquals(0.0, end.durationFrom(file.getSatellites().get("1996-062A").getStop()), Double.MIN_VALUE);
-        Assert.assertEquals("1996-062A", file.getSatellites().get("1996-062A").getId());
-        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), Double.MIN_VALUE);
-        Assert.assertEquals(new AbsoluteDate(2002, 11, 4, 17, 22, 31.0, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(0.0, end.durationFrom(file.getSatellites().get("1996-062A").getStop()), Double.MIN_VALUE);
+        Assertions.assertEquals("1996-062A", file.getSatellites().get("1996-062A").getId());
+        Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(new AbsoluteDate(2002, 11, 4, 17, 22, 31.0, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
-        Assert.assertEquals("NASA/JPL", file.getHeader().getOriginator());
-        Assert.assertEquals("UTC",     segment0.getMetadata().getTimeSystem().name());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
-        Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
-        Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
-        Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
-        Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
-        Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assert.assertNull(segment0.getMetadata().getCenter().getBody());
-        Assert.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals("NASA/JPL", file.getHeader().getOriginator());
+        Assertions.assertEquals("UTC",     segment0.getMetadata().getTimeSystem().name());
+        Assertions.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
+        Assertions.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
+        Assertions.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
+        Assertions.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
+        Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
+        Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStartTime());
-        Assert.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, 2.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, 2.5555, TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assert.assertEquals(new AbsoluteDate(1996, 11, 28, 22, 8, 2.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 22, 8, 2.5555, TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStartTime());
-        Assert.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 18, 2.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 18, 2.5555, TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStopTime());
-        Assert.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
-        Assert.assertEquals(7,         segment0.getMetadata().getInterpolationDegree());
-        Assert.assertFalse(segment0.getMetadata().isFirst());
-        Assert.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
-        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
+        Assertions.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
+        Assertions.assertEquals(7,         segment0.getMetadata().getInterpolationDegree());
+        Assertions.assertFalse(segment0.getMetadata().isFirst());
+        Assertions.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                             segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1",
+        Assertions.assertEquals("1",
                             segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
-        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
-        Assert.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
-        Assert.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
+        Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assertions.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.68427, 0.56748, 0.03146, 0.45689, false),
                                                                    Vector3D.ZERO,
@@ -132,34 +132,34 @@ public class AEMParserTest {
         ephemeridesDataLinesComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         ephemeridesDataLinesComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         ephemeridesDataLinesComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(ephemeridesDataLinesComment, segment0.getMetadata().getComments());
+        Assertions.assertEquals(ephemeridesDataLinesComment, segment0.getMetadata().getComments());
 
-        Assert.assertEquals("UTC",                      segment1.getMetadata().getTimeSystem().name());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR",     segment1.getMetadata().getObjectName());
-        Assert.assertEquals("1996-062A",                segment1.getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenter().getName());
-        Assert.assertEquals(1996,                       segment1.getMetadata().getLaunchYear());
-        Assert.assertEquals(62,                         segment1.getMetadata().getLaunchNumber());
-        Assert.assertEquals("A",                        segment1.getMetadata().getLaunchPiece());
-        Assert.assertFalse(segment1.getMetadata().getHasCreatableBody());
-        Assert.assertNull(segment1.getMetadata().getCenter().getBody());
-        Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals("UTC",                      segment1.getMetadata().getTimeSystem().name());
+        Assertions.assertEquals("MARS GLOBAL SURVEYOR",     segment1.getMetadata().getObjectName());
+        Assertions.assertEquals("1996-062A",                segment1.getMetadata().getObjectID());
+        Assertions.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenter().getName());
+        Assertions.assertEquals(1996,                       segment1.getMetadata().getLaunchYear());
+        Assertions.assertEquals(62,                         segment1.getMetadata().getLaunchNumber());
+        Assertions.assertEquals("A",                        segment1.getMetadata().getLaunchPiece());
+        Assertions.assertFalse(segment1.getMetadata().getHasCreatableBody());
+        Assertions.assertNull(segment1.getMetadata().getCenter().getBody());
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStartTime());
-        Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.5555, TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStopTime());
-        Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, 0.5555, TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getUseableStartTime());
-        Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, 0.5555, TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getUseableStopTime());
-        Assert.assertFalse(segment1.getMetadata().isFirst());
-        Assert.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
-        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
+        Assertions.assertFalse(segment1.getMetadata().isFirst());
+        Assertions.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                             segment0.getMetadata().getEndpoints().getSpacecraftBodyFrame().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1",
+        Assertions.assertEquals("1",
                             segment0.getMetadata().getEndpoints().getSpacecraftBodyFrame().asSpacecraftBodyFrame().getLabel());
-        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
-        Assert.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
-        Assert.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
+        Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assertions.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false),
                                                                    Vector3D.ZERO,
@@ -177,7 +177,7 @@ public class AEMParserTest {
                                  segment1.getData().getAngularCoordinates().get(2), 1.0e-5);
         ArrayList<String> ephemeridesDataLinesComment2 = new ArrayList<String>();
         ephemeridesDataLinesComment2.add("This block begins after trajectory correction maneuver TCM-3.");
-        Assert.assertEquals(ephemeridesDataLinesComment2, segment1.getMetadata().getComments());
+        Assertions.assertEquals(ephemeridesDataLinesComment2, segment1.getMetadata().getComments());
     }
 
     @Test
@@ -193,24 +193,24 @@ public class AEMParserTest {
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
-        Assert.assertEquals(headerComment, file.getHeader().getComments());
+        Assertions.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(metadataComment, segment0.getMetadata().getComments());
-        Assert.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
-        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
+        Assertions.assertEquals(metadataComment, segment0.getMetadata().getComments());
+        Assertions.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                             segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1",
+        Assertions.assertEquals("1",
                             segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
         List<AemSegment> blocks = file.getSegments();
-        Assert.assertEquals(1, blocks.size());
-        Assert.assertEquals(IERSConventions.IERS_2010, parser.getConventions());
-        Assert.assertTrue(parser.isSimpleEOP());
-        Assert.assertEquals(0.0, parser.getMissionReferenceDate().durationFrom(new AbsoluteDate(1996, 12, 17, 0, 0, 0.0, TimeScalesFactory.getUTC())), 1.0e-5);
-        Assert.assertEquals(DataContext.getDefault(), parser.getDataContext());
-        Assert.assertEquals((new AbsoluteDate("1996-12-17T00:00:00.000",
+        Assertions.assertEquals(1, blocks.size());
+        Assertions.assertEquals(IERSConventions.IERS_2010, parser.getConventions());
+        Assertions.assertTrue(parser.isSimpleEOP());
+        Assertions.assertEquals(0.0, parser.getMissionReferenceDate().durationFrom(new AbsoluteDate(1996, 12, 17, 0, 0, 0.0, TimeScalesFactory.getUTC())), 1.0e-5);
+        Assertions.assertEquals(DataContext.getDefault(), parser.getDataContext());
+        Assertions.assertEquals((new AbsoluteDate("1996-12-17T00:00:00.000",
                                               TimeScalesFactory.getUTC())),
                             parser.getMissionReferenceDate());
     }
@@ -233,41 +233,41 @@ public class AEMParserTest {
     private void validateAEM03(final Aem file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
-        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-15);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-15);
+        Assertions.assertEquals(0,
                             file.getHeader().getCreationDate().durationFrom(new AbsoluteDate("2008-071T17:09:49", utc)),
                             1.0e-12);
-        Assert.assertEquals("GSFC FDF", file.getHeader().getOriginator());
+        Assertions.assertEquals("GSFC FDF", file.getHeader().getOriginator());
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        Assert.assertEquals("ST5-224", segment0.getMetadata().getObjectName());
-        Assert.assertEquals("2006224", segment0.getMetadata().getObjectID());
-        Assert.assertEquals("J2000",   segment0.getMetadata().getEndpoints().getFrameA().getName());
-        Assert.assertEquals("SC_BODY_1", segment0.getMetadata().getEndpoints().getFrameB().getName());
-        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
-        Assert.assertEquals(TimeSystem.UTC, segment0.getMetadata().getTimeSystem());
-        Assert.assertEquals(0,
+        Assertions.assertEquals("ST5-224", segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("2006224", segment0.getMetadata().getObjectID());
+        Assertions.assertEquals("J2000",   segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals("SC_BODY_1", segment0.getMetadata().getEndpoints().getFrameB().getName());
+        Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assertions.assertEquals(TimeSystem.UTC, segment0.getMetadata().getTimeSystem());
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getStartTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.071", utc)),
                             1.0e-12);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getUseableStartTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.071", utc)),
                             1.0e-12);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getUseableStopTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.946", utc)),
                             1.0e-12);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getStopTime().durationFrom(new AbsoluteDate("2006-090T05:00:00.946", utc)),
                             1.0e-12);
-        Assert.assertEquals(AttitudeType.SPIN, segment0.getMetadata().getAttitudeType());
-        Assert.assertEquals(1, segment0.getData().getComments().size());
-        Assert.assertEquals("Spin KF ground solution, SPINKF rates", segment0.getData().getComments().get(0));
-        Assert.assertEquals(8, segment0.getData().getAngularCoordinates().size());
+        Assertions.assertEquals(AttitudeType.SPIN, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals(1, segment0.getData().getComments().size());
+        Assertions.assertEquals("Spin KF ground solution, SPINKF rates", segment0.getData().getComments().get(0));
+        Assertions.assertEquals(8, segment0.getData().getAngularCoordinates().size());
         TimeStampedAngularCoordinates prev = null;
         for (TimeStampedAngularCoordinates tac : segment0.getData().getAngularCoordinates()) {
             if (prev != null) {
                 double dt = tac.getDate().durationFrom(prev.getDate());
                 double dR = Rotation.distance(tac.getRotation(), prev.getRotation());
                 double meanRate = 0.5 * (prev.getRotationRate().getNorm() + tac.getRotationRate().getNorm());
-                Assert.assertEquals(dR, dt * meanRate, 1.3e-3);
+                Assertions.assertEquals(dR, dt * meanRate, 1.3e-3);
             }
             prev = tac;
         }
@@ -281,45 +281,45 @@ public class AEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
-        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-15);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-15);
+        Assertions.assertEquals(0,
                             file.getHeader().getCreationDate().durationFrom(new AbsoluteDate("2021-04-13T08:41:42", utc)),
                             1.0e-12);
-        Assert.assertEquals("CS GROUP", file.getHeader().getOriginator());
+        Assertions.assertEquals("CS GROUP", file.getHeader().getOriginator());
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        Assert.assertEquals("COPIHUE",   segment0.getMetadata().getObjectName());
-        Assert.assertEquals("2100-017F", segment0.getMetadata().getObjectID());
-        Assert.assertEquals(2100,        segment0.getMetadata().getLaunchYear());
-        Assert.assertEquals(17,          segment0.getMetadata().getLaunchNumber());
-        Assert.assertEquals("F",         segment0.getMetadata().getLaunchPiece());
-        Assert.assertEquals("EME2000",   segment0.getMetadata().getEndpoints().getFrameA().getName());
-        Assert.assertEquals("SC_BODY_1", segment0.getMetadata().getEndpoints().getFrameB().getName());
-        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
-        Assert.assertEquals(TimeSystem.UTC, segment0.getMetadata().getTimeSystem());
-        Assert.assertEquals(0,
+        Assertions.assertEquals("COPIHUE",   segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("2100-017F", segment0.getMetadata().getObjectID());
+        Assertions.assertEquals(2100,        segment0.getMetadata().getLaunchYear());
+        Assertions.assertEquals(17,          segment0.getMetadata().getLaunchNumber());
+        Assertions.assertEquals("F",         segment0.getMetadata().getLaunchPiece());
+        Assertions.assertEquals("EME2000",   segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals("SC_BODY_1", segment0.getMetadata().getEndpoints().getFrameB().getName());
+        Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assertions.assertEquals(TimeSystem.UTC, segment0.getMetadata().getTimeSystem());
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getStartTime().durationFrom(new AbsoluteDate("2021-12-31T00:00:00.000", utc)),
                             1.0e-12);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getUseableStartTime().durationFrom(new AbsoluteDate("2021-12-31T00:00:00.500", utc)),
                             1.0e-12);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getUseableStopTime().durationFrom(new AbsoluteDate("2021-12-31T00:00:05.500", utc)),
                             1.0e-12);
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                             segment0.getMetadata().getStopTime().durationFrom(new AbsoluteDate("2021-12-31T00:00:06.000", utc)),
                             1.0e-12);
-        Assert.assertEquals(AttitudeType.QUATERNION_DERIVATIVE, segment0.getMetadata().getAttitudeType());
-        Assert.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
-        Assert.assertEquals(3, segment0.getMetadata().getInterpolationDegree());
-        Assert.assertEquals(1, segment0.getData().getComments().size());
-        Assert.assertEquals(13, segment0.getData().getAngularCoordinates().size());
+        Assertions.assertEquals(AttitudeType.QUATERNION_DERIVATIVE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
+        Assertions.assertEquals(3, segment0.getMetadata().getInterpolationDegree());
+        Assertions.assertEquals(1, segment0.getData().getComments().size());
+        Assertions.assertEquals(13, segment0.getData().getAngularCoordinates().size());
         TimeStampedAngularCoordinates prev = null;
         for (TimeStampedAngularCoordinates tac : segment0.getData().getAngularCoordinates()) {
             if (prev != null) {
                 double dt = tac.getDate().durationFrom(prev.getDate());
                 double dR = Rotation.distance(tac.getRotation(), prev.getRotation());
                 double meanRate = 0.5 * (prev.getRotationRate().getNorm() + tac.getRotationRate().getNorm());
-                Assert.assertEquals(dR, dt * meanRate, 1.5e-6);
+                Assertions.assertEquals(dR, dt * meanRate, 1.5e-6);
             }
             prev = tac;
         }
@@ -335,23 +335,23 @@ public class AEMParserTest {
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
-        Assert.assertEquals(headerComment, file.getHeader().getComments());
+        Assertions.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(metadataComment,        segment0.getMetadata().getComments());
-        Assert.assertEquals("UTC",                  segment0.getMetadata().getTimeSystem().name());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
-        Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
-        Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
-        Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
-        Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
-        Assert.assertEquals(RotationOrder.ZXY,      segment0.getMetadata().getEulerRotSeq());
-        Assert.assertTrue(segment0.getMetadata().rateFrameIsA());
-        Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assert.assertNull(segment0.getMetadata().getCenter().getBody());
+        Assertions.assertEquals(metadataComment,        segment0.getMetadata().getComments());
+        Assertions.assertEquals("UTC",                  segment0.getMetadata().getTimeSystem().name());
+        Assertions.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
+        Assertions.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
+        Assertions.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
+        Assertions.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
+        Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
+        Assertions.assertEquals(RotationOrder.ZXY,      segment0.getMetadata().getEulerRotSeq());
+        Assertions.assertTrue(segment0.getMetadata().rateFrameIsA());
+        Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
 
         // Reference values
         final AbsoluteDate refDate = new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC());
@@ -364,12 +364,12 @@ public class AEMParserTest {
         final TimeStampedAngularCoordinates ac = segment0.getData().getAngularCoordinates().get(0);
         final double[] angles = ac.getRotation().getAngles(segment0.getMetadata().getEulerRotSeq(),
                                                            RotationConvention.FRAME_TRANSFORM);
-        Assert.assertEquals(0.0, refDate.durationFrom(ac.getDate()),                                      1.0e-5);
-        Assert.assertEquals(0.0, refRate.distance(ac.getRotation().applyInverseTo(ac.getRotationRate())), 1.0e-5);
-        Assert.assertEquals(0.0, refAcc.distance(ac.getRotationAcceleration()),                           1.0e-5);
-        Assert.assertEquals(-26.78, FastMath.toDegrees(angles[0]), 1.0e-2);
-        Assert.assertEquals(46.26,  FastMath.toDegrees(angles[1]), 1.0e-2);
-        Assert.assertEquals(144.10, FastMath.toDegrees(angles[2]), 1.0e-2);
+        Assertions.assertEquals(0.0, refDate.durationFrom(ac.getDate()),                                      1.0e-5);
+        Assertions.assertEquals(0.0, refRate.distance(ac.getRotation().applyInverseTo(ac.getRotationRate())), 1.0e-5);
+        Assertions.assertEquals(0.0, refAcc.distance(ac.getRotationAcceleration()),                           1.0e-5);
+        Assertions.assertEquals(-26.78, FastMath.toDegrees(angles[0]), 1.0e-2);
+        Assertions.assertEquals(46.26,  FastMath.toDegrees(angles[1]), 1.0e-2);
+        Assertions.assertEquals(144.10, FastMath.toDegrees(angles[2]), 1.0e-2);
     }
 
     @Test
@@ -380,10 +380,10 @@ public class AEMParserTest {
 
         try {
             parser.parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         }  catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
+            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
     }
 
@@ -396,56 +396,56 @@ public class AEMParserTest {
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
-        Assert.assertEquals(headerComment, file.getHeader().getComments());
+        Assertions.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(metadataComment,        segment0.getMetadata().getComments());
-        Assert.assertEquals(TimeSystem.UTC,         segment0.getMetadata().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
-        Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
-        Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
-        Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
-        Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
-        Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assert.assertNull(segment0.getMetadata().getCenter().getBody());
-        Assert.assertEquals(CelestialBodyFrame.EME2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
-        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
-        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
-        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(metadataComment,        segment0.getMetadata().getComments());
+        Assertions.assertEquals(TimeSystem.UTC,         segment0.getMetadata().getTimeSystem());
+        Assertions.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
+        Assertions.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
+        Assertions.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
+        Assertions.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
+        Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
+        Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
+        Assertions.assertEquals(CelestialBodyFrame.EME2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assertions.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assertions.assertEquals(new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStartTime());
-        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStartTime());
-        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:02:00.331", TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate("2002-12-18T12:02:00.331", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStopTime());
-        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:02:00.331", TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate("2002-12-18T12:02:00.331", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assert.assertEquals(AttitudeType.QUATERNION, segment0.getMetadata().getAttitudeType());
-        Assert.assertFalse(segment0.getMetadata().isFirst());
-        Assert.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
-        Assert.assertEquals(7, segment0.getMetadata().getInterpolationDegree());
+        Assertions.assertEquals(AttitudeType.QUATERNION, segment0.getMetadata().getAttitudeType());
+        Assertions.assertFalse(segment0.getMetadata().isFirst());
+        Assertions.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
+        Assertions.assertEquals(7, segment0.getMetadata().getInterpolationDegree());
 
         final AbsoluteDate refDate = new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC());
 
-        Assert.assertEquals(3, segment0.getData().getAngularCoordinates().size());
+        Assertions.assertEquals(3, segment0.getData().getAngularCoordinates().size());
         final TimeStampedAngularCoordinates ac0 = segment0.getData().getAngularCoordinates().get(0);
-        Assert.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(0.68427, 0.56748, 0.03146, 0.45689, true),
                                               ac0.getRotation()),
                             1.0e-10);
         final TimeStampedAngularCoordinates ac1 = segment0.getData().getAngularCoordinates().get(1);
-        Assert.assertEquals(60.0, ac1.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(60.0, ac1.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(0.74533, 0.42319, -0.45697, 0.23784, true),
                                               ac1.getRotation()),
                             1.0e-10);
         final TimeStampedAngularCoordinates ac2 = segment0.getData().getAngularCoordinates().get(2);
-        Assert.assertEquals(120.0, ac2.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(120.0, ac2.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(0.45652, -0.84532, 0.26974, -0.06532, true),
                                               ac2.getRotation()),
                             1.0e-10);
@@ -461,31 +461,31 @@ public class AEMParserTest {
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("This example shows an AEM with a rotation");
-        Assert.assertEquals(headerComment, file.getHeader().getComments());
+        Assertions.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(metadataComment, segment0.getMetadata().getComments());
-        Assert.assertEquals(TimeSystem.UTC,  segment0.getMetadata().getTimeSystem());
-        Assert.assertEquals("FICTITIOUS",    segment0.getMetadata().getObjectName());
-        Assert.assertEquals("2020-224A",     segment0.getMetadata().getObjectID());
-        Assert.assertEquals("EARTH",         segment0.getMetadata().getCenter().getName());
-        Assert.assertEquals(CelestialBodyFrame.J2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
-        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
-        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
-        Assert.assertEquals(new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(metadataComment, segment0.getMetadata().getComments());
+        Assertions.assertEquals(TimeSystem.UTC,  segment0.getMetadata().getTimeSystem());
+        Assertions.assertEquals("FICTITIOUS",    segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("2020-224A",     segment0.getMetadata().getObjectID());
+        Assertions.assertEquals("EARTH",         segment0.getMetadata().getCenter().getName());
+        Assertions.assertEquals(CelestialBodyFrame.J2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assertions.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assertions.assertEquals(new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStartTime());
-        Assert.assertEquals(new AbsoluteDate("2020-090T05:00:00.946", TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate("2020-090T05:00:00.946", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assert.assertEquals(AttitudeType.EULER_ANGLE_RATE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_RATE, segment0.getMetadata().getAttitudeType());
 
         final AbsoluteDate refDate = new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC());
 
-        Assert.assertEquals(2, segment0.getData().getAngularCoordinates().size());
+        Assertions.assertEquals(2, segment0.getData().getAngularCoordinates().size());
         final TimeStampedAngularCoordinates ac0 = segment0.getData().getAngularCoordinates().get(0);
-        Assert.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
                                                            FastMath.toRadians(45),
                                                            FastMath.toRadians(0.9),
@@ -493,8 +493,8 @@ public class AEMParserTest {
                                               ac0.getRotation()),
                             1.0e-10);
         final TimeStampedAngularCoordinates ac1 = segment0.getData().getAngularCoordinates().get(1);
-        Assert.assertEquals(0.875, ac1.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.875, ac1.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
                                                            FastMath.toRadians(50),
                                                            FastMath.toRadians(1.9),
@@ -512,36 +512,36 @@ public class AEMParserTest {
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        Assert.assertEquals(TimeSystem.TAI,          segment0.getMetadata().getTimeSystem());
-        Assert.assertEquals("OREKIT SAT",            segment0.getMetadata().getObjectName());
-        Assert.assertEquals("2020-012A",             segment0.getMetadata().getObjectID());
-        Assert.assertEquals(OrbitRelativeFrame.LVLH, segment0.getMetadata().getEndpoints().getFrameA().asOrbitRelativeFrame());
-        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.IMU_FRAME, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
-        Assert.assertFalse(segment0.getMetadata().getEndpoints().isA2b());
-        Assert.assertEquals(new AbsoluteDate("2021-04-15T13:31:20.000", tai), segment0.getMetadata().getStartTime());
-        Assert.assertEquals(new AbsoluteDate("2021-04-15T13:31:23.000", tai), segment0.getMetadata().getStopTime());
-        Assert.assertEquals(AttitudeType.QUATERNION_DERIVATIVE, segment0.getMetadata().getAttitudeType());
-        Assert.assertTrue(segment0.getMetadata().isFirst());
+        Assertions.assertEquals(TimeSystem.TAI,          segment0.getMetadata().getTimeSystem());
+        Assertions.assertEquals("OREKIT SAT",            segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("2020-012A",             segment0.getMetadata().getObjectID());
+        Assertions.assertEquals(OrbitRelativeFrame.LVLH, segment0.getMetadata().getEndpoints().getFrameA().asOrbitRelativeFrame());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.IMU_FRAME, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assertions.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assertions.assertFalse(segment0.getMetadata().getEndpoints().isA2b());
+        Assertions.assertEquals(new AbsoluteDate("2021-04-15T13:31:20.000", tai), segment0.getMetadata().getStartTime());
+        Assertions.assertEquals(new AbsoluteDate("2021-04-15T13:31:23.000", tai), segment0.getMetadata().getStopTime());
+        Assertions.assertEquals(AttitudeType.QUATERNION_DERIVATIVE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertTrue(segment0.getMetadata().isFirst());
 
         final AbsoluteDate refDate = new AbsoluteDate("2021-04-15T13:31:20.000", tai);
 
-        Assert.assertEquals(7, segment0.getData().getAngularCoordinates().size());
+        Assertions.assertEquals(7, segment0.getData().getAngularCoordinates().size());
         final TimeStampedAngularCoordinates ac0 = segment0.getData().getAngularCoordinates().get(0);
-        Assert.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(-0.488615, -0.402157,  0.581628,  0.511111, true),
                                               ac0.getRotation()),
                             1.0e-10);
         final TimeStampedAngularCoordinates ac1 = segment0.getData().getAngularCoordinates().get(1);
-        Assert.assertEquals(0.5, ac1.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.5, ac1.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(-0.488765, -0.402027,  0.581486,  0.511231, true),
                                               ac1.getRotation()),
                             1.0e-10);
         final TimeStampedAngularCoordinates ac2 = segment0.getData().getAngularCoordinates().get(2);
-        Assert.assertEquals(1.0, ac2.getDate().durationFrom(refDate), 1.0e-5);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(1.0, ac2.getDate().durationFrom(refDate), 1.0e-5);
+        Assertions.assertEquals(0.0,
                             Rotation.distance(new Rotation(-0.488916, -0.401898,  0.581344,  0.511350, true),
                                               ac2.getRotation()),
                             1.0e-10);
@@ -563,10 +563,10 @@ public class AEMParserTest {
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
         Attitude                  a = provider.getAttitude(o, o.getDate(), o.getFrame());
         FieldAttitude<Decimal64> fa = provider.getAttitude(fo, fo.getDate(), fo.getFrame());
-        Assert.assertEquals(a.getRotation().getQ0(), fa.getRotation().getQ0().getReal(), 0.00001);
-        Assert.assertEquals(a.getRotation().getQ1(), fa.getRotation().getQ1().getReal(), 0.00001);
-        Assert.assertEquals(a.getRotation().getQ2(), fa.getRotation().getQ2().getReal(), 0.00001);
-        Assert.assertEquals(a.getRotation().getQ3(), fa.getRotation().getQ3().getReal(), 0.00001);
+        Assertions.assertEquals(a.getRotation().getQ0(), fa.getRotation().getQ0().getReal(), 0.00001);
+        Assertions.assertEquals(a.getRotation().getQ1(), fa.getRotation().getQ1().getReal(), 0.00001);
+        Assertions.assertEquals(a.getRotation().getQ2(), fa.getRotation().getQ2().getReal(), 0.00001);
+        Assertions.assertEquals(a.getRotation().getQ3(), fa.getRotation().getQ3().getReal(), 0.00001);
 
     }
 
@@ -576,10 +576,10 @@ public class AEMParserTest {
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
-            Assert.assertEquals(name, oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assertions.assertEquals(name, oe.getParts()[0]);
         }
     }
 
@@ -590,10 +590,10 @@ public class AEMParserTest {
         final DataSource source =  new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assert.assertEquals(wrongName, oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assertions.assertEquals(wrongName, oe.getParts()[0]);
         }
     }
 
@@ -603,10 +603,10 @@ public class AEMParserTest {
             final String name = "/ccsds/adm/aem/AEM-missing-attitude-type.txt";
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
-            Assert.assertEquals(AemMetadataKey.ATTITUDE_TYPE.name(), oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals(AemMetadataKey.ATTITUDE_TYPE.name(), oe.getParts()[0]);
         }
     }
 
@@ -616,11 +616,11 @@ public class AEMParserTest {
             final String name = "/ccsds/adm/aem/AEM-inconsistent-time-systems.txt";
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
-            Assert.assertEquals("UTC", oe.getParts()[0]);
-            Assert.assertEquals("TCG", oe.getParts()[1]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
+            Assertions.assertEquals("UTC", oe.getParts()[0]);
+            Assertions.assertEquals("TCG", oe.getParts()[1]);
         }
     }
 
@@ -634,7 +634,7 @@ public class AEMParserTest {
         Aem actual = new ParserBuilder().buildAemParser().parseMessage(source);
 
         //verify
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 CelestialBodyFactory.getEarth(),
                 actual.getSegments().get(0).getMetadata().getCenter().getBody());
     }
@@ -645,10 +645,10 @@ public class AEMParserTest {
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
-            Assert.assertEquals(name, oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assertions.assertEquals(name, oe.getParts()[0]);
         }
     }
 
@@ -660,11 +660,11 @@ public class AEMParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
     }
 
@@ -674,12 +674,12 @@ public class AEMParserTest {
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(28, oe.getParts()[0]);
-            Assert.assertEquals(name, oe.getParts()[1]);
-            Assert.assertEquals("1996-11-28T22:08:03.5555 0.42319   this-is-not-a-number  0.23784   0.74533", oe.getParts()[2]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(28, oe.getParts()[0]);
+            Assertions.assertEquals(name, oe.getParts()[1]);
+            Assertions.assertEquals("1996-11-28T22:08:03.5555 0.42319   this-is-not-a-number  0.23784   0.74533", oe.getParts()[2]);
         }
     }
 
@@ -691,11 +691,11 @@ public class AEMParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(29, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(29, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
         }
     }
 
@@ -706,12 +706,12 @@ public class AEMParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new ParserBuilder().buildAemParser().parseMessage(source);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE, oe.getSpecifier());
-            Assert.assertEquals("7051995", oe.getParts()[0]);
-            Assert.assertEquals(22, ((Integer) oe.getParts()[1]).intValue());
-            Assert.assertEquals(name, oe.getParts()[2]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE, oe.getSpecifier());
+            Assertions.assertEquals("7051995", oe.getParts()[0]);
+            Assertions.assertEquals(22, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(name, oe.getParts()[2]);
         }
     }
 
@@ -723,7 +723,7 @@ public class AEMParserTest {
         try {
             file.getConventions();
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
         }
     }
 
@@ -731,15 +731,15 @@ public class AEMParserTest {
                                           final TimeStampedAngularCoordinates actual,
                                           final double threshold) {
         // Verify date
-        Assert.assertEquals(0.0, expected.getDate().durationFrom(actual.getDate()), threshold);
+        Assertions.assertEquals(0.0, expected.getDate().durationFrom(actual.getDate()), threshold);
 
         // Verify Angular elements
-        Assert.assertEquals(expected.getRotation().getQ0(), actual.getRotation().getQ0(), threshold);
-        Assert.assertEquals(expected.getRotation().getQ1(), actual.getRotation().getQ1(), threshold);
-        Assert.assertEquals(expected.getRotation().getQ2(), actual.getRotation().getQ2(), threshold);
-        Assert.assertEquals(expected.getRotation().getQ3(), actual.getRotation().getQ3(), threshold);
+        Assertions.assertEquals(expected.getRotation().getQ0(), actual.getRotation().getQ0(), threshold);
+        Assertions.assertEquals(expected.getRotation().getQ1(), actual.getRotation().getQ1(), threshold);
+        Assertions.assertEquals(expected.getRotation().getQ2(), actual.getRotation().getQ2(), threshold);
+        Assertions.assertEquals(expected.getRotation().getQ3(), actual.getRotation().getQ3(), threshold);
 
-        Assert.assertEquals(0.0, expected.getRotationRate().distance(actual.getRotationRate()), threshold);
+        Assertions.assertEquals(0.0, expected.getRotationRate().distance(actual.getRotationRate()), threshold);
     }
 
     /**
@@ -755,13 +755,13 @@ public class AEMParserTest {
 
         final DataSource source1 = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Aem file = builder.buildAemParser().parseMessage(source1);
-        Assert.assertEquals(7, file.getSegments().get(0).getMetadata().getInterpolationDegree());
-        Assert.assertEquals(1, file.getSegments().get(1).getMetadata().getInterpolationDegree());
+        Assertions.assertEquals(7, file.getSegments().get(0).getMetadata().getInterpolationDegree());
+        Assertions.assertEquals(1, file.getSegments().get(1).getMetadata().getInterpolationDegree());
 
         final DataSource source2 = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Aem file2 = builder.withDefaultInterpolationDegree(5).buildAemParser().parseMessage(source2);
-        Assert.assertEquals(7, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
-        Assert.assertEquals(5, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
+        Assertions.assertEquals(7, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
+        Assertions.assertEquals(5, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }
 
     @Test
@@ -770,17 +770,17 @@ public class AEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
-        Assert.assertEquals(CelestialBodyFrame.GTOD, segment0.getMetadata().getEndpoints().getFrameB().asCelestialBodyFrame());
+        Assertions.assertEquals(CelestialBodyFrame.GTOD, segment0.getMetadata().getEndpoints().getFrameB().asCelestialBodyFrame());
 
         final BoundedAttitudeProvider provider = segment0.getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
-        Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
-        Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
-        Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
-        Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
-        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(segment0.getMetadata().getStart()), 0.0001);
-        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(segment0.getMetadata().getStop()), 0.0001);
+        Assertions.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
+        Assertions.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
+        Assertions.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
+        Assertions.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
+        Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(segment0.getMetadata().getStart()), 0.0001);
+        Assertions.assertEquals(0.0, provider.getMaxDate().durationFrom(segment0.getMetadata().getStop()), 0.0001);
 
     }
 
@@ -790,18 +790,18 @@ public class AEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
-        Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_1993, IERSConventions.IERS_2010, true),
+        Assertions.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_1993, IERSConventions.IERS_2010, true),
                             segment0.getMetadata().getEndpoints().getFrameA().asFrame());
 
         final BoundedAttitudeProvider provider = segment0.getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
-        Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
-        Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
-        Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
-        Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
-        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(segment0.getMetadata().getStart()), 0.0001);
-        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(segment0.getMetadata().getStop()), 0.0001);
+        Assertions.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
+        Assertions.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
+        Assertions.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
+        Assertions.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
+        Assertions.assertEquals(0.0, provider.getMinDate().durationFrom(segment0.getMetadata().getStart()), 0.0001);
+        Assertions.assertEquals(0.0, provider.getMaxDate().durationFrom(segment0.getMetadata().getStop()), 0.0001);
 
     }
 

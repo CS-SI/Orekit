@@ -26,7 +26,10 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 public enum CdmHeaderKey {
 
     /** Creating spacecraft name for which the CDM is provided. */
-    MESSAGE_FOR((token, context, header) -> token.processAsUppercaseString(header::setMessageFor));
+    MESSAGE_FOR((token, context, header) -> token.processAsUppercaseString(header::setMessageFor)),
+
+    /** User-defined free-text message classification or caveats of this CDM. */
+    CLASSIFICATION((token, context, header) -> token.processAsNormalizedString(header::setClassification));
 
     /** Processing method. */
     private final TokenProcessor processor;

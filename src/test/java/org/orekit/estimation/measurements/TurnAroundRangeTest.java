@@ -26,8 +26,8 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
@@ -213,10 +213,10 @@ public class TurnAroundRangeTest {
             final double TARestimated = estimated.getEstimatedValue()[0];
 
             final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-            Assert.assertEquals(5, participants.length);
-            Assert.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[4].getDate().durationFrom(participants[0].getDate()),
+            Assertions.assertEquals(5, participants.length);
+            Assertions.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[4].getDate().durationFrom(participants[0].getDate()),
                                 estimated.getEstimatedValue()[0],
-                                2.0e-8);
+                                2.3e-8);
 
             absoluteErrors[index] = TARestimated-TARobserved;
             relativeErrors[index] = FastMath.abs(absoluteErrors[index])/FastMath.abs(TARobserved);
@@ -255,11 +255,14 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 1.4e-7);
-        Assert.assertEquals(0.0, absErrorsMin, 5.0e-7);
-        Assert.assertEquals(0.0, absErrorsMax, 4.9e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 8.9e-15);
-        Assert.assertEquals(0.0, relErrorsMax , 2.9e-14);
+        Assertions.assertEquals(0.0, absErrorsMedian, 1.5e-7);
+        Assertions.assertEquals(0.0, absErrorsMin, 5.0e-7);
+        Assertions.assertEquals(0.0, absErrorsMax, 4.9e-7);
+        Assertions.assertEquals(0.0, relErrorsMedian, 9.2e-15);
+        Assertions.assertEquals(0.0, relErrorsMax , 2.9e-14);
+        
+        // Test measurement type
+        Assertions.assertEquals(TurnAroundRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
@@ -334,8 +337,8 @@ public class TurnAroundRangeTest {
             }, measurement.getDimension(), propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
-            Assert.assertEquals(jacobianRef.length, jacobian.length);
-            Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+            Assertions.assertEquals(jacobianRef.length, jacobian.length);
+            Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
             double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
             double [][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
@@ -386,12 +389,12 @@ public class TurnAroundRangeTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
 
@@ -490,8 +493,8 @@ public class TurnAroundRangeTest {
             // Loop on the parameters
             for (int i = 0; i < 6; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 // Compute a reference value using finite differences
                 final ParameterFunction dMkdP =
@@ -547,12 +550,12 @@ public class TurnAroundRangeTest {
         }
 
         // Check values
-        Assert.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);
-        Assert.assertEquals(0.0, relErrorsQMMean, refErrorQMMean);
-        Assert.assertEquals(0.0, relErrorsQMMax, refErrorQMMax);
-        Assert.assertEquals(0.0, relErrorsQSMedian, refErrorQSMedian);
-        Assert.assertEquals(0.0, relErrorsQSMean, refErrorQSMean);
-        Assert.assertEquals(0.0, relErrorsQSMax, refErrorQSMax);
+        Assertions.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);
+        Assertions.assertEquals(0.0, relErrorsQMMean, refErrorQMMean);
+        Assertions.assertEquals(0.0, relErrorsQMMax, refErrorQMMax);
+        Assertions.assertEquals(0.0, relErrorsQSMedian, refErrorQSMedian);
+        Assertions.assertEquals(0.0, relErrorsQSMean, refErrorQSMean);
+        Assertions.assertEquals(0.0, relErrorsQSMax, refErrorQSMax);
 
     }
 }

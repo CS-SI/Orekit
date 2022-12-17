@@ -16,21 +16,10 @@
  */
 package org.orekit.files.general;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -64,9 +53,17 @@ import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 public class OrekitAttitudeEphemerisFileTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
@@ -77,9 +74,9 @@ public class OrekitAttitudeEphemerisFileTest {
         final String id2 = "ID2";
         OrekitAttitudeEphemerisFile file = new OrekitAttitudeEphemerisFile();
         OrekitSatelliteAttitudeEphemeris ephem1 = file.addSatellite(id1);
-        assertNotNull(ephem1);
+        Assertions.assertNotNull(ephem1);
         OrekitSatelliteAttitudeEphemeris ephem2 = file.addSatellite(id2);
-        assertNotNull(ephem2);
+        Assertions.assertNotNull(ephem2);
     }
 
     @Test
@@ -121,25 +118,25 @@ public class OrekitAttitudeEphemerisFileTest {
                                 AngularDerivativesFilter.USE_RR);
 
         // Test of all getters for OrekitSatelliteAttitudeEphemeris
-        assertEquals(satId, satellite.getId());
-        assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
-        assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
+        Assertions.assertEquals(satId, satellite.getId());
+        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(satellite.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
 
         // Test of all getters for OrekitAttitudeEphemerisSegment
         AttitudeEphemerisSegment<TimeStampedAngularCoordinates> segment = satellite.getSegments().get(0);
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_METHOD, segment.getInterpolationMethod());
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE, segment.getInterpolationSamples());
-        assertEquals(0.0, states.get(0).getDate().durationFrom(segment.getStart()), 1.0e-15);
-        assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(segment.getStop()), 1.0e-15);
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR, segment.getAvailableDerivatives());
+        Assertions.assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_METHOD, segment.getInterpolationMethod());
+        Assertions.assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE, segment.getInterpolationSamples());
+        Assertions.assertEquals(0.0, states.get(0).getDate().durationFrom(segment.getStart()), 1.0e-15);
+        Assertions.assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(segment.getStop()), 1.0e-15);
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, segment.getAvailableDerivatives());
 
         // Verify attitude
         final Attitude attitude = segment.getAttitudeProvider().getAttitude(initialOrbit, date, frame);
-        Assert.assertEquals(frame, attitude.getReferenceFrame());
-        Assert.assertEquals(refRot.getQ0(), attitude.getRotation().getQ0(), quaternionTolerance);
-        Assert.assertEquals(refRot.getQ1(), attitude.getRotation().getQ1(), quaternionTolerance);
-        Assert.assertEquals(refRot.getQ2(), attitude.getRotation().getQ2(), quaternionTolerance);
-        Assert.assertEquals(refRot.getQ3(), attitude.getRotation().getQ3(), quaternionTolerance);
+        Assertions.assertEquals(frame, attitude.getReferenceFrame());
+        Assertions.assertEquals(refRot.getQ0(), attitude.getRotation().getQ0(), quaternionTolerance);
+        Assertions.assertEquals(refRot.getQ1(), attitude.getRotation().getQ1(), quaternionTolerance);
+        Assertions.assertEquals(refRot.getQ2(), attitude.getRotation().getQ2(), quaternionTolerance);
+        Assertions.assertEquals(refRot.getQ3(), attitude.getRotation().getQ3(), quaternionTolerance);
 
         String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
@@ -150,16 +147,16 @@ public class OrekitAttitudeEphemerisFileTest {
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFrom =
                         new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAem));
         Files.delete(Paths.get(tempAem));
-        
+
         segment = ephemerisFrom.getSatellites().get(satId).getSegments().get(0);
-        assertEquals(states.get(0).getDate(), segment.getStart());
-        assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
-        assertEquals(states.size(), segment.getAngularCoordinates().size());
+        Assertions.assertEquals(states.get(0).getDate(), segment.getStart());
+        Assertions.assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
+        Assertions.assertEquals(states.size(), segment.getAngularCoordinates().size());
         for (int i = 0; i < states.size(); i++) {
             TimeStampedAngularCoordinates expected = states.get(i).getAttitude().getOrientation();
             TimeStampedAngularCoordinates actual = segment.getAngularCoordinates().get(i);
-            assertEquals(expected.getDate(), actual.getDate());
-            assertEquals(0.0, Rotation.distance(refRot, actual.getRotation()), quaternionTolerance);
+            Assertions.assertEquals(expected.getDate(), actual.getDate());
+            Assertions.assertEquals(0.0, Rotation.distance(refRot, actual.getRotation()), quaternionTolerance);
         }
 
     }
@@ -184,7 +181,7 @@ public class OrekitAttitudeEphemerisFileTest {
                                     OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE,
                                     AngularDerivativesFilter.USE_RR);
         } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
         }
 
 
@@ -221,7 +218,7 @@ public class OrekitAttitudeEphemerisFileTest {
         try {
             satellite.addNewSegment(states, "LINEAR", 1, AngularDerivativesFilter.USE_R);
         } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oiae.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oiae.getSpecifier());
         }
     }
 
