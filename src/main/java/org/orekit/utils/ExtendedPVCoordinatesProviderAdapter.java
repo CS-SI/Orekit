@@ -34,7 +34,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * This class is roughly the inverse of {@link FrameAdapter}
  * </p>
  * @see FrameAdapter
- * @since 11.4
+ * @since 12.0
  * @author Luc Maisonobe
  */
 public class ExtendedPVCoordinatesProviderAdapter extends Frame {
