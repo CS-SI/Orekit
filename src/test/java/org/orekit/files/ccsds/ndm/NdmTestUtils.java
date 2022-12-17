@@ -31,7 +31,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.definitions.PocMethodFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
 import org.orekit.files.ccsds.ndm.cdm.CdmRelativeMetadata;
@@ -102,7 +102,7 @@ public class NdmTestUtils {
                    original instanceof Section               ||
                    original instanceof CommentsContainer     ||
                    original instanceof ApmQuaternion         ||
-                   original instanceof AttitudeEndoints      ||
+                   original instanceof AttitudeEndpoints      ||
                    original instanceof OcmSatelliteEphemeris ||
                    original instanceof OemSatelliteEphemeris ||
                    original instanceof AemSatelliteEphemeris ||
@@ -271,7 +271,7 @@ public class NdmTestUtils {
     public static void checkOrbitStateHistory(final TrajectoryStateHistory original, final TrajectoryStateHistory rebuilt) {
         // we don't use checkContainer here because the history getters are redundant
         // with embedded metadata and states, and because the getFrame() method
-        // that would be called automatically may trhow an exception
+        // that would be called automatically may throw an exception
         // so we just jump down to metadata and states
         Assertions.assertTrue(recurseCheck(original.getMetadata(), rebuilt.getMetadata()));
         checkList(original.getTrajectoryStates(), rebuilt.getTrajectoryStates());

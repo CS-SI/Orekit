@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.gnss.metric.messages.rtcm.RtcmData;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
 
 /**
  * Container for common data in RTCM ephemeris message type.

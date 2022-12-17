@@ -30,6 +30,11 @@ public enum HeaderKey {
     COMMENT((token, context, header) ->
             token.getType() == TokenType.ENTRY ? header.addComment(token.getContentAsNormalizedString()) : true),
 
+    /** Classification.
+     * @since 12.0
+     */
+    CLASSIFICATION((token, context, header) -> token.processAsNormalizedString(header::setClassification)),
+
     /** Creation date. */
     CREATION_DATE((token, context, header) -> token.processAsDate(header::setCreationDate, context)),
 
