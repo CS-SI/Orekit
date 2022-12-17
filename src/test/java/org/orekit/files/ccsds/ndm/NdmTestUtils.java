@@ -31,7 +31,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.definitions.PocMethodFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
 import org.orekit.files.ccsds.ndm.cdm.CdmRelativeMetadata;
@@ -102,7 +102,7 @@ public class NdmTestUtils {
                    original instanceof Section               ||
                    original instanceof CommentsContainer     ||
                    original instanceof ApmQuaternion         ||
-                   original instanceof AttitudeEndoints      ||
+                   original instanceof AttitudeEndpoints      ||
                    original instanceof OcmSatelliteEphemeris ||
                    original instanceof OemSatelliteEphemeris ||
                    original instanceof AemSatelliteEphemeris ||
