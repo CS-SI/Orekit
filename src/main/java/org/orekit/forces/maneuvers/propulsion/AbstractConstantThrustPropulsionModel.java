@@ -66,10 +66,16 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
         this.initialFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
     }
 
+    /** Get the initial thrust vector.
+     * @return the initial thrust vector
+     */
     protected Vector3D getInitialThrustVector() {
         return initialThrustVector;
     }
 
+    /** Get the initial flow rate.
+     * @return the initial flow rate
+     */
     protected double getInitialFlowrate() {
         return initialFlowRate;
     }
