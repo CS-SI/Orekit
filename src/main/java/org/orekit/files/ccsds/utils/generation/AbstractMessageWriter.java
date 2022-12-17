@@ -159,6 +159,9 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
             generator.writeComments(header.getComments());
         }
 
+        // classification is optional
+        generator.writeEntry(HeaderKey.CLASSIFICATION.name(), header.getClassification(), null, false);
+
         // creation date is informational only, but mandatory and always in UTC
         final DateTimeComponents creationDate = ((header == null) ? date : header.getCreationDate()).getComponents(utc);
         final DateComponents     dc           = creationDate.getDate();
