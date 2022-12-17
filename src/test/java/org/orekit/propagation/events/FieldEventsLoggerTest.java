@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -57,7 +58,6 @@ public class FieldEventsLoggerTest {
             Utils.setDataRoot("regular-data");
             mu  = 3.9860047e14;
     }
-
 
     @Test
     public void testLogUmbra() {
@@ -337,8 +337,10 @@ public class FieldEventsLoggerTest {
     private <T extends CalculusFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
 
         FieldEclipseDetector<T> detector =
-                new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3), CelestialBodyFactory.getSun(), 696000000,
-                                           CelestialBodyFactory.getEarth(), 6400000);
+                new FieldEclipseDetector<>(field, CelestialBodyFactory.getSun(), 696000000,
+                                           new OneAxisEllipsoid(6400000, 0.0, FramesFactory.getGCRF())).
+                withMaxCheck(field.getZero().newInstance(60)).
+                withThreshold(field.getZero().newInstance(1.0e-3));
 
         if (totalEclipse) {
             detector = detector.withUmbra();
