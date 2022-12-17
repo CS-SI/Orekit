@@ -92,6 +92,7 @@ public class OemParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final Oem file = parser.parseMessage(source);
+        Assertions.assertEquals("public, test-data", file.getHeader().getClassification());
         Assertions.assertEquals(3, file.getSegments().size());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());

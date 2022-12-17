@@ -108,10 +108,16 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
         this.receiver = receiver;
     }
 
+    /** Get the emitter ground station.
+     * @return emitter ground station
+     */
     public GroundStation getEmitterStation() {
         return emitter;
     }
 
+    /** Get the receiver ground station.
+     * @return receiver ground station
+     */
     public GroundStation getReceiverStation() {
         return receiver;
     }

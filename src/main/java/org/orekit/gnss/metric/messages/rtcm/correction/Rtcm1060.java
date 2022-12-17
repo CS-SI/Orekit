@@ -14,11 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.orekit.gnss.metric.messages.rtcm.correction;
+
+import java.util.List;
+
+import org.orekit.gnss.SatelliteSystem;
+
 /**
- *
- * This package contains utility classes relate to RTCM ephemeris messages.
- *
+ * RTCM 1060 message: GPS Combined Orbit and Clock Correction Message.
  * @author Bryan Cazabonne
- * @since 11.0
+ * @since 12.0
  */
-package org.orekit.gnss.metric.messages.rtcm.ephemeris.utils;
+public class Rtcm1060 extends RtcmCorrectionMessage<RtcmOrbitCorrectionHeader, RtcmCombinedCorrectionData> {
+
+    /**
+     * Constructor.
+     * @param typeCode message number
+     * @param header message header
+     * @param data message data
+     */
+    public Rtcm1060(final int typeCode, final RtcmOrbitCorrectionHeader header,
+                    final List<RtcmCombinedCorrectionData> data) {
+        super(typeCode, SatelliteSystem.GPS, header, data);
+    }
+
+}

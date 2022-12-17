@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
@@ -119,13 +120,16 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
      * @param mu gravitational coefficient
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public OemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Oem.ROOT, Oem.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu, parsedUnitsBehavior);
+              missionReferenceDate, mu, parsedUnitsBehavior, filters);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 

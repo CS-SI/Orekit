@@ -108,7 +108,7 @@ public class OcmData implements Data {
 
     /** Get trajectory state histories logical blocks.
      * @return trajectory state histories logical blocks (may be null)
-     * @since 11.4
+     * @since 12.0
      */
     public List<TrajectoryStateHistory> getTrajectoryBlocks() {
         return trajectoryBlocks;
@@ -116,7 +116,7 @@ public class OcmData implements Data {
 
     /** Get trajectory state histories logical blocks.
      * @return trajectory state histories logical blocks (may be null)
-     * @deprecated as of 11.4 replaced by {@link #getTrajectoryBlocks()}
+     * @deprecated as of 12.0 replaced by {@link #getTrajectoryBlocks()}
      */
     @Deprecated
     public List<TrajectoryStateHistory> getOTrajectoryBlocks() {

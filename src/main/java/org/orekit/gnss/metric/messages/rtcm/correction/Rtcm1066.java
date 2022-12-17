@@ -14,18 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.rtcm.ephemeris.utils;
+package org.orekit.gnss.metric.messages.rtcm.correction;
+
+import java.util.List;
+
+import org.orekit.gnss.SatelliteSystem;
 
 /**
- * This interface represents an accuracy providerused to validate RTCM ephemeris messages.
+ * RTCM 1066 message: GLONASS Combined Orbit and Clock Correction Message.
  * @author Bryan Cazabonne
- * @since 11.0
+ * @since 12.0
  */
-public interface AccuracyProvider {
+public class Rtcm1066 extends RtcmCorrectionMessage<RtcmOrbitCorrectionHeader, RtcmCombinedCorrectionData> {
 
-    /** Get the accuracy of the ephemeris data from an accuracy index.
-     * @return accuracy in meters
+    /**
+     * Constructor.
+     * @param typeCode message number
+     * @param header message header
+     * @param data message data
      */
-    double getAccuracy();
+    public Rtcm1066(final int typeCode, final RtcmOrbitCorrectionHeader header,
+                    final List<RtcmCombinedCorrectionData> data) {
+        super(typeCode, SatelliteSystem.GLONASS, header, data);
+    }
 
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.messages.rtcm.ephemeris.utils;
+package org.orekit.gnss.metric.messages.common;
 
 /** Signal-In-Space Accuracy (SISA).
  * @see "Galileo OS Signal-In-Space Interface Control Document, Issue 1.3, December 2016, Table 76"
