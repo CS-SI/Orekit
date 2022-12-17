@@ -531,6 +531,10 @@ public enum AttitudeType {
         return filter;
     }
 
+    /** Format data for CCSDS ADM writing.
+     * @param data data to format
+     * @return formated data
+     */
     private String[] formatData(final double[] data) {
         final String[] fields = new String[data.length];
         for (int i = 0; i < data.length; ++i) {

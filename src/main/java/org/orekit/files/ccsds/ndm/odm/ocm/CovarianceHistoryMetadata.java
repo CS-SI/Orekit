@@ -74,7 +74,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      */
-    CovarianceHistoryMetadata(final AbsoluteDate epochT0) {
+    public CovarianceHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         covBasis          = "PREDICTED";

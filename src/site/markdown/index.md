@@ -276,7 +276,7 @@
     * loading of SINEX file (can load station positions, eccentricities and EOPs)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
-    * parsing of RTCM messages
+    * parsing of RTCM messages (both ephemeris and correction messages)
     * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
 

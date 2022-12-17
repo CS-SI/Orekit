@@ -372,6 +372,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         }
     }
 
+    /** {@inheritDoc}. */
     public String getSupportedNames() {
         return super.getSupportedNames();
     }

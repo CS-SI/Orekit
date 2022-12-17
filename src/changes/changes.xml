@@ -25,6 +25,21 @@
         Added filtering capability to CCSDS parsers at token level,
         allowing to fix on fly CCSDS messages.
       </action>
+      <action dev="bryan" type="add" issue="941">
+        Added RTCM orbit and clock messages for GPS, GLONASS, and Galileo. 
+      </action>
+      <action dev="luc" type="fix" issue="1002">
+        Added adapters in both directions between ExtendedPVCoordinatesProvider and Frame.
+      </action>
+      <action dev="luc" type="fix" issue="997">
+        Fixed longitude crossing detection in stepless propagators.
+      </action>
+      <action dev="luc" type="fix" issue="994">
+        Fixed typo in method name OcmData.getTrajectoryBlocks().
+      </action>
+      <action dev="luc" type="fix" issue="992">
+        Make several OCM sub-components constructors public to allow building an OCM from scratch.
+      </action>
       <action dev="bryan" type="add" issue="931">
         Added Zeis model for DSST J2-squared second order terms.
       </action>
@@ -36,7 +51,7 @@
              description="Version 11.3 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced in 11.3 are:
              the unscented Kalman filter (numerical version), the semi-analytical unscented Kalman filter (DSST version),
-             a new PVCoordinatesProvider modelling waypoints on an ellipsoid following a loxodrome (commonly, a rhum bline),
+             a new PVCoordinatesProvider modelling waypoints on an ellipsoid following a loxodrome (commonly, a rhumb line),
              a new method to compute hyperbolic anomaly based on Gooding and Odell algorithm,
              a new built-in additional state for covariance propagation (linear method based on the state transition matrix computation),
              with a new state covariance object allowing covariance transformation between frames and orbit types,
