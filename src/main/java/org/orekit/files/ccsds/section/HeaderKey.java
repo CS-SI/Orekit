@@ -31,7 +31,7 @@ public enum HeaderKey {
             token.getType() == TokenType.ENTRY ? header.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Classification.
-     * @since 11.4
+     * @since 12.0
      */
     CLASSIFICATION((token, context, header) -> token.processAsNormalizedString(header::setClassification)),
 

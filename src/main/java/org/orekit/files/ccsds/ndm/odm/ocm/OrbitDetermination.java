@@ -103,7 +103,7 @@ public class OrbitDetermination extends CommentsContainer {
     private List<String> considerParameters;
 
     /** Specific Energy Dissipation Rate.
-     * @since 11.4
+     * @since 12.0
      */
     private double sedr;
 
@@ -475,7 +475,7 @@ public class OrbitDetermination extends CommentsContainer {
 
     /** Get Specific Energy Dissipation Rate.
      * @return Specific Energy Dissipation Rate
-     * @since 11.4
+     * @since 12.0
      */
     public double getSedr() {
         return sedr;
@@ -483,7 +483,7 @@ public class OrbitDetermination extends CommentsContainer {
 
     /** Set Specific Energy Dissipation Rate.
      * @param sedr Specific Energy Dissipation Rate (W/kg)
-     * @since 11.4
+     * @since 12.0
      */
     public void setSedr(final double sedr) {
         this.sedr = sedr;

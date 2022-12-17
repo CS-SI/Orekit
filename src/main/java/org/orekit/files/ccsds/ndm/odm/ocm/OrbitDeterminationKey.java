@@ -123,7 +123,7 @@ public enum OrbitDeterminationKey {
     CONSIDER_PARAMS((token, context, container) -> token.processAsNormalizedList(container::setConsiderParameters)),
 
     /** Specific Energy Dissipation Rate.
-     * @since 11.4
+     * @since 12.0
      */
     SEDR((token, context, container) -> token.processAsDouble(Units.W_PER_KG, context.getParsedUnitsBehavior(),
                                                               container::setSedr)),
