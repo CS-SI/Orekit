@@ -271,7 +271,7 @@ public class NdmTestUtils {
     public static void checkOrbitStateHistory(final TrajectoryStateHistory original, final TrajectoryStateHistory rebuilt) {
         // we don't use checkContainer here because the history getters are redundant
         // with embedded metadata and states, and because the getFrame() method
-        // that would be called automatically may trhow an exception
+        // that would be called automatically may throw an exception
         // so we just jump down to metadata and states
         Assertions.assertTrue(recurseCheck(original.getMetadata(), rebuilt.getMetadata()));
         checkList(original.getTrajectoryStates(), rebuilt.getTrajectoryStates());
