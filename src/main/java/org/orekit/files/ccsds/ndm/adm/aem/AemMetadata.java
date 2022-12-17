@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -29,7 +29,7 @@ import org.orekit.time.AbsoluteDate;
 public class AemMetadata extends AdmMetadata {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
-    private final AttitudeEndoints endpoints;
+    private final AttitudeEndpoints endpoints;
 
     /** Start of total time span covered by attitude data. */
     private AbsoluteDate startTime;
@@ -65,7 +65,7 @@ public class AemMetadata extends AdmMetadata {
      * @param defaultInterpolationDegree default interpolation degree
      */
     public AemMetadata(final int defaultInterpolationDegree) {
-        endpoints           = new AttitudeEndoints();
+        endpoints           = new AttitudeEndpoints();
         interpolationDegree = defaultInterpolationDegree;
     }
 
@@ -119,19 +119,19 @@ public class AemMetadata extends AdmMetadata {
     /** Get the endpoints (i.e. frames A, B and their relationship).
      * @return endpoints
      */
-    public AttitudeEndoints getEndpoints() {
+    public AttitudeEndpoints getEndpoints() {
         return endpoints;
     }
 
-    /** Check if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}.
-     * @return true if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
+    /** Check if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}.
+     * @return true if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public boolean rateFrameIsA() {
         return rateFrameIsA == null ? false : rateFrameIsA;
     }
 
     /** Set the frame in which rates are specified.
-     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
+     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public void setRateFrameIsA(final boolean rateFrameIsA) {
         refuseFurtherComments();
