@@ -16,6 +16,9 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -67,13 +70,10 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AttitudesSequenceTest {
 
@@ -98,7 +98,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                         new EclipseDetector(sun, 696000000.,
                                             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -206,7 +206,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000.,
                                     new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

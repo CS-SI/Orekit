@@ -142,6 +142,7 @@ public class EclipseDetectorTest {
         Assertions.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
+        Assertions.assertEquals(0.0, e.getMargin(), 1.0e-15);
         Assertions.assertTrue(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
@@ -166,13 +167,14 @@ public class EclipseDetectorTest {
                              withHandler(new StopOnDecreasing<EclipseDetector>()).
                              withMaxCheck(120.0).
                              withThreshold(1.0e-4).
-                             withMaxIter(12);
+                             withMaxIter(12).
+                             withMargin(0.001);
         Assertions.assertEquals(120.0, e.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assertions.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals(2304.188978, finalState.getDate().durationFrom(iniDate), 1.0e-4);
 
     }
 
