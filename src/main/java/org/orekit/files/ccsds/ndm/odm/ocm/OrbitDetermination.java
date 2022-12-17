@@ -102,6 +102,11 @@ public class OrbitDetermination extends CommentsContainer {
     /** Description of consider parameters. */
     private List<String> considerParameters;
 
+    /** Specific Energy Dissipation Rate.
+     * @since 11.4
+     */
+    private double sedr;
+
     /** Number of sensors used. */
     private int sensorsN;
 
@@ -466,6 +471,22 @@ public class OrbitDetermination extends CommentsContainer {
      */
     public void setConsiderParameters(final List<String> considerParameters) {
         this.considerParameters = considerParameters;
+    }
+
+    /** Get Specific Energy Dissipation Rate.
+     * @return Specific Energy Dissipation Rate
+     * @since 11.4
+     */
+    public double getSedr() {
+        return sedr;
+    }
+
+    /** Set Specific Energy Dissipation Rate.
+     * @param sedr Specific Energy Dissipation Rate (W/kg)
+     * @since 11.4
+     */
+    public void setSedr(final double sedr) {
+        this.sedr = sedr;
     }
 
     /** Get number of sensors used.
