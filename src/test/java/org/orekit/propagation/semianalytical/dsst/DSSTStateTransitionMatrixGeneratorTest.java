@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -50,6 +51,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -125,8 +127,8 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
 
         // intermediate state has really different matrices, they are still building up
-        Assertions.assertEquals(0.158482, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-6);
-        Assertions.assertEquals(0.499959, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-6);
+        Assertions.assertEquals(0.158497, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-6);
+        Assertions.assertEquals(0.499960, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-6);
 
         // restarting propagation where we left it
         final SpacecraftState     state2       = propagator2.propagate(t0.shiftedBy(dt));
@@ -265,7 +267,9 @@ public class DSSTStateTransitionMatrixGeneratorTest {
 
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                             provider.getMu());
 
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());

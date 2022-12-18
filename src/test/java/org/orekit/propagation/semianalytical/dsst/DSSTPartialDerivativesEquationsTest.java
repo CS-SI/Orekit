@@ -303,7 +303,9 @@ public class DSSTPartialDerivativesEquationsTest {
 
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                             provider.getMu());
 
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
@@ -585,7 +587,9 @@ public class DSSTPartialDerivativesEquationsTest {
 
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                             provider.getMu());
 
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
@@ -623,7 +627,7 @@ public class DSSTPartialDerivativesEquationsTest {
         final DSSTJacobiansMapper mapperOSC = partialsOSC.getMapper();
         mapperOSC.setReferenceState(initialStateOSC);
         RealMatrix dYdY0OSC =   mapperOSC.getStateTransitionMatrix(initialStateOSC);
-        final double[] refLine1 = new double[] {1.0000, -5750.3478, 15270.6488, -2707.1208, -2165.0148, -178.3653};
+        final double[] refLine1 = new double[] {1.0000, -5750.3476, 15270.6487, -2707.1224, -2165.0156, -178.3653};
         final double[] refLine6 = new double[] {0.0000, 0.0035, 0.0013, -0.0005, 0.0005, 1.0000};
         for (int i = 0; i < 6; ++i) {
             Assertions.assertEquals(refLine1[i], dYdY0OSC.getEntry(0, i), 1e-4);

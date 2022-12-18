@@ -169,9 +169,8 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final DSSTPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
-        final DSSTForceModel srpModel = new DSSTSolarRadiationPressure(sun, equatorialRadius,
-                                                                       spacecraft, gravityField.getMu());
+                                                              final OneAxisEllipsoid body, final RadiationSensitive spacecraft) {
+        final DSSTForceModel srpModel = new DSSTSolarRadiationPressure(sun, body, spacecraft, gravityField.getMu());
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
     }

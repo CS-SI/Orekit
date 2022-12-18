@@ -383,7 +383,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft, gravityField.getMu());
+            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft, gravityField.getMu());
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);

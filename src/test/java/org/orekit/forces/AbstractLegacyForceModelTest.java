@@ -48,8 +48,7 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
 
     protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
                                                         final AttitudeProvider attitudeProvider,
-                                                        final double checkTolerance, final boolean print)
-        {
+                                                        final double checkTolerance, final boolean print) {
         FieldSpacecraftState<DerivativeStructure> fState = toDS(state, attitudeProvider);
         FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState,
                                                                            forceModel.getParameters(fState.getDate().getField()));
