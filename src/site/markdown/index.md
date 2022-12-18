@@ -52,7 +52,7 @@
 
   * Spacecraft state
 
-    * Cartesian, elliptical Keplerian, circular and equinoctial parameters, with non-Keplerian
+    * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
     * Two-Line Elements
     * transparent conversion between all parameters
