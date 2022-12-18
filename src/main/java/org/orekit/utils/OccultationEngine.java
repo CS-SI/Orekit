@@ -100,7 +100,7 @@ public class OccultationEngine {
     /** Compute the occultation angles as seen from a spacecraft.
      * @param state the current state information: date, kinematics, attitude
      * @param <T> the type of the field elements
-      * @return occultation angles
+     * @return occultation angles
      */
     public <T extends CalculusFieldElement<T>> FieldOccultationAngles<T> angles(final FieldSpacecraftState<T> state) {
 
