@@ -250,8 +250,8 @@ public class CR3BPRotatingTransformProviderTest {
         final Frame baryFrame = syst.getRotatingFrame();
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final AbsoluteDate date              = date0.shiftedBy(dt);
-            final Vector3D     sunPositionInBary   = sun.getPVCoordinates(date, baryFrame).getPosition();
-            final Vector3D     earthPositionInBary = earth.getPVCoordinates(date, baryFrame).getPosition();
+            final Vector3D     sunPositionInBary   = sun.getPosition(date, baryFrame);
+            final Vector3D     earthPositionInBary = earth.getPosition(date, baryFrame);
             Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInBary,   Vector3D.MINUS_I), 1.0e-10);
             Assertions.assertEquals(FastMath.PI, Vector3D.angle(earthPositionInBary, Vector3D.MINUS_I), 1.0e-4);
         }
@@ -273,8 +273,8 @@ public class CR3BPRotatingTransformProviderTest {
         final Frame baryFrame = syst.getRotatingFrame();
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final FieldAbsoluteDate<T> date              = date0.shiftedBy(dt);
-            final FieldVector3D<T>     sunPositionInBary   = sun.getPVCoordinates(date, baryFrame).getPosition();
-            final FieldVector3D<T>     earthPositionInBary = earth.getPVCoordinates(date, baryFrame).getPosition();
+            final FieldVector3D<T>     sunPositionInBary   = sun.getPosition(date, baryFrame);
+            final FieldVector3D<T>     earthPositionInBary = earth.getPosition(date, baryFrame);
             Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInBary,   Vector3D.MINUS_I).getReal(), 1.0e-10);
             Assertions.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInBary, Vector3D.MINUS_I).getReal(), 1.0e-4);
         }

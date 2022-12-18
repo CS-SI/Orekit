@@ -262,11 +262,11 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate());
 
         // Initial orbit definition
-        final FieldVector3D<T> initialPosition = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> initialPosition = state.getPosition();
         final FieldVector3D<T> initialVelocity = state.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final FieldVector3D<T> finalPosition = finalState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> finalPosition = finalState.getPosition();
         final FieldVector3D<T> finalVelocity = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -754,8 +754,8 @@ public class FieldDSSTPropagatorTest {
         T maxError = zero;
         for (final FieldSpacecraftState<T> state : states) {
             final FieldSpacecraftState<T> fromEphemeris = ephemeris.propagate(state.getDate());
-            final T error = FieldVector3D.distance(state.getPVCoordinates().getPosition(),
-                                                   fromEphemeris.getPVCoordinates().getPosition());
+            final T error = FieldVector3D.distance(state.getPosition(),
+                                                   fromEphemeris.getPosition());
             maxError = FastMath.max(maxError, error);
         }
         Assertions.assertEquals(0.0, maxError.getReal(), 1.0e-10);
@@ -818,8 +818,8 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(1559.1,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(meanState.getPosition(),
+                                              osculatingState.getPosition()).getReal(),
                             1.0);
     }
 
@@ -850,8 +850,8 @@ public class FieldDSSTPropagatorTest {
 
         Assertions.assertEquals(meanState.getA().getReal(), computedMeanState.getA().getReal(), 2.0e-8);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                             computedMeanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(meanState.getPosition(),
+                                             computedMeanState.getPosition()).getReal(),
                             2.0e-8);
     }
 
@@ -969,19 +969,19 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(734.3,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(meanState.getPosition(),
+                                              osculatingState.getPosition()).getReal(),
                             1.0);
 
         final FieldSpacecraftState<T> computedMeanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, forces);
         Assertions.assertEquals(734.3,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedMeanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(osculatingState.getPosition(),
+                                              computedMeanState.getPosition()).getReal(),
                             1.0);
 
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(computedMeanState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(computedMeanState.getPosition(),
+                                              meanState.getPosition()).getReal(),
                             5.0e-6);
 
     }
@@ -1017,14 +1017,14 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         Assertions.assertEquals(0.522,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(osculatingState.getPosition(),
+                                              meanState.getPosition()).getReal(),
                             0.001);
 
         final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(osculatingState.getPosition(),
+                                              computedOsculatingState.getPosition()).getReal(),
                             5.0e-6);
 
     }
@@ -1047,8 +1047,9 @@ public class FieldDSSTPropagatorTest {
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
-        Assertions.assertEquals(0.0, FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
-                            5.0e-6);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(osculatingState.getPosition(), computedOsculatingState.getPosition()).getReal(),
+                                5.0e-6);
     }
 
     @Test

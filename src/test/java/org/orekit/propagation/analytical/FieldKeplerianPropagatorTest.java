@@ -119,7 +119,7 @@ public class FieldKeplerianPropagatorTest {
         Max maxRadial     = new Max();
         propagator.setStepHandler(field.getZero().add(10.0),
                                  s -> {
-                                     FieldVector3D<Tuple> p = s.getPVCoordinates().getPosition();
+                                     FieldVector3D<Tuple> p = s.getPosition();
                                      FieldVector3D<Tuple> v = s.getPVCoordinates().getVelocity();
                                      Vector3D p0 = new Vector3D(p.getX().getComponent(0),
                                                                 p.getY().getComponent(0),
@@ -440,7 +440,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -530,7 +530,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -662,7 +662,7 @@ public class FieldKeplerianPropagatorTest {
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 5400.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 5500.0);
-        FieldGeodeticPoint<T> gp = bodyShape.transform(propagated.getPVCoordinates().getPosition(),
+        FieldGeodeticPoint<T> gp = bodyShape.transform(propagated.getPosition(),
                                                        propagated.getFrame(), propagated.getDate());
         Assertions.assertEquals(1500000, gp.getAltitude().getReal(), 0.1);
     }
@@ -695,7 +695,7 @@ public class FieldKeplerianPropagatorTest {
                                                                  topo).withConstantElevation(0.09));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition().toVector3D(),
+        final double elevation = topo.getElevation(propagated.getPosition().toVector3D(),
                                                    propagated.getFrame(),
                                                    propagated.getDate().toAbsoluteDate());
         final T zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();

@@ -127,7 +127,7 @@ public class KalmanModelTest {
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
         this.pv = new PV(date0,
-                             context.initialOrbit.getPVCoordinates().getPosition(),
+                             context.initialOrbit.getPosition(),
                              context.initialOrbit.getPVCoordinates().getVelocity(),
                              new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
                              sat);

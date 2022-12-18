@@ -272,7 +272,7 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
         // Run the reference until Kalman last date
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
-        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D refPos = refOrbit.getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
         
         // Check distances

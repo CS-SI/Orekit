@@ -142,8 +142,8 @@ public class PropagatorsParallelizerTest {
                                                         AbsoluteDate nCurr = interpolators.get(1).getCurrentState().getDate();
                                                         Assertions.assertEquals(0.0, aPrev.durationFrom(nPrev), 3.0e-13);
                                                         Assertions.assertEquals(0.0, aCurr.durationFrom(nCurr), 3.0e-13);
-                                                        Vector3D aPos = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
-                                                        Vector3D nPos = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
+                                                        Vector3D aPos = interpolators.get(0).getCurrentState().getPosition();
+                                                        Vector3D nPos = interpolators.get(1).getCurrentState().getPosition();
                                                         Assertions.assertTrue(Vector3D.distance(aPos, nPos) < 111.0);
                                                     });
         List<SpacecraftState> results = parallelizer.propagate(startDate, endDate);
@@ -172,8 +172,8 @@ public class PropagatorsParallelizerTest {
                         new PropagatorsParallelizer(propagators,
                                                     interpolators -> {
                                                         AbsoluteDate aCurr = interpolators.get(0).getCurrentState().getDate();
-                                                        Vector3D aPos = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
-                                                        Vector3D ePos = ephemeris.getPVCoordinates(aCurr, orbit.getFrame()).getPosition();
+                                                        Vector3D aPos = interpolators.get(0).getCurrentState().getPosition();
+                                                        Vector3D ePos = ephemeris.getPosition(aCurr, orbit.getFrame());
                                                         Assertions.assertEquals(0, Vector3D.distance(ePos, aPos), 1.0e-15);
                                                     });
         List<SpacecraftState> results = parallelizer.propagate(startDate, endDate);
@@ -203,8 +203,8 @@ public class PropagatorsParallelizerTest {
                         new PropagatorsParallelizer(propagators,
                                                     interpolators -> {
                                                         AbsoluteDate nCurr = interpolators.get(1).getCurrentState().getDate();
-                                                        Vector3D nPos = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
-                                                        Vector3D ePos = ephemeris.getPVCoordinates(nCurr, orbit.getFrame()).getPosition();
+                                                        Vector3D nPos = interpolators.get(1).getCurrentState().getPosition();
+                                                        Vector3D ePos = ephemeris.getPosition(nCurr, orbit.getFrame());
                                                         Assertions.assertEquals(0, Vector3D.distance(ePos, nPos), 1.0e-15);
                                                     });
         List<SpacecraftState> results = parallelizer.propagate(startDate, endDate);

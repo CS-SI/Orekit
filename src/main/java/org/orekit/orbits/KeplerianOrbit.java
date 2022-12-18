@@ -658,15 +658,11 @@ public class KeplerianOrbit extends Orbit {
         return paDot + raanDot + getMeanAnomalyDot();
     }
 
-    /** Compute position and velocity but not acceleration.
+    /** Compute reference axes.
+     * @return referecne axes
+     * @since 12.0
      */
-    private void computePVWithoutA() {
-
-        if (partialPV != null) {
-            // already computed
-            return;
-        }
-
+    private Vector3D[] referenceAxes() {
         // preliminary variables
         final SinCos scRaan  = FastMath.sinCos(raan);
         final SinCos scPa    = FastMath.sinCos(pa);
@@ -684,8 +680,23 @@ public class KeplerianOrbit extends Orbit {
         final double srsp    = sinRaan * sinPa;
 
         // reference axes defining the orbital plane
-        final Vector3D p = new Vector3D( crcp - cosI * srsp,  srcp + cosI * crsp, sinI * sinPa);
-        final Vector3D q = new Vector3D(-crsp - cosI * srcp, -srsp + cosI * crcp, sinI * cosPa);
+        return new Vector3D[] {
+            new Vector3D( crcp - cosI * srsp,  srcp + cosI * crsp, sinI * sinPa),
+            new Vector3D(-crsp - cosI * srcp, -srsp + cosI * crcp, sinI * cosPa)
+        };
+
+    }
+
+    /** Compute position and velocity but not acceleration.
+     */
+    private void computePVWithoutA() {
+
+        if (partialPV != null) {
+            // already computed
+            return;
+        }
+
+        final Vector3D[] axes = referenceAxes();
 
         if (a > 0) {
 
@@ -705,8 +716,8 @@ public class KeplerianOrbit extends Orbit {
             final double xDot   = -sinE * factor;
             final double yDot   =  cosE * s1Me2 * factor;
 
-            final Vector3D position = new Vector3D(x, p, y, q);
-            final Vector3D velocity = new Vector3D(xDot, p, yDot, q);
+            final Vector3D position = new Vector3D(x, axes[0], y, axes[1]);
+            final Vector3D velocity = new Vector3D(xDot, axes[0], yDot, axes[1]);
             partialPV = new PVCoordinates(position, velocity);
 
         } else {
@@ -726,8 +737,8 @@ public class KeplerianOrbit extends Orbit {
             final double   xDot         = -velFactor * sinV;
             final double   yDot         =  velFactor * (e + cosV);
 
-            final Vector3D position     = new Vector3D(x, p, y, q);
-            final Vector3D velocity     = new Vector3D(xDot, p, yDot, q);
+            final Vector3D position = new Vector3D(x, axes[0], y, axes[1]);
+            final Vector3D velocity = new Vector3D(xDot, axes[0], yDot, axes[1]);
             partialPV = new PVCoordinates(position, velocity);
 
         }
@@ -754,6 +765,41 @@ public class KeplerianOrbit extends Orbit {
                                       dCdP[5][3] * paDot   + dCdP[5][4] * raanDot + dCdP[5][5] * nonKeplerianMeanMotion;
 
         return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
+    /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+
+        final Vector3D[] axes = referenceAxes();
+
+        if (a > 0) {
+
+            // elliptical case
+
+            // elliptic eccentric anomaly
+            final double uME2   = (1 - e) * (1 + e);
+            final double s1Me2  = FastMath.sqrt(uME2);
+            final SinCos scE    = FastMath.sinCos(getEccentricAnomaly());
+            final double cosE   = scE.cos();
+            final double sinE   = scE.sin();
+
+            return new Vector3D(a * (cosE - e), axes[0], a * sinE * s1Me2, axes[1]);
+
+        } else {
+
+            // hyperbolic case
+
+            // compute position and velocity factors
+            final SinCos scV       = FastMath.sinCos(v);
+            final double sinV      = scV.sin();
+            final double cosV      = scV.cos();
+            final double f         = a * (1 - e * e);
+            final double posFactor = f / (1 + e * cosV);
+
+            return new Vector3D(posFactor * cosV, axes[0], posFactor * sinV, axes[1]);
+
+        }
 
     }
 

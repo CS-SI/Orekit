@@ -121,8 +121,8 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
         final AbsoluteDate date         = s.getDate();
         final Frame        frame        = s.getFrame();
-        final Vector3D     position     = s.getPVCoordinates().getPosition();
-        final Vector3D     sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+        final Vector3D     position     = s.getPosition();
+        final Vector3D     sunSatVector = position.subtract(sun.getPosition(date, frame));
         final double       r2           = sunSatVector.getNormSq();
 
         // compute flux
@@ -142,8 +142,8 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
         final FieldAbsoluteDate<T> date         = s.getDate();
         final Frame                frame        = s.getFrame();
-        final FieldVector3D<T>     position     = s.getPVCoordinates().getPosition();
-        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+        final FieldVector3D<T>     position     = s.getPosition();
+        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPosition(date, frame));
         final T                    r2           = sunSatVector.getNormSq();
 
         // compute flux
@@ -163,7 +163,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      */
     public double getLightingRatio(final SpacecraftState state) {
 
-        final Vector3D sunPosition = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition();
+        final Vector3D sunPosition = sun.getPosition(state.getDate(), state.getFrame());
         if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
             // we are in fact computing a trajectory around Sun (or solar system barycenter),
             // not around a planet, we consider lighting ratio is always 1
@@ -283,7 +283,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final T zero = state.getDate().getField().getZero();
         final T one  = state.getDate().getField().getOne();
 
-        final FieldVector3D<T> sunPosition = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition();
+        final FieldVector3D<T> sunPosition = sun.getPosition(state.getDate(), state.getFrame());
         if (sunPosition.getNorm().getReal() < 2 * Constants.SUN_RADIUS) {
             // we are in fact computing a trajectory around Sun (or solar system barycenter),
             // not around a planet,we consider lighting ratio is always 1

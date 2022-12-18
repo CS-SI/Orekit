@@ -81,7 +81,7 @@ public class LatitudeCrossingDetectorTest {
         AbsoluteDate previous = null;
         for (LoggedEvent e : logger.getLoggedEvents()) {
             SpacecraftState state = e.getState();
-            double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            double latitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                                               earth.getBodyFrame(), null).getLatitude();
             Assertions.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
             if (previous != null) {

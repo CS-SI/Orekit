@@ -159,7 +159,7 @@ public abstract class AbstractForceModelTest {
     protected FieldSpacecraftState<DerivativeStructure> toDS(final SpacecraftState state,
                                                              final AttitudeProvider attitudeProvider) {
 
-        final Vector3D p = state.getPVCoordinates().getPosition();
+        final Vector3D p = state.getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
         final Vector3D a = state.getPVCoordinates().getAcceleration();
         DSFactory factory = new DSFactory(6, 1);
@@ -188,7 +188,7 @@ public abstract class AbstractForceModelTest {
     protected FieldSpacecraftState<Gradient> toGradient(final SpacecraftState state,
                                                         final AttitudeProvider attitudeProvider) {
 
-        final Vector3D p = state.getPVCoordinates().getPosition();
+        final Vector3D p = state.getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
         final Vector3D a = state.getPVCoordinates().getAcceleration();
         final int freeParameters = 6;
@@ -227,7 +227,7 @@ public abstract class AbstractForceModelTest {
         DSFactory factory = new DSFactory(6, 1);
         Field<DerivativeStructure> field = factory.getDerivativeField();
         final FieldAbsoluteDate<DerivativeStructure> fDate = new FieldAbsoluteDate<>(field, state0.getDate());
-        final Vector3D p = state0.getPVCoordinates().getPosition();
+        final Vector3D p = state0.getPosition();
         final Vector3D v = state0.getPVCoordinates().getVelocity();
         final Vector3D a = state0.getPVCoordinates().getAcceleration();
         final TimeStampedFieldPVCoordinates<DerivativeStructure> fPVA =
@@ -324,7 +324,7 @@ public abstract class AbstractForceModelTest {
         final int freePrameters = 6;
         Field<Gradient> field = GradientField.getField(freePrameters);
         final FieldAbsoluteDate<Gradient> fDate = new FieldAbsoluteDate<>(field, state0.getDate());
-        final Vector3D p = state0.getPVCoordinates().getPosition();
+        final Vector3D p = state0.getPosition();
         final Vector3D v = state0.getPVCoordinates().getVelocity();
         final Vector3D a = state0.getPVCoordinates().getAcceleration();
         final TimeStampedFieldPVCoordinates<Gradient> fPVA =

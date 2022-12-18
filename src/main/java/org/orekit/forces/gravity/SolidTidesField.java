@@ -190,7 +190,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
         for (final CelestialBody body : bodies) {
 
             // compute tide generating body state
-            final Vector3D position = body.getPVCoordinates(date, centralBodyFrame).getPosition();
+            final Vector3D position = body.getPosition(date, centralBodyFrame);
 
             // compute polar coordinates
             final double x    = position.getX();

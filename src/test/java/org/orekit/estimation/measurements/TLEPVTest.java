@@ -109,7 +109,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -180,7 +180,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -255,7 +255,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -343,7 +343,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -421,7 +421,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
         final double       weight   = 1.;

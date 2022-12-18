@@ -416,8 +416,8 @@ public class SolarBodyTest {
         // checks are done within the step handler
         propag.setStepHandler(1000.0, currentState -> {
                 // propagated position should remain within 1400m of ephemeris for one month
-                Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
-                Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
+                Vector3D propagatedP = currentState.getPosition(icrf);
+                Vector3D ephemerisP  = venus.getPosition(currentState.getDate(), icrf);
                 Assertions.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
             });
 
@@ -462,8 +462,8 @@ public class SolarBodyTest {
             final double gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+            final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
+            final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
             final double   r2Sat         = satToBody.getNormSq();
 
             // compute relative acceleration
@@ -480,8 +480,8 @@ public class SolarBodyTest {
             final T gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
-            final FieldVector3D<T> centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+            final FieldVector3D<T> centralToBody = body.getPosition(s.getDate(), s.getFrame());
+            final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
             final T                r2Sat         = satToBody.getNormSq();
 
             // compute absolute acceleration

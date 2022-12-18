@@ -257,8 +257,8 @@ public class L2TransformProviderTest {
         final Frame         l2Frame = new L2Frame(sun, earth);
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final AbsoluteDate date              = date0.shiftedBy(dt);
-            final Vector3D     sunPositionInL2   = sun.getPVCoordinates(date, l2Frame).getPosition();
-            final Vector3D     earthPositionInL2 = earth.getPVCoordinates(date, l2Frame).getPosition();
+            final Vector3D     sunPositionInL2   = sun.getPosition(date, l2Frame);
+            final Vector3D     earthPositionInL2 = earth.getPosition(date, l2Frame);
             Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInL2,   Vector3D.MINUS_I), 3.0e-14);
             Assertions.assertEquals(0.0, Vector3D.angle(earthPositionInL2, Vector3D.MINUS_I), 3.0e-14);
         }
@@ -278,8 +278,8 @@ public class L2TransformProviderTest {
         final Frame         l2Frame = new L2Frame(sun, earth);
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final FieldAbsoluteDate<T> date              = date0.shiftedBy(dt);
-            final FieldVector3D<T>     sunPositionInL2   = sun.getPVCoordinates(date, l2Frame).getPosition();
-            final FieldVector3D<T>     earthPositionInL2 = earth.getPVCoordinates(date, l2Frame).getPosition();
+            final FieldVector3D<T>     sunPositionInL2   = sun.getPosition(date, l2Frame);
+            final FieldVector3D<T>     earthPositionInL2 = earth.getPosition(date, l2Frame);
             Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInL2,   Vector3D.MINUS_I).getReal(), 3.0e-14);
             Assertions.assertEquals(0.0, FieldVector3D.angle(earthPositionInL2, Vector3D.MINUS_I).getReal(), 3.0e-14);
         }

@@ -148,7 +148,7 @@ public class YawCompensationTest {
         Attitude         att0           = compensated.getAttitude(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
 
         // ground point in satellite Z direction
-        Vector3D satInert = circOrbit.getPVCoordinates().getPosition();
+        Vector3D satInert = circOrbit.getPosition();
         Vector3D zInert   = att0.getRotation().applyInverseTo(Vector3D.PLUS_K);
         GeodeticPoint gp  = earthShape.getIntersectionPoint(new Line(satInert,
                                                                      satInert.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zInert),

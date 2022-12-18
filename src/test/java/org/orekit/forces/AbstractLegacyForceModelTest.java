@@ -54,7 +54,7 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
                                                                            forceModel.getParameters(fState.getDate().getField()));
         FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState.getDate().toAbsoluteDate(),
                                                                            fState.getFrame(),
-                                                                           fState.getPVCoordinates().getPosition(),
+                                                                           fState.getPosition(),
                                                                            fState.getPVCoordinates().getVelocity(),
                                                                            fState.getAttitude().getRotation(),
                                                                            fState.getMass());
@@ -120,7 +120,7 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
                                                                            forceModel.getParameters(fState.getDate().getField()));
         FieldVector3D<Gradient> gOld = accelerationDerivativesGradient(forceModel, fState.getDate().toAbsoluteDate(),
                                                                        fState.getFrame(),
-                                                                       fState.getPVCoordinates().getPosition(),
+                                                                       fState.getPosition(),
                                                                        fState.getPVCoordinates().getVelocity(),
                                                                        fState.getAttitude().getRotation(),
                                                                        fState.getMass());

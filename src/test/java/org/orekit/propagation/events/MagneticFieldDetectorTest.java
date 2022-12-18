@@ -428,7 +428,7 @@ public class MagneticFieldDetectorTest {
 
         for (SpacecraftState s : events) {
             //Get the geodetic point corresponding to the event
-            GeodeticPoint geo = earth.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+            GeodeticPoint geo = earth.transform(s.getPosition(), s.getFrame(), s.getDate());
             double altitude = geo.getAltitude();
             if(sea) {
                 altitude = 0;
@@ -448,7 +448,7 @@ public class MagneticFieldDetectorTest {
 
         for (SpacecraftState s : events) {
             //Get the geodetic point corresponding to the event
-            GeodeticPoint geo = earth.transform(s.getPVCoordinates(itrf).getPosition(), itrf, s.getDate());
+            GeodeticPoint geo = earth.transform(s.getPosition(itrf), itrf, s.getDate());
             Vector2D point = new Vector2D(geo.getLongitude(), geo.getLatitude());
 
             //Check that the event is outside the "smaller than SAA" geographical zone

@@ -52,7 +52,7 @@ public class TwoBodiesBaryFrameTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute barycenter position and our frame origin in EME2000
-        Vector3D truePosBary = barycenter.getPVCoordinates(date, eme2000).getPosition();
+        Vector3D truePosBary = barycenter.getPosition(date, eme2000);
         Vector3D posBary   = baryFrame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Moon are aligned as seen from Earth
@@ -81,7 +81,7 @@ public class TwoBodiesBaryFrameTest {
                                                                   TimeScalesFactory.getUTC());
 
         // Compute barycenter position and our frame origin in EME2000
-        FieldVector3D<T> truePosBary = barycenter.getPVCoordinates(date, eme2000).getPosition();
+        FieldVector3D<T> truePosBary = barycenter.getPosition(date, eme2000);
         FieldVector3D<T> posBary   = baryFrame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Moon are aligned as seen from Earth

@@ -77,8 +77,8 @@ public class BatchLSModelTest {
                 Assertions.assertEquals(1, newOrbits.length);
                 Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                         1.0e-15);
-                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                  newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPosition(),
+                                  newOrbits[0].getPosition()), 1.0e-15);
                 Assertions.assertEquals(measurements.size(), newEvaluations.size());
             }
         };

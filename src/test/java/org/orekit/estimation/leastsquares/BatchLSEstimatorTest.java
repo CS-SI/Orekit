@@ -468,8 +468,8 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                          before.getPVCoordinates().getPosition()), 1.0e-3);
+        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
+                          before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           before.getPVCoordinates().getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
@@ -488,8 +488,8 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                          determined.getPVCoordinates().getPosition()), 6.2e-6);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
+                          determined.getPosition()), 6.2e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           determined.getPVCoordinates().getVelocity()), 1.6e-9);
 
@@ -668,8 +668,8 @@ public class BatchLSEstimatorTest {
                                                 closeOrbit.getFrame(),
                                                 closeOrbit.getDate(),
                                                 closeOrbit.getMu());
-        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                          before.getPVCoordinates().getPosition()), 1.0e-3);
+        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
+                          before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           before.getPVCoordinates().getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 4, 5,
@@ -688,8 +688,8 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                          determined.getPVCoordinates().getPosition()), 2.7e-6);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
+                          determined.getPosition()), 2.7e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           determined.getPVCoordinates().getVelocity()), 2.9e-9);
 
@@ -835,8 +835,8 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                          before.getPVCoordinates().getPosition()), 1.0e-3);
+        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
+                          before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           before.getPVCoordinates().getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
@@ -855,8 +855,8 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                          determined.getPVCoordinates().getPosition()), 3.3e-6);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
+                          determined.getPosition()), 3.3e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           determined.getPVCoordinates().getVelocity()), 1.6e-9);
 

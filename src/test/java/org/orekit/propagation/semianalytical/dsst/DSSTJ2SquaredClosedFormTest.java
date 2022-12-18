@@ -163,9 +163,9 @@ public class DSSTJ2SquaredClosedFormTest {
         dsstPropagatorWithJ2Squared.setInitialState(initialState, PropagationType.OSCULATING);
 
         // Propagate
-        final Vector3D propagatedNum                 = numPropagator.propagate(end).getPVCoordinates().getPosition();
-        final Vector3D propagatedDsstWitoutJ2Squared = dsstPropagatorWithoutJ2Squared.propagate(end).getPVCoordinates().getPosition();
-        final Vector3D propagatedDsstWithJ2Squared   = dsstPropagatorWithJ2Squared.propagate(end).getPVCoordinates().getPosition();
+        final Vector3D propagatedNum                 = numPropagator.propagate(end).getPosition();
+        final Vector3D propagatedDsstWitoutJ2Squared = dsstPropagatorWithoutJ2Squared.propagate(end).getPosition();
+        final Vector3D propagatedDsstWithJ2Squared   = dsstPropagatorWithJ2Squared.propagate(end).getPosition();
 
         // Differences
         final double differenceWithoutJ2Squared = FastMath.abs(Vector3D.distance(propagatedNum, propagatedDsstWitoutJ2Squared));

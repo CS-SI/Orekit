@@ -158,13 +158,13 @@ public class HaloOrbitTest {
         final PVCoordinates initialUnstableManifold = h.getManifolds(finalState, false);
         final PVCoordinates initialStableManifold = h.getManifolds(finalState, true);
 
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getZ(), initialUnstableManifold.getPosition().getZ(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getZ(), initialUnstableManifold.getPosition().getZ(), 1E-7);
 
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getZ(), initialStableManifold.getPosition().getZ(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getZ(), initialStableManifold.getPosition().getZ(), 1E-7);
     }
 
     @Test

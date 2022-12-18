@@ -125,7 +125,7 @@ public class ElevationDetectorTest {
             {
             BodyShape shape = topo.getParentShape();
             GeodeticPoint p =
-                            shape.transform(currentState.getPVCoordinates().getPosition(),
+                            shape.transform(currentState.getPosition(),
                                             currentState.getFrame(), currentState.getDate());
             Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
             double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
@@ -187,7 +187,7 @@ public class ElevationDetectorTest {
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
+        double elevation = topo.getElevation(fs.getPosition(), fs.getFrame(), fs.getDate());
         Assertions.assertEquals(0.065, elevation, 2.0e-5);
 
     }
@@ -225,7 +225,7 @@ public class ElevationDetectorTest {
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
+        double elevation = topo.getElevation(fs.getPosition(), fs.getFrame(), fs.getDate());
         Assertions.assertEquals(FastMath.toRadians(-0.5746255623877098), elevation, 2.0e-5);
 
     }
@@ -365,7 +365,7 @@ public class ElevationDetectorTest {
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
+        double elevation = topo.getElevation(fs.getPosition(), fs.getFrame(), fs.getDate());
         Assertions.assertEquals(FastMath.toRadians(1.7026104902251749), elevation, 2.0e-5);
 
     }

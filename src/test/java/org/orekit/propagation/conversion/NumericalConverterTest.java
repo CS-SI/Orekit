@@ -335,14 +335,14 @@ public class NumericalConverterTest {
 
         Assertions.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
                             1.1);
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
                             1.1);
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
                             1.1);
 
         Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
@@ -376,15 +376,15 @@ public class NumericalConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double peps = 1.e-1;
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getX()));
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getY()));
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getZ()));
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            peps * FastMath.abs(orbit.getPosition().getX()));
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            peps * FastMath.abs(orbit.getPosition().getY()));
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            peps * FastMath.abs(orbit.getPosition().getZ()));
 
         final double veps = 5.e-1;
         Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),

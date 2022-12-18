@@ -152,8 +152,8 @@ public class ECOM2 extends AbstractRadiationForceModel {
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         // Spacecraft and Sun position vectors (expressed in the spacecraft's frame)
-        final Vector3D satPos = s.getPVCoordinates().getPosition();
-        final Vector3D sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final Vector3D satPos = s.getPosition();
+        final Vector3D sunPos = sun.getPosition(s.getDate(), s.getFrame());
 
         // Build the coordinate system
         final Vector3D Z = s.getPVCoordinates().getMomentum();
@@ -189,8 +189,8 @@ public class ECOM2 extends AbstractRadiationForceModel {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
 
         // Spacecraft and Sun position vectors (expressed in the spacecraft's frame)
-        final FieldVector3D<T> satPos = s.getPVCoordinates().getPosition();
-        final FieldVector3D<T> sunPos = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final FieldVector3D<T> satPos = s.getPosition();
+        final FieldVector3D<T> sunPos = sun.getPosition(s.getDate(), s.getFrame());
 
         // Build the coordinate system
         final FieldVector3D<T> Z = s.getPVCoordinates().getMomentum();

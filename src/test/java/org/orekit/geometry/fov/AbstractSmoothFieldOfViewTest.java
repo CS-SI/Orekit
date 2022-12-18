@@ -83,7 +83,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
                                               state.toTransform().getInverse(),
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
-        Vector3D subSat = earth.projectToGround(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+        Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
@@ -103,7 +103,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
             maxOffset = FastMath.max(maxOffset, offset);
 
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "onFootprint");
-            final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
+            final double elevation = topo.getElevation(state.getPosition(),
                                                        state.getFrame(), state.getDate());
             if (elevation > 0.001) {
                 Assertions.assertEquals(-fov.getMargin(),

@@ -94,7 +94,7 @@ public class LongitudeCrossingDetectorTest {
         AbsoluteDate previous = null;
         for (LoggedEvent e : logger.getLoggedEvents()) {
             SpacecraftState state = e.getState();
-            double longitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            double longitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                                               earth.getBodyFrame(), null).getLongitude();
             Assertions.assertEquals(10.0, FastMath.toDegrees(longitude), 3.5e-7);
             if (previous != null) {
@@ -142,7 +142,7 @@ public class LongitudeCrossingDetectorTest {
         Assertions.assertEquals(3, logger.getLoggedEvents().size());
         for (int i = 0; i < 3; ++i) {
             SpacecraftState state = logger.getLoggedEvents().get(i).getState();
-            GeodeticPoint gp = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            GeodeticPoint gp = earth.transform(state.getPosition(earth.getBodyFrame()),
                                                earth.getBodyFrame(), null);
             Assertions.assertEquals(expectedLatitudes[i], FastMath.toDegrees(gp.getLatitude()),  1.0e-10);
             Assertions.assertEquals(-100.0,               FastMath.toDegrees(gp.getLongitude()), 1.2e-9);
@@ -177,7 +177,7 @@ public class LongitudeCrossingDetectorTest {
         Assertions.assertEquals(12, loggedEvents.size());
         for (int i = 0; i < loggedEvents.size(); ++i) {
             final SpacecraftState s  = loggedEvents.get(i).getState();
-            final GeodeticPoint   gp = earth.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+            final GeodeticPoint   gp = earth.transform(s.getPosition(), s.getFrame(), s.getDate());
             if (i % 2 == 0) {
                 Assertions.assertSame(lonEntryDetector, loggedEvents.get(i).getEventDetector());
                 Assertions.assertEquals(startLon, gp.getLongitude(), 1.0e-9);

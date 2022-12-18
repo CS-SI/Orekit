@@ -153,7 +153,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
         final Vector3D b  = Vector3D.crossProduct(pv.getMomentum(), a).normalize();
         final Vector3D x  = new Vector3D(cosAlignAngle, a,  sinAlignAngle, b);
         final Vector3D y  = new Vector3D(sinAlignAngle, a, -cosAlignAngle, b);
-        final Vector3D pb = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final Vector3D pb = body.getPosition(s.getDate(), s.getFrame());
         final double beta = FastMath.atan2(Vector3D.dotProduct(pb, y), Vector3D.dotProduct(pb, x));
         final double betm = -FastMath.PI - beta;
         final double betp =  FastMath.PI - beta;

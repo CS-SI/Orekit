@@ -65,7 +65,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
      */
     private double phaseErrorTroposphericModel(final GroundStation station, final SpacecraftState state, final double wavelength) {
         // satellite position
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
         final double elevation = station.getBaseFrame().getElevation(position,
@@ -100,7 +100,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final T zero         = field.getZero();
 
         // satellite elevation
-        final FieldVector3D<T> position     = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> position     = state.getPosition();
         final T elevation                   = station.getBaseFrame().getElevation(position,
                                                                                   state.getFrame(),
                                                                                   state.getDate());

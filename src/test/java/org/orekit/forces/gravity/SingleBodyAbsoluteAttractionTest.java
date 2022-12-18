@@ -81,7 +81,7 @@ public class SingleBodyAbsoluteAttractionTest extends AbstractLegacyForceModelTe
             double gm = forceModel.getParameterDriver(body.getName() + SingleBodyAbsoluteAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
+            final Vector3D centralToBody    = body.getPosition(date, frame);
             final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
             final DerivativeStructure r2Sat = satToBody.getNormSq();
 
@@ -112,7 +112,7 @@ public class SingleBodyAbsoluteAttractionTest extends AbstractLegacyForceModelTe
             double gm = forceModel.getParameterDriver(body.getName() + SingleBodyAbsoluteAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
+            final Vector3D centralToBody    = body.getPosition(date, frame);
             final FieldVector3D<Gradient> satToBody = position.subtract(centralToBody).negate();
             final Gradient r2Sat = satToBody.getNormSq();
 

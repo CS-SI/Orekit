@@ -90,15 +90,15 @@ public class KeplerianConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            eps * orbit.getPVCoordinates().getPosition().getX());
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            eps * orbit.getPVCoordinates().getPosition().getY());
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            eps * orbit.getPVCoordinates().getPosition().getZ());
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            eps * orbit.getPosition().getX());
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            eps * orbit.getPosition().getY());
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            eps * orbit.getPosition().getZ());
 
         Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),

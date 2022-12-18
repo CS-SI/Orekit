@@ -632,7 +632,7 @@ public class IodGooding {
         final PVCoordinates pv1 = new PVCoordinates(P1, V1);
         // create a Keplerian orbit. Assume MU = 1.
         final KeplerianOrbit orbit = new KeplerianOrbit(pv1, frame, date1, 1.);
-        return orbit.shiftedBy(tau).getPVCoordinates().getPosition();
+        return orbit.shiftedBy(tau).getPosition();
     }
 
     /**
@@ -671,7 +671,7 @@ public class IodGooding {
      * @return the station position
      */
     private static Vector3D stationPosition(final Frame frame, final AngularRaDec raDec) {
-        return raDec.getStation().getBaseFrame().getPVCoordinates(raDec.getDate(), frame).getPosition();
+        return raDec.getStation().getBaseFrame().getPosition(raDec.getDate(), frame);
     }
 
 }

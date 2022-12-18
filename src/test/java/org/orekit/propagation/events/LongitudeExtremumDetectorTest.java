@@ -125,7 +125,7 @@ public class LongitudeExtremumDetectorTest {
         Assertions.assertEquals(5, logger.getLoggedEvents().size());
         for (int i = 0; i < 5; ++i) {
             SpacecraftState state = logger.getLoggedEvents().get(i).getState();
-            GeodeticPoint gp = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            GeodeticPoint gp = earth.transform(state.getPosition(earth.getBodyFrame()),
                                                earth.getBodyFrame(), null);
             Assertions.assertEquals(expectedLongitudes[i], FastMath.toDegrees(gp.getLongitude()), 1.0e-10);
             Assertions.assertEquals(expectedLatitudes[i],  FastMath.toDegrees(gp.getLatitude()),  1.0e-10);

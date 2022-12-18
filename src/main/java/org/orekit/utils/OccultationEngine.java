@@ -78,8 +78,8 @@ public class OccultationEngine {
      */
     public OccultationAngles angles(final SpacecraftState state) {
 
-        final Vector3D psat  = state.getPVCoordinates(occulting.getBodyFrame()).getPosition();
-        final Vector3D pted  = occulted.getPVCoordinates(state.getDate(), occulting.getBodyFrame()).getPosition();
+        final Vector3D psat  = state.getPosition(occulting.getBodyFrame());
+        final Vector3D pted  = occulted.getPosition(state.getDate(), occulting.getBodyFrame());
         final Vector3D plimb = occulting.pointOnLimb(psat, pted);
         final Vector3D ps    = psat.subtract(pted);
         final Vector3D pi    = psat.subtract(plimb);
@@ -104,8 +104,8 @@ public class OccultationEngine {
      */
     public <T extends CalculusFieldElement<T>> FieldOccultationAngles<T> angles(final FieldSpacecraftState<T> state) {
 
-        final FieldVector3D<T> psat  = state.getPVCoordinates(occulting.getBodyFrame()).getPosition();
-        final FieldVector3D<T> pted  = occulted.getPVCoordinates(state.getDate(), occulting.getBodyFrame()).getPosition();
+        final FieldVector3D<T> psat  = state.getPosition(occulting.getBodyFrame());
+        final FieldVector3D<T> pted  = occulted.getPosition(state.getDate(), occulting.getBodyFrame());
         final FieldVector3D<T> plimb = occulting.pointOnLimb(psat, pted);
         final FieldVector3D<T> ps    = psat.subtract(pted);
         final FieldVector3D<T> pi    = psat.subtract(plimb);

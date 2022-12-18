@@ -170,8 +170,8 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             } else {
                 // get rid of Keplerian acceleration so we don't assume
                 // we have derivatives when in fact we don't have them
-                equinoctial = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(getPVCoordinates().getPosition(),
-                                                                                   getPVCoordinates().getVelocity()),
+                final FieldPVCoordinates<T> pva = getPVCoordinates();
+                equinoctial = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(pva.getPosition(), pva.getVelocity()),
                                                           getFrame(), getDate(), getMu());
             }
         }
@@ -200,8 +200,9 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     public T getA() {
         // lazy evaluation of semi-major axis
-        final T r  = getPVCoordinates().getPosition().getNorm();
-        final T V2 = getPVCoordinates().getVelocity().getNormSq();
+        final FieldPVCoordinates<T> pva = getPVCoordinates();
+        final T r  = pva.getPosition().getNorm();
+        final T V2 = pva.getVelocity().getNormSq();
         return r.divide(r.negate().multiply(V2).divide(getMu()).add(2));
     }
 
@@ -223,8 +224,9 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T muA = getA().multiply(getMu());
         if (muA.getReal() > 0) {
             // elliptic or circular orbit
-            final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
-            final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
+            final FieldPVCoordinates<T> pva = getPVCoordinates();
+            final FieldVector3D<T> pvP      = pva.getPosition();
+            final FieldVector3D<T> pvV      = pva.getVelocity();
             final T rV2OnMu = pvP.getNorm().multiply(pvV.getNormSq()).divide(getMu());
             final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE     = rV2OnMu.subtract(1);
@@ -403,6 +405,12 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
+    protected FieldVector3D<T> initPosition() {
+        // nothing to do here, as the canonical elements are already the Cartesian ones
+        return getPVCoordinates().getPosition();
+    }
+
+    /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
@@ -451,9 +459,10 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     private FieldPVCoordinates<T> shiftPVElliptic(final T dt) {
 
-        // preliminary computation
-        final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
-        final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
+        // preliminary computation0
+        final FieldPVCoordinates<T> pva = getPVCoordinates();
+        final FieldVector3D<T>      pvP = pva.getPosition();
+        final FieldVector3D<T>      pvV = pva.getVelocity();
         final T r2      = pvP.getNormSq();
         final T r       = r2.sqrt();
         final T rV2OnMu = r.multiply(pvV.getNormSq()).divide(getMu());

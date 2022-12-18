@@ -114,7 +114,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             RadiationSensitive spacecraft = (RadiationSensitive) spacecraftField.get(forceModel);
 
             final Field<DerivativeStructure> field = position.getX().getField();
-            final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+            final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPosition(date, frame));
             final DerivativeStructure r2  = sunSatVector.getNormSq();
 
             FieldSpacecraftState<DerivativeStructure> state =
@@ -163,7 +163,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             RadiationSensitive spacecraft = (RadiationSensitive) spacecraftField.get(forceModel);
 
             final Field<Gradient> field = position.getX().getField();
-            final FieldVector3D<Gradient> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+            final FieldVector3D<Gradient> sunSatVector = position.subtract(sun.getPosition(date, frame));
             final Gradient r2  = sunSatVector.getNormSq();
 
             FieldSpacecraftState<Gradient> state =
@@ -882,8 +882,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                    interpolators.get(0).getCurrentState().getDate().isAfterOrEqualTo(nextSample)) {
                 final SpacecraftState state0 = interpolators.get(0).getInterpolatedState(nextSample);
                 final SpacecraftState state1 = interpolators.get(1).getInterpolatedState(nextSample);
-                final double distance = Vector3D.distance(state0.getPVCoordinates().getPosition(),
-                                                          state1.getPVCoordinates().getPosition());
+                final double distance = Vector3D.distance(state0.getPosition(),
+                                                          state1.getPosition());
                 currentMax = FastMath.max(currentMax, distance);
                 nextSample = nextSample.shiftedBy(samplingStep);
             }
@@ -981,8 +981,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final SpacecraftState withoutFlattening = propagatorWithoutFlattening.propagate(orbit.getDate().shiftedBy(duration));
 
         Assertions.assertEquals(expectedDistance,
-                                Vector3D.distance(withFlattening.getPVCoordinates().getPosition(),
-                                                  withoutFlattening.getPVCoordinates().getPosition()),
+                                Vector3D.distance(withFlattening.getPosition(),
+                                                  withoutFlattening.getPosition()),
                                 1.0e-6);
 
     }
@@ -1026,9 +1026,9 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final AbsoluteDate date = currentState.getDate();
             final Frame frame = currentState.getFrame();
 
-            final Vector3D moonPos = moon.getPVCoordinates(date, frame).getPosition();
-            final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
-            final Vector3D statePos = currentState.getPVCoordinates().getPosition();
+            final Vector3D moonPos = moon.getPosition(date, frame);
+            final Vector3D sunPos = sun.getPosition(date, frame);
+            final Vector3D statePos = currentState.getPosition();
 
             // Moon umbra and penumbra conditions
             final double[] moonAngles = srp.getGeneralEclipseAngles(statePos, moonPos, Constants.MOON_EQUATORIAL_RADIUS,
@@ -1175,8 +1175,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldSpacecraftState<T> withoutFlattening = propagatorWithoutFlattening.propagate(orbit.getDate().shiftedBy(duration));
 
         Assertions.assertEquals(expectedDistance,
-                                FieldVector3D.distance(withFlattening.getPVCoordinates().getPosition(),
-                                                       withoutFlattening.getPVCoordinates().getPosition()).getReal(),
+                                FieldVector3D.distance(withFlattening.getPosition(),
+                                                       withoutFlattening.getPosition()).getReal(),
                                 1.0e-6);
 
     }
@@ -1220,9 +1220,9 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final FieldAbsoluteDate<T> date = currentState.getDate();
             final Frame frame = currentState.getFrame();
 
-            final FieldVector3D<T> moonPos = moon.getPVCoordinates(date, frame).getPosition();
-            final FieldVector3D<T> sunPos = sun.getPVCoordinates(date, frame).getPosition();
-            final FieldVector3D<T> statePos = currentState.getPVCoordinates().getPosition();
+            final FieldVector3D<T> moonPos = moon.getPosition(date, frame);
+            final FieldVector3D<T> sunPos = sun.getPosition(date, frame);
+            final FieldVector3D<T> statePos = currentState.getPosition();
 
             // Moon umbra and penumbra conditions
             final T[] moonAngles = srp.getGeneralEclipseAngles(statePos, moonPos,

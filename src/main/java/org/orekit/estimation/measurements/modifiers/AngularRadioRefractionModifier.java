@@ -61,7 +61,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     private double angularErrorRadioRefractionModel(final GroundStation station,
                                                     final SpacecraftState state) {
 
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation in radians
         final double elevation = station.getBaseFrame().getElevation(position,

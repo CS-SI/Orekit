@@ -148,10 +148,10 @@ public class IodGibbs {
 
         //check which orbit is correct
         final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                getPosition();
         final double dist = estP3.subtract(r3).getNorm();
         final Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                getPosition();
         final double dist2 = estP3_2.subtract(r3).getNorm();
 
         if (dist <= dist2) {

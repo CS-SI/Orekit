@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -744,14 +745,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                null;
     }
 
-    /** Compute position and velocity but not acceleration.
+    /** Compute reference axes.
+     * @return referecne axes
+     * @since 12.0
      */
-    private void computePVWithoutA() {
-
-        if (partialPV != null) {
-            // already computed
-            return;
-        }
+    private FieldVector3D<T>[] referenceAxes() {
 
         // preliminary variables
         final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
@@ -769,8 +767,25 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T srsp    = sinRaan.multiply(sinPa);
 
         // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+        @SuppressWarnings("unchecked")
+        final FieldVector3D<T>[] axes = (FieldVector3D<T>[]) Array.newInstance(FieldVector3D.class, 2);
+        axes[0] = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
+        axes[1] = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+
+        return axes;
+
+    }
+
+    /** Compute position and velocity but not acceleration.
+     */
+    private void computePVWithoutA() {
+
+        if (partialPV != null) {
+            // already computed
+            return;
+        }
+
+        final FieldVector3D<T>[] axes = referenceAxes();
 
         if (a.getReal() > 0) {
 
@@ -790,8 +805,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final T xDot   = sinE.negate().multiply(factor);
             final T yDot   = cosE.multiply(s1Me2).multiply(factor);
 
-            final FieldVector3D<T> position = new FieldVector3D<>(x, p, y, q);
-            final FieldVector3D<T> velocity = new FieldVector3D<>(xDot, p, yDot, q);
+            final FieldVector3D<T> position = new FieldVector3D<>(x, axes[0], y, axes[1]);
+            final FieldVector3D<T> velocity = new FieldVector3D<>(xDot, axes[0], yDot, axes[1]);
             partialPV = new FieldPVCoordinates<>(position, velocity);
 
         } else {
@@ -806,8 +821,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final T posFactor        = f.divide(e.multiply(cosV).add(1));
             final T velFactor        = FastMath.sqrt(getMu().divide(f));
 
-            final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
-            final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
+            final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), axes[0], posFactor.multiply(sinV), axes[1]);
+            final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), axes[0], velFactor.multiply(e.add(cosV)), axes[1]);
             partialPV = new FieldPVCoordinates<>(position, velocity);
 
         }
@@ -846,6 +861,40 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                  add(dCdP[5][5].multiply(nonKeplerianMeanMotion));
 
         return new FieldVector3D<>(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
+    /** {@inheritDoc} */
+    protected FieldVector3D<T> initPosition() {
+        final FieldVector3D<T>[] axes = referenceAxes();
+
+        if (a.getReal() > 0) {
+
+            // elliptical case
+
+            // elliptic eccentric anomaly
+            final T uME2             = e.negate().add(1).multiply(e.add(1));
+            final T s1Me2            = uME2.sqrt();
+            final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+            final T cosE             = scE.cos();
+            final T sinE             = scE.sin();
+
+            return new FieldVector3D<>(a.multiply(cosE.subtract(e)), axes[0], a.multiply(sinE).multiply(s1Me2), axes[1]);
+
+        } else {
+
+            // hyperbolic case
+
+            // compute position and velocity factors
+            final FieldSinCos<T> scV = FastMath.sinCos(v);
+            final T sinV             = scV.sin();
+            final T cosV             = scV.cos();
+            final T f                = a.multiply(e.multiply(e).negate().add(1));
+            final T posFactor        = f.divide(e.multiply(cosV).add(1));
+
+            return new FieldVector3D<>(posFactor.multiply(cosV), axes[0], posFactor.multiply(sinV), axes[1]);
+
+        }
 
     }
 

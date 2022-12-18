@@ -164,7 +164,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
     @Override
     public double g(final SpacecraftState s) {
 
-        final double trueElevation = topo.getElevation(s.getPVCoordinates().getPosition(),
+        final double trueElevation = topo.getElevation(s.getPosition(),
                                                        s.getFrame(), s.getDate());
 
         final double calculatedElevation;
@@ -175,7 +175,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
         }
 
         if (elevationMask != null) {
-            final double azimuth = topo.getAzimuth(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+            final double azimuth = topo.getAzimuth(s.getPosition(), s.getFrame(), s.getDate());
             return calculatedElevation - elevationMask.getElevation(azimuth);
         } else {
             return calculatedElevation - minElevation;

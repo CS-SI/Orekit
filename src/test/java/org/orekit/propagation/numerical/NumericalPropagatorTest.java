@@ -378,11 +378,11 @@ public class NumericalPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Initial orbit definition
-        final Vector3D initialPosition = initialState.getPVCoordinates().getPosition();
+        final Vector3D initialPosition = initialState.getPosition();
         final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final Vector3D finalPosition   = finalState.getPVCoordinates().getPosition();
+        final Vector3D finalPosition   = finalState.getPosition();
         final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -1400,8 +1400,8 @@ public class NumericalPropagatorTest {
                 // recurring event, we compare with the shifted reference state
                 final double dt = s.getDate().durationFrom(referenceState.getDate());
                 final SpacecraftState shifted = referenceState.shiftedBy(dt);
-                final double error = Vector3D.distance(shifted.getPVCoordinates().getPosition(),
-                                                       s.getPVCoordinates().getPosition());
+                final double error = Vector3D.distance(shifted.getPosition(),
+                                                       s.getPosition());
                 switch ((int) FastMath.rint(dt)) {
                     case 60 :
                         Assertions.assertEquals(error60s,  error, 0.01 * error60s);

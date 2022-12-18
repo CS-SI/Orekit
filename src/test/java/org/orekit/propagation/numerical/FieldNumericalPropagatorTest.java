@@ -374,11 +374,11 @@ public class FieldNumericalPropagatorTest {
         // Propagate of the initial at the initial date
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
         // Initial orbit definition
-        final FieldVector3D<T> initialPosition = initialState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> initialPosition = initialState.getPosition();
         final FieldVector3D<T> initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final FieldVector3D<T> finalPosition   = finalState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> finalPosition   = finalState.getPosition();
         final FieldVector3D<T> finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -1809,8 +1809,8 @@ public class FieldNumericalPropagatorTest {
                 // recurring event, we compare with the shifted reference state
                 final T dt = s.getDate().durationFrom(referenceState.getDate());
                 final FieldSpacecraftState<T> shifted = referenceState.shiftedBy(dt);
-                final T error = FieldVector3D.distance(shifted.getPVCoordinates().getPosition(),
-                                                       s.getPVCoordinates().getPosition());
+                final T error = FieldVector3D.distance(shifted.getPosition(),
+                                                       s.getPosition());
                 switch ((int) FastMath.rint(dt.getReal())) {
                     case 60 :
                         Assertions.assertEquals(error60s,  error.getReal(), 0.01 * error60s);

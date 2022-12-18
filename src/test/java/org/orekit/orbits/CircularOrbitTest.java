@@ -76,7 +76,7 @@ public class CircularOrbitTest {
             new CircularOrbit(42166712.0, 0.5, -0.5, i, raan,
                                    5.300 - raan, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        Vector3D pos = circ.getPVCoordinates().getPosition();
+        Vector3D pos = circ.getPosition();
         Vector3D vit = circ.getPVCoordinates().getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates( pos, vit);
@@ -104,7 +104,7 @@ public class CircularOrbitTest {
             new EquinoctialOrbit(42166712.0, 0.1e-10, -0.1e-10, i, raan,
                                       5.300 - raan, PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
-        Vector3D posCir = circCir.getPVCoordinates().getPosition();
+        Vector3D posCir = circCir.getPosition();
         Vector3D vitCir = circCir.getPVCoordinates().getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates( posCir, vitCir);
@@ -137,7 +137,7 @@ public class CircularOrbitTest {
             new CircularOrbit(42166712.0, ex, ey, i, raan,
                                    5.300 - raan, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        Vector3D pos = circ.getPVCoordinates().getPosition();
+        Vector3D pos = circ.getPosition();
         Vector3D vel = circ.getPVCoordinates().getVelocity();
 
         // check 1/a = 2/r  - V2/mu
@@ -335,8 +335,8 @@ public class CircularOrbitTest {
         double na = FastMath.sqrt(mu / a);
 
         Assertions.assertEquals(a * epsilon * epsilon / ksi,
-                     p.getPVCoordinates().getPosition().getNorm(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm()));
+                     p.getPosition().getNorm(),
+                     Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
                      p.getPVCoordinates().getVelocity().getNorm(),
                      Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm()));
@@ -392,8 +392,8 @@ public class CircularOrbitTest {
         double na = FastMath.sqrt(mu / a);
 
         Assertions.assertEquals(a * epsilon * epsilon / ksi,
-                     pCirEqua.getPVCoordinates().getPosition().getNorm(),
-                     Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getPosition().getNorm()));
+                     pCirEqua.getPosition().getNorm(),
+                     Utils.epsilonTest * FastMath.abs(pCirEqua.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
                      pCirEqua.getPVCoordinates().getVelocity().getNorm(),
                      Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
@@ -412,7 +412,7 @@ public class CircularOrbitTest {
                                    0.67 - raan, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
-        Vector3D position = p.getPVCoordinates().getPosition();
+        Vector3D position = p.getPosition();
         Vector3D velocity = p.getPVCoordinates().getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
@@ -423,7 +423,7 @@ public class CircularOrbitTest {
             p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(), p.getI(),
                                        p.getRightAscensionOfAscendingNode(),
                                        alphaV, PositionAngle.TRUE, p.getFrame(), date, mu);
-            position = p.getPVCoordinates().getPosition();
+            position = p.getPosition();
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
             Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
@@ -456,7 +456,7 @@ public class CircularOrbitTest {
                                    0.67 - raan, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
-        Vector3D position = pCirEqua.getPVCoordinates().getPosition();
+        Vector3D position = pCirEqua.getPosition();
         Vector3D velocity = pCirEqua.getPVCoordinates().getVelocity();
         Vector3D momentum = pCirEqua.getPVCoordinates().getMomentum().normalize();
 
@@ -469,7 +469,7 @@ public class CircularOrbitTest {
             pCirEqua = new CircularOrbit(pCirEqua.getA() , pCirEqua.getCircularEx(), pCirEqua.getCircularEy(), pCirEqua.getI(),
                                               pCirEqua.getRightAscensionOfAscendingNode(),
                                               alphaV, PositionAngle.TRUE, pCirEqua.getFrame(), date, mu);
-            position = pCirEqua.getPVCoordinates().getPosition();
+            position = pCirEqua.getPosition();
 
             // test if the norm pf the position is in the range [perigee radius, apogee radius]
             Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
@@ -498,7 +498,7 @@ public class CircularOrbitTest {
 
         CircularOrbit p = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        Vector3D positionOffset = p.getPVCoordinates().getPosition();
+        Vector3D positionOffset = p.getPosition();
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity();
 
         positionOffset = positionOffset.subtract(position);
@@ -518,7 +518,7 @@ public class CircularOrbitTest {
 
         CircularOrbit p = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        Vector3D positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        Vector3D positionOffset = p.getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0.0, positionOffset.getNorm(), position.getNorm() * Utils.epsilonTest);
@@ -677,7 +677,7 @@ public class CircularOrbitTest {
 
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
-        Vector3D p = orbit.getPVCoordinates().getPosition();
+        Vector3D p = orbit.getPosition();
         Vector3D v = orbit.getPVCoordinates().getVelocity();
         double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
 
@@ -813,9 +813,9 @@ public class CircularOrbitTest {
         double maxInterpolationError = 0;
         for (double dt = 0; dt < 241.0; dt += 1.0) {
             AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
+            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPosition();
+            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPosition();
+            Vector3D propagated   = propagator.propagate(t).getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
@@ -827,9 +827,9 @@ public class CircularOrbitTest {
         maxInterpolationError = 0;
         for (double dt = 240; dt < 300.0; dt += 1.0) {
             AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
+            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPosition();
+            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPosition();
+            Vector3D propagated   = propagator.propagate(t).getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
@@ -841,9 +841,9 @@ public class CircularOrbitTest {
         maxInterpolationError = 0;
         for (double dt = 300; dt < 1000; dt += 1.0) {
             AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
+            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPosition();
+            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPosition();
+            Vector3D propagated   = propagator.propagate(t).getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
@@ -1190,8 +1190,8 @@ public class CircularOrbitTest {
         final Orbit shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
 
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
-                                              shiftedOrbitCopy.getPVCoordinates().getPosition()),
+                            Vector3D.distance(shiftedOrbit.getPosition(),
+                                              shiftedOrbitCopy.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
