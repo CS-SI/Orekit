@@ -67,7 +67,7 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      * @return Position on Y axis
      */
     public double g(final SpacecraftState s) {
-        return s.getPVCoordinates().getPosition().getY();
+        return s.getPosition().getY();
     }
 
 }

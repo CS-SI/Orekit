@@ -321,8 +321,8 @@ public class OneAxisEllipsoidTest {
         Vector3D alongTrack   = Vector3D.crossProduct(acrossTrack, zenith).normalize();
         for (double dt = -1; dt < 1; dt += 0.01) {
             AbsoluteDate date = orbit.getDate().shiftedBy(dt);
-            Vector3D taylorP = groundTaylor.getPVCoordinates(date, model.getBodyFrame()).getPosition();
-            Vector3D refP    = model.projectToGround(orbit.getPVCoordinates(date, model.getBodyFrame()).getPosition(),
+            Vector3D taylorP = groundTaylor.getPosition(date, model.getBodyFrame());
+            Vector3D refP    = model.projectToGround(orbit.getPosition(date, model.getBodyFrame()),
                                                      date, model.getBodyFrame());
             Vector3D delta = taylorP.subtract(refP);
             Assertions.assertEquals(0.0, Vector3D.dotProduct(delta, alongTrack),  0.0015);

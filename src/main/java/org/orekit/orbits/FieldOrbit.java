@@ -422,6 +422,14 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
+    /** Get the position in definition frame.
+     * @return position in the definition frame
+     * @see #getPVCoordinates()
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition() {
+        return getPVCoordinates().getPosition();
+    }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return FieldPVCoordinates in the definition frame

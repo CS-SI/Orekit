@@ -219,7 +219,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                              FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
 
         // Direction cosines of the Sun in the equinoctial frame
-        final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
+        final Vector3D sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();
         final double alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final double beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final double gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
@@ -315,7 +315,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
 
         // Direction cosines of the Sun in the equinoctial frame
-        final FieldVector3D<T> sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
+        final FieldVector3D<T> sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();
         final T alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final T beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final T gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());

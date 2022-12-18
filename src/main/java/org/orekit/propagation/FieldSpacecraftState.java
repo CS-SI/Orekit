@@ -52,6 +52,7 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** This class is the representation of a complete state holding orbit, attitude
@@ -277,15 +278,16 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
         } else {
             final T zero = field.getZero();
-            final T x = zero.add(state.getPVCoordinates().getPosition().getX());
-            final T y = zero.add(state.getPVCoordinates().getPosition().getY());
-            final T z = zero.add(state.getPVCoordinates().getPosition().getZ());
-            final T vx = zero.add(state.getPVCoordinates().getVelocity().getX());
-            final T vy = zero.add(state.getPVCoordinates().getVelocity().getY());
-            final T vz = zero.add(state.getPVCoordinates().getVelocity().getZ());
-            final T ax = zero.add(state.getPVCoordinates().getAcceleration().getX());
-            final T ay = zero.add(state.getPVCoordinates().getAcceleration().getY());
-            final T az = zero.add(state.getPVCoordinates().getAcceleration().getZ());
+            final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+            final T x = zero.add(pva.getPosition().getX());
+            final T y = zero.add(pva.getPosition().getY());
+            final T z = zero.add(pva.getPosition().getZ());
+            final T vx = zero.add(pva.getVelocity().getX());
+            final T vy = zero.add(pva.getVelocity().getY());
+            final T vz = zero.add(pva.getVelocity().getZ());
+            final T ax = zero.add(pva.getAcceleration().getX());
+            final T ay = zero.add(pva.getAcceleration().getY());
+            final T az = zero.add(pva.getAcceleration().getZ());
             final FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x, y, z),
                                                                          new FieldVector3D<>(vx, vy, vz),
                                                                          new FieldVector3D<>(ax, ay, az));
@@ -1142,6 +1144,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         return (absPva == null) ? orbit.getI() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
+    /** Get the position in orbit definition frame.
+     * @return position in orbit definition frame
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition() {
+        return getPVCoordinates().getPosition();
+    }
+
     /** Get the {@link TimeStampedFieldPVCoordinates} in orbit definition frame.
      * <p>
      * Compute the position and velocity of the satellite. This method caches its
@@ -1154,6 +1164,16 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         return (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+    }
+
+    /** Get the position in given output frame.
+     * @param outputFrame frame in which position should be defined
+     * @return position in given output frame
+     * @since 12.0
+     * @see #getPVCoordinates(Frame)
+     */
+    public FieldVector3D<T> getPosition(final Frame outputFrame) {
+        return getPVCoordinates(outputFrame).getPosition();
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in given output frame.

@@ -83,7 +83,7 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
 
         // compute bodies separation vectors and squared norm
         final PVCoordinates bodyPV   = body.getPVCoordinates(s.getDate(), s.getFrame());
-        final Vector3D satToBody     = bodyPV.getPosition().subtract(s.getPVCoordinates().getPosition());
+        final Vector3D satToBody     = bodyPV.getPosition().subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
         // compute relative acceleration
@@ -99,7 +99,7 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
 
         // compute bodies separation vectors and squared norm
         final FieldPVCoordinates<T> bodyPV = body.getPVCoordinates(s.getDate(), s.getFrame());
-        final FieldVector3D<T> satToBody   = bodyPV.getPosition().subtract(s.getPVCoordinates().getPosition());
+        final FieldVector3D<T> satToBody   = bodyPV.getPosition().subtract(s.getPosition());
         final T                r2Sat       = satToBody.getNormSq();
 
         // compute relative acceleration

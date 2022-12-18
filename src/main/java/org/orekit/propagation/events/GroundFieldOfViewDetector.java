@@ -137,7 +137,7 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
     public double g(final SpacecraftState s) {
 
         // get line of sight in sensor frame
-        final Vector3D los = s.getPVCoordinates(this.frame).getPosition();
+        final Vector3D los = s.getPosition(this.frame);
         return this.fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
 
     }

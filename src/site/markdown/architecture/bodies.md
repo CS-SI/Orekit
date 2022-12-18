@@ -42,9 +42,9 @@ is done as follows:
     CelestialBody sun  = CelestialBodyFactory.getSun();
     CelestialBody moon = CelestialBodyFactory.getMoon();
     Vector3D sunInEME2000 =
-        sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
+        sun.getPosition(date, FramesFactory.getEME2000());
     Vector3D moonInEME2000 =
-        moon.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
+        moon.getPosition(date, FramesFactory.getEME2000());
 
 Since the supported bodies implement the `CelestialBody` interface, they all provide
 their own body-centered inertially-oriented frame and their own body-centered

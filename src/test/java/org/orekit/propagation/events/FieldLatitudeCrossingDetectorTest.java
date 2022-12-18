@@ -90,7 +90,7 @@ public class FieldLatitudeCrossingDetectorTest {
         AbsoluteDate previous = null;
         for (FieldLoggedEvent<Decimal64> e : logger.getLoggedEvents()) {
             FieldSpacecraftState<Decimal64> state = e.getState();
-            double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            double latitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                                               earth.getBodyFrame(), date).getLatitude().getReal();
             Assertions.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
             if (previous != null) {

@@ -71,8 +71,8 @@ public class IntegratedEphemerisTest {
             AbsoluteDate intermediateDate = initialOrbit.getDate().shiftedBy(i);
             SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
             SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
-            Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
-            Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+            Vector3D kepPosition = keplerIntermediateOrbit.getPosition();
+            Vector3D numPosition = numericIntermediateOrbit.getPosition();
             Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 0.06);
         }
 
@@ -85,8 +85,8 @@ public class IntegratedEphemerisTest {
         numericalPropagator.propagate(initialOrbit.getDate());
         BoundedPropagator invEphemeris = generator2.getGeneratedEphemeris();
         SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
-        Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
-        Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+        Vector3D kepPosition = keplerIntermediateOrbit.getPosition();
+        Vector3D numPosition = numericIntermediateOrbit.getPosition();
         Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
 
     }

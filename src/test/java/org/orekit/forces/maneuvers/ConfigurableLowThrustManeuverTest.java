@@ -499,8 +499,8 @@ public class ConfigurableLowThrustManeuverTest {
 
         /////////////////// results check /////////////////////////////////
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(orbit.getPVCoordinates().getPosition(),
-                                              recoveredStateNumerical.getPVCoordinates().getPosition()),
+                            Vector3D.distance(orbit.getPosition(),
+                                              recoveredStateNumerical.getPosition()),
                             0.015);
 
     }
@@ -561,8 +561,8 @@ public class ConfigurableLowThrustManeuverTest {
                                                      null));
         /////////////////// results check /////////////////////////////////
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(orbit.getPVCoordinates().getPosition(),
-                                              recoveredStateNumerical.getPVCoordinates().getPosition()),
+                            Vector3D.distance(orbit.getPosition(),
+                                              recoveredStateNumerical.getPosition()),
                             0.015);
 
     }

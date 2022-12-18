@@ -82,7 +82,7 @@ public class LatitudeExtremumDetectorTest {
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
         for (LoggedEvent e : logger.getLoggedEvents()) {
             SpacecraftState state = e.getState();
-            double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            double latitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                                               earth.getBodyFrame(), null).getLatitude();
             if (e.isIncreasing()) {
                 Assertions.assertEquals(-81.863, FastMath.toDegrees(latitude), 0.001);

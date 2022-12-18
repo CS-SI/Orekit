@@ -536,15 +536,15 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
         double delta = 0.1;
         Orbit shifted = new CartesianOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
-                                                                        orbit.getPVCoordinates().getPosition().add(new Vector3D(delta, 0, 0)),
+                                                                        orbit.getPosition().add(new Vector3D(delta, 0, 0)),
                                                                         orbit.getPVCoordinates().getVelocity()),
                                            orbit.getFrame(), orbit.getMu());
         propagator.setInitialState(new SpacecraftState(shifted, mass));
         SpacecraftState newState = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
         double[] dPVdX = new double[] {
-            (newState.getPVCoordinates().getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,
-            (newState.getPVCoordinates().getPosition().getY() - state.getPVCoordinates().getPosition().getY()) / delta,
-            (newState.getPVCoordinates().getPosition().getZ() - state.getPVCoordinates().getPosition().getZ()) / delta,
+            (newState.getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,
+            (newState.getPosition().getY() - state.getPVCoordinates().getPosition().getY()) / delta,
+            (newState.getPosition().getZ() - state.getPVCoordinates().getPosition().getZ()) / delta,
             (newState.getPVCoordinates().getVelocity().getX() - state.getPVCoordinates().getVelocity().getX()) / delta,
             (newState.getPVCoordinates().getVelocity().getY() - state.getPVCoordinates().getVelocity().getY()) / delta,
             (newState.getPVCoordinates().getVelocity().getZ() - state.getPVCoordinates().getVelocity().getZ()) / delta,

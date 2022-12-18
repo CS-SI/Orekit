@@ -244,7 +244,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         // Local atmospheric density
         final AbsoluteDate date     = s.getDate();
         final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
+        final Vector3D     position = s.getPosition();
         final double rho    = atmosphere.getDensity(date, position, frame);
 
         // Spacecraft relative velocity with respect to the atmosphere
@@ -268,7 +268,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         // Local atmospheric density
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
-        final FieldVector3D<T>     position = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>     position = s.getPosition();
 
         // Density and its derivatives
         final T rho;

@@ -66,7 +66,7 @@ public class EcksteinHechlerConverterTest {
 
         // shift position by 3m
         CircularOrbit modified = new CircularOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
-                                                                                new Vector3D(1, orbit.getPVCoordinates().getPosition(),
+                                                                                new Vector3D(1, orbit.getPosition(),
                                                                                              3.0, Vector3D.PLUS_J),
                                                                                 orbit.getPVCoordinates().getVelocity()),
                                                    orbit.getFrame(),
@@ -103,15 +103,15 @@ public class EcksteinHechlerConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            eps * modified.getPVCoordinates().getPosition().getX());
-        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            eps * modified.getPVCoordinates().getPosition().getY());
-        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            eps * modified.getPVCoordinates().getPosition().getZ());
+        Assertions.assertEquals(modified.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            eps * modified.getPosition().getX());
+        Assertions.assertEquals(modified.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            eps * modified.getPosition().getY());
+        Assertions.assertEquals(modified.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            eps * modified.getPosition().getZ());
 
         Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),

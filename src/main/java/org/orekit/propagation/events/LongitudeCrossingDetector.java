@@ -185,7 +185,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
         public double g(final SpacecraftState s) {
 
             // convert state to geodetic coordinates
-            final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
+            final GeodeticPoint gp = body.transform(s.getPosition(),
                                                     s.getFrame(), s.getDate());
 
             // longitude difference

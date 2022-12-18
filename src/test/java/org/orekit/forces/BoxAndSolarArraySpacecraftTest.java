@@ -207,13 +207,13 @@ public class BoxAndSolarArraySpacecraftTest {
 
             SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
 
-            Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
+            Vector3D sunInert = sun.getPosition(initialDate, state.getFrame());
             Vector3D momentum = state.getPVCoordinates().getMomentum();
             double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
             Assertions.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
             Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
-                                     state.getPVCoordinates().getPosition(),
+                                     state.getPosition(),
                                      state.getAttitude().getRotation());
             Assertions.assertEquals(0.0, n.getY(), 1.0e-10);
 
@@ -241,13 +241,13 @@ public class BoxAndSolarArraySpacecraftTest {
 
             SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
 
-            Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
+            Vector3D sunInert = sun.getPosition(initialDate, state.getFrame());
             Vector3D momentum = state.getPVCoordinates().getMomentum();
             double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
             Assertions.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
             Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
-                                     state.getPVCoordinates().getPosition(),
+                                     state.getPosition(),
                                      state.getAttitude().getRotation());
             Assertions.assertEquals(0.0, n.getY(), 1.0e-10);
 
@@ -276,13 +276,13 @@ public class BoxAndSolarArraySpacecraftTest {
 
                 SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
 
-                Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
+                Vector3D sunInert = sun.getPosition(initialDate, state.getFrame());
                 Vector3D momentum = state.getPVCoordinates().getMomentum();
                 double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
                 Assertions.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
                 Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
-                                         state.getPVCoordinates().getPosition(),
+                                         state.getPosition(),
                                          state.getAttitude().getRotation());
                 Assertions.assertEquals(0.0, n.getY(), 1.0e-10);
 
@@ -311,22 +311,22 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
 
             // simple Earth fixed atmosphere
-            Vector3D p = state.getPVCoordinates().getPosition();
+            Vector3D p = state.getPosition();
             Vector3D v = state.getPVCoordinates().getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
             Vector3D relativeVelocity = vAtm.subtract(v);
 
             Vector3D drag = s.dragAcceleration(state.getDate(), state.getFrame(),
-                                               state.getPVCoordinates().getPosition(),
+                                               state.getPosition(),
                                                state.getAttitude().getRotation(),
                                                state.getMass(), 0.001, relativeVelocity,
                                                getDragParameters(s));
             Assertions.assertEquals(0.0, Vector3D.angle(relativeVelocity, drag), 1.0e-15);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
             Vector3D radiation = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                                 state.getPVCoordinates().getPosition(),
+                                                                 state.getPosition(),
                                                                  state.getAttitude().getRotation(),
                                                                  state.getMass(), flux,
                                                                  getRadiationParameters(s));
@@ -351,23 +351,23 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
 
             // simple Earth fixed atmosphere
-            Vector3D p = state.getPVCoordinates().getPosition();
+            Vector3D p = state.getPosition();
             Vector3D v = state.getPVCoordinates().getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
             Vector3D relativeVelocity = vAtm.subtract(v);
 
             Vector3D drag = s.dragAcceleration(state.getDate(), state.getFrame(),
-                                               state.getPVCoordinates().getPosition(),
+                                               state.getPosition(),
                                                state.getAttitude().getRotation(),
                                                state.getMass(), 0.001, relativeVelocity,
                                                getDragParameters(s));
             Assertions.assertTrue(Vector3D.angle(relativeVelocity, drag) > 0.167);
             Assertions.assertTrue(Vector3D.angle(relativeVelocity, drag) < 0.736);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
             Vector3D radiation = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                                 state.getPVCoordinates().getPosition(),
+                                                                 state.getPosition(),
                                                                  state.getAttitude().getRotation(),
                                                                  state.getMass(), flux,
                                                                  getRadiationParameters(s));
@@ -483,15 +483,15 @@ public class BoxAndSolarArraySpacecraftTest {
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
             Vector3D acceleration = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                                    state.getPVCoordinates().getPosition(),
+                                                                    state.getPosition(),
                                                                     state.getAttitude().getRotation(),
                                                                     state.getMass(), flux,
                                                                     getRadiationParameters(s));
             Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
-                                                                                           state.getPVCoordinates().getPosition(),
+                                                                                           state.getPosition(),
                                                                                            state.getAttitude().getRotation()));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
@@ -517,16 +517,16 @@ public class BoxAndSolarArraySpacecraftTest {
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
             Vector3D acceleration =
                     s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                    state.getPVCoordinates().getPosition(),
+                                                    state.getPosition(),
                                                     state.getAttitude().getRotation(),
                                                     state.getMass(), flux,
                                                     getRadiationParameters(s));
             Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
-                                                                                           state.getPVCoordinates().getPosition(),
+                                                                                           state.getPosition(),
                                                                                            state.getAttitude().getRotation()));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
@@ -552,7 +552,7 @@ public class BoxAndSolarArraySpacecraftTest {
         Decimal64[] srpParam = getRadiationParameters(s, field);
 
         FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
-        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPVCoordinates().getPosition());
+        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPosition());
         FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
         Decimal64 mass = new Decimal64(state.getMass());
         FieldVector3D<Decimal64> flux = new FieldVector3D<Decimal64>(field.getOne(),
@@ -578,7 +578,7 @@ public class BoxAndSolarArraySpacecraftTest {
         Decimal64[] srpParam = getRadiationParameters(s, field);
 
         FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
-        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPVCoordinates().getPosition());
+        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPosition());
         FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
         Decimal64 mass = new Decimal64(state.getMass());
 
@@ -607,7 +607,7 @@ public class BoxAndSolarArraySpacecraftTest {
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
             Vector3D normal = s.getNormal(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
+                                            state.getPosition(),
                                             state.getAttitude().getRotation());
             Assertions.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
         }
@@ -625,7 +625,7 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
             FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
                                                           state.getFrame(),
-                                                          new FieldVector3D<>(field, state.getPVCoordinates().getPosition()),
+                                                          new FieldVector3D<>(field, state.getPosition()),
                                                           new FieldRotation<>(field, state.getAttitude().getRotation()));
             Assertions.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
         }
@@ -643,7 +643,7 @@ public class BoxAndSolarArraySpacecraftTest {
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
             Vector3D normal = s.getNormal(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
+                                            state.getPosition(),
                                             state.getAttitude().getRotation());
             Assertions.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
         }
@@ -663,7 +663,7 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
             FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
                                                           state.getFrame(),
-                                                          new FieldVector3D<>(field, state.getPVCoordinates().getPosition()),
+                                                          new FieldVector3D<>(field, state.getPosition()),
                                                           new FieldRotation<>(field, state.getAttitude().getRotation()));
             Assertions.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
         }
@@ -719,7 +719,7 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
 
             // Data used in acceleration computation
-            Vector3D position = state.getPVCoordinates().getPosition();
+            Vector3D position = state.getPosition();
             Vector3D velocity = state.getPVCoordinates().getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, position);
             Vector3D relativeVelocity = vAtm.subtract(velocity);
@@ -727,7 +727,7 @@ public class BoxAndSolarArraySpacecraftTest {
             Frame frame = state.getFrame();
             Rotation rotation = state.getAttitude().getRotation();
             double mass = state.getMass();
-            Vector3D flux = position.subtract(sun.getPVCoordinates(date, frame).getPosition()).normalize().scalarMultiply(refFlux);
+            Vector3D flux = position.subtract(sun.getPosition(date, frame)).normalize().scalarMultiply(refFlux);
 
             // Acceleration in double
             Vector3D aDrag = s.dragAcceleration(date, frame, position, rotation, mass,

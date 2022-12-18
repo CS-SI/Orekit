@@ -921,7 +921,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final Vector3D position = currentState.getPVCoordinates().getPosition();
+                    final Vector3D position = currentState.getPosition();
                     final double r2         = position.getNormSq();
                     final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
                     yDot[3] += coeff * position.getX();
@@ -1084,7 +1084,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         }
 
-        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPVCoordinates().getPosition().getNormSq()));
+        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPosition().getNormSq()));
 
         return new double[][] {
             absTol, relTol

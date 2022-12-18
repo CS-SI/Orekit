@@ -66,13 +66,13 @@ public class AltitudeDetectorTest {
 
         // propagation to the future
         SpacecraftState finalState = kepPropagator.propagate(initialDate.shiftedBy(1000));
-        Assertions.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius, alt, 1e-5);
+        Assertions.assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
         Assertions.assertEquals(44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
         // propagation to the past
         kepPropagator.resetInitialState(initialState);
         finalState = kepPropagator.propagate(initialDate.shiftedBy(-1000));
-        Assertions.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius, alt, 1e-5);
+        Assertions.assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
         Assertions.assertEquals(-44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
     }

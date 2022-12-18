@@ -1002,6 +1002,15 @@ public class SpacecraftState
         return (absPva == null) ? orbit.getI() : Double.NaN;
     }
 
+    /** Get the position in orbit definition frame.
+     * @return position in orbit definition frame
+     * @since 12.0
+     * @see #getPVCoordinates()
+     */
+    public Vector3D getPosition() {
+        return getPVCoordinates().getPosition();
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
      * <p>
      * Compute the position and velocity of the satellite. This method caches its
@@ -1014,6 +1023,16 @@ public class SpacecraftState
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
         return (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+    }
+
+    /** Get the position in given output frame.
+     * @param outputFrame frame in which position should be defined
+     * @return position in given output frame
+     * @since 12.0
+     * @see #getPVCoordinates(Frame)
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        return getPVCoordinates(outputFrame).getPosition();
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in given output frame.

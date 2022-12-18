@@ -237,7 +237,7 @@ public class SpacecraftStateTest {
             PVCoordinates pv = transform.transformPVCoordinates(PVCoordinates.ZERO);
             PVCoordinates dPV = new PVCoordinates(pv, state.getPVCoordinates());
             Vector3D mZDirection = transform.transformVector(Vector3D.MINUS_K);
-            double alpha = Vector3D.angle(mZDirection, state.getPVCoordinates().getPosition());
+            double alpha = Vector3D.angle(mZDirection, state.getPosition());
             maxDP = FastMath.max(maxDP, dPV.getPosition().getNorm());
             maxDV = FastMath.max(maxDV, dPV.getVelocity().getNorm());
             maxDA = FastMath.max(maxDA, FastMath.toDegrees(alpha));
@@ -486,8 +486,8 @@ public class SpacecraftStateTest {
         ObjectInputStream     ois = new ObjectInputStream(bis);
         SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPVCoordinates().getPosition(),
-                                              deserialized.getPVCoordinates().getPosition()),
+                            Vector3D.distance(state.getPosition(),
+                                              deserialized.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(state.getPVCoordinates().getVelocity(),
@@ -520,7 +520,7 @@ public class SpacecraftStateTest {
 
         final NumericalPropagator numPropagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
-                                                                    orbit.getPVCoordinates().getPosition(),
+                                                                    orbit.getPosition(),
                                                                     orbit.getPVCoordinates().getVelocity());
         numPropagator.setOrbitType(null);
         numPropagator.setIgnoreCentralAttraction(true);
@@ -548,8 +548,8 @@ public class SpacecraftStateTest {
         ObjectInputStream     ois = new ObjectInputStream(bis);
         SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPVCoordinates().getPosition(),
-                                              deserialized.getPVCoordinates().getPosition()),
+                            Vector3D.distance(state.getPosition(),
+                                              deserialized.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(state.getPVCoordinates().getVelocity(),

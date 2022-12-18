@@ -277,8 +277,8 @@ public class EphemerisTest {
         Orbit  o = (Orbit) propagateOrbit.invoke(ephem, s.getDate());
         double m = ((Double) getMass.invoke(ephem, s.getDate())).doubleValue();
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(s.getPVCoordinates().getPosition(),
-                                              o.getPVCoordinates().getPosition()),
+                            Vector3D.distance(s.getPosition(),
+                                              o.getPosition()),
                             1.0e-15);
         Assertions.assertEquals(s.getMass(), m, 1.0e-15);
 
@@ -417,7 +417,7 @@ public class EphemerisTest {
     }
 
     private double calculatePositionDelta(SpacecraftState state1, SpacecraftState state2) {
-        return Vector3D.distance(state1.getPVCoordinates().getPosition(), state2.getPVCoordinates().getPosition());
+        return Vector3D.distance(state1.getPosition(), state2.getPosition());
     }
 
     private double calculateVelocityDelta(SpacecraftState state1, SpacecraftState state2) {

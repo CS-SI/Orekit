@@ -240,11 +240,11 @@ public class DSSTPropagatorTest {
         final SpacecraftState finalState = dsstProp.propagate(state.getDate());
 
         // Initial orbit definition
-        final Vector3D initialPosition = state.getPVCoordinates().getPosition();
+        final Vector3D initialPosition = state.getPosition();
         final Vector3D initialVelocity = state.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final Vector3D finalPosition = finalState.getPVCoordinates().getPosition();
+        final Vector3D finalPosition = finalState.getPosition();
         final Vector3D finalVelocity = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -709,8 +709,8 @@ public class DSSTPropagatorTest {
         double maxError = 0;
         for (final SpacecraftState state : states) {
             final SpacecraftState fromEphemeris = ephemeris.propagate(state.getDate());
-            final double error = Vector3D.distance(state.getPVCoordinates().getPosition(),
-                                                   fromEphemeris.getPVCoordinates().getPosition());
+            final double error = Vector3D.distance(state.getPosition(),
+                                                   fromEphemeris.getPosition());
             maxError = FastMath.max(maxError, error);
         }
         Assertions.assertEquals(0.0, maxError, 1.0e-10);
@@ -765,8 +765,8 @@ public class DSSTPropagatorTest {
 
         final SpacecraftState osculatingState = DSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(1559.1,
-                            Vector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(meanState.getPosition(),
+                                              osculatingState.getPosition()),
                             1.0);
     }
 
@@ -793,8 +793,8 @@ public class DSSTPropagatorTest {
 
         Assertions.assertEquals(meanState.getA(), computedMeanState.getA(), 2.0e-8);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                             computedMeanState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(meanState.getPosition(),
+                                             computedMeanState.getPosition()),
                             2.0e-8);
     }
 
@@ -901,19 +901,19 @@ public class DSSTPropagatorTest {
 
         final SpacecraftState osculatingState = DSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(734.3,
-                            Vector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(meanState.getPosition(),
+                                              osculatingState.getPosition()),
                             1.0);
 
         final SpacecraftState computedMeanState = DSSTPropagator.computeMeanState(osculatingState, null, forces);
         Assertions.assertEquals(734.3,
-                            Vector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedMeanState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(osculatingState.getPosition(),
+                                              computedMeanState.getPosition()),
                             1.0);
 
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(computedMeanState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(computedMeanState.getPosition(),
+                                              meanState.getPosition()),
                             5.0e-6);
 
     }
@@ -945,14 +945,14 @@ public class DSSTPropagatorTest {
 
         final SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         Assertions.assertEquals(0.522,
-                            Vector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(osculatingState.getPosition(),
+                                              meanState.getPosition()),
                             0.001);
 
         final SpacecraftState computedOsculatingState = DSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedOsculatingState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(osculatingState.getPosition(),
+                                              computedOsculatingState.getPosition()),
                             5.0e-6);
 
     }
@@ -1014,8 +1014,9 @@ public class DSSTPropagatorTest {
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu()));
         final SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         final SpacecraftState computedOsculatingState = DSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
-        Assertions.assertEquals(0.0, Vector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()),
-                            5.0e-6);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(osculatingState.getPosition(), computedOsculatingState.getPosition()),
+                                5.0e-6);
     }
 
     @Test

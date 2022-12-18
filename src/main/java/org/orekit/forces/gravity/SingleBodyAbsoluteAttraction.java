@@ -108,8 +108,8 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         // compute bodies separation vectors and squared norm
-        final Vector3D bodyPosition = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D satToBody     = bodyPosition.subtract(s.getPVCoordinates().getPosition());
+        final Vector3D bodyPosition = body.getPosition(s.getDate(), s.getFrame());
+        final Vector3D satToBody     = bodyPosition.subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
         // compute absolute acceleration
@@ -123,8 +123,8 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
                                                                          final T[] parameters) {
          // compute bodies separation vectors and squared norm
         final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
-                                                                   body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition());
-        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+                                                                   body.getPosition(s.getDate().toAbsoluteDate(), s.getFrame()));
+        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();
 
         // compute absolute acceleration

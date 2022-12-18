@@ -116,7 +116,7 @@ public class YawSteeringTest {
 
         // Get sun direction in satellite frame
         Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
-        Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
+        Vector3D sunEME2000 = sun.getPosition(date, FramesFactory.getEME2000());
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
 
         // Check sun is in (X, Z) plane

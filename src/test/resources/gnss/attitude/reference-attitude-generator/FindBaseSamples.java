@@ -256,7 +256,7 @@ public class FindBaseSamples {
         /** {@inheritDoc} */
         @Override
         public double g(final SpacecraftState s) {
-            final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+            final Vector3D pSun = sun.getPosition(s.getDate(), s.getFrame());
             final Vector3D mSat = s.getPVCoordinates().getMomentum();
             final double beta = 0.5 * FastMath.PI - Vector3D.angle(pSun, mSat);
             return beta - targetAngle;
@@ -300,7 +300,7 @@ public class FindBaseSamples {
         }
 
         private double beta(final SpacecraftState s) {
-            final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+            final Vector3D pSun = sun.getPosition(s.getDate(), s.getFrame());
             final Vector3D mSat = s.getPVCoordinates().getMomentum();
             return FastMath.toDegrees(0.5 * FastMath.PI - Vector3D.angle(pSun, mSat));
         }

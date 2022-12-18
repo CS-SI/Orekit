@@ -298,7 +298,7 @@ public class LofOffsetTest {
     private void checkSatVector(Orbit o, Attitude a, Vector3D satVector,
                                 double expectedX, double expectedY, double expectedZ,
                                 double threshold) {
-        Vector3D zLof = o.getPVCoordinates().getPosition().normalize().negate();
+        Vector3D zLof = o.getPosition().normalize().negate();
         Vector3D yLof = o.getPVCoordinates().getMomentum().normalize().negate();
         Vector3D xLof = Vector3D.crossProduct(yLof, zLof);
         Assertions.assertTrue(Vector3D.dotProduct(xLof, o.getPVCoordinates().getVelocity()) > 0);

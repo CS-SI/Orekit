@@ -168,8 +168,8 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                 CelestialBodyFactory.getSun(),
                                                                 CelestialBodyFactory.getMoon()));
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(raw.getPVCoordinates().getPosition(),
-                                              interpolated.getPVCoordinates().getPosition()),
+                            Vector3D.distance(raw.getPosition(),
+                                              interpolated.getPosition()),
                             2.0e-5); // threshold would be 1.2e-3 for 30 days propagation
 
     }
@@ -483,12 +483,12 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                       CelestialBodyFactory.getSun(),
                                                                       CelestialBodyFactory.getMoon()));
         Assertions.assertEquals(delta1,
-                            Vector3D.distance(noTides.getPVCoordinates().getPosition(),
-                                              solidTidesNoPoleTide.getPVCoordinates().getPosition()),
+                            Vector3D.distance(noTides.getPosition(),
+                                              solidTidesNoPoleTide.getPosition()),
                             0.01);
         Assertions.assertEquals(delta2,
-                            Vector3D.distance(solidTidesNoPoleTide.getPVCoordinates().getPosition(),
-                                              solidTidesPoleTide.getPVCoordinates().getPosition()),
+                            Vector3D.distance(solidTidesNoPoleTide.getPosition(),
+                                              solidTidesPoleTide.getPosition()),
                             0.01);
 
     }

@@ -574,8 +574,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         propagator2.setAttitudeProvider(law);
         propagator2.addForceModel(maneuver);
         final SpacecraftState recoveredState = propagator2.propagate(orbit.getDate());
-        final Vector3D refPosition = initialState.getPVCoordinates().getPosition();
-        final Vector3D recoveredPosition = recoveredState.getPVCoordinates().getPosition();
+        final Vector3D refPosition = initialState.getPosition();
+        final Vector3D recoveredPosition = recoveredState.getPosition();
         Assertions.assertEquals(0.0, Vector3D.distance(refPosition, recoveredPosition), 1.1e-3);
         Assertions.assertEquals(initialState.getMass(), recoveredState.getMass(), 1.4e-8);
         Assertions.assertFalse(maneuver.isFiring(fireDate.shiftedBy(-1.0e-6)));
@@ -718,8 +718,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         propagator3.addForceModel(maneuverWithoutOverride);
         final SpacecraftState finalState3 = propagator3.propagate(finalState1.getDate());
         Assertions.assertEquals(345859.0,
-                           Vector3D.distance(finalState1.getPVCoordinates().getPosition(),
-                                             finalState3.getPVCoordinates().getPosition()),
+                           Vector3D.distance(finalState1.getPosition(),
+                                             finalState3.getPosition()),
                            1.0);
     }
 

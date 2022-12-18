@@ -113,7 +113,7 @@ public abstract class LibrationOrbit {
         final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
 
         // New PVCoordinates following the manifold
-        return new PVCoordinates(s.getPVCoordinates().getPosition()
+        return new PVCoordinates(s.getPosition()
                 .add(new Vector3D(eigenVector.getEntry(0), eigenVector
                         .getEntry(1), eigenVector.getEntry(2))
                             .scalarMultiply(epsilon)), s.getPVCoordinates()
@@ -140,7 +140,7 @@ public abstract class LibrationOrbit {
         final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(0).unitVector();
 
         // New PVCoordinates following the manifold
-        return new PVCoordinates(s.getPVCoordinates().getPosition()
+        return new PVCoordinates(s.getPosition()
                     .add(new Vector3D(eigenVector.getEntry(0), eigenVector
                         .getEntry(1), eigenVector.getEntry(2))
                             .scalarMultiply(epsilon)), s.getPVCoordinates()

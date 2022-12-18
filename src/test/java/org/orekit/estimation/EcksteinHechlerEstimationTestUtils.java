@@ -180,7 +180,7 @@ public class EcksteinHechlerEstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
         Assertions.assertEquals(iterations, estimator.getIterationsCount());
@@ -209,7 +209,7 @@ public class EcksteinHechlerEstimationTestUtils {
         }
 
         final double rms = FastMath.sqrt(sum / k);
-        final double deltaPos = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        final double deltaPos = Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition);
         final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
         Assertions.assertEquals(expectedRMS,
                             rms,
@@ -291,7 +291,7 @@ public class EcksteinHechlerEstimationTestUtils {
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated[k].getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
             final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
@@ -314,7 +314,7 @@ public class EcksteinHechlerEstimationTestUtils {
             }
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
             Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
             Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);

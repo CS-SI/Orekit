@@ -62,7 +62,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
      * @return the measurement error due to Troposphere (s)
      */
     private double timeErrorTroposphericModel(final GroundStation station, final SpacecraftState state) {
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
         final double elevation = station.getBaseFrame().getElevation(position,
@@ -96,7 +96,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         final T zero         = field.getZero();
 
         // elevation
-        final FieldVector3D<T> pos = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> pos = state.getPosition();
         final T elevation          = station.getBaseFrame().getElevation(pos,
                                                                          state.getFrame(),
                                                                          state.getDate());

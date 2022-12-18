@@ -286,7 +286,7 @@ public class FieldTLEPropagatorTest {
         Assertions.assertEquals(0, Vector3D.distance(finalGPS.getPosition(), fieldfinalGPS.getPosition().toVector3D()), 3.8e-9);
         Assertions.assertEquals(0, Vector3D.distance(finalGPS.getVelocity(), fieldfinalGPS.getVelocity().toVector3D()), 0.);
 
-        Assertions.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
+        Assertions.assertEquals(0, Vector3D.distance(finalISS.getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
         Assertions.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getVelocity(), fieldfinalISS.getPVCoordinates().getVelocity().toVector3D()), 0.);
 
     }

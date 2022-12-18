@@ -56,7 +56,7 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
         final double gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
 
         // Spacecraft Position
         final double rx = centralToBody.getX();
@@ -72,7 +72,7 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
 
 
         final Gradient                r2Central = centralToBodyFV.getNormSq();
-        final FieldVector3D<Gradient> satToBody = centralToBodyFV.subtract(s.getPVCoordinates().getPosition());
+        final FieldVector3D<Gradient> satToBody = centralToBodyFV.subtract(s.getPosition());
         final Gradient                r2Sat     = satToBody.getNormSq();
 
         return new FieldVector3D<>(gm, satToBody.scalarMultiply(r2Sat.multiply(r2Sat.sqrt()).reciprocal()),

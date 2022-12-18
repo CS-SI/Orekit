@@ -183,7 +183,7 @@ public class FieldOfViewDetectorTest {
         final Vector3D centerInert = toInert.applyTo(center);
         final Vector3D axis1Inert  = toInert.applyTo(axis1);
         final Vector3D axis2Inert  = toInert.applyTo(axis2);
-        final Vector3D direction   = target.getPosition().subtract(s.getPVCoordinates().getPosition()).normalize();
+        final Vector3D direction   = target.getPosition().subtract(s.getPosition()).normalize();
         return new double[] {
             dihedralAngle(centerInert, axis1Inert, direction),
             dihedralAngle(centerInert, axis2Inert, direction)

@@ -545,7 +545,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
+                    final FieldVector3D<T> position = currentState.getPosition();
                     final T r2         = position.getNormSq();
                     final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
                     yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
@@ -679,7 +679,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
         }
 
-        Arrays.fill(relTol, dP.divide(orbit.getPVCoordinates().getPosition().getNormSq().sqrt()).getReal());
+        Arrays.fill(relTol, dP.divide(orbit.getPosition().getNormSq().sqrt()).getReal());
 
         return new double[][] { absTol, relTol };
 
