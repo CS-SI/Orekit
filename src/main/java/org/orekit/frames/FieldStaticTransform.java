@@ -21,7 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
@@ -148,7 +147,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
      * @param <T> the type of the field elements
      * @return the newly created static transform that has the same effect as
      * applying {@code first}, then {@code second}.
-     * @see #of(AbsoluteDate, Vector3D, Rotation)
+     * @see #of(FieldAbsoluteDate, FieldVector3D, FieldRotation)
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> compose(final FieldAbsoluteDate<T> date,
                                                                                final FieldStaticTransform<T> first,
@@ -200,7 +199,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
      *                 the new frame.
      * @param <T> the type of the field elements
      * @return the newly created static transform.
-     * @see #of(AbsoluteDate, Vector3D, Rotation)
+     * @see #of(FieldAbsoluteDate, FieldVector3D, FieldRotation)
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> of(final FieldAbsoluteDate<T> date,
                                                                           final FieldRotation<T> rotation) {
@@ -216,7 +215,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
      *                    old frame.
      * @param <T> the type of the field elements
      * @return the newly created static transform.
-     * @see #of(AbsoluteDate, Vector3D, Rotation)
+     * @see #of(FieldAbsoluteDate, FieldVector3D, FieldRotation)
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> of(final FieldAbsoluteDate<T> date,
                                                                           final FieldVector3D<T> translation) {
@@ -235,9 +234,9 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
      *                    expressed in the new frame.
      * @param <T> the type of the field elements
      * @return the newly created static transform.
-     * @see #compose(AbsoluteDate, FieldStaticTransform, FieldStaticTransform)
-     * @see #of(AbsoluteDate, Rotation)
-     * @see #of(AbsoluteDate, Vector3D)
+     * @see #compose(FieldAbsoluteDate, FieldStaticTransform, FieldStaticTransform)
+     * @see #of(FieldAbsoluteDate, FieldRotation)
+     * @see #of(FieldAbsoluteDate, FieldVector3D)
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> of(final FieldAbsoluteDate<T> date,
                                                                           final FieldVector3D<T> translation,
