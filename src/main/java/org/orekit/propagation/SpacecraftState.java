@@ -388,7 +388,7 @@ public class SpacecraftState
      * @return a new instance, with the additional state added
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public SpacecraftState addAdditionalState(final String name, final double... value) {
         final DoubleArrayDictionary newDict = new DoubleArrayDictionary(additional);
@@ -724,7 +724,7 @@ public class SpacecraftState
      * @return true if the additional state is available
      * @see #addAdditionalState(String, double[])
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public boolean hasAdditionalState(final String name) {
         return additional.getEntry(name) != null;
@@ -807,7 +807,7 @@ public class SpacecraftState
      * @return value of the additional state
      * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public double[] getAdditionalState(final String name) {
         final DoubleArrayDictionary.Entry entry = additional.getEntry(name);

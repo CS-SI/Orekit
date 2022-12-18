@@ -465,7 +465,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return a new instance, with the additional state added
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     @SafeVarargs
     public final FieldSpacecraftState<T> addAdditionalState(final String name, final T... value) {
@@ -866,7 +866,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return true if the additional state is available
      * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public boolean hasAdditionalState(final String name) {
         return additional.getEntry(name) != null;
@@ -948,7 +948,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return value of the additional state
           * @see #addAdditionalState(String, CalculusFieldElement...)
      * @see #hasAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public T[] getAdditionalState(final String name) {
         final FieldArrayDictionary<T>.Entry entry = additional.getEntry(name);

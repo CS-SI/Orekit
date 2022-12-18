@@ -86,7 +86,7 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
      * }</pre>
      * <p>
      * The default implementation returns {@code false}, meaning that derivative data can be
-     * {@link #derivatives(FieldSpacecraftState) computed} immediately.
+     * {@link #combinedDerivatives(FieldSpacecraftState) computed} immediately.
      * </p>
      * @param state state to handle
      * @return true if this provider should yield so another provider has an opportunity to add missing parts

@@ -135,7 +135,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
     /** Kalman process model constructor (package private).
      * This constructor is used whenever state type and propagation type do not matter.
-     * It is used for {@link KalmanModel} and {@link TLEKalmanModel}.
+     * It is used for {@link KalmanModel}.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
@@ -153,7 +153,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
     /** Kalman process model constructor (package private).
      * This constructor is used whenever propagation type and/or state type are to be specified.
-     * It is used for {@link DSSTKalmanModel}.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate

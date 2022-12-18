@@ -37,7 +37,6 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @author Thomas Paulet
  * @since 11.0
- * @see org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations
  * @see org.orekit.propagation.analytical.tle.TLEPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator

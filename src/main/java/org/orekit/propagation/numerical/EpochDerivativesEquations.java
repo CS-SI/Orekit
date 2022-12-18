@@ -33,9 +33,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** This class is a copy of {@link AbsolutePartialDerivativesEquations}
- *  The computation of the derivatives of the acceleration due to a ThirdBodyAttraction
- *  has been added.
+/** Computes derivatives of the acceleration, including ThirdBodyAttraction.
  *
  * {@link AdditionalDerivativesProvider Provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -91,7 +89,7 @@ public class EpochDerivativesEquations
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * NumericalPropagator#addAdditionalDerivativesProvider(AdditionalDerivativesProvider)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
      * @param name name of the partial derivatives equations

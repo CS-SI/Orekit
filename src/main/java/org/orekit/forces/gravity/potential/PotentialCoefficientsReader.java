@@ -343,7 +343,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
-     * @see #getConstantProvider(boolean, int, int)
      * @since 6.0
      */
     public abstract RawSphericalHarmonicsProvider getProvider(boolean wantNormalized, int degree, int order);

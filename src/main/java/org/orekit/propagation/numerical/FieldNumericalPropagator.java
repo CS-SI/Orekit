@@ -74,9 +74,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalEquations additional equations}
+ *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalDerivativesProvider additional derivatives providers}
  *   should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.FieldAdditionalEquations)}),
+ *   ({@link #addAdditionalDerivativesProvider(org.orekit.propagation.integration.FieldAdditionalDerivativesProvider)}),
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>

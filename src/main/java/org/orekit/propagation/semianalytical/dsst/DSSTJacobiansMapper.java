@@ -41,7 +41,6 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
- * @see org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations
  * @see org.orekit.propagation.semianalytical.dsst.DSSTPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
