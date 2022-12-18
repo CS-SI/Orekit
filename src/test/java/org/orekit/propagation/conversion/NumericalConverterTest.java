@@ -231,10 +231,6 @@ public class NumericalConverterTest {
                 return 1;
             }
 
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
@@ -249,10 +245,6 @@ public class NumericalConverterTest {
 
             public int getDimension() {
                 return 1;
-            }
-
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
             }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {

@@ -99,13 +99,6 @@ class DSSTIntegrableJacobianColumnGenerator
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
         return new CombinedDerivatives(pDot, null);
     }

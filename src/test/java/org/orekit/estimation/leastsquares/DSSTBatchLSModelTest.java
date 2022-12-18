@@ -89,7 +89,7 @@ public class DSSTBatchLSModelTest {
                 Assertions.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
+        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
 
@@ -150,7 +150,7 @@ public class DSSTBatchLSModelTest {
                 // Do nothing here
             }
         };
-        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
+        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
         // Test forward propagation flag to false
         Assertions.assertEquals(false, model.isForwardPropagation());
     }

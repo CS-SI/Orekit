@@ -16,6 +16,11 @@
  */
 package org.orekit.propagation.events;
 
+import java.lang.reflect.Array;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -40,6 +45,7 @@ import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -47,11 +53,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
-
-import java.lang.reflect.Array;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 public class FieldDateDetectorTest {
 
@@ -115,7 +116,9 @@ public class FieldDateDetectorTest {
         propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
             public String getName()                              { return "dummy"; }
             public int    getDimension()                         { return 1; }
-            public T[]    derivatives(FieldSpacecraftState<T> s) { return MathArrays.buildArray(field, 1); }
+            public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
+                return new FieldCombinedDerivatives<>(MathArrays.buildArray(field, 1), null);
+                }
         });
         propagator.getMultiplexer().add(interpolator -> {
             FieldSpacecraftState<T> prev = interpolator.getPreviousState();

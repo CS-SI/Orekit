@@ -133,7 +133,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
                                    withMaxCheck(zero.newInstance(ECLIPSE_MAX_CHECK)).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((FieldSpacecraftState<T> state, FieldEclipseDetector<T> detector, boolean increasing) ->
-                                               Action.RESET_DERIVATIVES);
+                                                Action.RESET_DERIVATIVES);
         }
         return Stream.of(detectors);
     }

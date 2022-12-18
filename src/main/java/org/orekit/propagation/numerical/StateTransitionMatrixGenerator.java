@@ -164,13 +164,6 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
     }
 
     /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
-    }
-
-    /** {@inheritDoc} */
     public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         // Assuming position is (px, py, pz), velocity is (vx, vy, vz) and the acceleration

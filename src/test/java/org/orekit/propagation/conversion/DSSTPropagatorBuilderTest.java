@@ -227,13 +227,6 @@ public class DSSTPropagatorBuilderTest {
                 return 1;
             }
 
-            /** {@inheritDoc} */
-            @Override
-            @Deprecated
-            public double[] derivatives(final SpacecraftState state) {
-                return combinedDerivatives(state).getAdditionalDerivatives();
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
@@ -248,13 +241,6 @@ public class DSSTPropagatorBuilderTest {
 
             public int getDimension() {
                 return 1;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            @Deprecated
-            public double[] derivatives(final SpacecraftState state) {
-                return combinedDerivatives(state).getAdditionalDerivatives();
             }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {

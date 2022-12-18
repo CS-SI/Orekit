@@ -228,12 +228,6 @@ public class AdditionalDerivativesProvidersTest {
         }
 
         @Override
-        @Deprecated
-        public double[] derivatives(final SpacecraftState state) {
-            return combinedDerivatives(state).getAdditionalDerivatives();
-        }
-
-        @Override
         public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
             return new CombinedDerivatives(new double[] { rate }, null);
         }
@@ -264,12 +258,6 @@ public class AdditionalDerivativesProvidersTest {
             this.dependency = dependency;
             this.name       = name;
             this.rate       = rate;
-        }
-
-        @Override
-        @Deprecated
-        public double[] derivatives(final SpacecraftState state) {
-            return combinedDerivatives(state).getAdditionalDerivatives();
         }
 
         @Override
@@ -311,12 +299,6 @@ public class AdditionalDerivativesProvidersTest {
             this.secondaryInit = secondaryInit;
             this.secondaryRate = secondaryRate;
             this.smaRate       = smaRate;
-        }
-
-        @Override
-        @Deprecated
-        public double[] derivatives(final SpacecraftState state) {
-            return combinedDerivatives(state).getAdditionalDerivatives();
         }
 
         @Override

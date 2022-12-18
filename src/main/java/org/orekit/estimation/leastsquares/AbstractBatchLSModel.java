@@ -41,7 +41,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -124,25 +123,6 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
     /** Model function Jacobian. */
     private RealMatrix jacobian;
-
-    /**
-     * Constructor.
-     * @param propagatorBuilders builders to use for propagation
-     * @param measurements measurements
-     * @param estimatedMeasurementsParameters estimated measurements parameters
-     * @param harvesters harvesters for matrices (ignored since 11.1)
-     * @param observer observer to be notified at model calls
-     * @deprecated as of 11.1, replaced by [@link #AbstractBatchLSModel(OrbitDeterminationPropagatorBuilder[],
-     * List, ParameterDriversList, ModelObserver)}
-     */
-    @Deprecated
-    public AbstractBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final MatricesHarvester[] harvesters,
-                                final ModelObserver observer) {
-        this(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
-    }
 
     /**
      * Constructor.
@@ -266,19 +246,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param propagator {@link Propagator} to configure
      * @return harvester harvester to retrive the State Transition Matrix and Jacobian Matrix
      */
-    protected MatricesHarvester configureHarvester(final Propagator propagator) {
-        // FIXME: this default implementation is only intended for version 11.1 to delegate to a deprecated method
-        // it should be removed in 12.0 when configureDerivatives is removed
-        return configureDerivatives(propagator);
-    }
-
-    /** Configure the propagator to compute derivatives.
-     * @param propagators {@link Propagator} to configure
-     * @return mapper for this propagator
-     * @deprecated as of 11.1, replaced by {@link #configureHarvester(Propagator)}
-     */
-    @Deprecated
-    protected abstract AbstractJacobiansMapper configureDerivatives(Propagator propagators);
+    protected abstract MatricesHarvester configureHarvester(Propagator propagator);
 
     /** Configure the current estimated orbits.
      * <p>

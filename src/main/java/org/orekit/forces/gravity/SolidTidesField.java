@@ -168,13 +168,6 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double getOffset(final AbsoluteDate date) {
-        return date.durationFrom(getReferenceDate());
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public TideSystem getTideSystem() {
         // not really used here, but for consistency we can state that either
         // we add the permanent tide or it was already in the central attraction

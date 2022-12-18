@@ -171,15 +171,6 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
     }
 
-    /** Compute the derivatives of the short period terms related to the additional state parameters.
-     * @param s Current state information: date, kinematics, attitude, and additional state
-     * @deprecated as of 11.1, replaced by {@link #setReferenceState(SpacecraftState)}
-     */
-    @Deprecated
-    public void setShortPeriodJacobians(final SpacecraftState s) {
-        setReferenceState(s);
-    }
-
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override

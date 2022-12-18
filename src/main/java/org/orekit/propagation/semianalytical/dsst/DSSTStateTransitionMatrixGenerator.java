@@ -153,13 +153,6 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     }
 
     /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
-    }
-
-    /** {@inheritDoc} */
     public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         final double[] p = state.getAdditionalState(getName());

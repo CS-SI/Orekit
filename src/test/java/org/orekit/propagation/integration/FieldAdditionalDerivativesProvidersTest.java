@@ -259,12 +259,6 @@ public class FieldAdditionalDerivativesProvidersTest {
         }
 
         @Override
-        @Deprecated
-        public T[] derivatives(final FieldSpacecraftState<T> state) {
-            return combinedDerivatives(state).getAdditionalDerivatives();
-        }
-
-        @Override
         public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
             final T[] pDot = MathArrays.buildArray(s.getDate().getField(), 1);
             pDot[0] = s.getDate().getField().getZero().newInstance(rate);
@@ -297,12 +291,6 @@ public class FieldAdditionalDerivativesProvidersTest {
             this.dependency = dependency;
             this.name       = name;
             this.rate       = rate;
-        }
-
-        @Override
-        @Deprecated
-        public T[] derivatives(final FieldSpacecraftState<T> state) {
-            return combinedDerivatives(state).getAdditionalDerivatives();
         }
 
         @Override
@@ -348,12 +336,6 @@ public class FieldAdditionalDerivativesProvidersTest {
             this.secondaryInit = secondaryInit;
             this.secondaryRate = secondaryRate;
             this.smaRate       = smaRate;
-        }
-
-        @Override
-        @Deprecated
-        public T[] derivatives(final FieldSpacecraftState<T> state) {
-            return combinedDerivatives(state).getAdditionalDerivatives();
         }
 
         @Override
