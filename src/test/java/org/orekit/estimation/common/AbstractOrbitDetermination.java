@@ -275,12 +275,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     /** Set solar radiation pressure force model.
      * @param propagatorBuilder propagator builder
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param body central body (for shadow computation)
      * @param spacecraft spacecraft model
      * @return drivers for the force model
      */
     protected abstract List<ParameterDriver> setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
-                                                                       double equatorialRadius, RadiationSensitive spacecraft);
+                                                                       OneAxisEllipsoid body, RadiationSensitive spacecraft);
 
     /** Set Earth's albedo and infrared force model.
      * @param propagatorBuilder propagator builder
@@ -1088,7 +1088,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final double  area        = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
             final boolean cREstimated = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
             final List<ParameterDriver> drivers = setSolarRadiationPressure(propagatorBuilder, CelestialBodyFactory.getSun(),
-                                                                            body.getEquatorialRadius(),
+                                                                            body,
                                                                             new IsotropicRadiationSingleCoefficient(area, cr));
             if (cREstimated) {
                 for (final ParameterDriver driver : drivers) {

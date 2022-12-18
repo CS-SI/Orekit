@@ -189,11 +189,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngle.TRUE,
-                                         CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(),
-                                         date, Constants.JPL_SSD_SUN_GM);
+                                         FramesFactory.getICRF(), date, Constants.JPL_SSD_SUN_GM);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
-            new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
+            new SolarRadiationPressure(sun, new OneAxisEllipsoid(1.0e-10, 0.0, FramesFactory.getICRF()),
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
         Assertions.assertFalse(srp.dependsOnPositionOnly());
 
@@ -221,7 +220,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                 new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
             SolarRadiationPressure SRP =
-                new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
+                new SolarRadiationPressure(sun, earth,
                                            new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
 
             double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
@@ -276,7 +275,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationSingleCoefficient(2.5, 0.7));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -301,7 +303,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
@@ -325,7 +330,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
@@ -394,7 +402,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
@@ -418,7 +429,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
@@ -447,7 +461,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -478,7 +495,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationCNES95Convention(2.5, 0.7, 0.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -500,7 +520,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
@@ -521,7 +544,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
@@ -552,7 +578,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                                           Vector3D.PLUS_J, 1.2, 0.7, 0.2));
         propagator.addForceModel(forceModel);
@@ -583,8 +612,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure SRP =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
+            new SolarRadiationPressure(sun, earth, new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
 
         // creation of the propagator
         double[] absTolerance = {
@@ -691,8 +719,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure forceModel =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
+            new SolarRadiationPressure(sun, earth, new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
@@ -758,8 +785,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure forceModel =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
+            new SolarRadiationPressure(sun, earth, new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
 
         FNP.addForceModel(forceModel);
         //NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
@@ -798,7 +824,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 720.0, 1.0, 0, 531, 0, 0);
+        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0);
     }
 
     @Test
@@ -808,7 +834,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 1200.0, 1.0, 559, 1004, 0, 0);
+        doTestMoonEarth(orbit, 1200.0, 1.0, 534, 1003, 0, 0);
     }
 
     private void doTestMoonEarth(Orbit orbit, double duration, double step,
@@ -822,7 +848,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // Create SRP perturbation with Moon and Earth
         SolarRadiationPressure srp =
-            new SolarRadiationPressure(sun, Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+            new SolarRadiationPressure(sun,
+                                       new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
         srp.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
 
@@ -963,7 +992,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 531, 0, 0);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0);
     }
 
     @Test
@@ -976,7 +1005,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(1200.0), field.getZero().newInstance(1.0), 559, 1004, 0, 0);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(1200.0), field.getZero().newInstance(1.0), 534, 1003, 0, 0);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldMoonEarth(FieldOrbit<T> orbit, T duration, T step,
@@ -991,7 +1020,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // Create SRP perturbation with Moon and Earth
         SolarRadiationPressure srp =
-            new SolarRadiationPressure(sun, Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+            new SolarRadiationPressure(sun,
+                                       new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
         srp.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
 

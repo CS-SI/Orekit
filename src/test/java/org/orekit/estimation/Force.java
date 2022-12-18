@@ -54,8 +54,7 @@ public enum Force {
 
     SOLAR_RADIATION_PRESSURE() {
         public ForceModel getForceModel(Context context) {
-            return new SolarRadiationPressure(context.sun, context.earth.getEquatorialRadius(),
-                                              context.radiationSensitive);
+            return new SolarRadiationPressure(context.sun, context.earth,context.radiationSensitive);
         }
     },
 

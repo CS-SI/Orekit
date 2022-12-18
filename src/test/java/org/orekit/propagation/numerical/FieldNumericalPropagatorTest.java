@@ -1881,8 +1881,7 @@ public class FieldNumericalPropagatorTest {
         np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
         // solar radiation pressure
-        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                    earth.getEquatorialRadius(),
+        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
 
         return np;

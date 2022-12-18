@@ -24,10 +24,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -76,26 +74,6 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     /** Spacecraft. */
     private final RadiationSensitive spacecraft;
-
-    /** Simple constructor with default reference values.
-     * <p>When this constructor is used, the reference values are:</p>
-     * <ul>
-     *   <li>d<sub>ref</sub> = 149597870000.0 m</li>
-     *   <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m²</li>
-     * </ul>
-     * @param sun Sun model
-     * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
-     * @param spacecraft the object physical and geometrical information
-     * @since 9.2
-     * @deprecated as of 12.0, replaced by {@link #SolarRadiationPressure(ExtendedPVCoordinatesProvider,
-     * OneAxisEllipsoid, RadiationSensitive)}
-     */
-    @Deprecated
-    @DefaultDataContext
-    public SolarRadiationPressure(final ExtendedPVCoordinatesProvider sun, final double equatorialRadius,
-                                  final RadiationSensitive spacecraft) {
-        this(D_REF, P_REF, sun, new OneAxisEllipsoid(equatorialRadius, 0.0, FramesFactory.getGCRF()), spacecraft);
-    }
 
     /** Simple constructor with default reference values.
      * <p>When this constructor is used, the reference values are:</p>
