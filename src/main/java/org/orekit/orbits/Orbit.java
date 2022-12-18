@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
@@ -76,6 +77,11 @@ public abstract class Orbit
 
     /** Value of mu used to compute position and velocity (m³/s²). */
     private final double mu;
+
+    /** Computed position.
+     * @since 12.0
+     */
+    private transient Vector3D position;
 
     /** Computed PVCoordinates. */
     private transient TimeStampedPVCoordinates pvCoordinates;
@@ -442,13 +448,39 @@ public abstract class Orbit
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position in the specified output frame
+     * @see #getPosition()
+     * @since 12.0
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        if (position == null) {
+            position = initPosition();
+        }
+
+        // If output frame requested is the same as definition frame,
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return position;
+        }
+
+        // Else, PV coordinates are transformed to output frame
+        final StaticTransform t = frame.getStaticTransformTo(outputFrame, date);
+        return t.transformPosition(position);
+
+    }
+
     /** Get the position in definition frame.
      * @return position in the definition frame
      * @see #getPVCoordinates()
      * @since 12.0
      */
     public Vector3D getPosition() {
-        return getPVCoordinates().getPosition();
+        if (position == null) {
+            position = initPosition();
+        }
+        return position;
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
@@ -458,9 +490,16 @@ public abstract class Orbit
     public TimeStampedPVCoordinates getPVCoordinates() {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
+            position      = pvCoordinates.getPosition();
         }
         return pvCoordinates;
     }
+
+    /** Compute the position coordinates from the canonical parameters.
+     * @return computed position coordinates
+     * @since 12.0
+     */
+    protected abstract Vector3D initPosition();
 
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates

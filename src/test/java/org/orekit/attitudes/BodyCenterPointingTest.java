@@ -508,7 +508,7 @@ public class BodyCenterPointingTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assertions.assertTrue(spin0.getNorm().getReal() > 1.0e-3);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-13);
+        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.1e-13);
 
     }
 

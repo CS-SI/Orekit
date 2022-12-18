@@ -480,8 +480,8 @@ public class EquinoctialOrbitTest {
         Vector3D positionOffset = p.getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm(), 7.5e-12);
+        Assertions.assertEquals(0, velocityOffset.getNorm(), 1.0e-15);
 
         // circular and equatorial orbit
         position = new Vector3D(33051.2, 26184.9, -1.3E-5);
@@ -493,8 +493,8 @@ public class EquinoctialOrbitTest {
         positionOffset = p.getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm(), 1.1e-11);
+        Assertions.assertEquals(0, velocityOffset.getNorm(), 1.0e-15);
     }
 
     @Test

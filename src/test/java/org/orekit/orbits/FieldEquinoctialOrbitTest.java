@@ -708,8 +708,8 @@ public class FieldEquinoctialOrbitTest {
         FieldVector3D<T> positionOffset = p.getPosition().subtract(position);
         FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 7.5e-12);
+        Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
 
         // circular and equatorial orbit
         position = new FieldVector3D<>(zero.add(33051.2), zero.add(26184.9), zero.add(-1.3E-5));
@@ -721,8 +721,8 @@ public class FieldEquinoctialOrbitTest {
         positionOffset = p.getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 1.1e-11);
+        Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNonInertialFrame(Field<T> field) throws IllegalArgumentException {

@@ -1008,7 +1008,7 @@ public class SpacecraftState
      * @see #getPVCoordinates()
      */
     public Vector3D getPosition() {
-        return getPVCoordinates().getPosition();
+        return (absPva == null) ? orbit.getPosition() : absPva.getPosition();
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
@@ -1032,7 +1032,7 @@ public class SpacecraftState
      * @see #getPVCoordinates(Frame)
      */
     public Vector3D getPosition(final Frame outputFrame) {
-        return getPVCoordinates(outputFrame).getPosition();
+        return (absPva == null) ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in given output frame.

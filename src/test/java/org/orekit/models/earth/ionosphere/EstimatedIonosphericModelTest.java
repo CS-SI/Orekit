@@ -276,7 +276,7 @@ public class EstimatedIonosphericModelTest {
         // Verify delay equality
         final double delayR = model.pathDelay(dsState.toSpacecraftState(), baseFrame, frequency, model.getParameters());
         final DerivativeStructure delayD = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field));
-        Assertions.assertEquals(delayR, delayD.getValue(), 1e-15);
+        Assertions.assertEquals(delayR, delayD.getValue(), 5e-15);
 
         // Compute Delay with state derivatives
         final DerivativeStructure delay = model.pathDelay(dsElevation, frequency, model.getParameters(field));

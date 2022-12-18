@@ -1149,7 +1149,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 12.0
      */
     public FieldVector3D<T> getPosition() {
-        return getPVCoordinates().getPosition();
+        return (absPva == null) ? orbit.getPosition() : absPva.getPosition();
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in orbit definition frame.
@@ -1173,7 +1173,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getPVCoordinates(Frame)
      */
     public FieldVector3D<T> getPosition(final Frame outputFrame) {
-        return getPVCoordinates(outputFrame).getPosition();
+        return (absPva == null) ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in given output frame.

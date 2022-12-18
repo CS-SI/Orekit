@@ -91,7 +91,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                 FieldVector3D.distance(initialOrbit.getPosition(),
                                        finalOrbit.getPosition()).getReal(),
-                            5.3e-9);
+                            5.8e-9);
 
         Assertions.assertEquals(0.0,
                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),

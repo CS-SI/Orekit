@@ -412,8 +412,8 @@ public class KeplerianOrbitTest {
         Vector3D positionOffset = p.getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assertions.assertEquals(0.0, positionOffset.getNorm(), 2.9e-9);
+        Assertions.assertEquals(0.0, velocityOffset.getNorm(), 1.0e-15);
 
         // circular and equatorial orbit
         position = new Vector3D(1742382., -2.440243e7, -0.014517);
@@ -425,8 +425,8 @@ public class KeplerianOrbitTest {
         positionOffset = p.getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assertions.assertEquals(0.0, positionOffset.getNorm(), 4.8e-9);
+        Assertions.assertEquals(0.0, velocityOffset.getNorm(), 1.0e-100);
 
     }
 

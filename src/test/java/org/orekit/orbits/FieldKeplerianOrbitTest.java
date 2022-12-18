@@ -680,8 +680,8 @@ public class FieldKeplerianOrbitTest {
         FieldVector3D<T> positionOffset = p.getPosition().subtract(position);
         FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-       Assertions.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
-       Assertions.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
+       Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 2.9e-9);
+       Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
 
         // circular and equatorial orbit
         position = new FieldVector3D<>(field.getZero().add(1742382.), field.getZero().add(-2.440243e7), field.getZero().add(-0.014517));
@@ -693,8 +693,8 @@ public class FieldKeplerianOrbitTest {
         positionOffset = p.getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-       Assertions.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
-       Assertions.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
+       Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 4.8e-9);
+       Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
 
     }
 

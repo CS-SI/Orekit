@@ -276,6 +276,24 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         return this;
     }
 
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position
+     * @see #getPVCoordinates(Frame)
+     * @since 12.0
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        // If output frame requested is the same as definition frame,
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return getPosition();
+        }
+
+        // Else, PV coordinates are transformed to output frame
+        final StaticTransform t = frame.getStaticTransformTo(outputFrame, getDate());
+        return t.transformPosition(getPosition());
+    }
+
     /** Get the TimeStampedPVCoordinates in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return TimeStampedPVCoordinates
