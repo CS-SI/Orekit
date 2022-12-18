@@ -136,14 +136,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     }
 
-    /** {@inheritDoc}
-     * @deprecated as of 11.1, not used anymore
-     */
-    @Deprecated
-    public void analyticalDerivatives(final SpacecraftState s) {
-        computeDerivatives(s);
-    }
-
     /** Compute analytical derivatives.
      * @param state current state
      * @since 11.1

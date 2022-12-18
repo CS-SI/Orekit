@@ -162,38 +162,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * <p>FieldAttitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
-     * @deprecated as of 11.1, replacezd by {@link #FieldSpacecraftState(FieldOrbit, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional) {
-        this(orbit, new FieldArrayDictionary<>(orbit.getDate().getField(), additional));
-    }
-
-    /** Build a spacecraft state from orbit and additional states.
-     * <p>FieldAttitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param orbit the orbit
-     * @param additional additional states
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldArrayDictionary<T> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
-    }
-
-    /** Build a spacecraft state from orbit attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #FieldSpacecraftState(FieldOrbit, FieldAttitude, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final Map<String, T[]> additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, new FieldArrayDictionary<>(orbit.getDate().getField(), additional));
     }
 
     /** Build a spacecraft state from orbit attitude and additional states.
@@ -215,37 +189,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #FieldSpacecraftState(FieldOrbit, CalculusFieldElement, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional) {
-        this(orbit, mass, new FieldArrayDictionary<>(orbit.getDate().getField(), additional));
-    }
-
-    /** Create a new instance from orbit, mass and additional states.
-     * <p>FieldAttitude law is set to an unspecified default attitude.</p>
-     * @param orbit the orbit
-     * @param mass the mass (kg)
-     * @param additional additional states
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final FieldArrayDictionary<T> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude, mass and additional states.
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @deprecated as of 11.1, replaced by {@link #FieldSpacecraftState(FieldOrbit, FieldAttitude, CalculusFieldElement, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude,
-                                final T mass, final Map<String, T[]> additional) {
-        this(orbit, attitude, mass, new FieldArrayDictionary<>(orbit.getDate().getField(), additional));
     }
 
     /** Build a spacecraft state from orbit, attitude, mass and additional states.
@@ -420,17 +369,6 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #FieldSpacecraftState(FieldAbsolutePVCoordinates, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final Map<String, T[]> additional) {
-        this(absPva, new FieldArrayDictionary<>(absPva.getDate().getField(), additional));
-    }
-
-    /** Build a spacecraft state from orbit only.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param absPva position-velocity-acceleration
-     * @param additional additional states
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldArrayDictionary<T> additional) {
@@ -438,22 +376,6 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
              new LofOffset(absPva.getFrame(),
                            LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
-    }
-
-    /** Build a spacecraft state from orbit and attitude.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #FieldSpacecraftState(FieldAbsolutePVCoordinates, FieldAttitude, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
-                                final Map<String, T[]> additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, new FieldArrayDictionary<>(absPva.getDate().getField(), additional));
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -476,18 +398,6 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #FieldSpacecraftState(FieldAbsolutePVCoordinates, CalculusFieldElement, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass, final Map<String, T[]> additional) {
-        this(absPva, mass, new FieldArrayDictionary<>(absPva.getDate().getField(), additional));
-    }
-
-    /** Create a new instance from orbit and mass.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param absPva position-velocity-acceleration
-     * @param mass the mass (kg)
-     * @param additional additional states
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass, final FieldArrayDictionary<T> additional) {
@@ -495,19 +405,6 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
              new LofOffset(absPva.getFrame(),
                            LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude and mass.
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @deprecated as of 11.1, replaced by {@link #FieldSpacecraftState(FieldAbsolutePVCoordinates, FieldAttitude, CalculusFieldElement, FieldArrayDictionary)}
-     */
-    @Deprecated
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
-                           final T mass, final Map<String, T[]> additional) {
-        this(absPva, attitude, mass, new FieldArrayDictionary<>(absPva.getDate().getField(), additional));
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -1075,18 +972,6 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
         }
         return entry.getValue();
-    }
-
-    /** Get an unmodifiable map of additional states.
-     * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, CalculusFieldElement...)
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalState(String)
-     * @deprecated as of 11.1, replaced by {@link #getAdditionalStatesValues()}
-     */
-    @Deprecated
-    public Map<String, T[]> getAdditionalStates() {
-        return getAdditionalStatesValues().toMap();
     }
 
     /** Get an unmodifiable map of additional states.

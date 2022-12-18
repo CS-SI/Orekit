@@ -171,16 +171,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return {@link PropagationType MEAN} if only mean elements have to be used or
-     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
-     * @deprecated as of 11.1, replaced by {@link #getPropagationType()}
-     */
-    @Deprecated
-    protected PropagationType isMeanOrbit() {
-        return getPropagationType();
-    }
-
     /** Get the propagation type.
      * @return propagation type.
      * @since 11.1
@@ -266,15 +256,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             managed[i + alreadyIntegrated.length] = additionalDerivativesProviders.get(i).getName();
         }
         return managed;
-    }
-
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final AdditionalEquations additional) {
-        addAdditionalDerivativesProvider(new AdditionalEquationsAdapter(additional, this::getInitialState));
     }
 
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.

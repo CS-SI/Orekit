@@ -39,7 +39,6 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -367,15 +366,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     protected abstract void updateReferenceTrajectories(Propagator[] propagators,
                                                         PropagationType pType,
                                                         PropagationType sType);
-
-    /** Not used anymore.
-     * @param mapper Jacobian mapper to calculate short period perturbations
-     * @param state state used to calculate short period perturbations
-     * @deprecated as of 11.1, not used anymore
-     */
-    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
-        // nothing by default
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -1036,24 +1026,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      */
     public void setReferenceTrajectories(final Propagator[] referenceTrajectories) {
         this.referenceTrajectories = referenceTrajectories.clone();
-    }
-
-    /** Getter for the jacobian mappers.
-     * @return the jacobian mappers
-     * @deprecated as of 11.1, not used anymore
-     */
-    @Deprecated
-    public AbstractJacobiansMapper[] getMappers() {
-        return null;
-    }
-
-    /** Setter for the jacobian mappers.
-     * @param mappers the jacobian mappers to set
-     * @deprecated as of 11.1, replaced by {@link #setHarvesters(MatricesHarvester[])}
-     */
-    @Deprecated
-    public void setMappers(final AbstractJacobiansMapper[] mappers) {
-        setHarvesters(mappers);
     }
 
     /** Setter for the jacobian harvesters.

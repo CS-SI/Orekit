@@ -106,7 +106,6 @@ public class DSSTStateTransitionMatrixGeneratorTest {
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
-            public double[] derivatives(final SpacecraftState state) { return null; }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[1], null);
             }

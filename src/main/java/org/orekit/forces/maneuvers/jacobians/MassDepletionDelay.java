@@ -80,13 +80,6 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         // retrieve current Jacobian column

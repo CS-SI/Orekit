@@ -699,10 +699,6 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
@@ -717,10 +713,6 @@ public class NumericalPropagatorTest {
 
                 public int getDimension() {
                     return 1;
-                }
-
-                public double[] derivatives(final SpacecraftState state) {
-                    return null;
                 }
 
                 public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -740,10 +732,6 @@ public class NumericalPropagatorTest {
 
                public int getDimension() {
                    return 1;
-               }
-
-               public double[] derivatives(final SpacecraftState state) {
-                   return null;
                }
 
                public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -816,10 +804,6 @@ public class NumericalPropagatorTest {
 
             public int getDimension() {
                 return 1;
-            }
-
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
             }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -959,9 +943,6 @@ public class NumericalPropagatorTest {
             }
             public int getDimension() {
                 return 1;
-            }
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
             }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { rate }, null);
@@ -1597,12 +1578,6 @@ public class NumericalPropagatorTest {
         public EmptyDerivativeProvider(String name, double[] state) {
             this.name = name;
             this.state = state;
-        }
-
-        @Override
-        @Deprecated
-        public double[] derivatives(final SpacecraftState state) {
-            return null;
         }
 
         @Override

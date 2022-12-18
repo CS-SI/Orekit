@@ -772,10 +772,6 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             return null;
         }
 
-        public double getOffset(AbsoluteDate date) {
-            return 0;
-        }
-
         public TideSystem getTideSystem() {
             return TideSystem.UNKNOWN;
         }

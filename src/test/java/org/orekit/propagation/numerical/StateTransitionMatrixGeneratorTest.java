@@ -142,10 +142,9 @@ public class StateTransitionMatrixGeneratorTest {
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
-            public double[] derivatives(SpacecraftState s) { return null; }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[1], null);
-                }
+            }
         });
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
         propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,

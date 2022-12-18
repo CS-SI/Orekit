@@ -263,15 +263,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return managed;
     }
 
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(FieldAdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final FieldAdditionalEquations<T> additional) {
-        addAdditionalDerivativesProvider(new FieldAdditionalEquationsAdapter<>(additional, this::getInitialState));
-    }
-
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
      * @see #addAdditionalStateProvider(org.orekit.propagation.FieldAdditionalStateProvider)

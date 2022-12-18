@@ -16,12 +16,9 @@
  */
 package org.orekit.utils;
 
-import java.util.NavigableSet;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 
 /** Container for objects that apply to spans of time.
@@ -101,20 +98,6 @@ public class TimeSpanMap<T> {
 
     /** Add an entry valid before a limit date.
      * <p>
-     * Calling this method is equivalent to call {@link #addValidAfter(Object,
-     * AbsoluteDate, boolean) addValidAfter(entry, latestValidityDate, false)}.
-     * </p>
-     * @param entry entry to add
-     * @param latestValidityDate date before which the entry is valid
-     * @deprecated as of 11.1, replaced by {@link #addValidBefore(Object, AbsoluteDate, boolean)}
-     */
-    @Deprecated
-    public void addValidBefore(final T entry, final AbsoluteDate latestValidityDate) {
-        addValidBefore(entry, latestValidityDate, false);
-    }
-
-    /** Add an entry valid before a limit date.
-     * <p>
      * As an entry is valid, it truncates or overrides the validity of the neighboring
      * entries already present in the map.
      * </p>
@@ -188,20 +171,6 @@ public class TimeSpanMap<T> {
 
         return span;
 
-    }
-
-    /** Add an entry valid after a limit date.
-     * <p>
-     * Calling this method is equivalent to call {@link #addValidAfter(Object,
-     * AbsoluteDate, boolean) addValidAfter(entry, earliestValidityDate, false)}.
-     * </p>
-     * @param entry entry to add
-     * @param earliestValidityDate date after which the entry is valid
-     * @deprecated as of 11.1, replaced by {@link #addValidAfter(Object, AbsoluteDate, boolean)}
-     */
-    @Deprecated
-    public void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate) {
-        addValidAfter(entry, earliestValidityDate, false);
     }
 
     /** Add an entry valid after a limit date.
@@ -489,20 +458,6 @@ public class TimeSpanMap<T> {
 
         return range;
 
-    }
-
-    /** Get copy of the sorted transitions.
-     * @return copy of the sorted transitions
-     * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}, {@link #getLastSpan()},
-     * {@link #getFirstTransition()}, {@link #getLastTransition()}, and {@link #getSpansNumber()}
-     */
-    @Deprecated
-    public synchronized NavigableSet<Transition<T>> getTransitions() {
-        final NavigableSet<Transition<T>> set = new TreeSet<>(new ChronologicalComparator());
-        for (Transition<T> transition = getFirstTransition(); transition != null; transition = transition.next()) {
-            set.add(transition);
-        }
-        return set;
     }
 
     /**

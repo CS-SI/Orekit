@@ -16,13 +16,15 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -44,7 +46,6 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
@@ -58,9 +59,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.List;
-import java.util.Map;
 
 public class TropoModifierTest {
 
@@ -840,17 +838,6 @@ public class TropoModifierTest {
             // TODO: check threshold
             Assertions.assertEquals(0.0, diffEl, 1.0e-3);
         }
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        // dummy test, just to ensure coverage for deprecated class
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        TroposphericGradientConverter tgc =
-                        new TroposphericGradientConverter(new SpacecraftState(context.initialOrbit), 6,
-                                                         new InertialProvider(FramesFactory.getEME2000()));
-        Assertions.assertEquals(6, tgc.getFreeStateParameters());
     }
 
 }

@@ -156,21 +156,6 @@ public class GravityFieldFactoryTest {
         });
     }
 
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        Utils.setDataRoot("potential/icgem-format");
-        UnnormalizedSphericalHarmonicsProvider ref =
-                GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        NormalizedSphericalHarmonicsProvider normalized =
-                GravityFieldFactory.getNormalizedProvider(5, 5);
-        UnnormalizedSphericalHarmonicsProvider unnormalized =
-                GravityFieldFactory.getUnnormalizedProvider(normalized);
-        Assertions.assertEquals(ref.getOffset(AbsoluteDate.GPS_EPOCH),
-                            unnormalized.getOffset(AbsoluteDate.GPS_EPOCH),
-                            FastMath.ulp(ref.getOffset(AbsoluteDate.GPS_EPOCH)));
-    }
-
     @Test
     public void testUnnormalizer() throws OrekitException {
         Utils.setDataRoot("potential/icgem-format");

@@ -20,11 +20,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -89,20 +87,6 @@ public abstract class LibrationOrbit {
         final CR3BPDifferentialCorrection diff = new CR3BPDifferentialCorrection(initialPV, syst, orbitalPeriod);
         initialPV = applyCorrectionOnPV(diff);
         orbitalPeriod = diff.getOrbitalPeriod();
-    }
-
-    /** Apply differential correction.
-     * <p>
-     * This will update {@link #initialPV} and
-     * {@link #orbitalPeriod} parameters.
-     * </p>
-     * @param attitudeProvider the attitude law for the numerocal propagator
-     * @param utc UTC time scale
-     * @deprecated as of 11.1, replaced by {@link #applyDifferentialCorrection()}
-     */
-    @Deprecated
-    public void applyDifferentialCorrection(final AttitudeProvider attitudeProvider, final TimeScale utc) {
-        applyDifferentialCorrection();
     }
 
     /** Return a manifold direction from one position on a libration Orbit.

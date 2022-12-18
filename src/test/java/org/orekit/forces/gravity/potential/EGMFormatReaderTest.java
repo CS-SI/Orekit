@@ -74,17 +74,6 @@ public class EGMFormatReaderTest {
     }
 
     @Test
-    @Deprecated
-    public void testDeprecated() throws OrekitException {
-        Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
-        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        Assertions.assertNull(provider.getReferenceDate());
-        Assertions.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
-        Assertions.assertEquals(0, provider.getOffset(AbsoluteDate.MODIFIED_JULIAN_EPOCH), Precision.SAFE_MIN);
-    }
-
-    @Test
     public void testReadLimits() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));

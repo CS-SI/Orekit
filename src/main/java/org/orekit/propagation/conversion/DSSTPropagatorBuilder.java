@@ -28,6 +28,7 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.AbstractKalmanModel;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -228,7 +229,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("deprecation")
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -257,11 +257,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
             propagator.addAdditionalDerivativesProvider(provider);
         }
 
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
-            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
-        }
-
         return propagator;
 
     }
@@ -276,22 +271,17 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                     measurements,
                                     estimatedMeasurementsParameters,
                                     observer,
-                                    propagationType, stateType);
+                                    propagationType);
     }
 
     /** {@inheritDoc} */
     @Override
-    @SuppressWarnings("deprecation")
     public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                                 final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                                 final ParameterDriversList estimatedMeasurementsParameters,
                                                 final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        // FIXME: remove in 12.0 when DSSTKalmanModel is removed
-        return new org.orekit.estimation.sequential.DSSTKalmanModel(propagatorBuilders,
-                                                                    covarianceMatricesProviders,
-                                                                    estimatedMeasurementsParameters,
-                                                                    measurementProcessNoiseMatrix,
-                                                                    propagationType, stateType);
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
+                               estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
     /** Check if Newtonian attraction force model is available.
