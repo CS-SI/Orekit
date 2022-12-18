@@ -102,7 +102,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  */
 public class FieldTransform<T extends CalculusFieldElement<T>>
-    implements TimeStamped, TimeShiftable<FieldTransform<T>> {
+    implements TimeStamped, TimeShiftable<FieldTransform<T>>, FieldStaticTransform<T> {
 
     /** Date of the transform. */
     private final FieldAbsoluteDate<T> date;
