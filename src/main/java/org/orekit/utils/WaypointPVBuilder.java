@@ -298,6 +298,20 @@ public class WaypointPVBuilder {
         }
 
         @Override
+        public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+            final double d = date.durationFrom(t0);
+            final double fraction = d / duration;
+            final double phase = fraction * phaseLength;
+
+            final S2Point sp = new S2Point(circle.getPointAt(phase0 + phase));
+            final GeodeticPoint point = toGeodetic(sp, initialAltitude + d * altitudeSlope);
+            final Vector3D p = body.transform(point);
+
+            return body.getBodyFrame().getStaticTransformTo(frame, date).transformPosition(p);
+
+        }
+
+        @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             final double d = date.durationFrom(t0);
             final double fraction = d / duration;
@@ -367,6 +381,15 @@ public class WaypointPVBuilder {
         }
 
         @Override
+        public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+            final double fraction = date.durationFrom(t0) / duration;
+            final GeodeticPoint point = arc.calculatePointAlongArc(fraction);
+            final Vector3D p = arc.getBody().transform(point);
+
+            return arc.getBody().getBodyFrame().getStaticTransformTo(frame, date).transformPosition(p);
+        }
+
+        @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             final double fraction = date.durationFrom(t0) / duration;
             final GeodeticPoint point = arc.calculatePointAlongArc(fraction);
@@ -413,11 +436,19 @@ public class WaypointPVBuilder {
         }
 
         @Override
+        public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+            final double d = date.durationFrom(t0);
+            final Vector3D p = p0.add(vel.scalarMultiply(d));
+            return sourceFrame.getStaticTransformTo(frame, date).transformPosition(p);
+        }
+
+        @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             final double d = date.durationFrom(t0);
             final Vector3D p = p0.add(vel.scalarMultiply(d));
             final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, p, vel);
             return sourceFrame.getTransformTo(frame, date).transformPVCoordinates(pv);
         }
+
     }
 }

@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
@@ -246,6 +247,12 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      */
     public PVCoordinatesProvider toTaylorProvider() {
         return new PVCoordinatesProvider() {
+            /** {@inheritDoc} */
+            public Vector3D getPosition(final AbsoluteDate d,  final Frame f) {
+                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
+                final StaticTransform          transform = frame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
             /** {@inheritDoc} */
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
