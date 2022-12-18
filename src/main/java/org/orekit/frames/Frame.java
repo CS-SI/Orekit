@@ -311,11 +311,11 @@ public class Frame implements Serializable {
     public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransformTo(final Frame destination,
                                                                                             final FieldAbsoluteDate<T> date) {
         return getTransformTo(
-                destination,
-                FieldStaticTransform.getIdentity(date.getField()),
-                frame -> frame.getTransformProvider().getStaticTransform(date),
-                (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
-                FieldStaticTransform::getInverse);
+            destination,
+            FieldStaticTransform.getIdentity(date.getField()),
+            frame -> frame.getTransformProvider().getStaticTransform(date),
+            (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
+            FieldStaticTransform::getInverse);
     }
 
     /**
