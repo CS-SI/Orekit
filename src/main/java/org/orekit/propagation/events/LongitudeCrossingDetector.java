@@ -92,7 +92,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
         final RawLongitudeCrossingDetector raw = new RawLongitudeCrossingDetector(maxCheck, threshold, maxIter,
                                                                                   new ContinueOnEvent<>());
         final EnablingPredicate<RawLongitudeCrossingDetector> predicate =
-                        (state, detector, g) -> FastMath.abs(g) < 0.5 * FastMath.PI;
+            (state, detector, g) -> FastMath.abs(g) < 0.5 * FastMath.PI;
         this.filtering = new EventEnablingPredicateFilter<>(raw, predicate);
 
     }
