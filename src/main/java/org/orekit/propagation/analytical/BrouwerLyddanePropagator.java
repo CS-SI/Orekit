@@ -1282,18 +1282,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             // mean mean anomaly (with drag Eq. 2.38 of Phipps' 1992 thesis)
             final UnivariateDerivative2 dtM2  = dt.multiply(m2);
             final UnivariateDerivative2 dt2M2 = dt.multiply(dtM2);
-            final UnivariateDerivative2 lpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(),
-                                                                                               FastMath.PI),
+            final UnivariateDerivative2 lpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(), 0),
                                                                       lt * xnotDot + 2.0 * dtM2.getValue(),
                                                                       2.0 * m2);
             // mean argument of perigee
-            final UnivariateDerivative2 gpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(),
-                                                                                               FastMath.PI),
+            final UnivariateDerivative2 gpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(), 0),
                                                                       gt * xnotDot,
                                                                       0.0);
             // mean longitude of ascending node
-            final UnivariateDerivative2 hpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ht * xnot.getValue(),
-                                                                                               FastMath.PI),
+            final UnivariateDerivative2 hpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ht * xnot.getValue(), 0),
                                                                       ht * xnotDot,
                                                                       0.0);
 
