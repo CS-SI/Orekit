@@ -66,7 +66,7 @@ public class SpinStabilizedTest {
         checkField(Decimal64Field.getInstance(), bbq, kep, kep.getDate(), kep.getFrame());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Assertions.assertEquals(FastMath.atan(1.0 / 5000.0),
-                     Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
+                     Vector3D.angle(xDirection, sun.getPosition(date, FramesFactory.getEME2000())),
                      2.0e-15);
         Assertions.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
         Assertions.assertSame(cbp, bbq.getUnderlyingAttitudeProvider());

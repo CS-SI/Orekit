@@ -70,13 +70,6 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    @Override
-    public double getOffset(final AbsoluteDate date) {
-        return rawProvider.getOffset(date);
-    }
-
-    /** {@inheritDoc} */
     @Override
     public TideSystem getTideSystem() {
         return rawProvider.getTideSystem();

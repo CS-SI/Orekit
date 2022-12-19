@@ -73,8 +73,8 @@ public class BrouwerLyddanePropagatorTest {
 
         // positions velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                              finalOrbit.getPVCoordinates().getPosition()),
+                            Vector3D.distance(initialOrbit.getPosition(),
+                                              finalOrbit.getPosition()),
                             3.6e-9);
 
         Assertions.assertEquals(0.0,
@@ -610,8 +610,8 @@ public class BrouwerLyddanePropagatorTest {
 
         // Verify
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                              finalOrbit.getPVCoordinates().getPosition()),
+                            Vector3D.distance(initialOrbit.getPosition(),
+                                              finalOrbit.getPosition()),
                             1.9e-8);
 
         Assertions.assertEquals(0.0,

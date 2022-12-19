@@ -360,8 +360,8 @@ public class CelestialBodyFactoryTest {
 
     private double bodyDistance(CelestialBody body1, CelestialBody body2, AbsoluteDate date, Frame frame)
         {
-        Vector3D body1Position = body1.getPVCoordinates(date, frame).getPosition();
-        Vector3D body2Position = body2.getPVCoordinates(date, frame).getPosition();
+        Vector3D body1Position = body1.getPosition(date, frame);
+        Vector3D body2Position = body2.getPosition(date, frame);
         Vector3D bodyPositionDifference = body1Position.subtract(body2Position);
         return bodyPositionDifference.getNorm();
     }

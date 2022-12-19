@@ -80,7 +80,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
-            final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+            final Vector3D         position  = currentState.getPosition();
             final Vector3D         velocity  = currentState.getPVCoordinates().getVelocity();
 
             if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {

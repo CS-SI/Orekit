@@ -670,6 +670,13 @@ public class CdmRelativeMetadata {
         this.screenPcThreshold = screenPcThreshold;
     }
 
+    /**
+     * Check screen volume conditions.
+     * <p>
+     * The method verifies that all keys are present.
+     * Otherwise, an exception is thrown.
+     * </p>
+     */
     public void checkScreenVolumeConditions() {
 
         if (this.getScreenType() == ScreenType.SHAPE) {

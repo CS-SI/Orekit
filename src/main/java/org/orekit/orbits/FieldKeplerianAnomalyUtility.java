@@ -47,7 +47,9 @@ public class FieldKeplerianAnomalyUtility {
         B = k3 * k3 / (6 * k1);
     }
 
+    /** Private constructor for utility class. */
     private FieldKeplerianAnomalyUtility() {
+        // Nothing to do
     }
 
     /**

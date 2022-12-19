@@ -155,7 +155,7 @@ public class CartesianOrbit extends Orbit {
             } else {
                 // get rid of Keplerian acceleration so we don't assume
                 // we have derivatives when in fact we don't have them
-                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPVCoordinates().getPosition(),
+                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPosition(),
                                                                      getPVCoordinates().getVelocity()),
                                                    getFrame(), getDate(), getMu());
             }
@@ -184,7 +184,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getA() {
-        final double r  = getPVCoordinates().getPosition().getNorm();
+        final double r  = getPosition().getNorm();
         final double V2 = getPVCoordinates().getVelocity().getNormSq();
         return r / (2 - r * V2 / getMu());
     }
@@ -207,7 +207,7 @@ public class CartesianOrbit extends Orbit {
         final double muA = getMu() * getA();
         if (muA > 0) {
             // elliptic or circular orbit
-            final Vector3D pvP   = getPVCoordinates().getPosition();
+            final Vector3D pvP   = getPosition();
             final Vector3D pvV   = getPVCoordinates().getVelocity();
             final double rV2OnMu = pvP.getNorm() * pvV.getNormSq() / getMu();
             final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
@@ -383,6 +383,12 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+        // nothing to do here, as the canonical elements are already the Cartesian ones
+        return getPVCoordinates().getPosition();
+    }
+
+    /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
@@ -427,7 +433,7 @@ public class CartesianOrbit extends Orbit {
     private PVCoordinates shiftPVElliptic(final double dt) {
 
         // preliminary computation
-        final Vector3D pvP   = getPVCoordinates().getPosition();
+        final Vector3D pvP   = getPosition();
         final Vector3D pvV   = getPVCoordinates().getVelocity();
         final double r2      = pvP.getNormSq();
         final double r       = FastMath.sqrt(r2);

@@ -83,13 +83,13 @@ public class DSSTBatchLSModelTest {
                                     context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                                     1.0e-15);
                 Assertions.assertEquals(0,
-                                    Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                                      newOrbits[0].getPVCoordinates().getPosition()),
+                                    Vector3D.distance(context.initialOrbit.getPosition(),
+                                                      newOrbits[0].getPosition()),
                                     1.0e-15);
                 Assertions.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
+        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
 
@@ -150,7 +150,7 @@ public class DSSTBatchLSModelTest {
                 // Do nothing here
             }
         };
-        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
+        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
         // Test forward propagation flag to false
         Assertions.assertEquals(false, model.isForwardPropagation());
     }
@@ -192,8 +192,8 @@ public class DSSTBatchLSModelTest {
                 Assertions.assertEquals(1, newOrbits.length);
                 // Verify first orbit
                 Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
-                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                                         newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPosition(),
+                                                         newOrbits[0].getPosition()), 1.0e-15);
 
             }
         };
@@ -217,8 +217,8 @@ public class DSSTBatchLSModelTest {
                 Assertions.assertEquals(1, newOrbits.length);
                 // Verify first orbit
                 Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
-                Assertions.assertEquals(0, Vector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                                         newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+                Assertions.assertEquals(0, Vector3D.distance(meanState.getPosition(),
+                                                         newOrbits[0].getPosition()), 1.0e-15);
 
             }
         };

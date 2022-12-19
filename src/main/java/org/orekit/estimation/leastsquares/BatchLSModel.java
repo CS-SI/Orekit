@@ -22,10 +22,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.numerical.JacobiansMapper;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
@@ -57,23 +54,6 @@ public class BatchLSModel extends AbstractBatchLSModel {
     @Override
     protected MatricesHarvester configureHarvester(final Propagator propagator) {
         return propagator.setupMatricesComputation(STM_NAME, null, null);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    protected JacobiansMapper configureDerivatives(final Propagator propagator) {
-
-        final org.orekit.propagation.numerical.PartialDerivativesEquations partials =
-                        new org.orekit.propagation.numerical.PartialDerivativesEquations(STM_NAME, (NumericalPropagator) propagator);
-
-        // add the derivatives to the initial state
-        final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        propagator.resetInitialState(stateWithDerivatives);
-
-        return partials.getMapper();
-
     }
 
     /** {@inheritDoc} */

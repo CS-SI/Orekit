@@ -113,12 +113,6 @@ class PiecewiseSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    public double getOffset(final AbsoluteDate date) {
-        return date.durationFrom(references[0]);
-    }
-
-    /** {@inheritDoc} */
     public TideSystem getTideSystem() {
         return constant.getTideSystem();
     }

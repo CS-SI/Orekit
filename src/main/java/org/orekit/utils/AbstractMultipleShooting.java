@@ -45,12 +45,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Patch points along the trajectory. */
     private List<SpacecraftState> patchedSpacecraftStates;
 
-    /** Derivatives linked to the Propagators.
-     * @deprecated as of 11.1 not used anymore
-     */
-    @Deprecated
-    private List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations;
-
     /** List of Propagators. */
     private final List<NumericalPropagator> propagatorList;
 
@@ -86,24 +80,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
     /** Expected name of the additional equations. */
     private final String additionalName;
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting </p>
-     * @param initialGuessList initial patch points to be corrected.
-     * @param propagatorList list of propagators associated to each patch point.
-     * @param additionalEquations list of additional equations linked to propagatorList.
-     * @param arcDuration initial guess of the duration of each arc.
-     * @param tolerance convergence tolerance on the constraint vector.
-     * @param additionalName name of the additional equations
-     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, double, int, String)}
-     */
-    @Deprecated
-    protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                       final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
-                                       final double arcDuration, final double tolerance, final String additionalName) {
-        this(initialGuessList, propagatorList, arcDuration, tolerance, 1, additionalName);
-        this.additionalEquations = additionalEquations;
-    }
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting </p>
@@ -622,29 +598,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
 
     /** Compute the additional state from the additionalEquations.
-     *  @param initialState SpacecraftState without the additional state
-     *  @param additionalEquations2 Additional Equations.
-     *  @return augmentedSP SpacecraftState with the additional state within.
-     *  @deprecated as of 11.1, replaced by {@link #getAugmentedInitialState(int)}
-     */
-    @Deprecated
-    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final org.orekit.propagation.integration.AdditionalEquations additionalEquations2) {
-        // should never be called, only implementations by derived classes should be called
-        throw new UnsupportedOperationException();
-    }
-
-    /** Compute the additional state from the additionalEquations.
      *  @param i index of the state
      *  @return augmentedSP SpacecraftState with the additional state within.
      *  @since 11.1
      */
-    protected SpacecraftState getAugmentedInitialState(final int i) {
-        // FIXME: this base implementation is only intended for version 11.1 to delegate to a deprecated method
-        // it should be removed in 12.0 when getAugmentedInitialState(SpacecraftState, AdditionalDerivativesProvider) is removed
-        // and the method should remain abstract in this class and be implemented by derived classes only
-        return getAugmentedInitialState(patchedSpacecraftStates.get(i), additionalEquations.get(i));
-    }
+    protected abstract SpacecraftState getAugmentedInitialState(int i);
 
     /** Set the constraint of a closed orbit or not.
      *  @param isClosed true if orbit should be closed

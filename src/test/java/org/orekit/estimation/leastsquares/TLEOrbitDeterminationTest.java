@@ -136,7 +136,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
+                                                              final OneAxisEllipsoid body, final RadiationSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "SRP not implemented in TLE Propagator");
     }

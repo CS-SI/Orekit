@@ -68,7 +68,6 @@ public class DateDetectorTest {
         propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String   getName()                      { return "dummy"; }
             public int      getDimension()                 { return 1; }
-            public double[] derivatives(final SpacecraftState state) { return null; }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[1], null);
             }

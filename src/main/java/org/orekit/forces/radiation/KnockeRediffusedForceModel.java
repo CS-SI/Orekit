@@ -189,10 +189,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final Frame frame = s.getFrame();
 
         // Get satellite position
-        final Vector3D satellitePosition = s.getPVCoordinates().getPosition();
+        final Vector3D satellitePosition = s.getPosition();
 
         // Get Sun position
-        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D sunPosition = sun.getPosition(date, frame);
 
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
@@ -260,10 +260,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final T zero = date.getField().getZero();
 
         // Get satellite position
-        final FieldVector3D<T> satellitePosition = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T> satellitePosition = s.getPosition();
 
         // Get Sun position
-        final FieldVector3D<T> sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        final FieldVector3D<T> sunPosition = sun.getPosition(date, frame);
 
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
@@ -499,7 +499,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                                            final double elementArea) {
 
         // Get satellite position
-        final Vector3D satellitePosition = state.getPVCoordinates().getPosition();
+        final Vector3D satellitePosition = state.getPosition();
 
         // Get current date
         final AbsoluteDate date = state.getDate();
@@ -573,7 +573,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                                                                                    final T elementArea) {
 
         // Get satellite position
-        final FieldVector3D<T> satellitePosition = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> satellitePosition = state.getPosition();
 
         // Get current date
         final FieldAbsoluteDate<T> date = state.getDate();

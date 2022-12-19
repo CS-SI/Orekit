@@ -43,7 +43,9 @@ public final class KeplerianAnomalyUtility {
         B = k3 * k3 / (6 * k1);
     }
 
+    /** Private constructor for utility class. */
     private KeplerianAnomalyUtility() {
+        // Nothing to do
     }
 
     /**

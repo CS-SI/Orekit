@@ -59,7 +59,7 @@ public enum DSSTForce {
 
     SOLAR_RADIATION_PRESSURE() {
         public DSSTForceModel getForceModel(DSSTContext context) {
-            return new DSSTSolarRadiationPressure(context.sun, context.earth.getEquatorialRadius(),
+            return new DSSTSolarRadiationPressure(context.sun, context.earth,
                                                   context.radiationSensitive, context.gravity.getMu());
         }
     };

@@ -90,9 +90,9 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // positions  velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
-                FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                       finalOrbit.getPVCoordinates().getPosition()).getReal(),
-                            5.3e-9);
+                FieldVector3D.distance(initialOrbit.getPosition(),
+                                       finalOrbit.getPosition()).getReal(),
+                            5.8e-9);
 
         Assertions.assertEquals(0.0,
                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
@@ -702,8 +702,8 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Verify
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                                   finalOrbit.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(initialOrbit.getPosition(),
+                                                   finalOrbit.getPosition()).getReal(),
                             7.0e-8);
 
         Assertions.assertEquals(0.0,
@@ -801,7 +801,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
-        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
     }
 
@@ -853,7 +853,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
-        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
     }
 

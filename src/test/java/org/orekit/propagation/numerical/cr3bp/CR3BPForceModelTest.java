@@ -115,7 +115,7 @@ public class CR3BPForceModelTest {
         propagator.clearStepHandlers();
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
 
-        Assertions.assertNotEquals(initialState.getPVCoordinates().getPosition().getX(), finalState.getPVCoordinates().getPosition().getX(), 1E-2);
+        Assertions.assertNotEquals(initialState.getPosition().getX(), finalState.getPosition().getX(), 1E-2);
     }
 
     /**Testing if the propagation between the FieldPropagation and the propagation

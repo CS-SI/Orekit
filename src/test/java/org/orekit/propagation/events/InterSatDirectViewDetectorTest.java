@@ -64,8 +64,8 @@ public class InterSatDirectViewDetectorTest {
         p.addEventDetector(logger.monitorDetector(new InterSatDirectViewDetector(earth, o2).
                                                   withMaxCheck(60.0)));
         p.setStepHandler(10.0, state -> {
-            Vector3D pos1 = state.getPVCoordinates().getPosition();
-            Vector3D pos2 = o2.getPVCoordinates(state.getDate(), state.getFrame()).getPosition();
+            Vector3D pos1 = state.getPosition();
+            Vector3D pos2 = o2.getPosition(state.getDate(), state.getFrame());
             Assertions.assertTrue(Vector3D.distance(pos1, pos2) >  8100.0);
             Assertions.assertTrue(Vector3D.distance(pos1, pos2) < 16400.0);
         });

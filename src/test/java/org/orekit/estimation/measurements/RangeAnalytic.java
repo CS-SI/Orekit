@@ -110,7 +110,7 @@ public class RangeAnalytic extends Range {
         // Transit state position
         final SpacecraftState transitState = state.shiftedBy(dt);
         final AbsoluteDate    transitDate  = transitState.getDate();
-        final Vector3D        transitP     = transitState.getPVCoordinates().getPosition();
+        final Vector3D        transitP     = transitState.getPosition();
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
@@ -370,7 +370,7 @@ public class RangeAnalytic extends Range {
         // Transit state position
         final AbsoluteDate    transitT = state.getDate().shiftedBy(dt);
         final SpacecraftState transit  = state.shiftedBy(dt);
-        final Vector3D        transitP = transitState.getPVCoordinates().getPosition();
+        final Vector3D        transitP = transitState.getPosition();
 
         // Station position at signal departure
         // First guess
@@ -411,7 +411,7 @@ public class RangeAnalytic extends Range {
         // Qt = Primary station position at tmeas = t = signal arrival at primary station
         final Vector3D vel     = state.getPVCoordinates().getVelocity();
         final Vector3D Qt_V    = QDownlink.getVelocity();
-        final Vector3D Ptr     = transit.getPVCoordinates().getPosition();
+        final Vector3D Ptr     = transit.getPosition();
         final Vector3D Ptr_Qt  = QDownlink.getPosition().subtract(Ptr);
         final double   dDown   = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * td -
                         Vector3D.dotProduct(Ptr_Qt, vel);

@@ -262,11 +262,11 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate());
 
         // Initial orbit definition
-        final FieldVector3D<T> initialPosition = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> initialPosition = state.getPosition();
         final FieldVector3D<T> initialVelocity = state.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final FieldVector3D<T> finalPosition = finalState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> finalPosition = finalState.getPosition();
         final FieldVector3D<T> finalVelocity = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -564,7 +564,9 @@ public class FieldDSSTPropagatorTest {
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                             provider.getMu());
 
         // GEO Orbit
@@ -683,7 +685,7 @@ public class FieldDSSTPropagatorTest {
         propagator.addForceModel(new DSSTThirdBody(sun, nshp.getMu()));
         propagator.addForceModel(new DSSTThirdBody(moon, nshp.getMu()));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180, nshp.getMu()));
-        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth, nshp.getMu()));
 
 
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.OSCULATING);
@@ -692,13 +694,13 @@ public class FieldDSSTPropagatorTest {
         // the initial orbit is osculating the final orbit is a mean orbit
         // and they are not considered at the same epoch
         // we keep it only as is was an historical test
-        Assertions.assertEquals(2189.4, orbit.getA().subtract(finalState.getA()).getReal(), 1.0);
+        Assertions.assertEquals(2187.2, orbit.getA().subtract(finalState.getA()).getReal(), 1.0);
 
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         // the following comparison is realistic
         // both the initial orbit and final orbit are mean orbits
-        Assertions.assertEquals(1478.05, orbit.getA().subtract(finalState.getA()).getReal(), 1.0);
+        Assertions.assertEquals(1475.90, orbit.getA().subtract(finalState.getA()).getReal(), 1.0);
 
     }
 
@@ -734,7 +736,7 @@ public class FieldDSSTPropagatorTest {
         propagator.addForceModel(new DSSTThirdBody(sun, nshp.getMu()));
         propagator.addForceModel(new DSSTThirdBody(moon, nshp.getMu()));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180, nshp.getMu()));
-        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth, nshp.getMu()));
         propagator.setInterpolationGridToMaxTimeGap(zero.add(0.5 * Constants.JULIAN_DAY));
 
         // direct generation of states
@@ -752,8 +754,8 @@ public class FieldDSSTPropagatorTest {
         T maxError = zero;
         for (final FieldSpacecraftState<T> state : states) {
             final FieldSpacecraftState<T> fromEphemeris = ephemeris.propagate(state.getDate());
-            final T error = FieldVector3D.distance(state.getPVCoordinates().getPosition(),
-                                                   fromEphemeris.getPVCoordinates().getPosition());
+            final T error = FieldVector3D.distance(state.getPosition(),
+                                                   fromEphemeris.getPosition());
             maxError = FastMath.max(maxError, error);
         }
         Assertions.assertEquals(0.0, maxError.getReal(), 1.0e-10);
@@ -816,8 +818,8 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(1559.1,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(meanState.getPosition(),
+                                              osculatingState.getPosition()).getReal(),
                             1.0);
     }
 
@@ -848,8 +850,8 @@ public class FieldDSSTPropagatorTest {
 
         Assertions.assertEquals(meanState.getA().getReal(), computedMeanState.getA().getReal(), 2.0e-8);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                             computedMeanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(meanState.getPosition(),
+                                             computedMeanState.getPosition()).getReal(),
                             2.0e-8);
     }
 
@@ -885,7 +887,7 @@ public class FieldDSSTPropagatorTest {
         propagator.addForceModel(new DSSTThirdBody(sun, nshp.getMu()));
         propagator.addForceModel(new DSSTThirdBody(moon, nshp.getMu()));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180, nshp.getMu()));
-        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth, nshp.getMu()));
 
         final FieldAbsoluteDate<T> finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)));
@@ -967,19 +969,19 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(734.3,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(meanState.getPosition(),
+                                              osculatingState.getPosition()).getReal(),
                             1.0);
 
         final FieldSpacecraftState<T> computedMeanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, forces);
         Assertions.assertEquals(734.3,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedMeanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(osculatingState.getPosition(),
+                                              computedMeanState.getPosition()).getReal(),
                             1.0);
 
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(computedMeanState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(computedMeanState.getPosition(),
+                                              meanState.getPosition()).getReal(),
                             5.0e-6);
 
     }
@@ -1010,22 +1012,19 @@ public class FieldDSSTPropagatorTest {
 
         // Surface force models that require an attitude provider
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        forces.add(new DSSTSolarRadiationPressure(sun,
-                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                  boxAndWing,
-                                                  osculatingState.getMu().getReal()));
+        forces.add(new DSSTSolarRadiationPressure(sun, earth, boxAndWing, osculatingState.getMu().getReal()));
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));
 
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         Assertions.assertEquals(0.522,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(osculatingState.getPosition(),
+                                              meanState.getPosition()).getReal(),
                             0.001);
 
         final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(osculatingState.getPosition(),
+                                              computedOsculatingState.getPosition()).getReal(),
                             5.0e-6);
 
     }
@@ -1048,8 +1047,9 @@ public class FieldDSSTPropagatorTest {
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
-        Assertions.assertEquals(0.0, FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
-                            5.0e-6);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(osculatingState.getPosition(), computedOsculatingState.getPosition()).getReal(),
+                                5.0e-6);
     }
 
     @Test

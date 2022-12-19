@@ -133,9 +133,9 @@ public class CR3BPForceModel extends AbstractForceModel {
     public DerivativeStructure getPotential(final SpacecraftState s) {
 
         // Spacecraft Position
-        final double x = s.getPVCoordinates().getPosition().getX();
-        final double y = s.getPVCoordinates().getPosition().getY();
-        final double z = s.getPVCoordinates().getPosition().getZ();
+        final double x = s.getPosition().getX();
+        final double y = s.getPosition().getY();
+        final double z = s.getPosition().getZ();
 
         final DSFactory factoryP = new DSFactory(3, 2);
         final DerivativeStructure fpx = factoryP.variable(0, x);
@@ -175,9 +175,9 @@ public class CR3BPForceModel extends AbstractForceModel {
     public <T extends CalculusFieldElement<T>> FieldDerivativeStructure<T> getPotential(final FieldSpacecraftState<T> s) {
 
         // Spacecraft Position
-        final T x = s.getPVCoordinates().getPosition().getX();
-        final T y = s.getPVCoordinates().getPosition().getY();
-        final T z = s.getPVCoordinates().getPosition().getZ();
+        final T x = s.getPosition().getX();
+        final T y = s.getPosition().getY();
+        final T z = s.getPosition().getZ();
 
         final FDSFactory<T> factoryP = new FDSFactory<>(s.getDate().getField(), 3, 2);
         final FieldDerivativeStructure<T> fpx = factoryP.variable(0, x);

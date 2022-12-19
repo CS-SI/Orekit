@@ -13,6 +13,9 @@ handle them (conversions, propagations, pointing, events detection, orbit determ
 [![](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=alert_status)](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit)
 [![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=coverage)](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7249096.svg)](https://doi.org/10.5281/zenodo.7249096)
+
+
 
 ## Download
 

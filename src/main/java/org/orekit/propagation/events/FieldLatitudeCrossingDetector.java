@@ -134,7 +134,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
 
         // convert state to geodetic coordinates
         final FieldGeodeticPoint<T> gp = body.transform(
-                s.getPVCoordinates().getPosition(),
+                s.getPosition(),
                 s.getFrame(),
                 s.getDate());
 

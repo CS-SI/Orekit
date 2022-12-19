@@ -316,7 +316,7 @@ public class KeplerianPropagatorTest {
 
         Vector3D r = new Vector3D(finalOrbit.getA(), new Vector3D(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
 
     }
 
@@ -406,7 +406,7 @@ public class KeplerianPropagatorTest {
 
         Vector3D r = new Vector3D(finalOrbit.getA(), new Vector3D(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
 
     }
 
@@ -536,7 +536,7 @@ public class KeplerianPropagatorTest {
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 5400.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 5500.0);
-        GeodeticPoint gp = bodyShape.transform(propagated.getPVCoordinates().getPosition(),
+        GeodeticPoint gp = bodyShape.transform(propagated.getPosition(),
                                                propagated.getFrame(), propagated.getDate());
         Assertions.assertEquals(1500000, gp.getAltitude(), 0.1);
     }
@@ -567,7 +567,7 @@ public class KeplerianPropagatorTest {
         propagator.addEventDetector(new ElevationDetector(60, AbstractDetector.DEFAULT_THRESHOLD, topo).withConstantElevation(0.09));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition(),
+        final double elevation = topo.getElevation(propagated.getPosition(),
                                                    propagated.getFrame(),
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();

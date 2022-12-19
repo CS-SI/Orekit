@@ -172,7 +172,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
 
         final StaticTransform t = s.getFrame()
                 .getStaticTransformTo(topo, s.getDate().toAbsoluteDate());
-        final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPVCoordinates().getPosition());
+        final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPosition());
         final T trueElevation = extPointTopo.getDelta();
 
         final T calculatedElevation;

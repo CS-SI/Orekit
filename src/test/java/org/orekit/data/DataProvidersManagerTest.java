@@ -157,7 +157,6 @@ public class DataProvidersManagerTest {
         Assertions.assertNotNull(manager.removeProvider(provider));
         Assertions.assertEquals(1, manager.getProviders().size());
         Assertions.assertNull(manager.removeProvider(new DataProvider() {
-            @Deprecated
             public boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager) {
                 throw new OrekitException(new DummyLocalizable("oops!"));
             }

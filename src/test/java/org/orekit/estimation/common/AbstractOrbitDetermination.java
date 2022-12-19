@@ -275,12 +275,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     /** Set solar radiation pressure force model.
      * @param propagatorBuilder propagator builder
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param body central body (for shadow computation)
      * @param spacecraft spacecraft model
      * @return drivers for the force model
      */
     protected abstract List<ParameterDriver> setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
-                                                                       double equatorialRadius, RadiationSensitive spacecraft);
+                                                                       OneAxisEllipsoid body, RadiationSensitive spacecraft);
 
     /** Set Earth's albedo and infrared force model.
      * @param propagatorBuilder propagator builder
@@ -1088,7 +1088,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final double  area        = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
             final boolean cREstimated = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
             final List<ParameterDriver> drivers = setSolarRadiationPressure(propagatorBuilder, CelestialBodyFactory.getSun(),
-                                                                            body.getEquatorialRadius(),
+                                                                            body,
                                                                             new IsotropicRadiationSingleCoefficient(area, cr));
             if (cREstimated) {
                 for (final ParameterDriver driver : drivers) {
@@ -2840,9 +2840,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 final String lineFormat = "%4d\t%-25s\t%15.3f\t%-10s\t%-10s\t%-20s\t%20.9e\t%20.9e";
 
                 // Orbital correction = DP & DV between predicted orbit and estimated orbit
-                final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPosition();
                 final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getVelocity();
-                final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPosition();
                 final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getVelocity();
                 final double DPcorr       = Vector3D.distance(predictedP, estimatedP);
                 final double DVcorr       = Vector3D.distance(predictedV, estimatedV);

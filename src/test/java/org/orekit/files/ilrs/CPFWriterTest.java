@@ -397,40 +397,6 @@ public class CPFWriterTest {
 
     }
 
-    @Test
-    @Deprecated
-    public void testDefaultId() throws IOException {
-
-        // Initialize
-        final CPF cpf = new CPF();
-
-        // Fast check
-        Assertions.assertEquals(0, cpf.getSatellites().size());
-
-        // Add coordinates
-        final int leap = 0;
-        cpf.addSatelliteCoordinate(new CPFCoordinate(AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, leap));
-
-        // Verify
-        Assertions.assertEquals(1, cpf.getSatellites().size());
-
-    }
-
-    @Test
-    @Deprecated
-    public void testOldConstructor() throws IOException {
-
-        // Initialize
-        // Create an empty CPF file
-        final CPF cpf = new CPF();
-        final CPFEphemeris ephemeris = cpf.new CPFEphemeris();
-
-        // Fast check
-        Assertions.assertEquals(0, ephemeris.getCoordinates().size());
-        Assertions.assertEquals(CPF.DEFAULT_ID, ephemeris.getId());
-
-    }
-
     public static void compareCpfFiles(CPF file1, CPF file2) {
 
         // Header

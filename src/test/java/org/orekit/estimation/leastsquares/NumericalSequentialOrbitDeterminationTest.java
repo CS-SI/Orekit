@@ -159,8 +159,8 @@ public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDete
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final NumericalPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
-        final ForceModel srpModel = new SolarRadiationPressure(sun, equatorialRadius, spacecraft);
+                                                              final OneAxisEllipsoid body, final RadiationSensitive spacecraft) {
+        final ForceModel srpModel = new SolarRadiationPressure(sun, body, spacecraft);
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
     }

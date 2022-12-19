@@ -41,7 +41,6 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
- * @see org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations
  * @see org.orekit.propagation.semianalytical.dsst.DSSTPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
@@ -169,15 +168,6 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
         }
 
-    }
-
-    /** Compute the derivatives of the short period terms related to the additional state parameters.
-     * @param s Current state information: date, kinematics, attitude, and additional state
-     * @deprecated as of 11.1, replaced by {@link #setReferenceState(SpacecraftState)}
-     */
-    @Deprecated
-    public void setShortPeriodJacobians(final SpacecraftState s) {
-        setReferenceState(s);
     }
 
     /** {@inheritDoc} */

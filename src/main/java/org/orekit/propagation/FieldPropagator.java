@@ -158,10 +158,10 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * addAdditionalStateProvider} method. If the propagator is an {@link
      * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator integrator-based
      * propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.FieldAdditionalEquations additional equations} has
-     * been registered by calling the {@link
-     * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator#addAdditionalEquations(
-     * org.orekit.propagation.integration.FieldAdditionalEquations) addAdditionalEquations}
+     * org.orekit.propagation.integration.FieldAdditionalDerivativesProvider additional derivatives
+     * provider} has been registered by calling the {@link
+     * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator#addAdditionalDerivativesProvider(
+     * org.orekit.propagation.integration.FieldAdditionalDerivativesProvider) addAdditionalDerivativesProvider}
      * method are also counted as managed additional states.
      * </p>
      * <p>

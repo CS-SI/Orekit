@@ -73,6 +73,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.DateComponents;
@@ -373,11 +374,11 @@ public class FieldNumericalPropagatorTest {
         // Propagate of the initial at the initial date
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
         // Initial orbit definition
-        final FieldVector3D<T> initialPosition = initialState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> initialPosition = initialState.getPosition();
         final FieldVector3D<T> initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final FieldVector3D<T> finalPosition   = finalState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> finalPosition   = finalState.getPosition();
         final FieldVector3D<T> finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -893,10 +894,10 @@ public class FieldNumericalPropagatorTest {
                 return 1;
             }
 
-            public T[] derivatives(FieldSpacecraftState<T> s) {
+            public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
                 T[] pDot = MathArrays.buildArray(field, 1);
                 pDot[0] = field.getOne();
-                return pDot;
+                return new FieldCombinedDerivatives<>(pDot, null);
             }
         });
         try {
@@ -910,10 +911,10 @@ public class FieldNumericalPropagatorTest {
                     return 1;
                 }
 
-                public T[] derivatives(FieldSpacecraftState<T> s) {
+                public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
                     T[] pDot = MathArrays.buildArray(field, 1);
                     pDot[0] = field.getOne();
-                    return pDot;
+                    return new FieldCombinedDerivatives<>(pDot, null);
                 }
             });
             Assertions.fail("an exception should have been thrown");
@@ -1009,10 +1010,10 @@ public class FieldNumericalPropagatorTest {
                 return 1;
             }
 
-            public T[] derivatives(FieldSpacecraftState<T> s) {
+            public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
                 T[] pDot = MathArrays.buildArray(field, 1);
                 pDot[0] = field.getOne();
-                return pDot;
+                return new FieldCombinedDerivatives<>(pDot, null);
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear",
@@ -1173,10 +1174,10 @@ public class FieldNumericalPropagatorTest {
             public int getDimension() {
                 return 1;
             }
-            public T[] derivatives(FieldSpacecraftState<T> s) {
+            public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
                 T[] pDot = MathArrays.buildArray(field, 1);
                 pDot[0] = field.getZero().newInstance(rate);
-                return pDot;
+                return new FieldCombinedDerivatives<>(pDot, null);
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", field.getZero().add(1.5)));
@@ -1708,8 +1709,8 @@ public class FieldNumericalPropagatorTest {
         }
 
         @Override
-        public T[] derivatives(FieldSpacecraftState<T> s) {
-            return MathArrays.buildArray(field, getDimension());
+        public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
+            return new FieldCombinedDerivatives<>(MathArrays.buildArray(field, getDimension()), null);
         }
 
         @Override
@@ -1808,8 +1809,8 @@ public class FieldNumericalPropagatorTest {
                 // recurring event, we compare with the shifted reference state
                 final T dt = s.getDate().durationFrom(referenceState.getDate());
                 final FieldSpacecraftState<T> shifted = referenceState.shiftedBy(dt);
-                final T error = FieldVector3D.distance(shifted.getPVCoordinates().getPosition(),
-                                                       s.getPVCoordinates().getPosition());
+                final T error = FieldVector3D.distance(shifted.getPosition(),
+                                                       s.getPosition());
                 switch ((int) FastMath.rint(dt.getReal())) {
                     case 60 :
                         Assertions.assertEquals(error60s,  error.getReal(), 0.01 * error60s);
@@ -1881,8 +1882,7 @@ public class FieldNumericalPropagatorTest {
         np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
         // solar radiation pressure
-        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                    earth.getEquatorialRadius(),
+        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
 
         return np;

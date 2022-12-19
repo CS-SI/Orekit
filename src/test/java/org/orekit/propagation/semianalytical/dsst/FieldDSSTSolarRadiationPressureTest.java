@@ -38,6 +38,7 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -69,6 +70,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
@@ -112,7 +114,9 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                             mu);
 
         // Register the attitude provider to the force model
@@ -153,12 +157,12 @@ public class FieldDSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(6.843966348263062E-8,    elements[0].getReal(), 1.1e-11);
-        Assertions.assertEquals(-2.990913371084091E-11,  elements[1].getReal(), 2.2e-19);
-        Assertions.assertEquals(-2.538374405334012E-10,  elements[2].getReal(), 8.0e-19);
-        Assertions.assertEquals(2.0384702426501394E-13,  elements[3].getReal(), 2.0e-20);
-        Assertions.assertEquals(-2.3346333406116967E-14, elements[4].getReal(), 8.5e-22);
-        Assertions.assertEquals(1.6087485237156322E-11,  elements[5].getReal(), 1.7e-18);
+        Assertions.assertEquals(6.839604359021367E-8,    elements[0].getReal(), 1.0e-23);
+        Assertions.assertEquals(-2.990944216154925E-11,  elements[1].getReal(), 1.0e-27);
+        Assertions.assertEquals(-2.5384005619142175E-10, elements[2].getReal(), 1.0e-26);
+        Assertions.assertEquals(2.0378279596706824E-13,  elements[3].getReal(), 1.0e-29);
+        Assertions.assertEquals(-2.333877201515642E-14,  elements[4].getReal(), 1.0e-30);
+        Assertions.assertEquals(1.6082383581033796E-11,  elements[5].getReal(), 1.0e-27);
 
     }
 
@@ -199,9 +203,11 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                                 0.0, 0.0, 0.0);
 
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(sun,
-                                                                   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                   boxAndWing,
-                                                                   meanState.getMu().getReal());
+                                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
+                                                                  boxAndWing,
+                                                                  meanState.getMu().getReal());
 
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
@@ -223,12 +229,12 @@ public class FieldDSSTSolarRadiationPressureTest {
             }
         }
 
-        Assertions.assertEquals(0.36637346843285684,     y[0].getReal(), 0.5e-12);
-        Assertions.assertEquals(-2.4294913010512626E-10, y[1].getReal(), 2.6e-20);
-        Assertions.assertEquals(-3.858954680824408E-9,   y[2].getReal(), 7.e-20);
-        Assertions.assertEquals(-3.0648619902684686E-9,  y[3].getReal(), 0.9e-21);
-        Assertions.assertEquals(-4.9023731169635814E-9,  y[4].getReal(), 1.1e-19);
-        Assertions.assertEquals(-2.385357916413363E-9,   y[5].getReal(), 1.3e-20);
+        Assertions.assertEquals(0.3668654523023674,     y[0].getReal(), 1.0e-16);
+        Assertions.assertEquals(-2.567333228302908E-10, y[1].getReal(), 1.0e-25);
+        Assertions.assertEquals(-3.849598776918734E-9,  y[2].getReal(), 1.0e-24);
+        Assertions.assertEquals(-3.069285299519464E-9,  y[3].getReal(), 1.0e-24);
+        Assertions.assertEquals(-4.90887054227722E-9,   y[4].getReal(), 1.0e-23);
+        Assertions.assertEquals(-2.3854933842837777E-9, y[5].getReal(), 1.0e-25);
     }
 
     @Test
@@ -261,7 +267,9 @@ public class FieldDSSTSolarRadiationPressureTest {
         // Force model
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                                   provider.getMu());
         srp.registerAttitudeProvider(attitudeProvider);
 
@@ -391,7 +399,9 @@ public class FieldDSSTSolarRadiationPressureTest {
         // Force model
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                                   provider.getMu());
         srp.registerAttitudeProvider(attitudeProvider);
 

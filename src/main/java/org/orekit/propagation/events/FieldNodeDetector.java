@@ -160,7 +160,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @return value of the switching function
      */
     public T g(final FieldSpacecraftState<T> s) {
-        return s.getPVCoordinates(frame).getPosition().getZ();
+        return s.getPosition(frame).getZ();
     }
 
 //    public NodeDetector toNoField() {

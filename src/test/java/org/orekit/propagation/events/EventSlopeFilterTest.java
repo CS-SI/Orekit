@@ -208,7 +208,7 @@ public class EventSlopeFilterTest {
     public void testForwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -220,7 +220,7 @@ public class EventSlopeFilterTest {
     public void testForwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -232,7 +232,7 @@ public class EventSlopeFilterTest {
     public void testForwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative
@@ -244,7 +244,7 @@ public class EventSlopeFilterTest {
     public void testForwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -255,7 +255,7 @@ public class EventSlopeFilterTest {
     public void testForwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -266,7 +266,7 @@ public class EventSlopeFilterTest {
     public void testForwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative
@@ -277,7 +277,7 @@ public class EventSlopeFilterTest {
     public void testBackwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -289,7 +289,7 @@ public class EventSlopeFilterTest {
     public void testBackwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -301,7 +301,7 @@ public class EventSlopeFilterTest {
     public void testBackwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative
@@ -313,7 +313,7 @@ public class EventSlopeFilterTest {
     public void testBackwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -324,7 +324,7 @@ public class EventSlopeFilterTest {
     public void testBackwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -335,7 +335,7 @@ public class EventSlopeFilterTest {
     public void testBackwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative

@@ -1033,7 +1033,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final StaticTransform fromBodyFrame =
                 bodyFrame.getStaticTransformTo(s.getFrame(), date);
         final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final Vector3D position       = toBodyFrame.transformPosition(s.getPosition());
 
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new Vector3D(gradient(date, position, mu)));
@@ -1049,7 +1049,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // check for faster computation dedicated to derivatives with respect to state
         if (isGradientStateDerivative(s)) {
             @SuppressWarnings("unchecked")
-            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
@@ -1057,7 +1057,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
             return a;
         } else if (isDSStateDerivative(s)) {
             @SuppressWarnings("unchecked")
-            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
@@ -1070,7 +1070,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final StaticTransform      fromBodyFrame =
                 bodyFrame.getStaticTransformTo(s.getFrame(), date.toAbsoluteDate());
         final StaticTransform      toBodyFrame   = fromBodyFrame.getInverse();
-        final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPosition());
 
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position, mu)));

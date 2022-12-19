@@ -403,13 +403,13 @@ public class TopocentricFrameTest {
         AbsoluteDate dateP = date.shiftedBy(dt);
         Transform j2000ToItrfP = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         SpacecraftState orbitP = extrapolator.propagate(dateP);
-        Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
+        Vector3D satPointGeoP = j2000ToItrfP.transformPosition(orbitP.getPosition());
 
         // Retropolate satellite position a short while before reference date
         AbsoluteDate dateM = date.shiftedBy(-dt);
         Transform j2000ToItrfM = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         SpacecraftState orbitM = extrapolator.propagate(dateM);
-        Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();
+        Vector3D satPointGeoM = j2000ToItrfM.transformPosition(orbitM.getPosition());
 
         // Compute ranges at both instants
         double rangeP = topoFrame.getRange(satPointGeoP, earthSpheric.getBodyFrame(), dateP);
@@ -462,13 +462,13 @@ public class TopocentricFrameTest {
         FieldAbsoluteDate<T> dateP = fieldDate.shiftedBy(dt);
         FieldTransform<T> j2000ToItrfP = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         FieldSpacecraftState<T> orbitP = extrapolator.propagate(dateP);
-        FieldVector3D<T> satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
+        FieldVector3D<T> satPointGeoP = j2000ToItrfP.transformPosition(orbitP.getPosition());
 
         // Retropolate satellite position a short while before reference date
         FieldAbsoluteDate<T> dateM = fieldDate.shiftedBy(-dt);
         FieldTransform<T> j2000ToItrfM = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         FieldSpacecraftState<T> orbitM = extrapolator.propagate(dateM);
-        FieldVector3D<T> satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();
+        FieldVector3D<T> satPointGeoM = j2000ToItrfM.transformPosition(orbitM.getPosition());
 
         // Compute ranges at both instants
         T rangeP = topoFrame.getRange(satPointGeoP, earthSpheric.getBodyFrame(), dateP);

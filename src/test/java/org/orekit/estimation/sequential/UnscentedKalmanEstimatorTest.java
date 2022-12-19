@@ -176,7 +176,7 @@ public class UnscentedKalmanEstimatorTest {
                                               minStep, maxStep, dP);
         
         // Create shifted initial state
-        final Vector3D initialPosShifted = context.initialOrbit.getPVCoordinates().getPosition().add(new Vector3D(sigmaPos, sigmaPos, sigmaPos));
+        final Vector3D initialPosShifted = context.initialOrbit.getPosition().add(new Vector3D(sigmaPos, sigmaPos, sigmaPos));
         final Vector3D initialVelShifted = context.initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(sigmaVel, sigmaVel, sigmaVel));
 
         final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(context.initialOrbit.getDate(), initialPosShifted, initialVelShifted);
@@ -727,8 +727,8 @@ public class UnscentedKalmanEstimatorTest {
                                                 closeOrbit.getDate(),
                                                 closeOrbit.getMu());
         Assertions.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),

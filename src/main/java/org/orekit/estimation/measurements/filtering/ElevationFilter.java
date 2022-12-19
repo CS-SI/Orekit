@@ -49,7 +49,7 @@ public class ElevationFilter<T extends ObservedMeasurement<T>> implements Measur
     @Override
     public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
         // Current elevation of the satellite
-        final double trueElevation = station.getBaseFrame().getElevation(state.getPVCoordinates().getPosition(),
+        final double trueElevation = station.getBaseFrame().getElevation(state.getPosition(),
                                                                          state.getFrame(),
                                                                          state.getDate());
         // Filter

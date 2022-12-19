@@ -164,8 +164,8 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final NumericalPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
-        final ForceModel srpModel = new SolarRadiationPressure(sun, equatorialRadius, spacecraft);
+                                                              final OneAxisEllipsoid earth, final RadiationSensitive spacecraft) {
+        final ForceModel srpModel = new SolarRadiationPressure(sun, earth, spacecraft);
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
     }
@@ -275,7 +275,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // Run the reference until Kalman last date
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
-        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D refPos = refOrbit.getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
 
         // Check distances
@@ -567,7 +567,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
                                             kalmanW3B.getEstimatedPV().getDate());
 
         // Test on last orbit
-        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D refPos = refOrbit.getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
 
         // Check distances

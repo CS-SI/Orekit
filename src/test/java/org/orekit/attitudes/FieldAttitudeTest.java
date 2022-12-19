@@ -174,10 +174,10 @@ public class FieldAttitudeTest {
             maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
 
         }
-        Assertions.assertTrue(maxShiftAngleError         > 6.0e-6);
-        Assertions.assertTrue(maxInterpolationAngleError < 6.0e-15);
-        Assertions.assertTrue(maxShiftRateError          > 7.0e-8);
-        Assertions.assertTrue(maxInterpolationRateError  < 2.0e-16);
+        Assertions.assertEquals(0.0, maxShiftAngleError,         6.9e-6);
+        Assertions.assertEquals(0.0, maxInterpolationAngleError, 8.8e-15);
+        Assertions.assertEquals(0.0, maxShiftRateError,          7.6e-8);
+        Assertions.assertEquals(0.0, maxInterpolationRateError,  2.0e-16);
 
         // past sample end, interpolation error should increase, but still be far better than quadratic shift
         maxShiftAngleError = 0;
@@ -201,10 +201,10 @@ public class FieldAttitudeTest {
             maxShiftRateError           = FastMath.max(maxShiftRateError, shiftRateError.getReal());
             maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
         }
-        Assertions.assertTrue(maxShiftAngleError         > 1.0e-5);
-        Assertions.assertTrue(maxInterpolationAngleError < 8.0e-13);
-        Assertions.assertTrue(maxShiftRateError          > 1.0e-7);
-        Assertions.assertTrue(maxInterpolationRateError  < 6.0e-14);
+        Assertions.assertEquals(0.0, maxShiftAngleError,         1.3e-5);
+        Assertions.assertEquals(0.0, maxInterpolationAngleError, 1.2e-12);
+        Assertions.assertEquals(0.0, maxShiftRateError,          1.2e-7);
+        Assertions.assertEquals(0.0, maxInterpolationRateError,  8.4e-14);
 
     }
 

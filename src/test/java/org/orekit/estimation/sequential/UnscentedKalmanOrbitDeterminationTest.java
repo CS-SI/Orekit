@@ -168,7 +168,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.38e-3);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.39e-3);
         Assertions.assertEquals(0.0, statY.getMean(), 1.87e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 2.85e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
@@ -402,7 +402,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final ForceModel srp = new SolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft);
+            final ForceModel srp = new SolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft);
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);

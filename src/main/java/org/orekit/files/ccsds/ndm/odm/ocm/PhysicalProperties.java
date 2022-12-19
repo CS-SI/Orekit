@@ -110,7 +110,7 @@ public class PhysicalProperties extends CommonPhysicalProperties {
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      */
-    PhysicalProperties(final AbsoluteDate epochT0) {
+    public PhysicalProperties(final AbsoluteDate epochT0) {
 
         // Call to CommonPhysicalProperties constructor
         super();

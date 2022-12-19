@@ -439,6 +439,9 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
         return crc;
     }
 
+    /** Extract the used messages.
+     * @return the extracted messages
+     */
     private List<Integer> extractUsedMessages() {
         synchronized (observers) {
 

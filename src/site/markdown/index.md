@@ -52,7 +52,7 @@
 
   * Spacecraft state
 
-    * Cartesian, elliptical Keplerian, circular and equinoctial parameters, with non-Keplerian
+    * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
     * Two-Line Elements
     * transparent conversion between all parameters
@@ -95,7 +95,7 @@
           EGM and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
-        * radiation pressure with eclipses
+        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies)
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared
@@ -276,7 +276,7 @@
     * loading of SINEX file (can load station positions, eccentricities and EOPs)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
-    * parsing of RTCM messages
+    * parsing of RTCM messages (both ephemeris and correction messages)
     * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
 
@@ -307,7 +307,7 @@
     * displacement of ground points due to tides
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
-	* construction of trajectories using loxodromes (commonly, a rhum line)
+	* construction of trajectories using loxodromes (commonly, a rhumb line)
 
   * Collisions
 

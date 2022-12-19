@@ -162,7 +162,7 @@ public class FootprintOverlapDetectorTest {
         SpacecraftState middle = start.getState().shiftedBy(0.5 * expectedDuration);
 
         // sub-satellite point
-        Vector3D p = middle.getPVCoordinates().getPosition();
+        Vector3D p = middle.getPosition();
         GeodeticPoint gpSat = earth.transform(p, middle.getFrame(), middle.getDate());
         Assertions.assertEquals(spacecraftLatitude,  FastMath.toDegrees(gpSat.getLatitude()),  0.001);
         Assertions.assertEquals(spacecraftLongitude, FastMath.toDegrees(gpSat.getLongitude()), 0.001);
@@ -171,7 +171,7 @@ public class FootprintOverlapDetectorTest {
         final Transform scToInert = middle.toTransform().getInverse();
         GeodeticPoint gpFOV =
                 earth.getIntersectionPoint(new Line(p, scToInert.transformPosition(Vector3D.PLUS_K), 1.0e-6),
-                                           middle.getPVCoordinates().getPosition(),
+                                           middle.getPosition(),
                                            middle.getFrame(), middle.getDate());
         Assertions.assertEquals(fovCenterLatitude,  FastMath.toDegrees(gpFOV.getLatitude()),  0.001);
         Assertions.assertEquals(fovCenterLongitude, FastMath.toDegrees(gpFOV.getLongitude()), 0.001);

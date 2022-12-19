@@ -144,7 +144,7 @@ public class DOPComputer {
         final double[][] satDir = new double[gnss.size()][4];
         int satNb = 0;
         for (Propagator prop : gnss) {
-            final Vector3D pos = prop.getPVCoordinates(date, frame).getPosition();
+            final Vector3D pos = prop.getPosition(date, frame);
             final double elev  = frame.getElevation(pos, frame, date);
             final double elMin = (elevationMask != null) ?
                                  elevationMask.getElevation(frame.getAzimuth(pos, frame, date)) :

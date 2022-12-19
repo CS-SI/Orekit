@@ -67,7 +67,7 @@ public abstract class BaseRangeTroposphericDelayModifier {
                                               final SpacecraftState state) {
 
         // spacecraft position and elevation as seen from the ground station
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
         final double elevation  = station.getBaseFrame().getElevation(position,
                                                                       state.getFrame(),
                                                                       state.getDate());
@@ -100,7 +100,7 @@ public abstract class BaseRangeTroposphericDelayModifier {
         final T zero         = field.getZero();
 
         // spacecraft position and elevation as seen from the ground station
-        final FieldVector3D<T> position = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> position = state.getPosition();
         final T elevation               = station.getBaseFrame().getElevation(position,
                                                                               state.getFrame(),
                                                                               state.getDate());

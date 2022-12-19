@@ -182,7 +182,7 @@ public class IodGoodingTest {
     }
 
     private static Vector3D stationPosition(final Frame frame, final AngularRaDec raDec) {
-        return raDec.getStation().getBaseFrame().getPVCoordinates(raDec.getDate(), frame).getPosition();
+        return raDec.getStation().getBaseFrame().getPosition(raDec.getDate(), frame);
     }
 
 }

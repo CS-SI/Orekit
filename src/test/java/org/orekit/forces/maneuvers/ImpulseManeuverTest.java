@@ -189,8 +189,8 @@ public class ImpulseManeuverTest {
         backwardPropagator.addEventDetector(maneuver);
         SpacecraftState rebuiltPast = backwardPropagator.propagate(pastOrbit.getDate());
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(pastOrbit.getPVCoordinates().getPosition(),
-                                              rebuiltPast.getPVCoordinates().getPosition()),
+                            Vector3D.distance(pastOrbit.getPosition(),
+                                              rebuiltPast.getPosition()),
                             2.0e-8);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(pastOrbit.getPVCoordinates().getVelocity(),

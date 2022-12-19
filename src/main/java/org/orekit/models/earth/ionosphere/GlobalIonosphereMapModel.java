@@ -242,7 +242,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                             final double frequency, final double[] parameters) {
 
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -298,7 +298,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                                        final double frequency, final T[] parameters) {
 
         // Elevation in radians
-        final FieldVector3D<T> position = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position = state.getPosition(baseFrame);
         final T elevation = position.getDelta();
 
         // Only consider measures above the horizon

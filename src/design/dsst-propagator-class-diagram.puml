@@ -62,6 +62,7 @@
 
       DSSTForceModel -right->  AuxiliaryElements
       DSSTForceModel <|-- DSSTZonal
+      DSSTForceModel <|-- DSSTJ2SquaredClosedForm
       DSSTForceModel <|-- DSSTTesseral
       DSSTForceModel <|-- DSSTThirdBody
       DSSTForceModel <|-- AbstractGaussianContribution

@@ -378,11 +378,11 @@ public class NumericalPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Initial orbit definition
-        final Vector3D initialPosition = initialState.getPVCoordinates().getPosition();
+        final Vector3D initialPosition = initialState.getPosition();
         final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final Vector3D finalPosition   = finalState.getPVCoordinates().getPosition();
+        final Vector3D finalPosition   = finalState.getPosition();
         final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -699,10 +699,6 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
@@ -717,10 +713,6 @@ public class NumericalPropagatorTest {
 
                 public int getDimension() {
                     return 1;
-                }
-
-                public double[] derivatives(final SpacecraftState state) {
-                    return null;
                 }
 
                 public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -740,10 +732,6 @@ public class NumericalPropagatorTest {
 
                public int getDimension() {
                    return 1;
-               }
-
-               public double[] derivatives(final SpacecraftState state) {
-                   return null;
                }
 
                public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -816,10 +804,6 @@ public class NumericalPropagatorTest {
 
             public int getDimension() {
                 return 1;
-            }
-
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
             }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -959,9 +943,6 @@ public class NumericalPropagatorTest {
             }
             public int getDimension() {
                 return 1;
-            }
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
             }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { rate }, null);
@@ -1419,8 +1400,8 @@ public class NumericalPropagatorTest {
                 // recurring event, we compare with the shifted reference state
                 final double dt = s.getDate().durationFrom(referenceState.getDate());
                 final SpacecraftState shifted = referenceState.shiftedBy(dt);
-                final double error = Vector3D.distance(shifted.getPVCoordinates().getPosition(),
-                                                       s.getPVCoordinates().getPosition());
+                final double error = Vector3D.distance(shifted.getPosition(),
+                                                       s.getPosition());
                 switch ((int) FastMath.rint(dt)) {
                     case 60 :
                         Assertions.assertEquals(error60s,  error, 0.01 * error60s);
@@ -1600,12 +1581,6 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        @Deprecated
-        public double[] derivatives(final SpacecraftState state) {
-            return null;
-        }
-
-        @Override
         public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
             return new CombinedDerivatives(new double[getDimension()], null);
         }
@@ -1715,8 +1690,7 @@ public class NumericalPropagatorTest {
         np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
         // solar radiation pressure
-        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                    earth.getEquatorialRadius(),
+        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
 
         return np;

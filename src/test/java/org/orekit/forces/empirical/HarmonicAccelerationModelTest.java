@@ -177,8 +177,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator1.addForceModel(parametricAcceleration);
 
         MultiSatStepHandler handler = interpolators -> {
-            Vector3D p0 = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
-            Vector3D p1 = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
+            Vector3D p0 = interpolators.get(0).getCurrentState().getPosition();
+            Vector3D p1 = interpolators.get(1).getCurrentState().getPosition();
             Assertions.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
         };
         PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagator0, propagator1),
@@ -299,8 +299,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
         for (double dt = 1; dt < 999; dt += 10) {
             FieldAbsoluteDate<T> t = initialState.getDate().shiftedBy(dt);
-            FieldVector3D<T> p0 = ephemeris0.propagate(t).getPVCoordinates().getPosition();
-            FieldVector3D<T> p1 = ephemeris1.propagate(t).getPVCoordinates().getPosition();
+            FieldVector3D<T> p0 = ephemeris0.propagate(t).getPosition();
+            FieldVector3D<T> p1 = ephemeris1.propagate(t).getPosition();
             Assertions.assertEquals(0, FieldVector3D.distance(p0, p1).getReal(), positionTolerance);
         }
 
@@ -396,7 +396,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator0.setStepHandler(10.0,
                                    state ->
                                    measurements.add(new PV(state.getDate(),
-                                                           state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
+                                                           state.getPosition(), state.getPVCoordinates().getVelocity(),
                                                            1.0e-3, 1.0e-6, 1.0, sat0)));
         propagator0.propagate(orbit.getDate().shiftedBy(900));
 

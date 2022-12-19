@@ -73,7 +73,7 @@ public class CelestialBodyPointingTest {
         // Sun-Earth-Sat are in quadrature, with distance (Earth, Sat) == distance(Sun, Earth) / 5000
         Assertions.assertEquals(FastMath.atan(1.0 / 5000.0),
                             Vector3D.angle(xDirection,
-                                           sun.getPVCoordinates(date, frame).getPosition()),
+                                           sun.getPosition(date, frame)),
                                            1.0e-15);
 
         double h = 0.1;

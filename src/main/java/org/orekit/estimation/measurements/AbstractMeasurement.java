@@ -322,7 +322,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
         // Position of the satellite expressed as a gradient
         // The components of the position are the 3 first derivative parameters
-        final Vector3D p = state.getPVCoordinates().getPosition();
+        final Vector3D p = state.getPosition();
         final FieldVector3D<Gradient> pDS =
                         new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative + 0, p.getX()),
                                             Gradient.variable(freeParameters, firstDerivative + 1, p.getY()),

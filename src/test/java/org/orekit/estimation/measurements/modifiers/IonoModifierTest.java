@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -23,7 +27,6 @@ import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -48,7 +51,6 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
@@ -61,10 +63,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 public class IonoModifierTest {
 
@@ -649,17 +647,6 @@ public class IonoModifierTest {
             Assertions.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
         }
 
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        // dummy test, just to ensure coverage for deprecated class
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        IonosphericGradientConverter igc =
-                        new IonosphericGradientConverter(new SpacecraftState(context.initialOrbit), 6,
-                                                         new InertialProvider(FramesFactory.getEME2000()));
-        Assertions.assertEquals(6, igc.getFreeStateParameters());
     }
 
     private class MockIonosphericModel implements IonosphericModel {

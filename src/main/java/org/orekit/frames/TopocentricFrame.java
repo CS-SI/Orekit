@@ -396,6 +396,12 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         return parentShape.transform(observed, this, AbsoluteDate.ARBITRARY_EPOCH);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
+    }
+
     /** Get the {@link PVCoordinates} of the topocentric frame origin in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position

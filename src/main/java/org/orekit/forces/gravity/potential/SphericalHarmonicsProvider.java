@@ -69,14 +69,4 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
      */
     AbsoluteDate getReferenceDate();
 
-    /** Get the offset from {@link #getReferenceDate reference date} for the harmonics.
-     * @param date current date
-     * @return offset between current date and reference date if there is a reference
-     * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
-     * returns null)
-     * @deprecated as of 11.1, this method is only called by deprecated methods
-     */
-    @Deprecated
-    double getOffset(AbsoluteDate date);
-
 }

@@ -284,7 +284,7 @@ public class DSSTEstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
         Assertions.assertEquals(iterations, estimator.getIterationsCount());
@@ -319,7 +319,7 @@ public class DSSTEstimationTestUtils {
                             max,
                             maxEps);
         Assertions.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
+                            Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition),
                             posEps);
         Assertions.assertEquals(expectedDeltaVel,
                             Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
@@ -376,7 +376,7 @@ public class DSSTEstimationTestUtils {
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
             final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
@@ -399,7 +399,7 @@ public class DSSTEstimationTestUtils {
             }
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
             Assertions.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
             Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
@@ -458,7 +458,7 @@ public class DSSTEstimationTestUtils {
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
             final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
 
             // Get the last covariance matrix estimation
@@ -481,7 +481,7 @@ public class DSSTEstimationTestUtils {
             }
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
             Assertions.assertEquals(0.0, refOrbit[k].getDate().durationFrom(estimatedOrbit.getDate()), 1.0e-10);
             Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);

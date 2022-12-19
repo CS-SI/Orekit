@@ -772,10 +772,6 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             return null;
         }
 
-        public double getOffset(AbsoluteDate date) {
-            return 0;
-        }
-
         public TideSystem getTideSystem() {
             return TideSystem.UNKNOWN;
         }
@@ -852,7 +848,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
 
             AbsoluteDate current = currentState.getDate();
-            Vector3D sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
+            Vector3D sunPos = sun.getPosition(current , FramesFactory.getEME2000());
             Vector3D normal = currentState.getPVCoordinates().getMomentum();
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
@@ -920,8 +916,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         public void handleStep(SpacecraftState currentState) {
 
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
-            Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
-            Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
+            Vector3D posEHP  = EHPOrbit.getPosition();
+            Vector3D posDROZ = currentState.getPosition();
             Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
             Vector3D dif     = posEHP.subtract(posDROZ);
 

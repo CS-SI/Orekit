@@ -138,7 +138,7 @@ public class DSSTThirdBodyContext extends ForceModelContext {
         motion = FastMath.sqrt(mu / absA) / absA;
 
         // Distance from center of mass of the central body to the 3rd body
-        final Vector3D bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
+        final Vector3D bodyPos = thirdBody.getPosition(auxiliaryElements.getDate(), auxiliaryElements.getFrame());
         R3 = bodyPos.getNorm();
 
         // Direction cosines

@@ -44,8 +44,8 @@ public class RelativisticClockOneWayGNSSRangeModifierTest {
 
         // Measurement
         final OneWayGNSSRange range = new OneWayGNSSRange(states[1].getOrbit(), 0.0, date,
-                                                          Vector3D.distance(states[0].getPVCoordinates().getPosition(),
-                                                                            states[1].getPVCoordinates().getPosition()),
+                                                          Vector3D.distance(states[0].getPosition(),
+                                                                            states[1].getPosition()),
                                                           1.0, 1.0, new ObservableSatellite(0));
 
         // Inter-satellites range before applying the modifier

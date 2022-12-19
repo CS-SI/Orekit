@@ -74,9 +74,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalEquations additional equations}
+ *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalDerivativesProvider additional derivatives providers}
  *   should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.FieldAdditionalEquations)}),
+ *   ({@link #addAdditionalDerivativesProvider(org.orekit.propagation.integration.FieldAdditionalDerivativesProvider)}),
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>
@@ -545,7 +545,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
+                    final FieldVector3D<T> position = currentState.getPosition();
                     final T r2         = position.getNormSq();
                     final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
                     yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
@@ -679,7 +679,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
         }
 
-        Arrays.fill(relTol, dP.divide(orbit.getPVCoordinates().getPosition().getNormSq().sqrt()).getReal());
+        Arrays.fill(relTol, dP.divide(orbit.getPosition().getNormSq().sqrt()).getReal());
 
         return new double[][] { absTol, relTol };
 

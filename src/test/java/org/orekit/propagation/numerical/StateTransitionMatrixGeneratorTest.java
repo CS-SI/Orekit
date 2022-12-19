@@ -142,10 +142,9 @@ public class StateTransitionMatrixGeneratorTest {
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
-            public double[] derivatives(SpacecraftState s) { return null; }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[1], null);
-                }
+            }
         });
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
         propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
@@ -316,7 +315,7 @@ public class StateTransitionMatrixGeneratorTest {
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
         Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
-        final Vector3D position = pickUp.getState().getPVCoordinates().getPosition();
+        final Vector3D position = pickUp.getState().getPosition();
         final double   r        = position.getNorm();
 
         // here, we check that the trivial partial derivative of Newton acceleration is computed correctly
@@ -350,7 +349,7 @@ public class StateTransitionMatrixGeneratorTest {
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
         Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
-        final Vector3D position = pickUp.getState().getPVCoordinates().getPosition();
+        final Vector3D position = pickUp.getState().getPosition();
         final double   r        = position.getNorm();
         // here we check that when µ appear is another force model, partial derivatives are not Newton-only anymore
         Assertions.assertTrue(FastMath.abs(-position.getX() / (r * r * r) - pickUp.getAccPartial()[0]) > 2.0e-4 / (r * r));
@@ -706,7 +705,7 @@ public class StateTransitionMatrixGeneratorTest {
         @Override
         public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
             {
-            return s.getPVCoordinates().getPosition();
+            return s.getPosition();
         }
 
         @SuppressWarnings("unchecked")
@@ -714,9 +713,9 @@ public class StateTransitionMatrixGeneratorTest {
         public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
-            this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPosition();
             this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
-            return s.getPVCoordinates().getPosition();
+            return s.getPosition();
         }
 
         @Override
