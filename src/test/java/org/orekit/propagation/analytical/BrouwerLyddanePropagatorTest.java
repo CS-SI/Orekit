@@ -75,7 +75,7 @@ public class BrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            3.6e-9);
+                            4.4e-9);
 
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
