@@ -1241,18 +1241,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             // mean mean anomaly
             final FieldUnivariateDerivative2<T> dtM2  = dt.multiply(m2);
             final FieldUnivariateDerivative2<T> dt2M2 = dt.multiply(dtM2);
-            final FieldUnivariateDerivative2<T> lpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()),
-                                                                                        one.getPi()),
+            final FieldUnivariateDerivative2<T> lpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()), zero),
                                                                                         lt.multiply(xnotDot).add(dtM2.multiply(2.0).getValue()),
                                                                                         m2.multiply(2.0));
             // mean argument of perigee
-            final FieldUnivariateDerivative2<T> gpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())),
-                                                                                        one.getPi()),
+            final FieldUnivariateDerivative2<T> gpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())), zero),
                                                                                         gt.multiply(xnotDot),
                                                                                         zero);
             // mean longitude of ascending node
-            final FieldUnivariateDerivative2<T> hpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ht.multiply(xnot.getValue())),
-                                                                                        one.getPi()),
+            final FieldUnivariateDerivative2<T> hpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ht.multiply(xnot.getValue())), zero),
                                                                                         ht.multiply(xnotDot),
                                                                                         zero);
 
