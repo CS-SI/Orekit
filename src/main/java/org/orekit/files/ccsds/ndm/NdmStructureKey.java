@@ -51,7 +51,10 @@ enum NdmStructureKey {
     apm((token, parser) -> parser.manageApmConstituent()),
 
     /** AEM constituent. */
-    aem((token, parser) -> parser.manageAemConstituent());
+    aem((token, parser) -> parser.manageAemConstituent()),
+
+    /** CDM constituent. */
+    cdm((token, parser) -> parser.manageCdmConstituent());
 
     /** Processing method. */
     private final TokenProcessor processor;
