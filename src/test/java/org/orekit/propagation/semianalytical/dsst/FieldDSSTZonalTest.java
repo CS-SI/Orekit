@@ -261,7 +261,6 @@ public class FieldDSSTZonalTest {
         
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);
-        final Gradient[] dsParameters                = converter.getParametersAtStateDate(dsState, zonal);
         
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
         
@@ -383,7 +382,6 @@ public class FieldDSSTZonalTest {
       
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);
-        final Gradient[] dsParameters                = converter.getParametersAtStateDate(dsState, zonal);
       
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
       

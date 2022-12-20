@@ -101,13 +101,69 @@ public class BatchLSEstimatorTest {
                                      0.0, 1.4e-8,
                                      0.0, 6.3e-12);
 
-        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
+        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-8);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
         Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
         Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
+
+    }
+
+    /**
+     * Perfect PV measurements with a perfect start
+     */
+    @Test
+    public void testKeplerPVMultipleDrag() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0, Force.DRAG);
+
+        for (ParameterDriver driver:propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+            if (driver.getName().equals("drag coefficient")) {
+                driver.setSelected(true);
+                driver.addSpanAtDate(context.initialOrbit.getDate());
+            }
+        }
+        
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               -3.0, 3.0, 300.0);
+
+
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 7.8e-8,
+                                     0.0, 6.0e-7,
+                                     0.0, 3.2e-7,
+                                     0.0, 1.3e-10);
+
+        
+        List<DelegatingDriver> Orbparameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
+        Assert.assertEquals(context.initialOrbit.getA(), Orbparameters.get(0).getValue() , 1.0e-8);
+        Assert.assertEquals(context.initialOrbit.getE(), Orbparameters.get(1).getValue() , 1.0e-12);
+        Assert.assertEquals(context.initialOrbit.getI(), Orbparameters.get(2).getValue() , 1.0e-12);
+        
+        RealMatrix jacobian = estimator.getOptimum().getJacobian();
+        Assert.assertEquals(8,      jacobian.getColumnDimension());
 
     }
     
@@ -654,20 +710,20 @@ public class BatchLSEstimatorTest {
         List<DelegatingDriver> parameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
         Assert.assertEquals("a[0]", a0Driver.getName());
-        a0Driver.setValue(a0Driver.getValue(null) + 1.2, null);
+        a0Driver.setValue(a0Driver.getValue() + 1.2, null);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
         Assert.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue(null) - 5.4, null);
+        a1Driver.setValue(a1Driver.getValue() - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(null),
-                                                parameters.get( 7).getValue(null),
-                                                parameters.get( 8).getValue(null),
-                                                parameters.get( 9).getValue(null),
-                                                parameters.get(10).getValue(null),
-                                                parameters.get(11).getValue(null),
+        final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
+                                                parameters.get( 7).getValue(),
+                                                parameters.get( 8).getValue(),
+                                                parameters.get( 9).getValue(),
+                                                parameters.get(10).getValue(),
+                                                parameters.get(11).getValue(),
                                                 PositionAngle.TRUE,
                                                 closeOrbit.getFrame(),
                                                 closeOrbit.getDate(),
@@ -686,12 +742,12 @@ public class BatchLSEstimatorTest {
                                      0.0, 4.7e-07,
                                      0.0, 2.0e-10);
 
-        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(null),
-                                                    parameters.get( 7).getValue(null),
-                                                    parameters.get( 8).getValue(null),
-                                                    parameters.get( 9).getValue(null),
-                                                    parameters.get(10).getValue(null),
-                                                    parameters.get(11).getValue(null),
+        final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
+                                                    parameters.get( 7).getValue(),
+                                                    parameters.get( 8).getValue(),
+                                                    parameters.get( 9).getValue(),
+                                                    parameters.get(10).getValue(),
+                                                    parameters.get(11).getValue(),
                                                     PositionAngle.TRUE,
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
@@ -1076,9 +1132,11 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
+
         for (final ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
+
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;

@@ -397,10 +397,11 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         final Propagator[] propagators = new Propagator[builders.length];
 
-        int element = 0;
+
         // Set up the propagators
         for (int i = 0; i < builders.length; ++i) {
 
+            int element = 0;
             // Get the number of values to estimate for selected orbital drivers in the builder
             final int nbOrb    = orbitsEndColumns[i] - orbitsStartColumns[i];
 

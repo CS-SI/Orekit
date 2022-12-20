@@ -16,30 +16,20 @@
  */
 package org.orekit.forces.drag;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Transition;
 
 
 /** Atmospheric drag force model.
@@ -132,95 +122,6 @@ public class DragForce extends AbstractDragForceModel {
     public List<ParameterDriver> getParametersDrivers() {
         return spacecraft.getDragParametersDrivers();
     }
-
-    /** {@inheritDoc} */
-    /**
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }*/
-
-    /** Get the dates of the transitions for the drag sensitive models {@link TimeSpanMap}.
-     * @return dates of the transitions for the drag sensitive models {@link TimeSpanMap}
-     */
-    private AbsoluteDate[] getTransitionDates() {
-
-        // Get all transitions
-        final List<AbsoluteDate> listDates = new ArrayList<>();
-
-        // Extract all the transitions' dates
-        for (Transition<Double> transition = spacecraft.getDragParametersDrivers().get(0).getValueSpanMap().getFirstSpan().getEndTransition(); transition != null; transition = transition.next()) {
-            listDates.add(transition.getDate());
-        }
-        // Return the array of transition dates
-        return listDates.toArray(new AbsoluteDate[0]);
-    }
-    /**{@inheritDoc}
-     * <p>
-     * A date detector is used to cleanly stop the propagator and reset
-     * the state derivatives at transition dates.
-     * </p>
-     */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-
-        // Get the transitions' dates from the TimeSpanMap
-        final AbsoluteDate[] transitionDates = getTransitionDates();
-
-        if (transitionDates.length == 0) {
-            return Stream.empty();
-
-        } else {
-            // Initialize the date detector
-            final DateDetector datesDetector = new DateDetector(transitionDates[0]).
-                            withMaxCheck(60.).
-                            withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                                return Action.RESET_DERIVATIVES;
-                            });
-            // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.length; i++) {
-                datesDetector.addEventDate(transitionDates[i]);
-            }
-
-            // Return the detector
-            return Stream.of(datesDetector);
-        }
-    }
-
-
-    /** {@inheritDoc} */
-    /**.
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
-    }*/
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-
-        // Get the transitions' dates from the TimeSpanMap
-        final AbsoluteDate[] transitionDates = getTransitionDates();
-
-        // If only 1 span for the parameterDriver
-        if (transitionDates.length == 0) {
-            return Stream.empty();
-
-        } else {
-            // Initialize the date detector
-            final FieldDateDetector<T> datesDetector =
-                            new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates[0])).
-                            withMaxCheck(field.getZero().add(60.)).
-                            withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                                return Action.RESET_DERIVATIVES;
-                            });
-            // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.length; i++) {
-                datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates[i]));
-            }
-
-            // Return the detector
-            return Stream.of(datesDetector);
-        }
-    }
-
 
     /** Get the atmospheric model.
      * @return atmosphere model

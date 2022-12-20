@@ -155,25 +155,10 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
     /** {@inheritDoc} */
     @Override
-    /**
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
                                             final Atmosphere atmosphere, final DragSensitive spacecraft) {
         final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
         propagatorBuilder.addForceModel(dragModel);
-        return dragModel.getParametersDrivers();
-    }*/
-    
-    protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
-                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
-        AbsoluteDate dateeee = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
-        //AbsoluteDate dateeee = new AbsoluteDate(2014, 02, 14, 03, 0, 0, TimeScalesFactory.getUTC());
-        
-        dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).setPeriods(dateeee, dateeee.shiftedBy(15*3600), 8*3600);
-        System.out.println("drag model nbperiod");
-        System.out.println(dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).getValueSpanMap().getSpansNumber());
-        propagatorBuilder.addForceModel(dragModel);
-        System.out.println( propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(3).getValueSpanMap().getSpansNumber());
         return dragModel.getParametersDrivers();
     }
 

@@ -440,13 +440,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
             // set propagation orbit type
             //final FieldOrbit<T> initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
-            System.out.println(getMu().getReal());
             if (Double.isNaN(getMu().getReal())) {
-                //A ENLEVER       
-            	stateMapper = createMapper(stateMapper.getReferenceDate(), getInitialState().getMu(),
-                        stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
-                        stateMapper.getAttitudeProvider(), stateMapper.getFrame());
-            	// dd
                 setMu(getInitialState().getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {

@@ -67,6 +67,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -521,7 +522,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                    superSetMu(driver.getValue(date));
+                    // mu PDriver should have only 1 span
+                    superSetMu(driver.getValue());
+                }
+                /** {@inheritDoc} */
+                @Override
+                public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                    // mu PDriver should have only 1 span
+                    superSetMu(driver.getValue());
                 }
             });
 

@@ -37,9 +37,7 @@ public interface ParameterObserver {
      * @param previousValueSpanMap previous value
      * @param driver parameter driver that has been changed
      */
-    default void valueSpanMapChanged(TimeSpanMap<Double> previousValueSpanMap, ParameterDriver driver) {
-        // nothing by default
-    }
+    void valueSpanMapChanged(TimeSpanMap<Double> previousValueSpanMap, ParameterDriver driver);
 
     /** Notify that a parameter reference date has been changed.
      * <p>
@@ -75,6 +73,19 @@ public interface ParameterObserver {
      * @since 9.0
      */
     default void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter estimation type (continuous or step) has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousIsContinuous previous estimation type, continuous estimation if true,
+     * step estimation if not.
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void estimationTypeChanged(final boolean previousIsContinuous, final ParameterDriver driver) {
         // nothing by default
     }
 

@@ -65,6 +65,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 
 /**
  * This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using the DSST theory.
@@ -417,7 +418,14 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                        superSetMu(field.getZero().add(driver.getValue(date)));
+                        // mu PDriver should have only 1 span
+                        superSetMu(field.getZero().add(driver.getValue()));
+                    }
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                        // mu PDriver should have only 1 span
+                        superSetMu(field.getZero().add(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {

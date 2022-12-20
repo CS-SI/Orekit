@@ -438,12 +438,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
 
-        final ParameterDriversList orParameters   = estimator.getOrbitalParametersDrivers(true);
-        System.out.println("\n\nEND");
-        for (ParameterDriver driver : orParameters.getDrivers()) {
-        	System.out.println(driver.getName());
-        	System.out.println(driver.getValue(new AbsoluteDate()));
-        }
         //System.out.println(orParameters.getDrivers().get(0).getValue(null));
         return new ResultBatchLeastSquares(propagatorParameters, measurementsParameters,
                                            estimator.getIterationsCount(), estimator.getEvaluationsCount(), estimated.getPVCoordinates(),
@@ -1123,8 +1117,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final double  cd          = parser.getDouble(ParameterKey.DRAG_CD);
             final double  area        = parser.getDouble(ParameterKey.DRAG_AREA);
-            System.out.println("IIIIIIIII");
-            System.out.println(area);
             final boolean cdEstimated = parser.getBoolean(ParameterKey.DRAG_CD_ESTIMATED);
 
             final MarshallSolarActivityFutureEstimation msafe =

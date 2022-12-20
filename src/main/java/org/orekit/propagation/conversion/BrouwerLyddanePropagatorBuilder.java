@@ -249,7 +249,8 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
         boolean isSelected = false;
         for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
             if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
-                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF
+                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
+                // setPeriod method should not be called on this driver (to have several values estimated)
                 newM2      = driver.getValue();
                 isSelected = driver.isSelected();
             }

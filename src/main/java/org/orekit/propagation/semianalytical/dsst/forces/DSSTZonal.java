@@ -695,7 +695,7 @@ public class DSSTZonal implements DSSTForceModel {
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
             // Container of attributes
-            // Extract the proper parameters valid at date from the input array
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
             final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
             final DSSTZonalContext context = initializeStep(auxiliaryElements, extractedParameters);
 
@@ -738,7 +738,7 @@ public class DSSTZonal implements DSSTForceModel {
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
             // Container of attributes
-            // Extract the proper parameters valid at date from the input array
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
             final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
             final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 

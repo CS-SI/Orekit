@@ -36,6 +36,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 
 /** Base class for propagator builders.
  * @author Pascal Parraud
@@ -177,8 +178,14 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
                 /** {@inheridDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                    // getValues(date), date can be null as mu has only 1 value estimated value over the all period
-                    AbstractPropagatorBuilder.this.mu = driver.getValue(date);
+                    // getValue(), can be called without argument as mu driver should have only one span
+                    AbstractPropagatorBuilder.this.mu = driver.getValue();
+                }
+
+                @Override
+                public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap, final ParameterDriver driver) {
+                    // getValue(), can be called without argument as mu driver should have only one span
+                    AbstractPropagatorBuilder.this.mu = driver.getValue();
                 }
             });
             propagationDrivers.add(muDriver);

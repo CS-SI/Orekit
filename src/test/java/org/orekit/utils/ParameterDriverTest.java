@@ -27,17 +27,50 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeSpanMap.Span;
 
 public class ParameterDriverTest {
+
+	@Test
+    public void testPDriverConstruction(){
+        ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -10.0, +10.0);
+        AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
+
+        p1.addSpanAtDate(date);
+        p1.setValue(3.0, date.shiftedBy(10));
+        for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        	System.out.println(span.getData());
+        }
+        Assert.assertEquals(3.0, p1.getValue(date.shiftedBy(10)), 1e-10);
+        Assert.assertEquals(0.0, p1.getValue(date.shiftedBy(-10)), 1e-10);
+        Assert.assertEquals("Span" + p1.getName() + Integer.toString(0), p1.getNameSpan(date.shiftedBy(-10)));
+        Assert.assertEquals("Span" + p1.getName() + Integer.toString(1), p1.getNameSpan(date.shiftedBy(10)));
+
+        p1.addSpanAtDate(date.shiftedBy(2 * 24 * 3600));
+        p1.setValue(6.0, date.shiftedBy(2 * 24 * 3600));
+        Assert.assertEquals(p1.getValue(date.shiftedBy(2 * 24 * 3600 + 10)), 6.0, 1e-10);
+        int nb = 0;
+        for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        	Assert.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        }
+        
+        p1.setName("p1_new");
+        nb = 0;
+        for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        	Assert.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        }
+        
+        
+	}
+
 	@Test
     public void testExceptionSetPeriod(){
         ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
-        p1.setPeriods(date, date.shiftedBy(15 * 3600), 3 * 3600);
+        p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         int nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
         	Assert.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
         }
         try {
-            p1.setPeriods(date, date.shiftedBy(15 * 3600), 5*3600);
+            p1.addSpans(date, date.shiftedBy(15 * 3600), 5*3600);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
             Assert.assertEquals(OrekitMessages.PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET, oe.getSpecifier());
@@ -50,7 +83,7 @@ public class ParameterDriverTest {
     public void testExceptiongetValue(){
         ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
-        p1.setPeriods(date, date.shiftedBy(15 * 3600), 3 * 3600);
+        p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         try {
             p1.getNormalizedValue();
             Assert.fail("an exception should have been thrown");
@@ -66,7 +99,7 @@ public class ParameterDriverTest {
     public void testExceptionsetValue(){
         ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
-        p1.setPeriods(date, date.shiftedBy(15 * 3600), 3 * 3600);
+        p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         p1.setValue(30., date.shiftedBy(-100));
         Assert.assertEquals(1.0, p1.getValue(date.shiftedBy(-500)), 0);
         p1.setValue(0.8, date.shiftedBy(-100));

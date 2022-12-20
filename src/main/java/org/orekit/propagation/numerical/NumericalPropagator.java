@@ -70,6 +70,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -290,8 +291,13 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
+                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                        superSetMu(driver.getValue());
+                    }
+                    /** {@inheritDoc} */
+                    @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                        superSetMu(driver.getValue(date));
+                        superSetMu(driver.getValue());
                     }
                 });
             } catch (OrekitException oe) {

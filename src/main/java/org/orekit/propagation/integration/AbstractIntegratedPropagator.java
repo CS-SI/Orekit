@@ -458,16 +458,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
 
             if (Double.isNaN(getMu())) {
-            	System.out.println("TO FIX ne passe par setMu");
-                //setMu(getInitialState().getMu());
-            	stateMapper = createMapper(getInitialState().getDate(), getInitialState().getMu(),
-                        stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
-                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
-
+                setMu(getInitialState().getMu());
             }
-
-            System.out.println(getMu());
-
 
             if (getInitialState().getMass() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,

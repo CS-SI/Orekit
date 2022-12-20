@@ -29,6 +29,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * <p>
@@ -41,7 +43,7 @@ import org.orekit.utils.ParameterObserver;
  * that is not selected should be avoided as it leads to inconsistencies between the pairs.
  * </p>. Warning, startDate driver, stopDate driver, duration driver and medianDate driver
  * must all have the same number of values to estimate (same number of span in valueSpanMap), that is is to
- * say that the {@link org.orekit.utils.ParameterDriver#setPeriods(AbsoluteDate, AbsoluteDate, double)}
+ * say that the {@link org.orekit.utils.ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)}
  * should be called with same arguments.
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
@@ -234,7 +236,15 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                 setDelta(driver.getValue(date) - previousValue, date);
             }
         }
-
+        /** {@inheritDoc} */
+        @Override
+        public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+            if (driver.isSelected()) {
+                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    setDelta(span.getData() - previousValue.get(span.getStart()), span.getStart());
+                }
+            }
+        }
         /** {@inheritDoc} */
         @Override
         public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {

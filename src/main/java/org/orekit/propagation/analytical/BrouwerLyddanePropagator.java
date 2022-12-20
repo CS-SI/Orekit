@@ -61,7 +61,8 @@ import org.orekit.utils.TimeSpanMap.Span;
  * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
  * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
  * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
- * {@link #M2Driver}.
+ * {@link #M2Driver}. Beware that M2Driver must have only 1 span on its TimeSpanMap value (that is
+ * to say {@link ParameterDriver#setPeriods} method should not be called).
  *
  * Usually, M2 is adjusted during an orbit determination process and it represents the
  * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
@@ -606,20 +607,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     }
 
     /**
-     * Get the value of the M2 drag parameter.
+     * Get the value of the M2 drag parameter. Beware that M2Driver
+     * must have only 1 span on its TimeSpanMap value (that is
+     * to say setPeriod method should not be called)
      * @return the value of the M2 drag parameter
      */
     public double getM2() {
-        return M2Driver.getValue(getStartDate());
-    }
-
-    /**
-     * Get the value of the M2 drag parameter at specific date.
-     * @param date date at which the M2 drag parameter wants to be known.
-     * @return the value of the M2 drag parameter
-     */
-    public double getM2(final AbsoluteDate date) {
-        return M2Driver.getValue(date);
+        // As Brouwer Lyddane is an analytical propagator, for now it is not possible for
+        // M2Driver to have several values estimated
+        return M2Driver.getValue();
     }
 
     /**
@@ -1097,7 +1093,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
         public UnivariateDerivative2[] propagateParameters(final AbsoluteDate date) {
 
             // Empirical drag coefficient M2
-            final double m2 = M2Driver.getValue(date);
+            final double m2 = M2Driver.getValue();
 
             // Keplerian evolution
             final UnivariateDerivative2 dt = new UnivariateDerivative2(date.durationFrom(mean.getDate()), 1.0, 0.0);

@@ -153,43 +153,12 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
     
     /** {@inheritDoc} */
     @Override
-    /**
-    protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
-                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
-        AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
-        //AbsoluteDate dateeee = new AbsoluteDate(2014, 02, 14, 03, 0, 0, TimeScalesFactory.getUTC());
-        
-        dragModel.getParameterDriver(DragSensitive.DRAG_COEFFICIENT).setPeriods(date, date.shiftedBy(15*3600), 8*3600);
-        propagatorBuilder.addForceModel(dragModel);
-        return dragModel.getParametersDrivers();
-    }*/
-    
-
-    
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
                                             final Atmosphere atmosphere, final DragSensitive spacecraft) {
         final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
         propagatorBuilder.addForceModel(dragModel);
         return dragModel.getParametersDrivers();
     }
-    
-    /**
-    protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
-            final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        AbsoluteDate dateeee = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
-        IsotropicDrag isotropicDrag0 = new IsotropicDrag(13.12, 2.0);
-        IsotropicDrag isotropicDrag1 = new IsotropicDrag(13.12, 2.0);
-        isotropicDrag0.getDragParametersDrivers().get(0).setName("Cd0");
-        isotropicDrag0.getDragParametersDrivers().get(0).setSelected(true);
-        isotropicDrag1.getDragParametersDrivers().get(0).setName("Cd1");
-        isotropicDrag1.getDragParametersDrivers().get(0).setSelected(true);
-
-        TimeSpanDragForce force = new TimeSpanDragForce(atmosphere, isotropicDrag0);
-        force.addDragSensitiveValidAfter(isotropicDrag1, dateeee.shiftedBy(8*3600));
-        propagatorBuilder.addForceModel(force);
-        return force.getParametersDrivers();
-    }*/
     
     /** {@inheritDoc} */
     @Override

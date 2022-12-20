@@ -236,7 +236,7 @@ public class ParameterDriversList {
          * @param driver first driver in the series
          */
         DelegatingDriver(final ParameterDriversList owner, final ParameterDriver driver) {
-            super(driver.getName(), driver.getValidityPeriod(), driver.getNamesSpanMap(),
+            super(driver.getName(), driver.getNamesSpanMap(),
                   driver.getValueSpanMap(), driver.getReferenceValue(),
                   driver.getScale(), driver.getMinValue(), driver.getMaxValue());
 
@@ -452,6 +452,12 @@ public class ParameterDriversList {
         @Override
         public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
             updateAll(driver, d -> d.setSelected(driver.isSelected()));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void estimationTypeChanged(final boolean previousSelection, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setContinuousEstimation(driver.isContinuousEstimation()));
         }
 
         /** {@inheritDoc} */

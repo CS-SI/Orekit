@@ -16,15 +16,19 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractGradientConverter;
@@ -317,7 +321,35 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      * @return array of events detectors or null if the model is not
      * related to any discrete events
      */
-    EventDetector[] getEventsDetectors();
+    default EventDetector[] getEventsDetectors() {
+        // If force model does not have parameter Driver, an empty stream is given as results
+        final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
+        for (ParameterDriver driver : getParametersDrivers()) {
+            // Get the transitions' dates from the TimeSpanMap
+            for (AbsoluteDate date : driver.getTransitionDates()) {
+                transitionDates.add(date);
+            }
+        }
+        // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
+        if (transitionDates.size() == 0) {
+            return null;
+
+        } else {
+            transitionDates.sort(null);
+            // Initialize the date detector
+            final DateDetector datesDetector = new DateDetector(transitionDates.get(0)).
+                    withMaxCheck(60.).
+                    withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
+                        return Action.RESET_DERIVATIVES;
+                    });
+            // Add all transitions' dates to the date detector
+            for (int i = 1; i < transitionDates.size(); i++) {
+                datesDetector.addEventDate(transitionDates.get(i));
+            }
+            // Return the detector
+            return (EventDetector[]) Stream.of(datesDetector).toArray();
+        }
+    }
 
     /** Get the discrete events related to the model.
      * @param <T> type of the elements

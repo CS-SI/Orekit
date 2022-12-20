@@ -31,6 +31,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * <p>
@@ -236,6 +238,16 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
         public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
             if (driver.isSelected()) {
                 setDelta(driver.getValue(date) - previousValue, date);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+            if (driver.isSelected()) {
+                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    setDelta(span.getData() - previousValue.get(span.getStart()), span.getStart());
+                }
             }
         }
 

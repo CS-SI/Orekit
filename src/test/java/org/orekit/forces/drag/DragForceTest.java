@@ -821,7 +821,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double dt = 120.;
         // Build the force model
         isoDrag = new IsotropicDrag(dragArea, dragCd0);
-        isoDrag.getDragParametersDrivers().get(0).setPeriods(date.shiftedBy(-3*dt), date.shiftedBy(2.0*dt), 2*dt);
+        isoDrag.getDragParametersDrivers().get(0).addSpans(date.shiftedBy(-3*dt), date.shiftedBy(2.0*dt), 2*dt);
         isoDrag.getDragParametersDrivers().get(0).setValue(dragCd2, date.shiftedBy(-2*dt));
         isoDrag.getDragParametersDrivers().get(0).setValue(dragCd0, date.shiftedBy(-dt));
         isoDrag.getDragParametersDrivers().get(0).setValue(dragCd1, date.shiftedBy(dt));

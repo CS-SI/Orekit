@@ -83,6 +83,8 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventsDetectors() {
+        // Fusion between Date detector for parameter driver span change and
+        // Detector for umbra / penumbra events
         final EventDetector[] detectors = new EventDetector[2 + 2 * otherOccultingBodies.size()];
         detectors[0] = new UmbraDetector();
         detectors[1] = new PenumbraDetector();
@@ -92,12 +94,14 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
             detectors[i + 1] = new GeneralPenumbraDetector(entry.getKey(), entry.getValue());
             i = i + 2;
         }
-        return Stream.of(detectors);
+        return Stream.concat(Stream.of(detectors), super.getEventsDetectors());
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        // Fusion between Date detector for parameter driver span change and
+        // Detector for umbra / penumbra events
         final T zero = field.getZero();
         @SuppressWarnings("unchecked")
         final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) Array.newInstance(FieldEventDetector.class,
@@ -110,7 +114,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
             detectors[i + 1] = new FieldGeneralPenumbraDetector<>(field, entry.getKey(), zero.newInstance(entry.getValue()));
             i = i + 2;
         }
-        return Stream.of(detectors);
+        return Stream.concat(Stream.of(detectors), super.getFieldEventsDetectors(field));
     }
 
     /**
