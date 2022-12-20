@@ -543,7 +543,7 @@ public class ECOM2Test extends AbstractForceModelTest {
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assert.assertTrue(alpha > 100.0);
             Assert.assertTrue(alpha < 112.0);
-            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003525);
+            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003529);
         }
 
     }
