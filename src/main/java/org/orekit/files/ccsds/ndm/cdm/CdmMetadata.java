@@ -16,20 +16,15 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import java.util.List;
-
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.BodyFacade;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
-import org.orekit.files.ccsds.definitions.YesNoUnknown;
+import org.orekit.files.ccsds.definitions.*;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
+
+import java.util.List;
 
 /**
  * This class gathers the meta-data present in the Conjunction Data Message (CDM).
@@ -112,14 +107,14 @@ public class CdmMetadata extends Metadata {
     /** N-body perturbation bodies. */
     private List<BodyFacade> nBodyPerturbations;
 
-    /** Is solar radiation pressure taken into account or not ? */
-    private boolean isSolarRadPressure;
+    /** Is solar radiation pressure taken into account or not ? STANDARD CCSDS saying YES/NO choice and optional */
+    private YesNoUnknown isSolarRadPressure;
 
-    /** Is solid Earth and ocean tides taken into account or not ? */
-    private boolean isEarthTides;
+    /** Is solid Earth and ocean tides taken into account or not. STANDARD CCSDS saying YES/NO choice and optional */
+    private YesNoUnknown isEarthTides;
 
-    /** Is in-track thrust modelling used or not ? */
-    private boolean isIntrackThrustModeled;
+    /** Is in-track thrust modelling used or not. STANDARD CCSDS saying YES/NO choice and optional */
+    private YesNoUnknown isIntrackThrustModeled;
 
     /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
     private String covarianceSource;
@@ -518,52 +513,52 @@ public class CdmMetadata extends Metadata {
     }
 
     /**
-     * Get boolean that indicates if Solar Radiation Pressure is taken into account or not.
-     * @return isSolarRadPressure boolean
+     * Get Enum YesNoUnknown that indicates if Solar Radiation Pressure is taken into account or not.
+     * @return isSolarRadPressure YesNoUnknown
      */
-    public boolean getSolarRadiationPressure() {
+    public YesNoUnknown getSolarRadiationPressure() {
         return isSolarRadPressure;
     }
 
     /**
-     * Set boolean that indicates if Solar Radiation Pressure is taken into account or not.
-     * @param isSolRadPressure boolean
+     * Set Enum that indicates if Solar Radiation Pressure is taken into account or not.
+     * @param isSolRadPressure YesNoUnknown
      */
-    public void setSolarRadiationPressure(final boolean isSolRadPressure) {
+    public void setSolarRadiationPressure(final YesNoUnknown isSolRadPressure) {
         refuseFurtherComments();
         this.isSolarRadPressure = isSolRadPressure;
     }
 
     /**
-     * Get boolean that indicates if Earth and ocean tides are taken into account or not.
-     * @return isEarthTides boolean
+     * Get Enum YesNoUnknown that indicates if Earth and ocean tides are taken into account or not.
+     * @return isEarthTides YesNoUnknown
      */
-    public boolean getEarthTides() {
+    public YesNoUnknown getEarthTides() {
         return isEarthTides;
     }
 
     /**
-     * Set boolean that indicates if Earth and ocean tides are taken into account or not.
-     * @param EarthTides boolean
+     * Set Enum YesNoUnknown that indicates if Earth and ocean tides are taken into account or not.
+     * @param EarthTides YesNoUnknown
      */
-    public void setEarthTides(final boolean EarthTides) {
+    public void setEarthTides(final YesNoUnknown EarthTides) {
         refuseFurtherComments();
         this.isEarthTides = EarthTides;
     }
 
     /**
-     * Get boolean that indicates if intrack thrust modeling was into account or not.
-     * @return isEarthTides boolean
+     * Get Enum YesNoUnknown that indicates if intrack thrust modeling was into account or not.
+     * @return isEarthTides YesNoUnknown
      */
-    public boolean getIntrackThrust() {
+    public YesNoUnknown getIntrackThrust() {
         return isIntrackThrustModeled;
     }
 
     /**
      * Set boolean that indicates if intrack thrust modeling was into account or not.
-     * @param IntrackThrustModeled boolean
+     * @param IntrackThrustModeled YesNoUnknown
      */
-    public void setIntrackThrust(final boolean IntrackThrustModeled) {
+    public void setIntrackThrust(final YesNoUnknown IntrackThrustModeled) {
         refuseFurtherComments();
         this.isIntrackThrustModeled = IntrackThrustModeled;
     }

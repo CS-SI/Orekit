@@ -16,9 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +34,9 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
+
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class CdmParserTest {
 
@@ -376,9 +376,9 @@ public class CdmParserTest {
         Assertions.assertEquals(36, file.getMetadataObject1().getGravityOrder(), 0);
         Assertions.assertEquals("MOON", file.getMetadataObject1().getNBodyPerturbations().get(0).getName());
         Assertions.assertEquals("SUN", file.getMetadataObject1().getNBodyPerturbations().get(1).getName());
-        Assertions.assertEquals(false, file.getMetadataObject1().getSolarRadiationPressure());
-        Assertions.assertEquals(false, file.getMetadataObject1().getEarthTides());
-        Assertions.assertEquals(false, file.getMetadataObject1().getIntrackThrust());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getSolarRadiationPressure().name());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getEarthTides().name());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getIntrackThrust().name());
         Assertions.assertEquals("UTC", file.getMetadataObject1().getTimeSystem().name());
 
         // Check data block

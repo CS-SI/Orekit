@@ -16,14 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Keys for {@link CdmMetadata CDM container} entries.
  * @author Melina Vanel
@@ -107,13 +107,13 @@ public enum CdmMetadataKey {
                                                                                   context.getDataContext().getCelestialBodies())),
 
     /** Is solar radiation pressure used for the OD of the object ? */
-    SOLAR_RAD_PRESSURE((token, context, container) -> token.processAsBoolean(container::setSolarRadiationPressure)),
+    SOLAR_RAD_PRESSURE((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setSolarRadiationPressure)),
 
     /** Is solid Earth and ocean tides used for the OD of the object ? */
-    EARTH_TIDES((token, context, container) -> token.processAsBoolean(container::setEarthTides)),
+    EARTH_TIDES((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setEarthTides)),
 
     /** Indication of whether in-track thrust modeling used for the object. */
-    INTRACK_THRUST((token, context, container) -> token.processAsBoolean(container::setIntrackThrust));
+    INTRACK_THRUST((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setIntrackThrust));
 
     /** Processing method. */
     private final TokenProcessor processor;
