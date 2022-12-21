@@ -28,6 +28,7 @@ import org.hipparchus.CalculusFieldElement;
  * </p>
  * @see ZeisModel
  * @author Bryan Cazabonne
+ * @since 12.0
  */
 public interface J2SquaredModel {
 
