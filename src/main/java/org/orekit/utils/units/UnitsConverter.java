@@ -48,6 +48,10 @@ public class UnitsConverter {
     public static final UnitsConverter MILLI_SECONDS_TO_SECONDS =
                     new UnitsConverter(Unit.parse("ms"), Unit.SECOND);
 
+    /** Nano Teslas to Tesla converter. */
+    public static final UnitsConverter NANO_TESLAS_TO_TESLAS =
+                    new UnitsConverter(Unit.parse("nT"), Unit.TESLA);
+
     /** Days to seconds converter. */
     public static final UnitsConverter DAYS_TO_SECONDS =
                     new UnitsConverter(Unit.DAY, Unit.SECOND);
