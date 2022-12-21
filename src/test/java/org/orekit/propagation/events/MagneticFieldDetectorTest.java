@@ -46,6 +46,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.UnitsConverter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -66,8 +67,8 @@ public class MagneticFieldDetectorTest {
     GeoMagneticField wmm;
     GeoMagneticField igrf;
 
-    double saaValidationThreshold = 500;
-    double saaValidationWidth = 200;
+    double saaValidationThreshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(500);
+    double saaValidationWidth = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(200);
 
 
     /**
@@ -121,7 +122,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorWMMSeaLevelTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.WMM, earth, true).withHandler(handler);
@@ -137,7 +138,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorIGRFSeaLevelTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.IGRF, earth, true).withHandler(handler);
@@ -153,7 +154,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorWMMTrueAltitudeTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.WMM, earth).withHandler(handler);
@@ -169,7 +170,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorIGRFTrueAltitudeTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.IGRF, earth).withHandler(handler);
@@ -187,7 +188,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 0;
-        double threshold = 32000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(32000);
 
         PolygonsSet saaIn = generateGeomagneticMap(wmm, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(wmm, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -209,7 +210,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 0;
-        double threshold = 32000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(32000);
 
         PolygonsSet saaIn = generateGeomagneticMap(igrf, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(igrf, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -231,7 +232,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 600000;
-        double threshold = 23000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(23000);
 
         PolygonsSet saaIn = generateGeomagneticMap(wmm, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(wmm, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -253,7 +254,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 600000;
-        double threshold = 23000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(23000);
 
         PolygonsSet saaIn = generateGeomagneticMap(igrf, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(igrf, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -434,7 +435,7 @@ public class MagneticFieldDetectorTest {
                 altitude = 0;
             }
             double meas = field.calculateField(geo.getLatitude(), geo.getLongitude(), altitude).getTotalIntensity();
-            Assertions.assertEquals(threshold, meas, 1e-3);
+            Assertions.assertEquals(threshold, meas, 1e-12);
         }
     }
 
