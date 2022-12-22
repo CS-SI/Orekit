@@ -58,21 +58,24 @@ public class WaypointPVBuilder {
     private final OneAxisEllipsoid body;
 
     /** Set of waypoints, indexed by time. */
-    private final TreeMap<AbsoluteDate, GeodeticPoint> waypoints = new TreeMap<>();
+    private final TreeMap<AbsoluteDate, GeodeticPoint> waypoints;
 
     /** Whether the resulting provider should be invalid or constant prior to the first waypoint. */
-    private boolean invalidBefore = true;
+    private boolean invalidBefore;
 
     /** Whether the resulting provider should be invalid or constant after to the last waypoint. */
-    private boolean invalidAfter = true;
+    private boolean invalidAfter;
 
     /** Create a new instance.
      * @param factory The factory used to create the intermediate coordinate providers between waypoints.
      * @param body The central body, on which the way points are defined.
      */
     public WaypointPVBuilder(final InterpolationFactory factory, final OneAxisEllipsoid body) {
-        this.factory = factory;
-        this.body = body;
+        this.factory       = factory;
+        this.body          = body;
+        this.waypoints     = new TreeMap<>();
+        this.invalidBefore = true;
+        this.invalidAfter  = true;
     }
 
     /** Construct a waypoint builder interpolating points using a linear cartesian interpolation.
