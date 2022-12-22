@@ -1,4 +1,4 @@
-/* Contributed in the public domain.
+/* Copyright 2002-2022 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
@@ -32,16 +33,17 @@ import org.orekit.time.TimeStamped;
  * sense that no rates thereof are included.
  *
  * @param <T> the type of the field elements
+ * @author Bryan Cazabonne
+ * @see FieldTransform
  * @since 12.0
  */
-public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
-    extends TimeStamped {
+public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends TimeStamped {
 
     /**
      * Get the identity static transform.
      *
-     * @param field field for the components
-     * @param <T> the type of the field elements
+     * @param <T> type of the elements
+     * @param field field used by default
      * @return identity transform.
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getIdentity(final Field<T> field) {
@@ -94,16 +96,23 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
      * @param line to transform
      * @return transformed line
      */
-    default FieldLine<T> transformLine(final FieldLine<T> line) {
+    default FieldLine<T> transformLine(final Line line) {
         final FieldVector3D<T> transformedP0 = transformPosition(line.getOrigin());
         final FieldVector3D<T> transformedP1 = transformPosition(line.pointAt(1.0e6));
         return new FieldLine<>(transformedP0, transformedP1, line.getTolerance());
     }
 
-    /** Get the date.
-     * @return date attached to the object
+    /**
+     * Transform a line.
+     *
+     * @param line to transform
+     * @return transformed line
      */
-    FieldAbsoluteDate<T> getFieldDate();
+    default FieldLine<T> transformLine(final FieldLine<T> line) {
+        final FieldVector3D<T> transformedP0 = transformPosition(line.getOrigin());
+        final FieldVector3D<T> transformedP1 = transformPosition(line.pointAt(1.0e6));
+        return new FieldLine<>(transformedP0, transformedP1, line.getTolerance());
+    }
 
     /**
      * Get the underlying elementary translation.
@@ -141,17 +150,17 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
      * design choice allowing user full control of the combination.
      * </p>
      *
+     * @param <T>    type of the elements
      * @param date   date of the transform
      * @param first  first transform applied
      * @param second second transform applied
-     * @param <T> the type of the field elements
      * @return the newly created static transform that has the same effect as
      * applying {@code first}, then {@code second}.
      * @see #of(FieldAbsoluteDate, FieldVector3D, FieldRotation)
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> compose(final FieldAbsoluteDate<T> date,
                                                                                final FieldStaticTransform<T> first,
-                                                                               final FieldStaticTransform <T>second) {
+                                                                               final FieldStaticTransform<T> second) {
         return of(date,
                   compositeTranslation(first, second),
                   compositeRotation(first, second));
@@ -160,24 +169,26 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
     /**
      * Compute a composite translation.
      *
-     * @param first  first applied transform
+     * @param first first applied transform
      * @param second second applied transform
      * @param <T> the type of the field elements
      * @return translation part of the composite transform
      */
     static <T extends CalculusFieldElement<T>> FieldVector3D<T> compositeTranslation(final FieldStaticTransform<T> first,
                                                                                      final FieldStaticTransform<T> second) {
+
         final FieldVector3D<T> p1 = first.getTranslation();
         final FieldRotation<T> r1 = first.getRotation();
         final FieldVector3D<T> p2 = second.getTranslation();
 
         return p1.add(r1.applyInverseTo(p2));
+
     }
 
     /**
      * Compute a composite rotation.
      *
-     * @param first  first applied transform
+     * @param first first applied transform
      * @param second second applied transform
      * @param <T> the type of the field elements
      * @return rotation part of the composite transform
@@ -187,17 +198,16 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
         final FieldRotation<T> r1 = first.getRotation();
         final FieldRotation<T> r2 = second.getRotation();
         return r1.compose(r2, RotationConvention.FRAME_TRANSFORM);
-
     }
 
     /**
      * Create a new static transform from a rotation and zero translation.
      *
+     * @param <T>         type of the elements
      * @param date     of translation.
      * @param rotation to apply after the translation. That is after translating
      *                 applying this rotation produces positions expressed in
      *                 the new frame.
-     * @param <T> the type of the field elements
      * @return the newly created static transform.
      * @see #of(FieldAbsoluteDate, FieldVector3D, FieldRotation)
      */
@@ -209,11 +219,11 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
     /**
      * Create a new static transform from a translation and rotation.
      *
+     * @param <T>         type of the elements
      * @param date        of translation.
      * @param translation to apply, expressed in the old frame. That is, the
      *                    opposite of the coordinates of the new origin in the
      *                    old frame.
-     * @param <T> the type of the field elements
      * @return the newly created static transform.
      * @see #of(FieldAbsoluteDate, FieldVector3D, FieldRotation)
      */
@@ -225,6 +235,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
     /**
      * Create a new static transform from a translation and rotation.
      *
+     * @param <T>         type of the elements
      * @param date        of translation.
      * @param translation to apply, expressed in the old frame. That is, the
      *                    opposite of the coordinates of the new origin in the
@@ -232,9 +243,8 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
      * @param rotation    to apply after the translation. That is after
      *                    translating applying this rotation produces positions
      *                    expressed in the new frame.
-     * @param <T> the type of the field elements
      * @return the newly created static transform.
-     * @see #compose(FieldAbsoluteDate, FieldStaticTransform, FieldStaticTransform)
+     * @see #compose(AbsoluteDate, StaticTransform, StaticTransform)
      * @see #of(FieldAbsoluteDate, FieldRotation)
      * @see #of(FieldAbsoluteDate, FieldVector3D)
      */
@@ -254,11 +264,6 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>>
             @Override
             public AbsoluteDate getDate() {
                 return date.toAbsoluteDate();
-            }
-
-            @Override
-            public FieldAbsoluteDate<T> getFieldDate() {
-                return date;
             }
 
             @Override

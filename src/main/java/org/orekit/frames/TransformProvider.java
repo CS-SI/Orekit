@@ -64,8 +64,8 @@ public interface TransformProvider extends Serializable {
      * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
      * but implementations may override it for better performance.
      *
+     * @param <T> type of the elements
      * @param date current date.
-     * @param <T> type of the field elements
      * @return the static transform.
      * @since 12.0
      */

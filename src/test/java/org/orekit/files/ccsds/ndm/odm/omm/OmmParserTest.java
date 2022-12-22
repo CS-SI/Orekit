@@ -373,7 +373,6 @@ public class OmmParserTest {
             parser.parseMessage(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            oe.printStackTrace();
             Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
             Assertions.assertEquals("OBJECT_ID", oe.getParts()[0]);
         }

@@ -159,6 +159,20 @@ public class GTODProvider implements EOPBasedTransformProvider {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute Greenwich apparent sidereal time, in radians
+        final T gast = gastFunction.value(date);
+
+        // set up the transform from parent TOD
+        return FieldStaticTransform.of(
+                date,
+                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), gast, RotationConvention.FRAME_TRANSFORM));
+
+    }
+
     /** Replace the instance with a data transfer object for serialization.
      * <p>
      * This intermediate class serializes only the frame key.

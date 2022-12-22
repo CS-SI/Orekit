@@ -30,6 +30,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
@@ -287,6 +288,33 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final T ypNegDot = zero.subtract(polarDriftYDriver.getValue());
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+
+        // take parametric prime meridian shift into account
+        final T theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
+        final FieldStaticTransform<T> meridianShift = FieldStaticTransform.of(
+                date,
+                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), theta, RotationConvention.FRAME_TRANSFORM)
+        );
+
+        // take parametric pole shift into account
+        final T xpNeg     = linearModel(date, polarOffsetXDriver, polarDriftXDriver).negate();
+        final T ypNeg     = linearModel(date, polarOffsetYDriver, polarDriftYDriver).negate();
+        final FieldStaticTransform<T> poleShift = FieldStaticTransform.compose(
+                date,
+                FieldStaticTransform.of(
+                        date,
+                        new FieldRotation<>(FieldVector3D.getPlusJ(date.getField()), xpNeg, RotationConvention.FRAME_TRANSFORM)),
+                FieldStaticTransform.of(
+                        date,
+                        new FieldRotation<>(FieldVector3D.getPlusI(date.getField()), ypNeg, RotationConvention.FRAME_TRANSFORM)));
+
+        return FieldStaticTransform.compose(date, meridianShift, poleShift);
 
     }
 
