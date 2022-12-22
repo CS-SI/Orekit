@@ -101,7 +101,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
 
         // Update estimated value taking into account the ionospheric delay.
         final AbsoluteDate date     = transitState.getDate();
-        final Vector3D     position = transitState.getPVCoordinates().getPosition();
+        final Vector3D     position = transitState.getPosition();
         final Frame        inertial = transitState.getFrame();
 
         // Elevation and azimuth in radians

@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class EncodedMessagesTest {
 
@@ -29,10 +29,10 @@ public class EncodedMessagesTest {
         message.start();
 
         // Verify
-        Assert.assertEquals(1, DataType.BIT_1.decode(message).intValue());
-        Assert.assertEquals(2, DataType.BIT_2.decode(message).intValue());
-        Assert.assertEquals(3, DataType.BIT_3.decode(message).intValue());
-        Assert.assertEquals(4, DataType.BIT_4.decode(message).intValue());
+        Assertions.assertEquals(1, DataType.BIT_1.decode(message).intValue());
+        Assertions.assertEquals(2, DataType.BIT_2.decode(message).intValue());
+        Assertions.assertEquals(3, DataType.BIT_3.decode(message).intValue());
+        Assertions.assertEquals(4, DataType.BIT_4.decode(message).intValue());
     }
 
     private class MockEncodedMessages implements EncodedMessage {
@@ -41,7 +41,7 @@ public class EncodedMessagesTest {
         public long extractBits(int n) {
             return n;
         }
-        
+
     }
 
 }

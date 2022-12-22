@@ -34,7 +34,7 @@
       interface DataLoader
 
       abstract class AbstractSelfFeedingLoader {
-      	#feed(final DataLoader loader)
+        #feed(final DataLoader loader)
       }
 
     }

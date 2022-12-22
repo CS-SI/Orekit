@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -37,6 +33,10 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Class modeling a turn-around range measurement using a primary ground station and a secondary ground station.
  * <p>
@@ -65,8 +65,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "TurnAroundRangeAnalytic";
+
     /** Constructor from parent TurnAroundRange class
-     * @param Range parent class
+     * @param turnAroundRange parent class
      */
     public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange) {
         super(turnAroundRange.getPrimaryStation(), turnAroundRange.getSecondaryStation(),
@@ -142,7 +145,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // Uplink time of flight from secondary station to transit state leg2
         final double tSu    = signalTimeOfFlight(QsecondaryTransitLeg2PV,
-                                                 transitStateLeg2.getPVCoordinates().getPosition(),
+                                                 transitStateLeg2.getPosition(),
                                                  transitDateLeg2);
 
         // Total time of flight for leg 2
@@ -177,7 +180,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // Uplink time of flight from primary station to transit state leg1
         final double tMu = signalTimeOfFlight(QPrimaryTransitLeg1PV,
-                                              transitStateLeg1.getPVCoordinates().getPosition(),
+                                              transitStateLeg1.getPosition(),
                                               transitDateLeg1);
         final AbsoluteDate emissionDate = transitDateLeg1.shiftedBy(-tMu);
         final TimeStampedPVCoordinates primaryDeparture =
@@ -227,7 +230,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Transform FMt     = primaryGroundStation.getOffsetToInertial(state.getFrame(), getDate());
         final PVCoordinates QMt = FMt.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QMt_V    = QMt.getVelocity();
-        final Vector3D pos2     = transitStateLeg2.getPVCoordinates().getPosition();
+        final Vector3D pos2     = transitStateLeg2.getPosition();
         final Vector3D P2_QMt   = QMt.getPosition().subtract(pos2);
         final double   dMDown   = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tMd -
                         Vector3D.dotProduct(P2_QMt, vel);
@@ -283,7 +286,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tSd derivatives / state
         // -----------------------
 
-        final Vector3D pos1       = transitStateLeg1.getPVCoordinates().getPosition();
+        final Vector3D pos1       = transitStateLeg1.getPosition();
         final Vector3D P1_QSt2   = QSt2.getPosition().subtract(pos1);
         final double   dSDown    = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tSd -
                         Vector3D.dotProduct(P1_QSt2, vel);
@@ -749,7 +752,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // Uplink time of flight from secondary station to transit state leg2
         final double tSu    = signalTimeOfFlight(QSdate2PV,
-                                                 state2.getPVCoordinates().getPosition(),
+                                                 state2.getPosition(),
                                                  transitDateLeg2);
 
         // Total time of flight for leg 2
@@ -783,7 +786,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // Uplink time of flight from primary station to transit state leg1
         final double tMu = signalTimeOfFlight(QMdate1PV,
-                                              state1.getPVCoordinates().getPosition(),
+                                              state1.getPosition(),
                                               transitDateLeg1);
 
         // Total time of flight for leg 1
@@ -805,7 +808,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Vector3D vel         = state.getPVCoordinates().getVelocity();
         final PVCoordinates QMt_PV = primaryTopoToInert.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QMt_V       = QMt_PV.getVelocity();
-        final Vector3D pos2        = state2.getPVCoordinates().getPosition();
+        final Vector3D pos2        = state2.getPosition();
         final Vector3D P2_QMt      = QMt_PV.getPosition().subtract(pos2);
         final double   dMDown      = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tMd -
                         Vector3D.dotProduct(P2_QMt, vel);
@@ -911,7 +914,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // tSd derivatives / state
         // -----------------------
 
-        final Vector3D pos1       = state1.getPVCoordinates().getPosition();
+        final Vector3D pos1       = state1.getPosition();
         final Vector3D P1_QSt2   = QSt2.getPosition().subtract(pos1);
         final double   dSDown    = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tSd -
                         Vector3D.dotProduct(P1_QSt2, vel);

@@ -136,7 +136,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
         final AbsoluteDate  date     = state.getDate();
         final Frame         frame    = state.getFrame();
-        final Vector3D      position = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D      position = sun.getPosition(date, frame);
         final double trueElevation   = groundLocation.getElevation(position, frame, date);
 
         final double calculatedElevation;

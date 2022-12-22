@@ -16,16 +16,7 @@
  */
 package org.orekit;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -51,6 +42,15 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
 
@@ -97,7 +97,7 @@ public class Utils {
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
-        
+
     }
 
     public static DataContext setDataRoot(String root) {
@@ -129,7 +129,7 @@ public class Utils {
                 }
             }
         } catch (IllegalAccessException iae) {
-            Assert.fail(iae.getMessage());
+            Assertions.fail(iae.getMessage());
         }
     }
 
@@ -143,7 +143,7 @@ public class Utils {
                 }
             }
         } catch (IllegalAccessException iae) {
-            Assert.fail(iae.getMessage());
+            Assertions.fail(iae.getMessage());
         }
     }
 
@@ -157,7 +157,7 @@ public class Utils {
                 }
             }
         } catch (IllegalAccessException iae) {
-            Assert.fail(iae.getMessage());
+            Assertions.fail(iae.getMessage());
         }
     }
 

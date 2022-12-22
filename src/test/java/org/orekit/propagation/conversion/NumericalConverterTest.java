@@ -16,19 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -49,6 +42,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -56,6 +50,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
 
 public class NumericalConverterTest {
 
@@ -81,15 +79,15 @@ public class NumericalConverterTest {
                                                        dp54Builder,
                                                        PositionAngle.TRUE, 1.0);
         builder.addForceModel(gravity);
-        // Verify that there is no Newtonian attration force model
-        assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Verify that there is no Newtonian attraction force model
+        Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
         // Build the Numerical propagator (not used here)
         builder.buildPropagator(builder.getSelectedNormalizedParameters());
         // Verify the addition of the Newtonian attraction force model
-        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
         // Add a new force model to ensure the Newtonian attraction stay at the last position
         builder.addForceModel(drag);
-        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
     }
 
     @Test
@@ -102,11 +100,11 @@ public class NumericalConverterTest {
         builder.addForceModel(gravity);
         try {
             new JacobianPropagatorConverter(builder, 1.0e-3, 5000);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED, oe.getSpecifier());
-            Assert.assertEquals(OrbitType.CIRCULAR, oe.getParts()[0]);
-            Assert.assertEquals(OrbitType.CARTESIAN, oe.getParts()[1]);
+            Assertions.assertEquals(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED, oe.getSpecifier());
+            Assertions.assertEquals(OrbitType.CIRCULAR, oe.getParts()[0]);
+            Assertions.assertEquals(OrbitType.CARTESIAN, oe.getParts()[1]);
         }
     }
 
@@ -233,24 +231,24 @@ public class NumericalConverterTest {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
 
         });
 
         builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
-    	    public String getName() {
-    	        return "linear";
-    	    }
+            public String getName() {
+                return "linear";
+            }
 
             public int getDimension() {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
 
         });
@@ -258,12 +256,12 @@ public class NumericalConverterTest {
         try {
             // Build the numerical propagator
             builder.buildPropagator(builder.getSelectedNormalizedParameters());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
     }
-    
+
     @Test
     public void testDeselectOrbitals() {
         // Integrator builder
@@ -274,11 +272,11 @@ public class NumericalConverterTest {
                                                        dp54Builder,
                                                        PositionAngle.TRUE, 1.0);
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assert.assertTrue(driver.isSelected());
+            Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assert.assertFalse(driver.isSelected());
+            Assertions.assertFalse(driver.isSelected());
         }
     }
 
@@ -326,7 +324,7 @@ public class NumericalConverterTest {
                 if (force.isSupported(param)) {
                     for (ForceModel model: prop.getAllForceModels()) {
                         if (model.isSupported(param)) {
-                            Assert.assertEquals(force.getParameterDriver(param).getValue(),
+                            Assertions.assertEquals(force.getParameterDriver(param).getValue(),
                                                 model.getParameterDriver(param).getValue(),
                                                 3.0e-4 * FastMath.abs(force.getParameterDriver(param).getValue()));
                         }
@@ -335,25 +333,25 @@ public class NumericalConverterTest {
             }
         }
 
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
+        Assertions.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
                             1.1);
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
                             1.1);
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
                             1.1);
 
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
                             0.0005);
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
                             0.0005);
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
                             0.0005);
     }
@@ -378,29 +376,29 @@ public class NumericalConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double peps = 1.e-1;
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getX()));
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getY()));
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getZ()));
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            peps * FastMath.abs(orbit.getPosition().getX()));
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            peps * FastMath.abs(orbit.getPosition().getY()));
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            peps * FastMath.abs(orbit.getPosition().getZ()));
 
         final double veps = 5.e-1;
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
                             veps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getX()));
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
                             veps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getY()));
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
                             veps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getZ()));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
 
         Utils.setDataRoot("regular-data:potential/shm-format");

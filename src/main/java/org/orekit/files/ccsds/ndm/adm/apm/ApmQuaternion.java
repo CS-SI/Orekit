@@ -26,7 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.Section;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -44,7 +44,7 @@ public class ApmQuaternion implements Section {
     private AbsoluteDate epoch;
 
     /** Endpoints (i.e. frames A, B and their relationship). */
-    private final AttitudeEndoints endpoints;
+    private final AttitudeEndpoints endpoints;
 
     /** Quaternion. */
     private double[] q;
@@ -55,7 +55,7 @@ public class ApmQuaternion implements Section {
     /** Simple constructor.
      */
     public ApmQuaternion() {
-        endpoints = new AttitudeEndoints();
+        endpoints = new AttitudeEndpoints();
         q         = new double[4];
         qDot      = new double[4];
         Arrays.fill(q,    Double.NaN);
@@ -93,7 +93,7 @@ public class ApmQuaternion implements Section {
     /** Get the endpoints (i.e. frames A, B and their relationship).
      * @return endpoints
      */
-    public AttitudeEndoints getEndpoints() {
+    public AttitudeEndpoints getEndpoints() {
         return endpoints;
     }
 

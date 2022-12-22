@@ -921,7 +921,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final Vector3D position = currentState.getPVCoordinates().getPosition();
+                    final Vector3D position = currentState.getPosition();
                     final double r2         = position.getNormSq();
                     final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
                     yDot[3] += coeff * position.getX();
@@ -995,7 +995,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
      * we get at constant energy (i.e. on a Keplerian trajectory):
      * <pre>
-     * V² r |dV| = mu |dr|
+     * V r² |dV| = mu |dr|
      * </pre>
      * <p> So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent errors
@@ -1084,7 +1084,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         }
 
-        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPVCoordinates().getPosition().getNormSq()));
+        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPosition().getNormSq()));
 
         return new double[][] {
             absTol, relTol

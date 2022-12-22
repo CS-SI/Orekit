@@ -193,7 +193,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("deprecation")
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -224,12 +223,8 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
             propagator.addAdditionalDerivativesProvider(provider);
         }
 
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
-            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
-        }
-
         return propagator;
+
     }
 
     /** {@inheritDoc} */

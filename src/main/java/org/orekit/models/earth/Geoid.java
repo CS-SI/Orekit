@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -169,7 +168,6 @@ public class Geoid implements EarthShape {
      * @throws NullPointerException if {@code geopotential == null ||
      *                              referenceEllipsoid == null}
      */
-    @DefaultDataContext
     public Geoid(final NormalizedSphericalHarmonicsProvider geopotential,
                  final ReferenceEllipsoid referenceEllipsoid) {
         // parameter check
@@ -185,7 +183,7 @@ public class Geoid implements EarthShape {
         this.referenceEllipsoid = referenceEllipsoid;
         this.harmonics = new HolmesFeatherstoneAttractionModel(
                 referenceEllipsoid.getBodyFrame(), potential);
-        this.defaultDate = AbsoluteDate.J2000_EPOCH;
+        this.defaultDate = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     @Override
@@ -302,12 +300,6 @@ public class Geoid implements EarthShape {
         @Override
         public AbsoluteDate getReferenceDate() {
             return this.provider.getReferenceDate();
-        }
-
-        @Deprecated
-        @Override
-        public double getOffset(final AbsoluteDate date) {
-            return this.provider.getOffset(date);
         }
 
         @Override

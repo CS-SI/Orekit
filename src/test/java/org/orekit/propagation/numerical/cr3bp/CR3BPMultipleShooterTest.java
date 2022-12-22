@@ -16,15 +16,12 @@
  */
 package org.orekit.propagation.numerical.cr3bp;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CR3BPFactory;
 import org.orekit.bodies.CR3BPSystem;
@@ -43,11 +40,14 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CR3BPMultipleShooterTest {
 
     @Test
     public void testHaloOrbit() {
-        
+
         final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
@@ -112,7 +112,7 @@ public class CR3BPMultipleShooterTest {
         multipleShooting.setEpochFreedom(1, false);
         multipleShooting.setEpochFreedom(2, false);
         multipleShooting.addConstraint(1, 1, 1.0e-5);
-        
+
         // Differential correction
         h1.applyDifferentialCorrection();
         final PVCoordinates initialPVDC = h1.getInitialPV();
@@ -121,73 +121,78 @@ public class CR3BPMultipleShooterTest {
         // Multiple shooting computation
         List<SpacecraftState> result = multipleShooting.compute();
         final AbsolutePVCoordinates initialPVMS = result.get(0).getAbsPVA();
-        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate()); 
+        final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate());
 
-        Assert.assertEquals(0.0, initialPVDC.getPosition().getY(), 1E-15);
-        Assert.assertEquals(0.0, initialPVDC.getVelocity().getX(), 1E-15);
-        Assert.assertEquals(0.0, initialPVDC.getVelocity().getZ(), 1E-15);
+        Assertions.assertEquals(0.0, initialPVDC.getPosition().getY(), 1E-15);
+        Assertions.assertEquals(0.0, initialPVDC.getVelocity().getX(), 1E-15);
+        Assertions.assertEquals(0.0, initialPVDC.getVelocity().getZ(), 1E-15);
 
-        Assert.assertEquals(0.0, initialPVMS.getPosition().getY(), 1E-15);
-        Assert.assertEquals(0.0, initialPVMS.getVelocity().getX(), 1E-15);
-        Assert.assertEquals(0.0, initialPVMS.getVelocity().getZ(), 1E-15);
+        Assertions.assertEquals(0.0, initialPVMS.getPosition().getY(), 1E-15);
+        Assertions.assertEquals(0.0, initialPVMS.getVelocity().getX(), 1E-15);
+        Assertions.assertEquals(0.0, initialPVMS.getVelocity().getZ(), 1E-15);
 
-        Assert.assertEquals(initialPVDC.getPosition().getX(), initialPVMS.getPosition().getX(), 6.6E-4);
-        Assert.assertEquals(initialPVDC.getPosition().getZ(), initialPVMS.getPosition().getZ(), 1.0E-15);
-        Assert.assertEquals(initialPVDC.getVelocity().getY(), initialPVMS.getVelocity().getY(), 7.2E-3);
+        Assertions.assertEquals(initialPVDC.getPosition().getX(), initialPVMS.getPosition().getX(), 6.6E-4);
+        Assertions.assertEquals(initialPVDC.getPosition().getZ(), initialPVMS.getPosition().getZ(), 1.0E-15);
+        Assertions.assertEquals(initialPVDC.getVelocity().getY(), initialPVMS.getVelocity().getY(), 7.2E-3);
 
-        Assert.assertEquals(periodDC, periodMS, 3.0E-2);
+        Assertions.assertEquals(periodDC, periodMS, 3.0E-2);
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testLagrangianError() {
-        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
-        final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
-        h.getClass();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+            final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
+            h.getClass();
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testDifferentialCorrectionError() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 
-        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+            final double orbitalPeriod = 1;
 
-        final double orbitalPeriod = 1;
+            final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 
-        final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
-
-        final PVCoordinates initialConditions =
-                        new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod).compute(LibrationOrbitType.HALO);
-        initialConditions.toString();
+            final PVCoordinates initialConditions =
+                    new CR3BPDifferentialCorrection(firstGuess, syst, orbitalPeriod).compute(LibrationOrbitType.HALO);
+            initialConditions.toString();
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testSTMError() {
-        // Time settings
-        final AbsoluteDate initialDate =
-                        new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
-                                         TimeScalesFactory.getUTC());
-        CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            // Time settings
+            final AbsoluteDate initialDate =
+                    new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
+                            TimeScalesFactory.getUTC());
+            CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 
-        final Frame Frame = syst.getRotatingFrame();
+            final Frame Frame = syst.getRotatingFrame();
 
-        // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
-        // of 8 000 km
-        HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.SOUTHERN);
+            // Define a Northern Halo orbit around Earth-Moon L1 with a Z-amplitude
+            // of 8 000 km
+            HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.SOUTHERN);
 
-        final PVCoordinates pv = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
+            final PVCoordinates pv = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
 
-        final AbsolutePVCoordinates initialAbsPV =
-                        new AbsolutePVCoordinates(Frame, initialDate, pv);
+            final AbsolutePVCoordinates initialAbsPV =
+                    new AbsolutePVCoordinates(Frame, initialDate, pv);
 
-        // Creating the initial spacecraftstate that will be given to the
-        // propagator
-        final SpacecraftState s = new SpacecraftState(initialAbsPV);
+            // Creating the initial spacecraftstate that will be given to the
+            // propagator
+            final SpacecraftState s = new SpacecraftState(initialAbsPV);
 
 
-        final PVCoordinates manifold = h.getManifolds(s, true);
-        manifold.getMomentum();
+            final PVCoordinates manifold = h.getManifolds(s, true);
+            manifold.getMomentum();
+        });
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("cr3bp:regular-data");
     }

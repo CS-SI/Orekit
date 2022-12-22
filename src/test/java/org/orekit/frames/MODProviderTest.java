@@ -16,20 +16,13 @@
  */
 package org.orekit.frames;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.PolynomialNutation;
@@ -41,6 +34,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 
 public class MODProviderTest {
@@ -90,7 +89,7 @@ public class MODProviderTest {
             Transform t = new Transform(date,
                                         modProvider.getTransform(date).getInverse(),
                                         eulerBasedProvider.getTransform(date));
-            Assert.assertEquals(0, t.getRotation().getAngle(), 1.01e-11);
+            Assertions.assertEquals(0, t.getRotation().getAngle(), 1.01e-11);
         }
 
     }
@@ -148,7 +147,7 @@ public class MODProviderTest {
             Transform t = new Transform(date,
                                         modProvider.getTransform(date).getInverse(),
                                         eulerBasedProvider.getTransform(date));
-            Assert.assertEquals(0, t.getRotation().getAngle(), 6.6e-13);
+            Assertions.assertEquals(0, t.getRotation().getAngle(), 6.6e-13);
         }
 
     }
@@ -399,7 +398,7 @@ public class MODProviderTest {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
             double delta = mod1976.getTransformTo(mod2006, date).getRotation().getAngle();
             // MOD2006 and MOD2000 are similar to about 33 milli-arcseconds between 2000 and 2010
-            Assert.assertEquals(0.0, delta, 2.0e-7);
+            Assertions.assertEquals(0.0, delta, 2.0e-7);
         }
     }
 
@@ -412,7 +411,7 @@ public class MODProviderTest {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
             double delta = mod2000.getTransformTo(mod2006, date).getRotation().getAngle();
             // MOD2006 and MOD2000 are similar to about 0.15 milli-arcseconds between 2000 and 2010
-            Assert.assertEquals(0.0, delta, 7.2e-10);
+            Assertions.assertEquals(0.0, delta, 7.2e-10);
         }
     }
 
@@ -425,8 +424,8 @@ public class MODProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 150);
-        Assert.assertTrue(bos.size() < 250);
+        Assertions.assertTrue(bos.size() > 150);
+        Assertions.assertTrue(bos.size() < 250);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -436,13 +435,13 @@ public class MODProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }
@@ -454,15 +453,15 @@ public class MODProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assertions.assertEquals(0, dP.getNorm(), positionThreshold);
+        Assertions.assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
     private void checkRotation(double[][] reference, Transform t, double epsilon) {
         double[][] mat = t.getRotation().getMatrix();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                Assert.assertEquals(reference[i][j], mat[i][j], epsilon);
+                Assertions.assertEquals(reference[i][j], mat[i][j], epsilon);
             }
         }
     }

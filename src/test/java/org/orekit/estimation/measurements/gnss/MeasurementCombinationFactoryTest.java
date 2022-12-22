@@ -16,14 +16,9 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -39,6 +34,11 @@ import org.orekit.gnss.RinexObservationHeader;
 import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.utils.Constants;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MeasurementCombinationFactoryTest {
 
@@ -57,7 +57,7 @@ public class MeasurementCombinationFactoryTest {
     /** RINEX 3 Observation data set. */
     private ObservationDataSet dataSetRinex3;
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchAlgorithmException, IOException {
         Utils.setDataRoot("gnss");
 
@@ -112,7 +112,7 @@ public class MeasurementCombinationFactoryTest {
     }
 
     /**
-     * Test code stability if an empty observation data set is used. 
+     * Test code stability if an empty observation data set is used.
      */
     private void doTestEmptyDataSet(final MeasurementCombination combination) {
         // Build empty observation data set
@@ -121,7 +121,7 @@ public class MeasurementCombinationFactoryTest {
                                                                        new ArrayList<ObservationData>());
         // Test first method signature
         final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);
-        Assert.assertEquals(0, combinedData.getObservationData().size());
+        Assertions.assertEquals(0, combinedData.getObservationData().size());
     }
 
     @Test
@@ -159,41 +159,41 @@ public class MeasurementCombinationFactoryTest {
         try {
             final ObservationData observation = new ObservationData(ObservationType.L5, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
         }
 
         // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
             final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
         }
     }
 
     /**
-     * Test exceptions. 
+     * Test exceptions.
      */
     private void doTestExceptionsDualFrequency(final AbstractDualFrequencyCombination combination) {
         // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
             final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
         }
 
         // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
             final ObservationData observation = new ObservationData(ObservationType.D2, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS, oe.getSpecifier());
         }
     }
 
@@ -244,18 +244,18 @@ public class MeasurementCombinationFactoryTest {
         // Perform combination on the observation data set depending the Rinex version
         final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex2);
         checkCombinedDataSet(combinedDataSet, 3);
-        Assert.assertEquals(type.getName(), combination.getName());
+        Assertions.assertEquals(type.getName(), combination.getName());
         // Verify the combined observation data
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L1/C1
-        Assert.assertEquals(expectedL1C1,       data.get(0).getValue(),                eps);
-        Assert.assertEquals(154 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expectedL1C1,       data.get(0).getValue(),                eps);
+        Assertions.assertEquals(154 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
         // L2/C2
-        Assert.assertEquals(expectedL2C2,       data.get(1).getValue(),                eps);
-        Assert.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expectedL2C2,       data.get(1).getValue(),                eps);
+        Assertions.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
         // L2/P2
-        Assert.assertEquals(expectedL2P2,       data.get(2).getValue(),                eps);
-        Assert.assertEquals(120 * Frequency.F0, data.get(2).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expectedL2P2,       data.get(2).getValue(),                eps);
+        Assertions.assertEquals(120 * Frequency.F0, data.get(2).getCombinedMHzFrequency(), eps);
     }
 
     @Test
@@ -307,21 +307,21 @@ public class MeasurementCombinationFactoryTest {
                                              final double expected2X, final double expected5X) {
         // Perform combination on the observation data set depending the Rinex version
         final CombinedObservationDataSet combinedDataSet = combination.combine(dataSetRinex3);
-        Assert.assertEquals(type.getName(), combination.getName());
+        Assertions.assertEquals(type.getName(), combination.getName());
         // Verify the combined observation data
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L1C/C1C
-        Assert.assertEquals(expected1C,         data.get(0).getValue(),                eps);
-        Assert.assertEquals(154 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected1C,         data.get(0).getValue(),                eps);
+        Assertions.assertEquals(154 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
         // L2W/C2W
-        Assert.assertEquals(expected2W,         data.get(1).getValue(),                eps);
-        Assert.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected2W,         data.get(1).getValue(),                eps);
+        Assertions.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
         // L2X/C2X
-        Assert.assertEquals(expected2X,         data.get(2).getValue(),                eps);
-        Assert.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected2X,         data.get(2).getValue(),                eps);
+        Assertions.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
         // L5X/C5X
-        Assert.assertEquals(expected5X,         data.get(3).getValue(),                eps);
-        Assert.assertEquals(115 * Frequency.F0, data.get(3).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected5X,         data.get(3).getValue(),                eps);
+        Assertions.assertEquals(115 * Frequency.F0, data.get(3).getCombinedMHzFrequency(), eps);
     }
 
     /**
@@ -338,31 +338,31 @@ public class MeasurementCombinationFactoryTest {
             checkCombinedDataSet(combinedDataSet, expectedSize);
         } else {
             combinedDataSet = combination.combine(dataSetRinex3);
-            Assert.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
+            Assertions.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
         }
 
-        Assert.assertEquals(expectedType.getName(), combination.getName());
+        Assertions.assertEquals(expectedType.getName(), combination.getName());
 
         // Verify the combined observation data
         for (CombinedObservationData cod : combinedDataSet.getObservationData()) {
 
             if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
 
-                Assert.assertEquals(expectedPhaseValue, cod.getValue(),                eps);
-                Assert.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(expectedType,       cod.getCombinationType());
+                Assertions.assertEquals(expectedPhaseValue, cod.getValue(),                eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
-                Assert.assertEquals(expectedRangeValue, cod.getValue(),                eps);
-                Assert.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(expectedType,       cod.getCombinationType());
+                Assertions.assertEquals(expectedRangeValue, cod.getValue(),                eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.COMBINED_RANGE_PHASE) {
 
-                Assert.assertEquals(expectedRangePhase, cod.getValue(),                eps);
-                Assert.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
-                Assert.assertEquals(expectedType,       cod.getCombinationType());
+                Assertions.assertEquals(expectedRangePhase, cod.getValue(),                eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             }
 
@@ -372,17 +372,17 @@ public class MeasurementCombinationFactoryTest {
     private void checkCombinedDataSet(final CombinedObservationDataSet combinedDataSet,
                                       final int expectedSize) {
         // Verify the number of combined data set
-        Assert.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
+        Assertions.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
         // Verify RINEX Header
         final RinexObservationHeader header = combinedDataSet.getHeader();
-        Assert.assertEquals(2.11, header.getRinexVersion(), eps);
+        Assertions.assertEquals(2.11, header.getRinexVersion(), eps);
         // Verify satellite data
-        Assert.assertEquals(30, combinedDataSet.getPrnNumber());
-        Assert.assertEquals(SatelliteSystem.GPS, combinedDataSet.getSatelliteSystem());
+        Assertions.assertEquals(30, combinedDataSet.getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GPS, combinedDataSet.getSatelliteSystem());
         // Verify receiver clock
-        Assert.assertEquals(0.0, combinedDataSet.getRcvrClkOffset(), eps);
+        Assertions.assertEquals(0.0, combinedDataSet.getRcvrClkOffset(), eps);
         // Verify date
-        Assert.assertEquals("2016-02-13T00:49:43.000Z", combinedDataSet.getDate().toString());
+        Assertions.assertEquals("2016-02-13T00:49:43.000Z", combinedDataSet.getDate().toString());
     }
 
     private RinexObservationLoader load(final String name) {
@@ -408,7 +408,7 @@ public class MeasurementCombinationFactoryTest {
         final double combineValueMeters = combined.getValue() * wavelength;
 
         // Verify
-        Assert.assertEquals(22350475.245, combineValueMeters, 0.001);
+        Assertions.assertEquals(22350475.245, combineValueMeters, 0.001);
 
     }
 

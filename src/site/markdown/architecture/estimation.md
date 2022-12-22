@@ -169,6 +169,19 @@ DSST theory within a recursive filter orbit determination, Orekit implements the
 
 ![semi-analytical kalman filter overview class diagram](../images/design/extended-semi-analytical-kalman-filter-diagram.png)
 
+It is also possible to perform orbit determination using an Unscented Kalman Filter.
+The Unscented Kalman Filter should generate a better description of the state-error and measurement-error
+distribution functions relative to the Extended Kalman Filter when those error-distributions
+are non-Gaussian. It uses a set of sample points, also called sigma points, to represent the uncertainty
+distribution of the state. Therefore, the Unscented Kalman Filter is an interesting algorithm to solve nonlinear systems.
+
+![unscented kalman filter overview class diagram](../images/design/unscented-kalman-filter-diagram.png)
+
+Like for the Extended Kalman Filter, Orekit implements a semi-analytical version of the Unscented Kalman Filter
+named Unscented Semi-analytical Kalman Filter
+
+![unscented semi-analytical kalman filter overview class diagram](../images/design/unscented-semi-analytical-kalman-filter-diagram.png)
+
 ### Estimated parameters
 
 Users can decide what they want to estimate. The 6 orbital parameters are typically always estimated and are selected
@@ -188,6 +201,16 @@ to the `ParameterDriver` class. During setup, the user can retrieve three differ
 
 Then, looping on the elements of these lists, the user can change the default settings depending on his/her needs
 and for example fix a few orbital parameters while estimating a few propagation and measurements parameters.
+
+### Ephemeris based estimation
+
+Since Orekit 11.3 it is possible to perform ephemeris based estimation. The purpose of the ephemeris based estimation
+is to estimate only the measurement parameters. The dynamical parameter (i.e., orbital and propagator parameters) are
+not estimated. A typical application is the calibration of a telescope clock bias using precise GNSS ephemeris computed
+by analysis centers.
+
+To perform the ephemeris based estimation, the user must provide to the estimator an `EphemerisPropagatorBuilder`
+containing the ephemeris. Orekit automatically disable the estimation of the dynamical parameters.
 
 #### Parameters values changes
 

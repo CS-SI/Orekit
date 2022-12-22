@@ -26,8 +26,8 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
@@ -94,7 +94,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.2e-9, 2.0e-8, 3.1e-7, 8.0e-5, 2.6e-4, 5.0e-3);
+                                    6.5e-9, 2.0e-8, 3.1e-7, 8.5e-5, 3.4e-4, 1.2e-2);
     }
 
     /**
@@ -130,7 +130,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    3.1e-8, 9.9e-8, 1.8e-6, 7.3e-5, 3.2e-4, 1.2e-2);
+                                    3.1e-8, 9.9e-8, 1.8e-6, 8.5e-5, 3.2e-4, 1.2e-2);
     }
 
     /**
@@ -302,11 +302,16 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 8.4e-08);
-        Assert.assertEquals(0.0, absErrorsMin,    9.0e-08);
-        Assert.assertEquals(0.0, absErrorsMax,    2.0e-07);
-        Assert.assertEquals(0.0, relErrorsMedian, 5.1e-15);
-        Assert.assertEquals(0.0, relErrorsMax,    1.2e-14);
+        Assertions.assertEquals(0.0, absErrorsMedian, 8.5e-08);
+        Assertions.assertEquals(0.0, absErrorsMin,    9.0e-08);
+        Assertions.assertEquals(0.0, absErrorsMax,    2.0e-07);
+        Assertions.assertEquals(0.0, relErrorsMedian, 5.1e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    1.2e-14);
+ 
+        // Test measurement type
+        final TurnAroundRangeAnalytic taRangeAnalytic =
+                        new TurnAroundRangeAnalytic((TurnAroundRange) measurements.get(0));
+        Assertions.assertEquals(TurnAroundRangeAnalytic.MEASUREMENT_TYPE, taRangeAnalytic.getMeasurementType());
     }
 
     /**
@@ -406,8 +411,8 @@ public class TurnAroundRangeAnalyticTest {
 //            }
 //            //Test
 
-            Assert.assertEquals(jacobianRef.length, jacobian.length);
-            Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+            Assertions.assertEquals(jacobianRef.length, jacobian.length);
+            Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
             double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
             double [][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
@@ -459,12 +464,12 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Assert the results / max values depend on the test
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
 
@@ -579,8 +584,8 @@ public class TurnAroundRangeAnalyticTest {
                 }
                 final double[] gradient  = TAR.getParameterDerivatives(drivers[i]);
 
-                Assert.assertEquals(1, measurement.getDimension());
-                Assert.assertEquals(1, gradient.length);
+                Assertions.assertEquals(1, measurement.getDimension());
+                Assertions.assertEquals(1, gradient.length);
 
                 // Reference value
                 double ref;
@@ -643,12 +648,12 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Check values
-        Assert.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);
-        Assert.assertEquals(0.0, relErrorsQMMean, refErrorQMMean);
-        Assert.assertEquals(0.0, relErrorsQMMax, refErrorQMMax);
-        Assert.assertEquals(0.0, relErrorsQSMedian, refErrorQSMedian);
-        Assert.assertEquals(0.0, relErrorsQSMean, refErrorQSMean);
-        Assert.assertEquals(0.0, relErrorsQSMax, refErrorQSMax);
+        Assertions.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);
+        Assertions.assertEquals(0.0, relErrorsQMMean, refErrorQMMean);
+        Assertions.assertEquals(0.0, relErrorsQMMax, refErrorQMMax);
+        Assertions.assertEquals(0.0, relErrorsQSMedian, refErrorQSMedian);
+        Assertions.assertEquals(0.0, relErrorsQSMean, refErrorQSMean);
+        Assertions.assertEquals(0.0, relErrorsQSMax, refErrorQSMax);
 
     }
 

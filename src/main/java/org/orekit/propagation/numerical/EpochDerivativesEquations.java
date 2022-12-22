@@ -28,13 +28,12 @@ import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** This class is a copy of {@link AbsolutePartialDerivativesEquations}
- *  The computation of the derivatives of the acceleration due to a ThirdBodyAttraction
- *  has been added.
+/** Computes derivatives of the acceleration, including ThirdBodyAttraction.
  *
  * {@link AdditionalDerivativesProvider Provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -68,10 +67,8 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 10.2
  */
-@SuppressWarnings("deprecation")
 public class EpochDerivativesEquations
-    implements AdditionalDerivativesProvider,
-    org.orekit.propagation.integration.AdditionalEquations  {
+    implements AdditionalDerivativesProvider  {
 
     /** Propagator computing state evolution. */
     private final NumericalPropagator propagator;
@@ -92,7 +89,7 @@ public class EpochDerivativesEquations
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * NumericalPropagator#addAdditionalDerivativesProvider(AdditionalDerivativesProvider)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
      * @param name name of the partial derivatives equations
@@ -263,14 +260,7 @@ public class EpochDerivativesEquations
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState s) {
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
         final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
@@ -402,7 +392,7 @@ public class EpochDerivativesEquations
 
         }
 
-        return pDot;
+        return new CombinedDerivatives(pDot, null);
 
     }
 

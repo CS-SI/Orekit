@@ -16,10 +16,9 @@
  */
 package org.orekit.forces.radiation;
 
-
-import java.io.FileNotFoundException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -36,21 +35,29 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.ThirdBodyAttraction;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -60,12 +67,15 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
+import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -73,8 +83,10 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -89,8 +101,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> position,
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final DerivativeStructure mass) {
         try {
             java.lang.reflect.Field kRefField = SolarRadiationPressure.class.getDeclaredField("kRef");
             kRefField.setAccessible(true);
@@ -101,18 +112,26 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             java.lang.reflect.Field spacecraftField = SolarRadiationPressure.class.getDeclaredField("spacecraft");
             spacecraftField.setAccessible(true);
             RadiationSensitive spacecraft = (RadiationSensitive) spacecraftField.get(forceModel);
-            java.lang.reflect.Method getLightingRatioMethod = SolarRadiationPressure.class.getDeclaredMethod("getLightingRatio",
-                                                                                                             FieldVector3D.class,
-                                                                                                             Frame.class,
-                                                                                                             FieldAbsoluteDate.class);
-            getLightingRatioMethod.setAccessible(true);
 
             final Field<DerivativeStructure> field = position.getX().getField();
-            final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+            final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPosition(date, frame));
             final DerivativeStructure r2  = sunSatVector.getNormSq();
 
+            FieldSpacecraftState<DerivativeStructure> state =
+                            new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date,
+                                                                                                                     position,
+                                                                                                                     velocity,
+                                                                                                                     FieldVector3D.getZero(field)),
+                                                                                 frame,
+                                                                                 field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU)),
+                                                       new FieldAttitude<>(new FieldAbsoluteDate<>(field, date),
+                                                                           frame,
+                                                                           new FieldAngularCoordinates<>(rotation,
+                                                                                                         FieldVector3D.getZero(field))),
+                                                       mass);
+
             // compute flux
-            final DerivativeStructure ratio = (DerivativeStructure) getLightingRatioMethod.invoke(forceModel, position, frame, new FieldAbsoluteDate<>(field, date));
+            final DerivativeStructure ratio = ((SolarRadiationPressure) forceModel).getLightingRatio(state);
             final DerivativeStructure rawP = ratio.multiply(kRef).divide(r2);
             final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
@@ -120,20 +139,18 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             return spacecraft.radiationPressureAcceleration(new FieldAbsoluteDate<>(field, date),
                                                             frame, position, rotation, mass, flux,
                                                             forceModel.getParameters(field));
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
-                 SecurityException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
         }
     }
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<Gradient> position,
-                                                                         final FieldVector3D<Gradient> velocity,
-                                                                         final FieldRotation<Gradient> rotation,
-                                                                         final Gradient mass)
-        {
+                                                                      final AbsoluteDate date, final  Frame frame,
+                                                                      final FieldVector3D<Gradient> position,
+                                                                      final FieldVector3D<Gradient> velocity,
+                                                                      final FieldRotation<Gradient> rotation,
+                                                                      final Gradient mass) {
         try {
             java.lang.reflect.Field kRefField = SolarRadiationPressure.class.getDeclaredField("kRef");
             kRefField.setAccessible(true);
@@ -144,18 +161,25 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             java.lang.reflect.Field spacecraftField = SolarRadiationPressure.class.getDeclaredField("spacecraft");
             spacecraftField.setAccessible(true);
             RadiationSensitive spacecraft = (RadiationSensitive) spacecraftField.get(forceModel);
-            java.lang.reflect.Method getLightingRatioMethod = SolarRadiationPressure.class.getDeclaredMethod("getLightingRatio",
-                                                                                                             FieldVector3D.class,
-                                                                                                             Frame.class,
-                                                                                                             FieldAbsoluteDate.class);
-            getLightingRatioMethod.setAccessible(true);
 
             final Field<Gradient> field = position.getX().getField();
-            final FieldVector3D<Gradient> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+            final FieldVector3D<Gradient> sunSatVector = position.subtract(sun.getPosition(date, frame));
             final Gradient r2  = sunSatVector.getNormSq();
 
+            FieldSpacecraftState<Gradient> state =
+                            new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date,
+                                                                                                                     position,
+                                                                                                                     velocity,
+                                                                                                                     FieldVector3D.getZero(field)),
+                                                                                 frame,
+                                                                                 field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU)),
+                                                       new FieldAttitude<>(new FieldAbsoluteDate<>(field, date),
+                                                                           frame,
+                                                                           new FieldAngularCoordinates<>(rotation,
+                                                                                                         FieldVector3D.getZero(field))),
+                                                       mass);
             // compute flux
-            final Gradient ratio = (Gradient) getLightingRatioMethod.invoke(forceModel, position, frame, new FieldAbsoluteDate<>(field, date));
+            final Gradient ratio = ((SolarRadiationPressure) forceModel).getLightingRatio(state);
             final Gradient rawP = ratio.multiply(kRef).divide(r2);
             final FieldVector3D<Gradient> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
@@ -163,8 +187,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             return spacecraft.radiationPressureAcceleration(new FieldAbsoluteDate<>(field, date),
                                                             frame, position, rotation, mass, flux,
                                                             forceModel.getParameters(field));
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
-                 SecurityException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
         }
     }
@@ -176,24 +199,20 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngle.TRUE,
-                                         CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(),
-                                         date, Constants.JPL_SSD_SUN_GM);
+                                         FramesFactory.getICRF(), date, Constants.JPL_SSD_SUN_GM);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
-            new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
+            new SolarRadiationPressure(sun, new OneAxisEllipsoid(1.0e-10, 0.0, FramesFactory.getICRF()),
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        Assert.assertFalse(srp.dependsOnPositionOnly());
+        Assertions.assertFalse(srp.dependsOnPositionOnly());
 
-        Vector3D position = orbit.getPVCoordinates().getPosition();
-        Frame frame       = orbit.getFrame();
-        Assert.assertEquals(1.0,
-                            srp.getLightingRatio(position, frame, date),
+        Assertions.assertEquals(1.0,
+                            srp.getLightingRatio(new SpacecraftState(orbit)),
                             1.0e-15);
 
-        Assert.assertEquals(1.0,
-                            srp.getLightingRatio(new FieldVector3D<>(Decimal64Field.getInstance(), position),
-                                                 frame,
-                                                 new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date)).getReal(),
+        Assertions.assertEquals(1.0,
+                            srp.getLightingRatio(new FieldSpacecraftState<>(Decimal64Field.getInstance(),
+                                                                            new SpacecraftState(orbit))).getReal(),
                             1.0e-15);
     }
 
@@ -211,11 +230,11 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                 new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
             SolarRadiationPressure SRP =
-                new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
+                new SolarRadiationPressure(sun, earth,
                                            new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
 
             double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-            Assert.assertEquals(86164, period, 1);
+            Assertions.assertEquals(86164, period, 1);
 
         // creation of the propagator
         KeplerianPropagator k = new KeplerianPropagator(orbit);
@@ -229,8 +248,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             currentDate = date.shiftedBy(t);
             try {
 
-                double ratio = SRP.getLightingRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
-                                                    FramesFactory.getEME2000(), currentDate);
+                double ratio = SRP.getLightingRatio(k.propagate(currentDate));
 
                 if (FastMath.floor(ratio)!=changed) {
                     changed = FastMath.floor(ratio);
@@ -242,7 +260,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                 e.printStackTrace();
             }
         }
-        Assert.assertTrue(3==count);
+        Assertions.assertEquals(3, count);
     }
 
     @Test
@@ -267,7 +285,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationSingleCoefficient(2.5, 0.7));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -292,7 +313,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
@@ -316,7 +340,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
@@ -371,8 +398,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     private void doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(double deltaT, double dP,
                                                                           double checkTolerance,
-                                                                          boolean print)
-        {
+                                                                          boolean print) {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -385,7 +411,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
@@ -395,8 +424,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     private void doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(double deltaT, double dP,
                                                                                   double checkTolerance,
-                                                                                  boolean print)
-        {
+                                                                                  boolean print) {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -409,7 +437,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
@@ -418,8 +449,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicClassical()
-        {
+    public void testGlobalStateJacobianIsotropicClassical() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -439,19 +469,21 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e6, tolerances[0], 2.0e-5);
+                           1e6, tolerances[0], 2.8e-5);
 
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicCnes()
-        {
+    public void testGlobalStateJacobianIsotropicCnes() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -471,7 +503,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new IsotropicRadiationCNES95Convention(2.5, 0.7, 0.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -493,7 +528,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
@@ -514,7 +552,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
@@ -524,8 +565,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianBox()
-        {
+    public void testGlobalStateJacobianBox() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -545,7 +585,10 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                        tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         SolarRadiationPressure forceModel =
-                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                                           Vector3D.PLUS_J, 1.2, 0.7, 0.2));
         propagator.addForceModel(forceModel);
@@ -557,7 +600,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
+    public void testRoughOrbitalModifs() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
@@ -568,7 +611,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
                                            0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
-        Assert.assertEquals(86164, period, 1);
+        Assertions.assertEquals(86164, period, 1);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
@@ -576,8 +619,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure SRP =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
+            new SolarRadiationPressure(sun, earth, new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
 
         // creation of the propagator
         double[] absTolerance = {
@@ -597,12 +639,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
         calc.setInitialState(new SpacecraftState(orbit, 1500.0));
         calc.propagate(finalDate);
-        Assert.assertTrue(calc.getCalls() < 7100);
+        Assertions.assertTrue(calc.getCalls() < 7100);
     }
 
     public static void checkRadius(double radius , double min , double max) {
-        Assert.assertTrue(radius >= min);
-        Assert.assertTrue(radius <= max);
+        Assertions.assertTrue(radius >= min);
+        Assertions.assertTrue(radius <= max);
     }
 
     private double mu = 3.98600E14;
@@ -614,8 +656,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
-            Assert.assertTrue(alpha > 100.0);
-            Assert.assertTrue(alpha < 112.0);
+            Assertions.assertTrue(alpha > 100.0);
+            Assertions.assertTrue(alpha < 112.0);
             checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003524, 0.003541);
         }
 
@@ -684,8 +726,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure forceModel =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
+            new SolarRadiationPressure(sun, earth, new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
@@ -751,8 +792,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure forceModel =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
+            new SolarRadiationPressure(sun, earth, new IsotropicRadiationCNES95Convention(500.0, 0.7, 0.7));
 
         FNP.addForceModel(forceModel);
         //NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
@@ -763,13 +803,99 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+    }
+
+    @Test
+    public void testFlatteningLEO() {
+
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
+        NormalizedSphericalHarmonicsProvider gravityField = GravityFieldFactory.getNormalizedProvider(20, 20);
+
+        final AbsoluteDate initialDate = new AbsoluteDate("2000-02-14T00:00:00.000Z", TimeScalesFactory.getUTC());
+        final Orbit initialOrbit =
+                        new CircularOrbit(6992986.636088, -5.3589198032e-04, 1.2502577102e-03,
+                                          FastMath.toRadians(97.827521740), FastMath.toRadians(124.587089845),
+                                          FastMath.toRadians(0.0), PositionAngle.MEAN,
+                                          FramesFactory.getMOD(IERSConventions.IERS_2010),
+                                          initialDate, gravityField.getMu());
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit, 30.0);
+
+        final CelestialBody      sun            = CelestialBodyFactory.getSun();
+        final CelestialBody      moon           = CelestialBodyFactory.getMoon();
+        final RadiationSensitive spacecraft     = new IsotropicRadiationClassicalConvention(0.12, 0.5, 0.5);
+        final OneAxisEllipsoid   oblateEarth    = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final OneAxisEllipsoid   sphericalEarth = new OneAxisEllipsoid(oblateEarth.getEquatorialRadius(),
+                                                                       0.0,
+                                                                       oblateEarth.getBodyFrame());
+
+        PropagatorsParallelizer parallelizer =
+                        new PropagatorsParallelizer(Arrays.asList(createLeoPropagator(sun, moon, oblateEarth,
+                                                                                      gravityField, spacecraft, initialState),
+                                                                  createLeoPropagator(sun, moon, sphericalEarth,
+                                                                                      gravityField, spacecraft, initialState)),
+                                                    new DistanceCheckerHandler(10.0, 0.816805));
+        parallelizer.propagate(initialDate, initialDate.shiftedBy(7 * Constants.JULIAN_DAY));
+
+    }
+
+    private NumericalPropagator createLeoPropagator(final CelestialBody sun, final CelestialBody moon, final OneAxisEllipsoid earth,
+                                                    final NormalizedSphericalHarmonicsProvider gravityField,
+                                                    final RadiationSensitive spacecraft, SpacecraftState initialState) {
+        final double[][] tol = NumericalPropagator.tolerances(1.0e-6, initialState.getOrbit(), OrbitType.CIRCULAR);
+        final NumericalPropagator propagator =
+                        new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 60.0, tol[0], tol[1]));
+        propagator.setOrbitType(OrbitType.CIRCULAR);
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(earth.getBodyFrame(), gravityField));
+        propagator.addForceModel(new ThirdBodyAttraction(sun));
+        propagator.addForceModel(new ThirdBodyAttraction(moon));
+        propagator.addForceModel(new SolarRadiationPressure(sun, earth, spacecraft));
+        propagator.setInitialState(initialState);
+        return propagator;
+    }
+
+    private static class DistanceCheckerHandler implements MultiSatStepHandler {
+
+        private final double samplingStep;
+        private final double expectedMax;
+        private double       currentMax;
+        private AbsoluteDate nextSample;
+
+        DistanceCheckerHandler(final double samplingStep, final double expectedMax) {
+            this.samplingStep = samplingStep;
+            this.expectedMax  = expectedMax;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
+            currentMax = 0.0;
+            nextSample = states0.get(0).getDate().shiftedBy(samplingStep);
+        }
+
+        public void handleStep(List<OrekitStepInterpolator> interpolators) {
+            while (interpolators.get(0).getPreviousState().getDate().isBefore(nextSample) &&
+                   interpolators.get(0).getCurrentState().getDate().isAfterOrEqualTo(nextSample)) {
+                final SpacecraftState state0 = interpolators.get(0).getInterpolatedState(nextSample);
+                final SpacecraftState state1 = interpolators.get(1).getInterpolatedState(nextSample);
+                final double distance = Vector3D.distance(state0.getPosition(),
+                                                          state1.getPosition());
+                currentMax = FastMath.max(currentMax, distance);
+                nextSample = nextSample.shiftedBy(samplingStep);
+            }
+        }
+
+        public void finish(final List<SpacecraftState> finalStates) {
+            Assertions.assertEquals(expectedMax, currentMax, 1.0e-3 * expectedMax);
+        }
+
     }
 
     /** Testing if eclipses due to Moon are considered.
-     * Earth is artificially reduced to a single point to only consider Moon effect.
      * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Satellites"
      * written by Laurent Olivier Froideval in 2009.
      * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph.
@@ -781,7 +907,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-3366.9009055533616, 769.5389825219049,  -1679.3840677789601);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 7200.0, 1.0, 0, 0, 0, 1513);
+        doTestMoonEarth(orbit, 7200.0, 1.0, 0, 0, 0, 1513, 0.0);
     }
 
     @Test
@@ -791,7 +917,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 720.0, 1.0, 0, 531, 0, 0);
+        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0, 2.198e-3);
     }
 
     @Test
@@ -801,12 +927,13 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 1200.0, 1.0, 559, 1004, 0, 0);
+        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.656e-3);
     }
 
     private void doTestMoonEarth(Orbit orbit, double duration, double step,
                                  int expectedEarthUmbraSteps, int expectedEarthPenumbraSteps,
-                                 int expectedMoonUmbraSteps, int expectedMoonPenumbraSteps) {
+                                 int expectedMoonUmbraSteps, int expectedMoonPenumbraSteps,
+                                 double expectedDistance) {
 
         Utils.setDataRoot("2007");
         final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
@@ -814,26 +941,50 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final SpacecraftState initialState = new SpacecraftState(orbit);
 
         // Create SRP perturbation with Moon and Earth
-        SolarRadiationPressure srp =
-            new SolarRadiationPressure(sun, Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                       new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        srp.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
+        SolarRadiationPressure srpWithFlattening =
+                        new SolarRadiationPressure(sun,
+                                                   new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                        Constants.WGS84_EARTH_FLATTENING,
+                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                                   new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
+        srpWithFlattening.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
+        SolarRadiationPressure srpWithoutFlattening =
+                        new SolarRadiationPressure(sun,
+                                                   new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                        0.0,
+                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                                   new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
+        srpWithoutFlattening.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
 
         // creation of the propagator
         final OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = NumericalPropagator.tolerances(0.1, orbit, type);
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(600, 1000000, tol[0], tol[1]);
-        final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(type);
-        propagator.setInitialState(initialState);
-        propagator.addForceModel(srp);
-        MoonEclipseStepHandler handler = new MoonEclipseStepHandler(moon, sun, srp);
-        propagator.setStepHandler(step, handler);
-        propagator.propagate(orbit.getDate().shiftedBy(duration));
-        Assert.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
-        Assert.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
-        Assert.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
-        Assert.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
+        double[][] tol = NumericalPropagator.tolerances(1.0e-6, orbit, type);
+
+        final NumericalPropagator propagatorWithFlattening =
+                        new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 300, tol[0], tol[1]));
+        propagatorWithFlattening.setOrbitType(type);
+        propagatorWithFlattening.setInitialState(initialState);
+        propagatorWithFlattening.addForceModel(srpWithFlattening);
+        MoonEclipseStepHandler handler = new MoonEclipseStepHandler(moon, sun, srpWithFlattening);
+        propagatorWithFlattening.setStepHandler(step, handler);
+        final SpacecraftState withFlattening = propagatorWithFlattening.propagate(orbit.getDate().shiftedBy(duration));
+        Assertions.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
+        Assertions.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
+        Assertions.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
+        Assertions.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
+
+        final NumericalPropagator propagatorWithoutFlattening =
+                        new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 300, tol[0], tol[1]));
+        propagatorWithoutFlattening.setOrbitType(type);
+        propagatorWithoutFlattening.setInitialState(initialState);
+        propagatorWithoutFlattening.addForceModel(srpWithoutFlattening);
+        final SpacecraftState withoutFlattening = propagatorWithoutFlattening.propagate(orbit.getDate().shiftedBy(duration));
+
+        Assertions.assertEquals(expectedDistance,
+                                Vector3D.distance(withFlattening.getPosition(),
+                                                  withoutFlattening.getPosition()),
+                                1.0e-6);
+
     }
 
     /** Specialized step handler.
@@ -875,9 +1026,9 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final AbsoluteDate date = currentState.getDate();
             final Frame frame = currentState.getFrame();
 
-            final Vector3D moonPos = moon.getPVCoordinates(date, frame).getPosition();
-            final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
-            final Vector3D statePos = currentState.getPVCoordinates().getPosition();
+            final Vector3D moonPos = moon.getPosition(date, frame);
+            final Vector3D sunPos = sun.getPosition(date, frame);
+            final Vector3D statePos = currentState.getPosition();
 
             // Moon umbra and penumbra conditions
             final double[] moonAngles = srp.getGeneralEclipseAngles(statePos, moonPos, Constants.MOON_EQUATORIAL_RADIUS,
@@ -895,15 +1046,15 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
 
             // Earth umbra and penumbra conditions
-            final double[] earthAngles = srp.getEclipseAngles(sunPos, statePos);
+            final OccultationEngine.OccultationAngles angles = srp.getOccultingBodies().get(0).angles(currentState);
 
-            final double earthUmbra = earthAngles[0] - earthAngles[1] + earthAngles[2];
+            final double earthUmbra = angles.getSeparation() - angles.getLimbRadius() + angles.getOccultedApparentRadius();
             final boolean isInEarthUmbra = (earthUmbra < 1.0e-10);
             if (isInEarthUmbra) {
                 ++earthUmbraSteps;
             }
 
-            final double earthPenumbra = earthAngles[0] - earthAngles[1] - earthAngles[2];
+            final double earthPenumbra = angles.getSeparation() - angles.getLimbRadius() - angles.getOccultedApparentRadius();
             final boolean isInEarthPenumbra = (earthPenumbra < -1.0e-10);
             if (isInEarthPenumbra) {
                 ++earthPenumbraSteps;
@@ -911,24 +1062,23 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
 
             // Compute lighting ratio
-            final double lightingRatio = srp.getTotalLightingRatio(statePos, frame, date);
+            final double lightingRatio = srp.getLightingRatio(currentState);
 
             // Check behaviour
             if (isInMoonUmbra || isInEarthUmbra) {
-                Assert.assertEquals(0.0, lightingRatio, 1e-8);
+                Assertions.assertEquals(0.0, lightingRatio, 1e-8);
             }
             else if (isInMoonPenumbra || isInEarthPenumbra) {
-                Assert.assertTrue(lightingRatio < 1.0);
-                Assert.assertTrue(lightingRatio > 0.0);
+                Assertions.assertTrue(lightingRatio < 1.0);
+                Assertions.assertTrue(lightingRatio > 0.0);
             }
             else {
-                Assert.assertEquals(1.0, lightingRatio, 1e-8);
+                Assertions.assertEquals(1.0, lightingRatio, 1e-8);
             }
         }
     }
 
     /** Testing if eclipses due to Moon are considered.
-     * Earth is artificially reduced to a single point to only consider Moon effect.
      * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Satellites"
      * written by Laurent Olivier Froideval in 2009.
      * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph.
@@ -943,7 +1093,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(7200.0), field.getZero().newInstance(1.0), 0, 0, 0, 1513);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(7200.0), field.getZero().newInstance(1.0), 0, 0, 0, 1513, 0.0);
     }
 
     @Test
@@ -956,7 +1106,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 531, 0, 0);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.195e-3);
     }
 
     @Test
@@ -969,12 +1119,13 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(1200.0), field.getZero().newInstance(1.0), 559, 1004, 0, 0);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(3600.0), field.getZero().newInstance(1.0), 534, 1003, 0, 0, 11.633e-3);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldMoonEarth(FieldOrbit<T> orbit, T duration, T step,
                                                                           int expectedEarthUmbraSteps, int expectedEarthPenumbraSteps,
-                                                                          int expectedMoonUmbraSteps, int expectedMoonPenumbraSteps) {
+                                                                          int expectedMoonUmbraSteps, int expectedMoonPenumbraSteps,
+                                                                          double expectedDistance) {
 
         Utils.setDataRoot("2007");
         final Field<T> field = orbit.getDate().getField();
@@ -983,26 +1134,51 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
 
         // Create SRP perturbation with Moon and Earth
-        SolarRadiationPressure srp =
-            new SolarRadiationPressure(sun, Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                       new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
-        srp.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
+        SolarRadiationPressure srpWithFlattening =
+                        new SolarRadiationPressure(sun,
+                                                   new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                        Constants.WGS84_EARTH_FLATTENING,
+                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                                   new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
+        srpWithFlattening.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
+        SolarRadiationPressure srpWithoutFlattening =
+                        new SolarRadiationPressure(sun,
+                                                   new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                        0.0,
+                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                                   new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
+        srpWithoutFlattening.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
 
         // creation of the propagator
         final OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = FieldNumericalPropagator.tolerances(field.getZero().newInstance(0.1), orbit, type);
-        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 600, 1000000, tol[0], tol[1]);
-        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
-        propagator.setOrbitType(type);
-        propagator.setInitialState(initialState);
-        propagator.addForceModel(srp);
-        FieldMoonEclipseStepHandler<T> handler = new FieldMoonEclipseStepHandler<>(moon, sun, srp);
-        propagator.setStepHandler(step, handler);
-        propagator.propagate(orbit.getDate().shiftedBy(duration));
-        Assert.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
-        Assert.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
-        Assert.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
-        Assert.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
+        double[][] tol = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-6), orbit, type);
+        final FieldNumericalPropagator<T> propagatorWithFlattening =
+                        new FieldNumericalPropagator<>(field,
+                                        new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));
+        propagatorWithFlattening.setOrbitType(type);
+        propagatorWithFlattening.setInitialState(initialState);
+        propagatorWithFlattening.addForceModel(srpWithFlattening);
+        FieldMoonEclipseStepHandler<T> handler = new FieldMoonEclipseStepHandler<>(moon, sun, srpWithFlattening);
+        propagatorWithFlattening.setStepHandler(step, handler);
+        final FieldSpacecraftState<T> withFlattening = propagatorWithFlattening.propagate(orbit.getDate().shiftedBy(duration));
+        Assertions.assertEquals(expectedEarthUmbraSteps,    handler.earthUmbraSteps);
+        Assertions.assertEquals(expectedEarthPenumbraSteps, handler.earthPenumbraSteps);
+        Assertions.assertEquals(expectedMoonUmbraSteps,     handler.moonUmbraSteps);
+        Assertions.assertEquals(expectedMoonPenumbraSteps,  handler.moonPenumbraSteps);
+
+        final FieldNumericalPropagator<T> propagatorWithoutFlattening =
+                        new FieldNumericalPropagator<>(field,
+                                        new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));
+        propagatorWithoutFlattening.setOrbitType(type);
+        propagatorWithoutFlattening.setInitialState(initialState);
+        propagatorWithoutFlattening.addForceModel(srpWithoutFlattening);
+        final FieldSpacecraftState<T> withoutFlattening = propagatorWithoutFlattening.propagate(orbit.getDate().shiftedBy(duration));
+
+        Assertions.assertEquals(expectedDistance,
+                                FieldVector3D.distance(withFlattening.getPosition(),
+                                                       withoutFlattening.getPosition()).getReal(),
+                                1.0e-6);
+
     }
 
     /** Specialized step handler.
@@ -1044,9 +1220,9 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final FieldAbsoluteDate<T> date = currentState.getDate();
             final Frame frame = currentState.getFrame();
 
-            final FieldVector3D<T> moonPos = moon.getPVCoordinates(date, frame).getPosition();
-            final FieldVector3D<T> sunPos = sun.getPVCoordinates(date, frame).getPosition();
-            final FieldVector3D<T> statePos = currentState.getPVCoordinates().getPosition();
+            final FieldVector3D<T> moonPos = moon.getPosition(date, frame);
+            final FieldVector3D<T> sunPos = sun.getPosition(date, frame);
+            final FieldVector3D<T> statePos = currentState.getPosition();
 
             // Moon umbra and penumbra conditions
             final T[] moonAngles = srp.getGeneralEclipseAngles(statePos, moonPos,
@@ -1066,39 +1242,40 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             }
 
             // Earth umbra and penumbra conditions
-            final T[] earthAngles = srp.getEclipseAngles(sunPos, statePos);
+            final OccultationEngine.FieldOccultationAngles<T> angles = srp.getOccultingBodies().get(0).angles(currentState);
 
-            final T earthUmbra = earthAngles[0].subtract(earthAngles[1]).add(earthAngles[2]);
+            final T earthUmbra = angles.getSeparation().subtract(angles.getLimbRadius()).add(angles.getOccultedApparentRadius());
             final boolean isInEarthUmbra = (earthUmbra.getReal() < 1.0e-10);
             if (isInEarthUmbra) {
                 ++earthUmbraSteps;
             }
 
-            final T earthPenumbra = earthAngles[0].subtract(earthAngles[1]).subtract(earthAngles[2]);
+            final T earthPenumbra = angles.getSeparation().subtract(angles.getLimbRadius()).subtract(angles.getOccultedApparentRadius());
             final boolean isInEarthPenumbra = (earthPenumbra.getReal() < -1.0e-10);
             if (isInEarthPenumbra) {
                 ++earthPenumbraSteps;
             }
 
             // Compute lighting ratio
-            final T lightingRatio = srp.getTotalLightingRatio(statePos, frame, date);
+            final T lightingRatio = srp.getLightingRatio(currentState);
 
             // Check behaviour
             if (isInMoonUmbra || isInEarthUmbra) {
-                Assert.assertEquals(0.0, lightingRatio.getReal(), 1e-8);
+                Assertions.assertEquals(0.0, lightingRatio.getReal(), 1e-8);
             }
             else if (isInMoonPenumbra || isInEarthPenumbra) {
-                Assert.assertTrue(lightingRatio.getReal() < 1.0);
-                Assert.assertTrue(lightingRatio.getReal() > 0.0);
+                Assertions.assertTrue(lightingRatio.getReal() < 1.0);
+                Assertions.assertTrue(lightingRatio.getReal() > 0.0);
             }
             else {
-                Assert.assertEquals(1.0, lightingRatio.getReal(), 1e-8);
+                Assertions.assertEquals(1.0, lightingRatio.getReal(), 1e-8);
             }
         }
     }
-    @Before
+
+    @BeforeEach
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:potential");
     }
 
 }

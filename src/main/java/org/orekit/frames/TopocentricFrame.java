@@ -201,7 +201,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @since 9.3
      */
     public <T extends CalculusFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
-                                                          final FieldAbsoluteDate<T> date) {
+                                                              final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
         final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
@@ -251,7 +251,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                                         final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
-        final FieldStaticTransform<T> t = frame.getStaticTransformTo(frame, date).getInverse();
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
         final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
         // Compute azimuth
@@ -290,7 +290,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @since 9.3
      */
     public <T extends CalculusFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
-                                                      final FieldAbsoluteDate<T> date) {
+                                                          final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
         final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
@@ -394,6 +394,12 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                                 distance * scEl.cos() * scAz.cos(),
                                                 distance * scEl.sin());
         return parentShape.transform(observed, this, AbsoluteDate.ARBITRARY_EPOCH);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
     }
 
     /** Get the {@link PVCoordinates} of the topocentric frame origin in the selected frame.

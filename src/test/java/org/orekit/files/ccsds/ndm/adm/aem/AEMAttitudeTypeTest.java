@@ -23,10 +23,10 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -52,7 +52,7 @@ public class AEMAttitudeTypeTest {
     AemMetadata metadata;
     ContextBinding context;
 
-    @Before
+    @BeforeEach
     public void setUp()
         throws Exception {
         Utils.setDataRoot("regular-data");
@@ -70,7 +70,7 @@ public class AEMAttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         metadata = null;
         context  = null;
@@ -88,15 +88,17 @@ public class AEMAttitudeTypeTest {
         };
         final TimeStampedAngularCoordinates tsac = spin.parse(true, true, RotationOrder.XYZ, true, context, attitudeData);
         final Vector3D spinInert = tsac.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assert.assertEquals(-136.19348942398204, FastMath.toDegrees(spinInert.getAlpha()), ANGLE_PRECISION);
-        Assert.assertEquals(-33.53517498449179,  FastMath.toDegrees(spinInert.getDelta()), ANGLE_PRECISION);
+        Assertions.assertEquals(-136.19348942398204, FastMath.toDegrees(spinInert.getAlpha()), ANGLE_PRECISION);
+        Assertions.assertEquals(-33.53517498449179, FastMath.toDegrees(spinInert.getDelta()), ANGLE_PRECISION);
 
         final Rotation zeroPhase = new Rotation(RotationOrder.ZYZ, RotationConvention.FRAME_TRANSFORM,
                                                 spinInert.getAlpha(), 0.5 * FastMath.PI - spinInert.getDelta(), 0.0);
-        Assert.assertEquals(86.03122596451917,   FastMath.toDegrees(Rotation.distance(zeroPhase, tsac.getRotation())), ANGLE_PRECISION);
-        Assert.assertEquals(0.0,                 FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
-        Assert.assertEquals(0.0,                 FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
-        Assert.assertEquals(-14.816053659122998, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
+        Assertions.assertEquals(86.03122596451917, FastMath.toDegrees(Rotation.distance(zeroPhase, tsac.getRotation())),
+                ANGLE_PRECISION);
+        Assertions.assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
+        Assertions.assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
+        Assertions.assertEquals(-14.816053659122998, FastMath.toDegrees(tsac.getRotationRate().getZ()),
+                ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -112,13 +114,12 @@ public class AEMAttitudeTypeTest {
                                                                metadata.isSpacecraftBodyRate(),
                                                                tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]),
-                                Double.parseDouble(attitudeDataBis[i]),
-                                ANGLE_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+                    ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR, spin.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, spin.getAngularDerivativesFilter());
 
     }
 
@@ -136,23 +137,23 @@ public class AEMAttitudeTypeTest {
         try {
             spinNutation.parse(true, true, RotationOrder.XYZ, true,
                                context, new String[] { "2021-03-17T00:00:00.000" });
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
+            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
 
         // Test exception on the second method
         try {
             spinNutation.createDataFields(true, true, RotationOrder.XYZ, true, null);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
+            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
 
         // no exception on the third method
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR, spinNutation.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, spinNutation.getAngularDerivativesFilter());
 
     }
 
@@ -171,10 +172,10 @@ public class AEMAttitudeTypeTest {
                                                                     metadata.getEulerRotSeq(),
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
-        Assert.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
-        Assert.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
-        Assert.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
-        Assert.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -192,13 +193,12 @@ public class AEMAttitudeTypeTest {
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]),
-                                Double.parseDouble(attitudeDataBis[i]),
-                                QUATERNION_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+                    QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assert.assertEquals(AngularDerivativesFilter.USE_R, quaternion.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_R, quaternion.getAngularDerivativesFilter());
     }
 
     @Test
@@ -216,10 +216,10 @@ public class AEMAttitudeTypeTest {
                                                                     metadata.getEulerRotSeq(),
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
-        Assert.assertEquals(0.68427,    tsac.getRotation().getQ0(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.56748,    tsac.getRotation().getQ1(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.03146,    tsac.getRotation().getQ2(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.45689,    tsac.getRotation().getQ3(),    QUATERNION_PRECISION);
+        Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -237,13 +237,12 @@ public class AEMAttitudeTypeTest {
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]),
-                                Double.parseDouble(attitudeDataBis[i]),
-                                QUATERNION_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+                    QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR, quaternion.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, quaternion.getAngularDerivativesFilter());
     }
 
     @Test
@@ -263,14 +262,14 @@ public class AEMAttitudeTypeTest {
                                                                         metadata.getEulerRotSeq(),
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
-        Assert.assertEquals(0.68427,  tsac.getRotation().getQ0(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.56748,  tsac.getRotation().getQ1(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.03146,  tsac.getRotation().getQ2(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.45689,  tsac.getRotation().getQ3(),    QUATERNION_PRECISION);
+        Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
+        Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
         Vector3D rebuiltRate = tsac.getRotation().applyInverseTo(tsac.getRotationRate());
-        Assert.assertEquals(FastMath.toRadians(43.1), rebuiltRate.getX(), ANGLE_PRECISION);
-        Assert.assertEquals(FastMath.toRadians(12.8), rebuiltRate.getY(), ANGLE_PRECISION);
-        Assert.assertEquals(FastMath.toRadians(37.9), rebuiltRate.getZ(), ANGLE_PRECISION);
+        Assertions.assertEquals(FastMath.toRadians(43.1), rebuiltRate.getX(), ANGLE_PRECISION);
+        Assertions.assertEquals(FastMath.toRadians(12.8), rebuiltRate.getY(), ANGLE_PRECISION);
+        Assertions.assertEquals(FastMath.toRadians(37.9), rebuiltRate.getZ(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -288,13 +287,12 @@ public class AEMAttitudeTypeTest {
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]),
-                                Double.parseDouble(attitudeDataBis[i]),
-                                QUATERNION_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+                    QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR, quaternionRate.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, quaternionRate.getAngularDerivativesFilter());
     }
 
     @Test
@@ -313,9 +311,9 @@ public class AEMAttitudeTypeTest {
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         final double[] angles = tsac.getRotation().getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
-        Assert.assertEquals(43.1, FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
-        Assert.assertEquals(12.8, FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
-        Assert.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
+        Assertions.assertEquals(43.1, FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
+        Assertions.assertEquals(12.8, FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
+        Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -333,13 +331,12 @@ public class AEMAttitudeTypeTest {
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]),
-                                Double.parseDouble(attitudeDataBis[i]),
-                                ANGLE_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+                    ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assert.assertEquals(AngularDerivativesFilter.USE_R, eulerAngle.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_R, eulerAngle.getAngularDerivativesFilter());
     }
 
     @Test
@@ -361,10 +358,10 @@ public class AEMAttitudeTypeTest {
         mdWithoutRateFrame.setEulerRotSeq(RotationOrder.ZXZ);
         try {
             mdWithoutRateFrame.checkMandatoryEntriesExceptDatesAndExternalFrame(1.0);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
-            Assert.assertEquals(AemMetadataKey.RATE_FRAME.name(), oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals(AemMetadataKey.RATE_FRAME.name(), oe.getParts()[0]);
         }
     }
 
@@ -387,12 +384,12 @@ public class AEMAttitudeTypeTest {
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
         final double[] angles = tsac.getRotation().getAngles(sequence, RotationConvention.FRAME_TRANSFORM);
-        Assert.assertEquals(43.1,  FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
-        Assert.assertEquals(12.8,  FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
-        Assert.assertEquals(37.9,  FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
-        Assert.assertEquals(1.452, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
-        Assert.assertEquals(0.475, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
-        Assert.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
+        Assertions.assertEquals(43.1, FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
+        Assertions.assertEquals(12.8, FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
+        Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
+        Assertions.assertEquals(1.452, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
+        Assertions.assertEquals(0.475, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
+        Assertions.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -410,13 +407,12 @@ public class AEMAttitudeTypeTest {
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]),
-                                Double.parseDouble(attitudeDataBis[i]),
-                                ANGLE_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+                    ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR, eulerAngleRate.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, eulerAngleRate.getAngularDerivativesFilter());
     }
 
     @Test
@@ -526,15 +522,17 @@ public class AEMAttitudeTypeTest {
                                                            metadata.isSpacecraftBodyRate(),
                                                            context, sData);
         TimeStampedAngularCoordinates diff = tac.addOffset(rebuilt.revert());
-        Assert.assertEquals(0.0, diff.getRotation().getAngle(),    tolAngle);
+        Assertions.assertEquals(0.0, diff.getRotation().getAngle(), tolAngle);
         if (type.getAngularDerivativesFilter() != AngularDerivativesFilter.USE_R) {
-            Assert.assertEquals(0.0, diff.getRotationRate().getNorm(), tolRate);
+            Assertions.assertEquals(0.0, diff.getRotationRate().getNorm(), tolRate);
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidAttitudeType() {
-        AttitudeType.parseType("TAG");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            AttitudeType.parseType("TAG");
+        });
     }
 
 }

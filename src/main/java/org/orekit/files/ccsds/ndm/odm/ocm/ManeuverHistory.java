@@ -36,8 +36,8 @@ public class ManeuverHistory {
      * @param metadata metadata
      * @param maneuvers maneuvers
      */
-    ManeuverHistory(final ManeuverHistoryMetadata metadata,
-                    final List<Maneuver> maneuvers) {
+    public ManeuverHistory(final ManeuverHistoryMetadata metadata,
+                           final List<Maneuver> maneuvers) {
         this.metadata  = metadata;
         this.maneuvers = maneuvers;
     }

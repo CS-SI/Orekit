@@ -16,14 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -33,9 +27,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -44,6 +38,7 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -75,21 +70,28 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class FieldDSSTSolarRadiationPressureTest {
-    
+
     @Test
     public void testGetMeanElementRate() {
         doTestGetMeanElementRate(Decimal64Field.getInstance());
     }
-    
+
     private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
-        
+
         final T zero = field.getZero();
-        
+
         final Frame earthFrame = FramesFactory.getGCRF();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 9, 16, 0, 0, 0, TimeScalesFactory.getUTC());
         final double mu = 3.986004415E14;
@@ -112,7 +114,9 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                             mu);
 
         // Register the attitude provider to the force model
@@ -133,12 +137,12 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                                                                      rotationRate,
                                                                                                      rotationAcceleration);
         final FieldAttitude<T> att = new FieldAttitude<>(earthFrame, orientation);
-        
+
         // Spacecraft state
         final T mass = zero.add(1000.0);
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, att, mass);
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
-        
+
         // Force model parameters
         final T[] parameters = srp.getParameters(field);
         // Initialize force model
@@ -153,12 +157,12 @@ public class FieldDSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(6.843966348263062E-8,    elements[0].getReal(), 1.1e-11);
-        Assert.assertEquals(-2.990913371084091E-11,  elements[1].getReal(), 2.2e-19);
-        Assert.assertEquals(-2.538374405334012E-10,  elements[2].getReal(), 8.0e-19);
-        Assert.assertEquals(2.0384702426501394E-13,  elements[3].getReal(), 2.0e-20);
-        Assert.assertEquals(-2.3346333406116967E-14, elements[4].getReal(), 8.5e-22);
-        Assert.assertEquals(1.6087485237156322E-11,  elements[5].getReal(), 1.7e-18);
+        Assertions.assertEquals(6.839604359021367E-8,    elements[0].getReal(), 1.0e-23);
+        Assertions.assertEquals(-2.990944216154925E-11,  elements[1].getReal(), 1.0e-27);
+        Assertions.assertEquals(-2.5384005619142175E-10, elements[2].getReal(), 1.0e-26);
+        Assertions.assertEquals(2.0378279596706824E-13,  elements[3].getReal(), 1.0e-29);
+        Assertions.assertEquals(-2.333877201515642E-14,  elements[4].getReal(), 1.0e-30);
+        Assertions.assertEquals(1.6082383581033796E-11,  elements[5].getReal(), 1.0e-27);
 
     }
 
@@ -169,7 +173,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
     @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
- 
+
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
 
@@ -187,22 +191,24 @@ public class FieldDSSTSolarRadiationPressureTest {
         final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(orbit);
 
         final CelestialBody    sun   = CelestialBodyFactory.getSun();
-        
+
         final BoxAndSolarArraySpacecraft boxAndWing = new BoxAndSolarArraySpacecraft(5.0, 2.0, 2.0,
                                                                                      sun,
                                                                                      50.0, Vector3D.PLUS_J,
                                                                                      2.0, 0.1,
                                                                                      0.2, 0.6);
-        
+
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
                                                                 LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(sun,
-                                                                   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                   boxAndWing,
-                                                                   meanState.getMu().getReal());
-        
+                                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
+                                                                  boxAndWing,
+                                                                  meanState.getMu().getReal());
+
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
 
@@ -215,7 +221,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
-        
+
         for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
             final T[] shortPeriodic = spt.value(meanState.getOrbit());
             for (int i = 0; i < shortPeriodic.length; i++) {
@@ -223,18 +229,18 @@ public class FieldDSSTSolarRadiationPressureTest {
             }
         }
 
-        Assert.assertEquals(0.36637346843285684,     y[0].getReal(), 0.5e-12);
-        Assert.assertEquals(-2.4294913010512626E-10, y[1].getReal(), 2.6e-20);
-        Assert.assertEquals(-3.858954680824408E-9,   y[2].getReal(), 7.e-20);
-        Assert.assertEquals(-3.0648619902684686E-9,  y[3].getReal(), 0.9e-21);
-        Assert.assertEquals(-4.9023731169635814E-9,  y[4].getReal(), 1.1e-19);
-        Assert.assertEquals(-2.385357916413363E-9,   y[5].getReal(), 1.3e-20);
+        Assertions.assertEquals(0.3668654523023674,     y[0].getReal(), 1.0e-16);
+        Assertions.assertEquals(-2.567333228302908E-10, y[1].getReal(), 1.0e-25);
+        Assertions.assertEquals(-3.849598776918734E-9,  y[2].getReal(), 1.0e-24);
+        Assertions.assertEquals(-3.069285299519464E-9,  y[3].getReal(), 1.0e-24);
+        Assertions.assertEquals(-4.90887054227722E-9,   y[4].getReal(), 1.0e-23);
+        Assertions.assertEquals(-2.3854933842837777E-9, y[5].getReal(), 1.0e-25);
     }
-    
+
     @Test
     @SuppressWarnings("unchecked")
     public void testShortPeriodTermsStateDerivatives() {
-        
+
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
@@ -248,11 +254,11 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);
-        
+
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
-       
+
         final SpacecraftState meanState = new SpacecraftState(orbit);
-        
+
         // Attitude
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
                                                                 LOFType.LVLH_CCSDS, RotationOrder.XYZ,
@@ -261,22 +267,24 @@ public class FieldDSSTSolarRadiationPressureTest {
         // Force model
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                                   provider.getMu());
         srp.registerAttitudeProvider(attitudeProvider);
-                        
+
         // Converter for derivatives
         final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
-        
+
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(srp);
         final Gradient[] dsParameters                = converter.getParameters(dsState, srp);
-        
+
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
-        
+
         // Zero
         final Gradient zero = dsState.getDate().getField().getZero();
-        
+
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
         shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
@@ -289,9 +297,9 @@ public class FieldDSSTSolarRadiationPressureTest {
                 shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
             }
         }
-        
+
         final double[][] shortPeriodJacobian = new double[6][6];
-      
+
         final double[] derivativesASP  = shortPeriod[0].getGradient();
         final double[] derivativesExSP = shortPeriod[1].getGradient();
         final double[] derivativesEySP = shortPeriod[2].getGradient();
@@ -306,52 +314,52 @@ public class FieldDSSTSolarRadiationPressureTest {
         addToRow(derivativesHxSP, 3, shortPeriodJacobian);
         addToRow(derivativesHySP, 4, shortPeriodJacobian);
         addToRow(derivativesLSP,  5, shortPeriodJacobian);
-        
+
         // Compute reference state Jacobian using finite differences
         double[][] shortPeriodJacobianRef = new double[6][6];
         double dP = 0.001;
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
-            
+
             SpacecraftState stateM4 = shiftState(meanState, orbitType, -4 * steps[i], i);
             double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, srp);
-            
+
             SpacecraftState stateM3 = shiftState(meanState, orbitType, -3 * steps[i], i);
             double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, srp);
-            
+
             SpacecraftState stateM2 = shiftState(meanState, orbitType, -2 * steps[i], i);
             double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, srp);
- 
+
             SpacecraftState stateM1 = shiftState(meanState, orbitType, -1 * steps[i], i);
             double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, srp);
-            
+
             SpacecraftState stateP1 = shiftState(meanState, orbitType, 1 * steps[i], i);
             double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, srp);
-            
+
             SpacecraftState stateP2 = shiftState(meanState, orbitType, 2 * steps[i], i);
             double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, srp);
-            
+
             SpacecraftState stateP3 = shiftState(meanState, orbitType, 3 * steps[i], i);
             double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, srp);
-            
+
             SpacecraftState stateP4 = shiftState(meanState, orbitType, 4 * steps[i], i);
             double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, srp);
-            
+
             fillJacobianColumn(shortPeriodJacobianRef, i, orbitType, steps[i],
                                shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
                                shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
-            
+
         }
-        
+
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assert.assertEquals(0, error, 8.3e-10);
+                Assertions.assertEquals(0, error, 8.3e-10);
             }
         }
 
     }
-    
+
     @Test
     public void testSRPParametersDerivatives() throws ParseException, IOException {
         doTestShortPeriodTermsParametersDerivatives(RadiationSensitive.REFLECTION_COEFFICIENT, 9.e-15);
@@ -364,7 +372,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
     @SuppressWarnings("unchecked")
     private void doTestShortPeriodTermsParametersDerivatives(String parameterName, double tolerance) {
-      
+
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
@@ -378,11 +386,11 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);
-        
+
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
-       
+
         final SpacecraftState meanState = new SpacecraftState(orbit);
-        
+
         // Attitude
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
                                                                 LOFType.LVLH_CCSDS, RotationOrder.XYZ,
@@ -391,27 +399,29 @@ public class FieldDSSTSolarRadiationPressureTest {
         // Force model
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                                   provider.getMu());
         srp.registerAttitudeProvider(attitudeProvider);
-      
+
         for (final ParameterDriver driver : srp.getParametersDrivers()) {
             driver.setValue(driver.getReferenceValue());
             driver.setSelected(driver.getName().equals(parameterName));
         }
-      
+
         // Converter for derivatives
         final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, Utils.defaultLaw());
-      
+
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(srp);
         final Gradient[] dsParameters                = converter.getParameters(dsState, srp);
-      
+
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
-      
+
         // Zero
         final Gradient zero = dsState.getDate().getField().getZero();
-      
+
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
         shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
@@ -426,14 +436,14 @@ public class FieldDSSTSolarRadiationPressureTest {
         }
 
         final double[][] shortPeriodJacobian = new double[6][1];
-    
+
         final double[] derivativesASP  = shortPeriod[0].getGradient();
         final double[] derivativesExSP = shortPeriod[1].getGradient();
         final double[] derivativesEySP = shortPeriod[2].getGradient();
         final double[] derivativesHxSP = shortPeriod[3].getGradient();
         final double[] derivativesHySP = shortPeriod[4].getGradient();
         final double[] derivativesLSP  = shortPeriod[5].getGradient();
-      
+
         int index = converter.getFreeStateParameters();
         for (ParameterDriver driver : srp.getParametersDrivers()) {
             if (driver.isSelected()) {
@@ -446,7 +456,7 @@ public class FieldDSSTSolarRadiationPressureTest {
                 ++index;
             }
         }
-      
+
         // Compute reference Jacobian using finite differences
         double[][] shortPeriodJacobianRef = new double[6][1];
         ParameterDriversList bound = new ParameterDriversList();
@@ -458,57 +468,57 @@ public class FieldDSSTSolarRadiationPressureTest {
                 driver.setSelected(false);
             }
         }
-      
+
         ParameterDriver selected = bound.getDrivers().get(0);
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
-      
+
         selected.setValue(p0 - 4 * h);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, srp);
-  
+
         selected.setValue(p0 - 3 * h);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, srp);
-      
+
         selected.setValue(p0 - 2 * h);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, srp);
-      
+
         selected.setValue(p0 - 1 * h);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, srp);
-      
+
         selected.setValue(p0 + 1 * h);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, srp);
-      
+
         selected.setValue(p0 + 2 * h);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, srp);
-      
+
         selected.setValue(p0 + 3 * h);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, srp);
-      
+
         selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, srp);
-      
+
         fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
                            shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
-        
+
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+            Assertions.assertEquals(shortPeriodJacobianRef[i][0],
                                 shortPeriodJacobian[i][0],
                                 FastMath.abs(shortPeriodJacobianRef[i][0] * tolerance));
         }
-      
+
     }
 
     private double[] computeShortPeriodTerms(SpacecraftState state,
                                              DSSTForceModel force) {
-        
+
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
-        
+
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         double[] parameters = force.getParameters();
         shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
-        
+
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {
             double[] spVariation = spt.value(state.getOrbit());
@@ -516,9 +526,9 @@ public class FieldDSSTSolarRadiationPressureTest {
                 shortPeriod[i] += spVariation[i];
             }
         }
-        
+
         return shortPeriod;
-        
+
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
@@ -534,7 +544,7 @@ public class FieldDSSTSolarRadiationPressureTest {
                                    672 * (P1h[i] - M1h[i])) / (840 * h);
         }
     }
- 
+
     private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType,
                                        double delta, int column) {
 
@@ -559,7 +569,7 @@ public class FieldDSSTSolarRadiationPressureTest {
           EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
           return new SpacecraftState(orbit, attitude);
     }
-    
+
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component
      * @param index component index (0 for a, 1 for ex, 2 for ey, 3 for hx, 4 for hy, 5 for l)
@@ -574,7 +584,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));

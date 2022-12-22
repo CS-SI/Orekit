@@ -16,15 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -72,25 +72,25 @@ public class FieldApsideDetectorTest {
                                  withThreshold(zero.add(1.0e-12)).
                                  withHandler(new FieldContinueOnEvent<FieldApsideDetector<T>, T>());
 
-        Assert.assertEquals(600.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assert.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(detector));
 
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assert.assertEquals(30, logger.getLoggedEvents().size());
+        Assertions.assertEquals(30, logger.getLoggedEvents().size());
         for (FieldLoggedEvent<T> e : logger.getLoggedEvents()) {
             FieldKeplerianOrbit<T> o = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(e.getState().getOrbit());
             double expected = e.isIncreasing() ? 0.0 : FastMath.PI;
-            Assert.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly().getReal(), expected), 4.0e-14);
+            Assertions.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly().getReal(), expected), 4.0e-14);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

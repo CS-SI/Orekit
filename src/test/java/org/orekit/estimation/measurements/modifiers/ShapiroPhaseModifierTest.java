@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -37,6 +35,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 
+import java.util.List;
+
 public class ShapiroPhaseModifierTest {
 
     /** Frequency of the measurements. */
@@ -48,7 +48,7 @@ public class ShapiroPhaseModifierTest {
     }
 
     private void doTestShapiro(final double expectedMin, final double expectedMean, final double expectedMax) {
- 
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -84,8 +84,8 @@ public class ShapiroPhaseModifierTest {
 
             Phase phase = (Phase) measurement;
             EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             phase.addModifier(modifier);
@@ -93,7 +93,7 @@ public class ShapiroPhaseModifierTest {
             for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             EstimatedMeasurement<Phase> eval = phase.estimate(0, 0,  new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
@@ -103,9 +103,9 @@ public class ShapiroPhaseModifierTest {
         // wavelength
         final double wavelength = ((Phase) measurements.get(0)).getWavelength();
 
-        Assert.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
-        Assert.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
-        Assert.assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
+        Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
+        Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
+        Assertions.assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
 
     }
 

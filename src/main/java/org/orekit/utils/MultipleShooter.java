@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.EpochDerivativesEquations;
@@ -40,23 +39,6 @@ public class MultipleShooter extends AbstractMultipleShooting {
      * @since 11.1
      */
     private final List<EpochDerivativesEquations> epochEquations;
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
-     * @param initialGuessList initial patch points to be corrected.
-     * @param propagatorList list of propagators associated to each patch point.
-     * @param additionalEquations list of additional equations linked to propagatorList.
-     * @param arcDuration initial guess of the duration of each arc.
-     * @param tolerance convergence tolerance on the constraint vector
-     * @deprecated as of 11.1, replaced by {@link #MultipleShooter(List, List, List, double, double, int)}
-     */
-    @Deprecated
-    public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                           final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
-                           final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, DERIVATIVES);
-        epochEquations = additionalEquations.stream().map(ae -> (EpochDerivativesEquations) ae).collect(Collectors.toList());
-    }
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>

@@ -16,15 +16,12 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -45,6 +42,9 @@ import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TLEBatchLSEstimatorTest {
 
@@ -86,14 +86,14 @@ public class TLEBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.03071, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(0.03071, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
-    
+
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
     public void testPVBackward() {
@@ -130,11 +130,11 @@ public class TLEBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.03420, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(0.03420, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -181,36 +181,36 @@ public class TLEBatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                    Assertions.assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                    Assertions.assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assert.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                Assertions.assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(measurements.size());
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    Assertions.assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
         });
 
         ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assert.assertEquals(OrbitType.POS_X, xDriver.getName());
+        Assertions.assertEquals(OrbitType.POS_X, xDriver.getName());
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -225,10 +225,10 @@ public class TLEBatchLSEstimatorTest {
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if (OrbitType.POS_X.equals(driver.getName())) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
             }
         }
     }
@@ -278,7 +278,7 @@ public class TLEBatchLSEstimatorTest {
                                          0.0, 3.2e-6,
                                          0.0, 3.8e-7,
                                          0.0, 1.5e-10);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
         }
@@ -340,7 +340,7 @@ public class TLEBatchLSEstimatorTest {
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         TLEEstimationTestUtils.checkFit(context, estimator, 4, 5,
                                      0.0, 5.2e-6,
-                                     0.0, 3.3e-5,
+                                     0.0, 3.4e-5,
                                      0.0, 6.1e-6,
                                      0.0, 2.5e-9);
     }

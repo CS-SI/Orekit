@@ -365,7 +365,7 @@ public class DTM2000 implements Atmosphere {
         final double lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPVCoordinates(date, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(date, ecef);
         final double hl = FastMath.PI + FastMath.atan2(
                 sunPos.getX() * pEcef.getY() - sunPos.getY() * pEcef.getX(),
                 sunPos.getX() * pEcef.getX() + sunPos.getY() * pEcef.getY());
@@ -402,7 +402,7 @@ public class DTM2000 implements Atmosphere {
         final T lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPVCoordinates(dateD, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(dateD, ecef);
         final T y  = pEcef.getY().multiply(sunPos.getX()).subtract(pEcef.getX().multiply(sunPos.getY()));
         final T x  = pEcef.getX().multiply(sunPos.getX()).add(pEcef.getY().multiply(sunPos.getY()));
         final T hl = y.atan2(x).add(y.getPi());

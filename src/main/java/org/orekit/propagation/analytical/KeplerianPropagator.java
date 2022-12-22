@@ -198,7 +198,12 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
-        return new KeplerianHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Create the harvester
+        final KeplerianHarvester harvester = new KeplerianHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Update the list of additional state provider
+        addAdditionalStateProvider(harvester);
+        // Return the configured harvester
+        return harvester;
     }
 
 }

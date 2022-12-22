@@ -16,13 +16,10 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -43,6 +40,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ShapiroInterSatelliteRangeModifierTest {
 
     @Test
@@ -57,7 +57,7 @@ public class ShapiroInterSatelliteRangeModifierTest {
 
     private void doTestShapiro(final boolean twoWay,
                                final double expectedMin, final double expectedMean, final double expectedMax) {
- 
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -121,16 +121,16 @@ public class ShapiroInterSatelliteRangeModifierTest {
             for (final EstimationModifier<InterSatellitesRange> existing : sr.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             EstimatedMeasurement<InterSatellitesRange> eval = sr.estimate(0, 0, states);
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
 
-        Assert.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
-        Assert.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
-        Assert.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
+        Assertions.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
+        Assertions.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
+        Assertions.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
 
     }
 

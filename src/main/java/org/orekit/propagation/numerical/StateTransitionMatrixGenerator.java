@@ -35,6 +35,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 
@@ -163,7 +164,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
     }
 
     /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState state) {
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         // Assuming position is (px, py, pz), velocity is (vx, vy, vz) and the acceleration
         // due to the force models is (Σ ax, Σ ay, Σ az), the differential equation for
@@ -186,7 +187,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         // perform multiplication
         multiplyMatrix(factor, p, pDot, STATE_DIMENSION);
 
-        return pDot;
+        return new CombinedDerivatives(pDot, null);
 
     }
 

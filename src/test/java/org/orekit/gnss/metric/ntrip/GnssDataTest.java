@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class GnssDataTest {
 
@@ -29,6 +29,6 @@ public class GnssDataTest {
         };
         final GnssData gnssData = new GnssData(data, data.length);
         // Verify
-        Assert.assertEquals("123456789", gnssData.toString());
+        Assertions.assertEquals("123456789", gnssData.toString());
     }
 }

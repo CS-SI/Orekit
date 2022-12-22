@@ -19,8 +19,8 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -65,7 +65,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
      */
     private double phaseErrorTroposphericModel(final GroundStation station, final SpacecraftState state, final double wavelength) {
         // satellite position
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
         final double elevation = station.getBaseFrame().getElevation(position,
@@ -100,7 +100,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final T zero         = field.getZero();
 
         // satellite elevation
-        final FieldVector3D<T> position     = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> position     = state.getPosition();
         final T elevation                   = station.getBaseFrame().getElevation(position,
                                                                                   state.getFrame(),
                                                                                   state.getDate());
@@ -186,7 +186,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final double[] oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
-        final TroposphericGradientConverter converter = new TroposphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final ModifierGradientConverter converter = new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
         final Gradient[] gParameters = converter.getParameters(gState, tropoModel);
         final Gradient gDelay = phaseErrorTroposphericModel(station, gState, gParameters, measurement.getWavelength());

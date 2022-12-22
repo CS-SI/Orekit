@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Pair;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -41,6 +39,9 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import java.util.List;
+import java.util.Map;
+
 public class Context implements StationDataProvider {
     public IERSConventions                      conventions;
     public OneAxisEllipsoid                     earth;
@@ -58,6 +59,14 @@ public class Context implements StationDataProvider {
     // Map entry = primary station
     // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
+    // Stations for bistatic range rate
+    // key/first    = emitter station
+    // value/second = receiver station
+    public Pair<GroundStation, GroundStation>    BRRstations;
+    // Stations for TDOA
+    // key/first    = primary station that dates the measurement
+    // value/second = secondary station associated
+    public Pair<GroundStation, GroundStation>    TDOAstations;
 
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
                                                     final boolean perfectStart,
@@ -70,7 +79,7 @@ public class Context implements StationDataProvider {
             startOrbit = initialOrbit;
         } else {
             // orbit estimation will start from a wrong point
-            final Vector3D initialPosition = initialOrbit.getPVCoordinates().getPosition();
+            final Vector3D initialPosition = initialOrbit.getPosition();
             final Vector3D initialVelocity = initialOrbit.getPVCoordinates().getVelocity();
             final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
             final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));

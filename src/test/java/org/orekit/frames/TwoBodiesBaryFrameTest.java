@@ -16,14 +16,14 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -52,13 +52,13 @@ public class TwoBodiesBaryFrameTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute barycenter position and our frame origin in EME2000
-        Vector3D truePosBary = barycenter.getPVCoordinates(date, eme2000).getPosition();
+        Vector3D truePosBary = barycenter.getPosition(date, eme2000);
         Vector3D posBary   = baryFrame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Moon are aligned as seen from Earth
-        Assert.assertEquals(truePosBary.getX(), posBary.getX(), 1.0e-8);
-        Assert.assertEquals(truePosBary.getY(), posBary.getY(), 1.0e-8);
-        Assert.assertEquals(truePosBary.getZ(), posBary.getZ(), 1.0e-8);
+        Assertions.assertEquals(truePosBary.getX(), posBary.getX(), 1.0e-8);
+        Assertions.assertEquals(truePosBary.getY(), posBary.getY(), 1.0e-8);
+        Assertions.assertEquals(truePosBary.getZ(), posBary.getZ(), 1.0e-8);
     }
 
     @Test
@@ -81,16 +81,16 @@ public class TwoBodiesBaryFrameTest {
                                                                   TimeScalesFactory.getUTC());
 
         // Compute barycenter position and our frame origin in EME2000
-        FieldVector3D<T> truePosBary = barycenter.getPVCoordinates(date, eme2000).getPosition();
+        FieldVector3D<T> truePosBary = barycenter.getPosition(date, eme2000);
         FieldVector3D<T> posBary   = baryFrame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Moon are aligned as seen from Earth
-        Assert.assertEquals(truePosBary.getX().getReal(), posBary.getX().getReal(), 1.0e-8);
-        Assert.assertEquals(truePosBary.getY().getReal(), posBary.getY().getReal(), 1.0e-8);
-        Assert.assertEquals(truePosBary.getZ().getReal(), posBary.getZ().getReal(), 1.0e-8);
+        Assertions.assertEquals(truePosBary.getX().getReal(), posBary.getX().getReal(), 1.0e-8);
+        Assertions.assertEquals(truePosBary.getY().getReal(), posBary.getY().getReal(), 1.0e-8);
+        Assertions.assertEquals(truePosBary.getZ().getReal(), posBary.getZ().getReal(), 1.0e-8);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

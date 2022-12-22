@@ -60,7 +60,7 @@ public class IodLaplace {
      * @param raDec1 first angular observation
      * @param raDec2 second angular observation
      * @param raDec3 third angular observation
-     * @return estimate of the orbit at the central date or null if
+     * @return estimate of the orbit at the central date obsDate2 or null if
      *         no estimate is possible with the given data
      * @since 11.0
      */
@@ -83,7 +83,7 @@ public class IodLaplace {
      * @param los2 line of sight unit vector 2
      * @param obsDate3 date of observation 3
      * @param los3 line of sight unit vector 3
-     * @return estimate of the orbit at the central date dateObs2 or null if
+     * @return estimate of the orbit at the central date obsDate2 or null if
      *         no estimate is possible with the given data
      */
     public CartesianOrbit estimate(final Frame frame, final PVCoordinates obsPva,

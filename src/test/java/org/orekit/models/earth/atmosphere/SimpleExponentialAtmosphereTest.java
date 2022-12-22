@@ -16,11 +16,10 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
@@ -45,11 +44,11 @@ public class SimpleExponentialAtmosphereTest {
         Transform toBody = FramesFactory.getEME2000().getTransformTo(itrf, date);
         Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(), posInEME2000);
         test = test.subtract(vel);
-        Assert.assertEquals(0, test.getNorm(), 2.9e-5);
+        Assertions.assertEquals(0, test.getNorm(), 2.9e-5);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

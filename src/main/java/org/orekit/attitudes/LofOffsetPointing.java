@@ -110,7 +110,7 @@ public class LofOffsetPointing extends GroundPointing {
                     shifted,
                     StaticTransform.of(
                             shifted,
-                            pvProv.getPVCoordinates(shifted, frame).getPosition().negate()),
+                            pvProv.getPosition(shifted, frame).negate()),
                     StaticTransform.of(
                             shifted,
                             attitudeLaw.getAttitude(pvProv, shifted, frame).getRotation()));

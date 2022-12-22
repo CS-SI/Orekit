@@ -148,8 +148,8 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
         // get the line between primary and secondary in body frame
         final AbsoluteDate date    = state.getDate();
         final Frame        frame   = body.getBodyFrame();
-        final Vector3D     pPrimary = state.getPVCoordinates(frame).getPosition();
-        final Vector3D     pSecondary  = secondary.getPVCoordinates(date, frame).getPosition();
+        final Vector3D     pPrimary = state.getPosition(frame);
+        final Vector3D     pSecondary  = secondary.getPosition(date, frame);
 
         // points along the primary/secondary lines are defined as
         // xk = x + k * dx, yk = y + k * dy, zk = z + k * dz

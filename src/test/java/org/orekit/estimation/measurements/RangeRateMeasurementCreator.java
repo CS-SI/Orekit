@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -32,6 +30,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Arrays;
+
 public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     private final StationDataProvider context;
@@ -45,7 +45,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         this.satellite = new ObservableSatellite(0);
         this.satellite.getClockDriftDriver().setValue(satClockDrift);
     }
-    
+
     public ObservableSatellite getSatellite() {
         return satellite;
     }
@@ -80,7 +80,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
-            final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+            final Vector3D         position  = currentState.getPosition();
             final Vector3D         velocity  = currentState.getPVCoordinates().getVelocity();
 
             if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
@@ -125,9 +125,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                                           0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
                                               deltaVr.dotProduct(receptionLOS) + deltaD;
 
-                                          addMeasurement(new RangeRate(station, receptionDate,
-                                                                       rr,
-                                                                       1.0, 10, twoWay, satellite));
+                addMeasurement(new RangeRate(station, receptionDate, rr, 1.0, 10, twoWay, satellite));
             }
 
         }

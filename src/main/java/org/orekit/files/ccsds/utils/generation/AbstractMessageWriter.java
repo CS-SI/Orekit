@@ -38,6 +38,7 @@ import org.orekit.time.TimeScale;
  * Base class for Navigation Data Message (NDM) files.
  * @param <H> type of the header
  * @param <S> type of the segments
+ * @param <F> type of the NDM constituent
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -153,9 +154,14 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
             generator.enterSection(XmlStructureKey.header.name());
         }
 
-        // comments are optional
         if (header != null) {
+
+            // comments are optional
             generator.writeComments(header.getComments());
+
+            // classification is optional
+            generator.writeEntry(HeaderKey.CLASSIFICATION.name(), header.getClassification(), null, false);
+
         }
 
         // creation date is informational only, but mandatory and always in UTC

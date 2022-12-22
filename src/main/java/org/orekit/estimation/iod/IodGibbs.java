@@ -61,7 +61,8 @@ public class IodGibbs {
      * @param p1 First position measurement
      * @param p2 Second position measurement
      * @param p3 Third position measurement
-     * @return an initial orbit estimation
+     * @return an initial orbit estimation at the central date
+     *         (i.e., date of the second position measurement)
      * @since 11.0
      */
     public KeplerianOrbit estimate(final Frame frame, final Position p1, final Position p2, final Position p3) {
@@ -78,7 +79,8 @@ public class IodGibbs {
      * @param pv1 PV measure 1 taken in frame
      * @param pv2 PV measure 2 taken in frame
      * @param pv3 PV measure 3 taken in frame
-     * @return an initial orbit estimation
+     * @return an initial orbit estimation at the central date
+     *         (i.e., date of the second PV measurement)
      */
     public KeplerianOrbit estimate(final Frame frame, final PV pv1, final PV pv2, final PV pv3) {
         return estimate(frame,
@@ -97,7 +99,8 @@ public class IodGibbs {
      * @param date2 date of measure 2
      * @param r3 position 3 measured in frame
      * @param date3 date of measure 3
-     * @return an initial orbit estimation
+     * @return an initial orbit estimation at the central date
+     *         (i.e., date of the second position measurement)
      */
     public KeplerianOrbit estimate(final Frame frame,
                                    final Vector3D r1, final AbsoluteDate date1,
@@ -145,10 +148,10 @@ public class IodGibbs {
 
         //check which orbit is correct
         final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                getPosition();
         final double dist = estP3.subtract(r3).getNorm();
         final Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                getPosition();
         final double dist2 = estP3_2.subtract(r3).getNorm();
 
         if (dist <= dist2) {

@@ -306,7 +306,7 @@ public class Frame implements Serializable {
      * @param date        the date (can be null if it is sure than no date
      *                    dependent frame is used)
      * @return static transform from the instance to the destination frame
-     * @since 11.2
+     * @since 12.0
      */
     public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransformTo(final Frame destination,
                                                 final FieldAbsoluteDate<T> date) {

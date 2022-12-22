@@ -22,8 +22,8 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
 
@@ -32,7 +32,7 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
     }
 
     protected RealMatrix buildCovariance(AbstractLambdaMethod reducer) {
-        RealMatrix Z  = getZMatrix(reducer); 
+        RealMatrix Z  = getZMatrix(reducer);
         RealMatrix Zt = Z.transpose();
         return Zt.multiply(getLow(reducer).transposeMultiply(getDiag(reducer))).
                         multiply(getLow(reducer)).multiply(Z);
@@ -56,7 +56,7 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
         for (int k = 0; k < 1000; ++k) {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
-   
+
             final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
 
@@ -65,7 +65,7 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
 
         }
     }
-    
+
     private void doTestReduction(final RandomGenerator random,
                                    final int[] indirection, final RealMatrix covariance) {
         final double[] floatAmbiguities = new double[indirection.length];
@@ -77,16 +77,16 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
         initializeProblem(reducer, floatAmbiguities, indirection, covariance, 2);
         reducer.ltdlDecomposition();
         reducer.reduction();
-        
+
         //Rebuilt the covariance
         RealMatrix Z                  = this.getZMatrix(reducer);
         RealMatrix RebuiltCov         = Z.transposeMultiply(getLow(reducer).transposeMultiply(getDiag(reducer))).
                                         multiply(getLow(reducer)).multiply(Z);
-        
+
         //Check the covariance are the same
         double norm                   = filteredCovariance.subtract(RebuiltCov).getNorm1();
-        Assert.assertEquals(0.0, norm, 1e-11);
-        
+        Assertions.assertEquals(0.0, norm, 1e-11);
+
         //Check the floatAmbiguities have been well transform by Z transformation
         RealMatrix a = MatrixUtils.createColumnRealMatrix(floatAmbiguities);
         RealMatrix invZ = new QRDecomposer(1.0e-10).
@@ -95,9 +95,9 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
         RealMatrix zRef = invZ.transposeMultiply(a);
         double[] zComputed = getDecorrelated(reducer);
         for(int i= 0; i<zComputed.length; i++) {
-            Assert.assertEquals(zRef.getEntry(i, 0),zComputed[i],1e-6);
+            Assertions.assertEquals(zRef.getEntry(i, 0),zComputed[i],1e-6);
         }
     }
-}   
+}
 
 

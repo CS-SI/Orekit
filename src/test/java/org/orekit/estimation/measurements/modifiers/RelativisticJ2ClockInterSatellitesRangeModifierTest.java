@@ -17,9 +17,9 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -34,15 +34,15 @@ import org.orekit.utils.Constants;
 
 /**
  * Check against prediction in
- * 
+ *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- * 
+ *
  * An approximate value is given in terms of delay for Galileo satellites.
- * As these satellites are close to GPS satellites, we consider the delays to be 
+ * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
  *
  * The values produced by the modifiers are translated in terms of delay and checked against
- * the approximate value. 
+ * the approximate value.
  */
 
 public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
@@ -59,27 +59,27 @@ public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
         // Measurement
         final InterSatellitesRange range = new InterSatellitesRange(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     false, date,
-                                                                    Vector3D.distance(states[0].getPVCoordinates().getPosition(),
-                                                                                      states[1].getPVCoordinates().getPosition()),
+                                                                    Vector3D.distance(states[0].getPosition(),
+                                                                                      states[1].getPosition()),
                                                                     1.0, 1.0);
 
         // Inter-satellites range before applying the modifier
         final EstimatedMeasurement<InterSatellitesRange> estimatedBefore = range.estimate(0, 0, states);
 
         // Inter-satellites range before applying the modifier
-        final EstimationModifier<InterSatellitesRange> modifier = new RelativisticJ2ClockInterSatellitesRangeModifier(Constants.WGS84_EARTH_MU, 
+        final EstimationModifier<InterSatellitesRange> modifier = new RelativisticJ2ClockInterSatellitesRangeModifier(Constants.WGS84_EARTH_MU,
                 Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         range.addModifier(modifier);
         final EstimatedMeasurement<InterSatellitesRange> estimatedAfter = range.estimate(0, 0, states);
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 62 ps for Galileo.
-        //          The computed value is equal to 67.375 ps, therefore lying in the supposed range. 
-        Assert.assertEquals(-0.0202125, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-2);
-        Assert.assertEquals(0, modifier.getParametersDrivers().size());
+        //          The computed value is equal to 67.375 ps, therefore lying in the supposed range.
+        Assertions.assertEquals(-0.0202125, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Data root
         Utils.setDataRoot("regular-data");

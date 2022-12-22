@@ -24,15 +24,19 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.BistaticRange;
+import org.orekit.estimation.measurements.BistaticRangeMeasurementCreator;
+import org.orekit.estimation.measurements.BistaticRangeRate;
+import org.orekit.estimation.measurements.BistaticRangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -41,6 +45,8 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TDOA;
+import org.orekit.estimation.measurements.TDOAMeasurementCreator;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
@@ -66,7 +72,7 @@ public class IonoModifierTest {
     /** frequency [Hz]. */
     private double frequency;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
@@ -75,71 +81,6 @@ public class IonoModifierTest {
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
         // GPS L1 in HZ
         frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
-    }
-
-    @Test
-    public void testRangeIonoModifier() {
-
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 0.001);
-
-        // create perfect range measurements
-        for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
-            station.getEastOffsetDriver().setSelected(true);
-            station.getNorthOffsetDriver().setSelected(true);
-            station.getZenithOffsetDriver().setSelected(true);
-        }
-        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        final List<ObservedMeasurement<?>> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
-        propagator.clearStepHandlers();
-
-
-        final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model, frequency);
-
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            final AbsoluteDate date = measurement.getDate();
-
-            final SpacecraftState refstate = propagator.propagate(date);
-
-            Range range = (Range) measurement;
-            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
-
-            // add modifier
-            range.addModifier(modifier);
-            boolean found = false;
-            for (final EstimationModifier<Range> existing : range.getModifiers()) {
-                found = found || existing == modifier;
-            }
-            Assert.assertTrue(found);
-            //
-            EstimatedMeasurement<Range> eval = range.estimate(0, 0,  new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
-            eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
-            eval.setStatus(evalNoMod.getStatus());
-
-            try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
-            }
-
-            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
-            // TODO: check threshold
-            Assert.assertEquals(0.0, diffMeters, 30.0);
-
-        }
     }
 
     @Test
@@ -182,8 +123,8 @@ public class IonoModifierTest {
 
             Phase phase = (Phase) measurement;
             EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             phase.addModifier(modifier);
@@ -191,24 +132,24 @@ public class IonoModifierTest {
             for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             //
             EstimatedMeasurement<Phase> eval = phase.estimate(0, 0,  new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
             eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
             eval.setStatus(evalNoMod.getStatus());
 
             try {
                 eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
             }
 
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
-            Assert.assertTrue(diffMeters < 0);
-            Assert.assertEquals(0.0, diffMeters, 30.0);
+            Assertions.assertTrue(diffMeters < 0);
+            Assertions.assertEquals(0.0, diffMeters, 30.0);
 
         }
     }
@@ -255,8 +196,8 @@ public class IonoModifierTest {
 
             Phase phase = (Phase) measurement;
             EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             phase.addModifier(modifier);
@@ -264,29 +205,29 @@ public class IonoModifierTest {
             for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             //
             EstimatedMeasurement<Phase> eval = phase.estimate(0, 0,  new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
             eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
             eval.setStatus(evalNoMod.getStatus());
 
             try {
                 eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
             }
 
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
-            Assert.assertEquals(-12.0, diffMeters, 0.1);
+            Assertions.assertEquals(-12.0, diffMeters, 0.1);
 
         }
     }
 
     @Test
-    public void testTurnAroundRangeIonoModifier() {
+    public void testRangeIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -294,64 +235,58 @@ public class IonoModifierTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // Create perfect turn-around measurements
-        for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
-            final GroundStation    primaryStation = entry.getKey();
-            final GroundStation    secondaryStation  = entry.getValue();
-            primaryStation.getClockOffsetDriver().setSelected(true);
-            primaryStation.getEastOffsetDriver().setSelected(true);
-            primaryStation.getNorthOffsetDriver().setSelected(true);
-            primaryStation.getZenithOffsetDriver().setSelected(true);
-            secondaryStation.getClockOffsetDriver().setSelected(false);
-            secondaryStation.getEastOffsetDriver().setSelected(true);
-            secondaryStation.getNorthOffsetDriver().setSelected(true);
-            secondaryStation.getZenithOffsetDriver().setSelected(true);
+        // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new TurnAroundRangeMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
 
-        final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model, frequency);
+        final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model, frequency);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
 
-            TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
-            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Range range = (Range) measurement;
+            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, new SpacecraftState[] { refstate });
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
-            // Add modifier
-            turnAroundRange.addModifier(modifier);
+            // add modifier
+            range.addModifier(modifier);
             boolean found = false;
-            for (final EstimationModifier<TurnAroundRange> existing : turnAroundRange.getModifiers()) {
+            for (final EstimationModifier<Range> existing : range.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             //
-            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            EstimatedMeasurement<Range> eval = range.estimate(0, 0,  new SpacecraftState[] { refstate });
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
             eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
             eval.setStatus(evalNoMod.getStatus());
 
             try {
                 eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
             }
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffMeters, 30.0);
+            Assertions.assertEquals(0.0, diffMeters, 30.0);
 
         }
     }
@@ -399,8 +334,232 @@ public class IonoModifierTest {
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffMetersSec, 0.015);
+            Assertions.assertEquals(0.0, diffMetersSec, 0.015);
 
+        }
+    }
+
+    @Test
+    public void testTurnAroundRangeIonoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create perfect turn-around measurements
+        for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
+            final GroundStation    primaryStation = entry.getKey();
+            final GroundStation    secondaryStation  = entry.getValue();
+            primaryStation.getClockOffsetDriver().setSelected(true);
+            primaryStation.getEastOffsetDriver().setSelected(true);
+            primaryStation.getNorthOffsetDriver().setSelected(true);
+            primaryStation.getZenithOffsetDriver().setSelected(true);
+            secondaryStation.getClockOffsetDriver().setSelected(false);
+            secondaryStation.getEastOffsetDriver().setSelected(true);
+            secondaryStation.getNorthOffsetDriver().setSelected(true);
+            secondaryStation.getZenithOffsetDriver().setSelected(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new TurnAroundRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+
+        final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model, frequency);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate = propagator.propagate(date);
+
+            TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
+            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
+
+            // Add modifier
+            turnAroundRange.addModifier(modifier);
+            boolean found = false;
+            for (final EstimationModifier<TurnAroundRange> existing : turnAroundRange.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assertions.assertTrue(found);
+            //
+            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            eval.setStatus(EstimatedMeasurement.Status.REJECTED);
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            eval.setStatus(evalNoMod.getStatus());
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                Assertions.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
+
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+            // TODO: check threshold
+            Assertions.assertEquals(0.0, diffMeters, 30.0);
+
+        }
+    }
+
+    @Test
+    public void testBistaticRangeIonoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        // create perfect range measurements
+        final GroundStation emitter = context.BRRstations.getKey();
+        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getEastOffsetDriver().setSelected(true);
+        emitter.getNorthOffsetDriver().setSelected(true);
+        emitter.getZenithOffsetDriver().setSelected(true);
+        final GroundStation receiver = context.BRRstations.getValue();
+        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getEastOffsetDriver().setSelected(true);
+        receiver.getNorthOffsetDriver().setSelected(true);
+        receiver.getZenithOffsetDriver().setSelected(true);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new BistaticRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+        final BistaticRangeIonosphericDelayModifier modifier =
+                        new BistaticRangeIonosphericDelayModifier(model, frequency);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            BistaticRange biRange = (BistaticRange) measurement;
+            final SpacecraftState refstate = propagator.propagate(biRange.getDate());
+
+            // Estimate without modifier
+            EstimatedMeasurement<BistaticRange> evalNoMod = biRange.estimate(0, 0, new SpacecraftState[] { refstate });
+
+            // add modifier
+            biRange.addModifier(modifier);
+
+            // Estimate with modifier
+            EstimatedMeasurement<BistaticRange> eval = biRange.estimate(0, 0, new SpacecraftState[] { refstate });
+
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+            // TODO: check threshold
+            Assertions.assertTrue(diffMeters < 12.0);
+            Assertions.assertTrue(diffMeters >  4.0);
+        }
+    }
+
+    @Test
+    public void testBistaticRangeRateIonoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        // create perfect range rate measurements
+        final GroundStation emitter = context.BRRstations.getKey();
+        emitter.getEastOffsetDriver().setSelected(true);
+        emitter.getNorthOffsetDriver().setSelected(true);
+        emitter.getZenithOffsetDriver().setSelected(true);
+        final GroundStation receiver = context.BRRstations.getValue();
+        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getEastOffsetDriver().setSelected(true);
+        receiver.getNorthOffsetDriver().setSelected(true);
+        receiver.getZenithOffsetDriver().setSelected(true);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new BistaticRangeRateMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+        final BistaticRangeRateIonosphericDelayModifier modifier =
+                        new BistaticRangeRateIonosphericDelayModifier(model, frequency);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            BistaticRangeRate biRangeRate = (BistaticRangeRate) measurement;
+            final SpacecraftState refstate = propagator.propagate(biRangeRate.getDate());
+
+            // Estimate without modifier
+            EstimatedMeasurement<BistaticRangeRate> evalNoMod = biRangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
+
+            // add modifier
+            biRangeRate.addModifier(modifier);
+
+            // Estimate with modifier
+            EstimatedMeasurement<BistaticRangeRate> eval = biRangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
+
+            final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+            // TODO: check threshold
+            final double epsilon = 1e-5;
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.002, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.010, epsilon) > 0);
+
+        }
+    }
+
+    @Test
+    public void testTDOAIonoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        // create perfect range measurements
+        final GroundStation emitter = context.TDOAstations.getKey();
+        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getEastOffsetDriver().setSelected(true);
+        emitter.getNorthOffsetDriver().setSelected(true);
+        emitter.getZenithOffsetDriver().setSelected(true);
+        final GroundStation receiver = context.TDOAstations.getValue();
+        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getEastOffsetDriver().setSelected(true);
+        receiver.getNorthOffsetDriver().setSelected(true);
+        receiver.getZenithOffsetDriver().setSelected(true);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new TDOAMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+        final TDOAIonosphericDelayModifier modifier =
+                        new TDOAIonosphericDelayModifier(model, frequency);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            TDOA tdoa = (TDOA) measurement;
+            final SpacecraftState refState = propagator.propagate(tdoa.getDate());
+
+            // Estimate without modifier
+            EstimatedMeasurement<TDOA> evalNoMod = tdoa.estimate(0, 0, new SpacecraftState[] { refState });
+
+            // add modifier
+            tdoa.addModifier(modifier);
+
+            // Estimate with modifier
+            EstimatedMeasurement<TDOA> eval = tdoa.estimate(0, 0, new SpacecraftState[] { refState });
+
+            final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+
+            // TODO: check threshold
+            final double epsilon = 1.e-11;
+            Assertions.assertTrue(Precision.compareTo(diffSec, 2.90e-9, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, 0.85e-9, epsilon) > 0);
         }
     }
 
@@ -447,8 +606,8 @@ public class IonoModifierTest {
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffAz, 5.0e-5);
-            Assert.assertEquals(0.0, diffEl, 5.0e-6);
+            Assertions.assertEquals(0.0, diffAz, 5.0e-5);
+            Assertions.assertEquals(0.0, diffEl, 5.0e-6);
         }
     }
 
@@ -484,8 +643,8 @@ public class IonoModifierTest {
             double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters());
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
         }
 
     }

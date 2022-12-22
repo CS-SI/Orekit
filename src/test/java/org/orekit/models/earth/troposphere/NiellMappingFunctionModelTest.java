@@ -18,10 +18,10 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -30,19 +30,19 @@ import org.orekit.time.TimeScalesFactory;
 
 public class NiellMappingFunctionModelTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
     public void testMappingFactors() {
-        
+
         // Site (Le Mans, France):      latitude:  48.0°
         //                              longitude: 0.20°
         //                              height:    68 m
@@ -55,7 +55,7 @@ public class NiellMappingFunctionModelTest {
         //                                    wet -> 10.75 (Ref)
 
         final AbsoluteDate date = new AbsoluteDate(1994, 1, 1, TimeScalesFactory.getUTC());
-        
+
         final double latitude    = FastMath.toRadians(48.0);
         final double longitude   = FastMath.toRadians(0.20);
         final double height      = 68.0;
@@ -66,11 +66,11 @@ public class NiellMappingFunctionModelTest {
         final double expectedWet   = 10.75;
 
         final MappingFunction model = new NiellMappingFunctionModel();
-        
+
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
-        Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
+
+        Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
+        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
     }
 
     @Test
@@ -85,8 +85,8 @@ public class NiellMappingFunctionModelTest {
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, date);
-            Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
-            Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
+            Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
+            Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }

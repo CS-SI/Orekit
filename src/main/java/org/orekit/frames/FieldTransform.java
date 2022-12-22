@@ -30,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeShiftable;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -98,7 +99,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  */
 public class FieldTransform<T extends CalculusFieldElement<T>>
-    implements TimeShiftable<FieldTransform<T>>, FieldStaticTransform<T> {
+    implements TimeStamped, TimeShiftable<FieldTransform<T>>, FieldStaticTransform<T> {
 
     /** Date of the transform. */
     private final FieldAbsoluteDate<T> date;

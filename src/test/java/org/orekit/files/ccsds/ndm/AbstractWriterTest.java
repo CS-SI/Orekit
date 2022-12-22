@@ -16,13 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.section.Header;
@@ -34,9 +29,14 @@ import org.orekit.files.ccsds.utils.generation.MessageWriter;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>> {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -72,7 +72,7 @@ public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, 
             NdmTestUtils.checkEquals(original, rebuilt);
 
         } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
+            Assertions.fail(ioe.getLocalizedMessage());
         }
     }
 

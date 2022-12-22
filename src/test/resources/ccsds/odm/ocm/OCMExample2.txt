@@ -12,15 +12,20 @@ INTERNATIONAL_DESIGNATOR = 1998-999A
 ORIGINATOR_POC        = R. Rabbit
 ORIGINATOR_POSITION   = Flight Dynamics Mission Design Lead
 ORIGINATOR_PHONE      = (719)555-1234
+ORIGINATOR_EMAIL      = R.Rabbit@example.net
+ORIGINATOR_ADDRESS    = 5040 Spaceflight Ave., Cocoa Beach, FL, USA, 12345
 
 TECH_POC              = Mr. Rodgers
-TECH_PHONE            = (719)555-1234
-TECH_ADDRESS          = email@email.XXX
+TECH_PHONE            = (719)555-4321
+TECH_EMAIL            = Rodgers@elsewhere.org
+TECH_ADDRESS          = 125 CCSDS Road, Easter Island
 
 TIME_SYSTEM           = UT1
 EPOCH_TZERO           = 1998-12-18T00:00:00.0000
 
 TAIMUTC_AT_TZERO      = 36      [s]
+NEXT_LEAP_EPOCH       = 2016-12-31T23:59:60
+NEXT_LEAP_TAIMUTC     = 37      [s]
 UT1MUTC_AT_TZERO      = .357    [s]
 META_STOP
 

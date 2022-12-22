@@ -181,7 +181,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        return s.getPVCoordinates(frame).getPosition().getZ();
+        return s.getPosition(frame).getZ();
     }
 
 }

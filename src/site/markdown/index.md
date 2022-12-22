@@ -34,7 +34,7 @@
 
     * frames hierarchy supporting fixed and time-dependent
       (or telemetry-dependent) frames
-    * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014
+    * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2020
       and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, TEME and PZ-90.11 frames,
       tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
@@ -52,7 +52,7 @@
 
   * Spacecraft state
 
-    * Cartesian, elliptical Keplerian, circular and equinoctial parameters, with non-Keplerian
+    * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
     * Two-Line Elements
     * transparent conversion between all parameters
@@ -62,6 +62,13 @@
     * mass management
     * user-defined associated state
       (for example battery status, or higher order derivatives, or anything else)
+
+  * Covariance
+
+    * covariance propagation using the state transition matrix
+	* covariance extrapolation using a Keplerian model
+    * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
+    * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
 
   * Maneuvers
 
@@ -88,7 +95,7 @@
           EGM and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
-        * radiation pressure with eclipses
+        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies)
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared
@@ -163,6 +170,7 @@
         * ground at night
         * impulse maneuvers occurrence
         * geomagnetic intensity
+		* extremum approach for TCA (Time of Closest Approach) computing
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
@@ -199,7 +207,10 @@
     *  Kalman filtering
         * customizable process noise matrices providers
         * time dependent process noise provider
+        * implementation of the Extended Kalman Filter
         * implementation of the Extended Semi-analytical Kalman Filter
+        * implementation of the Unscented Kalman Filter
+        * implementation of the Unscented Semi-analytical Kalman Filter
     * parameters estimation
         * orbital parameters estimation (or only a subset if desired)
         * force model parameters estimation (drag coefficients, radiation pressure coefficients,
@@ -208,6 +219,7 @@
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
     * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
+    * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
@@ -224,6 +236,8 @@
         * inter-satellites GNSS phase
         * GNSS code
         * GNSS phase with integer ambiguity resolution and wind-up effect
+        * Time Difference of Arrival (TDOA)
+        * Bi-static range and range rate
         * multiplexed
     * possibility to add custom measurements
     * loading of ILRS CRD laser ranging measurements file
@@ -231,7 +245,7 @@
     * several predefined modifiers
         * tropospheric effects
         * ionospheric effects
-        * clock relativistic effects
+        * clock relativistic effects (including J2 correction)
         * station offsets
         * biases
         * delays
@@ -259,10 +273,11 @@
     * loading of RINEX observation files (version 2 and version 3)
     * loading of RINEX navigation files (version 3)
     * support for Hatanaka compact RINEX format
-    * loading of SINEX station file
+    * loading of SINEX file (can load station positions, eccentricities and EOPs)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
-    * parsing of RTCM messages
+    * parsing of RTCM messages (both ephemeris and correction messages)
+    * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
 
   * Orbit file handling
@@ -277,6 +292,7 @@
   
     * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
     * support for CSSI space weather data
+    * support for SOLFSMY and DTC data for JB2008 atmospheric model
     * tropospheric delay (modified Saastamoinen, estimated, fixed)
     * tropospheric mapping functions (Vienna 1, Vienna 3, Global, Niell)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
@@ -291,6 +307,11 @@
     * displacement of ground points due to tides
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
+	* construction of trajectories using loxodromes (commonly, a rhumb line)
+
+  * Collisions
+
+    * loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)
     
   * Customizable data loading
 

@@ -32,9 +32,10 @@ import org.orekit.time.TimeStamped;
  * A transform that only includes translation and rotation. It is static in the
  * sense that no rates thereof are included.
  *
+ * @param <T> the type of the field elements
  * @author Bryan Cazabonne
  * @see FieldTransform
- * @since 11.2
+ * @since 12.0
  */
 public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends TimeStamped {
 
@@ -97,8 +98,8 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      */
     default FieldLine<T> transformLine(final Line line) {
         final FieldVector3D<T> transformedP0 = transformPosition(line.getOrigin());
-        final FieldVector3D<T> transformedD  = transformVector(line.getDirection());
-        return new FieldLine<>(transformedP0, transformedD, line.getTolerance());
+        final FieldVector3D<T> transformedP1 = transformPosition(line.pointAt(1.0e6));
+        return new FieldLine<>(transformedP0, transformedP1, line.getTolerance());
     }
 
     /**
@@ -109,8 +110,8 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      */
     default FieldLine<T> transformLine(final FieldLine<T> line) {
         final FieldVector3D<T> transformedP0 = transformPosition(line.getOrigin());
-        final FieldVector3D<T> transformedD  = transformVector(line.getDirection());
-        return new FieldLine<>(transformedP0, transformedD, line.getTolerance());
+        final FieldVector3D<T> transformedP1 = transformPosition(line.pointAt(1.0e6));
+        return new FieldLine<>(transformedP0, transformedP1, line.getTolerance());
     }
 
     /**
@@ -193,7 +194,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      * @return rotation part of the composite transform
      */
     static <T extends CalculusFieldElement<T>> FieldRotation<T> compositeRotation(final FieldStaticTransform<T> first,
-                                                                                          final FieldStaticTransform<T> second) {
+                                                                                  final FieldStaticTransform<T> second) {
         final FieldRotation<T> r1 = first.getRotation();
         final FieldRotation<T> r2 = second.getRotation();
         return r1.compose(r2, RotationConvention.FRAME_TRANSFORM);

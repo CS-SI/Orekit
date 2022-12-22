@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -30,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -291,6 +293,15 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         System.arraycopy(upperManaged, 0, managed, 0, upperManaged.length);
         System.arraycopy(additional, 0, managed, upperManaged.length, additional.length);
         return managed;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        // In order to not throw an Orekit exception during ephemeris based orbit determination
+        // The default behavior of the method is overrided to return a null parameter
+        return null;
     }
 
     /** Internal PVCoordinatesProvider for attitude computation. */

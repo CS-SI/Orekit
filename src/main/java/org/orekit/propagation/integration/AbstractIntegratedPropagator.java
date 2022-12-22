@@ -171,16 +171,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return {@link PropagationType MEAN} if only mean elements have to be used or
-     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
-     * @deprecated as of 11.1, replaced by {@link #getPropagationType()}
-     */
-    @Deprecated
-    protected PropagationType isMeanOrbit() {
-        return getPropagationType();
-    }
-
     /** Get the propagation type.
      * @return propagation type.
      * @since 11.1
@@ -266,15 +256,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             managed[i + alreadyIntegrated.length] = additionalDerivativesProviders.get(i).getName();
         }
         return managed;
-    }
-
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final AdditionalEquations additional) {
-        addAdditionalDerivativesProvider(new AdditionalEquationsAdapter(additional, this::getInitialState));
     }
 
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
@@ -823,12 +804,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     }
                 } else {
                     // we can use these equations right now
-                    final String   name        = provider.getName();
-                    final int      offset      = secondaryOffsets.get(name);
-                    final int      dimension   = provider.getDimension();
-                    final double[] derivatives = provider.derivatives(updated);
-                    System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
-                    updated = updated.addAdditionalStateDerivative(name, derivatives);
+                    final String              name           = provider.getName();
+                    final int                 offset         = secondaryOffsets.get(name);
+                    final int                 dimension      = provider.getDimension();
+                    final CombinedDerivatives derivatives    = provider.combinedDerivatives(updated);
+                    final double[]            additionalPart = derivatives.getAdditionalDerivatives();
+                    final double[]            mainPart       = derivatives.getMainStateDerivativesIncrements();
+                    System.arraycopy(additionalPart, 0, secondaryDot, offset, dimension);
+                    updated = updated.addAdditionalStateDerivative(name, additionalPart);
+                    if (mainPart != null) {
+                        // this equation does change the main state derivatives
+                        for (int i = 0; i < mainPart.length; ++i) {
+                            primaryDot[i] += mainPart[i];
+                        }
+                    }
                     yieldCount = 0;
                 }
             }
@@ -1051,6 +1040,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Generated ephemeris. */
         private BoundedPropagator ephemeris;
 
+        /** Last interpolator handled by the object.*/
+        private  ODEStateInterpolator lastInterpolator;
+
         /** Set the end date.
          * @param endDate end date
          */
@@ -1068,11 +1060,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // ephemeris will be generated when last step is processed
             this.ephemeris = null;
 
+            this.lastInterpolator = null;
+
         }
 
         /** {@inheritDoc} */
         @Override
         public BoundedPropagator getGeneratedEphemeris() {
+            // Each time we try to get the ephemeris, rebuild it using the last data.
+            buildEphemeris();
             return ephemeris;
         }
 
@@ -1080,11 +1076,26 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public void handleStep(final ODEStateInterpolator interpolator) {
             model.handleStep(interpolator);
+            lastInterpolator = interpolator;
         }
 
         /** {@inheritDoc} */
         @Override
         public void finish(final ODEStateAndDerivative finalState) {
+            buildEphemeris();
+        }
+
+        /** Method used to produce ephemeris at a given time.
+         * Can be used at multiple times, updating the ephemeris to
+         * its last state.
+         */
+        private void buildEphemeris() {
+            // buildEphemeris was built in order to allow access to what was previously the finish method.
+            // This now allows to call it through getGeneratedEphemeris, therefore through an external call,
+            // which was not previously the case.
+
+            // Update the model's finalTime with the last interpolator.
+            model.finish(lastInterpolator.getCurrentState());
 
             // set up the boundary dates
             final double tI = model.getInitialTime();
@@ -1115,15 +1126,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[additionalDerivativesProviders.size()];
+            final String[] names      = new String[additionalDerivativesProviders.size()];
+            final int[]    dimensions = new int[additionalDerivativesProviders.size()];
             for (int i = 0; i < names.length; ++i) {
                 names[i] = additionalDerivativesProviders.get(i).getName();
+                dimensions[i] = additionalDerivativesProviders.get(i).getDimension();
             }
 
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
                                                 stateMapper, propagationType, model,
-                                                unmanaged, getAdditionalStateProviders(), names);
+                                                unmanaged, getAdditionalStateProviders(),
+                                                names, dimensions);
 
         }
 

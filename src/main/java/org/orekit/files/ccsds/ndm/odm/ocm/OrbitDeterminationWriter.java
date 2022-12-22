@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.units.Unit;
@@ -83,7 +84,7 @@ class OrbitDeterminationWriter extends AbstractWriter {
 
         // errors
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMAJ.name(),    od.getEpochEigenMaj(), Unit.METRE,        false);
-        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMED.name(),    od.getEpochEigenMed(), Unit.METRE,        false);
+        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGINT.name(),    od.getEpochEigenInt(), Unit.METRE,        false);
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH_EIGMIN.name(),    od.getEpochEigenMin(), Unit.METRE,        false);
         generator.writeEntry(OrbitDeterminationKey.OD_MAX_PRED_EIGMAJ.name(), od.getMaxPredictedEigenMaj(), Unit.METRE, false);
         generator.writeEntry(OrbitDeterminationKey.OD_MIN_PRED_EIGMIN.name(), od.getMinPredictedEigenMin(), Unit.METRE, false);
@@ -91,12 +92,13 @@ class OrbitDeterminationWriter extends AbstractWriter {
         generator.writeEntry(OrbitDeterminationKey.GDOP.name(),               od.getGdop(), Unit.ONE,                   false);
 
         // parameters
-        generator.writeEntry(OrbitDeterminationKey.SOLVE_N.name(),         od.getSolveN(),             false);
-        generator.writeEntry(OrbitDeterminationKey.SOLVE_STATES.name(),    od.getSolveStates(),        false);
-        generator.writeEntry(OrbitDeterminationKey.CONSIDER_N.name(),      od.getConsiderN(),          false);
-        generator.writeEntry(OrbitDeterminationKey.CONSIDER_PARAMS.name(), od.getConsiderParameters(), false);
-        generator.writeEntry(OrbitDeterminationKey.SENSORS_N.name(),       od.getSensorsN(),           false);
-        generator.writeEntry(OrbitDeterminationKey.SENSORS.name(),         od.getSensors(),            false);
+        generator.writeEntry(OrbitDeterminationKey.SOLVE_N.name(),         od.getSolveN(),               false);
+        generator.writeEntry(OrbitDeterminationKey.SOLVE_STATES.name(),    od.getSolveStates(),          false);
+        generator.writeEntry(OrbitDeterminationKey.CONSIDER_N.name(),      od.getConsiderN(),            false);
+        generator.writeEntry(OrbitDeterminationKey.CONSIDER_PARAMS.name(), od.getConsiderParameters(),   false);
+        generator.writeEntry(OrbitDeterminationKey.SEDR.name(),            od.getSedr(), Units.W_PER_KG, false);
+        generator.writeEntry(OrbitDeterminationKey.SENSORS_N.name(),       od.getSensorsN(),             false);
+        generator.writeEntry(OrbitDeterminationKey.SENSORS.name(),         od.getSensors(),              false);
 
         // observations
         generator.writeEntry(OrbitDeterminationKey.WEIGHTED_RMS.name(),  od.getWeightedRms(), Unit.ONE, false);

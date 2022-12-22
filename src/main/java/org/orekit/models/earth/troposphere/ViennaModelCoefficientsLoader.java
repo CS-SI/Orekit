@@ -313,10 +313,10 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
                 // Fill ah, aw, zhd and zwd lists
                 if (line.length() > 0 && !line.startsWith("!")) {
                     final String[] values_line = SEPARATOR.split(line);
-                    ah.add(Double.valueOf(values_line[2]));
-                    aw.add(Double.valueOf(values_line[3]));
-                    zhd.add(Double.valueOf(values_line[4]));
-                    zwd.add(Double.valueOf(values_line[5]));
+                    ah.add(Double.parseDouble(values_line[2]));
+                    aw.add(Double.parseDouble(values_line[3]));
+                    zhd.add(Double.parseDouble(values_line[4]));
+                    zwd.add(Double.parseDouble(values_line[5]));
                 }
             }
 

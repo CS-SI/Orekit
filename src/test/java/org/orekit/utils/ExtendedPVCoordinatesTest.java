@@ -16,14 +16,13 @@
  */
 package org.orekit.utils;
 
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -34,12 +33,12 @@ public class ExtendedPVCoordinatesTest {
     @Test
     public void testConversion() {
         final ExtendedPVCoordinatesProvider provider = new ExtendedPVCoordinatesProvider() {
-            
+
             @Override
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
                 return null;
             }
-            
+
             @Override
             public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
                 getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
@@ -56,9 +55,9 @@ public class ExtendedPVCoordinatesTest {
                         provider.toFieldPVCoordinatesProvider(field);
         FieldPVCoordinates<Decimal64> pv = converted.getPVCoordinates(FieldAbsoluteDate.getJ2000Epoch(field),
                                                                       FramesFactory.getGCRF());
-        Assert.assertEquals(0.0, FieldVector3D.distance(pv.getPosition(),FieldVector3D.getPlusI(field)).getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, FieldVector3D.distance(pv.getVelocity(),FieldVector3D.getPlusJ(field)).getReal(), 1.0e-15);
-        Assert.assertEquals(0.0, FieldVector3D.distance(pv.getAcceleration(),FieldVector3D.getPlusK(field)).getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getPosition(),FieldVector3D.getPlusI(field)).getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getVelocity(),FieldVector3D.getPlusJ(field)).getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getAcceleration(),FieldVector3D.getPlusK(field)).getReal(), 1.0e-15);
 
     }
 

@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.orekit.errors.OrekitException;
@@ -54,9 +55,12 @@ public class NdmParser extends AbstractMessageParser<Ndm> {
      * parserBuilder.buildNdmParser()}.
      * </p>
      * @param builder builder for the constituents parsers
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
-    public NdmParser(final ParserBuilder builder) {
-        super(NdmStructureKey.ndm.name(), null);
+    public NdmParser(final ParserBuilder builder,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(NdmStructureKey.ndm.name(), null, filters);
         this.builder = builder;
     }
 
@@ -73,6 +77,7 @@ public class NdmParser extends AbstractMessageParser<Ndm> {
         builders.putAll(builder.buildOcmParser().getSpecialXmlElementsBuilders());
         builders.putAll(builder.buildApmParser().getSpecialXmlElementsBuilders());
         builders.putAll(builder.buildAemParser().getSpecialXmlElementsBuilders());
+        builders.putAll(builder.buildCdmParser().getSpecialXmlElementsBuilders());
 
         return builders;
 
@@ -154,6 +159,13 @@ public class NdmParser extends AbstractMessageParser<Ndm> {
      */
     boolean manageAemConstituent() {
         return manageConstituent(builder::buildAemParser);
+    }
+
+    /** Prepare parsing of a CDM constituent.
+     * @return always return true
+     */
+    boolean manageCdmConstituent() {
+        return manageConstituent(builder::buildCdmParser);
     }
 
     /** Prepare parsing of a constituent.

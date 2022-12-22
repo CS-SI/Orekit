@@ -16,12 +16,6 @@
  */
 package org.orekit.estimation;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -32,7 +26,8 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
+import org.hipparchus.util.Pair;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -70,6 +65,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
@@ -128,6 +129,18 @@ public class EstimationTestUtils {
 
         context.TARstations.put(context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur"),
                                 context.createStation( 61.405833,   -6.705278,  470.0, "Sumba"));
+
+        // Bistatic range rate stations
+        // key/first    = emitter station
+        // value/second = receiver station
+        context.BRRstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
+                                                                     context.createStation(45.0, 0.0, 0.0, "Receiver"));
+
+        // TDOA stations
+        // key/first    = primary station that dates the measurement
+        // value/second = secondary station associated
+        context.TDOAstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "TDOA_Prime"),
+                                                                      context.createStation(45.0, 0.0, 0.0, "TDOA_Second"));
 
         return context;
 
@@ -228,6 +241,18 @@ public class EstimationTestUtils {
         context.TARstations.put(context.createStation(  49.867,  8.65 ,  144.0  , "Darmstadt"),
                                 context.createStation( -25.885, 27.707, 1566.633, "Pretoria"));
 
+        // Bistatic range rate stations
+        // key/first    = emitter station
+        // value/second = receiver station
+        context.BRRstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
+                                                                     context.createStation(45.0, 0.0, 0.0, "Receiver"));
+
+        // TDOA stations
+        // key/first    = primary station that dates the measurement
+        // value/second = secondary station associated
+        context.TDOAstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "TDOA_Prime"),
+                                                                      context.createStation(45.0, 0.0, 0.0, "TDOA_Second"));
+
         return context;
 
     }
@@ -296,14 +321,14 @@ public class EstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
-        Assert.assertEquals(iterations, estimator.getIterationsCount());
-        Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Assertions.assertEquals(iterations, estimator.getIterationsCount());
+        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
         Optimum optimum = estimator.getOptimum();
-        Assert.assertEquals(iterations, optimum.getIterations());
-        Assert.assertEquals(evaluations, optimum.getEvaluations());
+        Assertions.assertEquals(iterations, optimum.getIterations());
+        Assertions.assertEquals(evaluations, optimum.getEvaluations());
 
         int    k   = 0;
         double sum = 0;
@@ -325,23 +350,23 @@ public class EstimationTestUtils {
         }
 
         final double rms = FastMath.sqrt(sum / k);
-        final double deltaPos = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        final double deltaPos = Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition);
         final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
-        Assert.assertEquals(expectedRMS,
+        Assertions.assertEquals(expectedRMS,
                             rms,
                             rmsEps);
-        Assert.assertEquals(expectedMax,
+        Assertions.assertEquals(expectedMax,
                             max,
                             maxEps);
-        Assert.assertEquals(expectedDeltaPos,
+        Assertions.assertEquals(expectedDeltaPos,
                             deltaPos,
                             posEps);
-        Assert.assertEquals(expectedDeltaVel,
+        Assertions.assertEquals(expectedDeltaVel,
                             deltaVel,
                             velEps);
 
     }
-    
+
     /**
      * Checker for Kalman estimator validation
      * @param context context used for the test
@@ -400,15 +425,15 @@ public class EstimationTestUtils {
 
         // Add the measurements to the Kalman filter
         Propagator[] estimated = kalman.processMeasurements(measurements);
-        
+
         // Check the number of measurements processed by the filter
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated[k].getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
-            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
+            final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
             final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
@@ -418,7 +443,7 @@ public class EstimationTestUtils {
             final double[][] dCdY = new double[6][6];
             estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
-            final RealMatrix estimatedCartesianP = 
+            final RealMatrix estimatedCartesianP =
                             Jacobian.
                             multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
                             multiply(Jacobian.transpose());
@@ -429,7 +454,7 @@ public class EstimationTestUtils {
                 sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
             }
 //          // FIXME: debug print values
-//          final double dPos = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+//          final double dPos = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
 //          final double dVel = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
 //          System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
 //          System.out.println("dPos    = " + dPos + " m");
@@ -443,14 +468,14 @@ public class EstimationTestUtils {
 //          //debug
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
-            Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+            Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 
             for (int i = 0; i < 3; i++) {
-                Assert.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
-                Assert.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
+                Assertions.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
+                Assertions.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
             }
         }
     }

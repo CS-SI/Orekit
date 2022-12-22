@@ -131,7 +131,8 @@ public class IodGooding {
      * @param rho3init initial guess of the range problem. range 3, in meters
      * @param nRev number of complete revolutions between observation 1 and 3
      * @param direction true if posigrade (short way)
-     * @return an estimate of the Keplerian orbit
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
      * @since 11.0
      */
     public KeplerianOrbit estimate(final Frame frame, final AngularRaDec raDec1,
@@ -155,7 +156,8 @@ public class IodGooding {
      * @param raDec3 third angular observation
      * @param rho1init initial guess of the range problem. range 1, in meters
      * @param rho3init initial guess of the range problem. range 3, in meters
-     * @return an estimate of the Keplerian orbit
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
      * @since 11.0
      */
     public KeplerianOrbit estimate(final Frame frame, final AngularRaDec raDec1,
@@ -179,7 +181,8 @@ public class IodGooding {
      * @param rho3init initial guess of the range problem. range 3, in meters
      * @param nRev number of complete revolutions between observation1  and 3
      * @param direction true if posigrade (short way)
-     * @return an estimate of the Keplerian orbit
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
      */
     public KeplerianOrbit estimate(final Frame frame, final Vector3D O1, final Vector3D O2, final Vector3D O3,
                                    final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
@@ -235,7 +238,8 @@ public class IodGooding {
      * @param dateObs3 date of observation 1
      * @param rho1init initial guess of the range problem. range 1, in meters
      * @param rho3init initial guess of the range problem. range 3, in meters
-     * @return an estimate of the Keplerian orbit
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
      */
     public KeplerianOrbit estimate(final Frame frame, final Vector3D O1, final Vector3D O2, final Vector3D O3,
                                    final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
@@ -628,7 +632,7 @@ public class IodGooding {
         final PVCoordinates pv1 = new PVCoordinates(P1, V1);
         // create a Keplerian orbit. Assume MU = 1.
         final KeplerianOrbit orbit = new KeplerianOrbit(pv1, frame, date1, 1.);
-        return orbit.shiftedBy(tau).getPVCoordinates().getPosition();
+        return orbit.shiftedBy(tau).getPosition();
     }
 
     /**
@@ -667,7 +671,7 @@ public class IodGooding {
      * @return the station position
      */
     private static Vector3D stationPosition(final Frame frame, final AngularRaDec raDec) {
-        return raDec.getStation().getBaseFrame().getPVCoordinates(raDec.getDate(), frame).getPosition();
+        return raDec.getStation().getBaseFrame().getPosition(raDec.getDate(), frame);
     }
 
 }

@@ -148,7 +148,7 @@ public class FieldDSSTThirdBodyContext<T extends CalculusFieldElement <T>> exten
         motion = FastMath.sqrt(mu.divide(absA)).divide(absA);
 
         // Distance from center of mass of the central body to the 3rd body
-        final FieldVector3D<T> bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
+        final FieldVector3D<T> bodyPos = thirdBody.getPosition(auxiliaryElements.getDate(), auxiliaryElements.getFrame());
         R3 = bodyPos.getNorm();
 
         // Direction cosines

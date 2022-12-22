@@ -43,6 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.Constants;
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsConverter;
 
@@ -125,21 +126,21 @@ public class CRDParser {
         final ParseInfo pi = new ParseInfo();
 
         int lineNumber = 0;
-        Stream<LineParser> cdrParsers = Stream.of(LineParser.H1);
+        Stream<LineParser> crdParsers = Stream.of(LineParser.H1);
         try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++lineNumber;
                 final String l = line;
-                final Optional<LineParser> selected = cdrParsers.filter(p -> p.canHandle(l)).findFirst();
+                final Optional<LineParser> selected = crdParsers.filter(p -> p.canHandle(l)).findFirst();
                 if (selected.isPresent()) {
                     try {
                         selected.get().parse(line, pi);
                     } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
                         throw new OrekitException(e,
-                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, source.getName(), line);
+                                OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                lineNumber, source.getName(), line);
                     }
-                    cdrParsers = selected.get().allowedNext();
+                    crdParsers = selected.get().allowedNext();
                 }
                 if (pi.done) {
                     // Return file
@@ -151,6 +152,18 @@ public class CRDParser {
         // We never reached the EOF marker
         throw new OrekitException(OrekitMessages.CRD_UNEXPECTED_END_OF_FILE, lineNumber);
 
+    }
+
+    /**
+     * Computes if a day shift has happened comparing the current and past epoch, described by seconds in the day.
+     * This is useful as the data is sorted in the chronological order inside the file.
+     *
+     * @param lastSecOfDay past number of seconds per day
+     * @param secOfDay current number of seconds per day
+     * @return Boolean true if change in day.
+     */
+    private static int checkRollover(final double lastSecOfDay, final double secOfDay) {
+        return (secOfDay > lastSecOfDay) ? 0 : 1;
     }
 
     /** Transient data used for parsing a CRD file. The data is kept in a
@@ -184,6 +197,9 @@ public class CRDParser {
         /** End Of File reached indicator. */
         private boolean done;
 
+        /** Last parsed range measurement. */
+        private RangeMeasurement lastRange;
+
         /**
          * Constructor.
          */
@@ -193,6 +209,7 @@ public class CRDParser {
             this.done       = false;
             this.version    = 1;
             this.startEpoch = DateComponents.J2000_EPOCH;
+            this.lastRange  = null;
 
             // Initialise empty object
             this.file                 = new CRD();
@@ -349,8 +366,8 @@ public class CRDParser {
                 pi.startEpoch = new DateComponents(yearS, monthS, dayS);
 
                 pi.header.setStartEpoch(new AbsoluteDate(yearS, monthS, dayS,
-                                                         hourS, minuteS, secondS,
-                                                         pi.timeScale));
+                        hourS, minuteS, secondS,
+                        pi.timeScale));
 
                 // End epoch
                 final int    yearE   = Integer.parseInt(values[8]);
@@ -361,8 +378,8 @@ public class CRDParser {
                 final double secondE = Integer.parseInt(values[13]);
 
                 pi.header.setEndEpoch(new AbsoluteDate(yearE, monthE, dayE,
-                                                       hourE, minuteE, secondE,
-                                                       pi.timeScale));
+                        hourE, minuteE, secondE,
+                        pi.timeScale));
 
                 // Data release
                 pi.header.setDataReleaseFlag(Integer.parseInt(values[14]));
@@ -701,6 +718,12 @@ public class CRDParser {
         /** Range Record (Full rate, Sampled Engineering/Quicklook). */
         TEN("10") {
 
+            /** Storage for the last epoch parsed to compare with the current.*/
+            private double lastSecOfDay = 0;
+
+            /** Shift in days due to the rollover.*/
+            private int dayShift = 0;
+
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
@@ -713,10 +736,21 @@ public class CRDParser {
                 final double timeOfFlight = Double.parseDouble(values[2]);
                 final int    epochEvent   = Integer.parseInt(values[4]);
 
+                // Check secOfDay for rollover
+                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
                 // Initialise a new Range measurement
-                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                if (pi.lastRange != null) {
+                    final double duration = epoch.durationFrom(pi.lastRange.getDate());
+                    if (duration < 0) {
+                        epoch = epoch.shiftedBy(Constants.JULIAN_DAY);
+                    }
+                }
                 final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent);
                 pi.dataBlock.addRangeData(range);
+
+                lastSecOfDay = secOfDay;
+                pi.lastRange = range;
 
             }
 
@@ -731,6 +765,12 @@ public class CRDParser {
         /** Range Record (Normal point). */
         ELEVEN("11") {
 
+            /** Storage for the last epoch parsed to compare with the current.*/
+            private double lastSecOfDay = 0;
+
+            /** Shift in days due to the rollover.*/
+            private int dayShift = 0;
+
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
@@ -744,10 +784,21 @@ public class CRDParser {
                 final int    epochEvent   = Integer.parseInt(values[4]);
                 final double snr          = (pi.version == 2) ? Double.parseDouble(values[13]) : Double.NaN;
 
+                // Check secOfDay for rollover
+                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
                 // Initialise a new Range measurement
-                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                if (pi.lastRange != null) {
+                    final double duration = epoch.durationFrom(pi.lastRange.getDate());
+                    if (duration < 0) {
+                        epoch = epoch.shiftedBy(Constants.JULIAN_DAY);
+                    }
+                }
                 final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent, snr);
                 pi.dataBlock.addRangeData(range);
+
+                lastSecOfDay = secOfDay;
+                pi.lastRange = range;
 
             }
 
@@ -779,6 +830,12 @@ public class CRDParser {
         /** Meteorological record. */
         METEO("20") {
 
+            /** Storage for the last epoch parsed to compare with the current.*/
+            private double lastSecOfDay = 0;
+
+            /** Shift in days due to the rollover.*/
+            private int dayShift = 0;
+
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
@@ -792,10 +849,12 @@ public class CRDParser {
                 final double temperature = Double.parseDouble(values[3]);
                 final double humidity    = Double.parseDouble(values[4]);
 
-                // Initialise a new meteorological measurement
-                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                // Check secOfDay for rollover
+                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
+                // Initialise a new Range measurement
+                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale).shiftedBy(dayShift * 86400);
                 final MeteorologicalMeasurement meteo = new MeteorologicalMeasurement(epoch, pressure,
-                                                                                      temperature, humidity);
+                        temperature, humidity);
                 pi.dataBlock.addMeteoData(meteo);
 
             }
@@ -828,6 +887,12 @@ public class CRDParser {
         /** Pointing Angle Record. */
         ANGLES("30") {
 
+            /** Storage for the last epoch parsed to compare with the current.*/
+            private double lastSecOfDay = 0;
+
+            /** Shift in days due to the rollover.*/
+            private int dayShift = 0;
+
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
@@ -852,12 +917,14 @@ public class CRDParser {
                     elevationRate = readDoubleWithNaN(values[8]);
                 }
 
+                // Check secOfDay for rollover
+                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
                 // Initialise a new angles measurement
                 final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
                 final AnglesMeasurement angles = new AnglesMeasurement(epoch, azmiuth, elevation,
-                                                                       directionFlag, orginFlag,
-                                                                       isRefractionCorrected,
-                                                                       azimuthRate, elevationRate);
+                        directionFlag, orginFlag,
+                        isRefractionCorrected,
+                        azimuthRate, elevationRate);
                 pi.dataBlock.addAnglesData(angles);
 
             }
@@ -972,7 +1039,7 @@ public class CRDParser {
             @Override
             public Stream<LineParser> allowedNext() {
                 return Stream.of(H1, H2, H3, H4, H5, H8, H9, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO,
-                                 METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS);
+                        METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS);
 
             }
 
@@ -997,6 +1064,7 @@ public class CRDParser {
                 pi.header               = new CRDHeader();
                 pi.configurationRecords = new CRDConfiguration();
                 pi.dataBlock            = new CRDDataBlock();
+                pi.lastRange            = null;
 
             }
 

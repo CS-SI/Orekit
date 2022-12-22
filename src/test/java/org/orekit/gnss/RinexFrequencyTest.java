@@ -16,30 +16,30 @@
  */
 package org.orekit.gnss;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class RinexFrequencyTest {
-        
+
     @Test
     public void testMeasurementType() {
         for (final ObservationType rf : ObservationType.values()) {
             final char c = rf.toString().charAt(0);
             switch (rf.getMeasurementType()) {
                 case PSEUDO_RANGE :
-                    Assert.assertTrue(c == 'C' || c == 'P');
+                    Assertions.assertTrue(c == 'C' || c == 'P');
                     break;
                 case CARRIER_PHASE :
-                    Assert.assertTrue(c == 'L');
+                    Assertions.assertTrue(c == 'L');
                     break;
                 case DOPPLER :
-                    Assert.assertTrue(c == 'D');
+                    Assertions.assertTrue(c == 'D');
                     break;
                 case SIGNAL_STRENGTH :
-                    Assert.assertTrue(c == 'S');
+                    Assertions.assertTrue(c == 'S');
                     break;
                 default :
-                    Assert.fail("unknown " + rf.getMeasurementType());
+                    Assertions.fail("unknown " + rf.getMeasurementType());
             }
         }
     }

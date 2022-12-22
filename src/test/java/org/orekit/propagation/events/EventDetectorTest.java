@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.Locale;
-import java.util.function.Function;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -28,11 +25,12 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -55,6 +53,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.util.Locale;
+import java.util.function.Function;
 
 public class EventDetectorTest {
 
@@ -95,7 +96,7 @@ public class EventDetectorTest {
         double stepSize = 60.0;
         propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(handler));
         propagator.propagate(date.shiftedBy(10 * stepSize));
-        Assert.assertTrue(eventOccurred[0]);
+        Assertions.assertTrue(eventOccurred[0]);
 
     }
 
@@ -115,7 +116,7 @@ public class EventDetectorTest {
         propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(checker));
         propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(10 * stepSize));
-        Assert.assertTrue(checker.outOfOrderCallDetected());
+        Assertions.assertTrue(checker.outOfOrderCallDetected());
 
     }
 
@@ -144,7 +145,7 @@ public class EventDetectorTest {
                 double dt = currentState.getDate().durationFrom(triggerDate);
                 if (dt < 0) {
                     outOfOrderCallDetected = true;
-                    Assert.assertTrue(FastMath.abs(dt) < (2 * stepSize));
+                    Assertions.assertTrue(FastMath.abs(dt) < (2 * stepSize));
                 }
             }
         }
@@ -174,7 +175,7 @@ public class EventDetectorTest {
         GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<GCallsCounter>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(n * step));
-        Assert.assertEquals(n + 1, counter.getCount());
+        Assertions.assertEquals(n + 1, counter.getCount());
     }
 
     @Test
@@ -193,7 +194,7 @@ public class EventDetectorTest {
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
         // analytical propagator can take one big step, further reducing calls to g()
-        Assert.assertEquals(2, counter.getCount());
+        Assertions.assertEquals(2, counter.getCount());
     }
 
     private static class GCallsCounter extends AbstractDetector<GCallsCounter> {
@@ -245,7 +246,7 @@ public class EventDetectorTest {
                                                       k1));
         k2.addEventDetector(new DateDetector(Constants.JULIAN_DAY, 1.0e-6, interruptDate));
         SpacecraftState s = k2.propagate(startDate, targetDate);
-        Assert.assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
+        Assertions.assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
     }
 
     private static class CloseApproachDetector extends AbstractDetector<CloseApproachDetector> {
@@ -301,10 +302,10 @@ public class EventDetectorTest {
                 }
             });
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertSame(OrekitException.class, oe.getClass());
-            Assert.assertSame(dummyCause, oe.getCause().getCause());
+            Assertions.assertSame(OrekitException.class, oe.getClass());
+            Assertions.assertSame(dummyCause, oe.getCause().getCause());
             String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
                     "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
                     "Last iteration at 2011-05-11T00:00:00.000Z (g=-3.6E3)";
@@ -350,8 +351,40 @@ public class EventDetectorTest {
        SpacecraftState s = new SpacecraftState(new KeplerianOrbit(7e6, 0.01, 0.3, 0, 0, 0,
                                                                   PositionAngle.TRUE, FramesFactory.getEME2000(),
                                                                   AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
-       Assert.assertSame(s, dummyDetector.resetState(s));
+       Assertions.assertSame(s, dummyDetector.resetState(s));
 
+    }
+
+    @Test
+    public void testNumericalNoiseAtIntervalEnd() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        final AbsoluteDate initialDate   = new AbsoluteDate(2011, 5, 11, utc);
+        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008462.4706055815, -3155502.5373837613, -5044275.9880020910),
+                                                                   new Vector3D(-5012.9298276860990, 1920.3567095973078, -5172.7403501801580)),
+                                                 eme2000, initialDate, Constants.WGS84_EARTH_MU);
+        Propagator propagator = new KeplerianPropagator(orbit);
+        double base  = 3600.0;
+        double noise = FastMath.scalb(base, -60);
+        // introduce some numerical noise by using two separate shifts
+        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(2 * noise);
+        AbsoluteDate eventTime = finalTime.shiftedBy(-noise);
+        propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise / 2));
+        SpacecraftState finalState = propagator.propagate(finalTime);
+        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
+
+    }
+
+    @Test
+    public void testWrongConfiguration() {
+        try {
+            new DateDetector(-1.0, 1.0e-6, AbsoluteDate.ARBITRARY_EPOCH);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
+            Assertions.assertEquals(-1.0, ((Double) oe.getParts()[0]).doubleValue(), 1.0e-15);
+        }
     }
 
     @Test
@@ -418,7 +451,7 @@ public class EventDetectorTest {
 
         propagator.propagate(initialDate.shiftedBy(start), initialDate.shiftedBy(stop));
 
-        Assert.assertEquals(expectedCalls, checker.calls);
+        Assertions.assertEquals(expectedCalls, checker.calls);
 
     }
 
@@ -442,14 +475,14 @@ public class EventDetectorTest {
                 // check scheduling is always consistent with integration direction
                 if (start.isBefore(stop)) {
                     // forward direction
-                    Assert.assertTrue(date.isAfterOrEqualTo(start));
-                    Assert.assertTrue(date.isBeforeOrEqualTo(stop));
-                    Assert.assertTrue(date.isAfterOrEqualTo(last));
+                    Assertions.assertTrue(date.isAfterOrEqualTo(start));
+                    Assertions.assertTrue(date.isBeforeOrEqualTo(stop));
+                    Assertions.assertTrue(date.isAfterOrEqualTo(last));
                } else {
                     // backward direction
-                   Assert.assertTrue(date.isBeforeOrEqualTo(start));
-                   Assert.assertTrue(date.isAfterOrEqualTo(stop));
-                   Assert.assertTrue(date.isBeforeOrEqualTo(last));
+                   Assertions.assertTrue(date.isBeforeOrEqualTo(start));
+                   Assertions.assertTrue(date.isAfterOrEqualTo(stop));
+                   Assertions.assertTrue(date.isBeforeOrEqualTo(last));
                 }
             }
             last = date;
@@ -458,7 +491,7 @@ public class EventDetectorTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         mu = Constants.EIGEN5C_EARTH_MU;

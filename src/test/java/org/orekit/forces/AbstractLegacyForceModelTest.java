@@ -16,14 +16,13 @@
  */
 package org.orekit.forces;
 
-
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -49,14 +48,13 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
 
     protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
                                                         final AttitudeProvider attitudeProvider,
-                                                        final double checkTolerance, final boolean print)
-        {
+                                                        final double checkTolerance, final boolean print) {
         FieldSpacecraftState<DerivativeStructure> fState = toDS(state, attitudeProvider);
         FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState,
                                                                            forceModel.getParameters(fState.getDate().getField()));
         FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState.getDate().toAbsoluteDate(),
                                                                            fState.getFrame(),
-                                                                           fState.getPVCoordinates().getPosition(),
+                                                                           fState.getPosition(),
                                                                            fState.getPVCoordinates().getVelocity(),
                                                                            fState.getAttitude().getRotation(),
                                                                            fState.getMass());
@@ -122,7 +120,7 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
                                                                            forceModel.getParameters(fState.getDate().getField()));
         FieldVector3D<Gradient> gOld = accelerationDerivativesGradient(forceModel, fState.getDate().toAbsoluteDate(),
                                                                        fState.getFrame(),
-                                                                       fState.getPVCoordinates().getPosition(),
+                                                                       fState.getPosition(),
                                                                        fState.getPVCoordinates().getVelocity(),
                                                                        fState.getAttitude().getRotation(),
                                                                        fState.getMass());
@@ -183,9 +181,9 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
         if (reference.getNorm() == 0) {
             // if dF/dP is exactly zero (i.e. no dependency between F and P),
             // then the result should also be exactly zero
-            Assert.assertEquals(0, result.getNorm(), Precision.SAFE_MIN);
+            Assertions.assertEquals(0, result.getNorm(), Precision.SAFE_MIN);
         } else {
-            Assert.assertEquals(0, Vector3D.distance(reference, result), checkTolerance * reference.getNorm());
+            Assertions.assertEquals(0, Vector3D.distance(reference, result), checkTolerance * reference.getNorm());
         }
     }
 

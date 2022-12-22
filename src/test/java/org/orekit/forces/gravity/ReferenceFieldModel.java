@@ -238,11 +238,6 @@ class ReferenceFieldModel {
             return provider.getReferenceDate();
         }
 
-        @Deprecated
-        public double getOffset(AbsoluteDate date) {
-            return provider.getOffset(date);
-        }
-
         public TideSystem getTideSystem() {
             return provider.getTideSystem();
         }

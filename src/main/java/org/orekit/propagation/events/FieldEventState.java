@@ -16,8 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.Field;
+import java.util.function.DoubleFunction;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -265,6 +267,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         final BracketedUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0, convergence.getReal(), 0, 5);
 
+        // prepare loop below
+        FieldAbsoluteDate<T> loopT = ta;
+        T loopG = ga;
+
         // event time, just at or before the actual root.
         FieldAbsoluteDate<T> beforeRootT = null;
         T beforeRootG = zero.add(Double.NaN);
@@ -294,16 +300,26 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
             final T newGa = g(interpolator.getInterpolatedState(ta));
             if (ga.getReal() > 0 != newGa.getReal() > 0) {
                 // both non-zero, step sign change at ta, possibly due to reset state
-                beforeRootT = ta;
-                beforeRootG = newGa;
-                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+                final FieldAbsoluteDate<T> nextT = minTime(shiftedBy(ta, convergence), tb);
+                final T                    nextG = g(interpolator.getInterpolatedState(nextT));
+                if (nextG.getReal() > 0.0 == g0Positive) {
+                    // the sign change between ga and newGa just moved the root less than one convergence
+                    // threshold later, we are still in a regular search for another root before tb,
+                    // we just need to fix the bracketing interval
+                    // (see issue https://github.com/Hipparchus-Math/hipparchus/issues/184)
+                    loopT = nextT;
+                    loopG = nextG;
+                } else {
+                    beforeRootT = ta;
+                    beforeRootG = newGa;
+                    afterRootT  = nextT;
+                    afterRootG  = nextG;
+                }
             }
         }
+
         // loop to skip through "fake" roots, i.e. where g(t) = g'(t) = 0.0
         // executed once if we didn't hit a special case above
-        FieldAbsoluteDate<T> loopT = ta;
-        T loopG = ga;
         while ((afterRootG.getReal() == 0.0 || afterRootG.getReal() > 0.0 == g0Positive) &&
                 strictlyAfter(afterRootT, tb)) {
             if (loopG.getReal() == 0.0) {
@@ -317,19 +333,31 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
                 // both non-zero, the usual case, use a root finder.
                 // time zero for evaluating the function f. Needs to be final
                 final FieldAbsoluteDate<T> fT0 = loopT;
-                final UnivariateFunction f = dt -> {
-                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
+                final double tbDouble = tb.durationFrom(fT0).getReal();
+                final double middle   = 0.5 * tbDouble;
+                final DoubleFunction<FieldAbsoluteDate<T>> date = dt -> {
+                    // use either fT0 or tb as the base time for shifts
+                    // in order to ensure we reproduce exactly those times
+                    // using only one reference time like fT0 would imply
+                    // to use ft0.shiftedBy(tbDouble), which may be different
+                    // from tb due to numerical noise (see issue 921)
+                    if (forward == dt <= middle) {
+                        // use start of interval as reference
+                        return fT0.shiftedBy(dt);
+                    } else {
+                        // use end of interval as reference
+                        return tb.shiftedBy(dt - tbDouble);
+                    }
                 };
-                // tb as a double for use in f
-                final T tbDouble = tb.durationFrom(fT0);
+                final UnivariateFunction f = dt -> g(interpolator.getInterpolatedState(date.apply(dt))).getReal();
                 if (forward) {
                     try {
                         final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
-                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                        beforeRootT = date.apply(interval.getLeftAbscissa());
                         beforeRootG = zero.add(interval.getLeftValue());
-                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        afterRootG = zero.add(interval.getRightValue());
+                        afterRootT  = date.apply(interval.getRightAbscissa());
+                        afterRootG  = zero.add(interval.getRightValue());
                         // CHECKSTYLE: stop IllegalCatch check
                     } catch (RuntimeException e) {
                         // CHECKSTYLE: resume IllegalCatch check
@@ -339,11 +367,11 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
                 } else {
                     try {
                         final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
-                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                        beforeRootT = date.apply(interval.getRightAbscissa());
                         beforeRootG = zero.add(interval.getRightValue());
-                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        afterRootG = zero.add(interval.getLeftValue());
+                        afterRootT  = date.apply(interval.getLeftAbscissa());
+                        afterRootG  = zero.add(interval.getLeftValue());
                         // CHECKSTYLE: stop IllegalCatch check
                     } catch (RuntimeException e) {
                         // CHECKSTYLE: resume IllegalCatch check

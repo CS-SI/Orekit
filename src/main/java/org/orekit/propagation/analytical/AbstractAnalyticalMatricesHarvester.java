@@ -24,6 +24,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.AbstractMatricesHarvester;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -39,7 +40,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester {
+public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester implements AdditionalStateProvider {
 
     /** Columns names for parameters. */
     private List<String> columnsNames;
@@ -94,11 +95,28 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
+    public String getName() {
+        return getStmName();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getAdditionalState(final SpacecraftState state) {
         // Update the partial derivatives if needed
         updateDerivativesIfNeeded(state);
-        //return the state transition matrix
-        return MatrixUtils.createRealMatrix(analyticalDerivativesStm);
+        // Return the state transition matrix in an array
+        return toArray(analyticalDerivativesStm);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
+        // Check if additional state is defined
+        if (!state.hasAdditionalState(getName())) {
+            return null;
+        }
+        // Return the state transition matrix
+        return toRealMatrix(state.getAdditionalState(getName()));
     }
 
     /** {@inheritDoc} */
@@ -212,6 +230,37 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         for (int i = 0; i < 6; i++) {
             analyticalDerivativesStm[index][i] += derivatives[i];
         }
+    }
+
+    /** Convert an array to a matrix (6x6 dimension).
+     * @param array input array
+     * @return the corresponding matrix
+     */
+    private RealMatrix toRealMatrix(final double[] array) {
+        final RealMatrix matrix = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+        int index = 0;
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
+                matrix.setEntry(i, j, array[index++]);
+            }
+        }
+        return matrix;
+    }
+
+    /** Set the STM data into an array.
+     * @param matrix STM matrix
+     * @return an array containing the STM data
+     */
+    private double[] toArray(final double[][] matrix) {
+        final double[] array = new double[STATE_DIMENSION * STATE_DIMENSION];
+        int index = 0;
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            final double[] row = matrix[i];
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
+                array[index++] = row[j];
+            }
+        }
+        return array;
     }
 
     /**
