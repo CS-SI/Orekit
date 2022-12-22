@@ -40,7 +40,7 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -59,7 +59,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public abstract class AbstractBatchLSModel implements MultivariateJacobianFunction {
 
     /** Builders for propagators. */
-    private final OrbitDeterminationPropagatorBuilder[] builders;
+    private final PropagatorBuilder[] builders;
 
     /** Array of each builder's selected orbit drivers.
      * @since 11.1
@@ -131,7 +131,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public AbstractBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
+    public AbstractBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {

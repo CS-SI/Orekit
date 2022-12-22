@@ -30,7 +30,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
 /**
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory.
+ * The filter uses a {@link PropagatorBuilder} to initialize its reference trajectory.
  * The Kalman estimator can be used with a {@link NumericalPropagator}, {@link TLEPropagator},
  * {@link BrouwerLyddanePropagator}, {@link EcksteinHechlerPropagator}, {@link KeplerianPropagator},
  * or {@link Ephemeris}.
@@ -99,7 +99,7 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
      * @since 10.3
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                    final List<PropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

@@ -43,7 +43,6 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -64,7 +63,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class BatchLSEstimator {
 
     /** Builders for propagator. */
-    private final OrbitDeterminationPropagatorBuilder[] builders;
+    private final PropagatorBuilder[] builders;
 
     /** Measurements. */
     private final List<ObservedMeasurement<?>> measurements;
@@ -116,7 +115,7 @@ public class BatchLSEstimator {
      * @param propagatorBuilder builders to use for propagation
      */
     public BatchLSEstimator(final LeastSquaresOptimizer optimizer,
-                            final OrbitDeterminationPropagatorBuilder... propagatorBuilder) {
+                            final PropagatorBuilder... propagatorBuilder) {
 
         this.builders                       = propagatorBuilder;
         this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
@@ -411,7 +410,7 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.estimations = newEstimations;
             }
         };
-        final AbstractBatchLSModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        final AbstractBatchLSModel model = builders[0].buildLeastSquaresModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
 
         lsBuilder.model(model);
 

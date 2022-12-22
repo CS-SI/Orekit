@@ -16,15 +16,21 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class AbstractPropagatorBuilderTest {
@@ -45,6 +51,15 @@ public class AbstractPropagatorBuilderTest {
                 // Dummy function "buildPropagator", copied from KeplerianPropagatorBuilder
                 setParameters(normalizedParameters);
                 return new KeplerianPropagator(createInitialOrbit());
+            }
+
+            @Override
+            public AbstractBatchLSModel buildLeastSquaresModel(PropagatorBuilder[] builders,
+                                                               List<ObservedMeasurement<?>> measurements,
+                                                               ParameterDriversList estimatedMeasurementsParameters,
+                                                               ModelObserver observer) {
+                // The test don't use orbit determination. So, the method can return null
+                return null;
             }
         };
 
