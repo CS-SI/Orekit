@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -226,10 +226,11 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public BatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                            final List<ObservedMeasurement<?>> measurements,
-                            final ParameterDriversList estimatedMeasurementsParameters,
-                            final ModelObserver observer) {
+    @Override
+    public BatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                               final List<ObservedMeasurement<?>> measurements,
+                                               final ParameterDriversList estimatedMeasurementsParameters,
+                                               final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 

@@ -33,7 +33,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.3
  */
-public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Default position scale (not used for ephemeris based estimation). */
     private static final double DEFAULT_SCALE = 10.0;
@@ -76,10 +76,10 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implem
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 

@@ -34,7 +34,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Build a new instance.
      * <p>
@@ -90,10 +90,10 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 

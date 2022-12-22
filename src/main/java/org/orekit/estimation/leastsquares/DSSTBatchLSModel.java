@@ -24,7 +24,7 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTHarvester;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
@@ -34,7 +34,7 @@ import org.orekit.utils.ParameterDriversList;
  * least squares problems}.
  * <p>
  * This class is an adaption of the {@link BatchLSModel} class
- * but for the {@link DSSTPropagator DSST propagator}.
+ * for the {@link DSSTPropagator DSST propagator}.
  * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
@@ -56,7 +56,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
      * @param observer observer to be notified at model calls
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      */
-    public DSSTBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
+    public DSSTBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer,

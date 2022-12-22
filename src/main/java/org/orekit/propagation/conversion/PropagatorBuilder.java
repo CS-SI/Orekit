@@ -16,7 +16,13 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -34,6 +40,19 @@ public interface PropagatorBuilder {
      * @return an initialized propagator
      */
     Propagator buildPropagator(double[] normalizedParameters);
+
+    /** Build a new batch least squares model.
+     * @param builders builders to use for propagation
+     * @param measurements measurements
+     * @param estimatedMeasurementsParameters estimated measurements parameters
+     * @param observer observer to be notified at model calls
+     * @return a new model for the Batch Least Squares orbit determination
+     * @since 12.0
+     */
+    AbstractBatchLSModel buildLeastSquaresModel(PropagatorBuilder[] builders,
+                                                List<ObservedMeasurement<?>> measurements,
+                                                ParameterDriversList estimatedMeasurementsParameters,
+                                                ModelObserver observer);
 
     /** Get the current value of selected normalized parameters.
      * @return current value of selected normalized parameters
@@ -82,5 +101,11 @@ public interface PropagatorBuilder {
      * @since 8.0
      */
     ParameterDriversList getPropagationParametersDrivers();
+
+    /** Reset the orbit in the propagator builder.
+     * @param newOrbit New orbit to set in the propagator builder
+     * @since 12.0
+     */
+    void resetOrbit(Orbit newOrbit);
 
 }

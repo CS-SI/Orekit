@@ -66,7 +66,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Parameters scaling factor.
      * <p>
@@ -262,10 +262,10 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 

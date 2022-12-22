@@ -37,7 +37,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -51,7 +51,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class KalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
-    private final List<OrbitDeterminationPropagatorBuilder> builders;
+    private final List<PropagatorBuilder> builders;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList allEstimatedOrbitalParameters;
@@ -130,7 +130,7 @@ public class KalmanModel implements KalmanEstimation, NonLinearProcess<Measureme
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    public KalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+    public KalmanModel(final List<PropagatorBuilder> propagatorBuilders,
                        final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                        final ParameterDriversList estimatedMeasurementParameters,
                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
@@ -983,7 +983,7 @@ public class KalmanModel implements KalmanEstimation, NonLinearProcess<Measureme
     /** Getter for the propagators.
      * @return the propagators
      */
-    public List<OrbitDeterminationPropagatorBuilder> getBuilders() {
+    public List<PropagatorBuilder> getBuilders() {
         return builders;
     }
 
