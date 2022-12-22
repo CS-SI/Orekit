@@ -16,6 +16,10 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -30,13 +34,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 public class FieldAbsolutePVCoordinatesTest {
 
@@ -58,6 +61,11 @@ public class FieldAbsolutePVCoordinatesTest {
     @Test
     public void testLinearConstructors() {
         doTestLinearConstructors(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testDifferentFrames() {
+        doTestDifferentFrames(Decimal64Field.getInstance());
     }
 
     @Test
@@ -194,6 +202,24 @@ public class FieldAbsolutePVCoordinatesTest {
         checkPV(new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(5.0), pv4),
                 new FieldAbsolutePVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field), one.multiply(4.0), pv1, one.multiply(3.0), pv2, one.multiply(2.0), pv3, one, pv4),
                 1.0e-15);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestDifferentFrames(Field<T> field) {
+        final FieldVector3D<T> zero = FieldVector3D.getZero(field);
+        FieldAbsolutePVCoordinates<T> apv1 = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
+                                                                              FieldAbsoluteDate.getArbitraryEpoch(field),
+                                                                              zero, zero, zero);
+        FieldAbsolutePVCoordinates<T> apv2 = new FieldAbsolutePVCoordinates<>(FramesFactory.getGCRF(),
+                                                                              FieldAbsoluteDate.getArbitraryEpoch(field),
+                                                                              zero, zero, zero);
+        try {
+            new FieldAbsolutePVCoordinates<>(FieldAbsoluteDate.getArbitraryEpoch(field), apv1, apv2);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_FRAMES, oe.getSpecifier());
+            Assertions.assertEquals(apv1.getFrame().getName(), oe.getParts()[0]);
+            Assertions.assertEquals(apv2.getFrame().getName(), oe.getParts()[1]);
+        }
     }
 
     private <T extends CalculusFieldElement<T>> void doTestToDerivativeStructureVector1(Field<T> field) {
@@ -590,6 +616,7 @@ public class FieldAbsolutePVCoordinatesTest {
         final T one = field.getOne();
         FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame frame = FramesFactory.getEME2000();
+        Frame otherEme2000 = new Frame(frame, Transform.IDENTITY, "other-EME2000");
         FieldVector3D<T> p = new FieldVector3D<>(one.multiply(1), one.multiply(2), one.multiply(3));
         FieldVector3D<T> v = new FieldVector3D<>(one.multiply(4), one.multiply(5), one.multiply(6));
 
@@ -597,10 +624,37 @@ public class FieldAbsolutePVCoordinatesTest {
         FieldAbsolutePVCoordinates<T> actual = new FieldAbsolutePVCoordinates<>(frame, date, p, v);
 
         //verify
-        Assertions.assertEquals(actual.getPVCoordinates().toString(), actual.getPVCoordinates(frame).toString());
-        Assertions.assertEquals(actual.getPVCoordinates(frame).toString(), actual.getPVCoordinates(date, frame).toString());
+        Assertions.assertSame(actual.getPosition(), actual.getPosition(frame));
+        Assertions.assertNotSame(actual.getPosition(), actual.getPosition(otherEme2000));
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPosition(frame),
+                                                       actual.getPosition(otherEme2000)).getReal(),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                                                       actual.getPVCoordinates(date, frame).getPosition()).getReal(),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                                                       actual.getPVCoordinates(date, frame).getVelocity()).getReal(),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                                                       actual.getPVCoordinates(date, frame).getAcceleration()).getReal(),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                                                       actual.getPVCoordinates(date, otherEme2000).getPosition()).getReal(),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                                                       actual.getPVCoordinates(date, otherEme2000).getVelocity()).getReal(),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                                                       actual.getPVCoordinates(date, otherEme2000).getAcceleration()).getReal(),
+                                1.0e-15);
     }
-
 
     private <T extends CalculusFieldElement<T>> void doTestTaylorProvider(Field<T> field) {
         //setup
@@ -615,6 +669,9 @@ public class FieldAbsolutePVCoordinatesTest {
         final FieldPVCoordinatesProvider<T> pv = actual.toTaylorProvider();
 
         //verify
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.distance(actual.getPosition(date, frame), pv.getPosition(date, frame)).getReal(),
+                                1.0e-15);
         Assertions.assertEquals(actual.getPVCoordinates(date, frame).toString(), pv.getPVCoordinates(date, frame).toString());
     }
 
