@@ -26,8 +26,6 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
@@ -233,16 +231,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public KalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                        final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                        final ParameterDriversList estimatedMeasurementsParameters,
-                                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
-                               estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
     /** Check if Newtonian attraction force model is available.

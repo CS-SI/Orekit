@@ -82,7 +82,7 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
     private final AbsoluteDate referenceDate;
 
     /** Kalman filter process model. */
-    private final AbstractKalmanModel processModel;
+    private final KalmanModel processModel;
 
     /** Filter. */
     private final ExtendedKalmanFilter<MeasurementDecorator> filter;
@@ -108,10 +108,10 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
         this.observer           = null;
 
         // Build the process model and measurement model
-        this.processModel = propagatorBuilders.get(0).buildKalmanModel(propagatorBuilders,
-                                                                       processNoiseMatricesProviders,
-                                                                       estimatedMeasurementParameters,
-                                                                       measurementProcessNoiseMatrix);
+        this.processModel = new KalmanModel(propagatorBuilders,
+                                            processNoiseMatricesProviders,
+                                            estimatedMeasurementParameters,
+                                            measurementProcessNoiseMatrix);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 

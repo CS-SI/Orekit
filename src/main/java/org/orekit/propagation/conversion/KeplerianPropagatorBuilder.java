@@ -24,9 +24,6 @@ import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -98,15 +95,6 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
                                              final ParameterDriversList estimatedMeasurementsParameters,
                                              final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

@@ -21,8 +21,6 @@ import java.util.List;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriversList;
 
@@ -43,18 +41,6 @@ public interface OrbitDeterminationPropagatorBuilder extends PropagatorBuilder {
                                       List<ObservedMeasurement<?>> measurements,
                                       ParameterDriversList estimatedMeasurementsParameters,
                                       ModelObserver observer);
-
-    /** Build a new Kalman model.
-     * @param propagatorBuilders propagators builders used to evaluate the orbits.
-     * @param covarianceMatricesProviders providers for covariance matrices
-     * @param estimatedMeasurementsParameters measurement parameters to estimate
-     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @return a new model for Kalman Filter orbit determination
-     */
-    AbstractKalmanModel buildKalmanModel(List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                         List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                         ParameterDriversList estimatedMeasurementsParameters,
-                                         CovarianceMatrixProvider measurementProcessNoiseMatrix);
 
     /** Reset the orbit in the propagator builder.
      * @param newOrbit New orbit to set in the propagator builder
