@@ -34,7 +34,7 @@ import org.orekit.utils.ParameterDriversList;
  * least squares problems}.
  * <p>
  * This class is an adaption of the {@link BatchLSModel} class
- * but for the {@link DSSTPropagator DSST propagator}.
+ * for the {@link DSSTPropagator DSST propagator}.
  * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne

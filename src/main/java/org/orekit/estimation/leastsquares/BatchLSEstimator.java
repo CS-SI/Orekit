@@ -42,6 +42,11 @@ import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.Ephemeris;
+import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -53,9 +58,11 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Least squares estimator for orbit determination.
  * <p>
- * Since 10.0, the least squares estimator can be used with both
- * {@link NumericalPropagator numerical} and {@link DSSTPropagator DSST}
- * orbit propagators.
+ * The least squares estimator can be used with different orbit propagators
+ * in Orekit. Current propagators list of usable propagators are {@link NumericalPropagator numerical},
+ * {@link DSSTPropagator DSST}, {@link BrouwerLyddanePropagator Brouwer-Lyddane},
+ * {@link EcksteinHechlerPropagator Eckstein-Hechler}, {@link TLEPropagator SGP4},
+ * {@link KeplerianPropagator Keplerian}, and {@link Ephemeris ephemeris-based}.
  * </p>
  * @author Luc Maisonobe
  * @since 8.0
