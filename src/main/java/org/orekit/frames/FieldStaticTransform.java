@@ -244,7 +244,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      *                    translating applying this rotation produces positions
      *                    expressed in the new frame.
      * @return the newly created static transform.
-     * @see #compose(AbsoluteDate, StaticTransform, StaticTransform)
+     * @see #compose(FieldAbsoluteDate, FieldStaticTransform, FieldStaticTransform)
      * @see #of(FieldAbsoluteDate, FieldRotation)
      * @see #of(FieldAbsoluteDate, FieldVector3D)
      */
