@@ -19,7 +19,6 @@ package org.orekit.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.Before;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
