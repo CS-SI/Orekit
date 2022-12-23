@@ -79,10 +79,6 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Attitude provider for the propagator. */
     private AttitudeProvider attitudeProvider;
 
-    /** Additional equations. */
-    @Deprecated
-    private List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations;
-
     /** Additional derivatives providers.
      * @since 11.1
      */
@@ -168,7 +164,6 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             driver.setSelected(true);
         }
 
-        this.additionalEquations             = new ArrayList<>();
         this.additionalDerivativesProviders  = new ArrayList<>();
 
         if (addDriverForCentralAttraction) {
@@ -397,26 +392,6 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         // Change the initial orbit date in the builder
         this.initialOrbitDate = newOrbit.getDate();
-    }
-
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
-     * @param additional additional equations
-     * @since 10.1
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final org.orekit.propagation.integration.AdditionalEquations additional) {
-        additionalEquations.add(additional);
-    }
-
-    /** Get the list of additional equations.
-     * @return the list of additional equations
-     * @since 10.1
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    protected List<org.orekit.propagation.integration.AdditionalEquations> getAdditionalEquations() {
-        return additionalEquations;
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).

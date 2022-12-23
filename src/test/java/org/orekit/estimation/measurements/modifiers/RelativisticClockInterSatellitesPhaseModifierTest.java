@@ -17,9 +17,9 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -47,8 +47,8 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
         final double wavelength = Frequency.G01.getWavelength();
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     date,
-                                                                    Vector3D.distance(states[0].getPVCoordinates().getPosition(),
-                                                                                      states[1].getPVCoordinates().getPosition()) / wavelength,
+                                                                    Vector3D.distance(states[0].getPosition(),
+                                                                                      states[1].getPosition()) / wavelength,
                                                                     wavelength, 1.0, 1.0);
 
         // Inter-satellites phase before applying the modifier
@@ -60,12 +60,12 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
         final EstimatedMeasurement<InterSatellitesPhase> estimatedAfter = phase.estimate(0, 0, states);
 
         // Verify
-        Assert.assertEquals(-10.57, (estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0]) * wavelength, 1.0e-2);
-        Assert.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(-10.57, (estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0]) * wavelength, 1.0e-2);
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Data root
         Utils.setDataRoot("regular-data");

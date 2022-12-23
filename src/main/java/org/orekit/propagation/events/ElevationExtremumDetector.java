@@ -107,7 +107,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @return spacecraft elevation
      */
     public double getElevation(final SpacecraftState s) {
-        return topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+        return topo.getElevation(s.getPosition(), s.getFrame(), s.getDate());
     }
 
     /** Compute the value of the detection function.

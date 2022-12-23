@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.orekit.propagation.events;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
@@ -57,7 +57,7 @@ public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest 
         propagator.propagate(epoch.shiftedBy(period));
 
         // verify no events
-        Assert.assertEquals(0, handler.getEvents().size());
+        Assertions.assertEquals(0, handler.getEvents().size());
     }
 
     /** Test Analytic propagators take big steps. #830 */
@@ -79,7 +79,7 @@ public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest 
         propagator.propagate(epoch.shiftedBy(period));
 
         // verify no events
-        Assert.assertEquals(0, handler.getEvents().size());
+        Assertions.assertEquals(0, handler.getEvents().size());
     }
 
 }

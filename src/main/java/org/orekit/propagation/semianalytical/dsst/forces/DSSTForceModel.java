@@ -187,13 +187,31 @@ public interface DSSTForceModel extends ParametersDriversProvider {
     /** Get force model parameters at specific date (1 value per parameter
      * driver. Different from {@link #getParametersAllValues()} which
      * returns all span values of all parameters.
+     * @return force model parameters, will throw an exception if one
+     * of the PDriver in the DSST force model have more than 1 value driven. In this
+     * case (if one of the force PDriver has several values driven then the
+     * {@link #getParameters(AbsoluteDate)} must be used.
+     * @since 9.0
+     */
+    default double[] getParameters() {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters at specific date (1 value per parameter
+     * driver. Different from {@link #getParametersAllValues()} which
+     * returns all span values of all parameters.
      * @param date date at which the parameters want to be known, can
      * be new AbsoluteDate() if all the parameters have no validity period
      * that is to say that they have only 1 estimated value over the all
      * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
      * validity period = 0)
      * @return force model parameters
-     * @since 9.0
+     * @since 12.0
      */
     default double[] getParameters(AbsoluteDate date) {
         final List<ParameterDriver> drivers = getParametersDrivers();
@@ -209,13 +227,33 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      * returns all span values of all parameters.
      * @param field field to which the elements belong
      * @param <T> type of the elements
+     * @return force model parameters, will throw an exception if one
+     * of the PDriver in the DSST force model have more than 1 value driven. In this
+     * case (if one of the force PDriver has several values driven then the
+     * {@link #getParameters(Field, FieldAbsoluteDate)} must be used.
+     * @since 9.0
+     */
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters at specific date (1 value per parameter
+     * driver. Different from {@link #getParametersAllValues(Field)} which
+     * returns all span values of all parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
      * @param date field date at which the parameters want to be known, can
      * be new AbsoluteDate() if all the parameters have no validity period
      * that is to say that they have only 1 estimated value over the all
      * interval ( {@link org.orekit.utils.ParameterDriver#setPeriods} with
      * validity period = 0)
      * @return force model parameters
-     * @since 9.0
+     * @since 12.0
      */
     default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, FieldAbsoluteDate<T> date) {
         final List<ParameterDriver> drivers = getParametersDrivers();

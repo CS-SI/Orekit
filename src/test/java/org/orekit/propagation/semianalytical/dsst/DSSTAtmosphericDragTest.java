@@ -16,18 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -62,15 +56,21 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class DSSTAtmosphericDragTest {
-    
+
     @Test
     public void testGetMeanElementRate() throws IllegalArgumentException, OrekitException {
-        
+
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(2, 0);
-        
+
         final Frame earthFrame = FramesFactory.getEME2000();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         final double mu = 3.986004415E14;
@@ -106,7 +106,7 @@ public class DSSTAtmosphericDragTest {
         Vector3D rotationAcceleration = new Vector3D(0., 0., 0.);
         TimeStampedAngularCoordinates orientation = new TimeStampedAngularCoordinates(initDate, rotation, rotationRate, rotationAcceleration);
         final Attitude att = new Attitude(earthFrame, orientation);
-        
+
         final SpacecraftState state = new SpacecraftState(orbit, att, 1000.0);
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
@@ -118,7 +118,7 @@ public class DSSTAtmosphericDragTest {
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
         drag.registerAttitudeProvider(attitudeProvider );
-        
+
         // Compute the mean element rate
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -126,19 +126,19 @@ public class DSSTAtmosphericDragTest {
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-        
-        Assert.assertEquals(-3.415320567871035E-5, elements[0], 1.e-20);
-        Assert.assertEquals(6.276312897745139E-13, elements[1], 1.9e-27);
-        Assert.assertEquals(-9.303357008691404E-13, elements[2], 0.7e-27);
-        Assert.assertEquals(-7.052316604063199E-14, elements[3], 1.e-28);
-        Assert.assertEquals(-6.793277250493389E-14, elements[4], 3.e-29);
-        Assert.assertEquals(-1.3565284454826392E-15, elements[5], 1.e-27);
-    
+
+        Assertions.assertEquals(-3.415320567871035E-5, elements[0], 1.e-20);
+        Assertions.assertEquals(6.276312897745139E-13, elements[1], 1.9e-27);
+        Assertions.assertEquals(-9.303357008691404E-13, elements[2], 0.7e-27);
+        Assertions.assertEquals(-7.052316604063199E-14, elements[3], 1.e-28);
+        Assertions.assertEquals(-6.793277250493389E-14, elements[4], 3.e-29);
+        Assertions.assertEquals(-1.3565284454826392E-15, elements[5], 1.e-27);
+
     }
-    
+
     @Test
     public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
- 
+
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(7069219.9806427825,
@@ -159,20 +159,20 @@ public class DSSTAtmosphericDragTest {
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010,
                                                                                   true));
-        
+
         final BoxAndSolarArraySpacecraft boxAndWing = new BoxAndSolarArraySpacecraft(5.0, 2.0, 2.0,
                                                                                      sun,
                                                                                      50.0, Vector3D.PLUS_J,
                                                                                      2.0, 0.1,
                                                                                      0.2, 0.6);
-        
+
         final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
                                                                 LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         final DSSTForceModel drag = new DSSTAtmosphericDrag(atmosphere, boxAndWing, meanState.getMu());
-        
+
         //Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
 
@@ -190,16 +190,16 @@ public class DSSTAtmosphericDragTest {
                 y[i] += shortPeriodic[i];
             }
         }
-        
-        Assert.assertEquals(0.03966657233280967,    y[0], 1.e-15);
-        Assert.assertEquals(-1.5294381443173415E-8, y[1], 1.e-23);
-        Assert.assertEquals(-2.3614929828516364E-8, y[2], 1.e-23);
-        Assert.assertEquals(-5.901580336558653E-11, y[3], 1.e-26);
-        Assert.assertEquals(1.0287639743124977E-11, y[4], 1.e-26);
-        Assert.assertEquals(2.538427523777691E-8,   y[5], 1.e-23);
+
+        Assertions.assertEquals(0.03966657233280967,    y[0], 1.e-15);
+        Assertions.assertEquals(-1.5294381443173415E-8, y[1], 1.e-23);
+        Assertions.assertEquals(-2.3614929828516364E-8, y[2], 1.e-23);
+        Assertions.assertEquals(-5.901580336558653E-11, y[3], 1.e-26);
+        Assertions.assertEquals(1.0287639743124977E-11, y[4], 1.e-26);
+        Assertions.assertEquals(2.538427523777691E-8,   y[5], 1.e-23);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }

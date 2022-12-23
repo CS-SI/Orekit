@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -31,20 +29,36 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Arrays;
+
 public class RangeMeasurementCreator extends MeasurementCreator {
 
     private final StationDataProvider provider;
     private final Vector3D            antennaPhaseCenter;
     private final ObservableSatellite satellite;
+    private final double              bias;
 
     public RangeMeasurementCreator(final StationDataProvider context) {
-        this(context, Vector3D.ZERO);
+        this(context, 0.0);
+    }
+
+    public RangeMeasurementCreator(final StationDataProvider context, final double bias) {
+        this(context, Vector3D.ZERO, bias);
     }
 
     public RangeMeasurementCreator(final StationDataProvider provider, final Vector3D antennaPhaseCenter) {
-        this.provider            = provider;
+        this(provider, antennaPhaseCenter, 0.0);
+    }
+
+    public StationDataProvider getStationDataProvider() {
+    	return provider;
+    }
+
+    public RangeMeasurementCreator(final StationDataProvider provider, final Vector3D antennaPhaseCenter, final double bias) {
+        this.provider           = provider;
         this.antennaPhaseCenter = antennaPhaseCenter;
         this.satellite          = new ObservableSatellite(0);
+        this.bias               = bias;
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -100,7 +114,7 @@ public class RangeMeasurementCreator extends MeasurementCreator {
                                 station.getOffsetToInertial(inertial, emissionDate.shiftedBy(clockOffset)).transformPosition(Vector3D.ZERO);
                 final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
                 addMeasurement(new Range(station, true, receptionDate.shiftedBy(clockOffset),
-                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10, satellite));
+                                         0.5 * (downLinkDistance + upLinkDistance) + bias, 1.0, 10, satellite));
             }
 
         }

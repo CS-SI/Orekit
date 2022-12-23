@@ -248,7 +248,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         double value = FastMath.PI;
 
         // get spacecraft position in body frame
-        final Vector3D      scBody      = s.getPVCoordinates(body.getBodyFrame()).getPosition();
+        final Vector3D      scBody      = s.getPosition(body.getBodyFrame());
 
         // map the point to a sphere
         final GeodeticPoint gp          = body.transform(scBody, body.getBodyFrame(), s.getDate());

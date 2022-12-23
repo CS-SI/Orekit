@@ -16,18 +16,10 @@
  */
 package org.orekit.frames;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -36,6 +28,13 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 public class CIRFProviderTest {
 
@@ -49,10 +48,10 @@ public class CIRFProviderTest {
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2009, 4, 7, 2, 56, 33.816, TimeScalesFactory.getUTC());
         double minRate = provider.getTransform(tMin).getRotationRate().getNorm();
-        Assert.assertEquals(1.1e-15, minRate, 1.0e-16);
+        Assertions.assertEquals(1.1e-15, minRate, 1.0e-16);
         AbsoluteDate tMax = new AbsoluteDate(2043, 12, 16, 10, 47, 20, TimeScalesFactory.getUTC());
         double maxRate = provider.getTransform(tMax).getRotationRate().getNorm();
-        Assert.assertEquals(8.6e-12, maxRate, 1.0e-13);
+        Assertions.assertEquals(8.6e-12, maxRate, 1.0e-13);
     }
 
     @Test
@@ -102,7 +101,7 @@ public class CIRFProviderTest {
             final double error = transform.getRotation().getAngle();
             maxError = FastMath.max(maxError, error);
         }
-        Assert.assertTrue(maxError < 4.6e-12);
+        Assertions.assertTrue(maxError < 4.6e-12);
 
     }
 
@@ -152,7 +151,7 @@ public class CIRFProviderTest {
             final double error = transform.getRotation().getAngle();
             maxError = FastMath.max(maxError, error);
         }
-        Assert.assertTrue(maxError < 1.3e-13);
+        Assertions.assertTrue(maxError < 1.3e-13);
 
     }
 
@@ -164,8 +163,8 @@ public class CIRFProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 295000);
-        Assert.assertTrue(bos.size() < 300000);
+        Assertions.assertTrue(bos.size() > 295000);
+        Assertions.assertTrue(bos.size() < 300000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -175,13 +174,13 @@ public class CIRFProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("compressed-data");
     }

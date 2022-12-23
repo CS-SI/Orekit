@@ -67,7 +67,7 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
         final SpacecraftState state = propagator.getInitialState();
 
         // Position always has derivatives
-        final Vector3D pos = state.getPVCoordinates().getPosition();
+        final Vector3D pos = state.getPosition();
         final FieldVector3D<Gradient> posG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 0, pos.getX()),
                                                                  Gradient.variable(freeStateParameters, 1, pos.getY()),
                                                                  Gradient.variable(freeStateParameters, 2, pos.getZ()));

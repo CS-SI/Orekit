@@ -55,6 +55,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class Phase extends AbstractMeasurement<Phase> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "Phase";
+
     /** Name for ambiguity driver. */
     public static final String AMBIGUITY_NAME = "ambiguity";
 

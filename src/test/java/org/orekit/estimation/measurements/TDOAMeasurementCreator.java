@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -30,6 +28,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Arrays;
 
 /**
  * Creates a list of {@link TDOA} measurements.
@@ -48,7 +48,7 @@ public class TDOAMeasurementCreator extends MeasurementCreator {
         this.secondary = context.TDOAstations.getValue();
         this.satellite = new ObservableSatellite(0);
     }
-    
+
     public ObservableSatellite getSatellite() {
         return satellite;
     }
@@ -77,7 +77,7 @@ public class TDOAMeasurementCreator extends MeasurementCreator {
 
         final AbsoluteDate date     = currentState.getDate();
         final Frame        inertial = currentState.getFrame();
-        final Vector3D     position = currentState.getPVCoordinates().getPosition();
+        final Vector3D     position = currentState.getPosition();
 
         // Create a BRR measurement only if elevation for both stations is higher than 30°
         if ((primary.getBaseFrame().getElevation(position, inertial, date)  > FastMath.toRadians(30.0)) &&

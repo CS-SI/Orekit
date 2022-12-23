@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -305,7 +304,6 @@ public class ParameterDriver {
         chronologicalValues[getNbOfValues() - 1 ] = currentSpan.getData();
         return chronologicalValues;
     }
-
 
 
     /** Add an observer for this driver.
@@ -636,12 +634,11 @@ public class ParameterDriver {
      * @return current parameter value
      */
     public double getValue() {
-        final double value = (getNbOfValues() == 1) ? valueSpanMap.get(new AbsoluteDate()) : Double.NaN;
-        if (Double.isNaN(value)) {
+        if (getNbOfValues() > 1) {
             throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, name, "getValue(date)");
         }
         // Attention voir si qlqchose est retourné si une exception est levée
-        return value;
+        return valueSpanMap.get(new AbsoluteDate());
     }
 
     /** Get current parameter value at specific date, depending on isContinuousEstimation
@@ -695,6 +692,25 @@ public class ParameterDriver {
     /** Get the value as a gradient at special date.
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the differentiation parameters in derivatives computations
+     * @return value with derivatives, will throw exception if called on a PDriver having
+     * several values driven
+     * @since 10.2
+     */
+    public Gradient getValue(final int freeParameters, final Map<String, Integer> indices) {
+        Integer index = null;
+        for (Span<String> span = nameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+            index = indices.get(span.getData());
+            if (index != null) {
+                break;
+            }
+        }
+        return (index == null) ? Gradient.constant(freeParameters, getValue()) : Gradient.variable(freeParameters, index, getValue());
+    }
+
+    /** Get the value as a gradient at special date.
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the differentiation parameters in derivatives computations,
+     * must be span name and not driver name
      * @param date date for which the value wants to be known. Only if
      * parameter driver has 1 value estimated over the all orbit determination
      * period (not validity period intervals for estimation), the date value can
@@ -852,7 +868,7 @@ public class ParameterDriver {
      * @return text representation of the parameter, in the form name = value.
      */
     public String toString() {
-        return name + " = " + valueSpanMap.get(referenceDate);
+        return name + " = " + valueSpanMap.get(new AbsoluteDate());
     }
 
 }

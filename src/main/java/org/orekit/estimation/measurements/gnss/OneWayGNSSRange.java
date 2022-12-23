@@ -57,6 +57,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "OneWayGNSSRange";
+
     /** Emitting satellite. */
     private final PVCoordinatesProvider remote;
 

@@ -1220,7 +1220,7 @@ public class JB2008 implements Atmosphere {
 
         // compute sun position
         final Frame ecef = earth.getBodyFrame();
-        final Vector3D sunPos = sun.getPVCoordinates(date, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(date, ecef);
         final GeodeticPoint sunInBody = earth.transform(sunPos, ecef, date);
 
         return getDensity(dateMJD,
@@ -1262,7 +1262,7 @@ public class JB2008 implements Atmosphere {
         // compute sun position
         final Frame ecef = earth.getBodyFrame();
         final FieldVector3D<T> sunPos = new FieldVector3D<>(date.getField(),
-                        sun.getPVCoordinates(dateD, ecef).getPosition());
+                        sun.getPosition(dateD, ecef));
         final FieldGeodeticPoint<T> sunInBody = earth.transform(sunPos, ecef, date);
 
         return getDensity(dateMJD,

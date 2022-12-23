@@ -47,6 +47,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "AngularRaDec";
+
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 

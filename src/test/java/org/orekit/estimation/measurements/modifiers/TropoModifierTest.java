@@ -21,15 +21,16 @@ import java.util.Map;
 
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.attitudes.InertialProvider;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.BistaticRange;
+import org.orekit.estimation.measurements.BistaticRangeMeasurementCreator;
 import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.BistaticRangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -45,7 +46,6 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
@@ -62,12 +62,12 @@ import org.orekit.utils.ParameterDriver;
 
 public class TropoModifierTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
 
     }
@@ -114,20 +114,20 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
     @Test
     public void testRangeEstimatedTropoModifier() {
-    
+
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-    
+
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-    
+
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
@@ -135,12 +135,12 @@ public class TropoModifierTest {
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
-    
+
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
-    
+
             final SpacecraftState refState = propagator.propagate(date);
-    
+
             Range range = (Range) measurement;
             EstimatedMeasurement<Range> evalNoMod = range.estimate(0, 0, new SpacecraftState[] { refState });
 
@@ -150,18 +150,18 @@ public class TropoModifierTest {
             final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
-            
+
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
             parameterDriver.setName(baseFrame.getName() + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
             range.addModifier(modifier);
             EstimatedMeasurement<Range> eval = range.estimate(0, 0, new SpacecraftState[] { refState });
-    
+
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
-    
+
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -215,8 +215,8 @@ public class TropoModifierTest {
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -260,7 +260,7 @@ public class TropoModifierTest {
             final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
             final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
-            
+
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
             parameterDriver.setName(baseFrame.getName() + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
@@ -270,8 +270,8 @@ public class TropoModifierTest {
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -323,8 +323,58 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+        }
+    }
+
+    @Test
+    public void testBistaticRangeTropoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        // create perfect range measurements
+        final GroundStation emitter = context.BRRstations.getKey();
+        emitter.getClockOffsetDriver().setSelected(true);
+        emitter.getEastOffsetDriver().setSelected(true);
+        emitter.getNorthOffsetDriver().setSelected(true);
+        emitter.getZenithOffsetDriver().setSelected(true);
+        final GroundStation receiver = context.BRRstations.getValue();
+        receiver.getClockOffsetDriver().setSelected(true);
+        receiver.getEastOffsetDriver().setSelected(true);
+        receiver.getNorthOffsetDriver().setSelected(true);
+        receiver.getZenithOffsetDriver().setSelected(true);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new BistaticRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+        final BistaticRangeTroposphericDelayModifier modifier =
+                        new BistaticRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            BistaticRange biRange = (BistaticRange) measurement;
+            final SpacecraftState refState = propagator.propagate(biRange.getDate());
+
+            // Estimate without modifier
+            EstimatedMeasurement<BistaticRange> evalNoMod = biRange.estimate(0, 0, new SpacecraftState[] { refState });
+
+            // add modifier
+            biRange.addModifier(modifier);
+
+            // Estimate with modifier
+            EstimatedMeasurement<BistaticRange> eval = biRange.estimate(0, 0, new SpacecraftState[] { refState });
+
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+
+            Assertions.assertTrue(diffMeters < 9.0);
+            Assertions.assertTrue(diffMeters > 5.0);
         }
     }
 
@@ -338,7 +388,7 @@ public class TropoModifierTest {
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        // create perfect range measurements
+        // create perfect range-rate measurements
         final GroundStation emitter = context.BRRstations.getKey();
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
@@ -373,8 +423,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 5e-5;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec,  0.005, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.007, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.005, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.007, epsilon) > 0);
         }
     }
 
@@ -388,7 +438,7 @@ public class TropoModifierTest {
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        // create perfect range measurements
+        // create perfect range-rate measurements
         final GroundStation emitter = context.BRRstations.getKey();
         emitter.getEastOffsetDriver().setSelected(true);
         emitter.getNorthOffsetDriver().setSelected(true);
@@ -430,8 +480,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-4;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec,  0.010, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.014, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.010, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.014, epsilon) > 0);
         }
     }
 
@@ -481,8 +531,8 @@ public class TropoModifierTest {
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec,  2.35e-9, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, -1.05e-9, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec,  2.35e-9, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, -1.05e-9, epsilon) > 0);
         }
     }
 
@@ -538,8 +588,8 @@ public class TropoModifierTest {
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 5.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, -2.20e-9, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, -2.20e-9, epsilon) > 0);
         }
     }
 
@@ -587,8 +637,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }
 
@@ -636,8 +686,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }
 
@@ -683,8 +733,8 @@ public class TropoModifierTest {
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffAz, 5.0e-5);
-            Assert.assertEquals(0.0, diffEl, 5.0e-6);
+            Assertions.assertEquals(0.0, diffAz, 5.0e-5);
+            Assertions.assertEquals(0.0, diffEl, 5.0e-6);
         }
     }
 
@@ -736,8 +786,8 @@ public class TropoModifierTest {
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
 
-            Assert.assertEquals(0.0, diffAz, 1.9e-5);
-            Assert.assertEquals(0.0, diffEl, 2.1e-6);
+            Assertions.assertEquals(0.0, diffAz, 1.9e-5);
+            Assertions.assertEquals(0.0, diffEl, 2.1e-6);
         }
     }
 
@@ -786,19 +836,8 @@ public class TropoModifierTest {
 
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffEl, 1.0e-3);
+            Assertions.assertEquals(0.0, diffEl, 1.0e-3);
         }
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        // dummy test, just to ensure coverage for deprecated class
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        TroposphericGradientConverter tgc =
-                        new TroposphericGradientConverter(new SpacecraftState(context.initialOrbit), 6,
-                                                         new InertialProvider(FramesFactory.getEME2000()));
-        Assert.assertEquals(6, tgc.getFreeStateParameters());
     }
 
 }

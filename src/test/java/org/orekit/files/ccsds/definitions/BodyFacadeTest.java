@@ -16,14 +16,14 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 public class BodyFacadeTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -35,8 +35,8 @@ public class BodyFacadeTest {
         final BodyFacade body = BodyFacade.create(CenterName.EARTH);
 
         // Verify
-        Assert.assertEquals("EARTH", body.getName());
-        Assert.assertEquals("Earth", body.getBody().getName());
+        Assertions.assertEquals("EARTH", body.getName());
+        Assertions.assertEquals("Earth", body.getBody().getName());
 
     }
 
@@ -47,8 +47,8 @@ public class BodyFacadeTest {
         final BodyFacade body = BodyFacade.create(CenterName.SUN);
 
         // Verify
-        Assert.assertEquals("SUN", body.getName());
-        Assert.assertEquals("Sun", body.getBody().getName());
+        Assertions.assertEquals("SUN", body.getName());
+        Assertions.assertEquals("Sun", body.getBody().getName());
 
     }
 

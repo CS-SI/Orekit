@@ -633,7 +633,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         }
 
         // compute orientation for best lighting
-        final Vector3D sunInert = sun.getPVCoordinates(date, frame).getPosition().subtract(position).normalize();
+        final Vector3D sunInert = sun.getPosition(date, frame).subtract(position).normalize();
         final Vector3D sunSpacecraft = rotation.applyTo(sunInert);
         final double d = Vector3D.dotProduct(sunSpacecraft, saZ);
         final double f = 1 - d * d;
@@ -669,7 +669,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         }
 
         // compute orientation for best lighting
-        final FieldVector3D<T> sunInert = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition()).negate().normalize();
+        final FieldVector3D<T> sunInert = position.subtract(sun.getPosition(date.toAbsoluteDate(), frame)).negate().normalize();
         final FieldVector3D<T> sunSpacecraft = rotation.applyTo(sunInert);
         final T d = FieldVector3D.dotProduct(sunSpacecraft, saZ);
         final T f = d.multiply(d).subtract(1).negate();

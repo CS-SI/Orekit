@@ -16,12 +16,10 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -38,6 +36,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.Constants;
+
+import java.util.List;
 
 public class OnBoardAntennaPhaseModifierTest {
 
@@ -87,9 +87,9 @@ public class OnBoardAntennaPhaseModifierTest {
             Phase sr = (Phase) spacecraftCenteredMeasurements.get(i);
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
             double alphaMax = FastMath.asin(Constants.WGS84_EARTH_EQUATORIAL_RADIUS / sr.getObservedValue()[0]);
-            Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assert.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() >= xOffset);
-            Assert.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() <= xOffset * FastMath.cos(alphaMax) * sr.getWavelength());
+            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() >= xOffset);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() <= xOffset * FastMath.cos(alphaMax) * sr.getWavelength());
         }
     }
 
@@ -141,8 +141,8 @@ public class OnBoardAntennaPhaseModifierTest {
             sr.addModifier(modifier);
             EstimatedMeasurement<Phase> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
-            Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assert.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);
+            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
+            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);
         }
 
     }

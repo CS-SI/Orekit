@@ -16,8 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.gnss.SatelliteSystem;
 
 public class WindUpFactoryTest {
@@ -25,20 +25,20 @@ public class WindUpFactoryTest {
     @Test
     public void testDifferentFactories() {
         WindUp windUp1 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp1.getParametersDrivers().size());
+        Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
         WindUp windUp2 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp2.getParametersDrivers().size());
-        Assert.assertNotSame(windUp1, windUp2);
+        Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
+        Assertions.assertNotSame(windUp1, windUp2);
     }
 
     @Test
     public void testSameFactory() {
         WindUpFactory factory = new WindUpFactory();
         WindUp windUp1 = factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp1.getParametersDrivers().size());
+        Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
         WindUp windUp2 = factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
-        Assert.assertEquals(0, windUp2.getParametersDrivers().size());
-        Assert.assertSame(windUp1, windUp2);
+        Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
+        Assertions.assertSame(windUp1, windUp2);
     }
 
     @Test
@@ -69,11 +69,11 @@ public class WindUpFactoryTest {
         for (int i = 0; i < windUp1.length; ++i) {
             for (int j = 0; j < windUp1.length; ++j) {
                 if (i != j) {
-                    Assert.assertNotSame(windUp1[i], windUp1[j]);
-                    Assert.assertNotSame(windUp2[i], windUp2[j]);
+                    Assertions.assertNotSame(windUp1[i], windUp1[j]);
+                    Assertions.assertNotSame(windUp2[i], windUp2[j]);
                 }
             }
-            Assert.assertSame(windUp1[i], windUp2[i]);
+            Assertions.assertSame(windUp1[i], windUp2[i]);
         }
 
     }

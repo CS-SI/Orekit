@@ -16,14 +16,9 @@
  */
 package org.orekit.files.ilrs;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
@@ -34,11 +29,16 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+
 
 public class StreamingCpfWriterTest {
 
     /** Set Orekit data. */
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -68,7 +68,7 @@ public class StreamingCpfWriterTest {
                             .durationFrom(satellite.getStart()) /
                             (satellite.getCoordinates().size() - 1);
 
-            Assert.assertEquals(step, cpfFile.getHeader().getStep(), 0.1);
+            Assertions.assertEquals(step, cpfFile.getHeader().getStep(), 0.1);
             StringBuilder buffer = new StringBuilder();
             StreamingCpfWriter writer = new StreamingCpfWriter(buffer, utc, cpfFile.getHeader());
             writer.writeHeader();

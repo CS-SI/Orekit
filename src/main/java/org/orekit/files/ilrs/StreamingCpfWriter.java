@@ -91,6 +91,9 @@ public class StreamingCpfWriter {
     /** Real 17.3 Format. */
     private static final String F17_3 = "%17.3f";
 
+    /** Real 19.6 Format. */
+    private static final String F19_6 = "%19.6f";
+
     /** Space. */
     private static final String SPACE = " ";
 
@@ -115,20 +118,42 @@ public class StreamingCpfWriter {
     /** Container for header data. */
     private final CPFHeader header;
 
+    /** Flag for optional velocity record. */
+    private final boolean velocityFlag;
+
     /**
      * Create a CPF writer than streams data to the given output stream.
-     *
+     * <p>
+     * Using this constructor, velocity data are not written.
+     * </p>
      * @param writer     the output stream for the CPF file.
      * @param timeScale  for all times in the CPF
      * @param header     container for header data
+     * @see #StreamingCpfWriter(Appendable, TimeScale, CPFHeader, boolean)
      */
     public StreamingCpfWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final CPFHeader header) {
+        this(writer, timeScale, header, false);
+    }
 
-        this.writer     = writer;
-        this.timeScale  = timeScale;
-        this.header     = header;
+    /**
+     * Create a CPF writer than streams data to the given output stream.
+     *
+     * @param writer       the output stream for the CPF file.
+     * @param timeScale    for all times in the CPF
+     * @param header       container for header data
+     * @param velocityFlag true if velocity must be written
+     * @since 11.2
+     */
+    public StreamingCpfWriter(final Appendable writer,
+                              final TimeScale timeScale,
+                              final CPFHeader header,
+                              final boolean velocityFlag) {
+        this.writer       = writer;
+        this.timeScale    = timeScale;
+        this.header       = header;
+        this.velocityFlag = velocityFlag;
     }
 
     /**
@@ -278,9 +303,12 @@ public class StreamingCpfWriter {
         }
 
         /**
-         * Write a single ephemeris line This method does not
-         * write the velocity terms.
-         *
+         * Write ephemeris lines.
+         * <p>
+         * If <code>velocityFlag</code> is equals to true, both
+         * position and velocity records are written. Otherwise,
+         * only the position data are used.
+         * </p>
          * @param pv the time, position, and velocity to write.
          * @throws IOException if the output stream throws one while writing.
          */
@@ -308,6 +336,24 @@ public class StreamingCpfWriter {
 
             // New line
             writer.append(NEW_LINE);
+
+            // Write the velocity record
+            if (velocityFlag) {
+
+                // Record type and direction flag
+                writeValue(writer, A2, "20",                                    true);
+                writeValue(writer, I1, DEFAULT_DIRECTION_FLAG,                  true);
+
+                // Velocity
+                final Vector3D velocity = pv.getVelocity();
+                writeValue(writer, F19_6, velocity.getX(), true);
+                writeValue(writer, F19_6, velocity.getY(), true);
+                writeValue(writer, F19_6, velocity.getZ(), false);
+
+                // New line
+                writer.append(NEW_LINE);
+
+            }
 
         }
 

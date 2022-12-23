@@ -60,6 +60,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "TurnAroundRange";
+
     /** Primary ground station from which measurement is performed. */
     private final GroundStation primaryStation;
 

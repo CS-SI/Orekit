@@ -46,9 +46,8 @@ public class ODParametersWriter extends AbstractWriter {
     ODParametersWriter(final String xmlTag, final String kvnTag,
                        final ODParameters ODParameters, final TimeConverter timeConverter) {
         super(xmlTag, kvnTag);
-        this.ODparameters = ODParameters;
+        this.ODparameters  = ODParameters;
         this.timeConverter = timeConverter;
-
     }
 
     /** {@inheritDoc} */
@@ -57,16 +56,17 @@ public class ODParametersWriter extends AbstractWriter {
 
         generator.writeComments(ODparameters.getComments());
         // OD parameters
-        generator.writeEntry(ODParametersKey.TIME_LASTOB_START.name(),   timeConverter, ODparameters.getTimeLastobStart(),  false);
-        generator.writeEntry(ODParametersKey.TIME_LASTOB_END.name(),     timeConverter, ODparameters.getTimeLastobEnd(),    false);
-        generator.writeEntry(ODParametersKey.RECOMMENDED_OD_SPAN.name(), ODparameters.getRecommendedODSpan(), Unit.DAY,     false);
-        generator.writeEntry(ODParametersKey.ACTUAL_OD_SPAN.name(),      ODparameters.getActualODSpan(),      Unit.DAY,     false);
-        generator.writeEntry(ODParametersKey.OBS_AVAILABLE.name(),       ODparameters.getObsAvailable(),                    false);
-        generator.writeEntry(ODParametersKey.OBS_USED.name(),            ODparameters.getObsUsed(),                         false);
-        generator.writeEntry(ODParametersKey.TRACKS_AVAILABLE.name(),    ODparameters.getTracksAvailable(),                 false);
-        generator.writeEntry(ODParametersKey.TRACKS_USED.name(),         ODparameters.getTracksUsed(),                      false);
-        generator.writeEntry(ODParametersKey.RESIDUALS_ACCEPTED.name(),  ODparameters.getResidualsAccepted(), Unit.PERCENT, false);
-        generator.writeEntry(ODParametersKey.WEIGHTED_RMS.name(),        ODparameters.getWeightedRMSS(),      Unit.ONE,     false);
+        generator.writeEntry(ODParametersKey.TIME_LASTOB_START.name(),   timeConverter, ODparameters.getTimeLastObsStart(),  false);
+        generator.writeEntry(ODParametersKey.TIME_LASTOB_END.name(),     timeConverter, ODparameters.getTimeLastObsEnd(),    false);
+        generator.writeEntry(ODParametersKey.RECOMMENDED_OD_SPAN.name(), ODparameters.getRecommendedOdSpan(), Unit.DAY,      false);
+        generator.writeEntry(ODParametersKey.ACTUAL_OD_SPAN.name(),      ODparameters.getActualOdSpan(),      Unit.DAY,      false);
+        generator.writeEntry(ODParametersKey.OBS_AVAILABLE.name(),       ODparameters.getObsAvailable(),                     false);
+        generator.writeEntry(ODParametersKey.OBS_USED.name(),            ODparameters.getObsUsed(),                          false);
+        generator.writeEntry(ODParametersKey.TRACKS_AVAILABLE.name(),    ODparameters.getTracksAvailable(),                  false);
+        generator.writeEntry(ODParametersKey.TRACKS_USED.name(),         ODparameters.getTracksUsed(),                       false);
+        generator.writeEntry(ODParametersKey.RESIDUALS_ACCEPTED.name(),  ODparameters.getResidualsAccepted(), Unit.PERCENT,  false);
+        generator.writeEntry(ODParametersKey.WEIGHTED_RMS.name(),        ODparameters.getWeightedRMS(),       Unit.ONE,      false);
 
     }
+
 }

@@ -16,15 +16,12 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -45,6 +42,9 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class SBASPropagatorTest {
 
@@ -54,8 +54,8 @@ public class SBASPropagatorTest {
     /** SBAS orbital elements. */
     private SBASNavigationMessage soe;
     private Frames frames;
-    
-    @Before
+
+    @BeforeEach
     public void setUp() {
         // Reference data are taken from IGS file brdm0370.17p
         soe = new SBASNavigationMessage();
@@ -74,7 +74,7 @@ public class SBASPropagatorTest {
         frames = DataContext.getDefault().getFrames();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
     }
@@ -96,15 +96,15 @@ public class SBASPropagatorTest {
         final Vector3D velocity = pv.getVelocity();
         final Vector3D acceleration = pv.getAcceleration();
         // Verify
-        Assert.assertEquals(soe.getX(),       position.getX(),     eps);
-        Assert.assertEquals(soe.getY(),       position.getY(),     eps);
-        Assert.assertEquals(soe.getZ(),       position.getZ(),     eps);
-        Assert.assertEquals(soe.getXDot(),    velocity.getX(),     eps);
-        Assert.assertEquals(soe.getYDot(),    velocity.getY(),     eps);
-        Assert.assertEquals(soe.getZDot(),    velocity.getZ(),     eps);
-        Assert.assertEquals(soe.getXDotDot(), acceleration.getX(), eps);
-        Assert.assertEquals(soe.getYDotDot(), acceleration.getY(), eps);
-        Assert.assertEquals(soe.getZDotDot(), acceleration.getZ(), eps);
+        Assertions.assertEquals(soe.getX(),       position.getX(),     eps);
+        Assertions.assertEquals(soe.getY(),       position.getY(),     eps);
+        Assertions.assertEquals(soe.getZ(),       position.getZ(),     eps);
+        Assertions.assertEquals(soe.getXDot(),    velocity.getX(),     eps);
+        Assertions.assertEquals(soe.getYDot(),    velocity.getY(),     eps);
+        Assertions.assertEquals(soe.getZDot(),    velocity.getZ(),     eps);
+        Assertions.assertEquals(soe.getXDotDot(), acceleration.getX(), eps);
+        Assertions.assertEquals(soe.getYDotDot(), acceleration.getY(), eps);
+        Assertions.assertEquals(soe.getZDotDot(), acceleration.getZ(), eps);
     }
 
     @Test
@@ -118,24 +118,24 @@ public class SBASPropagatorTest {
         final Vector3D velocity = pv.getVelocity();
         final Vector3D acceleration = pv.getAcceleration();
         // Verify
-        Assert.assertEquals(24060222.2089125, position.getX(),     eps);
-        Assert.assertEquals(34609228.7430500, position.getY(),     eps);
-        Assert.assertEquals(19641.4119375,    position.getZ(),     eps);
-        Assert.assertEquals(-0.270925,        velocity.getX(),     eps);
-        Assert.assertEquals(3.062975,         velocity.getY(),     eps);
-        Assert.assertEquals(1.011875,         velocity.getZ(),     eps);
-        Assert.assertEquals(soe.getXDotDot(), acceleration.getX(), eps);
-        Assert.assertEquals(soe.getYDotDot(), acceleration.getY(), eps);
-        Assert.assertEquals(soe.getZDotDot(), acceleration.getZ(), eps);
+        Assertions.assertEquals(24060222.2089125, position.getX(),     eps);
+        Assertions.assertEquals(34609228.7430500, position.getY(),     eps);
+        Assertions.assertEquals(19641.4119375,    position.getZ(),     eps);
+        Assertions.assertEquals(-0.270925,        velocity.getX(),     eps);
+        Assertions.assertEquals(3.062975,         velocity.getY(),     eps);
+        Assertions.assertEquals(1.011875,         velocity.getZ(),     eps);
+        Assertions.assertEquals(soe.getXDotDot(), acceleration.getX(), eps);
+        Assertions.assertEquals(soe.getYDotDot(), acceleration.getY(), eps);
+        Assertions.assertEquals(soe.getZDotDot(), acceleration.getZ(), eps);
     }
 
     @Test
     public void testFrames() {
         // Builds the SBAS propagator from the ephemeris
         final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
-        Assert.assertEquals("EME2000", propagator.getFrame().getName());
-        Assert.assertEquals(3.986005e+14, propagator.getMU(), 1.0e6);
-        Assert.assertEquals(propagator.getECI().getName(), propagator.getFrame().getName());
+        Assertions.assertEquals("EME2000", propagator.getFrame().getName());
+        Assertions.assertEquals(3.986005e+14, propagator.getMU(), 1.0e6);
+        Assertions.assertEquals(propagator.getECI().getName(), propagator.getFrame().getName());
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2017, 2, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -144,8 +144,8 @@ public class SBASPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 7.7e-9);
-        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.8e-12);
+        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 7.7e-9);
+        Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.8e-12);
     }
 
     @Test
@@ -174,9 +174,9 @@ public class SBASPropagatorTest {
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
-        Assert.assertEquals(0.0, errorP, 1.5e-11);
-        Assert.assertEquals(0.0, errorV, 7.2e-3);
-        Assert.assertEquals(0.0, errorA, 1.7e-3);
+        Assertions.assertEquals(0.0, errorP, 1.5e-11);
+        Assertions.assertEquals(0.0, errorV, 7.2e-3);
+        Assertions.assertEquals(0.0, errorA, 1.7e-3);
 
     }
 
@@ -185,16 +185,16 @@ public class SBASPropagatorTest {
         try {
             final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
             propagator.resetInitialState(propagator.getInitialState());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
             final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 }

@@ -16,6 +16,9 @@
  */
 package org.orekit.gnss.metric.messages.ssr.igm;
 
+import org.orekit.gnss.metric.messages.common.ClockCorrection;
+import org.orekit.gnss.metric.messages.common.OrbitCorrection;
+
 /**
  * Container for SSR IGM03 data.
  * @author Bryan Cazabonne

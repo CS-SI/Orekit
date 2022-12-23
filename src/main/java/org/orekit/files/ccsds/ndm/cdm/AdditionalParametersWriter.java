@@ -62,6 +62,6 @@ public class AdditionalParametersWriter extends AbstractWriter {
         generator.writeEntry(AdditionalParametersKey.THRUST_ACCELERATION.name(), additionalParameters.getThrustAcceleration(), Units.M_PER_S2,  false);
         generator.writeEntry(AdditionalParametersKey.SEDR.name(),                additionalParameters.getSedr(),               Units.W_PER_KG,  false);
 
-
     }
+
 }

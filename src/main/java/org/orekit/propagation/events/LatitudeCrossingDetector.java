@@ -115,7 +115,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
+        final GeodeticPoint gp = body.transform(s.getPosition(),
                                                 s.getFrame(), s.getDate());
 
         // latitude difference

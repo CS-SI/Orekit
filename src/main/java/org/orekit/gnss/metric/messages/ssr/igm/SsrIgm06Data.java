@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.orekit.gnss.metric.messages.common.PhaseBias;
+
 /**
  * Container for SSR IGM06 data.
  * @author Bryan Cazabonne

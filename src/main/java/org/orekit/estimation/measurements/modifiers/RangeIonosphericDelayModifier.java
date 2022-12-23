@@ -16,19 +16,13 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.List;
-
-import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range measurement with ionospheric delay.
  * The effect of ionospheric correction on the range is directly computed
@@ -44,13 +38,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Joris Olympio
  * @since 8.0
  */
-public class RangeIonosphericDelayModifier implements EstimationModifier<Range> {
-
-    /** Ionospheric delay model. */
-    private final IonosphericModel ionoModel;
-
-    /** Frequency [Hz]. */
-    private final double frequency;
+public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModifier implements EstimationModifier<Range> {
 
     /** Constructor.
      *
@@ -59,47 +47,10 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      */
     public RangeIonosphericDelayModifier(final IonosphericModel model,
                                          final double freq) {
-        ionoModel = model;
-        frequency = freq;
-    }
-
-    /** Compute the measurement error due to ionosphere.
-     * @param station station
-     * @param state spacecraft state
-     * @return the measurement error due to ionosphere
-     */
-    private double rangeErrorIonosphericModel(final GroundStation station,
-                                              final SpacecraftState state) {
-        // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
-        // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
-        return delay;
-    }
-
-    /** Compute the measurement error due to ionosphere.
-     * @param <T> type of the element
-     * @param station station
-     * @param state spacecraft state
-     * @param parameters ionospheric model parameters
-     * @return the measurement error due to ionosphere
-     */
-    private <T extends CalculusFieldElement<T>> T rangeErrorIonosphericModel(final GroundStation station,
-                                                                             final FieldSpacecraftState<T> state,
-                                                                             final T[] parameters) {
-         // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
-        // delay in meters
-        final T delay = ionoModel.pathDelay(state, baseFrame, frequency, parameters);
-        return delay;
+        super(model, freq);
     }
 
     /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return ionoModel.getParametersDrivers();
-    }
-
     @Override
     public void modify(final EstimatedMeasurement<Range> estimated) {
 
@@ -107,7 +58,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
-        RangeModifierUtil.modify(estimated, ionoModel,
+        RangeModifierUtil.modify(estimated, getIonoModel(),
                                  new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
                                  station,
                                  this::rangeErrorIonosphericModel,

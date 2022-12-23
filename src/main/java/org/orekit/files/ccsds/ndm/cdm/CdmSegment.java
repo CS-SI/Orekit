@@ -24,6 +24,7 @@ import org.orekit.files.ccsds.section.Segment;
  * @since 11.2
  */
 public class CdmSegment extends Segment<CdmMetadata, CdmData> {
+
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
@@ -31,4 +32,5 @@ public class CdmSegment extends Segment<CdmMetadata, CdmData> {
     public CdmSegment(final CdmMetadata metadata, final CdmData data) {
         super(metadata, data);
     }
+
 }

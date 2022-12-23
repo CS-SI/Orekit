@@ -16,30 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
@@ -63,23 +45,38 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class AttitudeWriterTest {
 
     // The default format writes 5O digits after the decimal point hence the quaternion precision
     private static final double QUATERNION_PRECISION = 1e-5;
     private static final double DATE_PRECISION = 1e-3;
+    
+    @TempDir
+    public Path temporaryFolderPath;
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
     public void testAEMWriter() {
-        assertNotNull(new WriterBuilder().buildAemWriter());
+        Assertions.assertNotNull(new WriterBuilder().buildAemWriter());
     }
 
     @Test
@@ -132,10 +129,10 @@ public class AttitudeWriterTest {
                                                    FileFormat.KVN, "", 60);
         try {
             writer.write(new CharArrayWriter(), aem);
-            fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
-            assertEquals(metadata.getObjectID(), oiae.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
+            Assertions.assertEquals(metadata.getObjectID(), oiae.getParts()[0]);
         }
     }
 
@@ -154,10 +151,10 @@ public class AttitudeWriterTest {
                                                    "dummy", 0);
         try {
             writer.write((BufferedWriter) null, aem);
-            fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
-            assertEquals("writer", oiae.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
+            Assertions.assertEquals("writer", oiae.getParts()[0]);
         }
     }
 
@@ -172,7 +169,7 @@ public class AttitudeWriterTest {
                                                    header, metadata, FileFormat.KVN, "TestNullEphemeris.aem", 0);
         CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, null);
-        assertEquals(0, caw.size());
+        Assertions.assertEquals(0, caw.size());
     }
 
     @Test
@@ -181,13 +178,13 @@ public class AttitudeWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        final File temp = tempFolder.newFile("writeAEMExample01.xml");
+        final File temp = temporaryFolderPath.resolve("writeAEMExample01.xml").toFile();
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
                                                    aem.getHeader(), aem.getSegments().get(0).getMetadata(),
                                                    FileFormat.XML, temp.getName(), 1);
         writer.write(temp.getAbsolutePath(), aem);
         final Aem generatedAem = new ParserBuilder().buildAemParser().parseMessage(new DataSource(temp));
-        assertEquals(aem.getSegments().get(0).getMetadata().getObjectID(),
+        Assertions.assertEquals(aem.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAem.getSegments().get(0).getMetadata().getObjectID());
     }
 
@@ -229,7 +226,7 @@ public class AttitudeWriterTest {
                 ++count;
             }
         }
-        assertEquals(82, count);
+        Assertions.assertEquals(82, count);
 
     }
 
@@ -248,7 +245,7 @@ public class AttitudeWriterTest {
 
         final Aem generatedAem = new ParserBuilder().buildAemParser().
                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        assertEquals(aem.getHeader().getComments().get(0), generatedAem.getHeader().getComments().get(0));
+        Assertions.assertEquals(aem.getHeader().getComments().get(0), generatedAem.getHeader().getComments().get(0));
     }
 
     @Test
@@ -264,9 +261,9 @@ public class AttitudeWriterTest {
 
         String[] lines2 = caw.toString().split("\n");
 
-        assertEquals("2002-12-18T12:00:00.331 0.5674807981623039 0.031460044248583355 0.4568906426171408 0.6842709624277855", lines2[26]);
-        assertEquals("2002-12-18T12:01:00.331 0.4231908397172568 -0.4569709067454213 0.23784047193542462 0.7453314789254544", lines2[27]);
-        assertEquals("2002-12-18T12:02:00.331 -0.8453188238242068 0.2697396246845473 -0.0653199091139417 0.4565193647993977", lines2[28]);
+        Assertions.assertEquals("2002-12-18T12:00:00.331 0.5674807981623039 0.031460044248583355 0.4568906426171408 0.6842709624277855", lines2[26]);
+        Assertions.assertEquals("2002-12-18T12:01:00.331 0.4231908397172568 -0.4569709067454213 0.23784047193542462 0.7453314789254544", lines2[27]);
+        Assertions.assertEquals("2002-12-18T12:02:00.331 -0.8453188238242068 0.2697396246845473 -0.0653199091139417 0.4565193647993977", lines2[28]);
     }
 
     private static void compareAemAttitudeBlocks(AemSegment segment1, AemSegment segment2) {
@@ -274,37 +271,37 @@ public class AttitudeWriterTest {
         // compare metadata
         AemMetadata meta1 = segment1.getMetadata();
         AemMetadata meta2 = segment2.getMetadata();
-        assertEquals(meta1.getObjectID(),                            meta2.getObjectID());
-        assertEquals(meta1.getObjectName(),                          meta2.getObjectName());
-        assertEquals(meta1.getCenter().getName(),                    meta2.getCenter().getName());
-        assertEquals(meta1.getTimeSystem().name(), meta2.getTimeSystem().name());
-        assertEquals(meta1.getLaunchYear(),                          meta2.getLaunchYear());
-        assertEquals(meta1.getLaunchNumber(),                        meta2.getLaunchNumber());
-        assertEquals(meta1.getLaunchPiece(),                         meta2.getLaunchPiece());
-        assertEquals(meta1.getHasCreatableBody(),                    meta2.getHasCreatableBody());
-        assertEquals(meta1.getInterpolationDegree(),                 meta2.getInterpolationDegree());
+        Assertions.assertEquals(meta1.getObjectID(),                            meta2.getObjectID());
+        Assertions.assertEquals(meta1.getObjectName(),                          meta2.getObjectName());
+        Assertions.assertEquals(meta1.getCenter().getName(),                    meta2.getCenter().getName());
+        Assertions.assertEquals(meta1.getTimeSystem().name(), meta2.getTimeSystem().name());
+        Assertions.assertEquals(meta1.getLaunchYear(),                          meta2.getLaunchYear());
+        Assertions.assertEquals(meta1.getLaunchNumber(),                        meta2.getLaunchNumber());
+        Assertions.assertEquals(meta1.getLaunchPiece(),                         meta2.getLaunchPiece());
+        Assertions.assertEquals(meta1.getHasCreatableBody(),                    meta2.getHasCreatableBody());
+        Assertions.assertEquals(meta1.getInterpolationDegree(),                 meta2.getInterpolationDegree());
 
         // compare data
-        assertEquals(0.0, segment1.getStart().durationFrom(segment2.getStart()), DATE_PRECISION);
-        assertEquals(0.0, segment1.getStop().durationFrom(segment2.getStop()),   DATE_PRECISION);
-        assertEquals(segment1.getInterpolationMethod(), segment2.getInterpolationMethod());
-        assertEquals(segment1.getAngularCoordinates().size(), segment2.getAngularCoordinates().size());
+        Assertions.assertEquals(0.0, segment1.getStart().durationFrom(segment2.getStart()), DATE_PRECISION);
+        Assertions.assertEquals(0.0, segment1.getStop().durationFrom(segment2.getStop()),   DATE_PRECISION);
+        Assertions.assertEquals(segment1.getInterpolationMethod(), segment2.getInterpolationMethod());
+        Assertions.assertEquals(segment1.getAngularCoordinates().size(), segment2.getAngularCoordinates().size());
         for (int i = 0; i < segment1.getAngularCoordinates().size(); i++) {
             TimeStampedAngularCoordinates c1 = segment1.getAngularCoordinates().get(i);
             Rotation rot1 = c1.getRotation();
             TimeStampedAngularCoordinates c2 = segment2.getAngularCoordinates().get(i);
             Rotation rot2 = c2.getRotation();
-            assertEquals(0.0, c1.getDate().durationFrom(c2.getDate()), DATE_PRECISION);
-            assertEquals(rot1.getQ0(), rot2.getQ0(), QUATERNION_PRECISION);
-            assertEquals(rot1.getQ1(), rot2.getQ1(), QUATERNION_PRECISION);
-            assertEquals(rot1.getQ2(), rot2.getQ2(), QUATERNION_PRECISION);
-            assertEquals(rot1.getQ3(), rot2.getQ3(), QUATERNION_PRECISION);
+            Assertions.assertEquals(0.0, c1.getDate().durationFrom(c2.getDate()), DATE_PRECISION);
+            Assertions.assertEquals(rot1.getQ0(), rot2.getQ0(), QUATERNION_PRECISION);
+            Assertions.assertEquals(rot1.getQ1(), rot2.getQ1(), QUATERNION_PRECISION);
+            Assertions.assertEquals(rot1.getQ2(), rot2.getQ2(), QUATERNION_PRECISION);
+            Assertions.assertEquals(rot1.getQ3(), rot2.getQ3(), QUATERNION_PRECISION);
         }
     }
 
     static void compareAems(Aem file1, Aem file2) {
-        assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
-        assertEquals(file1.getSegments().size(), file2.getSegments().size());
+        Assertions.assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
+        Assertions.assertEquals(file1.getSegments().size(), file2.getSegments().size());
         for (int i = 0; i < file1.getSegments().size(); i++) {
             compareAemAttitudeBlocks(file1.getSegments().get(i), file2.getSegments().get(i));
         }

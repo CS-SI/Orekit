@@ -16,10 +16,8 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,9 +25,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.GeodeticPoint;
@@ -56,9 +54,11 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.util.List;
+
 public class EstimatedIonosphericModelTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
@@ -73,7 +73,7 @@ public class EstimatedIonosphericModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
                                              model.getParameters(new AbsoluteDate()));
         // Verify
-        Assert.assertEquals(0.162, delay, 0.001);
+        Assertions.assertEquals(0.162, delay, 0.001);
     }
 
     @Test
@@ -90,9 +90,9 @@ public class EstimatedIonosphericModelTest {
         // Delay
         final T delay = model.pathDelay(zero.add(0.5 * FastMath.PI),
                                         Frequency.G01.getMHzFrequency() * 1.0e6,
-                                        model.getParameters(field, new FieldAbsoluteDate<>(field)));
+                                        model.getParameters(field));
         // Verify
-        Assert.assertEquals(0.162, delay.getReal(), 0.001);
+        Assertions.assertEquals(0.162, delay.getReal(), 0.001);
     }
 
     @Test
@@ -103,13 +103,13 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         
         // the pamater driver has no validity period, so only 1 values estimated over
-        // the all period, that is why getParameters is called with new AbsoluteDate() argument
+        // the all period, that is why getParameters is called with no argument
         double delayMeters = model.pathDelay(FastMath.toRadians(elevation),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
-                                             model.getParameters(new AbsoluteDate()));
+                                             model.getParameters());
 
-        Assert.assertTrue(Precision.compareTo(delayMeters, 12., 1.0e-6) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters, 0.,  1.0e-6) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 12., 1.0e-6) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters, 0.,  1.0e-6) > 0);
     }
 
     @Test
@@ -125,10 +125,10 @@ public class EstimatedIonosphericModelTest {
         T zero = field.getZero();
         T delayMeters = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
-                                             model.getParameters(field, new FieldAbsoluteDate<>(field)));
+                                             model.getParameters(field));
 
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., 1.0e-6) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters.getReal(), 0.,  1.0e-6) > 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., 1.0e-6) < 0);
+        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 0.,  1.0e-6) > 0);
     }
 
     @Test
@@ -159,8 +159,8 @@ public class EstimatedIonosphericModelTest {
         final SpacecraftState state = new SpacecraftState(orbit);
 
         // Delay
-        final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(date));
-        Assert.assertEquals(0.0, delay, Double.MIN_VALUE);
+        final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
+        Assertions.assertEquals(0.0, delay, Double.MIN_VALUE);
     }
 
     @Test
@@ -196,8 +196,8 @@ public class EstimatedIonosphericModelTest {
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
 
         // Delay
-        final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field, date));
-        Assert.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
+        final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
+        Assertions.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
     }
 
     @Test
@@ -213,13 +213,13 @@ public class EstimatedIonosphericModelTest {
         T zero = field.getZero();
         T delayMetersF = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
-                                             model.getParameters(field, new FieldAbsoluteDate<>(field)));
+                                             model.getParameters(field));
 
         double delayMetersR = model.pathDelay(FastMath.toRadians(elevation),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
-                                             model.getParameters(new AbsoluteDate()));
+                                             model.getParameters());
 
-        Assert.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e-15);
+        Assertions.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e-15);
     }
 
     @Test
@@ -240,7 +240,7 @@ public class EstimatedIonosphericModelTest {
 
         // Station
         final GroundStation station = new GroundStation(baseFrame);
-        
+
         // Ionospheric model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 10.0);
@@ -267,7 +267,7 @@ public class EstimatedIonosphericModelTest {
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
         final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
 
         // Set drivers reference date
@@ -276,12 +276,12 @@ public class EstimatedIonosphericModelTest {
         }
 
         // Verify delay equality
-        final double delayR = model.pathDelay(dsState.toSpacecraftState(), baseFrame, frequency, model.getParameters(dsDate.toAbsoluteDate()));
-        final DerivativeStructure delayD = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field, dsDate));
-        Assert.assertEquals(delayR, delayD.getValue(), 1e-15);
+        final double delayR = model.pathDelay(dsState.toSpacecraftState(), baseFrame, frequency, model.getParameters());
+        final DerivativeStructure delayD = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field));
+        Assertions.assertEquals(delayR, delayD.getValue(), 5e-15);
 
         // Compute Delay with state derivatives
-        final DerivativeStructure delay = model.pathDelay(dsElevation, frequency, model.getParameters(field, dsDate));
+        final DerivativeStructure delay = model.pathDelay(dsElevation, frequency, model.getParameters(field));
 
         final double[] compDeriv = delay.getAllDerivatives();
 
@@ -297,44 +297,44 @@ public class EstimatedIonosphericModelTest {
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
-            final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
+            final Vector3D positionM4 = stateM4.getPosition();
             final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
-            double  delayM4 = model.pathDelay(elevationM4, frequency, model.getParameters(stateM4.getDate()));
+            double  delayM4 = model.pathDelay(elevationM4, frequency, model.getParameters());
             
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
-            final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
+            final Vector3D positionM3 = stateM3.getPosition();
             final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
-            double  delayM3 = model.pathDelay(elevationM3, frequency, model.getParameters(stateM3.getDate()));
+            double  delayM3 = model.pathDelay(elevationM3, frequency, model.getParameters());
             
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
-            final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
+            final Vector3D positionM2 = stateM2.getPosition();
             final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
-            double  delayM2 = model.pathDelay(elevationM2, frequency, model.getParameters(stateM2.getDate()));
+            double  delayM2 = model.pathDelay(elevationM2, frequency, model.getParameters());
  
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
-            final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
+            final Vector3D positionM1 = stateM1.getPosition();
             final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
-            double  delayM1 = model.pathDelay(elevationM1, frequency, model.getParameters(stateM1.getDate()));
+            double  delayM1 = model.pathDelay(elevationM1, frequency, model.getParameters());
            
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
-            final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
+            final Vector3D positionP1 = stateP1.getPosition();
             final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
-            double  delayP1 = model.pathDelay(elevationP1, frequency, model.getParameters(stateP1.getDate()));
+            double  delayP1 = model.pathDelay(elevationP1, frequency, model.getParameters());
             
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
-            final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
+            final Vector3D positionP2 = stateP2.getPosition();
             final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
-            double  delayP2 = model.pathDelay(elevationP2, frequency, model.getParameters(stateP2.getDate()));
+            double  delayP2 = model.pathDelay(elevationP2, frequency, model.getParameters());
             
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
-            final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
+            final Vector3D positionP3 = stateP3.getPosition();
             final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
-            double  delayP3 = model.pathDelay(elevationP3, frequency, model.getParameters(stateP3.getDate()));
+            double  delayP3 = model.pathDelay(elevationP3, frequency, model.getParameters());
             
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
-            final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
+            final Vector3D positionP4 = stateP4.getPosition();
             final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
-            double  delayP4 = model.pathDelay(elevationP4, frequency, model.getParameters(stateP4.getDate()));
+            double  delayP4 = model.pathDelay(elevationP4, frequency, model.getParameters());
             
             fillJacobianColumn(refDeriv, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
@@ -342,7 +342,7 @@ public class EstimatedIonosphericModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 8.3e-11);
+            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 8.3e-11);
         }
     }
 
@@ -374,14 +374,14 @@ public class EstimatedIonosphericModelTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
-        
+
         // Ionospheric model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {
-            driver.setValue(driver.getReferenceValue(), null);
+            driver.setValue(driver.getReferenceValue());
             driver.setSelected(driver.getName().equals(EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT));
         }
 
@@ -423,7 +423,7 @@ public class EstimatedIonosphericModelTest {
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
         final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsState.getDate());
 
         // Add parameter as a variable
@@ -432,14 +432,14 @@ public class EstimatedIonosphericModelTest {
         int index = 6;
         for (int i = 0; i < drivers.size(); ++i) {
             parameters[i] = drivers.get(i).isSelected() ?
-                            factory.variable(index++, drivers.get(i).getValue(null)) :
-                            factory.constant(drivers.get(i).getValue(null));
+                            factory.variable(index++, drivers.get(i).getValue()) :
+                            factory.constant(drivers.get(i).getValue());
         }
 
         // Compute delay state derivatives
         final DerivativeStructure delay = model.pathDelay(dsElevation, frequency, parameters);
 
-        final double[] compDeriv = delay.getAllDerivatives(); 
+        final double[] compDeriv = delay.getAllDerivatives();
 
         // Field -> non-field
         final double elevation = dsElevation.getReal();
@@ -460,34 +460,34 @@ public class EstimatedIonosphericModelTest {
         double h  = selected.getScale();
 
         selected.setValue(p0 - 4 * h, dsDate.toAbsoluteDate());
-        double  delayM4 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayM4 = model.pathDelay(elevation, frequency, model.getParameters());
         
         selected.setValue(p0 - 3 * h, dsDate.toAbsoluteDate());
-        double  delayM3 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayM3 = model.pathDelay(elevation, frequency, model.getParameters());
         
         selected.setValue(p0 - 2 * h, dsDate.toAbsoluteDate());
-        double  delayM2 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayM2 = model.pathDelay(elevation, frequency, model.getParameters());
 
         selected.setValue(p0 - 1 * h, dsDate.toAbsoluteDate());
-        double  delayM1 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayM1 = model.pathDelay(elevation, frequency, model.getParameters());
 
         selected.setValue(p0 + 1 * h, dsDate.toAbsoluteDate());
-        double  delayP1 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayP1 = model.pathDelay(elevation, frequency, model.getParameters());
 
         selected.setValue(p0 + 2 * h, dsDate.toAbsoluteDate());
-        double  delayP2 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayP2 = model.pathDelay(elevation, frequency, model.getParameters());
 
         selected.setValue(p0 + 3 * h, dsDate.toAbsoluteDate());
-        double  delayP3 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayP3 = model.pathDelay(elevation, frequency, model.getParameters());
 
         selected.setValue(p0 + 4 * h, dsDate.toAbsoluteDate());
-        double  delayP4 = model.pathDelay(elevation, frequency, model.getParameters(dsDate.toAbsoluteDate()));
+        double  delayP4 = model.pathDelay(elevation, frequency, model.getParameters());
             
         fillJacobianColumn(refDeriv, 0, h,
                            delayM4, delayM3, delayM2, delayM1,
                            delayP1, delayP2, delayP3, delayP4);
 
-        Assert.assertEquals(compDeriv[7], refDeriv[0][0], 1.0e-15);
+        Assertions.assertEquals(compDeriv[7], refDeriv[0][0], 1.0e-15);
 
     }
 

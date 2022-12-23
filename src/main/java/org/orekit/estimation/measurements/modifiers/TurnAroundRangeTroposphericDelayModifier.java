@@ -68,7 +68,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
      */
     private double rangeErrorTroposphericModel(final GroundStation station, final SpacecraftState state) {
         //
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
         final double elevation = station.getBaseFrame().getElevation(position,
@@ -101,7 +101,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final T zero         = field.getZero();
 
         //
-        final FieldVector3D<T> position = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> position = state.getPosition();
         final T dsElevation             = station.getBaseFrame().getElevation(position,
                                                                               state.getFrame(),
                                                                               state.getDate());

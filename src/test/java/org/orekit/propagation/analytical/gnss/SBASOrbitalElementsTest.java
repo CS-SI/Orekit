@@ -17,8 +17,8 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.propagation.analytical.gnss.data.SBASOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 
@@ -41,10 +41,10 @@ public class SBASOrbitalElementsTest {
             public double getZDot()       { return 0; }
             public double getZDotDot()    { return 0; }
         };
-        Assert.assertEquals(0,   soe.getIODN());
-        Assert.assertEquals(0.0, soe.getAGf0(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, soe.getAGf1(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, soe.getToc(), Precision.SAFE_MIN);
+        Assertions.assertEquals(0,   soe.getIODN());
+        Assertions.assertEquals(0.0, soe.getAGf0(), Precision.SAFE_MIN);
+        Assertions.assertEquals(0.0, soe.getAGf1(), Precision.SAFE_MIN);
+        Assertions.assertEquals(0.0, soe.getToc(), Precision.SAFE_MIN);
 
     }
 

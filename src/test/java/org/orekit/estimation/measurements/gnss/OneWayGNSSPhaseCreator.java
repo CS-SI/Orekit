@@ -42,7 +42,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     public OneWayGNSSPhaseCreator(final BoundedPropagator ephemeris,
                                   final Frequency frequency,
-                                  final int ambiguity, 
+                                  final int ambiguity,
                                   final double localClockOffset,
                                   final double remoteClockOffset) {
         this(ephemeris, frequency, ambiguity, localClockOffset, remoteClockOffset, Vector3D.ZERO, Vector3D.ZERO);
@@ -50,7 +50,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     public OneWayGNSSPhaseCreator(final BoundedPropagator ephemeris,
                                   final Frequency frequency,
-                                  final int ambiguity, 
+                                  final int ambiguity,
                                   final double localClockOffset,
                                   final double remoteClockOffset,
                                   final Vector3D antennaPhaseCenter1,

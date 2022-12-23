@@ -69,6 +69,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRange> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "InterSatellitesRange";
+
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
 

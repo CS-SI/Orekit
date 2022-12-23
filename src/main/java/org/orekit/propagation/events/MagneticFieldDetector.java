@@ -215,7 +215,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
             this.currentYear = s.getDate().getComponents(utc).getDate().getYear();
             this.field = dataContext.getGeoMagneticFields().getField(type, currentYear);
         }
-        final GeodeticPoint geoPoint = body.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+        final GeodeticPoint geoPoint = body.transform(s.getPosition(), s.getFrame(), s.getDate());
         final double altitude;
         if (seaLevel) {
             altitude = 0;

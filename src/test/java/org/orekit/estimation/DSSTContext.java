@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
@@ -38,6 +35,9 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.List;
+import java.util.Map;
 
 public class DSSTContext implements StationDataProvider {
 
@@ -79,7 +79,7 @@ public class DSSTContext implements StationDataProvider {
             startOrbit = initialOrbit;
         } else {
             // orbit estimation will start from a wrong point
-            final Vector3D initialPosition = initialOrbit.getPVCoordinates().getPosition();
+            final Vector3D initialPosition = initialOrbit.getPosition();
             final Vector3D initialVelocity = initialOrbit.getPVCoordinates().getVelocity();
             final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
             final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));

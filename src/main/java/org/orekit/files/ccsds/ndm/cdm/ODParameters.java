@@ -25,23 +25,24 @@ import org.orekit.time.AbsoluteDate;
  * @since 11.2
  */
 public class ODParameters extends CommentsContainer {
+
     /** The start of a time interval (UTC) that contains the time of the last accepted observation. */
-    private AbsoluteDate timeLastobStart;
+    private AbsoluteDate timeLastObsStart;
 
     /** The end of a time interval (UTC) that contains the time of the last accepted observation. */
-    private AbsoluteDate timeLastobEnd;
+    private AbsoluteDate timeLastObsEnd;
 
     /** The recommended OD time span calculated for the object. */
-    private double recommendedODSpan;
+    private double recommendedOdSpan;
 
     /** Based on the observations available and the RECOMMENDED_OD_SPAN, the actual time span used for the OD of the object. */
-    private double actualODSpan;
+    private double actualOdSpan;
 
     /** The number of observations available for the OD of the object. */
-    private int OBSavailable;
+    private int obsAvailable;
 
     /** The number of observations accepted for the OD of the object. */
-    private int OBSused;
+    private int obsUsed;
 
     /** The number of sensor tracks available for the OD of the object. */
     private int tracksAvailable;
@@ -55,11 +56,14 @@ public class ODParameters extends CommentsContainer {
     /** The weighted Root Mean Square (RMS) of the residuals from a batch least squares OD. */
     private double weightedRMS;
 
+    /** The epoch of the orbit determination used for this message (UTC). */
+    private AbsoluteDate odEpoch;
+
     /** Simple constructor.
      */
     public ODParameters() {
-        recommendedODSpan   = Double.NaN;
-        actualODSpan        = Double.NaN;
+        recommendedOdSpan   = Double.NaN;
+        actualOdSpan        = Double.NaN;
         residualsAccepted   = Double.NaN;
         weightedRMS         = Double.NaN;
     }
@@ -68,75 +72,74 @@ public class ODParameters extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-
     }
 
     /**
      * Get the start of a time interval (UTC) that contains the time of the last accepted observation.
      * @return the start of a time interval (UTC)
      */
-    public AbsoluteDate getTimeLastobStart() {
-        return timeLastobStart;
+    public AbsoluteDate getTimeLastObsStart() {
+        return timeLastObsStart;
     }
 
     /**
      * Set the start of a time interval (UTC) that contains the time of the last accepted observation.
-     * @param timeLastobStart the start of a time interval (UTC)
+     * @param timeLastObsStart the start of a time interval (UTC)
      */
-    public void setTimeLastobStart(final AbsoluteDate timeLastobStart) {
+    public void setTimeLastObsStart(final AbsoluteDate timeLastObsStart) {
         refuseFurtherComments();
-        this.timeLastobStart = timeLastobStart;
+        this.timeLastObsStart = timeLastObsStart;
     }
 
     /**
      * Get the start of a time interval (UTC) that contains the time of the last accepted observation.
      * @return the start of a time interval (UTC)
      */
-    public AbsoluteDate getTimeLastobEnd() {
-        return timeLastobEnd;
+    public AbsoluteDate getTimeLastObsEnd() {
+        return timeLastObsEnd;
     }
 
     /**
      * Set the start of a time interval (UTC) that contains the time of the last accepted observation.
-     * @param timeLastobEnd the start of a time interval (UTC)
+     * @param timeLastObsEnd the start of a time interval (UTC)
      */
-    public void setTimeLastobEnd(final AbsoluteDate timeLastobEnd) {
+    public void setTimeLastObsEnd(final AbsoluteDate timeLastObsEnd) {
         refuseFurtherComments();
-        this.timeLastobEnd = timeLastobEnd;
+        this.timeLastObsEnd = timeLastObsEnd;
     }
 
     /**
      * Get the recommended OD time span calculated for the object.
      * @return the recommended OD time span (in days) calculated for the object
      */
-    public double getRecommendedODSpan() {
-        return recommendedODSpan;
+    public double getRecommendedOdSpan() {
+        return recommendedOdSpan;
     }
 
     /**
      * Set the recommended OD time span calculated for the object.
-     * @param recommendedODSpan recommended OD time span (in days) calculated for the object
+     * @param recommendedOdSpan recommended OD time span (in days) calculated for the object
      */
-    public void setRecommendedODSpan(final double recommendedODSpan) {
+    public void setRecommendedOdSpan(final double recommendedOdSpan) {
         refuseFurtherComments();
-        this.recommendedODSpan = recommendedODSpan;
+        this.recommendedOdSpan = recommendedOdSpan;
     }
 
     /**
      * Get the actual OD time based on the observations available and the RECOMMENDED_OD_SPAN.
      * @return the actual OD time (in days)
      */
-    public double getActualODSpan() {
-        return actualODSpan;
+    public double getActualOdSpan() {
+        return actualOdSpan;
     }
 
     /**
      * Set the actual OD time based on the observations available and the RECOMMENDED_OD_SPAN.
-     * @param actualODSpan the actual OD time (in days)
+     * @param actualOdSpan the actual OD time (in days)
      */
-    public void setActualODSpan(final double actualODSpan) {
+    public void setActualOdSpan(final double actualOdSpan) {
         refuseFurtherComments();
-        this.actualODSpan = actualODSpan;
+        this.actualOdSpan = actualOdSpan;
     }
 
     /**
@@ -144,7 +147,7 @@ public class ODParameters extends CommentsContainer {
      * @return the number of observations available
      */
     public int getObsAvailable() {
-        return OBSavailable;
+        return obsAvailable;
     }
 
     /**
@@ -153,7 +156,7 @@ public class ODParameters extends CommentsContainer {
      */
     public void setObsAvailable(final int obsAvailable) {
         refuseFurtherComments();
-        this.OBSavailable = obsAvailable;
+        this.obsAvailable = obsAvailable;
     }
 
     /**
@@ -161,16 +164,16 @@ public class ODParameters extends CommentsContainer {
      * @return the number of observations used
      */
     public int getObsUsed() {
-        return OBSused;
+        return obsUsed;
     }
 
     /**
      * Set the number of observations accepted for the OD of the object.
-     * @param Obsused the number of observations used
+     * @param obsUsed the number of observations used
      */
-    public void setObsUsed(final int Obsused) {
+    public void setObsUsed(final int obsUsed) {
         refuseFurtherComments();
-        this.OBSused = Obsused;
+        this.obsUsed = obsUsed;
     }
 
     /**
@@ -228,7 +231,7 @@ public class ODParameters extends CommentsContainer {
      * Get the weighted Root Mean Square (RMS) of the residuals from a batch least squares OD.
      * @return the weighted Root Mean Square (RMS) of the residuals from a batch least squares OD
      */
-    public double getWeightedRMSS() {
+    public double getWeightedRMS() {
         return weightedRMS;
     }
 
@@ -236,9 +239,23 @@ public class ODParameters extends CommentsContainer {
      * Set the weighted Root Mean Square (RMS) of the residuals from a batch least squares OD.
      * @param WeightedRMS the weighted Root Mean Square (RMS) of the residuals from a batch least squares OD
      */
-    public void setWeightedRMSS(final double WeightedRMS) {
+    public void setWeightedRMS(final double WeightedRMS) {
         refuseFurtherComments();
         this.weightedRMS = WeightedRMS;
+    }
+
+    /** Get the epoch of the orbit determination used for this message.
+     * @return the odEpoch the epoch of the orbit determination used for this message
+     */
+    public AbsoluteDate getOdEpoch() {
+        return odEpoch;
+    }
+
+    /** Set the epoch of the orbit determination used for this message.
+     * @param odEpoch the odEpoch to set
+     */
+    public void setOdEpoch(final AbsoluteDate odEpoch) {
+        this.odEpoch = odEpoch;
     }
 
 }

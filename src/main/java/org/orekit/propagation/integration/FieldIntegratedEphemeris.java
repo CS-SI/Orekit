@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -99,32 +99,15 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     /** Unmanaged additional states that must be simply copied. */
     private final FieldArrayDictionary<T> unmanaged;
 
-    /** Creates a new instance of IntegratedEphemeris.
-     * @param startDate Start date of the integration (can be minDate or maxDate)
-     * @param minDate first date of the range
-     * @param maxDate last date of the range
-     * @param mapper mapper between raw double components and spacecraft state
-     * @param type type of orbit to output (mean or osculating)
-     * @param model underlying raw mathematical model
-     * @param unmanaged unmanaged additional states that must be simply copied
-     * @param providers providers for pre-integrated states
-     * @param equations names of additional equations
-     * @deprecated as of 11.1, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
-     * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
-     * FieldDenseOutputModel, FieldArrayDictionary, List, String[])}
+    /** Names of additional equations.
+     * @since 11.2
      */
-    @Deprecated
-    public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
-                               final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
-                               final FieldStateMapper<T> mapper, final PropagationType type,
-                               final FieldDenseOutputModel<T> model,
-                               final Map<String, T[]> unmanaged,
-                               final List<org.orekit.propagation.FieldAdditionalStateProvider<T>> providers,
-                               final String[] equations) {
-        this(startDate, minDate, maxDate, mapper, type, model,
-             new FieldArrayDictionary<>(startDate.getField(), unmanaged),
-             providers, equations);
-    }
+    private final String[] equations;
+
+    /** Dimensions of additional equations.
+     * @since 11.2
+     */
+    private final int[] dimensions;
 
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
@@ -136,7 +119,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers generators for pre-integrated states
      * @param equations names of additional equations
-     * @since 11.1
+     * @param dimensions dimensions of additional equations
+     * @since 11.2
      */
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                     final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
@@ -144,7 +128,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                     final FieldDenseOutputModel<T> model,
                                     final FieldArrayDictionary<T> unmanaged,
                                     final List<FieldAdditionalStateProvider<T>> providers,
-                                    final String[] equations) {
+                                    final String[] equations, final int[] dimensions) {
 
         super(startDate.getField(), mapper.getAttitudeProvider());
 
@@ -161,10 +145,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
             addAdditionalStateProvider(provider);
         }
 
-        // set up providers to map the final elements of the model array to additional states
-        for (int i = 0; i < equations.length; ++i) {
-            addAdditionalStateProvider(new LocalGenerator(equations[i], i));
-        }
+        this.equations  = equations.clone();
+        this.dimensions = dimensions.clone();
 
     }
 
@@ -262,38 +244,28 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
-    /** Local generator for additional state data. */
-    private class LocalGenerator implements FieldAdditionalStateProvider<T> {
+    /** {@inheritDoc} */
+    @Override
+    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
 
-        /** Name of the additional state. */
-        private final String name;
+        FieldSpacecraftState<T> updated = super.updateAdditionalStates(original);
 
-        /** Index of the additional state. */
-        private final int index;
-
-        /** Simple constructor.
-         * @param name name of the additional state
-         * @param index index of the additional state
-         */
-        LocalGenerator(final String name, final int index) {
-            this.name  = name;
-            this.index = index;
+        if (equations.length > 0) {
+            final FieldODEStateAndDerivative<T> osd                = getInterpolatedState(updated.getDate());
+            final T[]                           combinedState      = osd.getSecondaryState(1);
+            final T[]                           combinedDerivative = osd.getSecondaryDerivative(1);
+            int index = 0;
+            for (int i = 0; i < equations.length; ++i) {
+                final T[] state      = Arrays.copyOfRange(combinedState,      index, index + dimensions[i]);
+                final T[] derivative = Arrays.copyOfRange(combinedDerivative, index, index + dimensions[i]);
+                updated = updated.
+                          addAdditionalState(equations[i], state).
+                          addAdditionalStateDerivative(equations[i], derivative);
+                index += dimensions[i];
+            }
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
-
-            // extract the part of the interpolated array corresponding to the additional state
-            return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);
-
-        }
+        return updated;
 
     }
 

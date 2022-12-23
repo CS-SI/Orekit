@@ -19,11 +19,10 @@ package org.orekit.forces.empirical;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NavigableSet;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
@@ -40,7 +39,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeSpanMap.Transition;
 
 /** Time span parametric acceleration model.
  *  <p>
@@ -217,15 +215,6 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      */
     public TimeSpanMap<AccelerationModel> extractAccelerationModelRange(final AbsoluteDate start, final AbsoluteDate end) {
         return accelerationModelTimeSpanMap.extractRange(start, end);
-    }
-
-    /** Get the {@link Transition}s of the acceleration model time span map.
-     * @return the {@link Transition}s for the acceleration model time span map
-     * @deprecated as of 11.1, replace by {@link #getFirstSpan()}
-     */
-    @Deprecated
-    public NavigableSet<Transition<AccelerationModel>> getTransitions() {
-        return accelerationModelTimeSpanMap.getTransitions();
     }
 
     /** Get the first {@link Span time span} of the acceleration model time span map.

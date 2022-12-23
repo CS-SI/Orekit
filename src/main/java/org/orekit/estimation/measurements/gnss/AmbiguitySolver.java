@@ -28,6 +28,7 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -76,7 +77,10 @@ public class AmbiguitySolver {
                         stream().
                         filter(d -> {
                             if (d.isSelected()) {
-                                final double near   = FastMath.rint(d.getValue());
+                                // in order to make the code generic and compatible with pDriver having
+                                // 1 or several values driven getValue is called with a "random date"
+                                // it should be OK as we take the near number
+                                final double near   = FastMath.rint(d.getValue(new AbsoluteDate()));
                                 final double gapMin = near - d.getMinValue();
                                 final double gapMax = d.getMaxValue() - near;
                                 return FastMath.max(FastMath.abs(gapMin), FastMath.abs(gapMax)) > 1.0e-15;
@@ -165,9 +169,21 @@ public class AmbiguitySolver {
 
         // set up Integer Least Square problem
         final List<ParameterDriver> ambiguities      = getAllAmbiguityDrivers();
-        final double[]              floatAmbiguities = ambiguities.stream().mapToDouble(d -> d.getValue()).toArray();
-        final int[]                 indirection      = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
 
+        // construct floatambiguities array
+        int nbPDriver = 0;
+        for (ParameterDriver pDriver : ambiguities) {
+            nbPDriver += pDriver.getNbOfValues();
+        }
+        final double[]              floatAmbiguities = new double[nbPDriver];
+        int floatAmbRank = 0;
+        for (ParameterDriver pDriver : ambiguities) {
+            for (Span<Double> span = pDriver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                floatAmbiguities[floatAmbRank++] = span.getData();
+            }
+        }
+
+        final int[]                 indirection      = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
         // solve the ILS problem
         final IntegerLeastSquareSolution[] candidates =
                         solver.solveILS(acceptance.numberOfCandidates(), floatAmbiguities, indirection, covariance);
@@ -193,12 +209,6 @@ public class AmbiguitySolver {
         // fix the ambiguities
         final long[] fixedAmbiguities = bestCandidate.getSolution();
         final List<ParameterDriver> fixedDrivers = new ArrayList<>(indirection.length);
-        for (int i = 0; i < indirection.length; ++i) {
-            final ParameterDriver driver = measurementsParametersDrivers.get(indirection[i] - startIndex);
-            driver.setMinValue(fixedAmbiguities[i]);
-            driver.setMaxValue(fixedAmbiguities[i]);
-            fixedDrivers.add(driver);
-        }
         int nb = 0;
         for (int i = 0; i < measurementsParametersDrivers.size(); ++i) {
             final ParameterDriver driver = measurementsParametersDrivers.get(indirection[nb] - startIndex);

@@ -252,22 +252,6 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                                             LINE_END_REGEXP),
 
         /** Pole offsets, IAU-1980 final values. */
-        // the format for the IAU-2000 series is similar, but the meanings of the fields
-        // are different
-        //                       IAU2000A Celestial Pole Offset Series
-        //                        MJD      dX     error     dY     error
-        //                                      (msec. of arc)
-        //                       56519   -0.246   0.052   -0.223   0.080
-        //                       56520   -0.239   0.052   -0.248   0.080
-        //                       56521   -0.224   0.076   -0.277   0.110
-        POLE_OFFSETS_IAU_1980_FINAL_VALUES("^ *IERS Celestial Pole Offset Final Series *$",
-                                           LINE_START_REGEXP +
-                                           STORED_MJD_FIELD +
-                                           STORED_REAL_FIELD +
-                                           STORED_REAL_FIELD +
-                                           LINE_END_REGEXP),
-
-        /** Pole offsets, IAU-2000. */
         // the first bulletin A of each month also includes final values for the
         // period covering from day 2 of month m-2 to day 1 of month m-1.
         //                    IERS Celestial Pole Offset Final Series
@@ -279,6 +263,22 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
         //                         56478       -82.2     -13.5
         //                         56479       -82.5     -13.6
         //                         56480       -82.5     -13.7
+        POLE_OFFSETS_IAU_1980_FINAL_VALUES("^ *IERS Celestial Pole Offset Final Series *$",
+                                           LINE_START_REGEXP +
+                                           STORED_MJD_FIELD +
+                                           STORED_REAL_FIELD +
+                                           STORED_REAL_FIELD +
+                                           LINE_END_REGEXP),
+
+        /** Pole offsets, IAU-2000. */
+        // the format for the IAU-2000 series is similar, but the meanings of the fields
+        // are different
+        //                       IAU2000A Celestial Pole Offset Series
+        //                        MJD      dX     error     dY     error
+        //                                      (msec. of arc)
+        //                       56519   -0.246   0.052   -0.223   0.080
+        //                       56520   -0.239   0.052   -0.248   0.080
+        //                       56521   -0.224   0.076   -0.277   0.110
         POLE_OFFSETS_IAU_2000_RAPID_SERVICE("^ *IAU2000A Celestial Pole Offset Series *$",
                                             LINE_START_REGEXP +
                                             STORED_MJD_FIELD +

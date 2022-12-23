@@ -171,16 +171,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return {@link PropagationType MEAN} if only mean elements have to be used or
-     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
-     * @deprecated as of 11.1, replaced by {@link #getPropagationType()}
-     */
-    @Deprecated
-    protected PropagationType isMeanOrbit() {
-        return getPropagationType();
-    }
-
     /** Get the propagation type.
      * @return propagation type.
      * @since 11.1
@@ -266,15 +256,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             managed[i + alreadyIntegrated.length] = additionalDerivativesProviders.get(i).getName();
         }
         return managed;
-    }
-
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final AdditionalEquations additional) {
-        addAdditionalDerivativesProvider(new AdditionalEquationsAdapter(additional, this::getInitialState));
     }
 
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
@@ -823,12 +804,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     }
                 } else {
                     // we can use these equations right now
-                    final String   name        = provider.getName();
-                    final int      offset      = secondaryOffsets.get(name);
-                    final int      dimension   = provider.getDimension();
-                    final double[] derivatives = provider.derivatives(updated);
-                    System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
-                    updated = updated.addAdditionalStateDerivative(name, derivatives);
+                    final String              name           = provider.getName();
+                    final int                 offset         = secondaryOffsets.get(name);
+                    final int                 dimension      = provider.getDimension();
+                    final CombinedDerivatives derivatives    = provider.combinedDerivatives(updated);
+                    final double[]            additionalPart = derivatives.getAdditionalDerivatives();
+                    final double[]            mainPart       = derivatives.getMainStateDerivativesIncrements();
+                    System.arraycopy(additionalPart, 0, secondaryDot, offset, dimension);
+                    updated = updated.addAdditionalStateDerivative(name, additionalPart);
+                    if (mainPart != null) {
+                        // this equation does change the main state derivatives
+                        for (int i = 0; i < mainPart.length; ++i) {
+                            primaryDot[i] += mainPart[i];
+                        }
+                    }
                     yieldCount = 0;
                 }
             }
@@ -1051,7 +1040,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Generated ephemeris. */
         private BoundedPropagator ephemeris;
 
-        /** Variable used to store the last interpolator handled by the object.*/
+        /** Last interpolator handled by the object.*/
         private  ODEStateInterpolator lastInterpolator;
 
         /** Set the end date.
@@ -1107,6 +1096,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // Update the model's finalTime with the last interpolator.
             model.finish(lastInterpolator.getCurrentState());
+
             // set up the boundary dates
             final double tI = model.getInitialTime();
             final double tF = model.getFinalTime();

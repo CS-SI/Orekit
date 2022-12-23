@@ -16,18 +16,18 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 public class SingleLayerModelMappingFunctionTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
@@ -38,16 +38,16 @@ public class SingleLayerModelMappingFunctionTest {
         final IonosphericMappingFunction model = new SingleLayerModelMappingFunction();
         // z = 70°
         final double factor70 = model.mappingFactor(FastMath.toRadians(20.0));
-        Assert.assertEquals(2.09, factor70, 0.01);
+        Assertions.assertEquals(2.09, factor70, 0.01);
         // z = 75°
         final double factor75 = model.mappingFactor(FastMath.toRadians(15.0));
-        Assert.assertEquals(2.32, factor75, 0.01);
+        Assertions.assertEquals(2.32, factor75, 0.01);
         // z = 80°
         final double factor80 = model.mappingFactor(FastMath.toRadians(10.0));
-        Assert.assertEquals(2.55, factor80, 0.01);
+        Assertions.assertEquals(2.55, factor80, 0.01);
         // z = 85°
         final double factor85 = model.mappingFactor(FastMath.toRadians(5.0));
-        Assert.assertEquals(2.73, factor85, 0.01);
+        Assertions.assertEquals(2.73, factor85, 0.01);
     }
 
     @Test
@@ -61,16 +61,16 @@ public class SingleLayerModelMappingFunctionTest {
         final IonosphericMappingFunction model = new SingleLayerModelMappingFunction();
         // z = 70°
         final T factor70 = model.mappingFactor(zero.add(FastMath.toRadians(20.0)));
-        Assert.assertEquals(2.09, factor70.getReal(), 0.01);
+        Assertions.assertEquals(2.09, factor70.getReal(), 0.01);
         // z = 75°
         final T factor75 = model.mappingFactor(zero.add(FastMath.toRadians(15.0)));
-        Assert.assertEquals(2.32, factor75.getReal(), 0.01);
+        Assertions.assertEquals(2.32, factor75.getReal(), 0.01);
         // z = 80°
         final T factor80 = model.mappingFactor(zero.add(FastMath.toRadians(10.0)));
-        Assert.assertEquals(2.55, factor80.getReal(), 0.01);
+        Assertions.assertEquals(2.55, factor80.getReal(), 0.01);
         // z = 85°
         final T factor85 = model.mappingFactor(zero.add(FastMath.toRadians(5.0)));
-        Assert.assertEquals(2.73, factor85.getReal(), 0.01);
+        Assertions.assertEquals(2.73, factor85.getReal(), 0.01);
     }
 
 }

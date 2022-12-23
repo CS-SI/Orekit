@@ -33,6 +33,7 @@ import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -483,7 +484,8 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at <em>real</em> measurement
      * date (i.e. with clock, Earth and station offsets applied)
      * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, int, Map)
@@ -511,7 +513,8 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at specified date
      * @since 10.2
      */
@@ -530,12 +533,11 @@ public class GroundStation {
                         estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
 
         // take station offsets into account
-        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices, offsetCompensatedDate.toAbsoluteDate());
-        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices, offsetCompensatedDate.toAbsoluteDate());
-        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices, offsetCompensatedDate.toAbsoluteDate());
-        final BodyShape            baseShape  = baseFrame.getParentShape();
-        final StaticTransform      baseToBody = baseFrame
-                .getStaticTransformTo(baseShape.getBodyFrame(), null);
+        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
+        final BodyShape       baseShape  = baseFrame.getParentShape();
+        final FieldStaticTransform<Gradient> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
 
         FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
         origin = origin.add(computeDisplacement(offsetCompensatedDate.toAbsoluteDate(), origin.toVector3D()));

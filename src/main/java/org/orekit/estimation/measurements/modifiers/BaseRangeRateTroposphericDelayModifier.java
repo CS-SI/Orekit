@@ -72,7 +72,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
         final double dt = 10; // s
 
         // spacecraft position and elevation as seen from the ground station
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
         final double elevation1 = station.getBaseFrame().getElevation(position,
@@ -88,7 +88,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             final SpacecraftState state2 = state.shiftedBy(dt);
 
             // spacecraft position and elevation as seen from the ground station
-            final Vector3D position2 = state2.getPVCoordinates().getPosition();
+            final Vector3D position2 = state2.getPosition();
 
             // elevation
             final double elevation2 = station.getBaseFrame().getElevation(position2,
@@ -125,7 +125,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
         final double dt = 10; // s
 
         // spacecraft position and elevation as seen from the ground station
-        final FieldVector3D<T> position     = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> position     = state.getPosition();
         final T elevation1                  = station.getBaseFrame().getElevation(position,
                                                                                   state.getFrame(),
                                                                                   state.getDate());
@@ -139,7 +139,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             final FieldSpacecraftState<T> state2 = state.shiftedBy(dt);
 
             // spacecraft position and elevation as seen from the ground station
-            final FieldVector3D<T> position2     = state2.getPVCoordinates().getPosition();
+            final FieldVector3D<T> position2     = state2.getPosition();
 
             // elevation
             final T elevation2 = station.getBaseFrame().getElevation(position2,

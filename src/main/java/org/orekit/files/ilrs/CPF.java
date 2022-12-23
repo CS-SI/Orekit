@@ -107,19 +107,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     }
 
     /**
-     * Adds a new P/V coordinate to the satellite.
-     * <p>
-     * If the header has not been read, the {@link #DEFAULT_ID} is used.
-     * </p>
-     * @param coord the P/V coordinate of the satellite
-     * @deprecated as of 11.0.1, replaced by {@link CPF#addSatelliteCoordinate(String, CPFCoordinate)}
-     */
-    @Deprecated
-    public void addSatelliteCoordinate(final CPFCoordinate coord) {
-        addSatelliteCoordinate(DEFAULT_ID, coord);
-    }
-
-    /**
      * Adds a set of P/V coordinates to the satellite.
      * @param id satellite ILRS identifier
      * @param coord set of coordinates
@@ -139,6 +126,26 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     public void addSatelliteCoordinate(final String id, final CPFCoordinate coord) {
         createIfNeeded(id);
         ephemeris.get(id).coordinates.add(coord);
+    }
+
+    /**
+     * Add the velocity to the last CPF coordinate entry.
+     * @param id satellite ILRS identifier
+     * @param velocity the velocity vector of the satellite
+     * @since 11.2
+     */
+    public void addSatelliteVelocityToCPFCoordinate(final String id, final Vector3D velocity) {
+        // Get the last coordinate entry, which contains the position vector
+        final CPFCoordinate lastCoordinate = ephemeris.get(id).coordinates.get(ephemeris.get(id).coordinates.size() - 1);
+
+        // Create a new CPFCoordinate object with both position and velocity information
+        final CPFCoordinate CPFCoordUpdated = new CPFCoordinate(lastCoordinate.getDate(),
+                lastCoordinate.getPosition(),
+                velocity,
+                lastCoordinate.getLeap());
+
+        // Patch the last record
+        ephemeris.get(id).coordinates.set(ephemeris.get(id).coordinates.size() - 1, CPFCoordUpdated);
     }
 
     /**
@@ -193,15 +200,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
         /** Ephemeris Data. */
         private final List<CPFCoordinate> coordinates;
-
-        /**
-         * Constructor.
-         * @deprecated as of 11.0.1, replaced by
-         */
-        @Deprecated
-        public CPFEphemeris() {
-            this(null);
-        }
 
         /**
          * Constructor.

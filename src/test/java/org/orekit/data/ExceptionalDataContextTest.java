@@ -18,8 +18,8 @@ package org.orekit.data;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -57,33 +57,33 @@ public class ExceptionalDataContextTest {
         // verify
         try {
             context.getCelestialBodies();
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assert.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
         }
         try {
             context.getFrames();
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assert.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
         }
         try {
             context.getGeoMagneticFields();
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assert.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
         }
         try {
             context.getGravityFields();
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assert.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
         }
         try {
             context.getTimeScales();
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assert.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
         }
     }
 
@@ -118,9 +118,9 @@ public class ExceptionalDataContextTest {
         // verify using default data context throws an exception
         try {
             new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.0));
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assert.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
         }
 
     }
@@ -131,7 +131,7 @@ public class ExceptionalDataContextTest {
      */
     private void hack() {
         Object o = AbsoluteDate.ARBITRARY_EPOCH;
-        Assert.assertNotNull(o);
+        Assertions.assertNotNull(o);
     }
 
 }

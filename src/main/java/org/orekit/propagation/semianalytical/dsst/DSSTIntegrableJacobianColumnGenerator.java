@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 
 /** Generator for one column of a Jacobian matrix.
  * <p>
@@ -98,8 +99,8 @@ class DSSTIntegrableJacobianColumnGenerator
 
     /** {@inheritDoc} */
     @Override
-    public double[] derivatives(final SpacecraftState s) {
-        return pDot;
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
+        return new CombinedDerivatives(pDot, null);
     }
 
 }

@@ -16,17 +16,15 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.util.Collections;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.GeodeticPoint;
@@ -53,11 +51,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Collections;
+
 public class SsrVtecIonosphericModelTest {
 
     private SsrIm201 vtecMessage;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 
@@ -112,8 +112,8 @@ public class SsrVtecIonosphericModelTest {
         final SpacecraftState state = new SpacecraftState(orbit);
 
         // Delay
-        final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(date));
-        Assert.assertEquals(13.488, delay, 0.001);
+        final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
+        Assertions.assertEquals(13.488, delay, 0.001);
 
     }
 
@@ -149,8 +149,8 @@ public class SsrVtecIonosphericModelTest {
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
 
         // Delay
-        final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field, date));
-        Assert.assertEquals(13.488, delay.getReal(), 0.001);
+        final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
+        Assertions.assertEquals(13.488, delay.getReal(), 0.001);
     }
 
     @Test
@@ -180,8 +180,8 @@ public class SsrVtecIonosphericModelTest {
         final SpacecraftState state = new SpacecraftState(orbit);
 
         // Delay
-        final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(date));
-        Assert.assertEquals(0.0, delay, Double.MIN_VALUE);
+        final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
+        Assertions.assertEquals(0.0, delay, Double.MIN_VALUE);
     }
 
     @Test
@@ -216,8 +216,8 @@ public class SsrVtecIonosphericModelTest {
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
 
         // Delay
-        final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field, date));
-        Assert.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
+        final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
+        Assertions.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
     }
 
     @Test
@@ -235,7 +235,7 @@ public class SsrVtecIonosphericModelTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
-        
+
         // Ionospheric model
         final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
 
@@ -266,7 +266,7 @@ public class SsrVtecIonosphericModelTest {
         }
 
         // Compute Delay with state derivatives
-        final DerivativeStructure delay = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field, dsDate));
+        final DerivativeStructure delay = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field));
 
         final double[] compDeriv = delay.getAllDerivatives();
 
@@ -282,28 +282,28 @@ public class SsrVtecIonosphericModelTest {
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
-            double  delayM4 = model.pathDelay(stateM4, baseFrame, frequency, model.getParameters(stateM4.getDate()));
+            double  delayM4 = model.pathDelay(stateM4, baseFrame, frequency, model.getParameters());
             
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
-            double  delayM3 = model.pathDelay(stateM3, baseFrame, frequency, model.getParameters(stateM3.getDate()));
+            double  delayM3 = model.pathDelay(stateM3, baseFrame, frequency, model.getParameters());
             
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
-            double  delayM2 = model.pathDelay(stateM2, baseFrame, frequency, model.getParameters(stateM2.getDate()));
+            double  delayM2 = model.pathDelay(stateM2, baseFrame, frequency, model.getParameters());
  
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
-            double  delayM1 = model.pathDelay(stateM1, baseFrame, frequency, model.getParameters(stateM1.getDate()));
+            double  delayM1 = model.pathDelay(stateM1, baseFrame, frequency, model.getParameters());
            
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
-            double  delayP1 = model.pathDelay(stateP1, baseFrame, frequency, model.getParameters(stateP1.getDate()));
+            double  delayP1 = model.pathDelay(stateP1, baseFrame, frequency, model.getParameters());
             
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
-            double  delayP2 = model.pathDelay(stateP2, baseFrame, frequency, model.getParameters(stateP2.getDate()));
+            double  delayP2 = model.pathDelay(stateP2, baseFrame, frequency, model.getParameters());
             
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
-            double  delayP3 = model.pathDelay(stateP3, baseFrame, frequency, model.getParameters(stateP3.getDate()));
+            double  delayP3 = model.pathDelay(stateP3, baseFrame, frequency, model.getParameters());
             
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
-            double  delayP4 = model.pathDelay(stateP4, baseFrame, frequency, model.getParameters(stateP4.getDate()));
+            double  delayP4 = model.pathDelay(stateP4, baseFrame, frequency, model.getParameters());
             
             fillJacobianColumn(refDeriv, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
@@ -311,7 +311,7 @@ public class SsrVtecIonosphericModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.3e-11);
+            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.3e-11);
         }
     }
 
@@ -345,8 +345,8 @@ public class SsrVtecIonosphericModelTest {
             for (double longitude = -180.0; longitude <= 180.0; longitude += 10.0) {
                 final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(latitude), FastMath.toRadians(longitude), height);
                 final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
-                final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(date));
-                Assert.assertTrue(delay >= 0 && delay < 20.0);
+                final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
+                Assertions.assertTrue(delay >= 0 && delay < 20.0);
             }
         }
 
@@ -386,8 +386,8 @@ public class SsrVtecIonosphericModelTest {
             for (double longitude = -180.0; longitude <= 180.0; longitude += 10.0) {
                 final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(latitude), FastMath.toRadians(longitude), height);
                 final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
-                final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field, date));
-                Assert.assertTrue(delay.getReal() >= 0 && delay.getReal() < 20.0);
+                final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
+                Assertions.assertTrue(delay.getReal() >= 0 && delay.getReal() < 20.0);
             }
         }
 

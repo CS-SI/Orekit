@@ -27,9 +27,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.forces.AbstractLegacyForceModelTest;
@@ -223,7 +223,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(relativity);
         NP.addForceModel(relativity);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 1.4e-3,
@@ -242,7 +242,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         LenseThirringRelativity relativity = new LenseThirringRelativity(Constants.EIGEN5C_EARTH_MU, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assert.assertFalse(relativity.dependsOnPositionOnly());
+        Assertions.assertFalse(relativity.dependsOnPositionOnly());
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
@@ -278,7 +278,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

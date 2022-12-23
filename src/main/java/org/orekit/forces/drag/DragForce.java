@@ -72,7 +72,7 @@ public class DragForce extends AbstractDragForceModel {
 
         final AbsoluteDate date     = s.getDate();
         final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
+        final Vector3D     position = s.getPosition();
 
         final double rho    = atmosphere.getDensity(date, position, frame);
         final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
@@ -91,7 +91,7 @@ public class DragForce extends AbstractDragForceModel {
 
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
-        final FieldVector3D<T>     position = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>     position = s.getPosition();
 
         // Density and its derivatives
         final T rho;

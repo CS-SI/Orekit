@@ -131,12 +131,32 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
     }
 
     /**
+     * Get the thrust.
+     * @return thrust force (N). Will throw
+     * an exception if the Thrust driver has several
+     * values driven
+     */
+    public double getThrust() {
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector().getNorm();
+    }
+
+    /**
      * Get the specific impulse.
      * @param date at which the ISP wants to be known
      * @return specific impulse (s).
      */
     public double getISP(final AbsoluteDate date) {
         return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp(date);
+    }
+
+    /**
+     * Get the specific impulse.
+     * @return specific impulse (s). Will throw
+     * an exception if the Thrust driver has several
+     * values driven
+     */
+    public double getISP() {
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp();
     }
 
 }

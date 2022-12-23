@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -37,6 +33,10 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -62,8 +62,11 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class RangeAnalytic extends Range {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "RangeAnalytic";
+
     /** Constructor from parent Range class
-     * @param Range parent class
+     * @param range parent class
      */
     public RangeAnalytic(final Range range) {
         super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
@@ -78,7 +81,6 @@ public class RangeAnalytic extends Range {
      * @param iteration current LS estimator iteration
      * @param evaluation current LS estimator evaluation
      * @param state spacecraft state. At measurement date on first iteration then close to emission date on further iterations
-     * @param interpolator Orekit step interpolator
      * @return
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
@@ -109,7 +111,7 @@ public class RangeAnalytic extends Range {
         // Transit state position
         final SpacecraftState transitState = state.shiftedBy(dt);
         final AbsoluteDate    transitDate  = transitState.getDate();
-        final Vector3D        transitP     = transitState.getPVCoordinates().getPosition();
+        final Vector3D        transitP     = transitState.getPosition();
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
@@ -375,7 +377,7 @@ public class RangeAnalytic extends Range {
         // Transit state position
         final AbsoluteDate    transitT = state.getDate().shiftedBy(dt);
         final SpacecraftState transit  = state.shiftedBy(dt);
-        final Vector3D        transitP = transitState.getPVCoordinates().getPosition();
+        final Vector3D        transitP = transitState.getPosition();
 
         // Station position at signal departure
         // First guess
@@ -416,7 +418,7 @@ public class RangeAnalytic extends Range {
         // Qt = Primary station position at tmeas = t = signal arrival at primary station
         final Vector3D vel     = state.getPVCoordinates().getVelocity();
         final Vector3D Qt_V    = QDownlink.getVelocity();
-        final Vector3D Ptr     = transit.getPVCoordinates().getPosition();
+        final Vector3D Ptr     = transit.getPosition();
         final Vector3D Ptr_Qt  = QDownlink.getPosition().subtract(Ptr);
         final double   dDown   = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * td -
                         Vector3D.dotProduct(Ptr_Qt, vel);

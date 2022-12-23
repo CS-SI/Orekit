@@ -18,10 +18,12 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -45,12 +47,11 @@ import org.orekit.utils.IERSConventions;
  * way to use parsers is to either dedicate one parser for each message
  * and drop it afterwards, or to use a single-thread loop.
  * </p>
- * @param <T> type of the file
- * @param <P> type of the parser
  * @author Melina Vanel
  * @since 11.2
  */
 public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
+
     /** Comment key. */
     private static String COMMENT = "COMMENT";
 
@@ -90,6 +91,15 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** CDM covariance matrix logical block being read. */
     private RTNCovariance covMatrix;
 
+    /** CDM XYZ covariance matrix logical block being read. */
+    private XYZCovariance xyzCovMatrix;
+
+    /** CDM Sigma/Eigenvectors covariance logical block being read. */
+    private SigmaEigenvectorsCovariance sig3eigvec3;
+
+    /** CDM additional covariance metadata logical block being read. */
+    private AdditionalCovarianceMetadata additionalCovMetadata;
+
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
 
@@ -98,6 +108,10 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
 
     /** Flag to indicate that data block parsing is finished. */
     private boolean isDatafinished;
+
+    /** CDM user defined logical block being read. */
+    private UserDefined userDefinedBlock;
+
 
     /** Complete constructor.
      * <p>
@@ -109,10 +123,13 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
+                     final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
         this.doRelativeMetadata = true;
         this.isDatafinished = false;
     }
@@ -135,6 +152,10 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         addParameters             = null;
         stateVector               = null;
         covMatrix                 = null;
+        xyzCovMatrix              = null;
+        sig3eigvec3               = null;
+        additionalCovMetadata     = null;
+        userDefinedBlock          = null;
         commentsBlock             = null;
         if (fileFormat == FileFormat.XML) {
             structureProcessor = new XmlStructureProcessingState(Cdm.ROOT, this);
@@ -206,7 +227,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     public boolean finalizeMetadata() {
         metadata.validate(header.getFormatVersion());
         relativeMetadata.validate();
-        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : structureProcessor);
+        anticipateNext(structureProcessor);
         return true;
     }
 
@@ -216,6 +237,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         // stateVector and RTNCovariance blocks are 2 mandatory data blocks
         stateVector = new StateVector();
         covMatrix = new RTNCovariance();
+
         // initialize comments block for general data comments
         commentsBlock = new CommentsContainer();
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
@@ -233,10 +255,27 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     public boolean finalizeData() {
         // call at the and of data block for object 1 or 2
         if (metadata != null) {
-            final CdmData data = new CdmData(commentsBlock, odParameters, addParameters,
-                                             stateVector, covMatrix);
+
+            CdmData data = new CdmData(commentsBlock, odParameters, addParameters,
+                                             stateVector, covMatrix, additionalCovMetadata);
+
+            if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.XYZ) {
+                data = new CdmData(commentsBlock, odParameters, addParameters,
+                                             stateVector, covMatrix, xyzCovMatrix, additionalCovMetadata);
+            } else if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3) {
+                data = new CdmData(commentsBlock, odParameters, addParameters,
+                                             stateVector, covMatrix, sig3eigvec3, additionalCovMetadata);
+            }
+
             data.validate(header.getFormatVersion());
             segments.add(new CdmSegment(metadata, data));
+
+            // Add the user defined block to both Objects data sections
+            if (userDefinedBlock != null && !userDefinedBlock.getParameters().isEmpty()) {
+                for (int i = 0; i < segments.size(); i++) {
+                    segments.get(i).getData().setUserDefinedBlock(userDefinedBlock);
+                }
+            }
         }
         metadata                  = null;
         context                   = null;
@@ -244,6 +283,10 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         addParameters             = null;
         stateVector               = null;
         covMatrix                 = null;
+        xyzCovMatrix              = null;
+        sig3eigvec3               = null;
+        additionalCovMetadata     = null;
+        userDefinedBlock          = null;
         commentsBlock             = null;
         return true;
     }
@@ -254,6 +297,9 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         // CDM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
+        if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
+            userDefinedBlock = null;
+        }
         final Cdm file = new Cdm(header, segments, getConventions(), getDataContext());
         return file;
     }
@@ -320,14 +366,53 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
         return true;
     }
 
-    /** Manage covariance matrix section.
+    /** Manage general covariance section in XML file.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
      * @return always return true
      */
-    boolean manageCovMatrixSection(final boolean starting) {
+    boolean manageXmlGeneralCovarianceSection(final boolean starting) {
         commentsBlock.refuseFurtherComments();
-        anticipateNext(starting ? this::processCovMatrixToken : structureProcessor);
+
+        if (starting) {
+            if (metadata.getAltCovType() == null) {
+                anticipateNext(this::processCovMatrixToken);
+            } else {
+                if (Double.isNaN(covMatrix.getCrr())) {
+                    // First, handle mandatory RTN covariance section
+                    anticipateNext(this::processCovMatrixToken);
+                } else if ( metadata.getAltCovType() == AltCovarianceType.XYZ && xyzCovMatrix == null ||
+                                metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null ) {
+                    // Second, add the alternate covariance if provided
+                    anticipateNext(this::processAltCovarianceToken);
+                } else if (additionalCovMetadata == null) {
+                    // Third, process the additional covariance metadata
+                    anticipateNext(this::processAdditionalCovMetadataToken);
+                }
+            }
+        } else {
+            anticipateNext(structureProcessor);
+        }
+
+        return true;
+    }
+
+    /** Manage user-defined parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageUserDefinedParametersSection(final boolean starting) {
+        commentsBlock.refuseFurtherComments();
+        if (starting) {
+            if (userDefinedBlock == null) {
+                // this is the first (and unique) user-defined parameters block, we need to allocate the container
+                userDefinedBlock = new UserDefined();
+            }
+            anticipateNext(this::processUserDefinedToken);
+        } else {
+            anticipateNext(structureProcessor);
+        }
         return true;
     }
 
@@ -547,8 +632,18 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      */
     private boolean processCovMatrixToken(final ParseToken token) {
 
+        if (moveCommentsIfEmpty(stateVector, covMatrix)) {
+            // get rid of the empty logical block
+            stateVector = null;
+        }
+
+        if (metadata.getAltCovType() == null) {
+            anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+        } else {
+            anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processAltCovarianceToken);
+        }
+
         isDatafinished = true;
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         try {
             return token.getName() != null &&
                    RTNCovarianceKey.valueOf(token.getName()).process(token, context, covMatrix);
@@ -557,6 +652,119 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
             return false;
         }
     }
+
+    /** Process alternate covariance data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processAltCovarianceToken(final ParseToken token) {
+
+        // Covariance is provided in XYZ
+        if (metadata.getAltCovType() == AltCovarianceType.XYZ && xyzCovMatrix == null) {
+            xyzCovMatrix = new XYZCovariance(true);
+
+            if (moveCommentsIfEmpty(covMatrix, xyzCovMatrix)) {
+                // get rid of the empty logical block
+                covMatrix = null;
+            }
+        }
+        // Covariance is provided in CSIG3EIGVEC3 format
+        if (metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null) {
+            sig3eigvec3 = new SigmaEigenvectorsCovariance(true);
+
+            if (moveCommentsIfEmpty(covMatrix, sig3eigvec3)) {
+                // get rid of the empty logical block
+                covMatrix = null;
+            }
+        }
+
+
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processAdditionalCovMetadataToken);
+        try {
+
+            if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.XYZ) {
+
+                return token.getName() != null &&
+                           XYZCovarianceKey.valueOf(token.getName()).process(token, context, xyzCovMatrix);
+
+            } else if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3) {
+
+                return token.getName() != null &&
+                           SigmaEigenvectorsCovarianceKey.valueOf(token.getName()).process(token, context, sig3eigvec3);
+
+            } else {
+
+                // token has not been recognized
+                return false;
+
+            }
+
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process additional covariance metadata token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processAdditionalCovMetadataToken(final ParseToken token) {
+
+        // Additional covariance metadata
+        if ( additionalCovMetadata == null) {
+            additionalCovMetadata = new AdditionalCovarianceMetadata();
+        }
+
+        if (moveCommentsIfEmpty(xyzCovMatrix, additionalCovMetadata)) {
+            // get rid of the empty logical block
+            xyzCovMatrix = null;
+        } else if (moveCommentsIfEmpty(sig3eigvec3, additionalCovMetadata)) {
+            // get rid of the empty logical block
+            sig3eigvec3 = null;
+        }
+
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
+        try {
+            return token.getName() != null &&
+                           AdditionalCovarianceMetadataKey.valueOf(token.getName()).process(token, context, additionalCovMetadata);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one user-defined parameter data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processUserDefinedToken(final ParseToken token) {
+
+        if (userDefinedBlock == null) {
+            userDefinedBlock = new UserDefined();
+        }
+
+        if (moveCommentsIfEmpty(additionalCovMetadata, userDefinedBlock)) {
+            // get rid of the empty logical block
+            additionalCovMetadata = null;
+        }
+
+        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
+
+        if (COMMENT.equals(token.getName())) {
+            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
+        } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
+            if (token.getType() == TokenType.ENTRY) {
+                userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
+                                          token.getContentAsNormalizedString());
+            }
+            return true;
+        } else {
+            // the token was not processed
+            return false;
+        }
+    }
+
 
     /** Move comments from one empty logical block to another logical block.
      * @param origin origin block
@@ -574,5 +782,6 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
             return false;
         }
     }
+
 }
 

@@ -17,14 +17,14 @@
 
 package org.orekit.estimation.common;
 
+import org.hipparchus.stat.descriptive.StreamingStatistics;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+
 import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 
 /** Local class for measurement-specific log.
  * @param T type of mesurement

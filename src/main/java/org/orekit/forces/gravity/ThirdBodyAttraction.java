@@ -80,9 +80,9 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         final double gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
         final double r2Central       = centralToBody.getNormSq();
-        final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+        final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
         // compute relative acceleration
@@ -100,9 +100,9 @@ public class ThirdBodyAttraction extends AbstractForceModel {
 
         // compute bodies separation vectors and squared norm
         final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
-                                                                   body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition());
+                                                                   body.getPosition(s.getDate().toAbsoluteDate(), s.getFrame()));
         final T                r2Central     = centralToBody.getNormSq();
-        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();
 
         // compute relative acceleration

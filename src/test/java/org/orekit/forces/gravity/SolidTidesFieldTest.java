@@ -16,17 +16,12 @@
  */
 package org.orekit.forces.gravity;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.BodiesElements;
@@ -53,6 +48,11 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.LoveNumbers;
 import org.orekit.utils.OrekitConfiguration;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 
 public class SolidTidesFieldTest {
 
@@ -73,29 +73,29 @@ public class SolidTidesFieldTest {
         fieldReal.setAccessible(true);
         LoveNumbers love = (LoveNumbers) fieldReal.get(tidesField);
 
-        Assert.assertEquals(0.30190, love.getReal(2, 0), 1.0e-10);
-        Assert.assertEquals(0.29830, love.getReal(2, 1), 1.0e-10);
-        Assert.assertEquals(0.30102, love.getReal(2, 2), 1.0e-10);
-        Assert.assertEquals(0.093,   love.getReal(3, 0), 1.0e-10);
-        Assert.assertEquals(0.093,   love.getReal(3, 1), 1.0e-10);
-        Assert.assertEquals(0.093,   love.getReal(3, 2), 1.0e-10);
-        Assert.assertEquals(0.094,   love.getReal(3, 3), 1.0e-10);
+        Assertions.assertEquals(0.30190, love.getReal(2, 0), 1.0e-10);
+        Assertions.assertEquals(0.29830, love.getReal(2, 1), 1.0e-10);
+        Assertions.assertEquals(0.30102, love.getReal(2, 2), 1.0e-10);
+        Assertions.assertEquals(0.093,   love.getReal(3, 0), 1.0e-10);
+        Assertions.assertEquals(0.093,   love.getReal(3, 1), 1.0e-10);
+        Assertions.assertEquals(0.093,   love.getReal(3, 2), 1.0e-10);
+        Assertions.assertEquals(0.094,   love.getReal(3, 3), 1.0e-10);
 
-        Assert.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
-        Assert.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
-        Assert.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
+        Assertions.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
+        Assertions.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
+        Assertions.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
 
-        Assert.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
-        Assert.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
-        Assert.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
+        Assertions.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
+        Assertions.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
+        Assertions.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
 
     }
 
@@ -116,22 +116,22 @@ public class SolidTidesFieldTest {
         fieldReal.setAccessible(true);
         LoveNumbers love = (LoveNumbers) fieldReal.get(tidesField);
 
-        Assert.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
-        Assert.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
-        Assert.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
+        Assertions.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
+        Assertions.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
+        Assertions.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
 
 
-        Assert.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
-        Assert.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
-        Assert.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
-        Assert.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
+        Assertions.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
+        Assertions.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
+        Assertions.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
+        Assertions.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
 
     }
 
@@ -198,9 +198,9 @@ public class SolidTidesFieldTest {
             }
             frequencyDependentPart.invoke(tf, date, cachedCNM, cachedSNM);
             double thetaPlusPi = gmstFunction.value(date) + FastMath.PI;
-            Assert.assertEquals(470.9e-12 * FastMath.sin(thetaPlusPi) - 30.2e-12 * FastMath.cos(thetaPlusPi),
+            Assertions.assertEquals(470.9e-12 * FastMath.sin(thetaPlusPi) - 30.2e-12 * FastMath.cos(thetaPlusPi),
                                 cachedCNM[2][1], 2.0e-25);
-            Assert.assertEquals(470.9e-12 * FastMath.cos(thetaPlusPi) + 30.2e-12 * FastMath.sin(thetaPlusPi),
+            Assertions.assertEquals(470.9e-12 * FastMath.cos(thetaPlusPi) + 30.2e-12 * FastMath.sin(thetaPlusPi),
                                 cachedSNM[2][1], 2.0e-25);
         }
 
@@ -242,8 +242,8 @@ public class SolidTidesFieldTest {
         for (int n = 0; n < refDeltaCnm.length; ++n) {
             double threshold = (n == 2) ? 1.3e-17 : 1.0e-24;
             for (int m = 0; m <= n; ++m) {
-                Assert.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
-                Assert.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
+                Assertions.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
+                Assertions.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
             }
         }
     }
@@ -308,14 +308,14 @@ public class SolidTidesFieldTest {
                 }
             }
         }
-        Assert.assertEquals(0.0, stat.getMean(), 2.0e-12);
-        Assert.assertTrue(stat.getStandardDeviation() < 2.0e-9);
-        Assert.assertTrue(stat.getMin() > -9.0e-8);
-        Assert.assertTrue(stat.getMax() <  2.2e-7);
+        Assertions.assertEquals(0.0, stat.getMean(), 2.0e-12);
+        Assertions.assertTrue(stat.getStandardDeviation() < 2.0e-9);
+        Assertions.assertTrue(stat.getMin() > -9.0e-8);
+        Assertions.assertTrue(stat.getMax() <  2.2e-7);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
     }

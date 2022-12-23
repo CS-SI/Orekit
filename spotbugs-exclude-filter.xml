@@ -11,8 +11,9 @@
     <Or>
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper\$DataTransferObject$" />
       <Class name="~.*\.IntegratedEphemeris\$DataTransferObject$" />
-     <Class name="~.*\.KeplerianPropagator\$DataTransferObject$" />
-     <Class name="~.*\.EcksteinHechlerPropagator\$DataTransferObject$" />
+      <Class name="~.*\.KeplerianPropagator\$DataTransferObject$" />
+      <Class name="~.*\.EcksteinHechlerPropagator\$DataTransferObject$" />
+	  <Class name="~.*\.SigmaEigenvectorsCovarianceKey$" />
     </Or>
     <Bug pattern="SE_BAD_FIELD" />
   </Match>

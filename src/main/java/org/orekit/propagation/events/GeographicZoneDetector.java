@@ -159,7 +159,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
+        final GeodeticPoint gp = body.transform(s.getPosition(),
                                                 s.getFrame(), s.getDate());
 
         // map the point to a sphere (geodetic coordinates have already taken care of ellipsoid flatness)

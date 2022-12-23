@@ -17,8 +17,8 @@
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class HansenThirdBodyLinearTest {
 
@@ -35,7 +35,7 @@ public class HansenThirdBodyLinearTest {
             return ((2 * (double)s + 1) / ((double)s + 1) ) * hansen(s - 1, s, chi);
         } else {
             return ((2 * (double)n + 1) / ((double)n + 1)) * hansen(n - 1, s, chi) -
-                   ((((double)n + (double)s) * ((double)n - (double)s)) / ((double)n * ((double)n + 1) * chi * chi)) * hansen(n - 2, s, chi); 
+                   ((((double)n + (double)s) * ((double)n - (double)s)) / ((double)n * ((double)n + 1) * chi * chi)) * hansen(n - 2, s, chi);
         }
     }
 
@@ -108,10 +108,10 @@ public class HansenThirdBodyLinearTest {
                 maxRelativeError = FastMath.max(maxRelativeError, relativeError);
             }
         }
-        
-        Assert.assertEquals(0.0, maxRelativeError, tol);
+
+        Assertions.assertEquals(0.0, maxRelativeError, tol);
 
     }
 
-    
+
 }

@@ -16,6 +16,15 @@
  */
 package org.orekit.time;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.frames.EOPHistory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,16 +37,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.Utils;
-import org.orekit.frames.EOPHistory;
-import org.orekit.frames.ITRFVersion;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 
 public class UT1ScaleTest {
 
@@ -52,14 +51,14 @@ public class UT1ScaleTest {
         double deltaBUTC = utc.offsetFromTAI(dateB);
 
         // there is a leap second between the two dates
-        Assert.assertEquals(deltaAUTC - 1.0, deltaBUTC, 1.0e-15);
+        Assertions.assertEquals(deltaAUTC - 1.0, deltaBUTC, 1.0e-15);
 
         // the leap second induces UTC goes from above UT1 to below UT1
-        Assert.assertTrue(deltaAUTC > deltaAUT1);
-        Assert.assertTrue(deltaBUTC < deltaBUT1);
+        Assertions.assertTrue(deltaAUTC > deltaAUT1);
+        Assertions.assertTrue(deltaBUTC < deltaBUT1);
 
         // UT1 is continuous, so change should be very small in two days
-        Assert.assertEquals(deltaAUT1, deltaBUT1, 3.0e-4);
+        Assertions.assertEquals(deltaAUT1, deltaBUT1, 3.0e-4);
 
     }
 
@@ -74,8 +73,8 @@ public class UT1ScaleTest {
 
         // verify
         // there is a leap second and jump in UT1-UTC
-        Assert.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2005, 12, 31, utc)), -0.6611333, 0);
-        Assert.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2006, 1, 1, utc)), 0.338829, 1e-16);
+        Assertions.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2005, 12, 31, utc)), -0.6611333, 0);
+        Assertions.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2006, 1, 1, utc)), 0.338829, 1e-16);
 
         // check UT1-TAI is still smooth
         double dt = 0.5;
@@ -83,7 +82,7 @@ public class UT1ScaleTest {
         double previous = ut1.offsetFromTAI(dateA.shiftedBy(-dt));
         for (AbsoluteDate d = dateA; d.compareTo(dateB) < 0; d = d.shiftedBy(dt)) {
             double actual = ut1.offsetFromTAI(d);
-            Assert.assertEquals("at " + d.toString(utc), 0, actual - previous, tol);
+            Assertions.assertEquals(0, actual - previous, tol, "at " + d.toString(utc));
             previous = actual;
         }
     }
@@ -95,7 +94,7 @@ public class UT1ScaleTest {
             double dt1 = ut1.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(ut1);
             double dt2 = ut1.offsetToTAI(components.getDate(), components.getTime());
-            Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
@@ -120,7 +119,7 @@ public class UT1ScaleTest {
                 public Boolean call() throws Exception {
                     for (int j = 0; j < timesPerThread; j++) {
                         final double actual = ut1.offsetFromTAI(date.shiftedBy(j * dt));
-                        Assert.assertEquals(expected[j], actual, 0);
+                        Assertions.assertEquals(expected[j], actual, 0);
                     }
                     return true;
                 }
@@ -132,7 +131,7 @@ public class UT1ScaleTest {
 
         // verify - necessary to throw AssertionErrors from the Callable
         for (Future<Boolean> future : futures) {
-            Assert.assertEquals(true, future.get());
+            Assertions.assertEquals(true, future.get());
         }
     }
 
@@ -158,12 +157,12 @@ public class UT1ScaleTest {
         AbsoluteDate date =
                 new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
         DateTimeComponents components = date.getComponents(TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true));
-        Assert.assertEquals(2004,        components.getDate().getYear());
-        Assert.assertEquals(   4,        components.getDate().getMonth());
-        Assert.assertEquals(   6,        components.getDate().getDay());
-        Assert.assertEquals(   7,        components.getTime().getHour());
-        Assert.assertEquals(  51,        components.getTime().getMinute());
-        Assert.assertEquals(  27.946047, components.getTime().getSecond(), 1.0e-10);
+        Assertions.assertEquals(2004,        components.getDate().getYear());
+        Assertions.assertEquals(   4,        components.getDate().getMonth());
+        Assertions.assertEquals(   6,        components.getDate().getDay());
+        Assertions.assertEquals(   7,        components.getTime().getHour());
+        Assertions.assertEquals(  51,        components.getTime().getMinute());
+        Assertions.assertEquals(  27.946047, components.getTime().getSecond(), 1.0e-10);
     }
 
     @Test
@@ -174,15 +173,15 @@ public class UT1ScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ut1);
 
-        Assert.assertTrue(bos.size() > 145000);
-        Assert.assertTrue(bos.size() < 155000);
+        Assertions.assertTrue(bos.size() > 145000);
+        Assertions.assertTrue(bos.size() < 155000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         UT1Scale deserialized  = (UT1Scale) ois.readObject();
         for (double dt = 0; dt < 7 * Constants.JULIAN_DAY; dt += 3600) {
             AbsoluteDate date = ut1.getEOPHistory().getStartDate().shiftedBy(dt);
-            Assert.assertEquals(ut1.offsetFromTAI(date), deserialized.offsetFromTAI(date), 1.0e-15);
+            Assertions.assertEquals(ut1.offsetFromTAI(date), deserialized.offsetFromTAI(date), 1.0e-15);
         }
 
     }
@@ -195,19 +194,19 @@ public class UT1ScaleTest {
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assert.assertEquals(61, utc.minuteDuration(during));
-        Assert.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assert.assertEquals(60, scale.minuteDuration(during));
-        Assert.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(61, utc.minuteDuration(during));
+        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(60, scale.minuteDuration(during));
+        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         ut1 = null;
     }

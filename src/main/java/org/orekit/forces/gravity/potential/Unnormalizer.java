@@ -71,13 +71,6 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    @Override
-    public double getOffset(final AbsoluteDate date) {
-        return normalized.getOffset(date);
-    }
-
-    /** {@inheritDoc} */
     @Override
     public TideSystem getTideSystem() {
         return normalized.getTideSystem();

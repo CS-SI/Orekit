@@ -96,10 +96,25 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
 
     /** {@inheritDoc} */
     @Override
+    public Vector3D getThrustVector() {
+        // scaleFactorThruster must be drivers with only 1 one value driven
+        return getThrustVector(scaleFactorThrustXDriver.getValue(),
+                               scaleFactorThrustYDriver.getValue(),
+                               scaleFactorThrustZDriver.getValue());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Vector3D getThrustVector(final AbsoluteDate date) {
         return getThrustVector(scaleFactorThrustXDriver.getValue(date),
                                scaleFactorThrustYDriver.getValue(date),
                                scaleFactorThrustZDriver.getValue(date));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getFlowRate() {
+        return getInitialFlowrate();
     }
 
     /** {@inheritDoc} */

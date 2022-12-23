@@ -16,13 +16,11 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -42,6 +40,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.util.List;
+
 /**
  * Unit tests for {@link GroundFieldOfViewDetector}.
  *
@@ -49,7 +49,7 @@ import org.orekit.utils.IERSConventions;
  */
 public class GroundFieldOfViewDetectorTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -101,8 +101,8 @@ public class GroundFieldOfViewDetectorTest {
         GroundFieldOfViewDetector fovDetector =
                 new GroundFieldOfViewDetector(topo, fov)
                         .withMaxCheck(5.0);
-        Assert.assertSame(topo, fovDetector.getFrame());
-        Assert.assertSame(fov, fovDetector.getFOV());
+        Assertions.assertSame(topo, fovDetector.getFrame());
+        Assertions.assertSame(fov, fovDetector.getFOV());
         logger = new EventsLogger();
 
         prop = new KeplerianPropagator(orbit);
@@ -111,13 +111,13 @@ public class GroundFieldOfViewDetectorTest {
         List<LoggedEvent> actual = logger.getLoggedEvents();
 
         //verify
-        Assert.assertEquals(2, expected.size());
-        Assert.assertEquals(2, actual.size());
+        Assertions.assertEquals(2, expected.size());
+        Assertions.assertEquals(2, actual.size());
         for (int i = 0; i < 2; i++) {
             AbsoluteDate expectedDate = expected.get(i).getState().getDate();
             AbsoluteDate actualDate = actual.get(i).getState().getDate();
             // same event times to within 1s.
-            Assert.assertEquals(expectedDate.durationFrom(actualDate), 0.0, 1.0);
+            Assertions.assertEquals(expectedDate.durationFrom(actualDate), 0.0, 1.0);
         }
 
     }

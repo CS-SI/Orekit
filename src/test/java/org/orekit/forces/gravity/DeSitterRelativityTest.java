@@ -28,9 +28,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.forces.AbstractLegacyForceModelTest;
@@ -63,8 +63,6 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     private static final double c = Constants.SPEED_OF_LIGHT;
     /** arbitrary date */
     private static final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-    /** inertial frame */
-    private static final Frame frame = FramesFactory.getGCRF();
 
     @Override
     protected FieldVector3D<DerivativeStructure>
@@ -128,12 +126,12 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
     /**
      * Check against prediction in
-     * 
+     *
      * "C IUFOLINI, Ignazio, MATZNER, Richard, GURZADYAN, Vahe, et al.
      * A new laser-ranged satellite for General Relativityand space geodesy:
      * III. De Sitter effect and the LARES 2 space experiment.
      * The European Physical Journal C, 2017, vol. 77, no 12, p. 819"
-     * 
+     *
      * They predict a precession of the orbital plane at a rate of the order
      * of -19.2 milliarcsecs per year.
      *
@@ -146,6 +144,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     public void testSmallEffectOnOrbit() {
         // Setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
+	final Frame frame = FramesFactory.getGCRF();
         Orbit orbit =
                 new KeplerianOrbit(7000000.0, 0.01, FastMath.toRadians(80.), FastMath.toRadians(80.), FastMath.toRadians(20.),
                                    FastMath.toRadians(40.), PositionAngle.MEAN,
@@ -170,7 +169,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         double dpDeg = FastMath.toDegrees(dp);
         // change in right ascension of the ascending node in milliarcseconds per year
         double milliArcsecPerYear = 1.0e3 * dpDeg * 3600 / dtYears;
-        Assert.assertEquals(-19.2, milliArcsecPerYear, 1.0);
+        Assertions.assertEquals(-19.2, milliArcsecPerYear, 1.0);
     }
 
     @Test
@@ -215,7 +214,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         DeSitterRelativity relativity = new DeSitterRelativity();
-        Assert.assertFalse(relativity.dependsOnPositionOnly());
+        Assertions.assertFalse(relativity.dependsOnPositionOnly());
         final String name = relativity.getSun().getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
@@ -271,7 +270,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(relativity);
         NP.addForceModel(relativity);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 1.4e-3,
@@ -286,7 +285,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(
                 new PVCoordinates(p, v),
-                frame,
+                FramesFactory.getGCRF(),
                 date,
                 gm
         ));
@@ -304,7 +303,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(
                 new PVCoordinates(p, v),
-                frame,
+                FramesFactory.getGCRF(),
                 date,
                 gm
         ));
@@ -314,7 +313,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                              1.0e-50, false);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

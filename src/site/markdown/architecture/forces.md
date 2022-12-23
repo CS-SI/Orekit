@@ -57,7 +57,8 @@ The force models implemented are as follows:
 
 * solar radiation pressure force, taking into account force reduction in
   penumbra and no force at all during complete eclipse, and taking attitude
-  into account if spacecraft shape is defined,
+  into account if spacecraft shape is defined ; several occulting bodies
+  can be defined as oblate spheroids
 
 * Earth Albedo and IR emission force model. Our implementation is based on
   paper: _EARTH RADIATION PRESSURE EFFECTS ON SATELLITES", 1988, by

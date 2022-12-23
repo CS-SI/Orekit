@@ -16,15 +16,15 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import java.util.List;
 
 public class FESCnmSnmReaderTest {
 
@@ -35,11 +35,11 @@ public class FESCnmSnmReaderTest {
             reader.setMaxParseDegree(5);
             reader.setMaxParseOrder(5);
              DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(9, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(" 56.554 Sa    3   0   0.00###  -0.00050    -0.00000  -0.00000", oe.getParts()[2]);
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(9, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(" 56.554 Sa    3   0   0.00###  -0.00050    -0.00000  -0.00000", oe.getParts()[2]);
         }
     }
 
@@ -50,11 +50,11 @@ public class FESCnmSnmReaderTest {
             reader.setMaxParseDegree(20);
             reader.setMaxParseOrder(5);
             DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS, oe.getSpecifier());
-            Assert.assertEquals(8, ((Integer) oe.getParts()[1]).intValue());
-            Assert.assertEquals(8, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(OrekitMessages.OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS, oe.getSpecifier());
+            Assertions.assertEquals(8, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(8, ((Integer) oe.getParts()[2]).intValue());
         }
     }
 
@@ -65,11 +65,11 @@ public class FESCnmSnmReaderTest {
             reader.setMaxParseDegree(5);
             reader.setMaxParseOrder(20);
             DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS, oe.getSpecifier());
-            Assert.assertEquals(8, ((Integer) oe.getParts()[1]).intValue());
-            Assert.assertEquals(8, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(OrekitMessages.OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS, oe.getSpecifier());
+            Assertions.assertEquals(8, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(8, ((Integer) oe.getParts()[2]).intValue());
         }
     }
 
@@ -81,13 +81,13 @@ public class FESCnmSnmReaderTest {
         reader.setMaxParseOrder(5);
         DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
         List<OceanTidesWave> waves = reader.getWaves();
-        Assert.assertEquals(18, waves.size());
+        Assertions.assertEquals(18, waves.size());
         for (OceanTidesWave wave : waves) {
             switch (wave.getDoodson()) {
                 case 55565:
                 case 55575:
-                    Assert.assertEquals(2, wave.getMaxDegree());
-                    Assert.assertEquals(0, wave.getMaxOrder());
+                    Assertions.assertEquals(2, wave.getMaxDegree());
+                    Assertions.assertEquals(0, wave.getMaxOrder());
                     break;
                 case 56554:
                 case 57555:
@@ -105,16 +105,16 @@ public class FESCnmSnmReaderTest {
                 case 273555:
                 case 275555:
                 case 455555:
-                    Assert.assertEquals(5, wave.getMaxDegree());
-                    Assert.assertEquals(5, wave.getMaxOrder());
+                    Assertions.assertEquals(5, wave.getMaxDegree());
+                    Assertions.assertEquals(5, wave.getMaxOrder());
                     break;
                 default:
-                    Assert.fail("unexpected wave " + wave.getDoodson());
+                    Assertions.fail("unexpected wave " + wave.getDoodson());
             }
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:tides");
     }

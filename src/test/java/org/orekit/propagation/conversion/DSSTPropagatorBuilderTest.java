@@ -16,17 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.List;
-
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -40,6 +33,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -48,6 +42,10 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
 
 public class DSSTPropagatorBuilderTest {
 
@@ -154,10 +152,10 @@ public class DSSTPropagatorBuilderTest {
     }
 
     private void doTestBuildPropagator(final ODEIntegratorBuilder foiBuilder) {
-        
+
         // We propagate using directly the propagator of the set up
         final Orbit orbitWithPropagator = propagator.propagate(initDate.shiftedBy(600)).getOrbit();
-        
+
         // We propagate using a build version of the propagator
         // We shall have the same results than before
         DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
@@ -165,22 +163,22 @@ public class DSSTPropagatorBuilderTest {
                                                                   1.0,
                                                                   PropagationType.MEAN,
                                                                   PropagationType.MEAN);
-        
+
         builder.addForceModel(moon);
         builder.setMass(1000.);
-        
+
         final DSSTPropagator prop = builder.buildPropagator(builder.getSelectedNormalizedParameters());
-        
+
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(600)).getOrbit();
-        
+
         // Verify
-        Assert.assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
-        Assert.assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
-        Assert.assertEquals(orbitWithPropagator.getEquinoctialEy(), orbitWithBuilder.getEquinoctialEy(), eps);
-        Assert.assertEquals(orbitWithPropagator.getHx(),            orbitWithBuilder.getHx(), eps);
-        Assert.assertEquals(orbitWithPropagator.getHy(),            orbitWithBuilder.getHy(), eps);
-        Assert.assertEquals(orbitWithPropagator.getLM(),            orbitWithBuilder.getLM(), 8.0e-10);
-        
+        Assertions.assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
+        Assertions.assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
+        Assertions.assertEquals(orbitWithPropagator.getEquinoctialEy(), orbitWithBuilder.getEquinoctialEy(), eps);
+        Assertions.assertEquals(orbitWithPropagator.getHx(),            orbitWithBuilder.getHx(), eps);
+        Assertions.assertEquals(orbitWithPropagator.getHy(),            orbitWithBuilder.getHy(), eps);
+        Assertions.assertEquals(orbitWithPropagator.getLM(),            orbitWithBuilder.getLM(), 8.0e-10);
+
     }
 
     @Test
@@ -194,15 +192,15 @@ public class DSSTPropagatorBuilderTest {
                                                                   PropagationType.MEAN,
                                                                   PropagationType.MEAN);
         builder.addForceModel(moon);
-        // Verify that there is no Newtonian attration force model
-        assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
+        // Verify that there is no Newtonian attraction force model
+        Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
         // Build the DSST propagator (not used here)
         builder.buildPropagator(builder.getSelectedNormalizedParameters());
         // Verify the addition of the Newtonian attraction force model
-        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
         // Add a new force model to ensure the Newtonian attraction stay at the last position
         builder.addForceModel(sun);
-        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
     }
 
     @Test
@@ -229,35 +227,37 @@ public class DSSTPropagatorBuilderTest {
                 return 1;
             }
 
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
+
         });
 
         builder.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
 
-    	    public String getName() {
-    	        return "linear";
-    	    }
-
-    	    public int getDimension() {
-    	        return 1;
-    	    }
-
-            public double[] derivatives(SpacecraftState s) {
-                return new double[] { 1.0 };
+            public String getName() {
+                return "linear";
             }
+
+            public int getDimension() {
+                return 1;
+            }
+
+            public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+                return new CombinedDerivatives(new double[] { 1.0 }, null);
+            }
+
         });
 
         try {
-    	    // Build the propagator
-    	    builder.buildPropagator(builder.getSelectedNormalizedParameters());
-            Assert.fail("an exception should have been thrown");
+            // Build the propagator
+            builder.buildPropagator(builder.getSelectedNormalizedParameters());
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
     }
-    
+
     @Test
     public void testDeselectOrbitals() {
         // Integrator builder
@@ -269,17 +269,17 @@ public class DSSTPropagatorBuilderTest {
                                                                   PropagationType.MEAN,
                                                                   PropagationType.MEAN);
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assert.assertTrue(driver.isSelected());
+            Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assert.assertFalse(driver.isSelected());
+            Assertions.assertFalse(driver.isSelected());
         }
     }
-    
-    @Before
+
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
-        
+
         Utils.setDataRoot("regular-data");
 
         minStep = 1.0;
@@ -288,7 +288,7 @@ public class DSSTPropagatorBuilderTest {
 
         final Frame earthFrame = FramesFactory.getEME2000();
         initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
-        
+
         final double mu = 3.986004415E14;
         // a    = 42163393.0 m
         // ex =  -0.25925449177598586

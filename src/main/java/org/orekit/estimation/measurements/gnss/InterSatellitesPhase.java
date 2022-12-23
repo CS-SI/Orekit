@@ -47,6 +47,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPhase> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "InterSatellitesPhase";
+
     /** Name for ambiguity driver. */
     public static final String AMBIGUITY_NAME = "ambiguity";
 

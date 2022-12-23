@@ -159,17 +159,6 @@ public class SpacecraftState
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional) {
-        this(orbit, new DoubleArrayDictionary(additional));
-    }
-
-    /** Build a spacecraft state from orbit and additional states.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param orbit the orbit
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final DoubleArrayDictionary additional) {
@@ -177,21 +166,6 @@ public class SpacecraftState
              new LofOffset(orbit.getFrame(),
                            LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, Attitude, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final Attitude attitude, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from orbit, attitude and additional states.
@@ -213,40 +187,12 @@ public class SpacecraftState
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, double, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional) {
-        this(orbit, mass, new DoubleArrayDictionary(additional));
-    }
-
-    /** Create a new instance from orbit, mass and additional states.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param orbit the orbit
-     * @param mass the mass (kg)
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final double mass, final DoubleArrayDictionary additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude, mass and additional states.
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, Attitude, double, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final Attitude attitude,
-                           final double mass, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, mass, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from orbit, attitude, mass and additional states.
@@ -345,38 +291,12 @@ public class SpacecraftState
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Map<String, double[]> additional) {
-        this(absPva, new DoubleArrayDictionary(additional));
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration and additional states.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param absPva position-velocity-acceleration
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final DoubleArrayDictionary additional) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, additional);
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration, attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, Attitude, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude and additional states.
@@ -398,39 +318,12 @@ public class SpacecraftState
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, double, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final Map<String, double[]> additional) {
-        this(absPva, mass, new DoubleArrayDictionary(additional));
-    }
-
-    /** Create a new instance from position-velocity-acceleration, mass and additional states.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param absPva position-velocity-acceleration
-     * @param mass the mass (kg)
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final DoubleArrayDictionary additional) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states.
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, Attitude, double, DoubleArrayDictionary)}
-     */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude,
-                           final double mass, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, mass, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states.
@@ -495,7 +388,7 @@ public class SpacecraftState
      * @return a new instance, with the additional state added
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public SpacecraftState addAdditionalState(final String name, final double... value) {
         final DoubleArrayDictionary newDict = new DoubleArrayDictionary(additional);
@@ -831,7 +724,7 @@ public class SpacecraftState
      * @return true if the additional state is available
      * @see #addAdditionalState(String, double[])
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public boolean hasAdditionalState(final String name) {
         return additional.getEntry(name) != null;
@@ -914,7 +807,7 @@ public class SpacecraftState
      * @return value of the additional state
      * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public double[] getAdditionalState(final String name) {
         final DoubleArrayDictionary.Entry entry = additional.getEntry(name);
@@ -938,18 +831,6 @@ public class SpacecraftState
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
         }
         return entry.getValue();
-    }
-
-    /** Get an unmodifiable map of additional states.
-     * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, double[])
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalState(String)
-     * @deprecated as of 11.1, replaced by {@link #getAdditionalStatesValues()}
-     */
-    @Deprecated
-    public Map<String, double[]> getAdditionalStates() {
-        return getAdditionalStatesValues().toMap();
     }
 
     /** Get an unmodifiable map of additional states.
@@ -1121,6 +1002,15 @@ public class SpacecraftState
         return (absPva == null) ? orbit.getI() : Double.NaN;
     }
 
+    /** Get the position in orbit definition frame.
+     * @return position in orbit definition frame
+     * @since 12.0
+     * @see #getPVCoordinates()
+     */
+    public Vector3D getPosition() {
+        return (absPva == null) ? orbit.getPosition() : absPva.getPosition();
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
      * <p>
      * Compute the position and velocity of the satellite. This method caches its
@@ -1133,6 +1023,16 @@ public class SpacecraftState
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
         return (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+    }
+
+    /** Get the position in given output frame.
+     * @param outputFrame frame in which position should be defined
+     * @return position in given output frame
+     * @since 12.0
+     * @see #getPVCoordinates(Frame)
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        return (absPva == null) ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in given output frame.

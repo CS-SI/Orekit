@@ -16,10 +16,8 @@
  */
 package org.orekit.gnss.metric.messages.ssr;
 
-import java.util.ArrayList;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -28,6 +26,8 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm07Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
+
+import java.util.ArrayList;
 
 public class SsrIgm07Test {
 
@@ -60,28 +60,28 @@ public class SsrIgm07Test {
         final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assert.assertEquals(2,                            igm07.getData().size());
-        Assert.assertEquals(SatelliteSystem.GPS,          igm07.getSatelliteSystem());
+        Assertions.assertEquals(2,                            igm07.getData().size());
+        Assertions.assertEquals(SatelliteSystem.GPS,          igm07.getSatelliteSystem());
 
         // Verify header
-        Assert.assertEquals(27,                           igm07.getTypeCode());
-        Assert.assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
-        Assert.assertEquals(60.0,                         igm07.getHeader().getSsrUpdateInterval(), eps);
-        Assert.assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
-        Assert.assertEquals(7,                            igm07.getHeader().getIodSsr());
-        Assert.assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
-        Assert.assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
-        Assert.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
+        Assertions.assertEquals(27,                           igm07.getTypeCode());
+        Assertions.assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
+        Assertions.assertEquals(60.0,                         igm07.getHeader().getSsrUpdateInterval(), eps);
+        Assertions.assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
+        Assertions.assertEquals(7,                            igm07.getHeader().getIodSsr());
+        Assertions.assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
+        Assertions.assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
+        Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
         final SsrIgm07Data g1 = igm07.getSsrIgm07Data().get("G01").get(0);
-        Assert.assertEquals(1,                         g1.getSatelliteID());
-        Assert.assertEquals(23.0,                      g1.getSsrUra(), eps);
+        Assertions.assertEquals(1,                         g1.getSatelliteID());
+        Assertions.assertEquals(23.0,                      g1.getSsrUra(), eps);
 
         // Verify data for satellite G12
         final SsrIgm07Data g12 = igm07.getSsrIgm07Data().get("G12").get(0);
-        Assert.assertEquals(12,                         g12.getSatelliteID());
-        Assert.assertEquals(60.0,                       g12.getSsrUra(), eps);
+        Assertions.assertEquals(12,                         g12.getSatelliteID());
+        Assertions.assertEquals(60.0,                       g12.getSsrUra(), eps);
 
     }
 
@@ -112,28 +112,28 @@ public class SsrIgm07Test {
         final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assert.assertEquals(2,                            igm07.getData().size());
-        Assert.assertEquals(SatelliteSystem.GALILEO,      igm07.getSatelliteSystem());
+        Assertions.assertEquals(2,                            igm07.getData().size());
+        Assertions.assertEquals(SatelliteSystem.GALILEO,      igm07.getSatelliteSystem());
 
         // Verify header
-        Assert.assertEquals(67,                           igm07.getTypeCode());
-        Assert.assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
-        Assert.assertEquals(3600.0,                       igm07.getHeader().getSsrUpdateInterval(), eps);
-        Assert.assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
-        Assert.assertEquals(7,                            igm07.getHeader().getIodSsr());
-        Assert.assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
-        Assert.assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
-        Assert.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
+        Assertions.assertEquals(67,                           igm07.getTypeCode());
+        Assertions.assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
+        Assertions.assertEquals(3600.0,                       igm07.getHeader().getSsrUpdateInterval(), eps);
+        Assertions.assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
+        Assertions.assertEquals(7,                            igm07.getHeader().getIodSsr());
+        Assertions.assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
+        Assertions.assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
+        Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
         final SsrIgm07Data e01 = igm07.getSsrIgm07Data().get("E01").get(0);
-        Assert.assertEquals(1,                         e01.getSatelliteID());
-        Assert.assertEquals(23.0,                      e01.getSsrUra(), eps);
+        Assertions.assertEquals(1,                         e01.getSatelliteID());
+        Assertions.assertEquals(23.0,                      e01.getSsrUra(), eps);
 
         // Verify data for satellite E12
         final SsrIgm07Data e12 = igm07.getSsrIgm07Data().get("E12").get(0);
-        Assert.assertEquals(12,                         e12.getSatelliteID());
-        Assert.assertEquals(60.0,                       e12.getSsrUra(), eps);
+        Assertions.assertEquals(12,                         e12.getSatelliteID());
+        Assertions.assertEquals(60.0,                       e12.getSsrUra(), eps);
 
     }
 
@@ -163,7 +163,7 @@ public class SsrIgm07Test {
 
        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages).parse(message, false);
 
-       Assert.assertNull(igm07);
+       Assertions.assertNull(igm07);
     }
 
     @Test
@@ -172,9 +172,9 @@ public class SsrIgm07Test {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessages(array);
             new IgsSsrMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
         }
 
     }

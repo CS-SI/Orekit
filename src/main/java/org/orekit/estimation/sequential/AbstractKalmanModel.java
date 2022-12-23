@@ -31,21 +31,14 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -143,7 +136,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
     /** Kalman process model constructor (package private).
      * This constructor is used whenever state type and propagation type do not matter.
-     * It is used for {@link KalmanModel} and {@link TLEKalmanModel}.
+     * It is used for {@link KalmanModel}.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
@@ -161,7 +154,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
     /** Kalman process model constructor (package private).
      * This constructor is used whenever propagation type and/or state type are to be specified.
-     * It is used for {@link DSSTKalmanModel}.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
@@ -255,12 +247,12 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         }
 
         // Populate the map of measurement drivers' columns and update the total number of columns
-        int nbEstimatedMeasurementParameters = 0;
+        int nbMeas = 0;
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
             if (parameter.getReferenceDate() == null) {
                 parameter.setReferenceDate(currentDate);
             }
-            nbEstimatedMeasurementParameters += parameter.getNbOfValues();
+            nbMeas += parameter.getNbOfValues();
             for (Span<String> span = parameter.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 measurementParameterColumns.put(span.getData(), columns);
                 ++columns;
@@ -271,7 +263,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // Store providers for process noise matrices
         this.covarianceMatricesProviders = covarianceMatricesProviders;
         this.measurementProcessNoiseMatrix = measurementProcessNoiseMatrix;
-        this.covarianceIndirection       = new int[covarianceMatricesProviders.size()][columns];
+        this.covarianceIndirection       = new int[builders.size()][columns];
         for (int k = 0; k < covarianceIndirection.length; ++k) {
             final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
             final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
@@ -279,7 +271,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             int i = 0;
             for (final ParameterDriver driver : orbitDrivers.getDrivers()) {
                 final Integer c = orbitalParameterColumns.get(driver.getName());
-                covarianceIndirection[k][i++] = (c == null) ? -1 : c.intValue();
+                if (c != null) {
+                    covarianceIndirection[k][i++] = c.intValue();
+                }
             }
             for (final ParameterDriver driver : parametersDrivers.getDrivers()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
@@ -356,20 +350,22 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                                nbEstimatedPropagationParameters[k];
 
             // Covariance matrix
-            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbEstimatedMeasurementParameters, nbDyn + nbEstimatedMeasurementParameters);
-            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
-                                      getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
-            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
+            if (nbDyn > 0) {
+                final RealMatrix noiseP = covarianceMatricesProviders.get(k).
+                        getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            }
             if (measurementProcessNoiseMatrix != null) {
                 final RealMatrix noiseM = measurementProcessNoiseMatrix.
                                           getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
                 noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
             }
 
-            checkDimension(noiseK.getRowDimension(),
-                           builders.get(k).getOrbitalParametersDrivers(),
-                           builders.get(k).getPropagationParametersDrivers(),
-                           estimatedMeasurementsParameters);
+            KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                               builders.get(k).getOrbitalParametersDrivers(),
+                                               builders.get(k).getPropagationParametersDrivers(),
+                                               estimatedMeasurementsParameters);
 
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
@@ -397,67 +393,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     protected abstract void updateReferenceTrajectories(Propagator[] propagators,
                                                         PropagationType pType,
                                                         PropagationType sType);
-
-    /** Not used anymore.
-     * @param mapper Jacobian mapper to calculate short period perturbations
-     * @param state state used to calculate short period perturbations
-     * @deprecated as of 11.1, not used anymore
-     */
-    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
-        // nothing by default
-    }
-
-    /** Check dimension.
-     * @param dimension dimension to check
-     * @param orbitalParameters orbital parameters
-     * @param propagationParameters propagation parameters
-     * @param measurementParameters measurements parameters
-     */
-    private void checkDimension(final int dimension,
-                                final ParameterDriversList orbitalParameters,
-                                final ParameterDriversList propagationParameters,
-                                final ParameterDriversList measurementParameters) {
-
-        // count parameters, taking care of counting all orbital parameters
-        // regardless of them being estimated or not
-        int requiredDimension = orbitalParameters.getNbParams();
-        for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                // orbital drivers should have only 1 span on their value TimeSpanMap (only
-                // 1 value to be estimated)
-                requiredDimension += driver.getNbOfValues();
-            }
-        }
-        for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-            if (driver.isSelected()) {
-                requiredDimension += driver.getNbOfValues();
-            }
-        }
-
-        if (dimension != requiredDimension) {
-            // there is a problem, set up an explicit error message
-            final StringBuilder builder = new StringBuilder();
-            for (final ParameterDriver driver : orbitalParameters.getDrivers()) {
-                if (builder.length() > 0) {
-                    builder.append(", ");
-                }
-                builder.append(driver.getName());
-            }
-            for (final ParameterDriver driver : propagationParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    builder.append(driver.getName());
-                }
-            }
-            for (final ParameterDriver driver : measurementParameters.getDrivers()) {
-                if (driver.isSelected()) {
-                    builder.append(driver.getName());
-                }
-            }
-            throw new OrekitException(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS,
-                                      dimension, builder.toString());
-        }
-
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -738,12 +673,13 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Indexes
             final int[] indK = covarianceIndirection[k];
 
-            // Reset reference (for example compute short periodic terms in DSST)
-            harvesters[k].setReferenceState(predictedSpacecraftStates[k]);
-
             // Derivatives of the state vector with respect to initial state vector
             final int nbOrbParams = estimatedOrbitalParameters[k].getNbParams();
             if (nbOrbParams > 0) {
+
+                // Reset reference (for example compute short periodic terms in DSST)
+                harvesters[k].setReferenceState(predictedSpacecraftStates[k]);
+
                 final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
 
                 // Fill upper left corner (dY/dY0)
@@ -915,61 +851,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         return normalizedCovarianceMatrix;
     }
 
-    /** Set and apply a dynamic outlier filter on a measurement.<p>
-     * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<p>
-     * Compute the sigma array using the matrix in input and set the filter.<p>
-     * Apply the filter by calling the modify method on the estimated measurement.<p>
-     * Reset the filter.
-     * @param measurement measurement to filter
-     * @param innovationCovarianceMatrix So called innovation covariance matrix S, with:<p>
-     *        S = H.Ppred.Ht + R<p>
-     *        Where:<p>
-     *         - H is the normalized measurement matrix (Ht its transpose)<p>
-     *         - Ppred is the normalized predicted covariance matrix<p>
-     *         - R is the normalized measurement noise matrix
-     * @param <T> the type of measurement
-     */
-    private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
-                                                                              final RealMatrix innovationCovarianceMatrix) {
-
-        // Observed measurement associated to the predicted measurement
-        final ObservedMeasurement<T> observedMeasurement = measurement.getObservedMeasurement();
-
-        // Check if a dynamic filter was added to the measurement
-        // If so, update its sigma value and apply it
-        for (EstimationModifier<T> modifier : observedMeasurement.getModifiers()) {
-            if (modifier instanceof DynamicOutlierFilter<?>) {
-                final DynamicOutlierFilter<T> dynamicOutlierFilter = (DynamicOutlierFilter<T>) modifier;
-
-                // Initialize the values of the sigma array used in the dynamic filter
-                final double[] sigmaDynamic     = new double[innovationCovarianceMatrix.getColumnDimension()];
-                final double[] sigmaMeasurement = observedMeasurement.getTheoreticalStandardDeviation();
-
-                // Set the sigma value for each element of the measurement
-                // Here we do use the value suggested by David A. Vallado (see [1]§10.6):
-                // sigmaDynamic[i] = sqrt(diag(S))*sigma[i]
-                // With S = H.Ppred.Ht + R
-                // Where:
-                //  - S is the measurement error matrix in input
-                //  - H is the normalized measurement matrix (Ht its transpose)
-                //  - Ppred is the normalized predicted covariance matrix
-                //  - R is the normalized measurement noise matrix
-                //  - sigma[i] is the theoretical standard deviation of the ith component of the measurement.
-                //    It is used here to un-normalize the value before it is filtered
-                for (int i = 0; i < sigmaDynamic.length; i++) {
-                    sigmaDynamic[i] = FastMath.sqrt(innovationCovarianceMatrix.getEntry(i, i)) * sigmaMeasurement[i];
-                }
-                dynamicOutlierFilter.setSigma(sigmaDynamic);
-
-                // Apply the modifier on the estimated measurement
-                modifier.modify(measurement);
-
-                // Re-initialize the value of the filter for the next measurement of the same type
-                dynamicOutlierFilter.setSigma(null);
-            }
-        }
-    }
-
     /** {@inheritDoc} */
     @Override
     public NonLinearEvolution getEvolution(final double previousTime, final RealVector previousState,
@@ -1011,7 +892,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // so far. We use this to be able to apply the OutlierFilter modifiers on the predicted measurement.
         predictedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            filterRelevant(observedMeasurement, predictedSpacecraftStates));
+                                                            KalmanEstimatorUtil.filterRelevant(observedMeasurement, predictedSpacecraftStates));
 
         // Normalized measurement matrix (nxm)
         final RealMatrix measurementMatrix = getMeasurementMatrix();
@@ -1037,10 +918,12 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
             // Covariance matrix
             final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
-            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
-                                      getProcessNoiseMatrix(correctedSpacecraftStates[k],
-                                                            predictedSpacecraftStates[k]);
-            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            if (nbDyn > 0) {
+                final RealMatrix noiseP = covarianceMatricesProviders.get(k).
+                                          getProcessNoiseMatrix(correctedSpacecraftStates[k],
+                                                                predictedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            }
             if (measurementProcessNoiseMatrix != null) {
                 final RealMatrix noiseM = measurementProcessNoiseMatrix.
                                           getProcessNoiseMatrix(correctedSpacecraftStates[k],
@@ -1048,10 +931,10 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                 noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
             }
 
-            checkDimension(noiseK.getRowDimension(),
-                           builders.get(k).getOrbitalParametersDrivers(),
-                           builders.get(k).getPropagationParametersDrivers(),
-                           estimatedMeasurementsParameters);
+            KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
+                                               builders.get(k).getOrbitalParametersDrivers(),
+                                               builders.get(k).getPropagationParametersDrivers(),
+                                               estimatedMeasurementsParameters);
 
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
@@ -1079,22 +962,9 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                                     final RealMatrix innovationCovarianceMatrix) {
 
         // Apply the dynamic outlier filter, if it exists
-        applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
-        if (predictedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
-            // set innovation to null to notify filter measurement is rejected
-            return null;
-        } else {
-            // Normalized innovation of the measurement (Nx1)
-            final double[] observed  = predictedMeasurement.getObservedMeasurement().getObservedValue();
-            final double[] estimated = predictedMeasurement.getEstimatedValue();
-            final double[] sigma     = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
-            final double[] residuals = new double[observed.length];
-
-            for (int i = 0; i < observed.length; i++) {
-                residuals[i] = (observed[i] - estimated[i]) / sigma[i];
-            }
-            return MatrixUtils.createRealVector(residuals);
-        }
+        KalmanEstimatorUtil.applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
+        // Compute the innovation vector
+        return KalmanEstimatorUtil.computeInnovationVector(predictedMeasurement, predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
     /** Finalize estimation.
@@ -1118,26 +988,11 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         // Compute the estimated measurement using estimated spacecraft state
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            filterRelevant(observedMeasurement, correctedSpacecraftStates));
+                                                            KalmanEstimatorUtil.filterRelevant(observedMeasurement, correctedSpacecraftStates));
         // Update the trajectory
         // ---------------------
         updateReferenceTrajectories(estimatedPropagators, propagationType, stateType);
 
-    }
-
-    /** Filter relevant states for a measurement.
-     * @param observedMeasurement measurement to consider
-     * @param allStates all states
-     * @return array containing only the states relevant to the measurement
-     * @since 10.1
-     */
-    private SpacecraftState[] filterRelevant(final ObservedMeasurement<?> observedMeasurement, final SpacecraftState[] allStates) {
-        final List<ObservableSatellite> satellites = observedMeasurement.getSatellites();
-        final SpacecraftState[] relevantStates = new SpacecraftState[satellites.size()];
-        for (int i = 0; i < relevantStates.length; ++i) {
-            relevantStates[i] = allStates[satellites.get(i).getPropagatorIndex()];
-        }
-        return relevantStates;
     }
 
     /** Set the predicted normalized state vector.
@@ -1228,24 +1083,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      */
     public void setReferenceTrajectories(final Propagator[] referenceTrajectories) {
         this.referenceTrajectories = referenceTrajectories.clone();
-    }
-
-    /** Getter for the jacobian mappers.
-     * @return the jacobian mappers
-     * @deprecated as of 11.1, not used anymore
-     */
-    @Deprecated
-    public AbstractJacobiansMapper[] getMappers() {
-        return null;
-    }
-
-    /** Setter for the jacobian mappers.
-     * @param mappers the jacobian mappers to set
-     * @deprecated as of 11.1, replaced by {@link #setHarvesters(MatricesHarvester[])}
-     */
-    @Deprecated
-    public void setMappers(final AbstractJacobiansMapper[] mappers) {
-        setHarvesters(mappers);
     }
 
     /** Setter for the jacobian harvesters.

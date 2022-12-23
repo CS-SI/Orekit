@@ -26,6 +26,7 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  * @since 11.2
  */
 public enum RTNCovarianceKey {
+
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),

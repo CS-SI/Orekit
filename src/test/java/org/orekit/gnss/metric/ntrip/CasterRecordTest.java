@@ -17,8 +17,8 @@
 package org.orekit.gnss.metric.ntrip;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CasterRecordTest {
 
@@ -28,47 +28,47 @@ public class CasterRecordTest {
     @Test
     public void testPRODUCTS() {
         final CasterRecord cas = new CasterRecord(PRODUCTS);
-        Assert.assertEquals(RecordType.CAS,                    cas.getRecordType());
-        Assert.assertEquals("products.igs-ip.net",             cas.getHostOrIPAddress());
-        Assert.assertEquals(2101,                              cas.getPort());
-        Assert.assertEquals("PRODUCTS",                        cas.getSourceIdentifier());
-        Assert.assertEquals("BKG",                             cas.getOperator());
-        Assert.assertEquals(false,                             cas.canReceiveNMEA());
-        Assert.assertEquals("DEU",                             cas.getCountry());
-        Assert.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
-        Assert.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);
-        Assert.assertEquals("0.0.0.0",                         cas.getFallbackHostOrIPAddress());
-        Assert.assertEquals(0,                                 cas.getFallbackPort());
-        Assert.assertEquals("http://products.igs-ip.net/home", cas.getMisc());
+        Assertions.assertEquals(RecordType.CAS,                    cas.getRecordType());
+        Assertions.assertEquals("products.igs-ip.net",             cas.getHostOrIPAddress());
+        Assertions.assertEquals(2101,                              cas.getPort());
+        Assertions.assertEquals("PRODUCTS",                        cas.getSourceIdentifier());
+        Assertions.assertEquals("BKG",                             cas.getOperator());
+        Assertions.assertEquals(false,                             cas.canReceiveNMEA());
+        Assertions.assertEquals("DEU",                             cas.getCountry());
+        Assertions.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
+        Assertions.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);
+        Assertions.assertEquals("0.0.0.0",                         cas.getFallbackHostOrIPAddress());
+        Assertions.assertEquals(0,                                 cas.getFallbackPort());
+        Assertions.assertEquals("http://products.igs-ip.net/home", cas.getMisc());
     }
 
     @Test
     public void testRTCM_NTRIP() {
         final CasterRecord cas = new CasterRecord(RTCM_NTRIP);
-        Assert.assertEquals(RecordType.CAS,                    cas.getRecordType());
-        Assert.assertEquals("rtcm-ntrip.org",                  cas.getHostOrIPAddress());
-        Assert.assertEquals(2101,                              cas.getPort());
-        Assert.assertEquals("NtripInfoCaster",                 cas.getSourceIdentifier());
-        Assert.assertEquals("BKG",                             cas.getOperator());
-        Assert.assertEquals(false,                             cas.canReceiveNMEA());
-        Assert.assertEquals("DEU",                             cas.getCountry());
-        Assert.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
-        Assert.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);
-        Assert.assertEquals("0.0.0.0",                         cas.getFallbackHostOrIPAddress());
-        Assert.assertEquals(0,                                 cas.getFallbackPort());
-        Assert.assertEquals("http://www.rtcm-ntrip.org/home",  cas.getMisc());
+        Assertions.assertEquals(RecordType.CAS,                    cas.getRecordType());
+        Assertions.assertEquals("rtcm-ntrip.org",                  cas.getHostOrIPAddress());
+        Assertions.assertEquals(2101,                              cas.getPort());
+        Assertions.assertEquals("NtripInfoCaster",                 cas.getSourceIdentifier());
+        Assertions.assertEquals("BKG",                             cas.getOperator());
+        Assertions.assertEquals(false,                             cas.canReceiveNMEA());
+        Assertions.assertEquals("DEU",                             cas.getCountry());
+        Assertions.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
+        Assertions.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);
+        Assertions.assertEquals("0.0.0.0",                         cas.getFallbackHostOrIPAddress());
+        Assertions.assertEquals(0,                                 cas.getFallbackPort());
+        Assertions.assertEquals("http://www.rtcm-ntrip.org/home",  cas.getMisc());
     }
 
     @Test
     public void testReceiveNMEA() {
         final CasterRecord cas = new CasterRecord(PRODUCTS.replace(";BKG;0;DEU;", ";BKG;1;DEU;"));
-        Assert.assertTrue(cas.canReceiveNMEA());
+        Assertions.assertTrue(cas.canReceiveNMEA());
     }
 
     @Test
     public void testEmbeddedSemiColon() {
         final CasterRecord cas = new CasterRecord(PRODUCTS.replace("http://products.igs-ip.net/home", "aa\";\"bb\";\"cc"));
-        Assert.assertEquals("aa;bb;cc", cas.getMisc());
+        Assertions.assertEquals("aa;bb;cc", cas.getMisc());
     }
 
 }

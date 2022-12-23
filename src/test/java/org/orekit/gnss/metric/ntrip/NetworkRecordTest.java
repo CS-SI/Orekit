@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class NetworkRecordTest {
 
@@ -27,47 +27,47 @@ public class NetworkRecordTest {
     @Test
     public void testIGS() {
         final NetworkRecord net = new NetworkRecord(IGS);
-        Assert.assertEquals(RecordType.NET,                                                         net.getRecordType());
-        Assert.assertEquals("IGS",                                                                  net.getNetworkIdentifier());
-        Assert.assertEquals("IGS",                                                                  net.getOperator());
-        Assert.assertEquals(Authentication.BASIC,                                                   net.getAuthentication());
-        Assert.assertEquals(false,                                                                  net.areFeesRequired());
-        Assert.assertEquals("https://igs.bkg.bund.de/root_ftp/NTRIP/neteams/neteamlist_igs-ip.htm", net.getNetworkInfoAddress());
-        Assert.assertEquals("https://igs.bkg.bund.de:443/root_ftp/IGS/station/rnxskl/",             net.getStreamInfoAddress());
-        Assert.assertEquals("http://register.rtcm-ntrip.org",                                       net.getRegistrationAddress());
-        Assert.assertEquals("none",                                                                 net.getMisc());
+        Assertions.assertEquals(RecordType.NET,                                                         net.getRecordType());
+        Assertions.assertEquals("IGS",                                                                  net.getNetworkIdentifier());
+        Assertions.assertEquals("IGS",                                                                  net.getOperator());
+        Assertions.assertEquals(Authentication.BASIC,                                                   net.getAuthentication());
+        Assertions.assertEquals(false,                                                                  net.areFeesRequired());
+        Assertions.assertEquals("https://igs.bkg.bund.de/root_ftp/NTRIP/neteams/neteamlist_igs-ip.htm", net.getNetworkInfoAddress());
+        Assertions.assertEquals("https://igs.bkg.bund.de:443/root_ftp/IGS/station/rnxskl/",             net.getStreamInfoAddress());
+        Assertions.assertEquals("http://register.rtcm-ntrip.org",                                       net.getRegistrationAddress());
+        Assertions.assertEquals("none",                                                                 net.getMisc());
     }
 
     @Test
     public void testMISC() {
         final NetworkRecord net = new NetworkRecord(MISC);
-        Assert.assertEquals(RecordType.NET,                                                         net.getRecordType());
-        Assert.assertEquals("MISC",                                                                 net.getNetworkIdentifier());
-        Assert.assertEquals("BKG",                                                                  net.getOperator());
-        Assert.assertEquals(Authentication.BASIC,                                                   net.getAuthentication());
-        Assert.assertEquals(false,                                                                  net.areFeesRequired());
-        Assert.assertEquals("http://igs.bkg.bund.de/root_ftp/NTRIP/neteams/neteamlist_igs-ip.htm",  net.getNetworkInfoAddress());
-        Assert.assertEquals("https://igs.bkg.bund.de:443/root_ftp/MISC/station/rnxskl/",            net.getStreamInfoAddress());
-        Assert.assertEquals("http://register.rtcm-ntrip.org",                                       net.getRegistrationAddress());
-        Assert.assertEquals("none",                                                                 net.getMisc());
+        Assertions.assertEquals(RecordType.NET,                                                         net.getRecordType());
+        Assertions.assertEquals("MISC",                                                                 net.getNetworkIdentifier());
+        Assertions.assertEquals("BKG",                                                                  net.getOperator());
+        Assertions.assertEquals(Authentication.BASIC,                                                   net.getAuthentication());
+        Assertions.assertEquals(false,                                                                  net.areFeesRequired());
+        Assertions.assertEquals("http://igs.bkg.bund.de/root_ftp/NTRIP/neteams/neteamlist_igs-ip.htm",  net.getNetworkInfoAddress());
+        Assertions.assertEquals("https://igs.bkg.bund.de:443/root_ftp/MISC/station/rnxskl/",            net.getStreamInfoAddress());
+        Assertions.assertEquals("http://register.rtcm-ntrip.org",                                       net.getRegistrationAddress());
+        Assertions.assertEquals("none",                                                                 net.getMisc());
     }
 
     @Test
     public void testDigestAuthentication() {
         final NetworkRecord net = new NetworkRecord(IGS.replace(";B;", ";D;"));
-        Assert.assertEquals(Authentication.DIGEST, net.getAuthentication());
+        Assertions.assertEquals(Authentication.DIGEST, net.getAuthentication());
     }
 
     @Test
     public void testNoAuthentication() {
         final NetworkRecord net = new NetworkRecord(IGS.replace(";B;", ";N;"));
-        Assert.assertEquals(Authentication.NONE, net.getAuthentication());
+        Assertions.assertEquals(Authentication.NONE, net.getAuthentication());
     }
 
     @Test
     public void testRequiresFees() {
         final NetworkRecord net = new NetworkRecord(IGS.replace(";B;N;", ";B;Y;"));
-        Assert.assertTrue(net.areFeesRequired());
+        Assertions.assertTrue(net.areFeesRequired());
     }
 
 }

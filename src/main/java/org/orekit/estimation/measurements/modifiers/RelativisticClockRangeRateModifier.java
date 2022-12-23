@@ -65,7 +65,7 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
         // Relativistic frequency deviation
         final double factor = -gm * getScaleFactor();
         final double dfRel = factor *
-                        (reciprocal(state.getA()) - reciprocal(state.getPVCoordinates().getPosition().getNorm()));
+                        (reciprocal(state.getA()) - reciprocal(state.getPosition().getNorm()));
 
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();

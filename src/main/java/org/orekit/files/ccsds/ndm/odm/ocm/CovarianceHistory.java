@@ -36,8 +36,8 @@ public class CovarianceHistory {
      * @param metadata metadata
      * @param covariances covariances
      */
-    CovarianceHistory(final CovarianceHistoryMetadata metadata,
-                      final List<Covariance> covariances) {
+    public CovarianceHistory(final CovarianceHistoryMetadata metadata,
+                             final List<Covariance> covariances) {
         this.metadata    = metadata;
         this.covariances = covariances;
     }

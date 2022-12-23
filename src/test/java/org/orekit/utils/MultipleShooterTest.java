@@ -16,17 +16,14 @@
  */
 package org.orekit.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -44,6 +41,9 @@ import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MultipleShooterTest {
 
@@ -65,7 +65,7 @@ public class MultipleShooterTest {
     /** subject under test */
     private EpochDerivativesEquations pde;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         propagator = new NumericalPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
@@ -90,7 +90,7 @@ public class MultipleShooterTest {
                         new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
                                          TimeScalesFactory.getUTC());
         final double arcDuration = 10000;
-       
+
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(1.25E10, 1.450E11, -7.5E9),
                                                            new Vector3D(-30000.0, 2500.0, -3500.0));
 
@@ -146,7 +146,7 @@ public class MultipleShooterTest {
         final AttitudeProvider attPro = propagatorList.get(nP).getAttitudeProvider();
 
         // Small change of the a patch point
-        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP); 
+        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP);
         final Vector3D newVel = firstGuessSP.getAbsPVA().getVelocity().add(deltaV);
         final AbsoluteDate newDate = firstGuessSP.getDate().shiftedBy(deltaEpoch);
         AbsolutePVCoordinates absPva = new AbsolutePVCoordinates(firstGuessSP.getFrame(), newDate, newPos, newVel);
@@ -169,18 +169,18 @@ public class MultipleShooterTest {
         multipleShooting.compute();
 
         // Verify
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.005230, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.009869, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.006641, Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getPosition(), correctedList.get(3).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getVelocity(), correctedList.get(3).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.003216, Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getPosition(), correctedList.get(4).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getVelocity(), correctedList.get(4).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getPosition(), correctedList.get(5).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getVelocity(), correctedList.get(5).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.005230, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.009869, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.006641, Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getPosition(), correctedList.get(3).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(3).getAbsPVA().getVelocity(), correctedList.get(3).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.003216, Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getPosition(), correctedList.get(4).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(4).getAbsPVA().getVelocity(), correctedList.get(4).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getPosition(), correctedList.get(5).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(5).getAbsPVA().getVelocity(), correctedList.get(5).getAbsPVA().getVelocity()), eps);
 
     }
 
@@ -193,7 +193,7 @@ public class MultipleShooterTest {
                         new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
                                          TimeScalesFactory.getUTC());
         final double arcDuration = 10000;
-       
+
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(1.25E10, 1.450E11, -7.5E9),
                                                            new Vector3D(-30000.0, 2500.0, -3500.0));
 
@@ -249,7 +249,7 @@ public class MultipleShooterTest {
         final AttitudeProvider attPro = propagatorList.get(nP).getAttitudeProvider();
 
         // Small change of the a patch point
-        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP); 
+        final Vector3D newPos = firstGuessSP.getAbsPVA().getPosition().add(deltaP);
         final Vector3D newVel = firstGuessSP.getAbsPVA().getVelocity().add(deltaV);
         final AbsoluteDate newDate = firstGuessSP.getDate().shiftedBy(deltaEpoch);
         AbsolutePVCoordinates absPva = new AbsolutePVCoordinates(firstGuessSP.getFrame(), newDate, newPos, newVel);
@@ -272,35 +272,43 @@ public class MultipleShooterTest {
         multipleShooting.compute();
 
         // Verify
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.000108, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
-        Assert.assertEquals(0.000308, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
-        Assert.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getPosition(), correctedList.get(0).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(0).getAbsPVA().getVelocity(), correctedList.get(0).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.000108, Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getPosition(), correctedList.get(1).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(1).getAbsPVA().getVelocity(), correctedList.get(1).getAbsPVA().getVelocity()), eps);
+        Assertions.assertEquals(0.000308, Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getPosition(), correctedList.get(2).getAbsPVA().getPosition()), eps);
+        Assertions.assertEquals(0.0,      Vector3D.distance(firstGuessList2.get(2).getAbsPVA().getVelocity(), correctedList.get(2).getAbsPVA().getVelocity()), eps);
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testNotInitialized() {
-        new EpochDerivativesEquations("partials", propagator).getMapper();
+        Assertions.assertThrows(OrekitException.class, () -> {
+            new EpochDerivativesEquations("partials", propagator).getMapper();
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testTooSmallDimension() {
-        final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(state, new double[5][6], new double[6][2]);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
+            partials.setInitialJacobians(state, new double[5][6], new double[6][2]);
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testTooLargeDimension() {
-        final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(state, new double[8][6], new double[6][2]);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
+            partials.setInitialJacobians(state, new double[8][6], new double[6][2]);
+        });
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testMismatchedDimensions() {
-        final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(state, new double[6][6], new double[7][2]);
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
+            partials.setInitialJacobians(state, new double[6][6], new double[7][2]);
+        });
     }
 
     private static List<SpacecraftState> generatePatchPointsEphemeris(final CelestialBody primary, final CelestialBody secondary,
@@ -351,7 +359,7 @@ public class MultipleShooterTest {
 
             propagator.setOrbitType(null);
             propagatorList.add(propagator);
-        }        
+        }
         return propagatorList;
     }
 
@@ -371,7 +379,7 @@ public class MultipleShooterTest {
 
             propagator.setOrbitType(null);
             propagatorList.add(propagator);
-        }        
+        }
         return propagatorList;
     }
 

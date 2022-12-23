@@ -17,8 +17,8 @@
 package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class OceanLoadDeformationCoefficientsTest {
 
@@ -27,9 +27,9 @@ public class OceanLoadDeformationCoefficientsTest {
         {
         double[] coeff1996 = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeff2003 = OceanLoadDeformationCoefficients.IERS_2003.getCoefficients();
-        Assert.assertEquals(coeff1996.length, coeff2003.length);
+        Assertions.assertEquals(coeff1996.length, coeff2003.length);
         for (int i = 0; i < coeff1996.length; ++i) {
-            Assert.assertEquals(coeff1996[i], coeff2003[i], 1.0e-15);
+            Assertions.assertEquals(coeff1996[i], coeff2003[i], 1.0e-15);
         }
     }
 
@@ -38,16 +38,16 @@ public class OceanLoadDeformationCoefficientsTest {
         {
         double[] coeff1996 = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeff2010 = OceanLoadDeformationCoefficients.IERS_2010.getCoefficients();
-        Assert.assertEquals(coeff1996.length, coeff2010.length);
+        Assertions.assertEquals(coeff1996.length, coeff2010.length);
         for (int i = 0; i < coeff1996.length; ++i) {
-            Assert.assertEquals(coeff1996[i], coeff2010[i], 1.0e-15);
+            Assertions.assertEquals(coeff1996[i], coeff2010[i], 1.0e-15);
         }
     }
 
     @Test
     public void testGegoutHighDegree()
         {
-        Assert.assertEquals(251, OceanLoadDeformationCoefficients.GEGOUT.getCoefficients().length);
+        Assertions.assertEquals(251, OceanLoadDeformationCoefficients.GEGOUT.getCoefficients().length);
     }
 
     @Test
@@ -57,9 +57,9 @@ public class OceanLoadDeformationCoefficientsTest {
         double[] coeffGegout = OceanLoadDeformationCoefficients.GEGOUT.getCoefficients();
         for (int i = 0; i < coeff1996.length; ++i) {
             if (coeff1996[i] == 0) {
-                Assert.assertEquals(0.0, coeffGegout[i], 1.0e-15);
+                Assertions.assertEquals(0.0, coeffGegout[i], 1.0e-15);
             } else {
-                Assert.assertTrue(FastMath.abs(coeff1996[i] - coeffGegout[i]) > FastMath.abs(coeff1996[i]) / 200);
+                Assertions.assertTrue(FastMath.abs(coeff1996[i] - coeffGegout[i]) > FastMath.abs(coeff1996[i]) / 200);
             }
         }
     }

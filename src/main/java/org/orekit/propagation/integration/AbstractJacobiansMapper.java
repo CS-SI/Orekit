@@ -75,15 +75,6 @@ public abstract class AbstractJacobiansMapper implements MatricesHarvester {
         return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbValuesToEstimate());
     }
 
-    /** Not used anymore.
-     * @param s spacecraft state
-     * @deprecated as of 11.1, not used anymore
-     */
-    @Deprecated
-    public void analyticalDerivatives(final SpacecraftState s) {
-        // nothing by default
-    }
-
     /** {@inheritDoc} */
     @Override
     public void setReferenceState(final SpacecraftState reference) {

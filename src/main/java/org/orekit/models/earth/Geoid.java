@@ -302,12 +302,6 @@ public class Geoid implements EarthShape {
             return this.provider.getReferenceDate();
         }
 
-        @Deprecated
-        @Override
-        public double getOffset(final AbsoluteDate date) {
-            return this.provider.getOffset(date);
-        }
-
         @Override
         public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
             return new NormalizedSphericalHarmonics() {

@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -153,7 +154,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     }
 
     /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState state) {
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         final double[] p = state.getAdditionalState(getName());
         final double[] res = new double[p.length];
@@ -171,7 +172,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
             }
         }
 
-        return res;
+        return new CombinedDerivatives(res, null);
 
     }
 

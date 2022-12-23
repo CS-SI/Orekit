@@ -16,13 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -42,22 +40,24 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.Arrays;
+
 /**
  * Check against prediction in
- * 
+ *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- * 
+ *
  * An approximate value is given in terms of delay for Galileo satellites.
- * As these satellites are close to GPS satellites, we consider the delays to be 
+ * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
  *
  * The values produced by the modifiers are translated in terms of delay and checked against
- * the approximate value. 
+ * the approximate value.
  */
 
 public class RelativisticJ2ClockPhaseModifierTest {
 
-    
+
     @Test
     public void testRelativisticClockCorrection() {
 
@@ -101,21 +101,21 @@ public class RelativisticJ2ClockPhaseModifierTest {
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(phase.getObservedValue()[0]);
-        Assert.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
-        final RelativisticJ2ClockPhaseModifier modifier = new RelativisticJ2ClockPhaseModifier(Constants.WGS84_EARTH_MU, 
+        final RelativisticJ2ClockPhaseModifier modifier = new RelativisticJ2ClockPhaseModifier(Constants.WGS84_EARTH_MU,
                 Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         modifier.modify(estimated);
-        Assert.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 60ps for Galileo.
         //          The computed value is equal to 64.745 ps, therefore lying in the supposed range.
-        Assert.assertEquals(-0.10202, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(-0.10202, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

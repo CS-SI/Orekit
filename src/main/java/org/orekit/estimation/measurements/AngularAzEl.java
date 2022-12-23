@@ -45,6 +45,9 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "AngularAzEl";
+
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 

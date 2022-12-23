@@ -194,7 +194,7 @@ public class KlobucharIonoModel implements IonosphericModel {
                             final double frequency, final double[] parameters) {
 
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -302,7 +302,7 @@ public class KlobucharIonoModel implements IonosphericModel {
                                                        final double frequency, final T[] parameters) {
 
         // Elevation and azimuth in radians
-        final FieldVector3D<T> position = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position = state.getPosition(baseFrame);
         final T elevation = position.getDelta();
 
         if (elevation.getReal() > 0.0) {

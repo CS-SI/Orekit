@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -233,13 +234,45 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
      * simulated measurement} with respect to a parameter.
      * @param driver name of the span of the driver for the parameter for which
      * the derivative wants to be known.
+     * @return partial derivatives of the simulated value
+     * @exception OrekitIllegalArgumentException if parameter is unknown or
+     * OrekitIllegalStateException if this function is used on a PDriver having several
+     * values driven, in this case the method
+     * {@link #getParameterDerivatives(ParameterDriver, AbsoluteDate)} must be called
+     */
+    public double[] getParameterDerivatives(final ParameterDriver driver)
+        throws OrekitIllegalArgumentException {
+        if (driver.getNbOfValues() == 1) {
+            final TimeSpanMap<double[]> p = parametersDerivatives.get(driver);
+            if (p == null) {
+                final StringBuilder builder = new StringBuilder();
+                for (final Map.Entry<ParameterDriver, TimeSpanMap<double[]>> entry : parametersDerivatives.entrySet()) {
+                    if (builder.length() > 0) {
+                        builder.append(",  ");
+                    }
+                    builder.append(entry.getKey());
+                }
+                throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                                         driver,
+                                                         builder.length() > 0 ? builder.toString() : " <none>");
+            }
+            return p.get(new AbsoluteDate());
+        } else {
+            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, driver.getName(), "getParameterDerivatives(driver, date)");
+        }
+    }
+
+    /** Get the partial derivatives of the {@link #getEstimatedValue()
+     * simulated measurement} with respect to a parameter.
+     * @param driver name of the span of the driver for the parameter for which
+     * the derivative wants to be known.
      * @param date date at which the parameter derivatives wants to be known
      * @return partial derivatives of the simulated value
      * @exception OrekitIllegalArgumentException if parameter is unknown
      */
     public double[] getParameterDerivatives(final ParameterDriver driver, final AbsoluteDate date)
         throws OrekitIllegalArgumentException {
-        final double[] p = parametersDerivatives.get(driver).get(date);
+        final TimeSpanMap<double[]> p = parametersDerivatives.get(driver);
         if (p == null) {
             final StringBuilder builder = new StringBuilder();
             for (final Map.Entry<ParameterDriver, TimeSpanMap<double[]>> entry : parametersDerivatives.entrySet()) {
@@ -252,7 +285,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
                                                      driver,
                                                      builder.length() > 0 ? builder.toString() : "<none>");
         }
-        return p;
+        return p.get(date);
     }
 
     /** Set the partial derivatives of the {@link #getEstimatedValue()
@@ -262,7 +295,6 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
      * @param date date at which the parameterDerivative wants to be set
      * @param parameterDerivatives partial derivatives with respect to parameter
      */
-    //public void setParameterDerivatives(final String driver, final double... parameterDerivatives) {
     public void setParameterDerivatives(final ParameterDriver driver, final AbsoluteDate date, final double... parameterDerivatives) {
         if (!parametersDerivatives.containsKey(driver) || parametersDerivatives.get(driver) == null) {
             final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<double[]>(parameterDerivatives);
