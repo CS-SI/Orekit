@@ -1163,7 +1163,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             // Compute short periodic coefficients for this step
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(field));
+                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(field), meanStates);
             }
 
         }

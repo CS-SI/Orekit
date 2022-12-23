@@ -145,8 +145,11 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams);
-                nbParams += driver.getNbOfValues();
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -230,10 +233,10 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            Integer index = indices.get(driver.getName());
-            if (index != null) {
-                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index++]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
             }
         }

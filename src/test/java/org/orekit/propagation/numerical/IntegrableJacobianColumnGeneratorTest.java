@@ -125,7 +125,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
                 SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getName());
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getNameSpan(new AbsoluteDate()));
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 RealMatrix dYdP = pickUp.getdYdP();
