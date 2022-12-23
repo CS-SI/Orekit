@@ -16,9 +16,10 @@
  */
 package org.orekit.utils;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.Before;
-import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -38,23 +39,23 @@ public class ParameterDriverTest {
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
         	System.out.println(span.getData());
         }
-        Assert.assertEquals(3.0, p1.getValue(date.shiftedBy(10)), 1e-10);
-        Assert.assertEquals(0.0, p1.getValue(date.shiftedBy(-10)), 1e-10);
-        Assert.assertEquals("Span" + p1.getName() + Integer.toString(0), p1.getNameSpan(date.shiftedBy(-10)));
-        Assert.assertEquals("Span" + p1.getName() + Integer.toString(1), p1.getNameSpan(date.shiftedBy(10)));
+        Assertions.assertEquals(3.0, p1.getValue(date.shiftedBy(10)), 1e-10);
+        Assertions.assertEquals(0.0, p1.getValue(date.shiftedBy(-10)), 1e-10);
+        Assertions.assertEquals("Span" + p1.getName() + Integer.toString(0), p1.getNameSpan(date.shiftedBy(-10)));
+        Assertions.assertEquals("Span" + p1.getName() + Integer.toString(1), p1.getNameSpan(date.shiftedBy(10)));
 
         p1.addSpanAtDate(date.shiftedBy(2 * 24 * 3600));
         p1.setValue(6.0, date.shiftedBy(2 * 24 * 3600));
-        Assert.assertEquals(p1.getValue(date.shiftedBy(2 * 24 * 3600 + 10)), 6.0, 1e-10);
+        Assertions.assertEquals(p1.getValue(date.shiftedBy(2 * 24 * 3600 + 10)), 6.0, 1e-10);
         int nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assert.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
         }
         
         p1.setName("p1_new");
         nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assert.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
         }
         
         
@@ -67,14 +68,14 @@ public class ParameterDriverTest {
         p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         int nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assert.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
         }
         try {
             p1.addSpans(date, date.shiftedBy(15 * 3600), 5*3600);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-            Assert.assertEquals(OrekitMessages.PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET, oe.getSpecifier());
-            Assert.assertEquals(p1.getName(), oe.getParts()[0]);
+        	Assertions.assertEquals(OrekitMessages.PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET, oe.getSpecifier());
+        	Assertions.assertEquals(p1.getName(), oe.getParts()[0]);
         }
         
 	}
@@ -86,11 +87,11 @@ public class ParameterDriverTest {
         p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         try {
             p1.getNormalizedValue();
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-            Assert.assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
-            Assert.assertEquals(p1.getName(), oe.getParts()[0]);
-            Assert.assertEquals("getValue(date)", oe.getParts()[1]);
+        	Assertions.assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
+        	Assertions.assertEquals(p1.getName(), oe.getParts()[0]);
+        	Assertions.assertEquals("getValue(date)", oe.getParts()[1]);
         }
         
     }
@@ -101,21 +102,21 @@ public class ParameterDriverTest {
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
         p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         p1.setValue(30., date.shiftedBy(-100));
-        Assert.assertEquals(1.0, p1.getValue(date.shiftedBy(-500)), 0);
+        Assertions.assertEquals(1.0, p1.getValue(date.shiftedBy(-500)), 0);
         p1.setValue(0.8, date.shiftedBy(-100));
-        Assert.assertEquals(0.8, p1.getValue(date.shiftedBy(-500)), 0);
+        Assertions.assertEquals(0.8, p1.getValue(date.shiftedBy(-500)), 0);
         try {
             p1.setNormalizedValue(2.0);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-            Assert.assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
-            Assert.assertEquals(p1.getName(), oe.getParts()[0]);
-            Assert.assertEquals("setValue(date)", oe.getParts()[1]);
+        	Assertions.assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
+        	Assertions.assertEquals(p1.getName(), oe.getParts()[0]);
+        	Assertions.assertEquals("setValue(date)", oe.getParts()[1]);
         }
         
     }
 	
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

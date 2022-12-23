@@ -526,12 +526,12 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         private Object readResolve() {
             try {
                 final EstimatedEarthFrameProvider provider = new EstimatedEarthFrameProvider(baseUT1);
-                provider.getPrimeMeridianOffsetDriver().setValue(primeMeridianOffset, new AbsoluteDate());
-                provider.getPrimeMeridianDriftDriver().setValue(primeMeridianDrift, new AbsoluteDate());
-                provider.getPolarOffsetXDriver().setValue(polarOffsetX, new AbsoluteDate());
-                provider.getPolarDriftXDriver().setValue(polarDriftX, new AbsoluteDate());
-                provider.getPolarOffsetYDriver().setValue(polarOffsetY, new AbsoluteDate());
-                provider.getPolarDriftYDriver().setValue(polarDriftY, new AbsoluteDate());
+                provider.getPrimeMeridianOffsetDriver().setValue(primeMeridianOffset);
+                provider.getPrimeMeridianDriftDriver().setValue(primeMeridianDrift);
+                provider.getPolarOffsetXDriver().setValue(polarOffsetX);
+                provider.getPolarDriftXDriver().setValue(polarDriftX);
+                provider.getPolarOffsetYDriver().setValue(polarOffsetY);
+                provider.getPolarDriftYDriver().setValue(polarDriftY);
                 return provider;
             } catch (OrekitException oe) {
                 // this should never happen as values already come from previous drivers

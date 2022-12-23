@@ -638,7 +638,7 @@ public class ParameterDriver {
             throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, name, "getValue(date)");
         }
         // Attention voir si qlqchose est retourné si une exception est levée
-        return valueSpanMap.get(new AbsoluteDate());
+        return valueSpanMap.getFirstSpan().getData();
     }
 
     /** Get current parameter value at specific date, depending on isContinuousEstimation
@@ -669,7 +669,7 @@ public class ParameterDriver {
      * period)
      */
     public double getValueStepEstimation(final AbsoluteDate date) {
-        return getNbOfValues() == 1 ? valueSpanMap.get(new AbsoluteDate()) : valueSpanMap.get(date);
+        return getNbOfValues() == 1 ? valueSpanMap.getFirstSpan().getData() : valueSpanMap.get(date);
     }
 
     /** Get current parameter value at specific date with continuous estimation.
