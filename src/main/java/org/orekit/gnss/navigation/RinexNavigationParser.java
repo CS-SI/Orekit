@@ -763,7 +763,7 @@ public class RinexNavigationParser {
                 pi.galileoNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.galileoNav.setDate(new GNSSDate(pi.galileoNav.getWeek(),
                                                    SEC_TO_MILLI * pi.galileoNav.getTime(),
-                                                   SatelliteSystem.GALILEO,
+                                                   SatelliteSystem.GPS, // in Rinex files, week number is aligned to GPS week!
                                                    pi.timeScales).getDate());
             }
 
@@ -998,7 +998,7 @@ public class RinexNavigationParser {
                 pi.qzssNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.qzssNav.setDate(new GNSSDate(pi.qzssNav.getWeek(),
                                                 SEC_TO_MILLI * pi.qzssNav.getTime(),
-                                                SatelliteSystem.QZSS,
+                                                SatelliteSystem.GPS, // in Rinex files, week number is aligned to GPS week!
                                                 pi.timeScales).getDate());
             }
 
@@ -1112,7 +1112,7 @@ public class RinexNavigationParser {
                 pi.irnssNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.irnssNav.setDate(new GNSSDate(pi.irnssNav.getWeek(),
                                                  SEC_TO_MILLI * pi.irnssNav.getTime(),
-                                                 SatelliteSystem.IRNSS,
+                                                 SatelliteSystem.GPS, // in Rinex files, week number is aligned to GPS week!
                                                  pi.timeScales).getDate());
             }
 
