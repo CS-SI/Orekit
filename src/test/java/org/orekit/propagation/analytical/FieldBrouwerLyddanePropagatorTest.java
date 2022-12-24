@@ -16,6 +16,7 @@ import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -126,12 +127,12 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()).getReal(),
-                            3.5e-9);
+                7.4e-9);
 
         Assertions.assertEquals(0.0,
                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()).getReal(),
-                            5.1e-12);
+                7.8e-12);
         Assertions.assertEquals(0.0, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.0);
     }
 
@@ -279,9 +280,9 @@ public class FieldBrouwerLyddanePropagatorTest {
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit().toOrbit());
 
 
-        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.070);
+        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.2);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000000053);
+        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.00000007);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0021);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
@@ -371,7 +372,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaBefore = 20.44;
-        final double deltaEccBefore = 1.0125e-4;
+        final double deltaEccBefore = 1.0301e-4;
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaBefore);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccBefore);
 
@@ -386,7 +387,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaAfter = 15.66;
-        final double deltaEccAfter = 1.0121e-4;
+        final double deltaEccAfter = 1.0297e-4;
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaAfter);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
         Assertions.assertTrue(deltaSmaAfter < deltaSmaBefore);
@@ -730,7 +731,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Initial orbit
         final double a = 24396159; // semi major axis in meters
-        final double e = 0.9; // eccentricity
+        final double e = 0.957; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
@@ -762,7 +763,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final Frame inertialFrame = FramesFactory.getEME2000();
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
-        double timeshift = -60000.0;
+        double timeshift = -59400.0;
 
         // Initial orbit
         final double a = 24396159; // semi major axis in meters
@@ -898,7 +899,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
 
         Assertions.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
-        Assertions.assertEquals(  55.540, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+        Assertions.assertEquals(  18.464, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
 
     }
 

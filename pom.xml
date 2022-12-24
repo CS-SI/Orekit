@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.3</version>
+  <version>11.3.1</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -336,6 +336,9 @@
     </contributor>
     <contributor>
       <name>Sofia Urbina</name>
+    </contributor>
+    <contributor>
+      <name>Jean-Baptiste Valet</name>
     </contributor>
     <contributor>
       <name>M&#233;lina Vanel</name>

@@ -42,9 +42,8 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * Flight Dynamics Operations</i> by David A. SVallado.
  * <p>
  * Finally, covariance orbit type can be changed using the
- * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle) changeCovarianceType(Orbit, OrbitType, PositionAngle)}
- * method.
- * </p>
+ * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle)} method.
+ *
  * @author Bryan Cazabonne
  * @author Vincent Cucchietti
  * @since 11.3
@@ -54,7 +53,7 @@ public class StateCovariance implements TimeStamped {
     /** State dimension. */
     private static final int STATE_DIMENSION = 6;
 
-    /** Default position angle for covariance expressed in cartesian elements. */
+    /** Default position angle for covariance expressed in Cartesian elements. */
     private static final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.TRUE;
 
     /** Orbital covariance [6x6]. */
@@ -197,7 +196,13 @@ public class StateCovariance implements TimeStamped {
      * The covariance orbit type <b>cannot</b> be changed if the covariance
      * matrix is expressed in a {@link LOFType local orbital frame} or a
      * non-pseudo inertial frame.
-     * </p>
+     * <p>
+     * As this type change uses the jacobian matrix of the transformation, it introduces a linear approximation.
+     * Hence, the current covariance matrix <b>will not exactly match</b> the new linearized case and the
+     * distribution will not follow a generalized Gaussian distribution anymore.
+     * <p>
+     * This is based on equation (1) to (6) from "Vallado, D. A. (2004). Covariance transformations for satellite flight
+     * dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param outOrbitType target orbit type of the state covariance matrix
@@ -229,6 +234,12 @@ public class StateCovariance implements TimeStamped {
 
     /**
      * Get the covariance in a given local orbital frame.
+     * <p>
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
+     * <p>
+     * This is based on equation (18) to (20) "from Vallado, D. A. (2004). Covariance transformations for satellite
+     * flight dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param lofOut output local orbital frame
@@ -253,6 +264,12 @@ public class StateCovariance implements TimeStamped {
 
     /**
      * Get the covariance in the output frame.
+     * <p>
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
+     * <p>
+     * This is based on equation (18) to (20) "from Vallado, D. A. (2004). Covariance transformations for satellite
+     * flight dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param frameOut output frame
@@ -278,8 +295,8 @@ public class StateCovariance implements TimeStamped {
     /**
      * Get a time-shifted covariance matrix.
      * <p>
-     * The shifting model is a Keplerian one. In other words, the state transition matrix is computed supposing
-     * Keplerian motion.
+     * The shifting model is a linearized, Keplerian one. In other words, it is based on a state transition matrix that
+     * is computed assuming Keplerian motion.
      * <p>
      * Shifting is <em>not</em> intended as a replacement for proper covariance propagation, but should be sufficient
      * for small time shifts or coarse accuracy.
@@ -347,6 +364,13 @@ public class StateCovariance implements TimeStamped {
 
     /**
      * Create a covariance matrix in another orbit type.
+     * <p>
+     * As this type change uses the jacobian matrix of the transformation, it introduces a linear approximation.
+     * Hence, the input covariance matrix <b>will not exactly match</b> the new linearized case and the
+     * distribution will not follow a generalized Gaussian distribution anymore.
+     * <p>
+     * This is based on equation (1) to (6) from "Vallado, D. A. (2004). Covariance transformations for satellite flight
+     * dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param date covariance epoch
@@ -396,7 +420,9 @@ public class StateCovariance implements TimeStamped {
      * Create a covariance matrix from a {@link LOFType local orbital frame} to another
      * {@link LOFType local orbital frame}.
      * <p>
-     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * Changing the covariance frame is a linear process, this method does not introduce approximation.
+     * <p>
+     * The transformation is based on Equation (18) to (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      *
      * @param orbit orbit to which the covariance matrix should correspond
@@ -404,7 +430,7 @@ public class StateCovariance implements TimeStamped {
      * @param lofIn the local orbital frame in which the input covariance matrix is expressed
      * @param lofOut the target local orbital frame
      * @param inputCartesianCov input covariance {@code CARTESIAN})
-     * @return the covariance matrix expressed in the target commonly used local orbital frame in cartesian elements
+     * @return the covariance matrix expressed in the target commonly used local orbital frame in Cartesian elements
      */
     private static StateCovariance changeFrameAndCreate(final Orbit orbit, final AbsoluteDate date,
                                                         final LOFType lofIn, final LOFType lofOut,
@@ -426,28 +452,30 @@ public class StateCovariance implements TimeStamped {
     /**
      * Convert the covariance matrix from a {@link Frame frame} to a {@link LOFType local orbital frame}.
      * <p>
-     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
+     * <p>
+     * The transformation is based on Equation (18) to (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      * <p>
      * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
      * and position angle types of the input covariance must be provided.
      * <p>
-     * <b>The output covariance matrix will provided in cartesian orbit type and not converted back to
-     * its original expression (if input different from cartesian elements).</b>
-     * <p>
+     * <b>The output covariance matrix will provided in Cartesian orbit type and not converted back to
+     * its original expression (if input different from Cartesian elements).</b>
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param date covariance epoch
      * @param frameIn the frame in which the input covariance matrix is expressed. In case the frame is <b>not</b>
-     * pseudo-inertial, the input covariance matrix is expected to be expressed in <b>cartesian elements</b>.
+     * pseudo-inertial, the input covariance matrix is expected to be expressed in <b>Cartesian elements</b>.
      * @param lofOut the target local orbital frame
      * @param inputCov input covariance
      * @param covOrbitType orbit type of the covariance matrix (used if frameIn is pseudo-inertial)
      * @param covAngleType position angle type of the covariance matrix (used if frameIn is pseudo-inertial) (not used
      * if covOrbitType equals {@code CARTESIAN})
-     * @return the covariance matrix expressed in the target local orbital frame in cartesian elements
+     * @return the covariance matrix expressed in the target local orbital frame in Cartesian elements
      * @throws OrekitException if input frame is <b>not</b> pseudo-inertial <b>and</b> the input covariance is
-     * <b>not</b> expressed in cartesian elements.
+     * <b>not</b> expressed in Cartesian elements.
      */
     private static StateCovariance changeFrameAndCreate(final Orbit orbit, final AbsoluteDate date,
                                                         final Frame frameIn, final LOFType lofOut,
@@ -472,12 +500,12 @@ public class StateCovariance implements TimeStamped {
             final RealMatrix cartesianCovarianceOut =
                     jacobianFromFrameInToLofOut.multiply(cartesianCovarianceIn.multiplyTransposed(jacobianFromFrameInToLofOut));
 
-            // Return converted covariance matrix expressed in cartesian elements
+            // Return converted covariance matrix expressed in Cartesian elements
             return new StateCovariance(cartesianCovarianceOut, date, lofOut);
 
         }
 
-        // Input frame is not inertial so the covariance matrix is expected to be in cartesian elements
+        // Input frame is not inertial so the covariance matrix is expected to be in Cartesian elements
         else {
 
             // Method checkInputConsistency already verify that input covariance is defined in CARTESIAN type
@@ -499,19 +527,21 @@ public class StateCovariance implements TimeStamped {
     /**
      * Convert the covariance matrix from a {@link LOFType  local orbital frame} to a {@link Frame frame}.
      * <p>
-     * The transformation is based on Equation (20) of "Covariance Transformations for Satellite Flight Dynamics
+     * Changing the covariance frame is a linear process, this method does not introduce approximation.
+     * <p>
+     * The transformation is based on Equation (18) to (20) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      * <p>
-     * The <u>input</u> covariance matrix is necessarily provided in <b>cartesian orbit type</b>.
+     * The <u>input</u> covariance matrix is necessarily provided in <b>Cartesian orbit type</b>.
      * <p>
-     * The <u>output</u> covariance matrix will be expressed in <b>cartesian elements</b>.
+     * The <u>output</u> covariance matrix will be expressed in <b>Cartesian elements</b>.
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param date covariance epoch
      * @param lofIn the local orbital frame in which the input covariance matrix is expressed
      * @param frameOut the target frame
      * @param inputCartesianCov input covariance ({@code CARTESIAN})
-     * @return the covariance matrix expressed in the target frame in cartesian elements
+     * @return the covariance matrix expressed in the target frame in Cartesian elements
      */
     private static StateCovariance changeFrameAndCreate(final Orbit orbit, final AbsoluteDate date,
                                                         final LOFType lofIn, final Frame frameOut,
@@ -558,14 +588,17 @@ public class StateCovariance implements TimeStamped {
      * The transformation is based on Equation (18) of "Covariance Transformations for Satellite Flight Dynamics
      * Operations" by David A. Vallado.
      * <p>
+     * Changing the covariance frame is a linear process, this method does not introduce approximation unless a change
+     * in covariance orbit type is required.
+     * <p>
      * As the frame transformation must be performed with the covariance expressed in Cartesian elements, both the orbit
      * and position angle types of the input covariance must be provided.
      * <p>
      * In case the <u>input</u> frame is <b>not</b> pseudo-inertial, the <u>input</u> covariance matrix is necessarily
-     * expressed in <b>cartesian elements</b>.
+     * expressed in <b>Cartesian elements</b>.
      * <p>
      * In case the <u>output</u> frame is <b>not</b> pseudo-inertial, the <u>output</u> covariance matrix will be
-     * expressed in <b>cartesian elements</b>.
+     * expressed in <b>Cartesian elements</b>.
      *
      * @param orbit orbit to which the covariance matrix should correspond
      * @param date covariance epoch
@@ -577,7 +610,7 @@ public class StateCovariance implements TimeStamped {
      * used if covOrbitType equals {@code CARTESIAN})
      * @return the covariance matrix expressed in the target frame
      * @throws OrekitException if input frame is <b>not</b> pseudo-inertial <b>and</b> the input covariance is
-     * <b>not</b> expressed in cartesian elements.
+     * <b>not</b> expressed in Cartesian elements.
      */
     private static StateCovariance changeFrameAndCreate(final Orbit orbit, final AbsoluteDate date,
                                                         final Frame frameIn, final Frame frameOut,
@@ -615,7 +648,7 @@ public class StateCovariance implements TimeStamped {
             // Output frame is not pseudo-inertial
             else {
 
-                // Output cartesian matrix
+                // Output Cartesian matrix
                 return new StateCovariance(cartesianCovarianceOut, date, frameOut, OrbitType.CARTESIAN,
                                            DEFAULT_POSITION_ANGLE);
 

@@ -33,12 +33,16 @@ import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 public class NavigationFileParserTest {
+
+    private static final Double SEC_TO_MILLI = 1000.0;
 
     @BeforeEach
     public void setUp() {
@@ -115,6 +119,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  gps.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  gps.getTGD(), 1.0e-15);
         Assertions.assertEquals(389,                 gps.getIODC());
+
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gps.getWeek(), SEC_TO_MILLI * gps.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gps.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
 
     }
 
@@ -218,6 +229,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1.500000000000e-09,  bdt.getTGD1(), 1.0e-15);
         Assertions.assertEquals(-1.370000000000e-08, bdt.getTGD2(), 1.0e-15);
 
+        // check weeks reference in Rinex navigation are aligned with Beidou weeks (not GPS weeks as other systems)
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getWeek(), SEC_TO_MILLI * bdt.getTime(), SatelliteSystem.BEIDOU).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(bdt.getDate()), 1.0e-15);
+
     }
 
     @Test
@@ -286,6 +304,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  gal.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-7.450580596924E-09, gal.getBGDE1E5a(), 1.0e-15);
         Assertions.assertEquals(0.000000000000E+00,  gal.getBGDE5bE1(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gal.getWeek(), SEC_TO_MILLI * gal.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gal.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
 
     }
 
@@ -357,6 +382,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.620000000000e+02,  qzs.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-0.605359673500e-08, qzs.getTGD(), 1.0e-15);
         Assertions.assertEquals(957,                 qzs.getIODC(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(qzs.getWeek(), SEC_TO_MILLI * qzs.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(qzs.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzs.getDate()), 1.0e-15);
 
     }
 
@@ -465,6 +497,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2.000000000000e+00,  irnss.getURA(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  irnss.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-4.656613000000e-10, irnss.getTGD(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(irnss.getWeek(), SEC_TO_MILLI * irnss.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(irnss.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(irnss.getDate()), 1.0e-15);
 
     }
 
@@ -584,6 +623,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  qzs.getTGD(), 1.0e-15);
         Assertions.assertEquals(961,                 qzs.getIODC(), 1.0e-15);
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(qzs.getWeek(), SEC_TO_MILLI * qzs.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(qzs.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzs.getDate()), 1.0e-15);
+
     }
 
     @Test
@@ -656,6 +702,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(4.656612873077E-09,  gps.getTGD(), 1.0e-15);
         Assertions.assertEquals(9,                   gps.getIODC());
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gps.getWeek(), SEC_TO_MILLI * gps.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gps.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
+
     }
 
     @Test
@@ -717,6 +770,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  gal.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(4.656612873077e-10,  gal.getBGDE1E5a(), 1.0e-15);
         Assertions.assertEquals(2.328306436539e-10,  gal.getBGDE5bE1(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gal.getWeek(), SEC_TO_MILLI * gal.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gal.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
 
     }
 
@@ -822,6 +882,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  irnss.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-4.656613000000e-10, irnss.getTGD(), 1.0e-15);
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(irnss.getWeek(), SEC_TO_MILLI * irnss.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(irnss.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(irnss.getDate()), 1.0e-15);
+
     }
 
     @Test
@@ -877,6 +944,12 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2.000000000000e+00,  bdt.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(1.220000000000e-08,  bdt.getTGD1(), 1.0e-15);
         Assertions.assertEquals(1.220000000000e-08,  bdt.getTGD2(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with Beidou weeks (not GPS weeks as other systems)
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getWeek(), SEC_TO_MILLI * bdt.getTime(), SatelliteSystem.BEIDOU).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
 
     }
 
