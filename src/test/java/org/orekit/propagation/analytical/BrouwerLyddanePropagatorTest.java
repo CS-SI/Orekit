@@ -71,16 +71,16 @@ public class BrouwerLyddanePropagatorTest {
                 new BrouwerLyddanePropagator(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
         SpacecraftState finalOrbit = extrapolator.propagate(initDate);
 
-        // positions  velocity and semi major axis match perfectly
+        // positions velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()),
-                            3.6e-9);
+                            4.4e-9);
 
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            3.8e-12);
+                            3.9e-12);
         Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
 
     }
@@ -104,12 +104,12 @@ public class BrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()),
-                            7.0e-9);
+                            7.4e-9);
 
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            7.0e-12);
+                            7.8e-12);
         Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
     }
 
@@ -244,9 +244,9 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
-        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.070);
+        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.2);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000000053);
+        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.00000007);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0021);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
@@ -329,7 +329,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaBefore = 20.44;
-        final double deltaEccBefore = 1.0125e-4;
+        final double deltaEccBefore = 1.0301e-4;
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaBefore);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccBefore);
 
@@ -344,7 +344,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaAfter = 15.66;
-        final double deltaEccAfter = 1.0121e-4;
+        final double deltaEccAfter = 1.0297e-4;
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaAfter);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
         Assertions.assertTrue(deltaSmaAfter < deltaSmaBefore);
@@ -654,7 +654,7 @@ public class BrouwerLyddanePropagatorTest {
 
             // Initial orbit
             final double a = 24396159; // semi major axis in meters
-            final double e = 0.9; // eccentricity
+            final double e = 0.957; // eccentricity
             final double i = FastMath.toRadians(7); // inclination
             final double omega = FastMath.toRadians(180); // perigee argument
             final double raan = FastMath.toRadians(261); // right ascention of ascending node
@@ -709,7 +709,7 @@ public class BrouwerLyddanePropagatorTest {
         num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
 
         Assertions.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
-        Assertions.assertEquals(  55.540, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+        Assertions.assertEquals(  18.464, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
 
     }
 
