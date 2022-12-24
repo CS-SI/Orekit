@@ -1,5 +1,7 @@
 package org.orekit.propagation.analytical;
 
+import java.io.IOException;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -16,7 +18,6 @@ import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -57,8 +58,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
-
-import java.io.IOException;
 
 public class FieldBrouwerLyddanePropagatorTest {
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
