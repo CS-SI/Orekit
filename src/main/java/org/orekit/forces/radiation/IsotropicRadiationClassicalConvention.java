@@ -33,7 +33,7 @@ import org.orekit.utils.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses the classical thermo-optical coefficients
- * Ca for absorption, Cs for specular reflection and Kd for diffuse
+ * Ca for absorption, Cs for specular reflection and Cd for diffuse
  * reflection. The equation Ca + Cs + Cd = 1 always holds.
  * </p>
  * <p>
