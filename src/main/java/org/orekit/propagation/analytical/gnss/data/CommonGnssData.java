@@ -169,7 +169,7 @@ public class CommonGnssData {
 
     /**
      * Setter for the reference time of the orbit as a duration from week start.
-     * @param time the time to set
+     * @param time the time to set in seconds
      */
     public void setTime(final double time) {
         this.time = time;

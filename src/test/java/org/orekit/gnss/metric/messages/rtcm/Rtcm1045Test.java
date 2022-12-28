@@ -91,7 +91,7 @@ public class Rtcm1045Test {
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(galileoMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, galileoMessage.getDate().
-                            durationFrom(new GNSSDate(galileoMessage.getWeek(), 1000.0 * galileoMessage.getTime(), SatelliteSystem.GALILEO).getDate()), eps);
+                            durationFrom(new GNSSDate(galileoMessage.getWeek(), galileoMessage.getTime(), SatelliteSystem.GALILEO).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1045,                   rtcm1045.getTypeCode());

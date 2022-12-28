@@ -61,7 +61,7 @@ public class SBASPropagatorTest {
         soe = new SBASNavigationMessage();
         soe.setPRN(127);
         soe.setTime(1.23303e+05);;
-        soe.setDate(new GNSSDate(1935, 1.23303e+05 * 1000.0, SatelliteSystem.SBAS).getDate());
+        soe.setDate(new GNSSDate(1935, 123303.0, SatelliteSystem.SBAS).getDate());
         soe.setX(2.406022248000e+07);
         soe.setXDot(-2.712500000000e-01);
         soe.setXDotDot(3.250000000000e-04);
@@ -157,7 +157,7 @@ public class SBASPropagatorTest {
         double errorA = 0;
         final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
         SBASOrbitalElements elements = propagator.getSBASOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 1000.0 * elements.getTime(), SatelliteSystem.SBAS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.SBAS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
