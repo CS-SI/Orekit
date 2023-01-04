@@ -317,9 +317,8 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
             // If all expected fields have been read
             if (readOK(checks)) {
                 // Returns a GPSAlmanac built from the entries
-                final AbsoluteDate date =
-                        new GNSSDate(almanac.getWeek(), almanac.getTime() * 1000, SatelliteSystem.GPS, timeScales)
-                                .getDate();
+                final AbsoluteDate date = new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.GPS, timeScales).
+                                          getDate();
                 almanac.setDate(date);
 
                 // Add default values to missing keys

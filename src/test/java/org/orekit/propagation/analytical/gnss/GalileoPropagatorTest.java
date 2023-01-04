@@ -68,7 +68,7 @@ public class GalileoPropagatorTest {
         goe.setCrs(-18.78125);
         goe.setCic(3.166496753692627E-8);
         goe.setCis(-1.862645149230957E-8);
-        goe.setDate(new GNSSDate(goe.getWeek(), 1000. * goe.getTime(), SatelliteSystem.GALILEO).getDate());
+        goe.setDate(new GNSSDate(goe.getWeek(), goe.getTime(), SatelliteSystem.GALILEO).getDate());
     }
 
     @BeforeAll
@@ -96,7 +96,7 @@ public class GalileoPropagatorTest {
         almanac.setHealthE1(0);
         almanac.setHealthE5a(0);
         almanac.setHealthE5b(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.GALILEO).getDate());
+        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.GALILEO).getDate());
 
         // Intermediate verification
         Assertions.assertEquals(1,                   almanac.getPRN());
@@ -166,11 +166,11 @@ public class GalileoPropagatorTest {
         double errorA = 0;
         GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
         GNSSOrbitalElements elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.GALILEO).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GALILEO).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
-            final double h = 10.0;
+            final double h = 60.0;
             List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
@@ -183,9 +183,9 @@ public class GalileoPropagatorTest {
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
-        Assertions.assertEquals(0.0, errorP, 1.5e-11);
-        Assertions.assertEquals(0.0, errorV, 2.2e-7);
-        Assertions.assertEquals(0.0, errorA, 4.9e-8);
+        Assertions.assertEquals(0.0, errorP, 2.4e-10);
+        Assertions.assertEquals(0.0, errorV, 4.4e-8);
+        Assertions.assertEquals(0.0, errorA, 1.7e-9);
 
     }
 

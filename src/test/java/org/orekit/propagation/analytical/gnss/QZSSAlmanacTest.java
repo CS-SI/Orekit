@@ -75,7 +75,7 @@ public class QZSSAlmanacTest {
         Assertions.assertEquals(0.0, alm.getAf1(), 0.);
         Assertions.assertEquals(0, alm.getHealth());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(1015, 262144 * 1000., SatelliteSystem.QZSS).getDate()) == 0);
+        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(1015, 262144.0, SatelliteSystem.QZSS).getDate()) == 0);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
@@ -303,10 +303,8 @@ public class QZSSAlmanacTest {
                 // If all expected fields have been read
                 if (readOK(checks)) {
                     // Returns a QZSSAlmanac built from the entries
-                    final AbsoluteDate date =
-                                    new GNSSDate(almanac.getWeek(), almanac.getTime() * 1000, SatelliteSystem.QZSS)
-                                            .getDate();
-                            almanac.setDate(date);
+                    final AbsoluteDate date = new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.QZSS).getDate();
+                    almanac.setDate(date);
                     return almanac;
                 } else {
                     // The file is not a YUMA file

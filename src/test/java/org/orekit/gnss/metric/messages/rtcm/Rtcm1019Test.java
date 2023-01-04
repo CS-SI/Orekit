@@ -95,7 +95,7 @@ public class Rtcm1019Test {
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(gpsMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, gpsMessage.getDate().
-                            durationFrom(new GNSSDate(gpsMessage.getWeek(), 1000.0 * gpsMessage.getTime(), SatelliteSystem.GPS).getDate()), eps);
+                            durationFrom(new GNSSDate(gpsMessage.getWeek(), gpsMessage.getTime(), SatelliteSystem.GPS).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1019,                   rtcm1019.getTypeCode());

@@ -93,7 +93,7 @@ public class Rtcm1044Test {
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(qzssMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, qzssMessage.getDate().
-                            durationFrom(new GNSSDate(qzssMessage.getWeek(), 1000.0 * qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);
+                            durationFrom(new GNSSDate(qzssMessage.getWeek(), qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1044,                   rtcm1044.getTypeCode());

@@ -65,7 +65,7 @@ public class IRNSSPropagatorTest {
         almanac.setM0(-1.396094758025);
         almanac.setAf0(-9.473115205765e-04);
         almanac.setAf1(1.250555214938e-12);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.IRNSS).getDate());
+        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.IRNSS).getDate());
 
         frames = DataContext.getDefault().getFrames();
     }
@@ -130,7 +130,7 @@ public class IRNSSPropagatorTest {
         double errorA = 0;
         GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
         GNSSOrbitalElements elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.IRNSS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.IRNSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);

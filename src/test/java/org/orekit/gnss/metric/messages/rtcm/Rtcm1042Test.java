@@ -91,7 +91,7 @@ public class Rtcm1042Test {
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(beidouMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, beidouMessage.getDate().
-                            durationFrom(new GNSSDate(beidouMessage.getWeek(), 1000.0 * beidouMessage.getTime(), SatelliteSystem.BEIDOU).getDate()), eps);
+                            durationFrom(new GNSSDate(beidouMessage.getWeek(), beidouMessage.getTime(), SatelliteSystem.BEIDOU).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1042,                   rtcm1042.getTypeCode());
