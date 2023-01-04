@@ -301,7 +301,7 @@ public class RinexObservationLoader {
                 }
 
                 //File Type must be Observation_Data
-                if (!(parseString(20, 1)).equals(FILE_TYPE)) {
+                if (!parseString(20, 1).equals(FILE_TYPE)) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
                 satelliteSystem = SatelliteSystem.parseSatelliteSystem(parseString(40, 1));
