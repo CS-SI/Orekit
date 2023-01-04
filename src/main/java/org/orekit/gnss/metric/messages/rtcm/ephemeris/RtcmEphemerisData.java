@@ -26,9 +26,6 @@ import org.orekit.gnss.metric.messages.rtcm.RtcmData;
  */
 public class RtcmEphemerisData extends RtcmData {
 
-    /** Seconds to milliseconds converter. */
-    protected static final double SEC_TO_MILLI = 1000.0;
-
     /** Satellite ID. */
     private int rtcmSatelliteId;
 

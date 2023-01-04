@@ -240,6 +240,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     private static class ParsedLine {
 
+        /** Conversion factor from milliseconds to seconds. */
+        private static final double MS_TO_S = 1.0e-3;
+
         final GNSSDate      gpsDate;
         final int           prnNumber;
         final SatelliteType satType;
@@ -249,7 +252,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
         ParsedLine(final String line, final Frame eme2000, final Frame itrf) {
             final String[] fields = line.split("\\s+");
-            gpsDate    = new GNSSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]), SatelliteSystem.GPS);
+            gpsDate    = new GNSSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]) * MS_TO_S, SatelliteSystem.GPS);
             final Transform t = itrf.getTransformTo(eme2000, gpsDate.getDate());
             prnNumber  = Integer.parseInt(fields[3].substring(1));
             satType    = SatelliteType.parseSatelliteType(fields[4].replaceAll("[-_ ]", ""));

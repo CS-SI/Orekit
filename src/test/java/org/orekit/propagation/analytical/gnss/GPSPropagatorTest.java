@@ -277,11 +277,11 @@ public class GPSPropagatorTest {
         for (final GPSAlmanac almanac : almanacs) {
             GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
             GNSSOrbitalElements elements = propagator.getOrbitalElements();
-            AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.GPS).getDate();
+            AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GPS).getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate central = t0.shiftedBy(dt);
                 final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
-                final double h = 10.0;
+                final double h = 60.0;
                 List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
                 for (int i = -3; i <= 3; ++i) {
                     sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
@@ -323,7 +323,7 @@ public class GPSPropagatorTest {
         goe.setCrs(87.03125);
         goe.setCic(3.203749656677246E-7);
         goe.setCis(4.0978193283081055E-8);
-        goe.setDate(new GNSSDate(goe.getWeek(), 1000.0 * goe.getTime(), SatelliteSystem.GPS).getDate());
+        goe.setDate(new GNSSDate(goe.getWeek(), goe.getTime(), SatelliteSystem.GPS).getDate());
 
         // Date of the GPS orbital elements
         final AbsoluteDate target = goe.getDate();
