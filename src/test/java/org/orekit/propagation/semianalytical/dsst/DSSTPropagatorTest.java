@@ -324,7 +324,7 @@ public class DSSTPropagatorTest {
 
         // Add impulse maneuver
         dsstProp.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS));
-        dsstProp.addEventDetector(new ImpulseManeuver<NodeDetector>(new NodeDetector(initialOrbit, FramesFactory.getEME2000()), new Vector3D(dv, Vector3D.PLUS_J), 400.0));
+        dsstProp.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()), new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = dsstProp.propagate(initialOrbit.getDate().shiftedBy(8000));
 
         Assertions.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
@@ -589,7 +589,7 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         final AbsoluteDate stopDate = state.getDate().shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.STOP);
+        CheckingHandler checking = new CheckingHandler(Action.STOP);
         dsstProp.addEventDetector(new DateDetector(stopDate).withHandler(checking));
         checking.assertEvent(false);
         final SpacecraftState finalState = dsstProp.propagate(state.getDate().shiftedBy(3200));
@@ -603,7 +603,7 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         final AbsoluteDate resetDate = state.getDate().shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.CONTINUE);
+        CheckingHandler checking = new CheckingHandler(Action.CONTINUE);
         dsstProp.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
@@ -1108,7 +1108,7 @@ public class DSSTPropagatorTest {
         dsstProp.setInitialState(initialState, PropagationType.MEAN);
     }
 
-    private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
+    private static class CheckingHandler implements EventHandler {
 
         private final Action actionOnEvent;
         private boolean gotHere;
@@ -1123,7 +1123,7 @@ public class DSSTPropagatorTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             gotHere = true;
             return actionOnEvent;
         }

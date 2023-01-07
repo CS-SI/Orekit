@@ -768,7 +768,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).
-                                    withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>()));
+                                    withHandler(new FieldContinueOnEvent<T>()));
         FieldAbsoluteDate<T> farTarget = orbit.getDate().shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);

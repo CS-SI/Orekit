@@ -23,7 +23,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
@@ -115,7 +114,7 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
 
     /** {@inheritDoc} */
     @Override
-    protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+    protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
         FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field, final ParameterDrivenDateIntervalDetector detector) {
 
         final FieldParameterDrivenDateIntervalDetector<S> fd =

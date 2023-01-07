@@ -207,9 +207,7 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(finalDate);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         ephemeris.addEventDetector(new FieldDateDetector<>(initialOrbit.getDate().shiftedBy(10)).
-                                   withHandler((FieldSpacecraftState<T> s,
-                                                FieldDateDetector<T> detector,
-                                                boolean increasing) -> Action.RESET_STATE));
+                                   withHandler((s, detector, increasing) -> Action.RESET_STATE));
 
         try {
             ephemeris.propagate(initialOrbit.getDate(), finalDate);

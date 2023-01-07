@@ -67,7 +67,7 @@ public class FieldNodeDetectorTest {
         // Define 2 instances of NodeDetector:
         FieldEventDetector<T> rawDetector =
                 new FieldNodeDetector<>(zero.add(1e-6), initialState.getOrbit(), initialState.getFrame()).
-                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>());
+                withHandler(new FieldContinueOnEvent<>());
 
         FieldEventsLogger<T> logger1 = new FieldEventsLogger<>();
         FieldEventDetector<T> node1 = logger1.monitorDetector(rawDetector);

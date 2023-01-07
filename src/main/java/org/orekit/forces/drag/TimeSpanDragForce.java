@@ -337,7 +337,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final FieldDateDetector<T> datesDetector =
                         new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates[0])).
                         withMaxCheck(field.getZero().add(60.)).
-                        withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> detector, boolean increasing) ->
+                        withHandler((FieldSpacecraftState<T> state, FieldEventDetector<T> detector, boolean increasing) ->
                                     Action.RESET_DERIVATIVES);
         // Add all transitions' dates to the date detector
         for (int i = 1; i < transitionDates.length; i++) {

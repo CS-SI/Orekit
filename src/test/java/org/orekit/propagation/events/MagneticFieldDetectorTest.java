@@ -401,7 +401,7 @@ public class MagneticFieldDetectorTest {
      * the custom event handler used in tests to check if the event detected is located between the inside and the outside geographical zones
      * @author Romaric Her
      */
-    private class CustomEventHandler implements EventHandler<EventDetector>{
+    private class CustomEventHandler implements EventHandler {
 
         ArrayList<SpacecraftState> events = new ArrayList<SpacecraftState>();
 

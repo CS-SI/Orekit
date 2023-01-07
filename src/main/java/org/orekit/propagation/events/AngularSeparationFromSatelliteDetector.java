@@ -58,7 +58,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
                                                   final PVCoordinatesProvider secondaryObject,
                                                   final double proximityAngle) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing<AngularSeparationFromSatelliteDetector>(),
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              primaryObject, secondaryObject, proximityAngle);
     }
 
@@ -79,7 +79,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      */
     private AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
                                                    final int maxIter,
-                                                   final EventHandler<? super AngularSeparationFromSatelliteDetector> handler,
+                                                   final EventHandler handler,
                                                    final PVCoordinatesProvider primaryObject,
                                                    final PVCoordinatesProvider secondaryObject,
                                                    final double proximityAngle) {
@@ -92,7 +92,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     /** {@inheritDoc} */
     @Override
     protected AngularSeparationFromSatelliteDetector create(final double newMaxCheck, final double newThreshold,
-                                               final int newMaxIter, final EventHandler<? super AngularSeparationFromSatelliteDetector> newHandler) {
+                                               final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationFromSatelliteDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              primaryObject, secondaryObject, proximityAngle);
     }

@@ -193,7 +193,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     public class CountingHandler <D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
-            implements FieldEventHandler<FieldEventDetector<T>, T> {
+            implements FieldEventHandler<T> {
 
         /**
          * number of calls to {@link #eventOccurred(FieldSpacecraftState<T>,
@@ -231,9 +231,9 @@ public class FieldNumericalPropagatorTest {
 
         // setup
         FieldDateDetector<T> d1 = new FieldDateDetector<>(zero.add(10), zero.add(1), toArray(initDate.shiftedBy(15)))
-                .withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T>());
+                .withHandler(new FieldContinueOnEvent<T>());
         FieldDateDetector<T> d2 = new FieldDateDetector<>(zero.add(10), zero.add(1), toArray(initDate.shiftedBy(15.5)))
-                .withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T>());
+                .withHandler(new FieldContinueOnEvent<T>());
         propagator.addEventDetector(d1);
         propagator.addEventDetector(d2);
 
@@ -714,7 +714,7 @@ public class FieldNumericalPropagatorTest {
         propagator.setInitialState(initialState);
 
         final FieldAbsoluteDate<T> stopDate = initDate.shiftedBy(1000);
-        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.STOP);
+        CheckingHandler<T> checking = new CheckingHandler<T>(Action.STOP);
         propagator.addEventDetector(new FieldDateDetector<>(stopDate).withHandler(checking));
         Assertions.assertEquals(1, propagator.getEventsDetectors().size());
         checking.assertEvent(false);
@@ -752,8 +752,8 @@ public class FieldNumericalPropagatorTest {
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.RESET_STATE) {
-            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+        CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return new FieldSpacecraftState<>(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass().subtract(200.0));
             }
         };
@@ -790,7 +790,7 @@ public class FieldNumericalPropagatorTest {
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.RESET_DERIVATIVES);
+        CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_DERIVATIVES);
         propagator.addEventDetector(new FieldDateDetector<>(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
@@ -839,7 +839,7 @@ public class FieldNumericalPropagatorTest {
 
 
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.CONTINUE);
+        CheckingHandler<T> checking = new CheckingHandler<T>(Action.CONTINUE);
         propagator.addEventDetector(new FieldDateDetector<>(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
@@ -952,8 +952,7 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", zero.add(1.5)));
 
-        CheckingHandler<AdditionalStateLinearDetector<T>, T> checking =
-                new CheckingHandler<AdditionalStateLinearDetector<T>, T>(Action.STOP);
+        CheckingHandler<T> checking = new CheckingHandler<T>(Action.STOP);
         propagator.addEventDetector(new AdditionalStateLinearDetector<T>(zero.add(10.0), zero.add(1.0e-8)).withHandler(checking));
 
         final double dt = 3200;
@@ -970,17 +969,17 @@ public class FieldNumericalPropagatorTest {
         extends FieldAbstractDetector<AdditionalStateLinearDetector<T>, T> {
 
         public AdditionalStateLinearDetector(T maxCheck, T threshold) {
-            this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<AdditionalStateLinearDetector<T>, T>());
+            this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<T>());
         }
 
         private AdditionalStateLinearDetector(T maxCheck, T threshold, int maxIter,
-                                              FieldEventHandler<? super AdditionalStateLinearDetector<T>, T> handler) {
+                                              FieldEventHandler<T> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         protected AdditionalStateLinearDetector<T> create(final T newMaxCheck, final T newThreshold,
                                                        final int newMaxIter,
-                                                       final FieldEventHandler<? super AdditionalStateLinearDetector<T>, T> newHandler) {
+                                                       final FieldEventHandler<T> newHandler) {
             return new AdditionalStateLinearDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -1019,9 +1018,8 @@ public class FieldNumericalPropagatorTest {
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear",
                                                                                    field.getZero().add(1.5)));
 
-        CheckingHandler<AdditionalStateLinearDetector<T>, T> checking =
-            new CheckingHandler<AdditionalStateLinearDetector<T>, T>(Action.RESET_STATE) {
-            public FieldSpacecraftState<T> resetState(AdditionalStateLinearDetector<T> detector, FieldSpacecraftState<T> oldState)
+        CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState)
                 {
                 return oldState.addAdditionalState("linear", oldState.getAdditionalState("linear")[0].multiply(2));
             }
@@ -1761,7 +1759,7 @@ public class FieldNumericalPropagatorTest {
         np.propagate(reference.shiftedBy(1000.0));
     }
 
-    private static class ShiftChecker<T extends CalculusFieldElement<T>> implements FieldEventHandler<FieldDateDetector<T>, T> {
+    private static class ShiftChecker<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         private final boolean           withDerivatives;
         private final OrbitType         orbitType;
@@ -1789,7 +1787,7 @@ public class FieldNumericalPropagatorTest {
         }
 
         @Override
-        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldDateDetector<T> detector,
+        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector,
                                     final boolean increasing)
             {
             if (referenceState == null) {
@@ -1919,7 +1917,7 @@ public class FieldNumericalPropagatorTest {
         return new FieldCartesianOrbit<>(pv, frame, zero.add(mu));
     }
 
-    private class CheckingHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<D, T> {
+    private class CheckingHandler<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         private final Action actionOnEvent;
         private boolean gotHere;
@@ -1933,15 +1931,14 @@ public class FieldNumericalPropagatorTest {
             Assertions.assertEquals(expected, gotHere);
         }
 
-        public Action eventOccurred(FieldSpacecraftState<T> s, D detector, boolean increasing) {
+        public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
             gotHere = true;
             return actionOnEvent;
         }
 
     }
 
-    private <T extends CalculusFieldElement<T>>  FieldNumericalPropagator<T> createPropagator(Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>>  FieldNumericalPropagator<T> createPropagator(Field<T> field) {
         T zero = field.getZero();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6),
                                                               zero.add(1.0e6),

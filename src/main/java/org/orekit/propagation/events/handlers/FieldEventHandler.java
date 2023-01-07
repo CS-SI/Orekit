@@ -33,10 +33,10 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Hank Grabowski
  *
- * @param <KK> object type that the handler is called from
+ * @param <T> type of the field element
  * @since 6.1
  */
-public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
+public interface FieldEventHandler<T extends CalculusFieldElement<T>> {
 
     /** Initialize event handler at the start of a propagation.
      * <p>
@@ -52,7 +52,7 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends C
      * @param detector event detector related to the event handler
      * @since 11.1
      */
-    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target, KK detector) {
+    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target, FieldEventDetector<T> detector) {
         // nothing by default
     }
 
@@ -69,7 +69,7 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends C
      * @return the Action that the calling detector should pass back to the evaluation system
      *
      */
-    Action eventOccurred(FieldSpacecraftState<T> s, KK detector, boolean increasing);
+    Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -86,7 +86,7 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends C
      * @param oldState old state
      * @return new state
      */
-    default FieldSpacecraftState<T> resetState(KK detector, FieldSpacecraftState<T> oldState) {
+    default FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
         return oldState;
     }
 }

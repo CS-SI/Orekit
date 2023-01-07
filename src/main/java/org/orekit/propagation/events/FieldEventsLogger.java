@@ -81,10 +81,9 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
      * </p>
      * @param monitoredDetector event detector to monitor
      * @return the wrapping detector to add to the propagator
-     * @param <D> class type for the generic version
      */
-    public <D extends FieldEventDetector<T>> FieldEventDetector<T> monitorDetector(final D monitoredDetector) {
-        return new FieldLoggingWrapper<>(monitoredDetector);
+    public FieldAbstractDetector<FieldLoggingWrapper, T> monitorDetector(final FieldEventDetector<T> monitoredDetector) {
+        return new FieldLoggingWrapper(monitoredDetector);
     }
 
     /** Clear the logged events.
@@ -154,20 +153,18 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
     }
 
-    /** Internal wrapper for events detectors.
-     * @param <D> class type for the generic version
-     */
-    private class FieldLoggingWrapper<D extends FieldEventDetector<T>> extends FieldAbstractDetector<FieldLoggingWrapper<D>, T> {
+    /** Internal wrapper for events detectors. */
+    private class FieldLoggingWrapper extends FieldAbstractDetector<FieldLoggingWrapper, T> {
 
         /** Wrapped events detector. */
-        private final D detector;
+        private final FieldEventDetector<T> detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
-        FieldLoggingWrapper(final D detector) {
+        FieldLoggingWrapper(final FieldEventDetector<T> detector) {
             this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), new FieldLocalHandler<>(),
+                 detector.getMaxIterationCount(), new FieldLocalHandler(),
                  detector);
         }
 
@@ -185,17 +182,17 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
          * @since 6.1
          */
         private FieldLoggingWrapper(final T maxCheck, final T threshold,
-                               final int maxIter, final FieldEventHandler<? super FieldLoggingWrapper<D>, T> handler,
-                               final D detector) {
+                                    final int maxIter, final FieldEventHandler<T> handler,
+                                    final FieldEventDetector<T> detector) {
             super(maxCheck, threshold, maxIter, handler);
             this.detector = detector;
         }
 
         /** {@inheritDoc} */
         @Override
-        protected FieldLoggingWrapper<D> create(final T newMaxCheck, final T newThreshold,
-                                           final int newMaxIter, final FieldEventHandler<? super FieldLoggingWrapper<D>, T> newHandler) {
-            return new FieldLoggingWrapper<>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
+        protected FieldLoggingWrapper create(final T newMaxCheck, final T newThreshold,
+                                             final int newMaxIter, final FieldEventHandler<T> newHandler) {
+            return new FieldLoggingWrapper(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
         }
 
         /** Log an event.
@@ -223,17 +220,19 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
     /** Local class for handling events.
      * @param <D> class type for the generic version
      */
-    private class FieldLocalHandler<D extends FieldEventDetector<T>> implements FieldEventHandler<FieldLoggingWrapper<D>, T> {
+    private class FieldLocalHandler implements FieldEventHandler<T> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing) {
+        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
+            final FieldLoggingWrapper wrapper = (FieldLoggingWrapper) detector;
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState) {
+        public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector, final FieldSpacecraftState<T> oldState) {
+            final FieldLoggingWrapper wrapper = (FieldLoggingWrapper) detector;
             return wrapper.detector.resetState(oldState);
         }
 

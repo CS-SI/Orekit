@@ -58,7 +58,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
     public AngularSeparationDetector(final PVCoordinatesProvider beacon,
                                      final PVCoordinatesProvider observer,
                                      final double proximityAngle) {
-        this(60.0, 1.0e-3, 100, new StopOnDecreasing<AngularSeparationDetector>(),
+        this(60.0, 1.0e-3, 100, new StopOnDecreasing(),
              beacon, observer, proximityAngle);
     }
 
@@ -79,7 +79,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      */
     private AngularSeparationDetector(final double maxCheck, final double threshold,
                                       final int maxIter,
-                                      final EventHandler<? super AngularSeparationDetector> handler,
+                                      final EventHandler handler,
                                       final PVCoordinatesProvider beacon,
                                       final PVCoordinatesProvider observer,
                                       final double proximityAngle) {
@@ -92,7 +92,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
     /** {@inheritDoc} */
     @Override
     protected AngularSeparationDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super AngularSeparationDetector> newHandler) {
+                                       final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              beacon, observer, proximityAngle);
     }

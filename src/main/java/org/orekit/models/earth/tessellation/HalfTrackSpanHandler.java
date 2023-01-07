@@ -18,7 +18,7 @@ package org.orekit.models.earth.tessellation;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.LatitudeExtremumDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * @see AlongTrackAiming
  * @author Luc Maisonobe
  */
-class HalfTrackSpanHandler implements EventHandler<LatitudeExtremumDetector> {
+class HalfTrackSpanHandler implements EventHandler {
 
     /** Indicator for zone tiling with respect to ascending or descending orbits. */
     private final boolean isAscending;
@@ -64,9 +64,7 @@ class HalfTrackSpanHandler implements EventHandler<LatitudeExtremumDetector> {
 
     /** {@inheritDoc} */
     @Override
-    public Action eventOccurred(final SpacecraftState s,
-                                final LatitudeExtremumDetector detector,
-                                final boolean increasing) {
+    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
         if (increasing ^ isAscending) {
             // we have found an end event
             if (start == null) {

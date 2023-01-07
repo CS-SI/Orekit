@@ -57,7 +57,7 @@ public class AltitudeDetectorTest {
         final KeplerianPropagator kepPropagator = new KeplerianPropagator(initialOrbit);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(earthRadius, earthF, EME2000);
         final AltitudeDetector altDetector = new AltitudeDetector(alt, earth).
-                                             withHandler(new StopOnEvent<AltitudeDetector>());
+                                             withHandler(new StopOnEvent());
         Assertions.assertEquals(alt, altDetector.getAltitude(), 1.0e-15);
         Assertions.assertSame(earth, altDetector.getBodyShape());
 

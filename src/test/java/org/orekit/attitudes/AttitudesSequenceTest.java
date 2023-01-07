@@ -104,8 +104,8 @@ public class AttitudesSequenceTest {
                                             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                  0.0,
                                                                  FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
-                withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+                withHandler(new ContinueOnEvent() {
+                    public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         return Action.RESET_STATE;
                     }
@@ -212,10 +212,10 @@ public class AttitudesSequenceTest {
                                     new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          0.0,
                                                          FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
-                withHandler(new ContinueOnEvent<EclipseDetector>() {
+                withHandler(new ContinueOnEvent() {
                     int count = 0;
                     public Action eventOccurred(final SpacecraftState s,
-                                                             final EclipseDetector d,
+                                                             final EventDetector d,
                                                              final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         if (count++ == 7) {
@@ -393,7 +393,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final Handler nadirToTarget =  new Handler(nadirPointing, targetPointing);
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -469,7 +469,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final List<AbsoluteDate> nadirToTarget = new ArrayList<>();
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -537,7 +537,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final List<AbsoluteDate> nadirToTarget = new ArrayList<>();
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -590,8 +590,8 @@ public class AttitudesSequenceTest {
         // Define attitude sequence
         final AbsoluteDate forwardSwitchDate = initialDate.shiftedBy(600);
         final AbsoluteDate backwardSwitchDate = initialDate.shiftedBy(-600);
-        final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
-        final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
+        final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent());
+        final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent());
 
         // Initialize the attitude sequence
         final AttitudesSequence attitudeSequence = new AttitudesSequence();

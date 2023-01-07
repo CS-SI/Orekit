@@ -24,6 +24,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
+ * @param <T> type of the detector
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
@@ -48,7 +49,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     private final int maxIter;
 
     /** Default handler for event overrides. */
-    private final EventHandler<? super T> handler;
+    private final EventHandler handler;
 
     /** Propagation direction. */
     private boolean forward;
@@ -60,7 +61,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @param handler event handler to call at event occurrences
      */
     protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
-                               final EventHandler<? super T> handler) {
+                               final EventHandler handler) {
         checkStrictlyPositive(maxCheck);
         checkStrictlyPositive(threshold);
         this.maxCheck  = maxCheck;
@@ -88,11 +89,10 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * handler. If a subclass overrides this method it should call {@code
      * super.init(s0, t)}.
      */
-    @SuppressWarnings("unchecked")
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
         forward = t.durationFrom(s0.getDate()) >= 0.0;
-        getHandler().init(s0, t, (T) this);
+        getHandler().init(s0, t, this);
     }
 
     /** {@inheritDoc} */
@@ -161,14 +161,14 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
      */
-    public T withHandler(final EventHandler<? super T> newHandler) {
+    public T withHandler(final EventHandler newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
     /** Get the handler.
      * @return event handler to call at event occurrences
      */
-    public EventHandler<? super T> getHandler() {
+    public EventHandler getHandler() {
         return handler;
     }
 
@@ -194,7 +194,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @return a new instance of the appropriate sub-type
      */
     protected abstract T create(double newMaxCheck, double newThreshold,
-                                int newMaxIter, EventHandler<? super T> newHandler);
+                                int newMaxIter, EventHandler newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

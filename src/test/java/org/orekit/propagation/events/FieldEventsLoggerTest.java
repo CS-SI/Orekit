@@ -104,15 +104,13 @@ public class FieldEventsLoggerTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
-        FieldEventDetector<T> umbraDetector = buildDetector(field, true);
-        FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
+        FieldEclipseDetector<T> umbraDetector = buildDetector(field, true);
+        FieldEclipseDetector<T> penumbraDetector = buildDetector(field, false);
 
 
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
-        @SuppressWarnings("unchecked")
-        FieldEventDetector<T> monitored = ((FieldAbstractDetector<FieldEventDetector<T>, T>) logger.monitorDetector(umbraDetector)).
-                withMaxIter(200);
+        FieldEventDetector<T> monitored = logger.monitorDetector(umbraDetector).withMaxIter(200);
         Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assertions.assertEquals(200, monitored.getMaxIterationCount());
 
@@ -334,7 +332,7 @@ public class FieldEventsLoggerTest {
         Assertions.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
+    private <T extends CalculusFieldElement<T>> FieldEclipseDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
 
         FieldEclipseDetector<T> detector =
                 new FieldEclipseDetector<>(field, CelestialBodyFactory.getSun(), 696000000,
@@ -348,13 +346,11 @@ public class FieldEventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new FieldEventHandler<FieldEclipseDetector<T>, T>() {
-
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEclipseDetector<T> detector, boolean increasing) {
+        detector = detector.withHandler(new FieldEventHandler<T>() {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
                 ++count;
                 return Action.CONTINUE;
             }
-
         } );
 
         return detector;

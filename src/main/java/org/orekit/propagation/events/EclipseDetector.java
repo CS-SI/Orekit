@@ -84,7 +84,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector(final OccultationEngine occultationEngine) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<EclipseDetector>(),
+             new StopOnIncreasing(),
              occultationEngine, 0.0, true);
     }
 
@@ -104,7 +104,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 12.0
      */
     private EclipseDetector(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler<? super EclipseDetector> handler,
+                            final int maxIter, final EventHandler handler,
                             final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
         this.occultationEngine = occultationEngine;
@@ -115,7 +115,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     /** {@inheritDoc} */
     @Override
     protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
-                                     final int nawMaxIter, final EventHandler<? super EclipseDetector> newHandler) {
+                                     final int nawMaxIter, final EventHandler newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
                                    occultationEngine, margin, totalEclipse);
     }

@@ -81,7 +81,7 @@ public class EventsLogger {
      * @param <T> class type for the generic version
      */
     public <T extends EventDetector> EventDetector monitorDetector(final T monitoredDetector) {
-        return new LoggingWrapper<T>(monitoredDetector);
+        return new LoggingWrapper(monitoredDetector);
     }
 
     /** Clear the logged events.
@@ -157,20 +157,18 @@ public class EventsLogger {
 
     }
 
-    /** Internal wrapper for events detectors.
-     * @param <T> class type for the generic version
-     */
-    private class LoggingWrapper<T extends EventDetector> extends AbstractDetector<LoggingWrapper<T>> {
+    /** Internal wrapper for events detectors. */
+    private class LoggingWrapper extends AbstractDetector<LoggingWrapper> {
 
         /** Wrapped events detector. */
-        private final T detector;
+        private final EventDetector detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
-        LoggingWrapper(final T detector) {
+        LoggingWrapper(final EventDetector detector) {
             this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), new LocalHandler<T>(),
+                 detector.getMaxIterationCount(), new LocalHandler(),
                  detector);
         }
 
@@ -188,17 +186,17 @@ public class EventsLogger {
          * @since 6.1
          */
         private LoggingWrapper(final double maxCheck, final double threshold,
-                               final int maxIter, final EventHandler<? super LoggingWrapper<T>> handler,
-                               final T detector) {
+                               final int maxIter, final EventHandler handler,
+                               final EventDetector detector) {
             super(maxCheck, threshold, maxIter, handler);
             this.detector = detector;
         }
 
         /** {@inheritDoc} */
         @Override
-        protected LoggingWrapper<T> create(final double newMaxCheck, final double newThreshold,
-                                           final int newMaxIter, final EventHandler<? super LoggingWrapper<T>> newHandler) {
-            return new LoggingWrapper<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
+        protected LoggingWrapper create(final double newMaxCheck, final double newThreshold,
+                                        final int newMaxIter, final EventHandler newHandler) {
+            return new LoggingWrapper(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
         }
 
         /** Log an event.
@@ -223,20 +221,20 @@ public class EventsLogger {
 
     }
 
-    /** Local class for handling events.
-     * @param <T> class type for the generic version
-     */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<LoggingWrapper<T>> {
+    /** Local class for handling events. */
+    private static class LocalHandler implements EventHandler {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+            final LoggingWrapper wrapper = (LoggingWrapper) detector;
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+            final LoggingWrapper wrapper = (LoggingWrapper) detector;
             return wrapper.detector.resetState(oldState);
         }
 

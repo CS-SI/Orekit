@@ -74,7 +74,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     public FieldNodeDetector(final T threshold, final FieldOrbit<T> orbit, final Frame frame) {
         this(orbit.getA().getField().getZero().add(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3), threshold,
-             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<FieldNodeDetector<T>, T>(),
+             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              frame);
     }
 
@@ -94,7 +94,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @since 6.1
      */
     private FieldNodeDetector(final T maxCheck, final T threshold,
-                         final int maxIter, final FieldEventHandler<? super FieldNodeDetector<T>, T> handler,
+                         final int maxIter, final FieldEventHandler<T> handler,
                          final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
@@ -103,7 +103,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
     /** {@inheritDoc} */
     @Override
     protected FieldNodeDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                  final int newMaxIter, final FieldEventHandler<? super FieldNodeDetector<T>, T> newHandler) {
+                                          final int newMaxIter, final FieldEventHandler<T> newHandler) {
         return new FieldNodeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 

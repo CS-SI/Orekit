@@ -170,9 +170,8 @@ public class FieldDateDetectorTest {
                                                                     (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0));
         Assertions.assertNull(dateDetector.getDate());
         FieldEventDetector<T> nodeDetector = new FieldNodeDetector<>(iniOrbit, iniOrbit.getFrame()).
-                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
-                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
-                        {
+                withHandler(new FieldContinueOnEvent<T>() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> nd, boolean increasing) {
                         if (increasing) {
                             nodeDate = s.getDate().toAbsoluteDate();
                             dateDetector.addEventDate(s.getDate().shiftedBy(dt));
@@ -212,11 +211,10 @@ public class FieldDateDetectorTest {
 
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                     toArray(iniDate.shiftedBy(-dt))).
-                withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
-                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd,  boolean increasing)
-                            {
+                withHandler(new FieldContinueOnEvent<T >() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T>  dd,  boolean increasing) {
                         FieldAbsoluteDate<T> nextDate = s.getDate().shiftedBy(-dt);
-                        dd.addEventDate(nextDate);
+                        ((FieldDateDetector<T>) dd).addEventDate(nextDate);
                         ++evtno;
                         return Action.CONTINUE;
                     }
@@ -250,12 +248,12 @@ public class FieldDateDetectorTest {
 
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                     toArray(iniDate.shiftedBy(dt))).
-                withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
-                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd, boolean increasing)
+                withHandler(new FieldContinueOnEvent<T>() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T>  dd, boolean increasing)
                         {
                         double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
                         FieldAbsoluteDate<T> nextDate = s.getDate().shiftedBy(step);
-                        dd.addEventDate(nextDate);
+                        ((FieldDateDetector<T>) dd).addEventDate(nextDate);
                         ++evtno;
                         return Action.CONTINUE;
                     }
@@ -293,19 +291,17 @@ public class FieldDateDetectorTest {
         final FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                           toArray(iniDate.shiftedBy(dt)));
         // generic event handler that works with all detectors.
-        FieldEventHandler<FieldEventDetector<T>, T> handler = new FieldEventHandler<FieldEventDetector<T>, T>() {
+        FieldEventHandler<T> handler = new FieldEventHandler<T>() {
             @Override
             public Action eventOccurred(FieldSpacecraftState<T> s,
                                         FieldEventDetector<T> detector,
-                                        boolean increasing)
-                    {
+                                        boolean increasing) {
                 return Action.STOP;
             }
 
             @Override
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector,
-                                              FieldSpacecraftState<T> oldState)
-                    {
+                                              FieldSpacecraftState<T> oldState) {
                 throw new RuntimeException("Should not be called");
             }
         };

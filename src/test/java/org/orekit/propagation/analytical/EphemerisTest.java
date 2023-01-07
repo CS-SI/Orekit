@@ -142,7 +142,7 @@ public class EphemerisTest {
         // Define attitude sequence
         AbsoluteDate switchDate = initialDate.shiftedBy(86400.0);
         double transitionTime = 600;
-        DateDetector switchDetector = new DateDetector(switchDate).withHandler(new ContinueOnEvent<DateDetector>());
+        DateDetector switchDetector = new DateDetector(switchDate).withHandler(new ContinueOnEvent());
 
         AttitudesSequence attitudeSequence = new AttitudesSequence();
         attitudeSequence.resetActiveProvider(before);

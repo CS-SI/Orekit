@@ -143,7 +143,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                  final boolean seaLevel,
                                  final DataContext dataContext)
         throws OrekitIllegalArgumentException {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              limit, type, body, seaLevel, dataContext);
     }
 
@@ -165,7 +165,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
     private MagneticFieldDetector(final double maxCheck, final double threshold,
-                                  final int maxIter, final EventHandler<? super MagneticFieldDetector> handler,
+                                  final int maxIter, final EventHandler handler,
                                   final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel,
                                   final DataContext dataContext)
         throws OrekitIllegalArgumentException {
@@ -182,7 +182,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     /** {@inheritDoc} */
     @Override
     protected MagneticFieldDetector create(final double newMaxCheck, final double newThreshold,
-                                           final int newMaxIter, final EventHandler<? super MagneticFieldDetector> newHandler) {
+                                           final int newMaxIter, final EventHandler newHandler) {
         return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                          limit, type, body, seaLevel, dataContext);
     }

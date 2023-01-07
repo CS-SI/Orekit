@@ -86,12 +86,11 @@ public class FieldEventDetectorTest {
                                                              FramesFactory.getEME2000(), date, zero.add(mu));
         // mutable boolean
         final boolean[] eventOccurred = new boolean[1];
-        FieldEventHandler<FieldDateDetector<T>, T> handler =
-                new FieldEventHandler<FieldDateDetector<T>, T>() {
+        FieldEventHandler<T> handler = new FieldEventHandler<T>() {
             private boolean initCalled;
             @Override
             public Action eventOccurred(FieldSpacecraftState<T> s,
-                                        FieldDateDetector<T> detector,
+                                        FieldEventDetector<T> detector,
                                         boolean increasing) {
                 if (!initCalled) {
                     throw new RuntimeException("init() not called before eventOccurred()");
@@ -103,7 +102,7 @@ public class FieldEventDetectorTest {
             @Override
             public void init(final FieldSpacecraftState<T> initialState,
                              final FieldAbsoluteDate<T> target,
-                             final FieldDateDetector<T> detector) {
+                             final FieldEventDetector<T> detector) {
                 initCalled = true;
             }
         };
@@ -146,7 +145,7 @@ public class FieldEventDetectorTest {
     }
 
     private static class OutOfOrderChecker<T extends CalculusFieldElement<T>>
-        implements FieldEventHandler<FieldDateDetector<T>, T>, FieldOrekitFixedStepHandler<T> {
+        implements FieldEventHandler<T>, FieldOrekitFixedStepHandler<T> {
 
         private FieldAbsoluteDate<T> triggerDate;
         private boolean outOfOrderCallDetected;
@@ -158,7 +157,7 @@ public class FieldEventDetectorTest {
             this.stepSize = stepSize;
         }
 
-        public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+        public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
             triggerDate = s.getDate();
             return Action.CONTINUE;
         }
@@ -205,7 +204,7 @@ public class FieldEventDetectorTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
-                                                       new FieldStopOnEvent<GCallsCounter<T>, T>());
+                                                       new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(step.multiply(n)));
         Assertions.assertEquals(n + 1, counter.getCount());
@@ -232,7 +231,7 @@ public class FieldEventDetectorTest {
         final int    n    = 100;
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
-                                                       new FieldStopOnEvent<GCallsCounter<T>, T>());
+                                                       new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
@@ -245,14 +244,14 @@ public class FieldEventDetectorTest {
         private int count;
 
         public GCallsCounter(final T maxCheck, final T threshold,
-                             final int maxIter, final FieldEventHandler<? super GCallsCounter<T>, T> handler) {
+                             final int maxIter, final FieldEventHandler<T> handler) {
             super(maxCheck, threshold, maxIter, handler);
             count = 0;
         }
 
         protected GCallsCounter<T> create(final T newMaxCheck, final T newThreshold,
                                           final int newMaxIter,
-                                          final FieldEventHandler<? super GCallsCounter<T>, T> newHandler) {
+                                          final FieldEventHandler<T> newHandler) {
             return new GCallsCounter<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -303,19 +302,20 @@ public class FieldEventDetectorTest {
                                                                                                                         zero.add(-5172.2177085540500))),
                                                              eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
         k2.addEventDetector(new FieldCloseApproachDetector<>(zero.add(2015.243454166727), zero.add(0.0001), 100,
-                                                             new FieldContinueOnEvent<FieldCloseApproachDetector<T>, T>(),
+                                                             new FieldContinueOnEvent<T>(),
                                                              k1));
         k2.addEventDetector(new FieldDateDetector<>(zero.add(Constants.JULIAN_DAY), zero.add(1.0e-6), interruptDates));
         FieldSpacecraftState<T> s = k2.propagate(startDate, targetDate);
         Assertions.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
     }
 
-    private static class FieldCloseApproachDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
+    private static class FieldCloseApproachDetector<T extends CalculusFieldElement<T>>
+        extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
 
         private final FieldPVCoordinatesProvider<T> provider;
 
         public FieldCloseApproachDetector(T maxCheck, T threshold,
-                                          final int maxIter, final FieldEventHandler<? super FieldCloseApproachDetector<T>, T> handler,
+                                          final int maxIter, final FieldEventHandler<T> handler,
                                           FieldPVCoordinatesProvider<T> provider) {
             super(maxCheck, threshold, maxIter, handler);
             this.provider = provider;
@@ -332,7 +332,7 @@ public class FieldEventDetectorTest {
 
         protected FieldCloseApproachDetector<T> create(final T newMaxCheck, final T newThreshold,
                                                        final int newMaxIter,
-                                                       final FieldEventHandler<? super FieldCloseApproachDetector<T>, T> newHandler) {
+                                                       final FieldEventHandler<T> newHandler) {
             return new FieldCloseApproachDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                     provider);
         }
@@ -515,7 +515,7 @@ public class FieldEventDetectorTest {
 
         for (int i = 0; i < 10; ++i) {
             propagator.addEventDetector(new FieldDateDetector<>(initialDate.shiftedBy(0.0625 * (i + 1))).
-                               withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> detector, boolean increasing) -> {
+                               withHandler((state, detector, increasing) -> {
                                    checker.callDate(state.getDate());
                                    return Action.CONTINUE;
                                }));

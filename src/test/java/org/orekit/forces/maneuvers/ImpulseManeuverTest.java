@@ -72,8 +72,8 @@ public class ImpulseManeuverTest {
         double dv = 0.99 * FastMath.tan(i) * vApo;
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit,
                                                                  new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS));
-        propagator.addEventDetector(new ImpulseManeuver<NodeDetector>(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
-                                                                      new Vector3D(dv, Vector3D.PLUS_J), 400.0));
+        propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
+                                                        new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
         Assertions.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
         Assertions.assertEquals(0.442476 + 6 * FastMath.PI, ((KeplerianOrbit) propagated.getOrbit()).getLv(), 1.0e-6);
@@ -110,7 +110,7 @@ public class ImpulseManeuverTest {
         InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
-        ImpulseManeuver<DateDetector> burnAtEpoch = new ImpulseManeuver<DateDetector>(dateDetector, attitudeOverride, deltaV, isp).withThreshold(driftTimeInSec/4);
+        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(driftTimeInSec/4);
         Assertions.assertEquals(0.0, Vector3D.distance(deltaV, burnAtEpoch.getDeltaVSat()), 1.0e-15);
         Assertions.assertEquals(isp, burnAtEpoch.getIsp(), 1.0e-15);
         Assertions.assertSame(dateDetector, burnAtEpoch.getTrigger());
@@ -145,8 +145,8 @@ public class ImpulseManeuverTest {
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(-300));
         Vector3D deltaV = new Vector3D(12.0, 1.0, -4.0);
         final double isp = 300;
-        ImpulseManeuver<DateDetector> maneuver =
-                        new ImpulseManeuver<DateDetector>(dateDetector, deltaV, isp).
+        ImpulseManeuver maneuver =
+                        new ImpulseManeuver(dateDetector, deltaV, isp).
                         withMaxCheck(3600.0).
                         withThreshold(1.0e-6);
         propagator.addEventDetector(maneuver);
@@ -172,10 +172,10 @@ public class ImpulseManeuverTest {
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(600));
         Vector3D deltaV = new Vector3D(12.0, 1.0, -4.0);
         final double isp = 300;
-        ImpulseManeuver<DateDetector> maneuver =
-                        new ImpulseManeuver<DateDetector>(dateDetector,
-                                                          new InertialProvider(Rotation.IDENTITY),
-                                                          deltaV, isp).
+        ImpulseManeuver maneuver =
+                        new ImpulseManeuver(dateDetector,
+                                            new InertialProvider(Rotation.IDENTITY),
+                                            deltaV, isp).
                         withMaxCheck(3600.0).
                         withThreshold(1.0e-6);
 
@@ -234,7 +234,7 @@ public class ImpulseManeuverTest {
         InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
-        ImpulseManeuver<DateDetector> burnAtEpoch = new ImpulseManeuver<DateDetector>(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
+        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
@@ -281,7 +281,7 @@ public class ImpulseManeuverTest {
         InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
-        ImpulseManeuver<DateDetector> burnAtEpoch = new ImpulseManeuver<DateDetector>(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
+        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
@@ -329,7 +329,7 @@ public class ImpulseManeuverTest {
         final AttitudeProvider attitudeOverride = new LofOffset(FramesFactory.getEME2000(), LOFType.TNW);
         final Vector3D         deltaVSat        = Vector3D.PLUS_I;
         final double           isp              = 1500.0;
-        final ImpulseManeuver<InitializationDetector> maneuver = new ImpulseManeuver<>(trigger, attitudeOverride, deltaVSat, isp);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(trigger, attitudeOverride, deltaVSat, isp);
 
         // add maneuver to propagator
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, attitudeOverride);
@@ -358,7 +358,7 @@ public class ImpulseManeuverTest {
          */
         InitializationDetector() {
             super(AbstractDetector.DEFAULT_MAXCHECK, AbstractDetector.DEFAULT_THRESHOLD,
-                  AbstractDetector.DEFAULT_MAX_ITER, new StopOnIncreasing<InitializationDetector>());
+                  AbstractDetector.DEFAULT_MAX_ITER, new StopOnIncreasing());
             this.initialized = false;
         }
 
@@ -377,8 +377,7 @@ public class ImpulseManeuverTest {
 
         /** {@inheritDoc} */
         @Override
-        protected InitializationDetector create(double newMaxCheck, double newThreshold, int newMaxIter,
-                                                EventHandler<? super InitializationDetector> newHandler) {
+        protected InitializationDetector create(double newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
             return new InitializationDetector();
         }
 

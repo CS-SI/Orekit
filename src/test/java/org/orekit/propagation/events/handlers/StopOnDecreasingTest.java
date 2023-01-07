@@ -23,7 +23,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -36,7 +35,7 @@ public class StopOnDecreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(s, new StopOnDecreasing<EventDetector>().resetState(null, s));
+        Assertions.assertSame(s, new StopOnDecreasing().resetState(null, s));
     }
 
     @Test
@@ -46,7 +45,7 @@ public class StopOnDecreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(Action.CONTINUE, new StopOnDecreasing<EventDetector>().eventOccurred(s, null, true));
+        Assertions.assertSame(Action.CONTINUE, new StopOnDecreasing().eventOccurred(s, null, true));
     }
 
     @Test
@@ -56,7 +55,7 @@ public class StopOnDecreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(Action.STOP, new StopOnDecreasing<EventDetector>().eventOccurred(s, null, false));
+        Assertions.assertSame(Action.STOP, new StopOnDecreasing().eventOccurred(s, null, false));
     }
 
 }

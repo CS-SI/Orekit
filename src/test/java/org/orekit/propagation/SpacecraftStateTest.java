@@ -55,6 +55,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -381,15 +382,15 @@ public class SpacecraftStateTest {
         // Create date detector and handler
         AbsoluteDate changeDate = date0.shiftedBy(3);
         DateDetector dateDetector = new DateDetector(changeDate).
-                                    withHandler(new EventHandler<DateDetector>() {
+                                    withHandler(new EventHandler() {
 
             @Override
-            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                 return oldState.addAdditionalState(name, new double[] { +1 });
             }
 
@@ -431,15 +432,15 @@ public class SpacecraftStateTest {
         // Create date detector and handler
         AbsoluteDate changeDate = date0.shiftedBy(3);
         DateDetector dateDetector = new DateDetector(changeDate).
-                                    withHandler(new EventHandler<DateDetector>() {
+                                    withHandler(new EventHandler() {
 
             @Override
-            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                 return Action.RESET_STATE;
             }
 
             @Override
-            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                 return oldState.addAdditionalState(name, new double[] { +1 });
             }
 

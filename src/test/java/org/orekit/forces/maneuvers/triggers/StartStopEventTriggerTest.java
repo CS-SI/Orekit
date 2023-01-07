@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64Field;
@@ -25,13 +27,10 @@ import org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
-
-import java.util.List;
 
 public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
 
@@ -39,13 +38,13 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
 
         public StartStopDates(final AbsoluteDate start, final AbsoluteDate stop) {
             super(new DateDetector(5.0, 1.0e-10, start, stop.shiftedBy(10.0)).
-                  withHandler(new StopOnEvent<>()),
+                  withHandler(new StopOnEvent()),
                   new DateDetector(5.0, 1.0e-10, stop, stop.shiftedBy(20.0)).
-                  withHandler(new StopOnEvent<>()));
+                  withHandler(new StopOnEvent()));
         }
 
         @Override
-        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
             FieldAbstractDetector<D, S> convertStartDetector(Field<S> field, DateDetector detector) {
             final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
             @SuppressWarnings("unchecked")
@@ -54,7 +53,7 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
         }
 
         @Override
-        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
             FieldAbstractDetector<D, S> convertStopDetector(Field<S> field, DateDetector detector) {
             final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
             @SuppressWarnings("unchecked")

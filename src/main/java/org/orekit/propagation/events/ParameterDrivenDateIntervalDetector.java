@@ -94,7 +94,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
         this(FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
              THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<ParameterDrivenDateIntervalDetector>(),
+             new StopOnDecreasing(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),
              new DateDriver(refStop, prefix + STOP_SUFFIX, false),
              new DateDriver(refStart.shiftedBy(0.5 * refStop.durationFrom(refStart)), prefix + MEDIAN_SUFFIX, true),
@@ -117,7 +117,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      * @param duration duration driver
      */
     private ParameterDrivenDateIntervalDetector(final double maxCheck, final double threshold, final int maxIter,
-                                                final EventHandler<? super ParameterDrivenDateIntervalDetector> handler,
+                                                final EventHandler handler,
                                                 final DateDriver start, final DateDriver stop,
                                                 final DateDriver median, final ParameterDriver duration) {
         super(maxCheck, threshold, maxIter, handler);
@@ -155,7 +155,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     /** {@inheritDoc} */
     @Override
     protected ParameterDrivenDateIntervalDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
-                                                         final EventHandler<? super ParameterDrivenDateIntervalDetector> newHandler) {
+                                                         final EventHandler newHandler) {
         return new ParameterDrivenDateIntervalDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                        start, stop, median, duration);
     }

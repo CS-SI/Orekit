@@ -25,11 +25,13 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
+ * @param <D> type of the detector
+ * @param <T> type of the field element
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
-                                            T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
+public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T>, T extends CalculusFieldElement<T>>
+    implements FieldEventDetector<T> {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
@@ -50,7 +52,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     private final int maxIter;
 
     /** Default handler for event overrides. */
-    private final FieldEventHandler<? super D, T> handler;
+    private final FieldEventHandler<T> handler;
 
     /** Propagation direction. */
     private boolean forward;
@@ -62,7 +64,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @param handler event handler to call at event occurrences
      */
     protected FieldAbstractDetector(final T maxCheck, final T threshold, final int maxIter,
-                                    final FieldEventHandler<? super D, T> handler) {
+                                    final FieldEventHandler<T> handler) {
         checkStrictlyPositive(maxCheck.getReal());
         checkStrictlyPositive(threshold.getReal());
         this.maxCheck  = maxCheck;
@@ -84,11 +86,10 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t, (D) this);
+        getHandler().init(s0, t, this);
     }
 
     /** {@inheritDoc} */
@@ -157,14 +158,14 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
      */
-    public D withHandler(final FieldEventHandler<? super D, T> newHandler) {
+    public D withHandler(final FieldEventHandler<T> newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
     /** Get the handler.
      * @return event handler to call at event occurrences
      */
-    public FieldEventHandler<? super D, T> getHandler() {
+    public FieldEventHandler<T> getHandler() {
         return handler;
     }
 
@@ -190,7 +191,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @return a new instance of the appropriate sub-type
      */
     protected abstract D create(T newMaxCheck, T newThreshold,
-                                int newMaxIter, FieldEventHandler<? super D, T> newHandler);
+                                int newMaxIter, FieldEventHandler<T> newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

@@ -92,7 +92,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
                                  final OrbitType orbitType, final PositionAngle positionAngle,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<PositionAngleDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              orbitType, positionAngle, angle);
     }
 
@@ -112,7 +112,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
     private PositionAngleDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super PositionAngleDetector> handler,
+                                     final int maxIter, final EventHandler handler,
                                      final OrbitType orbitType, final PositionAngle positionAngle,
                                      final double angle)
         throws OrekitIllegalArgumentException {
@@ -149,7 +149,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     @Override
     protected PositionAngleDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super PositionAngleDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new PositionAngleDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                          orbitType, positionAngle, angle);
     }

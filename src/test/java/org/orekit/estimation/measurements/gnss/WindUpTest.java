@@ -145,7 +145,7 @@ public class WindUpTest {
                                                          generator.getPropagator(obsSat),
                                                          new ElevationDetector(station.getBaseFrame()).
                                                          withConstantElevation(FastMath.toRadians(5.0)).
-                                                         withHandler(new ContinueOnEvent<>()),
+                                                         withHandler(new ContinueOnEvent()),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
         SortedSet<ObservedMeasurement<?>> measurements = generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
         Assertions.assertEquals(120, measurements.size());

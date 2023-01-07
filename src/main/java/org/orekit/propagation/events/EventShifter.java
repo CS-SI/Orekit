@@ -37,10 +37,10 @@ import org.orekit.time.AbsoluteDate;
  * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class EventShifter<T extends EventDetector> extends AbstractDetector<EventShifter<T>> {
+public class EventShifter extends AbstractDetector<EventShifter> {
 
     /** Event detector for the raw unshifted event. */
-    private final T detector;
+    private final EventDetector detector;
 
     /** Indicator for using shifted or unshifted states at event occurrence. */
     private final boolean useShiftedStates;
@@ -67,10 +67,10 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
      */
-    public EventShifter(final T detector, final boolean useShiftedStates,
+    public EventShifter(final EventDetector detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
         this(detector.getMaxCheckInterval(), detector.getThreshold(),
-             detector.getMaxIterationCount(), new LocalHandler<T>(),
+             detector.getMaxIterationCount(), new LocalHandler(),
              detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
@@ -94,8 +94,8 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
      * @since 6.1
      */
     private EventShifter(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<? super EventShifter<T>> handler,
-                         final T detector, final boolean useShiftedStates,
+                         final int maxIter, final EventHandler handler,
+                         final EventDetector detector, final boolean useShiftedStates,
                          final double increasingTimeShift, final double decreasingTimeShift) {
         super(maxCheck, threshold, maxIter, handler);
         this.detector         = detector;
@@ -106,10 +106,10 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter<T> create(final double newMaxCheck, final double newThreshold,
-                                     final int newMaxIter, final EventHandler<? super EventShifter<T>> newHandler) {
-        return new EventShifter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                   detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    protected EventShifter create(final double newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler newHandler) {
+        return new EventShifter(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                detector, useShiftedStates, -increasingOffset, -decreasingOffset);
     }
 
     /**
@@ -151,14 +151,15 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
     }
 
     /** Local class for handling events. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventShifter<T>> {
+    private static class LocalHandler implements EventHandler {
 
         /** Shifted state at even occurrence. */
         private SpacecraftState shiftedState;
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
 
+            final EventShifter shifter = (EventShifter) detector;
             if (shifter.useShiftedStates) {
                 // the state provided by the caller already includes the time shift
                 shiftedState = s;
@@ -174,7 +175,8 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+            final EventShifter shifter = (EventShifter) detector;
             return shifter.detector.resetState(shiftedState);
         }
 

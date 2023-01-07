@@ -109,7 +109,7 @@ public class FootprintOverlapDetectorTest {
                 new FootprintOverlapDetector(fov, earth, france, 50000.0).
                 withMaxCheck(1.0).
                 withThreshold(1.0e-6).
-                withHandler(new ContinueOnEvent<FootprintOverlapDetector>());
+                withHandler(new ContinueOnEvent());
         final EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(detector));
 

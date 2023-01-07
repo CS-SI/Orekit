@@ -55,8 +55,7 @@ public class FieldFunctionalDetectorTest {
         T zero = field.getZero();
         T one = field.getOne();
         Function<FieldSpacecraftState<T>, T> g = FieldSpacecraftState::getMass;
-        FieldEventHandler<FieldEventDetector<T>, T> handler =
-                (s, detector, increasing) -> Action.STOP;
+        FieldEventHandler<T> handler = (s, detector, increasing) -> Action.STOP;
 
         // action
         FieldFunctionalDetector<T> detector = new FieldFunctionalDetector<>(field)

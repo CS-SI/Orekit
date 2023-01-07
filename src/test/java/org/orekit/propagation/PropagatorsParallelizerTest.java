@@ -265,7 +265,7 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate stopDate  = startDate.shiftedBy(0.01);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
-        propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent<>()));
+        propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                                         propagate(startDate, endDate);
         Assertions.assertEquals(2, results.size());
@@ -280,7 +280,7 @@ public class PropagatorsParallelizerTest {
         final AbsoluteDate stopDate  = startDate.shiftedBy(900.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
                                                      buildNumerical());
-        propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent<>()));
+        propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                                         propagate(startDate, endDate);
         Assertions.assertEquals(2, results.size());
