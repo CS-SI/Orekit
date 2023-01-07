@@ -90,8 +90,8 @@ public class EventHandlerTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
-            return Action.CONTINUE;
+        public EventHandler getHandler() {
+            return new Handler();
         }
     }
 
@@ -104,7 +104,7 @@ public class EventHandlerTest {
 
         @Override
         public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
-            return detector.eventOccurred(s, increasing);
+            return Action.CONTINUE;
         }
 
     }

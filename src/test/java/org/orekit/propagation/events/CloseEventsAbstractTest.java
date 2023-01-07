@@ -2428,13 +2428,17 @@ public abstract class CloseEventsAbstractTest {
             return (dt - y1) * (dt - y2);
         }
 
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
-            return ++count < 2 ? Action.RESET_STATE : Action.STOP;
-        }
+        public EventHandler getHandler() {
+            return new EventHandler() {
+                public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                    return ++count < 2 ? Action.RESET_STATE : Action.STOP;
+                }
 
-        public SpacecraftState resetState(SpacecraftState s) {
-            delta = change;
-            return s;
+                public SpacecraftState resetState(EventDetector detector, SpacecraftState s) {
+                    delta = change;
+                    return s;
+                }
+            };
         }
 
         public int getCount() {

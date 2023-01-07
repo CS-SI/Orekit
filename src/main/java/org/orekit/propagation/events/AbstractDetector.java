@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
@@ -165,25 +164,10 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
-    /** Get the handler.
-     * @return event handler to call at event occurrences
-     */
+    /** {@inheritDoc} */
+    @Override
     public EventHandler getHandler() {
         return handler;
-    }
-
-    /** {@inheritDoc} */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-        @SuppressWarnings("unchecked")
-        final Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
-        return whatNext;
-    }
-
-    /** {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState oldState) {
-        @SuppressWarnings("unchecked")
-        final SpacecraftState newState = getHandler().resetState((T) this, oldState);
-        return newState;
     }
 
     /** Build a new instance.

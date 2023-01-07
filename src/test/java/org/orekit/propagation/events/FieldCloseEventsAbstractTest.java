@@ -2653,13 +2653,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             return dt.subtract(y1).multiply(dt.subtract(y2));
         }
 
-        public Action eventOccurred(FieldSpacecraftState<T> s, boolean increasing) {
-            return ++count < 2 ? Action.RESET_STATE : Action.STOP;
-        }
+        public FieldEventHandler<T> getHandler() {
+            return new FieldEventHandler<T>() {
+                public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
+                    return ++count < 2 ? Action.RESET_STATE : Action.STOP;
+                }
 
-        public FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> s) {
-            delta = change;
-            return s;
+                public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> s) {
+                    delta = change;
+                    return s;
+                }
+            };
         }
 
         public int getCount() {

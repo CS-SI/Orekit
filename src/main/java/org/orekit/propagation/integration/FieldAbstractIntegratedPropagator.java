@@ -58,6 +58,7 @@ import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -854,6 +855,11 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** Underlying event detector. */
         private final FieldEventDetector<T> detector;
 
+        /** Underlying event handler.
+         * @since 12.0
+         */
+        private final FieldEventHandler<T> handler;
+
         /** Time of the previous call to g. */
         private T lastT;
 
@@ -865,6 +871,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         */
         FieldAdaptedEventDetector(final FieldEventDetector<T> detector) {
             this.detector = detector;
+            this.handler  = detector.getHandler();
             this.lastT    = getField().getZero().add(Double.NaN);
             this.lastG    = getField().getZero().add(Double.NaN);
         }
@@ -887,14 +894,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         public Action eventOccurred(final FieldODEStateAndDerivative<T> s, final boolean increasing) {
-            return detector.eventOccurred(convert(s), increasing);
+            return handler.eventOccurred(convert(s), detector, increasing);
         }
 
         /** {@inheritDoc} */
         public FieldODEState<T> resetState(final FieldODEStateAndDerivative<T> s) {
 
             final FieldSpacecraftState<T> oldState = convert(s);
-            final FieldSpacecraftState<T> newState = detector.resetState(oldState);
+            final FieldSpacecraftState<T> newState = handler.resetState(detector, oldState);
             stateChanged(newState);
 
             // main part

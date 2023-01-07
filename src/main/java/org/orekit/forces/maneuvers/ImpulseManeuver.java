@@ -196,7 +196,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
 
             // filter underlying event
             final ImpulseManeuver im = (ImpulseManeuver) detector;
-            final Action underlyingAction = im.trigger.eventOccurred(s, increasing);
+            final Action underlyingAction = im.trigger.getHandler().eventOccurred(s, detector, increasing);
 
             return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
 

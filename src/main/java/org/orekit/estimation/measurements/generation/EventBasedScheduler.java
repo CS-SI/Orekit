@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.hipparchus.ode.events.Action;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdapterDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
@@ -150,22 +150,29 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public EventHandler getHandler() {
 
-            // find the feasibility status AFTER the current date
-            final boolean statusAfter = signSemantic.measurementIsFeasible(increasing ? +1 : -1);
+            final EventDetector rawDetector = getDetector();
+            final EventHandler  rawHandler  = rawDetector.getHandler();
 
-            // store either status or its opposite according to propagation direction
-            if (forward) {
-                // forward propagation
-                feasibility.addValidAfter(statusAfter, s.getDate(), false);
-            } else {
-                // backward propagation
-                feasibility.addValidBefore(!statusAfter, s.getDate(), false);
-            }
+            return (state, detector, increasing) -> {
 
-            // delegate to wrapped detector
-            return super.eventOccurred(s, increasing);
+                // find the feasibility status AFTER the current date
+                final boolean statusAfter = signSemantic.measurementIsFeasible(increasing ? +1 : -1);
+
+                // store either status or its opposite according to propagation direction
+                if (forward) {
+                    // forward propagation
+                    feasibility.addValidAfter(statusAfter, state.getDate(), false);
+                } else {
+                    // backward propagation
+                    feasibility.addValidBefore(!statusAfter, state.getDate(), false);
+                }
+
+                // delegate to wrapped detector
+                return rawHandler.eventOccurred(state, rawDetector, increasing);
+
+            };
 
         }
 

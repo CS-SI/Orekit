@@ -291,14 +291,14 @@ public class EventEnablingPredicateFilter
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             final EventEnablingPredicateFilter ef = (EventEnablingPredicateFilter) detector;
             final Transformer transformer = ef.forward ? ef.transformers[ef.transformers.length - 1] : ef.transformers[0];
-            return ef.rawDetector.eventOccurred(s, transformer == Transformer.PLUS ? increasing : !increasing);
+            return ef.rawDetector.getHandler().eventOccurred(s, ef, transformer == Transformer.PLUS ? increasing : !increasing);
         }
 
         /** {@inheritDoc} */
         @Override
         public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             final EventEnablingPredicateFilter ef = (EventEnablingPredicateFilter) detector;
-            return ef.rawDetector.resetState(oldState);
+            return ef.rawDetector.getHandler().resetState(ef, oldState);
         }
 
     }

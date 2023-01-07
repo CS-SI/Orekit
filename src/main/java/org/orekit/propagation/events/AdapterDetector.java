@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Base class for adapting an existing detector.
@@ -81,14 +81,8 @@ public class AdapterDetector implements EventDetector {
 
     /** {@inheritDoc} */
     @Override
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-        return detector.eventOccurred(s, increasing);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public SpacecraftState resetState(final SpacecraftState oldState) {
-        return detector.resetState(oldState);
+    public EventHandler getHandler() {
+        return detector.getHandler();
     }
 
 }

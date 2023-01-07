@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
@@ -85,31 +85,10 @@ public interface EventDetector {
      */
     int getMaxIterationCount();
 
-    /** Handle the event.
-     * @param s SpaceCraft state to be used in the evaluation
-     * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
-     * @return the Action that the calling detector should pass back to the evaluation system
-          * @since 7.0
+    /** Get the handler.
+     * @return event handler to call at event occurrences
+     * @since 12.0
      */
-    Action eventOccurred(SpacecraftState s, boolean increasing);
-
-    /** Reset the state prior to continue propagation.
-     * <p>This method is called after the step handler has returned and
-     * before the next step is started, but only when {@link
-     * #eventOccurred} has itself returned the {@link Action#RESET_STATE}
-     * indicator. It allows the user to reset the state for the next step,
-     * without perturbing the step handler of the finishing step. If the
-     * {@link #eventOccurred} never returns the {@link Action#RESET_STATE}
-     * indicator, this function will never be called, and it is safe to simply return null.</p>
-     * <p>
-     * The default implementation simply returns its argument.
-     * </p>
-     * @param oldState old state
-     * @return new state
-          * @since 7.0
-     */
-    default SpacecraftState resetState(SpacecraftState oldState) {
-        return oldState;
-    }
+    EventHandler getHandler();
 
 }

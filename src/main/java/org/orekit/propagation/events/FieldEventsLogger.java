@@ -164,7 +164,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
          */
         FieldLoggingWrapper(final FieldEventDetector<T> detector) {
             this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), new FieldLocalHandler(),
+                 detector.getMaxIterationCount(), null,
                  detector);
         }
 
@@ -215,25 +215,29 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
             return detector.g(s);
         }
 
-    }
-
-    /** Local class for handling events.
-     * @param <D> class type for the generic version
-     */
-    private class FieldLocalHandler implements FieldEventHandler<T> {
-
         /** {@inheritDoc} */
-        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
-            final FieldLoggingWrapper wrapper = (FieldLoggingWrapper) detector;
-            wrapper.logEvent(s, increasing);
-            return wrapper.detector.eventOccurred(s, increasing);
-        }
+        public FieldEventHandler<T> getHandler() {
 
-        /** {@inheritDoc} */
-        @Override
-        public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector, final FieldSpacecraftState<T> oldState) {
-            final FieldLoggingWrapper wrapper = (FieldLoggingWrapper) detector;
-            return wrapper.detector.resetState(oldState);
+            final FieldEventHandler<T> handler = detector.getHandler();
+
+            return new FieldEventHandler<T>() {
+
+                /** {@inheritDoc} */
+                public Action eventOccurred(final FieldSpacecraftState<T> s,
+                                            final FieldEventDetector<T> d,
+                                            final boolean increasing) {
+                    logEvent(s, increasing);
+                    return handler.eventOccurred(s, detector, increasing);
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> d,
+                                                          final FieldSpacecraftState<T> oldState) {
+                    return handler.resetState(detector, oldState);
+                }
+
+            };
         }
 
     }

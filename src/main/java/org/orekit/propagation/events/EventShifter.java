@@ -169,7 +169,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
                 shiftedState = s.shiftedBy(offset);
             }
 
-            return shifter.detector.eventOccurred(shiftedState, increasing);
+            return shifter.detector.getHandler().eventOccurred(shiftedState, shifter.detector, increasing);
 
         }
 
@@ -177,7 +177,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
         @Override
         public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             final EventShifter shifter = (EventShifter) detector;
-            return shifter.detector.resetState(shiftedState);
+            return shifter.detector.getHandler().resetState(shifter.detector, shiftedState);
         }
 
     }

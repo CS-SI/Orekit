@@ -167,7 +167,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // in maneuver
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
-        maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
+        EventDetector d = maneuver.getEventsDetectors().findFirst().get();
+        d.getHandler().eventOccurred(startState, d, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
         checkStateJacobianVs80Implementation(midState, maneuver, law, 1.0e-20, false);
 
@@ -208,7 +209,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // in maneuver
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
-        maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
+        EventDetector d = maneuver.getEventsDetectors().findFirst().get();
+        d.getHandler().eventOccurred(startState, d, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
         checkStateJacobianVs80ImplementationGradient(midState, maneuver, law, 1.0e-20, false);
 

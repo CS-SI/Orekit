@@ -54,6 +54,7 @@ import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -860,6 +861,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Underlying event detector. */
         private final EventDetector detector;
 
+        /** Underlying event handler.
+         * @since 12.0
+         */
+        private final EventHandler handler;
+
         /** Time of the previous call to g. */
         private double lastT;
 
@@ -871,6 +877,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         */
         AdaptedEventDetector(final EventDetector detector) {
             this.detector = detector;
+            this.handler  = detector.getHandler();
             this.lastT    = Double.NaN;
             this.lastG    = Double.NaN;
         }
@@ -893,14 +900,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            return detector.eventOccurred(convert(s), increasing);
+            return handler.eventOccurred(convert(s), detector, increasing);
         }
 
         /** {@inheritDoc} */
         public ODEState resetState(final ODEStateAndDerivative s) {
 
             final SpacecraftState oldState = convert(s);
-            final SpacecraftState newState = detector.resetState(oldState);
+            final SpacecraftState newState = handler.resetState(detector, oldState);
             stateChanged(newState);
 
             // main part

@@ -16,7 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
+import java.util.Collections;
+import java.util.NoSuchElementException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +26,6 @@ import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Collections;
-import java.util.NoSuchElementException;
 
 /**
  * Unit tests for {@link BooleanDetector#orCombine(EventDetector...)}.
@@ -189,13 +188,8 @@ public class OrDetectorTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
-            return null;
-        }
-
-        @Override
-        public SpacecraftState resetState(SpacecraftState oldState) {
-            return null;
+        public EventHandler getHandler() {
+            return (state, detector, increasing) -> null;
         }
     }
 }
