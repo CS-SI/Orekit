@@ -23,12 +23,12 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2I.txt", 7.7e-15, 9.5e-16, false);
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2I.txt", 7.8e-15, 1.1e-15, false);
     }
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2I.txt", 7.7e-15, 5.0e-16, false);
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2I.txt", 8.1e-15, 9.3e-16, false);
     }
 
     @Test
@@ -38,17 +38,17 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2I.txt", 7.8e-15, 1.2e-15, false);
+        doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2I.txt", 7.9e-15, 1.2e-15, false);
     }
 
     @Test
     public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2I.txt", 7.7e-15, 9.5e-16, false);
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2I.txt", 7.8e-15, 1.1e-15, false);
     }
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2I.txt", 3.9e-3, 5.0e-16, false);
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2I.txt", 3.9e-3, 9.3e-16, false);
     }
 
     @Test
@@ -58,7 +58,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BEIDOU-2I.txt", 7.8e-15, 1.2e-15, false);
+        doTestAxes("original-eclips/beta-large-positive-BEIDOU-2I.txt", 7.9e-15, 1.2e-15, false);
     }
 
 }

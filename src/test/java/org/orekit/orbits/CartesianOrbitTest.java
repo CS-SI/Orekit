@@ -446,6 +446,15 @@ public class CartesianOrbitTest {
         testShift(orbit, new KeplerianOrbit(orbit), 6.0e-15);
     }
 
+    @Test
+    public void testNumericalIssue1015() {
+        Vector3D position = new Vector3D(-1466739.735988, 1586390.713569, 6812901.677773);
+        Vector3D velocity = new Vector3D(-9532.812, -4321.894, -1409.018);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, 3.986004415E14);
+        testShift(orbit, new KeplerianOrbit(orbit), 1.0e-10);
+    }
+
     private void testShift(CartesianOrbit tested, Orbit reference, double threshold) {
         for (double dt = - 1000; dt < 1000; dt += 10.0) {
 
