@@ -23,8 +23,6 @@ import java.util.stream.Stream;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -73,6 +71,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Andrew Goetz
  * @since 9.0
  */
 public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
@@ -451,51 +450,49 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     private FieldPVCoordinates<T> shiftPVElliptic(final T dt) {
 
-        // preliminary computation
-        final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
-        final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
-        final T r2      = pvP.getNormSq();
-        final T r       = r2.sqrt();
-        final T rV2OnMu = r.multiply(pvV.getNormSq()).divide(getMu());
-        final T a       = r.divide(rV2OnMu.negate().add(2));
-        final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(getMu()).sqrt());
-        final T eCE     = rV2OnMu.subtract(1);
-        final T e2      = eCE.multiply(eCE).add(eSE.multiply(eSE));
+        final FieldPVCoordinates<T> pva = getPVCoordinates();
+        final FieldVector3D<T>      pvP = pva.getPosition();
+        final FieldVector3D<T>      pvV = pva.getVelocity();
+        final FieldVector3D<T>      pvM = pva.getMomentum();
+        final T r2                      = pvP.getNormSq();
+        final T r                       = r2.sqrt();
+        final T rV2OnMu                 = r.multiply(pvV.getNormSq()).divide(getMu());
+        final T a                       = r.divide(rV2OnMu.negate().add(2));
+        final T muA                     = getMu().multiply(a);
 
-        // we can use any arbitrary reference 2D frame in the orbital plane
-        // in order to simplify some equations below, we use the current position as the u axis
-        final FieldVector3D<T> u     = pvP.normalize();
-        final FieldVector3D<T> v     = FieldVector3D.crossProduct(FieldVector3D.crossProduct(pvP, pvV), u).normalize();
+        // compute mean anomaly
+        final T eSE              = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
+        final T eCE              = rV2OnMu.subtract(1);
+        final T E0               = FastMath.atan2(eSE, eCE);
+        final T M0               = E0.subtract(eSE);
 
-        // the following equations rely on the specific choice of u explained above,
-        // some coefficients that vanish to 0 in this case have already been removed here
-        final T              ex        = eCE.subtract(e2).multiply(a).divide(r);
-        final T              s         = e2.negate().add(1).sqrt();
-        final T              ey        = s.negate().multiply(eSE).multiply(a).divide(r);
-        final T              beta      = s.add(1).reciprocal();
-        final T              thetaE0   = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
-        final FieldSinCos<T> scThetaE0 = FastMath.sinCos(thetaE0);
-        final T              thetaM0   = thetaE0.subtract(ex.multiply(scThetaE0.sin())).add(ey.multiply(scThetaE0.cos()));
+        final T e                       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
+        final T sqrt                    = e.add(1).divide(e.negate().add(1)).sqrt();
 
-        // compute in-plane shifted eccentric argument
-        final T              sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
-        final T              thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
-        final T              thetaE1   = meanToEccentric(thetaM1, ex, ey);
-        final FieldSinCos<T> scTE      = FastMath.sinCos(thetaE1);
-        final T              cTE       = scTE.cos();
-        final T              sTE       = scTE.sin();
+        // find canonical 2D frame with p pointing to perigee
+        final T v0               = sqrt.multiply(FastMath.tan(E0.divide(2))).atan().multiply(2);
+        final FieldVector3D<T> p = new FieldRotation<>(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
+        final FieldVector3D<T> q = FieldVector3D.crossProduct(pvM, p).normalize();
+
+        // compute shifted eccentric anomaly
+        final T M1               = M0.add(getKeplerianMeanMotion().multiply(dt));
+        final T E1               = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, M1);
 
         // compute shifted in-plane Cartesian coordinates
-        final T exey   = ex.multiply(ey);
-        final T exCeyS = ex.multiply(cTE).add(ey.multiply(sTE));
-        final T x      = a.multiply(beta.multiply(ey).multiply(ey).negate().add(1).multiply(cTE).add(beta.multiply(exey).multiply(sTE)).subtract(ex));
-        final T y      = a.multiply(beta.multiply(ex).multiply(ex).negate().add(1).multiply(sTE).add(beta.multiply(exey).multiply(cTE)).subtract(ey));
-        final T factor = sqrtMmuOA.divide(exCeyS.negate().add(1));
-        final T xDot   = factor.multiply(beta.multiply(ey).multiply(exCeyS).subtract(sTE));
-        final T yDot   = factor.multiply(cTE.subtract(beta.multiply(ex).multiply(exCeyS)));
+        final FieldSinCos<T> scE = FastMath.sinCos(E1);
+        final T               cE = scE.cos();
+        final T               sE = scE.sin();
+        final T            sE2m1 = e.negate().add(1).multiply(e.add(1)).sqrt();
 
-        final FieldVector3D<T> shiftedP = new FieldVector3D<>(x, u, y, v);
-        final FieldVector3D<T> shiftedV = new FieldVector3D<>(xDot, u, yDot, v);
+        // coordinates of position and velocity in the orbital plane
+        final T x        = a.multiply(cE.subtract(e));
+        final T y        = a.multiply(sE2m1).multiply(sE);
+        final T factor   = a.reciprocal().multiply(getMu()).sqrt().divide(e.multiply(cE).negate().add(1));
+        final T xDot     = factor.multiply(sE).negate();
+        final T yDot     = factor.multiply(sE2m1).multiply(cE);
+
+        final FieldVector3D<T> shiftedP = new FieldVector3D<>(x, p, y, q);
+        final FieldVector3D<T> shiftedV = new FieldVector3D<>(xDot, p, yDot, q);
         if (hasNonKeplerianAcceleration) {
 
             // extract non-Keplerian part of the initial acceleration
@@ -592,43 +589,6 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             // so the shifted orbit is not considered to have derivatives
             return new FieldPVCoordinates<>(shiftedP, shiftedV);
         }
-
-    }
-
-    /** Computes the eccentric in-plane argument from the mean in-plane argument.
-     * @param thetaM = mean in-plane argument (rad)
-     * @param ex first component of eccentricity vector
-     * @param ey second component of eccentricity vector
-     * @return the eccentric in-plane argument.
-     */
-    private T meanToEccentric(final T thetaM, final T ex, final T ey) {
-        // Generalization of Kepler equation to in-plane parameters
-        // with thetaE = eta + E and
-        //      thetaM = eta + M = thetaE - ex.sin(thetaE) + ey.cos(thetaE)
-        // and eta being counted from an arbitrary reference in the orbital plane
-        T thetaE        = thetaM;
-        T thetaEMthetaM = zero;
-        int    iter          = 0;
-        do {
-            final FieldSinCos<T> scThetaE = FastMath.sinCos(thetaE);
-
-            final T f2 = ex.multiply(scThetaE.sin()).subtract(ey.multiply(scThetaE.cos()));
-            final T f1 = one.subtract(ex.multiply(scThetaE.cos())).subtract(ey.multiply(scThetaE.sin()));
-            final T f0 = thetaEMthetaM.subtract(f2);
-
-            final T f12 = f1.multiply(2.0);
-            final T shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
-
-            thetaEMthetaM = thetaEMthetaM.subtract(shift);
-            thetaE         = thetaM.add(thetaEMthetaM);
-
-            if (FastMath.abs(shift.getReal()) <= 1.0e-12) {
-                return thetaE;
-            }
-
-        } while (++iter < 50);
-
-        throw new MathIllegalStateException(LocalizedCoreFormats.CONVERGENCE_FAILED);
 
     }
 
