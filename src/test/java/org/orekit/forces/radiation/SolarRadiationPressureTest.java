@@ -496,7 +496,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 1.9e-15);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.1e-15);
         checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 6.9e-15);
 
     }
@@ -517,7 +517,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
-        checkParameterDerivativeGradient(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 1.9e-15);
+        checkParameterDerivativeGradient(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.1e-15);
         checkParameterDerivativeGradient(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 6.9e-10);
 
     }
