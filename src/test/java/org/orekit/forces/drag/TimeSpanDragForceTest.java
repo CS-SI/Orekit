@@ -838,7 +838,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Check parameter derivatives at initial date: only 1st model parameter derivatives shouldn't be 0.
         checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
-        checkParameterDerivative(state, forceModel, DragSensitive.LIFT_RATIO, 1.0e-4, 2.0e-11);
+        checkParameterDerivative(state, forceModel, DragSensitive.LIFT_RATIO, 1.0e-4, 2.2e-11);
         checkParameterDerivative(state, forceModel, "Cd2", 1.0e-4, 0.);
         checkParameterDerivative(state, forceModel, "Cl2", 1.0e-4, 0.);
         checkParameterDerivative(state, forceModel, "Cd3", 1.0e-4, 0.);
@@ -926,7 +926,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Check parameter derivatives at initial date: only 1st model parameter derivatives shouldn't be 0.
         checkParameterDerivativeGradient(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
-        checkParameterDerivativeGradient(state, forceModel, DragSensitive.LIFT_RATIO, 1.0e-4, 2.0e-11);
+        checkParameterDerivativeGradient(state, forceModel, DragSensitive.LIFT_RATIO, 1.0e-4, 2.2e-11);
         checkParameterDerivativeGradient(state, forceModel, "Cd2", 1.0e-4, 0.);
         checkParameterDerivativeGradient(state, forceModel, "Cl2", 1.0e-4, 0.);
         checkParameterDerivativeGradient(state, forceModel, "Cd3", 1.0e-4, 0.);

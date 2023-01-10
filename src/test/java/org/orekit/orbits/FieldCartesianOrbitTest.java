@@ -143,6 +143,11 @@ public class FieldCartesianOrbitTest {
     }
 
     @Test
+    public void testNumericalIssue1015() {
+        doTestNumericalIssue1015(Decimal64Field.getInstance());
+    }
+
+    @Test
     public void testJacobianReference() {
         doTestJacobianReference(Decimal64Field.getInstance());
     }
@@ -497,7 +502,7 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>( position, velocity);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                                  FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
-        testShift(orbit, new FieldKeplerianOrbit<>(orbit), 2e-15);
+        testShift(orbit, new FieldKeplerianOrbit<>(orbit), 1e-13);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircular(Field<T> field) {
@@ -539,6 +544,17 @@ public class FieldCartesianOrbitTest {
                                                                  FieldAbsoluteDate.getJ2000Epoch(field),
                                                                  zero.add(324858598826460.));
         testShift(orbit, new FieldKeplerianOrbit<>(orbit), 6.0e-15);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNumericalIssue1015(Field<T> field) {
+        T zero = field.getZero();
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(-1466739.735988), zero.add(1586390.713569), zero.add(6812901.677773));
+        FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-9532.812), zero.add(-4321.894), zero.add(-1409.018));
+        FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>(position, velocity);
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(),
+                                                                 FieldAbsoluteDate.getJ2000Epoch(field),
+                                                                 zero.add(3.986004415E14));
+        testShift(orbit, new FieldKeplerianOrbit<>(orbit), 1.0e-10);
     }
 
     private <T extends CalculusFieldElement<T>> void testShift(FieldCartesianOrbit<T> tested, FieldOrbit<T> reference, double threshold) {

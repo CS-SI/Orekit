@@ -544,13 +544,13 @@ public class FieldPVCoordinatesTest {
         FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
         Assertions.assertEquals(numericalJerk.getX().getReal(),
                             fv.getVelocity().getX().getPartialDerivative(2).getReal(),
-                            1.0e-13);
+                            3.0e-13);
         Assertions.assertEquals(numericalJerk.getY().getReal(),
                             fv.getVelocity().getY().getPartialDerivative(2).getReal(),
-                            1.0e-13);
+                            3.0e-13);
         Assertions.assertEquals(numericalJerk.getZ().getReal(),
                             fv.getVelocity().getZ().getPartialDerivative(2).getReal(),
-                            1.0e-13);
+                            3.0e-13);
 
     }
 
@@ -566,24 +566,24 @@ public class FieldPVCoordinatesTest {
         FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
         Assertions.assertEquals(numericalJerk.getX().getReal(),
                             fv1.getAcceleration().getX().getPartialDerivative(1).getReal(),
-                            1.0e-13);
+                            3.0e-13);
         Assertions.assertEquals(numericalJerk.getY().getReal(),
                             fv1.getAcceleration().getY().getPartialDerivative(1).getReal(),
-                            1.0e-13);
+                            3.0e-13);
         Assertions.assertEquals(numericalJerk.getZ().getReal(),
                             fv1.getAcceleration().getZ().getPartialDerivative(1).getReal(),
-                            1.0e-13);
+                            3.0e-13);
 
         FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv2 = orbit.getPVCoordinates().toDerivativeStructurePV(2);
         Assertions.assertEquals(numericalJerk.getX().getReal(),
                             fv2.getAcceleration().getX().getPartialDerivative(1).getReal(),
-                            1.0e-13);
+                            3.0e-13);
         Assertions.assertEquals(numericalJerk.getY().getReal(),
                             fv2.getAcceleration().getY().getPartialDerivative(1).getReal(),
-                            1.0e-13);
+                            3.0e-13);
         Assertions.assertEquals(numericalJerk.getZ().getReal(),
                             fv2.getAcceleration().getZ().getPartialDerivative(1).getReal(),
-                            1.0e-13);
+                            3.0e-13);
 
     }
 

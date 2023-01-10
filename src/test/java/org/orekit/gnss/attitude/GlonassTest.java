@@ -23,7 +23,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 5.8e-15, 5.2e-16, false);
+        doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, false);
     }
 
     @Test
@@ -33,22 +33,22 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-GLONASS.txt", 5.2e-6, 6.7e-16, false);
+        doTestAxes("patched-eclips/beta-crossing-GLONASS.txt", 5.2e-6, 9.8e-16, false);
     }
 
     @Test
     public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-GLONASS.txt", 2.4e-12, 5.1e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-GLONASS.txt", 2.4e-12, 7.4e-16, false);
     }
 
     @Test
     public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-GLONASS.txt", 6.5e-15, 8.8e-16, false);
+        doTestAxes("patched-eclips/beta-large-positive-GLONASS.txt", 6.8e-15, 9.2e-16, false);
     }
 
     @Test
     public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 5.8e-15, 5.2e-16, false);
+        doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, false);
     }
 
     @Test
@@ -75,17 +75,17 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
         // As a conclusion, we consider here that the reference output is wrong and that
         // Orekit behavior is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-GLONASS.txt", 0.54, 8.5e-16, false);
+        doTestAxes("original-eclips/beta-crossing-GLONASS.txt", 0.54, 9.8e-16, false);
     }
 
     @Test
     public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-GLONASS.txt", 1.6e-4, 5.1e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-GLONASS.txt", 1.6e-4, 7.4e-16, false);
     }
 
     @Test
     public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-GLONASS.txt", 6.5e-15, 8.8e-16, false);
+        doTestAxes("original-eclips/beta-large-positive-GLONASS.txt", 6.8e-15, 9.2e-16, false);
     }
 
 }

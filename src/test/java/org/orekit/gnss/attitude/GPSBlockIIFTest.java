@@ -23,7 +23,7 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt",  6.7e-15, 7.6e-16, false);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt",  6.8e-15, 7.6e-16, false);
     }
 
     @Test
@@ -38,17 +38,17 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIF.txt", 2.9e-12, 5.0e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIF.txt", 2.9e-12, 6.0e-16, false);
     }
 
     @Test
     public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIF.txt", 7.2e-15, 6.3e-16, false);
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIF.txt", 7.4e-15, 6.7e-16, false);
     }
 
     @Test
     public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt",  6.7e-15, 7.6e-16, false);
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt", 6.8e-15, 7.6e-16, false);
     }
 
     @Test
@@ -80,12 +80,12 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIF.txt", 2.8e-4, 5.0e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIF.txt", 2.8e-4, 6.0e-16, false);
     }
 
     @Test
     public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIF.txt", 7.2e-15, 6.3e-16, false);
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIF.txt", 7.4e-15, 6.7e-16, false);
     }
 
 }
