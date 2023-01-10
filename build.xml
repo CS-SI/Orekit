@@ -64,7 +64,7 @@
     <property name="tools.path"                         value="lib"                                               />
 
 
-    <property name="copyright"                  value="2002-2022 CS GROUP" />
+    <property name="copyright"                  value="2002-2023 CS GROUP" />
 
     <property environment="env"/>
 
