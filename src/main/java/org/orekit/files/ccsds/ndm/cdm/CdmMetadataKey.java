@@ -16,14 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /** Keys for {@link CdmMetadata CDM container} entries.
  * @author Melina Vanel

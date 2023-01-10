@@ -85,14 +85,19 @@ public class CdmWriterTest extends AbstractWriterTest<CdmHeader, CdmSegment, Cdm
     }
 
     @Test
-    public void testWrite_issue_988_XML() {
+    public void testWrite_issue_988_XML_YES() {
         doTest("/ccsds/cdm/CDMExample_issue988.xml");
     }
 
 
     @Test
-    public void testWrite_issue_988_XML_NONE() {
+    public void testWrite_issue_988_XML_NO() {
         doTest("/ccsds/cdm/CDMExample_issue988_2.xml");
+    }
+
+    @Test
+    public void testWrite_issue_988_XML_NONE() {
+        doTest("/ccsds/cdm/CDMExample_issue988_3.txt");
     }
 
 }

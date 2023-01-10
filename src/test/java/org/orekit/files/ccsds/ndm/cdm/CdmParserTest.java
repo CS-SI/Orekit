@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,9 +37,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
-
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 public class CdmParserTest {
 

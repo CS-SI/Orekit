@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.List;
+
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -28,8 +30,6 @@ import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
-
-import java.util.List;
 
 /**
  * This class gathers the meta-data present in the Conjunction Data Message (CDM).

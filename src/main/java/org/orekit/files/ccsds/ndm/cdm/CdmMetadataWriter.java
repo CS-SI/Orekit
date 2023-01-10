@@ -16,14 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.generation.Generator;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Writer for Metadata for CCSDS Conjunction Data Messages.
@@ -118,9 +118,6 @@ public class CdmMetadataWriter extends AbstractWriter {
             }
             generator.writeEntry(CdmMetadataKey.N_BODY_PERTURBATIONS.name(), names, false);
         }
-
-        // other perturbations : Issue 988 : change from boolean to YesNoUnknown class + if condition for optional
-        //writing
 
         if (metadata.getSolarRadiationPressure() != null) {
             generator.writeEntry(CdmMetadataKey.SOLAR_RAD_PRESSURE.name(), metadata.getSolarRadiationPressure().name(),
