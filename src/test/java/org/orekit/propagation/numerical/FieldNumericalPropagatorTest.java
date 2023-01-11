@@ -1726,6 +1726,30 @@ public class FieldNumericalPropagatorTest {
         }
     }
 
+    @Test
+    public void testInfinitePropagation() {
+        doTestInfinitePropagation(Decimal64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>>  void doTestInfinitePropagation(Field<T> field) {
+
+        Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        FieldNumericalPropagator<T> propagator = createPropagator(field);
+        propagator.setResetAtEnd(false);
+
+        // Stop condition
+        propagator.addEventDetector(new FieldDateDetector<T>(propagator.getInitialState().getDate().shiftedBy(60)));
+
+        // Propagate until the stop condition is reached
+        final FieldSpacecraftState<T> finalState =  propagator.propagate(FieldAbsoluteDate.getFutureInfinity(field));
+
+        // Check that the expected final state was reached
+        Assertions.assertEquals(60, finalState.getDate().durationFrom(propagator.getInitialState().getDate()).getReal());
+
+    }
+
     private static <T extends CalculusFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitType orbitType,
                                                                     final PositionAngle angleType, final boolean withDerivatives,
                                                                     final double error60s, final double error120s,
