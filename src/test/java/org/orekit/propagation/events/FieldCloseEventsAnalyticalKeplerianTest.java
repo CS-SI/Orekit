@@ -53,8 +53,7 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
         propagator.setStepHandler(interpolator -> {});
         double period = 2 * initialOrbit.getKeplerianPeriod().getReal();
 
-        FieldRecordAndContinue<TimeDetector, Decimal64> handler =
-                new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<Decimal64> handler = new FieldRecordAndContinue<>();
         TimeDetector detector = new TimeDetector(1, period - 1)
                 .withHandler(handler)
                 .withMaxCheck(v(1e100))
@@ -76,8 +75,7 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
         propagator.setStepHandler(interpolator -> {});
         double period = -2 * initialOrbit.getKeplerianPeriod().getReal();
 
-        FieldRecordAndContinue<TimeDetector, Decimal64> handler =
-                new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<Decimal64> handler = new FieldRecordAndContinue<>();
         TimeDetector detector = new TimeDetector(-1, period + 1)
                 .withHandler(handler)
                 .withMaxCheck(v(1e100))

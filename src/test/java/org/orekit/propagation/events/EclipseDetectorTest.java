@@ -81,7 +81,7 @@ public class EclipseDetectorTest {
         EclipseDetector withoutFlattening = new EclipseDetector(sun, sunRadius, sphericalEarth).
                                             withMaxCheck(60.0).
                                             withThreshold(1.0e-3).
-                                            withHandler(new ContinueOnEvent<>()).
+                                            withHandler(new ContinueOnEvent()).
                                             withUmbra();
         OneAxisEllipsoid obateEarth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                            Constants.WGS84_EARTH_FLATTENING,
@@ -90,7 +90,7 @@ public class EclipseDetectorTest {
         EclipseDetector withFlattening    = new EclipseDetector(sun, sunRadius, obateEarth).
                                             withMaxCheck(60.0).
                                             withThreshold(1.0e-3).
-                                            withHandler(new ContinueOnEvent<>()).
+                                            withHandler(new ContinueOnEvent()).
                                             withUmbra();
         propagator.addEventDetector(logger.monitorDetector(withoutFlattening));
         propagator.addEventDetector(logger.monitorDetector(withFlattening));
@@ -137,7 +137,7 @@ public class EclipseDetectorTest {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
                             withMaxCheck(60.0).
                             withThreshold(1.0e-3).
-                            withHandler(new StopOnDecreasing<EclipseDetector>()).
+                            withHandler(new StopOnDecreasing()).
                             withUmbra();
         Assertions.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
@@ -164,7 +164,7 @@ public class EclipseDetectorTest {
     @Test
     public void testWithMethods() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
-                             withHandler(new StopOnDecreasing<EclipseDetector>()).
+                             withHandler(new StopOnDecreasing()).
                              withMaxCheck(120.0).
                              withThreshold(1.0e-4).
                              withMaxIter(12).
@@ -211,7 +211,7 @@ public class EclipseDetectorTest {
     public void testTooSmallMaxIterationCount() {
         int n = 5;
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
-                             withHandler(new StopOnDecreasing<EclipseDetector>()).
+                             withHandler(new StopOnDecreasing()).
                              withMaxCheck(120.0).
                              withThreshold(1.0e-4).
                              withMaxIter(n);

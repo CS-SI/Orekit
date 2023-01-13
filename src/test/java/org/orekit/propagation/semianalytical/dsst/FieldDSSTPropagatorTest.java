@@ -1205,7 +1205,7 @@ public class FieldDSSTPropagatorTest {
         return dsstProp;
     }
 
-    private class CheckingHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<D, T> {
+    private class CheckingHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         private final Action actionOnEvent;
         private boolean gotHere;
@@ -1220,7 +1220,7 @@ public class FieldDSSTPropagatorTest {
         }
 
         @Override
-        public Action eventOccurred(FieldSpacecraftState<T> s, D detector, boolean increasing) {
+        public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
             gotHere = true;
             return actionOnEvent;
         }

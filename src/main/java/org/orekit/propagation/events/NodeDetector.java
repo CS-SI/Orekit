@@ -68,7 +68,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      */
     public NodeDetector(final Frame frame) {
         this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<NodeDetector>(), frame);
+             new StopOnIncreasing(), frame);
     }
 
     /** Build a new instance.
@@ -95,7 +95,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
         this(2 * estimateNodesTimeSeparation(orbit) / 3, threshold,
-             DEFAULT_MAX_ITER, new StopOnIncreasing<NodeDetector>(),
+             DEFAULT_MAX_ITER, new StopOnIncreasing(),
              frame);
     }
 
@@ -115,7 +115,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @since 6.1
      */
     private NodeDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<? super NodeDetector> handler,
+                         final int maxIter, final EventHandler handler,
                          final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
@@ -124,7 +124,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
     /** {@inheritDoc} */
     @Override
     protected NodeDetector create(final double newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler<? super NodeDetector> newHandler) {
+                                  final int newMaxIter, final EventHandler newHandler) {
         return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 

@@ -95,17 +95,15 @@ public class EventHandlerTest {
         }
     }
 
-    private static class Handler implements EventHandler<Detector> {
+    private static class Handler implements EventHandler {
 
         @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target,
-                         Detector detector) {
+        public void init(SpacecraftState initialState, AbsoluteDate target, EventDetector detector) {
             detector.init(initialState, target);
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, Detector detector,
-                                    boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             return detector.eventOccurred(s, increasing);
         }
 

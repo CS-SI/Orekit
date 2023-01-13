@@ -85,7 +85,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      */
     public FieldElevationDetector(final T maxCheck, final T threshold, final TopocentricFrame topo) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER,
-             new FieldStopOnDecreasing<FieldElevationDetector<T>, T>(),
+             new FieldStopOnDecreasing<>(),
              0.0, null, null, topo);
     }
 
@@ -105,7 +105,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @param topo reference to a topocentric model
      */
     private FieldElevationDetector(final T maxCheck, final T threshold,
-                                   final int maxIter, final FieldEventHandler<? super FieldElevationDetector<T>, T> handler,
+                                   final int maxIter, final FieldEventHandler<T> handler,
                                    final double minElevation, final ElevationMask mask,
                                    final AtmosphericRefractionModel refractionModel,
                                    final TopocentricFrame topo) {
@@ -119,7 +119,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
     /** {@inheritDoc} */
     @Override
     protected FieldElevationDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                               final int newMaxIter, final FieldEventHandler<? super FieldElevationDetector<T>, T> newHandler) {
+                                               final int newMaxIter, final FieldEventHandler<T> newHandler) {
         return new FieldElevationDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                             minElevation, elevationMask, refractionModel, topo);
     }

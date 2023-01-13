@@ -73,16 +73,16 @@ public class AngularSeparationFromSatelliteDetectorTest {
                         new AngularSeparationFromSatelliteDetector(sun, acatenango, proximityAngle).
                         withMaxCheck(maxCheck).
                         withThreshold(1.0e-6).
-                        withHandler(new EventHandler<AngularSeparationFromSatelliteDetector>() {
-                public Action eventOccurred(SpacecraftState s, AngularSeparationFromSatelliteDetector detector, boolean increasing) {
-                    if (increasing) {
-                        Assertions.assertEquals(5259.6649, s.getDate().durationFrom(iniDate), 1.0e-3);
-                    } else {
-                        Assertions.assertEquals(4410.2581, s.getDate().durationFrom(iniDate), 1.0e-3);
-                    }
-                    return Action.CONTINUE;
-                }
-            });
+                        withHandler(new EventHandler() {
+                            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                                if (increasing) {
+                                    Assertions.assertEquals(5259.6649, s.getDate().durationFrom(iniDate), 1.0e-3);
+                                } else {
+                                    Assertions.assertEquals(4410.2581, s.getDate().durationFrom(iniDate), 1.0e-3);
+                                }
+                                return Action.CONTINUE;
+                            }
+                        });
         Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
         Assertions.assertSame(sun,    detector.getPrimaryObject());
         Assertions.assertSame(acatenango,  detector.getSecondaryObject());

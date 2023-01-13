@@ -112,7 +112,7 @@ public class ExtremumApproachDetectorTest {
 
         // Initializing detector with custom handler
         final ExtremumApproachDetector detector =
-                new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent<>());
+                new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent());
 
         // Initializing propagator
         final Propagator propagator = new KeplerianPropagator(orbit);

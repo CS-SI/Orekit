@@ -53,7 +53,7 @@ public class ElevationExtremumDetectorTest {
                 new ElevationExtremumDetector(new TopocentricFrame(earth, gp, "test")).
                 withMaxCheck(60).
                 withThreshold(1.e-6).
-                withHandler(new ContinueOnEvent<ElevationExtremumDetector>());
+                withHandler(new ContinueOnEvent());
         final EventSlopeFilter<ElevationExtremumDetector> maxElevationDetector =
                 new EventSlopeFilter<ElevationExtremumDetector>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 

@@ -633,7 +633,7 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent<NodeDetector>()));
+        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent()));
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);

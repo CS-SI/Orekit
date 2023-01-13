@@ -70,7 +70,7 @@ public class FieldApsideDetectorTest {
         FieldEventDetector<T> detector = new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
                                  withMaxCheck(zero.add(600.0)).
                                  withThreshold(zero.add(1.0e-12)).
-                                 withHandler(new FieldContinueOnEvent<FieldApsideDetector<T>, T>());
+                                 withHandler(new FieldContinueOnEvent<T>());
 
         Assertions.assertEquals(600.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);

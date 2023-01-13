@@ -123,7 +123,7 @@ public class OrekitStepHandlerTest {
         propagator.setOrbitType(OrbitType.CARTESIAN);
         // detector triggers half way through second step
         DateDetector detector =
-                new DateDetector(date.shiftedBy(90)).withHandler(new ContinueOnEvent<>());
+                new DateDetector(date.shiftedBy(90)).withHandler(new ContinueOnEvent());
         propagator.addEventDetector(detector);
 
         // action and verify

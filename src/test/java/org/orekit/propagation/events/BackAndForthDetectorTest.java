@@ -89,7 +89,7 @@ public class BackAndForthDetectorTest {
 
     }
 
-    private static class Visibility implements EventHandler<ElevationDetector> {
+    private static class Visibility implements EventHandler {
         private int _visiNb;
 
         public Visibility() {
@@ -100,7 +100,7 @@ public class BackAndForthDetectorTest {
             return _visiNb;
         }
 
-        public Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector ed, boolean increasing) {
             _visiNb++;
             return Action.CONTINUE;
         }

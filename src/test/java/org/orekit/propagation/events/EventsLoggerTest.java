@@ -177,9 +177,9 @@ public class EventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new EventHandler<EclipseDetector>() {
+        detector = detector.withHandler(new EventHandler() {
 
-            public Action eventOccurred(SpacecraftState s, EclipseDetector detector, boolean increasing) {
+            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                 ++count;
                 return Action.CONTINUE;
             }

@@ -104,7 +104,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                     final SphericalPolygonsSet zone,
                                     final double samplingStep) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<FootprintOverlapDetector>(),
+             new StopOnIncreasing(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
     }
 
@@ -125,7 +125,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
      */
     private FootprintOverlapDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super FootprintOverlapDetector> handler,
+                                     final int maxIter, final EventHandler handler,
                                      final FieldOfView fov,
                                      final OneAxisEllipsoid body,
                                      final SphericalPolygonsSet zone,
@@ -194,7 +194,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
     @Override
     protected FootprintOverlapDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super FootprintOverlapDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new FootprintOverlapDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                             fov, body, zone, samplingStep, sampledZone);
     }

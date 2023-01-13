@@ -26,7 +26,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -60,7 +59,7 @@ public class FieldStopOnDecreasingTest {
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
-        Assertions.assertSame(s, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().resetState(null, s));
+        Assertions.assertSame(s, new FieldStopOnDecreasing<T>().resetState(null, s));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIncreasing(Field<T> field) {
@@ -77,7 +76,7 @@ public class FieldStopOnDecreasingTest {
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
 
-        Assertions.assertSame(Action.CONTINUE, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
+        Assertions.assertSame(Action.CONTINUE, new FieldStopOnDecreasing<T>().eventOccurred(s, null, true));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDecreasing(Field<T> field) {
@@ -94,7 +93,7 @@ public class FieldStopOnDecreasingTest {
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
 
-        Assertions.assertSame(Action.STOP, new FieldStopOnDecreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, false));
+        Assertions.assertSame(Action.STOP, new FieldStopOnDecreasing<T>().eventOccurred(s, null, false));
     }
 
 }

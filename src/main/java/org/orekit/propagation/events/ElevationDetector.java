@@ -79,7 +79,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
     public ElevationDetector(final double maxCheck, final double threshold,
                              final TopocentricFrame topo) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<ElevationDetector>(),
+             new StopOnDecreasing(),
              0.0, null, null, topo);
     }
 
@@ -99,7 +99,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * @param topo reference to a topocentric model
      */
     private ElevationDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<? super ElevationDetector> handler,
+                              final int maxIter, final EventHandler handler,
                               final double minElevation, final ElevationMask mask,
                               final AtmosphericRefractionModel refractionModel,
                               final TopocentricFrame topo) {
@@ -113,7 +113,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
     /** {@inheritDoc} */
     @Override
     protected ElevationDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super ElevationDetector> newHandler) {
+                                       final int newMaxIter, final EventHandler newHandler) {
         return new ElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      minElevation, elevationMask, refractionModel, topo);
     }

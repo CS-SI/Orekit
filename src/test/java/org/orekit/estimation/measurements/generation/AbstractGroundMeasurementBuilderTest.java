@@ -62,7 +62,7 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
                                                         generator.getPropagator(satellite),
                                                         new ElevationDetector(context.stations.get(0).getBaseFrame()).
                                                         withConstantElevation(FastMath.toRadians(5.0)).
-                                                        withHandler(new ContinueOnEvent<>()),
+                                                        withHandler(new ContinueOnEvent()),
                                                         SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
        final double period = context.initialOrbit.getKeplerianPeriod();
        AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);

@@ -215,13 +215,13 @@ public class PositionAngleDetectorTest {
                                                                      propagationType,
                                                                      PositionAngle.TRUE,
                                                                      FastMath.toRadians(01.0)).
-                                           withHandler(new ContinueOnEvent<>());
+                                           withHandler(new ContinueOnEvent());
         PositionAngleDetector detector90 = new PositionAngleDetector(maxCheck,
                                                                      threshold,
                                                                      propagationType,
                                                                      PositionAngle.TRUE,
                                                                      FastMath.toRadians(90.0)).
-                                           withHandler(new ContinueOnEvent<>());
+                                           withHandler(new ContinueOnEvent());
 
         // detect events with numerical propagator (and generate ephemeris)
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
@@ -254,7 +254,7 @@ public class PositionAngleDetectorTest {
                 new PositionAngleDetector(orbitType, positionAngle, angle).
                 withMaxCheck(60).
                 withThreshold(1.e-10).
-                withHandler(new ContinueOnEvent<PositionAngleDetector>());
+                withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-10, d.getThreshold(), 1.0e-15);

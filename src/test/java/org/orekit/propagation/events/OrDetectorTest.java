@@ -129,8 +129,7 @@ public class OrDetectorTest {
         EventDetector b = Mockito.mock(EventDetector.class);
         Mockito.when(b.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
         Mockito.when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
-        @SuppressWarnings("unchecked")
-        EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
+        EventHandler c = Mockito.mock(EventHandler.class);
         BooleanDetector or = BooleanDetector.orCombine(a, b).withHandler(c);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
         s = Mockito.mock(SpacecraftState.class);

@@ -49,8 +49,7 @@ public class FieldRecordAndContinueTest {
     @Test
     public void testGetEvents() {
         // setup
-        FieldRecordAndContinue<FieldDateDetector<Decimal64>, Decimal64> handler =
-                new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<Decimal64> handler = new FieldRecordAndContinue<>();
         FieldAbsoluteDate<Decimal64> date =
                 new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         Decimal64 zero = date.getField().getZero();
@@ -70,7 +69,7 @@ public class FieldRecordAndContinueTest {
         Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
 
         // verify
-        List<Event<FieldDateDetector<Decimal64>, Decimal64>> events = handler.getEvents();
+        List<Event<Decimal64>> events = handler.getEvents();
         Assertions.assertEquals(3, events.size());
         Assertions.assertEquals(s1, events.get(0).getState());
         Assertions.assertEquals(s2, events.get(1).getState());
@@ -78,7 +77,7 @@ public class FieldRecordAndContinueTest {
         Assertions.assertEquals(true, events.get(0).isIncreasing());
         Assertions.assertEquals(true, events.get(1).isIncreasing());
         Assertions.assertEquals(false, events.get(2).isIncreasing());
-        for (Event<FieldDateDetector<Decimal64>, Decimal64> event : events) {
+        for (Event<Decimal64> event : events) {
             Assertions.assertEquals(detector, event.getDetector());
         }
 

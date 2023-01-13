@@ -99,13 +99,13 @@ public class ConfigurableLowThrustManeuverTest {
          * @param handler
          */
         protected EquinoctialLongitudeIntervalDetector(final double halfArcLength, final PositionAngle type,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<T>> handler) {
+                final EventHandler handler) {
             this(halfArcLength, type, maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
         }
 
         public EquinoctialLongitudeIntervalDetector(final double halfArcLength, final PositionAngle type,
                 final double maxCheck, final double threshold, final int maxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<T>> handler) {
+                final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
             this.halfArcLength = halfArcLength;
             this.type = type;
@@ -181,13 +181,13 @@ public class ConfigurableLowThrustManeuverTest {
 
         protected PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
                 final double maxCheck, final double threshold, final int maxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector>> handler) {
+                final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, threshold, maxIter, handler);
         }
 
         public PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector>> handler) {
+                final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
         }
@@ -205,7 +205,7 @@ public class ConfigurableLowThrustManeuverTest {
         @Override
         protected EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector> create(final double newMaxCheck,
                 final double newThreshold, final int newMaxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector>> newHandler) {
+                final EventHandler newHandler) {
             return new PerigeeCenteredIntervalDetector(getHalfArcLength(), getType(), newMaxCheck, newThreshold,
                     newMaxIter, newHandler);
         }
@@ -216,14 +216,12 @@ public class ConfigurableLowThrustManeuverTest {
 
         protected ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
                 final double maxCheck, final double threshold, final int maxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector>> handler) {
+                final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, threshold, maxIter, handler);
         }
 
-        public ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector>> handler) {
-
+        public ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type, final EventHandler handler) {
             super(halfArcLength, type, maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
         }
 
@@ -240,8 +238,7 @@ public class ConfigurableLowThrustManeuverTest {
 
         @Override
         protected EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector> create(final double newMaxCheck,
-                final double newThreshold, final int newMaxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector>> newHandler) {
+                final double newThreshold, final int newMaxIter, final EventHandler newHandler) {
 
             return new ApogeeCenteredIntervalDetector(getHalfArcLength(), getType(), newMaxCheck, newThreshold,
                     newMaxIter, newHandler);
@@ -257,11 +254,11 @@ public class ConfigurableLowThrustManeuverTest {
 
         public DateIntervalDetector(final AbsoluteDate startDate, final AbsoluteDate endDate) {
             this(startDate, endDate, 1.0e10, 1.e-9 /* values from DateDetector */, DEFAULT_MAX_ITER,
-                    new StopOnEvent<DateIntervalDetector>());
+                    new StopOnEvent());
         }
 
         protected DateIntervalDetector(final AbsoluteDate startDate, final AbsoluteDate endDate, final double maxCheck,
-                final double threshold, final int maxIter, final EventHandler<? super DateIntervalDetector> handler) {
+                final double threshold, final int maxIter, final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
             this.startDate = startDate;
             this.endDate = endDate;
@@ -291,7 +288,7 @@ public class ConfigurableLowThrustManeuverTest {
 
         @Override
         protected DateIntervalDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
-                final EventHandler<? super DateIntervalDetector> newHandler) {
+                final EventHandler newHandler) {
             return new DateIntervalDetector(startDate, endDate, newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -339,7 +336,7 @@ public class ConfigurableLowThrustManeuverTest {
     private ConfigurableLowThrustManeuver buildApogeeManeuver() {
 
         final ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent<>());
+                PositionAngle.MEAN, new ContinueOnEvent());
         final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
 
         // thrust in velocity direction to increase semi-major-axis
@@ -350,7 +347,7 @@ public class ConfigurableLowThrustManeuverTest {
     private ConfigurableLowThrustManeuver buildPerigeeManeuver() {
 
         final PerigeeCenteredIntervalDetector maneuverStartDetector = new PerigeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent<>());
+                PositionAngle.MEAN, new ContinueOnEvent());
 
         final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
 
@@ -736,7 +733,7 @@ public class ConfigurableLowThrustManeuverTest {
     @Test
     public void testGetters() {
         final ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent<>());
+                PositionAngle.MEAN, new ContinueOnEvent());
         final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
 
         final ThrustDirectionAndAttitudeProvider attitudeProvider = buildVelocityThrustDirectionProvider();
@@ -777,7 +774,7 @@ public class ConfigurableLowThrustManeuverTest {
     public void testStartDetectorNotSet() {
         Assertions.assertThrows(OrekitException.class, () -> {
             new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(), null,
-                    new ApogeeCenteredIntervalDetector(halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>()), thrust,
+                    new ApogeeCenteredIntervalDetector(halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent()), thrust,
                     isp);
 
         });
@@ -787,7 +784,7 @@ public class ConfigurableLowThrustManeuverTest {
     public void testStopDetectorNotSet() {
         Assertions.assertThrows(OrekitException.class, () -> {
             new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
-                    new ApogeeCenteredIntervalDetector(halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>()), null,
+                    new ApogeeCenteredIntervalDetector(halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent()), null,
                     thrust, isp);
         });
     }

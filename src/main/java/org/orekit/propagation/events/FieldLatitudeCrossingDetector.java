@@ -88,7 +88,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
             final T maxCheck,
             final T threshold,
             final int maxIter,
-            final FieldEventHandler<? super FieldLatitudeCrossingDetector<T>, T> handler,
+            final FieldEventHandler<T> handler,
             final OneAxisEllipsoid body,
             final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
@@ -102,7 +102,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
             final T newMaxCheck,
             final T newThreshold,
             final int newMaxIter,
-            final FieldEventHandler<? super FieldLatitudeCrossingDetector<T>, T> newHandler) {
+            final FieldEventHandler<T> newHandler) {
         return new FieldLatitudeCrossingDetector<>(
                 newMaxCheck, newThreshold, newMaxIter, newHandler, body, latitude);
     }

@@ -42,7 +42,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Andrea Fiorentino
  * @since 10.2
  */
-public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandler<EventDetector> {
+public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandler {
 
     /** Detector to start firing, only detect increasing sign change. */
     private final AbstractDetector<? extends EventDetector> startFiringDetector;

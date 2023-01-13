@@ -44,7 +44,7 @@ public class FunctionalDetectorTest {
     public void testFunctionalDetector() {
         // setup
         ToDoubleFunction<SpacecraftState> g = SpacecraftState::getMass;
-        EventHandler<EventDetector> handler = (s, detector, increasing) -> Action.STOP;
+        EventHandler handler = (s, detector, increasing) -> Action.STOP;
 
         // action
         FunctionalDetector detector = new FunctionalDetector()

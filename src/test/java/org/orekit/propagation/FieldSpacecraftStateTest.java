@@ -57,6 +57,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -1069,15 +1070,15 @@ public class FieldSpacecraftStateTest {
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
-                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+                                    withHandler(new FieldEventHandler<T>() {
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return oldState.addAdditionalState(name, zero.add(+1));
             }
 
@@ -1120,15 +1121,15 @@ public class FieldSpacecraftStateTest {
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
-                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+                                    withHandler(new FieldEventHandler<T>() {
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return oldState.addAdditionalState(name, zero.add(+1));
             }
 

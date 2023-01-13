@@ -45,8 +45,7 @@ public class RecordAndContinueTest {
     @Test
     public void testGetEvents() {
         // setup
-        RecordAndContinue<DateDetector> handler =
-                new RecordAndContinue<DateDetector>();
+        RecordAndContinue handler = new RecordAndContinue();
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         DateDetector detector = new DateDetector(date);
         Frame eci = FramesFactory.getGCRF();
@@ -63,7 +62,7 @@ public class RecordAndContinueTest {
         Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
 
         // verify
-        List<Event<DateDetector>> events = handler.getEvents();
+        List<Event> events = handler.getEvents();
         Assertions.assertEquals(3, events.size());
         Assertions.assertEquals(s1, events.get(0).getState());
         Assertions.assertEquals(s2, events.get(1).getState());
@@ -71,7 +70,7 @@ public class RecordAndContinueTest {
         Assertions.assertEquals(true, events.get(0).isIncreasing());
         Assertions.assertEquals(true, events.get(1).isIncreasing());
         Assertions.assertEquals(false, events.get(2).isIncreasing());
-        for (Event<DateDetector> event : events) {
+        for (Event event : events) {
             Assertions.assertEquals(detector, event.getDetector());
         }
 

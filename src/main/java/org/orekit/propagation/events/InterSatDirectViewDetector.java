@@ -88,7 +88,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      */
     public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
         this(body, secondary, DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new ContinueOnEvent<>());
+             new ContinueOnEvent());
     }
 
     /** Private constructor.
@@ -104,7 +104,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
                                        final double maxCheck,
                                        final double threshold,
                                        final int maxIter,
-                                       final EventHandler<? super InterSatDirectViewDetector> handler) {
+                                       final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.body  = body;
         this.ae2   = body.getEquatorialRadius() * body.getEquatorialRadius();
@@ -131,7 +131,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     protected InterSatDirectViewDetector create(final double newMaxCheck,
                                                 final double newThreshold,
                                                 final int newMaxIter,
-                                                final EventHandler<? super InterSatDirectViewDetector> newHandler) {
+                                                final EventHandler newHandler) {
         return new InterSatDirectViewDetector(body, secondary, newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 

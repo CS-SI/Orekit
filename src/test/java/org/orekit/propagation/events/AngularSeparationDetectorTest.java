@@ -80,8 +80,8 @@ public class AngularSeparationDetectorTest {
             new AngularSeparationDetector(sun, acatenango, proximityAngle).
             withMaxCheck(maxCheck).
             withThreshold(1.0e-6).
-            withHandler(new EventHandler<AngularSeparationDetector>() {
-                public Action eventOccurred(SpacecraftState s, AngularSeparationDetector detector, boolean increasing) {
+            withHandler(new EventHandler() {
+                public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                     if (increasing) {
                         Assertions.assertEquals(1928.3659, s.getDate().durationFrom(iniDate), 1.0e-3);
                     } else {

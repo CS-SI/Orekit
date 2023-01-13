@@ -52,7 +52,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      */
     public LatitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LatitudeExtremumDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body);
     }
 
@@ -69,7 +69,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      * @param body body on which the latitude is defined
      */
     private LatitudeExtremumDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super LatitudeExtremumDetector> handler,
+                                     final int maxIter, final EventHandler handler,
                                      final OneAxisEllipsoid body) {
         super(maxCheck, threshold, maxIter, handler);
         this.body = body;
@@ -79,7 +79,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
     @Override
     protected LatitudeExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super LatitudeExtremumDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new LatitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
     }
 

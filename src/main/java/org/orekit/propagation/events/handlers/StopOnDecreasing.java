@@ -28,10 +28,9 @@ import org.orekit.propagation.events.EventDetector;
  *
  * @author Hank Grabowski
  *
- * @param <T> class type for the generic version
  * @since 6.1
  */
-public class StopOnDecreasing <T extends EventDetector> implements EventHandler<T> {
+public class StopOnDecreasing implements EventHandler {
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
@@ -43,7 +42,7 @@ public class StopOnDecreasing <T extends EventDetector> implements EventHandler<
      * when times increases around event
      * @return {@link Action#STOP} or {@link Action#CONTINUE}
      */
-    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
         return increasing ? Action.CONTINUE : Action.STOP;
     }
 

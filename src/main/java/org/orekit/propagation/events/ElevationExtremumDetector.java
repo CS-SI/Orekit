@@ -63,7 +63,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<ElevationExtremumDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              topo);
     }
 
@@ -80,7 +80,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @param topo topocentric frame centered on ground point
      */
     private ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                      final int maxIter, final EventHandler<? super ElevationExtremumDetector> handler,
+                                      final int maxIter, final EventHandler handler,
                                       final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.topo = topo;
@@ -90,7 +90,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     @Override
     protected ElevationExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super ElevationExtremumDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
     }
 

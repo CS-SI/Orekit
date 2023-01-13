@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Decimal64Field;
@@ -25,13 +27,10 @@ import org.orekit.forces.maneuvers.trigger.IntervalEventTrigger;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
-
-import java.util.List;
 
 public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEventTrigger<DateDetector>> {
 
@@ -39,11 +38,11 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
 
         public IntervalDates(final AbsoluteDate start, final AbsoluteDate stop) {
             super(new DateDetector(0.5 * stop.durationFrom(start), 1.0e-10, start, stop).
-                  withHandler(new StopOnEvent<DateDetector>()));
+                  withHandler(new StopOnEvent()));
         }
 
         @Override
-        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
             FieldAbstractDetector<D, S> convertIntervalDetector(Field<S> field, DateDetector detector) {
             final S                    maxCheck  = field.getZero().newInstance(detector.getMaxCheckInterval());
             final S                    threshold = field.getZero().newInstance(detector.getThreshold());

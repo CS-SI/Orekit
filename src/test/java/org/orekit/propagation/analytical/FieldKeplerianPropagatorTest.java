@@ -624,7 +624,7 @@ public class FieldKeplerianPropagatorTest {
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>()));
+        propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).withHandler(new FieldContinueOnEvent<>()));
         FieldAbsoluteDate<T> farTarget = orbit.getDate().shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);

@@ -47,7 +47,7 @@ public class ApsideDetectorTest {
         EventDetector detector = new ApsideDetector(propagator.getInitialState().getOrbit()).
                                  withMaxCheck(600.0).
                                  withThreshold(1.0e-12).
-                                 withHandler(new ContinueOnEvent<ApsideDetector>());
+                                 withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(600.0, detector.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
