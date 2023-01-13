@@ -80,7 +80,7 @@ public class FieldFunctionalDetectorTest {
                         zero.add(4)),
                 zero.add(5));
         MatcherAssert.assertThat(detector.g(state).getReal(), CoreMatchers.is(5.0));
-        MatcherAssert.assertThat(detector.eventOccurred(null, false),
+        MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false),
                 CoreMatchers.is(Action.STOP));
         MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
     }

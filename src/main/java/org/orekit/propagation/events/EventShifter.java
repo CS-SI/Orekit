@@ -34,7 +34,6 @@ import org.orekit.time.AbsoluteDate;
  * and a negative times shift for decreasing events (eclipse entry).</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see EventDetector
- * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
 public class EventShifter extends AbstractDetector<EventShifter> {
@@ -55,14 +54,14 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
      * {@link #getThreshold() convergence threshold} of the raw unshifted
      * events will be used for the shifted event. When an event occurs,
-     * the {@link #eventOccurred(SpacecraftState, boolean) eventOccurred}
+     * the {@link EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
      * method of the raw unshifted events will be called (with spacecraft
      * state at either the shifted or the unshifted event date depending
      * on the <code>useShiftedStates</code> parameter).</p>
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
-     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method of
-     * the <code>detector</code> will remain shifted, otherwise it will
+     * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred} method of
+     * the associated {@code handler} will remain shifted, otherwise it will
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
@@ -86,7 +85,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * @param handler event handler to call at event occurrences
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
-     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method of
+     * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred} method of
      * the <code>detector</code> will remain shifted, otherwise it will
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.

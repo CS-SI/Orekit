@@ -489,7 +489,7 @@ public class EventState<T extends EventDetector> {
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link EventDetector#resetState(SpacecraftState)}
+     * call including a call to {@link EventHandler#resetState(EventDetector, SpacecraftState)}
      * if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as

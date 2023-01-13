@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -165,20 +164,6 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     /** {@inheritDoc} */
     public FieldEventHandler<T> getHandler() {
         return handler;
-    }
-
-    /** {@inheritDoc} */
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
-        @SuppressWarnings("unchecked")
-        final Action whatNext = getHandler().eventOccurred(s, (D) this, increasing);
-        return whatNext;
-    }
-
-    /** {@inheritDoc} */
-    public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
-        @SuppressWarnings("unchecked")
-        final FieldSpacecraftState<T> newState = getHandler().resetState((D) this, oldState);
-        return newState;
     }
 
     /** Build a new instance.
