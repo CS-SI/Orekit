@@ -18,6 +18,7 @@
 package org.orekit.propagation.events;
 
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Enumerate for {@link EventSlopeFilter filtering events}.
  * <p>This class is heavily based on the class with the same name from the
@@ -29,11 +30,11 @@ import org.orekit.errors.OrekitInternalError;
 public enum FilterType {
 
     /** Constant for triggering only decreasing events.
-     * <p>When this filter is used, the wrapped {@link EventDetector
-     * event detector} {@link
-     * EventDetector#eventOccurred(org.orekit.propagation.SpacecraftState,
-     * boolean) eventOccurred} method will be called <em>only</em> with
-     * its {@code increasing} argument set to false.</p>
+     * <p>When this filter is used, the wrapped {@link EventHandler
+     * event handler} {@link
+     * EventHandler#eventOccurred(org.orekit.propagation.SpacecraftState,
+     * EventDetector, boolean) eventOccurred} method will be called
+     * <em>only</em> with its {@code increasing} argument set to false.</p>
      */
     TRIGGER_ONLY_DECREASING_EVENTS {
 
@@ -179,10 +180,9 @@ public enum FilterType {
     },
 
     /** Constant for triggering only increasing events.
-     * <p>When this filter is used, the wrapped {@link EventDetector
-     * event detector} {@link
-     * EventDetector#eventOccurred(org.orekit.propagation.SpacecraftState,
-     * boolean) eventOccurred} method will be called <em>only</em> with
+     * <p>When this filter is used, the wrapped {@link EventHandler
+     * event handler} {@link EventHandler#eventOccurred(org.orekit.propagation.SpacecraftState,
+     * EventDetector, boolean) eventOccurred} method will be called <em>only</em> with
      * its {@code increasing} argument set to true.</p>
      */
     TRIGGER_ONLY_INCREASING_EVENTS {

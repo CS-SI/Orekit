@@ -29,7 +29,7 @@ import org.orekit.time.TimeStamped;
  *
  * <p>As {@link EventDetector events detectors} are triggered during
  * orbit propagation, an event specific {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean) eventOccurred}
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
@@ -37,7 +37,7 @@ import org.orekit.time.TimeStamped;
  * <p>This class works by wrapping user-provided {@link EventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean) eventOccurred}
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred}
  * and store the corresponding events as {@link LoggedEvent} instances.
  * After propagation is complete, the user can retrieve all the events
  * that have occurred at once by calling method {@link #getLoggedEvents()}.</p>
@@ -141,7 +141,7 @@ public class EventsLogger {
 
         /** Get the triggering state.
          * @return triggering state
-         * @see EventDetector#eventOccurred(SpacecraftState, boolean)
+         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public SpacecraftState getState() {
             return state;
@@ -149,7 +149,7 @@ public class EventsLogger {
 
         /** Get the Increasing/decreasing status of the event.
          * @return increasing/decreasing status of the event
-         * @see EventDetector#eventOccurred(SpacecraftState, boolean)
+         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public boolean isIncreasing() {
             return increasing;

@@ -30,7 +30,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * <p>As {@link FieldEventDetector events detectors} are triggered during
  * orbit propagation, an event specific {@link
- * FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean) eventOccurred}
+ * FieldEventHandler#eventOccurred(FieldSpacecraftState, FieldEventDetector, boolean) eventOccurred}
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
@@ -38,7 +38,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * <p>This class works by wrapping user-provided {@link FieldEventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link
- * FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean) eventOccurred}
+ * FieldEventHandler#eventOccurred(FieldSpacecraftState, FieldEventDetector, boolean) eventOccurred}
  * and store the corresponding events as {@link FieldLoggedEvent} instances.
  * After propagation is complete, the user can retrieve all the events
  * that have occurred at once by calling method {@link #getLoggedEvents()}.</p>
@@ -137,7 +137,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
         /** Get the triggering state.
          * @return triggering state
-         * @see FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean)
+         * @see FieldEventHandler#eventOccurred(FieldSpacecraftState, FieldEventDetector, boolean)
          */
         public FieldSpacecraftState<T> getState() {
             return state;
@@ -145,7 +145,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
         /** Get the Increasing/decreasing status of the event.
          * @return increasing/decreasing status of the event
-         * @see FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean)
+         * @see FieldEventHandler#eventOccurred(FieldSpacecraftState, FieldEventDetector, boolean)
          */
         public boolean isIncreasing() {
             return increasing;

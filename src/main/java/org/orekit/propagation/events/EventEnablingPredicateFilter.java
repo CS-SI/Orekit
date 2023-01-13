@@ -44,7 +44,7 @@ import org.orekit.time.AbsoluteDate;
  * in order to avoid wasting time looking for uninteresting events.
  * The wrapper will intercept the calls to the {@link
  * EventDetector#g(SpacecraftState) g function} and to the {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean)
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
  * eventOccurred} method in order to ignore uninteresting events. The
  * wrapped regular {@link EventDetector event detector} will the see only
  * the interesting events, i.e. either only events that occur when a

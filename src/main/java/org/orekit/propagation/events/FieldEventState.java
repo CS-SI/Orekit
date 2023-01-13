@@ -496,8 +496,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link FieldEventDetector#resetState(FieldSpacecraftState)}
-     * if necessary.
+     * call including a call to {@link FieldEventHandler#resetState(FieldEventDetector,
+     * FieldSpacecraftState)} if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
