@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.LocalizedODEFormats;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -220,7 +221,8 @@ public class EclipseDetectorTest {
             propagator.propagate(iniDate.shiftedBy(6000));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
+            Assertions.assertEquals(LocalizedODEFormats.FIND_ROOT,
+                                    ((MathRuntimeException) oe.getCause()).getSpecifier());
         }
     }
 

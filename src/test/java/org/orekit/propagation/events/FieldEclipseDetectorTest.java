@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.LocalizedODEFormats;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
@@ -307,7 +308,8 @@ public class FieldEclipseDetectorTest {
             propagator.propagate(iniDate.shiftedBy(6000));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
+            Assertions.assertEquals(LocalizedODEFormats.FIND_ROOT,
+                                    ((MathRuntimeException) oe.getCause()).getSpecifier());
         }
     }
 

@@ -339,8 +339,8 @@ public class EventDetectorTest {
             }
 
             @Override
-            public Action eventOccurred(SpacecraftState s, boolean increasing) {
-                return Action.RESET_STATE;
+            public EventHandler getHandler() {
+                return (state, detector, increasing) -> Action.RESET_STATE;
             }
        };
 
@@ -351,7 +351,7 @@ public class EventDetectorTest {
        SpacecraftState s = new SpacecraftState(new KeplerianOrbit(7e6, 0.01, 0.3, 0, 0, 0,
                                                                   PositionAngle.TRUE, FramesFactory.getEME2000(),
                                                                   AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
-       Assertions.assertSame(s, dummyDetector.resetState(s));
+       Assertions.assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
 
     }
 

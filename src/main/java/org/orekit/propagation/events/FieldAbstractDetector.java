@@ -162,9 +162,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
-    /** Get the handler.
-     * @return event handler to call at event occurrences
-     */
+    /** {@inheritDoc} */
     public FieldEventHandler<T> getHandler() {
         return handler;
     }

@@ -69,8 +69,7 @@ public class FunctionalDetectorTest {
                         4),
                 5);
         MatcherAssert.assertThat(detector.g(state), CoreMatchers.is(5.0));
-        MatcherAssert.assertThat(detector.eventOccurred(null, false),
-                CoreMatchers.is(Action.STOP));
+        MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false), CoreMatchers.is(Action.STOP));
         MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
     }
 

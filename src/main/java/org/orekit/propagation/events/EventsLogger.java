@@ -168,7 +168,7 @@ public class EventsLogger {
          */
         LoggingWrapper(final EventDetector detector) {
             this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), new LocalHandler(),
+                 detector.getMaxIterationCount(), null,
                  detector);
         }
 
@@ -219,23 +219,26 @@ public class EventsLogger {
             return detector.g(s);
         }
 
-    }
-
-    /** Local class for handling events. */
-    private static class LocalHandler implements EventHandler {
-
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
-            final LoggingWrapper wrapper = (LoggingWrapper) detector;
-            wrapper.logEvent(s, increasing);
-            return wrapper.detector.eventOccurred(s, increasing);
-        }
+        public EventHandler getHandler() {
 
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
-            final LoggingWrapper wrapper = (LoggingWrapper) detector;
-            return wrapper.detector.resetState(oldState);
+            final EventHandler handler = detector.getHandler();
+
+            return new EventHandler() {
+
+                /** {@inheritDoc} */
+                public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
+                    logEvent(s, increasing);
+                    return handler.eventOccurred(s, detector, increasing);
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState resetState(final EventDetector d, final SpacecraftState oldState) {
+                    return handler.resetState(detector, oldState);
+                }
+
+            };
         }
 
     }

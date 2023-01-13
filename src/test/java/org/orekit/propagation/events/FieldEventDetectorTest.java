@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.events;
 
+import java.lang.reflect.Array;
+import java.util.Locale;
+import java.util.function.Function;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -57,10 +61,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
-
-import java.lang.reflect.Array;
-import java.util.Locale;
-import java.util.function.Function;
 
 public class FieldEventDetectorTest {
 
@@ -413,8 +413,8 @@ public class FieldEventDetectorTest {
             }
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, boolean increasing) {
-                return Action.RESET_STATE;
+            public FieldEventHandler<T> getHandler() {
+                return (state, detector, increasing) ->  Action.RESET_STATE;
             }
        };
 
@@ -431,7 +431,7 @@ public class FieldEventDetectorTest {
                                                                                         FramesFactory.getEME2000(),
                                                                                         FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU)));
-       Assertions.assertSame(s, dummyDetector.resetState(s));
+       Assertions.assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
 
     }
 

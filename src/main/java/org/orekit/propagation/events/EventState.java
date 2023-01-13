@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -54,6 +55,9 @@ public class EventState<T extends EventDetector> {
 
     /** Event detector. */
     private T detector;
+
+    /** Event handler. */
+    private EventHandler handler;
 
     /** Time of the previous call to g. */
     private AbsoluteDate lastT;
@@ -104,6 +108,7 @@ public class EventState<T extends EventDetector> {
      */
     public EventState(final T detector) {
         this.detector     = detector;
+        this.handler      = detector.getHandler();
 
         // some dummy values ...
         lastT                  = AbsoluteDate.PAST_INFINITY;
@@ -501,10 +506,10 @@ public class EventState<T extends EventDetector> {
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = handler.eventOccurred(state, detector, increasing == forward);
         final SpacecraftState newState;
         if (action == Action.RESET_STATE) {
-            newState = detector.resetState(state);
+            newState = handler.resetState(detector, state);
         } else {
             newState = state;
         }
