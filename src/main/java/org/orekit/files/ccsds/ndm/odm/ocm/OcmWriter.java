@@ -134,7 +134,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
 
         if (segment.getData().getUserDefinedBlock() != null) {
             // write optional user defined parameters block
-            new UserDefinedWriter(OcmDataSubStructureKey.userDef.name(),
+            new UserDefinedWriter(OcmDataSubStructureKey.user.name(),
                                   OcmDataSubStructureKey.USER.name(),
                                   segment.getData().getUserDefinedBlock()).
             write(generator);

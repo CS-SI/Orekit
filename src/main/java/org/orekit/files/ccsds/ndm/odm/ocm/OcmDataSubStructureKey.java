@@ -41,7 +41,7 @@ public enum OcmDataSubStructureKey {
     COV((token, parser) -> parser.manageCovarianceHistorySection(token.getType() == TokenType.START)),
 
     /** Covariance time history section. */
-    covar((token, parser) -> parser.manageCovarianceHistorySection(token.getType() == TokenType.START)),
+    cov((token, parser) -> parser.manageCovarianceHistorySection(token.getType() == TokenType.START)),
 
     /** Maneuvers section. */
     MAN((token, parser) -> parser.manageManeuversSection(token.getType() == TokenType.START)),
@@ -65,7 +65,7 @@ public enum OcmDataSubStructureKey {
     USER((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START)),
 
     /** User-defined parameters section. */
-    userDef((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START));
+    user((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -47,7 +47,7 @@ class CovarianceHistoryWriter extends AbstractWriter {
      */
     CovarianceHistoryWriter(final CovarianceHistory covarianceHistory,
                             final TimeConverter timeConverter) {
-        super(OcmDataSubStructureKey.covar.name(), OcmDataSubStructureKey.COV.name());
+        super(OcmDataSubStructureKey.cov.name(), OcmDataSubStructureKey.COV.name());
         this.history       = covarianceHistory;
         this.timeConverter = timeConverter;
     }
