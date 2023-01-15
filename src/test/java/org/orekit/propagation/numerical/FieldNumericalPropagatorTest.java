@@ -1740,13 +1740,14 @@ public class FieldNumericalPropagatorTest {
         propagator.setResetAtEnd(false);
 
         // Stop condition
-        propagator.addEventDetector(new FieldDateDetector<T>(propagator.getInitialState().getDate().shiftedBy(60)));
+        T convergenceThreshold = field.getZero().add(1e-9);
+        propagator.addEventDetector(new FieldDateDetector<T>(field.getZero().add(1e10), convergenceThreshold, propagator.getInitialState().getDate().shiftedBy(60)));
 
         // Propagate until the stop condition is reached
         final FieldSpacecraftState<T> finalState =  propagator.propagate(FieldAbsoluteDate.getFutureInfinity(field));
 
         // Check that the expected final state was reached
-        Assertions.assertEquals(60, finalState.getDate().durationFrom(propagator.getInitialState().getDate()).getReal());
+        Assertions.assertEquals(60, finalState.getDate().durationFrom(propagator.getInitialState().getDate()).getReal(), convergenceThreshold.getReal());
 
     }
 

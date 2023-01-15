@@ -1600,13 +1600,14 @@ public class NumericalPropagatorTest {
         final NumericalPropagator propag = createPropagator(initialState, OrbitType.KEPLERIAN, PositionAngle.TRUE);
 
         // Stop condition
-        propag.addEventDetector(new DateDetector(initialState.getDate().shiftedBy(60)));
+        final double convergenceThreshold = 1e-9;
+        propag.addEventDetector(new DateDetector(1e10, convergenceThreshold, initialState.getDate().shiftedBy(60)));
 
         // Propagate until the stop condition is reached
         final SpacecraftState finalState =  propag.propagate(AbsoluteDate.FUTURE_INFINITY);
 
         // Check that the expected final state was reached
-        Assertions.assertEquals(60, finalState.getDate().durationFrom(initialState.getDate()));
+        Assertions.assertEquals(60, finalState.getDate().durationFrom(initialState.getDate()), convergenceThreshold);
 
     }
 
