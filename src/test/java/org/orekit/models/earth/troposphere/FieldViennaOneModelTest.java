@@ -22,7 +22,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -69,7 +69,7 @@ public class FieldViennaOneModelTest {
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(Decimal64Field.getInstance());
+        doTestMappingFactors(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
@@ -121,7 +121,7 @@ public class FieldViennaOneModelTest {
 
     @Test
     public void testDelay() {
-        doTestDelay(Decimal64Field.getInstance());
+        doTestDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDelay(final Field<T> field) {
@@ -140,7 +140,7 @@ public class FieldViennaOneModelTest {
 
     @Test
     public void testFixedHeight() {
-        doTestFixedHeight(Decimal64Field.getInstance());
+        doTestFixedHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {

@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -44,7 +44,7 @@ public class FieldApsideDetectorTest {
 
     @Test
     public void testSimple() {
-        doTestSimple(Decimal64Field.getInstance());
+        doTestSimple(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimple(Field<T> field) {

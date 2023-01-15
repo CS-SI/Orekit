@@ -28,7 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -184,7 +184,7 @@ public class AttitudesSequenceTest {
 
     @Test
     public void testDayNightSwitchField() {
-        doTestDayNightSwitchField(Decimal64Field.getInstance());
+        doTestDayNightSwitchField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)

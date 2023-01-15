@@ -12,7 +12,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Min;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -64,7 +64,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void sameDateCartesian() {
-        doSameDateCartesian(Decimal64Field.getInstance());
+        doSameDateCartesian(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doSameDateCartesian(Field<T> field) {
 
@@ -104,7 +104,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void sameDateKeplerian() {
-        doSameDateKeplerian(Decimal64Field.getInstance());
+        doSameDateKeplerian(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
 
@@ -138,7 +138,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void almostSphericalBody() {
-        doAlmostSphericalBody(Decimal64Field.getInstance());
+        doAlmostSphericalBody(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
 
@@ -215,7 +215,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagation() {
-        doCompareToNumericalPropagation(Decimal64Field.getInstance());
+        doCompareToNumericalPropagation(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagation(Field<T> field) {
 
@@ -292,7 +292,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagationWithDrag() {
-        doCompareToNumericalPropagationWithDrag(Decimal64Field.getInstance());
+        doCompareToNumericalPropagationWithDrag(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationWithDrag(Field<T> field) {
@@ -397,7 +397,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagationMeanInitialOrbit() {
-        doCompareToNumericalPropagationMeanInitialOrbit(Decimal64Field.getInstance());
+        doCompareToNumericalPropagationMeanInitialOrbit(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationMeanInitialOrbit(Field<T> field) {
 
@@ -476,7 +476,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagationResetInitialIntermediate() {
-        doCompareToNumericalPropagationResetInitialIntermediate(Decimal64Field.getInstance());
+        doCompareToNumericalPropagationResetInitialIntermediate(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationResetInitialIntermediate(Field<T> field) {
 
@@ -541,7 +541,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareConstructors() {
-        doCompareConstructors(Decimal64Field.getInstance());
+        doCompareConstructors(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareConstructors(Field<T> field) {
 
@@ -603,7 +603,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void undergroundOrbit() {
-        doUndergroundOrbit(Decimal64Field.getInstance());
+        doUndergroundOrbit(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
 
@@ -639,7 +639,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void tooEllipticalOrbit() {
-        doTooEllipticalOrbit(Decimal64Field.getInstance());
+        doTooEllipticalOrbit(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
         // for an eccentricity too big for the model
@@ -670,7 +670,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void criticalInclination() {
-        doCriticalInclination(Decimal64Field.getInstance());
+        doCriticalInclination(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
 
@@ -717,7 +717,7 @@ public class FieldBrouwerLyddanePropagatorTest {
     @Test
     public void testUnableToComputeBLMeanParameters() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            doTestUnableToComputeBLMeanParameters(Decimal64Field.getInstance());
+            doTestUnableToComputeBLMeanParameters(Binary64Field.getInstance());
         });
     }
 
@@ -753,7 +753,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void testMeanComparisonWithNonField() {
-        doTestMeanComparisonWithNonField(Decimal64Field.getInstance());
+        doTestMeanComparisonWithNonField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMeanComparisonWithNonField(Field<T> field) {
@@ -806,7 +806,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void testOsculatingComparisonWithNonField() {
-        doTestOsculatingComparisonWithNonField(Decimal64Field.getInstance());
+        doTestOsculatingComparisonWithNonField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestOsculatingComparisonWithNonField(Field<T> field) {
@@ -858,7 +858,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void testMeanOrbit() throws IOException {
-        doTestMeanOrbit(Decimal64Field.getInstance());
+        doTestMeanOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMeanOrbit(Field<T> field) {

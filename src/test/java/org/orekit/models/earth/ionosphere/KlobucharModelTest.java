@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.AfterEach;
@@ -101,7 +101,7 @@ public class KlobucharModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -149,7 +149,7 @@ public class KlobucharModelTest {
 
     @Test
     public <T extends CalculusFieldElement<T>> void compareFieldExpectedValue() {
-        doCompareFieldExpectedValue(Decimal64Field.getInstance());
+        doCompareFieldExpectedValue(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValue(final Field<T> field)
@@ -213,7 +213,7 @@ public class KlobucharModelTest {
 
     @Test
     public <T extends CalculusFieldElement<T>> void testFieldEquality() {
-        doTestFieldEquality(Decimal64Field.getInstance());
+        doTestFieldEquality(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldEquality(final Field<T> field) {

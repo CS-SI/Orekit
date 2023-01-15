@@ -28,7 +28,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -48,7 +48,7 @@ public class FieldTransformTest {
 
     @Test
     public void testIdentityTranslation() {
-        doTestIdentityTranslation(Decimal64Field.getInstance());
+        doTestIdentityTranslation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIdentityTranslation(Field<T> field) {
@@ -58,7 +58,7 @@ public class FieldTransformTest {
 
     @Test
     public void testIdentityRotation() {
-        doTestIdentityRotation(Decimal64Field.getInstance());
+        doTestIdentityRotation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIdentityRotation(Field<T> field) {
@@ -68,7 +68,7 @@ public class FieldTransformTest {
 
     @Test
     public void testIdentityLine() {
-        doTestIdentityLine(Decimal64Field.getInstance());
+        doTestIdentityLine(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIdentityLine(Field<T> field) {
@@ -82,7 +82,7 @@ public class FieldTransformTest {
 
     @Test
     public void testSimpleComposition() {
-        doTestSimpleComposition(Decimal64Field.getInstance());
+        doTestSimpleComposition(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimpleComposition(Field<T> field) {
@@ -100,7 +100,7 @@ public class FieldTransformTest {
 
     @Test
     public void testAcceleration() {
-        doTestAcceleration(Decimal64Field.getInstance());
+        doTestAcceleration(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAcceleration(Field<T> field) {
@@ -134,7 +134,7 @@ public class FieldTransformTest {
 
     @Test
     public void testAccelerationComposition() {
-        doTestAccelerationComposition(Decimal64Field.getInstance());
+        doTestAccelerationComposition(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAccelerationComposition(Field<T> field) {
@@ -188,7 +188,7 @@ public class FieldTransformTest {
 
     @Test
     public void testRandomComposition() {
-        doTestRandomComposition(Decimal64Field.getInstance());
+        doTestRandomComposition(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestRandomComposition(Field<T> field) {
@@ -238,7 +238,7 @@ public class FieldTransformTest {
 
     @Test
     public void testReverse() {
-        doTestReverse(Decimal64Field.getInstance());
+        doTestReverse(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestReverse(Field<T> field) {
@@ -254,7 +254,7 @@ public class FieldTransformTest {
 
     @Test
     public void testIdentityJacobianP() {
-        doTestIdentityJacobianP(Decimal64Field.getInstance());
+        doTestIdentityJacobianP(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIdentityJacobianP(Field<T> field) {
@@ -263,7 +263,7 @@ public class FieldTransformTest {
 
     @Test
     public void testIdentityJacobianPV() {
-        doTestIdentityJacobianPV(Decimal64Field.getInstance());
+        doTestIdentityJacobianPV(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIdentityJacobianPV(Field<T> field) {
@@ -272,7 +272,7 @@ public class FieldTransformTest {
 
     @Test
     public void testIdentityJacobianPVA() {
-        doTestIdentityJacobianPVA(Decimal64Field.getInstance());
+        doTestIdentityJacobianPVA(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIdentityJacobianPVA(Field<T> field) {
@@ -291,7 +291,7 @@ public class FieldTransformTest {
 
     @Test
     public void testDecomposeAndRebuild() {
-        doTestDecomposeAndRebuild(Decimal64Field.getInstance());
+        doTestDecomposeAndRebuild(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDecomposeAndRebuild(Field<T> field) {
@@ -312,7 +312,7 @@ public class FieldTransformTest {
 
     @Test
     public void testTranslation() {
-        doTestTranslation(Decimal64Field.getInstance());
+        doTestTranslation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestTranslation(Field<T> field) {
@@ -334,7 +334,7 @@ public class FieldTransformTest {
 
     @Test
     public void testTranslationDouble() {
-        doTestTranslationDouble(Decimal64Field.getInstance());
+        doTestTranslationDouble(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestTranslationDouble(Field<T> field) {
@@ -356,7 +356,7 @@ public class FieldTransformTest {
 
     @Test
     public void testRoughTransPV() {
-        doTestRoughTransPV(Decimal64Field.getInstance());
+        doTestRoughTransPV(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestRoughTransPV(Field<T> field) {
@@ -448,7 +448,7 @@ public class FieldTransformTest {
 
     @Test
     public void testRotPV() {
-        doTestRotPV(Decimal64Field.getInstance());
+        doTestRotPV(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestRotPV(Field<T> field) {
@@ -495,7 +495,7 @@ public class FieldTransformTest {
 
     @Test
     public void testTransPV() {
-        doTestTransPV(Decimal64Field.getInstance());
+        doTestTransPV(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestTransPV(Field<T> field) {
@@ -539,7 +539,7 @@ public class FieldTransformTest {
 
     @Test
     public void testTransPVDouble() {
-        doTestTransPVDouble(Decimal64Field.getInstance());
+        doTestTransPVDouble(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestTransPVDouble(Field<T> field) {
@@ -583,7 +583,7 @@ public class FieldTransformTest {
 
     @Test
     public void testRotation() {
-        doTestRotation(Decimal64Field.getInstance());
+        doTestRotation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestRotation(Field<T> field) {
@@ -611,7 +611,7 @@ public class FieldTransformTest {
 
     @Test
     public void testJacobianP() {
-        doTestJacobianP(Decimal64Field.getInstance());
+        doTestJacobianP(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestJacobianP(Field<T> field) {
@@ -690,7 +690,7 @@ public class FieldTransformTest {
 
     @Test
     public void testJacobianPV() {
-        doTestJacobianPV(Decimal64Field.getInstance());
+        doTestJacobianPV(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestJacobianPV(Field<T> field) {
@@ -776,7 +776,7 @@ public class FieldTransformTest {
 
     @Test
     public void testJacobianPVA() {
-        doTestJacobianPVA(Decimal64Field.getInstance());
+        doTestJacobianPVA(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestJacobianPVA(Field<T> field) {
@@ -857,7 +857,7 @@ public class FieldTransformTest {
 
     @Test
     public void testLine() {
-        doTestLine(Decimal64Field.getInstance());
+        doTestLine(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLine(Field<T> field) {
@@ -879,7 +879,7 @@ public class FieldTransformTest {
 
     @Test
     public void testLineDouble() {
-        doTestLineDouble(Decimal64Field.getInstance());
+        doTestLineDouble(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLineDouble(Field<T> field) {
@@ -901,7 +901,7 @@ public class FieldTransformTest {
 
     @Test
     public void testLinear() {
-        doTestLinear(Decimal64Field.getInstance());
+        doTestLinear(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLinear(final Field<T> field) {
@@ -977,7 +977,7 @@ public class FieldTransformTest {
 
     @Test
     public void testShift() {
-        doTestShift(Decimal64Field.getInstance());
+        doTestShift(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShift(Field<T> field) {
@@ -1037,7 +1037,7 @@ public class FieldTransformTest {
 
     @Test
     public void testShiftDerivatives() {
-        doTestShiftDerivatives(Decimal64Field.getInstance());
+        doTestShiftDerivatives(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftDerivatives(Field<T> field) {
@@ -1175,7 +1175,7 @@ public class FieldTransformTest {
 
     @Test
     public void testInterpolation() {
-        doTestInterpolation(Decimal64Field.getInstance());
+        doTestInterpolation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field) {

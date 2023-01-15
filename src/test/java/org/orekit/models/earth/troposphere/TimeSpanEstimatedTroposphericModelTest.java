@@ -22,7 +22,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -389,7 +389,7 @@ public class TimeSpanEstimatedTroposphericModelTest {
 
     @Test
     public void testFieldComparisonWithEstimatedModel() {
-        doTestFieldComparisonWithEstimatedModel(Decimal64Field.getInstance());
+        doTestFieldComparisonWithEstimatedModel(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldComparisonWithEstimatedModel(final Field<T> field) {

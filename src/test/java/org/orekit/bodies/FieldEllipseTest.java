@@ -24,7 +24,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.FieldVector2D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,32 +42,32 @@ public class FieldEllipseTest {
 
     @Test
     public void testMeridianShape() {
-        doTestMeridianShape(Decimal64Field.getInstance());
+        doTestMeridianShape(Binary64Field.getInstance());
     }
 
     @Test
     public void testEquatorialShape() {
-        doTestEquatorialShape(Decimal64Field.getInstance());
+        doTestEquatorialShape(Binary64Field.getInstance());
     }
 
     @Test
     public void testProjectionDerivatives() {
-        doTestProjectionDerivatives(Decimal64Field.getInstance());
+        doTestProjectionDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testMinRadiusOfCurvature() {
-        doTestMinRadiusOfCurvature(Decimal64Field.getInstance());
+        doTestMinRadiusOfCurvature(Binary64Field.getInstance());
     }
 
     @Test
     public void testMaxRadiusOfCurvature() {
-        doTestMaxRadiusOfCurvature(Decimal64Field.getInstance());
+        doTestMaxRadiusOfCurvature(Binary64Field.getInstance());
     }
 
     @Test
     public void testFlatEllipse() {
-        doTestFlatEllipse(Decimal64Field.getInstance());
+        doTestFlatEllipse(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMeridianShape(final Field<T> field) {

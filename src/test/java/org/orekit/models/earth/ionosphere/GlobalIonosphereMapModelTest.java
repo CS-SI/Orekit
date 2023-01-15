@@ -18,7 +18,7 @@ package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,7 +82,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testFieldTEC() {
-        doTestFieldTEC(Decimal64Field.getInstance());
+        doTestFieldTEC(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldTEC(final Field<T> field) {
@@ -105,7 +105,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -184,7 +184,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testFieldEarlierDate() {
-        doTestFieldEarlierDate(Decimal64Field.getInstance());
+        doTestFieldEarlierDate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldEarlierDate(final Field<T> field) {
@@ -221,7 +221,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testFieldLaterDate() {
-        doTestFieldLaterDate(Decimal64Field.getInstance());
+        doTestFieldLaterDate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldLaterDate(final Field<T> field) {

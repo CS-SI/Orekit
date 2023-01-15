@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,7 +81,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     public void testFieldAEM() {
-        doTestFieldAEM(Decimal64Field.getInstance());
+        doTestFieldAEM(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
@@ -137,7 +137,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     public void testFieldOutsideBounds() throws Exception {
-        doTestFieldOutsideBounds(Decimal64Field.getInstance());
+        doTestFieldOutsideBounds(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {

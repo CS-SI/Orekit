@@ -18,7 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,12 +41,12 @@ public class FieldNodeDetectorTest {
 
     @Test
     public void testIssue138() {
-        doTestIssue138(Decimal64Field.getInstance());
+        doTestIssue138(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue158() {
-        doTestIssue158(Decimal64Field.getInstance());
+        doTestIssue158(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>>void doTestIssue138(Field<T> field) {

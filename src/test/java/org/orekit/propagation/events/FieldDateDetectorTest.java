@@ -27,7 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,34 +65,34 @@ public class FieldDateDetectorTest {
 
     @Test
     public void testSimpleTimer() {
-        doTestSimpleTimer(Decimal64Field.getInstance());
+        doTestSimpleTimer(Binary64Field.getInstance());
     }
 
     @Test
     public void testEmbeddedTimer() {
-        doTestEmbeddedTimer(Decimal64Field.getInstance());
+        doTestEmbeddedTimer(Binary64Field.getInstance());
     }
 
     @Test
     public void testAutoEmbeddedTimer() {
-        doTestAutoEmbeddedTimer(Decimal64Field.getInstance());
+        doTestAutoEmbeddedTimer(Binary64Field.getInstance());
     }
 
     @Test
     public void testExceptionTimer() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestExceptionTimer(Decimal64Field.getInstance());
+            doTestExceptionTimer(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testGenericHandler() {
-        doTestGenericHandler(Decimal64Field.getInstance());
+        doTestGenericHandler(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue935() {
-        doTestIssue935(Decimal64Field.getInstance());
+        doTestIssue935(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimpleTimer(final Field<T> field) {

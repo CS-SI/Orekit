@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -354,7 +354,7 @@ public class TargetPointingTest {
         // Get attitude rotation
         Rotation rotSatEME2000 = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
-        checkField(Decimal64Field.getInstance(), targetLaw, circ, circ.getDate(), circ.getFrame());
+        checkField(Binary64Field.getInstance(), targetLaw, circ, circ.getDate(), circ.getFrame());
 
         // Compute difference between both attitude providers
         // *********************************************

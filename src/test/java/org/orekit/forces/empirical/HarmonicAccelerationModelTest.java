@@ -26,7 +26,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -207,7 +207,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         inertialAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
-        doTestEquivalentManeuver(Decimal64Field.getInstance(),
+        doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 3.0e-9);
     }
 
@@ -226,7 +226,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
         lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
-        doTestEquivalentManeuver(Decimal64Field.getInstance(),
+        doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
     }
 
@@ -248,7 +248,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
         lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
-        doTestEquivalentManeuver(Decimal64Field.getInstance(),
+        doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
     }
 

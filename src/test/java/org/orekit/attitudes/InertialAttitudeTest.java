@@ -22,8 +22,8 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -71,7 +71,7 @@ public class InertialAttitudeTest {
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
             SpacecraftState state = propagator.propagate(t0.shiftedBy(t));
-            checkField(Decimal64Field.getInstance(), law, state.getOrbit(), state.getDate(), state.getFrame());
+            checkField(Binary64Field.getInstance(), law, state.getOrbit(), state.getDate(), state.getFrame());
             Attitude attitude = state.getAttitude();
             Rotation evolution = attitude.getRotation().compose(initial.getRotation().revert(),
                                                                 RotationConvention.VECTOR_OPERATOR);
@@ -201,16 +201,16 @@ public class InertialAttitudeTest {
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
         AttitudeProvider law = InertialProvider.of(eci);
-        Decimal64 one = Decimal64.ONE;
-        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(one.getField(), t0);
-        FieldOrbit<Decimal64> orbit = new FieldCartesianOrbit<>(
+        Binary64 one = Binary64.ONE;
+        FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(one.getField(), t0);
+        FieldOrbit<Binary64> orbit = new FieldCartesianOrbit<>(
                 new FieldPVCoordinates<>(one, this.orbit0.getPVCoordinates()),
                 eci,
                 date,
                 one.multiply(orbit0.getMu()));
 
         // action + verify
-        FieldAttitude<Decimal64> actual = law.getAttitude(orbit, date, eci);
+        FieldAttitude<Binary64> actual = law.getAttitude(orbit, date, eci);
         MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
         MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
         actual = law.getAttitude(orbit.shiftedBy(1e3), date.shiftedBy(1e3), eci);

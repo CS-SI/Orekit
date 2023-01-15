@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +61,7 @@ public class CelestialBodyPointingTest {
         Orbit orbit = new KeplerianOrbit(pv, frame, date, 3.986004415e14);
         Attitude attitude   = sunPointing.getAttitude(orbit, date, frame);
 
-        checkField(Decimal64Field.getInstance(), sunPointing, orbit, date, frame);
+        checkField(Binary64Field.getInstance(), sunPointing, orbit, date, frame);
 
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D zDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);

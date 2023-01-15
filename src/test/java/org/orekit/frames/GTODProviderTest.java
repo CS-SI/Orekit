@@ -23,8 +23,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -180,12 +180,12 @@ public class GTODProviderTest {
                              { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
                          }));
-        FieldAbsoluteDate<Decimal64> t0 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        FieldAbsoluteDate<Binary64> t0 = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                   new DateComponents(2004, 06, 01),
                                                                   TimeComponents.H00,
                                                                   TimeScalesFactory.getUTC());
 
-        FieldTransform<Decimal64> t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+        FieldTransform<Binary64> t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
                 getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
         // TOD iau76
         PVCoordinates pvTOD =
@@ -199,11 +199,11 @@ public class GTODProviderTest {
 
         // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
         // was not taken into account in the reference paper, so we fix it here for the test
-        final Decimal64 dDeltaPsi =
+        final Binary64 dDeltaPsi =
                 FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
-        final Decimal64 epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
-        final FieldTransform<Decimal64> fix =
-                new FieldTransform<>(t0, new FieldRotation<>(FieldVector3D.getPlusK(Decimal64Field.getInstance()),
+        final Binary64 epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
+        final FieldTransform<Binary64> fix =
+                new FieldTransform<>(t0, new FieldRotation<>(FieldVector3D.getPlusK(Binary64Field.getInstance()),
                                                              dDeltaPsi.multiply(epsilonA.cos()),
                                                              RotationConvention.FRAME_TRANSFORM));
 

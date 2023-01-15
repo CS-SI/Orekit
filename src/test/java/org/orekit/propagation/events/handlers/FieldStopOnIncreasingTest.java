@@ -19,7 +19,7 @@ package org.orekit.propagation.events.handlers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
@@ -33,17 +33,17 @@ public class FieldStopOnIncreasingTest {
 
     @Test
     public void testNoReset() {
-        doTestNoReset(Decimal64Field.getInstance());
+        doTestNoReset(Binary64Field.getInstance());
     }
 
     @Test
     public void testIbcreasing() {
-        doTestIncreasing(Decimal64Field.getInstance());
+        doTestIncreasing(Binary64Field.getInstance());
     }
 
     @Test
     public void testDecreasing() {
-        doTestDecreasing(Decimal64Field.getInstance());
+        doTestDecreasing(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNoReset(Field<T> field) {

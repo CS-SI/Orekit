@@ -32,8 +32,8 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -211,7 +211,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                             1.0e-15);
 
         Assertions.assertEquals(1.0,
-                            srp.getLightingRatio(new FieldSpacecraftState<>(Decimal64Field.getInstance(),
+                            srp.getLightingRatio(new FieldSpacecraftState<>(Binary64Field.getInstance(),
                                                                             new SpacecraftState(orbit))).getReal(),
                             1.0e-15);
     }
@@ -1085,12 +1085,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      */
     @Test
     public void testFieldMoonPenumbra() {
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<>(field, 2007, 1, 19, 5,  0, 0, TimeScalesFactory.getGPS());
-        final FieldVector3D<Decimal64>     p     = new FieldVector3D<>(field, new Vector3D(12538484.957505366, 15515522.98001655, -17884023.51839292));
-        final FieldVector3D<Decimal64>     v     = new FieldVector3D<>(field, new Vector3D(-3366.9009055533616, 769.5389825219049,  -1679.3840677789601));
-        final FieldVector3D<Decimal64>     a     = FieldVector3D.getZero(field);
-        final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
+        Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field, 2007, 1, 19, 5,  0, 0, TimeScalesFactory.getGPS());
+        final FieldVector3D<Binary64>     p     = new FieldVector3D<>(field, new Vector3D(12538484.957505366, 15515522.98001655, -17884023.51839292));
+        final FieldVector3D<Binary64>     v     = new FieldVector3D<>(field, new Vector3D(-3366.9009055533616, 769.5389825219049,  -1679.3840677789601));
+        final FieldVector3D<Binary64>     a     = FieldVector3D.getZero(field);
+        final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
         doTestFieldMoonEarth(orbit, field.getZero().newInstance(7200.0), field.getZero().newInstance(1.0), 0, 0, 0, 1513, 0.0);
@@ -1098,12 +1098,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testFieldEarthPenumbraOnly() {
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<>(field, 2007, 3, 13, 17, 14, 0, TimeScalesFactory.getGPS());
-        final FieldVector3D<Decimal64>     p     = new FieldVector3D<>(field, new Vector3D(-26168647.4977583, -1516554.3304749255, -3206794.210706205));
-        final FieldVector3D<Decimal64>     v     = new FieldVector3D<>(field, new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495));
-        final FieldVector3D<Decimal64>     a     = FieldVector3D.getZero(field);
-        final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
+        Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field, 2007, 3, 13, 17, 14, 0, TimeScalesFactory.getGPS());
+        final FieldVector3D<Binary64>     p     = new FieldVector3D<>(field, new Vector3D(-26168647.4977583, -1516554.3304749255, -3206794.210706205));
+        final FieldVector3D<Binary64>     v     = new FieldVector3D<>(field, new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495));
+        final FieldVector3D<Binary64>     a     = FieldVector3D.getZero(field);
+        final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
         doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.195e-3);
@@ -1111,12 +1111,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testFieldEarthPenumbraAndUmbra() {
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<>(field, 2007, 3, 14,  5,  8, 0, TimeScalesFactory.getGPS());
-        final FieldVector3D<Decimal64>     p     = new FieldVector3D<>(field, new Vector3D(-26101379.998276696, -947280.678355501, -3940992.754483608));
-        final FieldVector3D<Decimal64>     v     = new FieldVector3D<>(field, new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567));
-        final FieldVector3D<Decimal64>     a     = FieldVector3D.getZero(field);
-        final FieldOrbit<Decimal64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
+        Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field, 2007, 3, 14,  5,  8, 0, TimeScalesFactory.getGPS());
+        final FieldVector3D<Binary64>     p     = new FieldVector3D<>(field, new Vector3D(-26101379.998276696, -947280.678355501, -3940992.754483608));
+        final FieldVector3D<Binary64>     v     = new FieldVector3D<>(field, new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567));
+        final FieldVector3D<Binary64>     a     = FieldVector3D.getZero(field);
+        final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
         doTestFieldMoonEarth(orbit, field.getZero().newInstance(3600.0), field.getZero().newInstance(1.0), 534, 1003, 0, 0, 11.633e-3);

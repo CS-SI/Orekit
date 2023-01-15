@@ -24,7 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.LocalizedODEFormats;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,28 +74,28 @@ public class FieldEclipseDetectorTest {
 
     @Test
     public void testEclipse() {
-        doTestEclipse(Decimal64Field.getInstance());
+        doTestEclipse(Binary64Field.getInstance());
     }
     @Test
     public void testPenumbra() {
-        doTestPenumbra(Decimal64Field.getInstance());
+        doTestPenumbra(Binary64Field.getInstance());
     }
     @Test
     public void testWithMethods() {
-        doTestWithMethods(Decimal64Field.getInstance());
+        doTestWithMethods(Binary64Field.getInstance());
     }
 
     @Test
     public void testInsideOcculting() {
-        doTestInsideOcculting(Decimal64Field.getInstance());
+        doTestInsideOcculting(Binary64Field.getInstance());
     }
     @Test
     public void testInsideOcculted() {
-        doTestInsideOcculted(Decimal64Field.getInstance());
+        doTestInsideOcculted(Binary64Field.getInstance());
     }
     @Test
     public void testTooSmallMaxIterationCount() {
-        testTooSmallMaxIterationCount(Decimal64Field.getInstance());
+        testTooSmallMaxIterationCount(Binary64Field.getInstance());
     }
 
 

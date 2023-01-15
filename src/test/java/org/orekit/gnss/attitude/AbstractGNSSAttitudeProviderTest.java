@@ -20,8 +20,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,14 +131,14 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 maxErrorZ = FastMath.max(maxErrorZ, CheckAxis.Z_AXIS.error(attitude1, x, z));
 
                 // test on field
-                final Field<Decimal64> field = Decimal64Field.getInstance();
-                final FieldPVCoordinates<Decimal64> pv64 = new FieldPVCoordinates<>(field, parsedLine.orbit.getPVCoordinates());
-                final FieldAbsoluteDate<Decimal64> date64 =  new FieldAbsoluteDate<>(field, parsedLine.gpsDate.getDate());
-                final FieldCartesianOrbit<Decimal64> orbit64 = new FieldCartesianOrbit<>(pv64,
+                final Field<Binary64> field = Binary64Field.getInstance();
+                final FieldPVCoordinates<Binary64> pv64 = new FieldPVCoordinates<>(field, parsedLine.orbit.getPVCoordinates());
+                final FieldAbsoluteDate<Binary64> date64 =  new FieldAbsoluteDate<>(field, parsedLine.gpsDate.getDate());
+                final FieldCartesianOrbit<Binary64> orbit64 = new FieldCartesianOrbit<>(pv64,
                                                                                          parsedLine.orbit.getFrame(),
                                                                                          date64,
                                                                                          field.getZero().add(parsedLine.orbit.getMu()));
-                final FieldAttitude<Decimal64> attitude64 =
+                final FieldAttitude<Binary64> attitude64 =
                                 attitudeProvider.getAttitude(orbit64, orbit64.getDate(), parsedLine.orbit.getFrame());
                 final Attitude attitude2 = attitude64.toAttitude();
                 maxErrorX = FastMath.max(maxErrorX, CheckAxis.X_AXIS.error(attitude2, x, z));

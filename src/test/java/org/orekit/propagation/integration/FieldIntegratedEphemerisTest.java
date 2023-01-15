@@ -26,7 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,27 +56,27 @@ public class FieldIntegratedEphemerisTest {
 
     @Test
     public void testNormalKeplerIntegration() {
-        doTestNormalKeplerIntegration(Decimal64Field.getInstance());
+        doTestNormalKeplerIntegration(Binary64Field.getInstance());
     }
 
     @Test
     public void testGetFrame() {
-        doTestGetFrame(Decimal64Field.getInstance());
+        doTestGetFrame(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalState() {
-        doTestAdditionalState(Decimal64Field.getInstance());
+        doTestAdditionalState(Binary64Field.getInstance());
     }
 
     @Test
     public void testNoReset() {
-        doTestNoReset(Decimal64Field.getInstance());
+        doTestNoReset(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalDerivatives() {
-        doTestAdditionalDerivatives(Decimal64Field.getInstance());
+        doTestAdditionalDerivatives(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {

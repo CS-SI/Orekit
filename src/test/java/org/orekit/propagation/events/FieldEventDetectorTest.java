@@ -30,7 +30,7 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +68,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testEventHandlerInit() {
-        doTestEventHandlerInit(Decimal64Field.getInstance());
+        doTestEventHandlerInit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field) {
@@ -117,7 +117,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testBasicScheduling() {
-        doTestBasicScheduling(Decimal64Field.getInstance());
+        doTestBasicScheduling(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestBasicScheduling(Field<T> field) {
@@ -183,7 +183,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testIssue108Numerical() {
-        doTestIssue108Numerical(Decimal64Field.getInstance());
+        doTestIssue108Numerical(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue108Numerical(Field<T> field) {
@@ -212,7 +212,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testIssue108Analytical() {
-        doTestIssue108Analytical(Decimal64Field.getInstance());
+        doTestIssue108Analytical(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue108Analytical(Field<T> field) {
@@ -268,7 +268,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testNoisyGFunction() {
-        doTestNoisyGFunction(Decimal64Field.getInstance());
+        doTestNoisyGFunction(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNoisyGFunction(Field<T> field) {
@@ -341,7 +341,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testWrappedException() {
-        doTestWrappedException(Decimal64Field.getInstance());
+        doTestWrappedException(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
@@ -386,7 +386,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testDefaultMethods() {
-        doTestDefaultMethods(Decimal64Field.getInstance());
+        doTestDefaultMethods(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDefaultMethods(final Field<T> field) {
@@ -437,7 +437,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testWrongConfiguration() {
-        doTestWrongConfiguration(Decimal64Field.getInstance());
+        doTestWrongConfiguration(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestWrongConfiguration(final Field<T> field) {
@@ -454,22 +454,22 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testForwardAnalytical() {
-        doTestScheduling(Decimal64Field.getInstance(), 0.0, 1.0, 21, this::buildAnalytical);
+        doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 21, this::buildAnalytical);
     }
 
     @Test
     public void testBackwardAnalytical() {
-        doTestScheduling(Decimal64Field.getInstance(), 1.0, 0.0, 21, this::buildAnalytical);
+        doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 21, this::buildAnalytical);
     }
 
     @Test
     public void testForwardNumerical() {
-        doTestScheduling(Decimal64Field.getInstance(), 0.0, 1.0, 23, this::buildNumerical);
+        doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 23, this::buildNumerical);
     }
 
     @Test
     public void testBackwardNumerical() {
-        doTestScheduling(Decimal64Field.getInstance(), 1.0, 0.0, 23, this::buildNumerical);
+        doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 23, this::buildNumerical);
     }
 
     private <T extends CalculusFieldElement<T>> FieldPropagator<T> buildAnalytical(final FieldOrbit<T> orbit) {

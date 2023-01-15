@@ -25,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -194,7 +194,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldSiteAtZenith() {
-        doTestFieldSiteAtZenith(Decimal64Field.getInstance());
+        doTestFieldSiteAtZenith(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSiteAtZenith(final Field<T> field) {
@@ -257,7 +257,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldAzimuthEquatorial() {
-        doTestFieldAzimuthEquatorial(Decimal64Field.getInstance());
+        doTestFieldAzimuthEquatorial(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldAzimuthEquatorial(final Field<T> field) {
@@ -328,7 +328,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldAzimuthPole() {
-        doTestFieldAzimuthPole(Decimal64Field.getInstance());
+        doTestFieldAzimuthPole(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldAzimuthPole(final Field<T> field) {
@@ -412,7 +412,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldDoppler() {
-        doTestFieldDoppler(Decimal64Field.getInstance());
+        doTestFieldDoppler(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDoppler(final Field<T> field) {
@@ -574,7 +574,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldEllipticEarth() {
-        doTestFieldEllipticEarth(Decimal64Field.getInstance());
+        doTestFieldEllipticEarth(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldEllipticEarth(final Field<T> field)  {

@@ -24,7 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -151,7 +151,7 @@ public class TabulatedLofOffsetTest {
                 final Rotation r1 = currentState.getAttitude().getRotation();
                 final Rotation r2 = rebuilt.getAttitude().getRotation();
                 Assertions.assertEquals(0.0, Rotation.distance(r1, r2), 7.0e-6);
-                checkField(Decimal64Field.getInstance(), tabulated,
+                checkField(Binary64Field.getInstance(), tabulated,
                            currentState.getOrbit(), currentState.getDate(), currentState.getFrame());
             });
         rebuildingPropagator.propagate(orbit.getDate().shiftedBy(50), orbit.getDate().shiftedBy(1950));

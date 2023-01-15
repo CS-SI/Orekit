@@ -20,8 +20,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -111,7 +111,7 @@ public class CelestialBodyFrameTest {
                                                           CelestialBodyFactory.getMars(), "MARS");
         MatcherAssert.assertThat(CelestialBodyFrame.map(frame), CoreMatchers.is(CelestialBodyFrame.EME2000));
         Vector3D v = frame.getTransformProvider().getTransform(AbsoluteDate.J2000_EPOCH).getTranslation();
-        FieldVector3D<Decimal64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance())).getTranslation();
+        FieldVector3D<Binary64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance())).getTranslation();
         Assertions.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
 
         // check unknown frame

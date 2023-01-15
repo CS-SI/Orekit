@@ -23,7 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,22 +55,22 @@ public class FieldTLEPropagatorTest {
 
     @Test
     public void testsecondaryMode() {
-        doTestsecondaryMode(Decimal64Field.getInstance());
+        doTestsecondaryMode(Binary64Field.getInstance());
     }
 
     @Test
     public void testEphemerisMode() {
-        doTestEphemerisMode(Decimal64Field.getInstance());
+        doTestEphemerisMode(Binary64Field.getInstance());
     }
 
     @Test
     public void testBodyCenterInPointingDirection() {
-        doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
+        doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
     @Test
     public void testComparisonWithNonField() {
-        doTestComparisonWithNonField(Decimal64Field.getInstance());
+        doTestComparisonWithNonField(Binary64Field.getInstance());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestsecondaryMode(Field<T> field) {

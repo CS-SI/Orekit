@@ -28,7 +28,7 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,82 +50,82 @@ public class FieldAbsolutePVCoordinatesTest {
 
     @Test
     public void TestPVOnlyConstructor() {
-        doTestPVOnlyConstructor(Decimal64Field.getInstance());
+        doTestPVOnlyConstructor(Binary64Field.getInstance());
     }
 
     @Test
     public void testPVCoordinatesCopyConstructor() {
-        doTestPVCoordinatesCopyConstructor(Decimal64Field.getInstance());
+        doTestPVCoordinatesCopyConstructor(Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearConstructors() {
-        doTestLinearConstructors(Decimal64Field.getInstance());
+        doTestLinearConstructors(Binary64Field.getInstance());
     }
 
     @Test
     public void testDifferentFrames() {
-        doTestDifferentFrames(Decimal64Field.getInstance());
+        doTestDifferentFrames(Binary64Field.getInstance());
     }
 
     @Test
     public void testToDerivativeStructureVector1() {
-        doTestToDerivativeStructureVector1(Decimal64Field.getInstance());
+        doTestToDerivativeStructureVector1(Binary64Field.getInstance());
     }
 
     @Test
     public void testToDerivativeStructureVector2() {
-        doTestToDerivativeStructureVector2(Decimal64Field.getInstance());
+        doTestToDerivativeStructureVector2(Binary64Field.getInstance());
     }
 
     @Test
     public void testToUnivariateDerivative1Vector() {
-        doTestToUnivariateDerivative1Vector(Decimal64Field.getInstance());
+        doTestToUnivariateDerivative1Vector(Binary64Field.getInstance());
     }
 
     @Test
     public void testToUnivariateDerivative2Vector() {
-        doTestToUnivariateDerivative2Vector(Decimal64Field.getInstance());
+        doTestToUnivariateDerivative2Vector(Binary64Field.getInstance());
     }
 
     @Test
     public void testShift() {
-        doTestShift(Decimal64Field.getInstance());
+        doTestShift(Binary64Field.getInstance());
     }
 
     @Test
     public void testToString() {
-        doTestToString(Decimal64Field.getInstance());
+        doTestToString(Binary64Field.getInstance());
     }
 
     @Test
     public void testInterpolatePolynomialPVA() {
-        doTestInterpolatePolynomialPVA(Decimal64Field.getInstance());
+        doTestInterpolatePolynomialPVA(Binary64Field.getInstance());
     }
 
     @Test
     public void testInterpolatePolynomialPV() {
-        doTestInterpolatePolynomialPV(Decimal64Field.getInstance());
+        doTestInterpolatePolynomialPV(Binary64Field.getInstance());
     }
 
     @Test
     public void testInterpolatePolynomialPositionOnly() {
-        doTestInterpolatePolynomialPositionOnly(Decimal64Field.getInstance());
+        doTestInterpolatePolynomialPositionOnly(Binary64Field.getInstance());
     }
 
     @Test
     public void testInterpolateNonPolynomial() {
-        doTestInterpolateNonPolynomial(Decimal64Field.getInstance());
+        doTestInterpolateNonPolynomial(Binary64Field.getInstance());
     }
 
     @Test
     public void testSamePV() {
-        doTestSamePV(Decimal64Field.getInstance());
+        doTestSamePV(Binary64Field.getInstance());
     }
 
     @Test
     public void testTaylorProvider() {
-        doTestTaylorProvider(Decimal64Field.getInstance());
+        doTestTaylorProvider(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPVOnlyConstructor(Field<T> field) {

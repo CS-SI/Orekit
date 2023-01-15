@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +63,7 @@ public class SpinStabilizedTest {
                               new Vector3D(0, 0, 3680.853673522056));
         KeplerianOrbit kep = new KeplerianOrbit(pv, FramesFactory.getEME2000(), date, 3.986004415e14);
         Attitude attitude = bbq.getAttitude(kep, date, kep.getFrame());
-        checkField(Decimal64Field.getInstance(), bbq, kep, kep.getDate(), kep.getFrame());
+        checkField(Binary64Field.getInstance(), bbq, kep, kep.getDate(), kep.getFrame());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Assertions.assertEquals(FastMath.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection, sun.getPosition(date, FramesFactory.getEME2000())),

@@ -18,7 +18,7 @@ package org.orekit.forces.maneuvers.triggers;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
@@ -60,8 +60,8 @@ public class ManeuverTriggersTest {
                                                                        AbsoluteDate.J2000_EPOCH,
                                                                        Constants.EIGEN5C_EARTH_MU));
         dummy.init(state, state.getDate().shiftedBy(60));
-        dummy.init(new FieldSpacecraftState<>(Decimal64Field.getInstance(), state),
-                   new FieldAbsoluteDate<>(Decimal64Field.getInstance(), state.getDate().shiftedBy(60)));
+        dummy.init(new FieldSpacecraftState<>(Binary64Field.getInstance(), state),
+                   new FieldAbsoluteDate<>(Binary64Field.getInstance(), state.getDate().shiftedBy(60)));
         Assertions.assertEquals("", dummy.getName());
 
     }

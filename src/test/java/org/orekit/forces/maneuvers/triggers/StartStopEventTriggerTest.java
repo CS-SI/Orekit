@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger;
@@ -74,7 +74,7 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
         final List<TimeStamped>    startDates = trigger.getStartDetector().getDates();
         final List<TimeStamped>    stopDates  = trigger.getStopDetector().getDates();
         Assertions.assertEquals(2,     trigger.getEventsDetectors().count());
-        Assertions.assertEquals(2,     trigger.getFieldEventsDetectors(Decimal64Field.getInstance()).count());
+        Assertions.assertEquals(2,     trigger.getFieldEventsDetectors(Binary64Field.getInstance()).count());
         Assertions.assertEquals(2,     startDates.size());
         Assertions.assertEquals(  0.0, startDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(110.0, startDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);

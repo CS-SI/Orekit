@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -291,7 +291,7 @@ public class LofOffsetTest {
             double alpha2 = 0.456;
             double alpha3 = 0.789;
             LofOffset law = new LofOffset(orbit.getFrame(), type, order, alpha1, alpha2, alpha3);
-            checkField(Decimal64Field.getInstance(), law, orbit, date, orbit.getFrame());
+            checkField(Binary64Field.getInstance(), law, orbit, date, orbit.getFrame());
         }
     }
 

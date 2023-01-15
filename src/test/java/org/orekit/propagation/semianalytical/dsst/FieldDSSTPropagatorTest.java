@@ -28,7 +28,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
@@ -113,7 +113,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue363() {
-        doTestIssue363(Decimal64Field.getInstance());
+        doTestIssue363(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue363(Field<T> field) {
@@ -142,7 +142,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue364() {
-        doTestIssue364(Decimal64Field.getInstance());
+        doTestIssue364(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue364(Field<T> field) {
@@ -171,7 +171,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testHighDegreesSetting() {
-        doTestHighDegreesSetting(Decimal64Field.getInstance());
+        doTestHighDegreesSetting(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestHighDegreesSetting(Field<T> field) {
@@ -207,7 +207,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testEphemerisDates() {
-        doTestEphemerisDates(Decimal64Field.getInstance());
+        doTestEphemerisDates(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEphemerisDates(Field<T> field) {
@@ -251,7 +251,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testNoExtrapolation() {
-        doTestNoExtrapolation(Decimal64Field.getInstance());
+        doTestNoExtrapolation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNoExtrapolation(Field<T> field) {
@@ -280,7 +280,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testKepler() {
-        doTestKepler(Decimal64Field.getInstance());
+        doTestKepler(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestKepler(Field<T> field) {
@@ -304,7 +304,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testEphemeris() {
-        doTestEphemeris(Decimal64Field.getInstance());
+        doTestEphemeris(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEphemeris(Field<T> field) {
@@ -337,7 +337,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testPropagationWithCentralBody() {
-        doTestPropagationWithCentralBody(Decimal64Field.getInstance());
+        doTestPropagationWithCentralBody(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPropagationWithCentralBody(Field<T> field) {
@@ -392,7 +392,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testPropagationWithThirdBody() throws IOException {
-        doTestPropagationWithThirdBody(Decimal64Field.getInstance());
+        doTestPropagationWithThirdBody(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPropagationWithThirdBody(Field<T> field) throws IOException {
@@ -476,7 +476,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testPropagationWithDrag() {
-        doTestPropagationWithDrag(Decimal64Field.getInstance());
+        doTestPropagationWithDrag(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPropagationWithDrag(Field<T> field) {
@@ -549,7 +549,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testPropagationWithSolarRadiationPressure() {
-        doTestPropagationWithSolarRadiationPressure(Decimal64Field.getInstance());
+        doTestPropagationWithSolarRadiationPressure(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPropagationWithSolarRadiationPressure(Field<T> field) {
@@ -612,7 +612,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testStopEvent() {
-        doTestStopEvent(Decimal64Field.getInstance());
+        doTestStopEvent(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStopEvent(Field<T> field) {
@@ -630,7 +630,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testContinueEvent() {
-        doTestContinueEvent(Decimal64Field.getInstance());
+        doTestContinueEvent(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestContinueEvent(Field<T> field) {
@@ -655,7 +655,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue157() {
-        doTestIssue157(Decimal64Field.getInstance());
+        doTestIssue157(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue157(Field<T> field) {
@@ -706,7 +706,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testEphemerisGeneration() {
-        doTestEphemerisGeneration(Decimal64Field.getInstance());
+        doTestEphemerisGeneration(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEphemerisGeneration(Field<T> field){
@@ -763,7 +763,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testGetInitialOsculatingState() {
-        doTestGetInitialOsculatingState(Decimal64Field.getInstance());
+        doTestGetInitialOsculatingState(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGetInitialOsculatingState(Field<T> field) {
@@ -800,7 +800,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testMeanToOsculatingState() {
-        doTestMeanToOsculatingState(Decimal64Field.getInstance());
+        doTestMeanToOsculatingState(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doTestMeanToOsculatingState(Field<T> field) {
         final FieldSpacecraftState<T> meanState = getGEOState(field);
@@ -825,7 +825,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testOsculatingToMeanState() {
-        doTestOsculatingToMeanState(Decimal64Field.getInstance());
+        doTestOsculatingToMeanState(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestOsculatingToMeanState(Field<T> field) {
@@ -857,7 +857,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testShortPeriodCoefficients() {
-        doTestShortPeriodCoefficients(Decimal64Field.getInstance());
+        doTestShortPeriodCoefficients(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShortPeriodCoefficients(Field<T> field) {
@@ -916,7 +916,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssueMeanInclination() {
-        doTestIssueMeanInclination(Decimal64Field.getInstance());
+        doTestIssueMeanInclination(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssueMeanInclination(Field<T> field) {
@@ -953,7 +953,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue257() {
-        doTestIssue257(Decimal64Field.getInstance());
+        doTestIssue257(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue257(Field<T> field) {
@@ -988,7 +988,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue339() {
-        doTestIssue339(Decimal64Field.getInstance());
+        doTestIssue339(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue339(Field<T> field) {
@@ -1031,7 +1031,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue339WithAccelerations() {
-        doTestIssue339WithAccelerations(Decimal64Field.getInstance());
+        doTestIssue339WithAccelerations(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue339WithAccelerations(Field<T> field) {
@@ -1054,7 +1054,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue613() {
-        doTestIssue613(Decimal64Field.getInstance());
+        doTestIssue613(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue613(final Field<T> field) {
@@ -1102,7 +1102,7 @@ public class FieldDSSTPropagatorTest {
 
     @Test
     public void testIssue704() {
-        doTestIssue704(Decimal64Field.getInstance());
+        doTestIssue704(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue704(final Field<T> field) {
@@ -1131,7 +1131,7 @@ public class FieldDSSTPropagatorTest {
     /** This test is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
     @Test
     public void testIssue670() {
-        doTestIssue670(Decimal64Field.getInstance());
+        doTestIssue670(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue670(final Field<T> field) {

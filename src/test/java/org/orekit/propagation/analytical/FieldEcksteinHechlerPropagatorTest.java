@@ -26,7 +26,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Min;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -115,7 +115,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void sameDateCartesian() {
-        doSameDateCartesian(Decimal64Field.getInstance());
+        doSameDateCartesian(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doSameDateCartesian(Field<T> field) {
@@ -166,7 +166,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void sameDateKeplerian() {
-        doSameDateKeplerian(Decimal64Field.getInstance());
+        doSameDateKeplerian(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
@@ -215,7 +215,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void almostSphericalBody() {
-        doAlmostSphericalBody(Decimal64Field.getInstance());
+        doAlmostSphericalBody(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
@@ -290,7 +290,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void propagatedCartesian() {
-        doPropagatedCartesian(Decimal64Field.getInstance());
+        doPropagatedCartesian(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doPropagatedCartesian(Field<T> field) {
@@ -384,7 +384,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     @Test
     public void propagatedKeplerian() {
 
-        doPropagatedKeplerian(Decimal64Field.getInstance());
+        doPropagatedKeplerian(Binary64Field.getInstance());
 
     }
 
@@ -472,7 +472,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void undergroundOrbit() {
-        doUndergroundOrbit(Decimal64Field.getInstance());
+        doUndergroundOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
@@ -503,7 +503,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void equatorialOrbit() {
-        doEquatorialOrbit(Decimal64Field.getInstance());
+        doEquatorialOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doEquatorialOrbit(Field<T> field) {
@@ -534,7 +534,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void criticalInclination() {
-        doCriticalInclination(Decimal64Field.getInstance());
+        doCriticalInclination(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
@@ -568,7 +568,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void tooEllipticalOrbit() {
-        doTooEllipticalOrbit(Decimal64Field.getInstance());
+        doTooEllipticalOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
@@ -599,7 +599,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void hyperbolic() {
-        doHyperbolic(Decimal64Field.getInstance());
+        doHyperbolic(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doHyperbolic(Field<T> field) {
@@ -620,7 +620,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void wrongAttitude() {
-        doWrongAttitude(Decimal64Field.getInstance());
+        doWrongAttitude(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doWrongAttitude(Field<T> field) {
@@ -659,7 +659,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testAcceleration() {
-        doTestAcceleration(Decimal64Field.getInstance());
+        doTestAcceleration(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAcceleration(Field<T> field) {
@@ -722,7 +722,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void ascendingNode() {
-        doAscendingNode(Decimal64Field.getInstance());
+        doAscendingNode(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doAscendingNode(Field<T> field) {
@@ -755,7 +755,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void stopAtTargetDate() {
-        doStopAtTargetDate(Decimal64Field.getInstance());
+        doStopAtTargetDate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doStopAtTargetDate(Field<T> field) {
@@ -776,7 +776,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void perigee() {
-        doPerigee(Decimal64Field.getInstance());
+        doPerigee(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doPerigee(Field<T> field) {
@@ -798,7 +798,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void date() {
-        doDate(Decimal64Field.getInstance());
+        doDate(Binary64Field.getInstance());
 
     }
 
@@ -820,7 +820,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     @Test
     public void fixedStep() {
 
-        doFixedStep(Decimal64Field.getInstance());
+        doFixedStep(Binary64Field.getInstance());
 
 
     }
@@ -851,7 +851,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     @Test
     public void setting() {
 
-        doSetting(Decimal64Field.getInstance());
+        doSetting(Binary64Field.getInstance());
 
     }
 
@@ -887,7 +887,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testIssue504() {
-        doTestIssue504(Decimal64Field.getInstance());
+        doTestIssue504(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue504(Field<T> field) {
@@ -928,7 +928,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testIssue504Bis() {
-        doTestIssue504Bis(Decimal64Field.getInstance());
+        doTestIssue504Bis(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue504Bis(Field<T> field) {
@@ -969,7 +969,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testMeanOrbit() throws IOException {
-        doTestMeanOrbit(Decimal64Field.getInstance());
+        doTestMeanOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMeanOrbit(Field<T> field) {

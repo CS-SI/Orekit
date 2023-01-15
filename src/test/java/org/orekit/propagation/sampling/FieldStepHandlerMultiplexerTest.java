@@ -2,8 +2,8 @@ package org.orekit.propagation.sampling;
 
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,16 +23,16 @@ import org.orekit.utils.Constants;
 
 public class FieldStepHandlerMultiplexerTest {
 
-    FieldAbsoluteDate<Decimal64> initDate;
-    FieldPropagator<Decimal64> propagator;
+    FieldAbsoluteDate<Binary64> initDate;
+    FieldPropagator<Binary64> propagator;
 
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64        zero  = field.getZero();
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64        zero  = field.getZero();
         initDate = new FieldAbsoluteDate<>(field, 2020, 2, 28, 16, 15, 0.0, TimeScalesFactory.getUTC());
-        FieldOrbit<Decimal64> ic = new FieldKeplerianOrbit<>(zero.add(6378137 + 500e3), zero.add(1e-3), zero, zero, zero, zero,
+        FieldOrbit<Binary64> ic = new FieldKeplerianOrbit<>(zero.add(6378137 + 500e3), zero.add(1e-3), zero, zero, zero, zero,
                                                              PositionAngle.TRUE, FramesFactory.getGCRF(), initDate,
                                                              zero.add(Constants.WGS84_EARTH_MU));
         propagator = new FieldKeplerianPropagator<>(ic);
@@ -47,10 +47,10 @@ public class FieldStepHandlerMultiplexerTest {
     @Test
     public void testMixedSteps() {
 
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64        zero  = field.getZero();
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64        zero  = field.getZero();
 
-        FieldStepHandlerMultiplexer<Decimal64> multiplexer = propagator.getMultiplexer();
+        FieldStepHandlerMultiplexer<Binary64> multiplexer = propagator.getMultiplexer();
 
         FieldInitCheckerHandler initHandler = new FieldInitCheckerHandler(1.0);
         FieldFixedCounter    counter60  = new FieldFixedCounter();
@@ -89,10 +89,10 @@ public class FieldStepHandlerMultiplexerTest {
     @Test
     public void testRemove() {
 
-        FieldStepHandlerMultiplexer<Decimal64> multiplexer = propagator.getMultiplexer();
+        FieldStepHandlerMultiplexer<Binary64> multiplexer = propagator.getMultiplexer();
 
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64        zero  = field.getZero();
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64        zero  = field.getZero();
 
         FieldFixedCounter    counter60  = new FieldFixedCounter();
         FieldVariableCounter counterVar = new FieldVariableCounter();
@@ -102,10 +102,10 @@ public class FieldStepHandlerMultiplexerTest {
         multiplexer.add(counterVar);
         multiplexer.add(zero.newInstance(10.0), counter10);
         Assertions.assertEquals(3, multiplexer.getHandlers().size());
-        Assertions.assertTrue(((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(0)).getFixedStepHandler() instanceof FieldFixedCounter);
-        Assertions.assertEquals(60.0, ((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(0)).getFixedTimeStep().getReal(), 1.0e-15);
-        Assertions.assertTrue(((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(2)).getFixedStepHandler() instanceof FieldFixedCounter);
-        Assertions.assertEquals(10.0, ((FieldOrekitStepNormalizer<Decimal64>) multiplexer.getHandlers().get(2)).getFixedTimeStep().getReal(), 1.0e-15);
+        Assertions.assertTrue(((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(0)).getFixedStepHandler() instanceof FieldFixedCounter);
+        Assertions.assertEquals(60.0, ((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(0)).getFixedTimeStep().getReal(), 1.0e-15);
+        Assertions.assertTrue(((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(2)).getFixedStepHandler() instanceof FieldFixedCounter);
+        Assertions.assertEquals(10.0, ((FieldOrekitStepNormalizer<Binary64>) multiplexer.getHandlers().get(2)).getFixedTimeStep().getReal(), 1.0e-15);
 
         // first run with all handlers
         propagator.propagate(initDate.shiftedBy(90.0));
@@ -230,10 +230,10 @@ public class FieldStepHandlerMultiplexerTest {
     @Test
     public void testOnTheFlyChanges() {
 
-        final FieldStepHandlerMultiplexer<Decimal64> multiplexer = propagator.getMultiplexer();
+        final FieldStepHandlerMultiplexer<Binary64> multiplexer = propagator.getMultiplexer();
 
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64        zero  = field.getZero();
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64        zero  = field.getZero();
 
         double               add60      =  3.0;
         double               rem60      = 78.0;
@@ -297,7 +297,7 @@ public class FieldStepHandlerMultiplexerTest {
 
     }
 
-    private class FieldInitCheckerHandler implements FieldOrekitFixedStepHandler<Decimal64> {
+    private class FieldInitCheckerHandler implements FieldOrekitFixedStepHandler<Binary64> {
 
         private double expected;
         private boolean initialized;
@@ -308,12 +308,12 @@ public class FieldStepHandlerMultiplexerTest {
         }
 
         @Override
-        public void init(FieldSpacecraftState<Decimal64> s0, FieldAbsoluteDate<Decimal64> t, Decimal64 step) {
+        public void init(FieldSpacecraftState<Binary64> s0, FieldAbsoluteDate<Binary64> t, Binary64 step) {
             initialized = true;
         }
 
         @Override
-        public void handleStep(FieldSpacecraftState<Decimal64> currentState) {
+        public void handleStep(FieldSpacecraftState<Binary64> currentState) {
             this.expected = 2.0;
         }
 
@@ -327,7 +327,7 @@ public class FieldStepHandlerMultiplexerTest {
 
     }
 
-    private class FieldFixedCounter implements FieldOrekitFixedStepHandler<Decimal64> {
+    private class FieldFixedCounter implements FieldOrekitFixedStepHandler<Binary64> {
 
         private int    initCount;
         private int    handleCount;
@@ -336,25 +336,25 @@ public class FieldStepHandlerMultiplexerTest {
         private double stop;
 
         @Override
-        public void init(FieldSpacecraftState<Decimal64> s0, FieldAbsoluteDate<Decimal64> t, Decimal64 step) {
+        public void init(FieldSpacecraftState<Binary64> s0, FieldAbsoluteDate<Binary64> t, Binary64 step) {
             ++initCount;
             start = s0.getDate().durationFrom(initDate).getReal();
         }
 
         @Override
-        public void handleStep(FieldSpacecraftState<Decimal64> currentState) {
+        public void handleStep(FieldSpacecraftState<Binary64> currentState) {
             ++handleCount;
         }
 
         @Override
-        public void finish(FieldSpacecraftState<Decimal64> finalState) {
+        public void finish(FieldSpacecraftState<Binary64> finalState) {
             ++finishCount;
             stop = finalState.getDate().durationFrom(initDate).getReal();
         }
 
     }
 
-    private class FieldVariableCounter implements FieldOrekitStepHandler<Decimal64> {
+    private class FieldVariableCounter implements FieldOrekitStepHandler<Binary64> {
 
         private int    initCount;
         private int    handleCount;
@@ -363,18 +363,18 @@ public class FieldStepHandlerMultiplexerTest {
         private double stop;
 
         @Override
-        public void init(FieldSpacecraftState<Decimal64> s0, FieldAbsoluteDate<Decimal64> t) {
+        public void init(FieldSpacecraftState<Binary64> s0, FieldAbsoluteDate<Binary64> t) {
             ++initCount;
             start = s0.getDate().durationFrom(initDate).getReal();
         }
 
         @Override
-        public void handleStep(FieldOrekitStepInterpolator<Decimal64> interpolator) {
+        public void handleStep(FieldOrekitStepInterpolator<Binary64> interpolator) {
             ++handleCount;
         }
 
         @Override
-        public void finish(FieldSpacecraftState<Decimal64> finalState) {
+        public void finish(FieldSpacecraftState<Binary64> finalState) {
             ++finishCount;
             stop = finalState.getDate().durationFrom(initDate).getReal();
         }

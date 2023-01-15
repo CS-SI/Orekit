@@ -23,7 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -47,7 +47,7 @@ public class FieldFunctionalDetectorTest {
      */
     @Test
     public void testFunctionalDetector() {
-        doTestFunctionalDetector(Decimal64Field.getInstance());
+        doTestFunctionalDetector(Binary64Field.getInstance());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestFunctionalDetector(Field<T> field) {

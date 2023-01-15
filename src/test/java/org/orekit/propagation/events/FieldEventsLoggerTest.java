@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,23 +61,23 @@ public class FieldEventsLoggerTest {
 
     @Test
     public void testLogUmbra() {
-        doTestLogUmbra(Decimal64Field.getInstance());
+        doTestLogUmbra(Binary64Field.getInstance());
     }
     @Test
     public void testLogPenumbra() {
-        doTestLogPenumbra(Decimal64Field.getInstance());
+        doTestLogPenumbra(Binary64Field.getInstance());
     }
     @Test
     public void testLogAll() {
-        doTestLogAll(Decimal64Field.getInstance());
+        doTestLogAll(Binary64Field.getInstance());
     }
     @Test
     public void testImmutableList() {
-        doTestImmutableList(Decimal64Field.getInstance());
+        doTestImmutableList(Binary64Field.getInstance());
     }
     @Test
     public void testClearLog() {
-        doTestClearLog(Decimal64Field.getInstance());
+        doTestClearLog(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLogUmbra(Field<T> field) {

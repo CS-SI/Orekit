@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +71,7 @@ public class FieldAdditionalStateProviderTest {
 
     @Test
     public void testIssue900Numerical() {
-        doTestIssue900Numerical(Decimal64Field.getInstance());
+        doTestIssue900Numerical(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue900Numerical(final Field<T> field) {
@@ -102,7 +102,7 @@ public class FieldAdditionalStateProviderTest {
 
     @Test
     public void testIssue900Dsst() {
-        doTestIssue900Dsst(Decimal64Field.getInstance());
+        doTestIssue900Dsst(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue900Dsst(final Field<T> field) {
@@ -133,7 +133,7 @@ public class FieldAdditionalStateProviderTest {
 
     @Test
     public void testIssue900BrouwerLyddane() {
-        doTestIssue900BrouwerLyddane(Decimal64Field.getInstance());
+        doTestIssue900BrouwerLyddane(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue900BrouwerLyddane(final Field<T> field) {

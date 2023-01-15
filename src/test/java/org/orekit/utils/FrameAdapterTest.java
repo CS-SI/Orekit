@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +64,7 @@ public class FrameAdapterTest {
 
     @Test
     public void testField() {
-        doTestField(Decimal64Field.getInstance());
+        doTestField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestField(final Field<T> field) {

@@ -27,8 +27,8 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -77,10 +77,10 @@ public class TransformTest {
         Utils.setDataRoot("regular-data");
         TimeScale utc = TimeScalesFactory.getUTC();
         Frame tod = FramesFactory.getTOD(false);
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        FieldTransform<Decimal64> t1 =
+        Field<Binary64> field = Binary64Field.getInstance();
+        FieldTransform<Binary64> t1 =
                         tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16, 21, 0, 0, utc)));
-        FieldTransform<Decimal64> t2 =
+        FieldTransform<Binary64> t2 =
                         tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16,  9, 0, 0, utc)));
         Assertions.assertEquals(-43200.0, t2.getDate().durationFrom(t1.getDate()), 1.0e-15);
     }
@@ -197,11 +197,11 @@ public class TransformTest {
             // check the composition
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = randomVector(1.0, random);
-                FieldVector3D<Decimal64> aF = new FieldVector3D<>(Decimal64Field.getInstance(), a);
+                FieldVector3D<Binary64> aF = new FieldVector3D<>(Binary64Field.getInstance(), a);
                 Vector3D b = randomVector(1.0e3, random);
                 PVCoordinates c = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
                 Vector3D                 aRef  = a;
-                FieldVector3D<Decimal64> aFRef = aF;
+                FieldVector3D<Binary64> aFRef = aF;
                 Vector3D                 bRef  = b;
                 PVCoordinates            cRef  = c;
                 for (int k = 0; k < n; ++k) {
@@ -212,7 +212,7 @@ public class TransformTest {
                 }
 
                 Vector3D aCombined = combined.transformVector(a);
-                FieldVector3D<Decimal64> aFCombined = combined.transformVector(aF);
+                FieldVector3D<Binary64> aFCombined = combined.transformVector(aF);
                 Vector3D bCombined = combined.transformPosition(b);
                 PVCoordinates cCombined = combined.transformPVCoordinates(c);
                 checkVector(aRef, aCombined, 3.0e-15);
@@ -460,23 +460,23 @@ public class TransformTest {
             Vector3D result  = pvTwo.getPosition().add(new Vector3D(dt, pvTwo.getVelocity()));
             checkVector(good, result, 1.0e-15);
 
-            FieldPVCoordinates<Decimal64> fieldPVOne =
-                            new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getPosition()),
-                                                              new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getVelocity()),
-                                                              new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getAcceleration()));
-            FieldPVCoordinates<Decimal64> fieldPVTwo = tr.transformPVCoordinates(fieldPVOne);
-            FieldVector3D<Decimal64> fieldResult  =
-                            fieldPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldPVTwo.getVelocity()));
+            FieldPVCoordinates<Binary64> fieldPVOne =
+                            new FieldPVCoordinates<Binary64>(new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getPosition()),
+                                                              new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getVelocity()),
+                                                              new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getAcceleration()));
+            FieldPVCoordinates<Binary64> fieldPVTwo = tr.transformPVCoordinates(fieldPVOne);
+            FieldVector3D<Binary64> fieldResult  =
+                            fieldPVTwo.getPosition().add(new FieldVector3D<Binary64>(dt, fieldPVTwo.getVelocity()));
             checkVector(good, fieldResult.toVector3D(), 1.0e-15);
 
-            TimeStampedFieldPVCoordinates<Decimal64> fieldTPVOne =
-                            new TimeStampedFieldPVCoordinates<Decimal64>(tr.getDate(),
-                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getPosition()),
-                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getVelocity()),
-                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getAcceleration()));
-            TimeStampedFieldPVCoordinates<Decimal64> fieldTPVTwo = tr.transformPVCoordinates(fieldTPVOne);
-            FieldVector3D<Decimal64> fieldTResult  =
-                            fieldTPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldTPVTwo.getVelocity()));
+            TimeStampedFieldPVCoordinates<Binary64> fieldTPVOne =
+                            new TimeStampedFieldPVCoordinates<Binary64>(tr.getDate(),
+                                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getPosition()),
+                                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getVelocity()),
+                                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getAcceleration()));
+            TimeStampedFieldPVCoordinates<Binary64> fieldTPVTwo = tr.transformPVCoordinates(fieldTPVOne);
+            FieldVector3D<Binary64> fieldTResult  =
+                            fieldTPVTwo.getPosition().add(new FieldVector3D<Binary64>(dt, fieldTPVTwo.getVelocity()));
             checkVector(good, fieldTResult.toVector3D(), 1.0e-15);
 
             // test inverse

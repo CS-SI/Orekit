@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -420,7 +420,7 @@ public class ConfigurableLowThrustManeuverTest {
 
     @Test
     public void testFielddPropagationDisabled() {
-        doTestFielddPropagationDisabled(Decimal64Field.getInstance());
+        doTestFielddPropagationDisabled(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFielddPropagationDisabled(Field<T> field) {
@@ -548,13 +548,13 @@ public class ConfigurableLowThrustManeuverTest {
         Assertions.assertEquals(0.0, backwardDetector.getTriggeredStart().durationFrom(startDate), 1.0e-16);
         Assertions.assertEquals(duration, backwardDetector.getTriggeredEnd().durationFrom(startDate), 1.0e-16);
 
-        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(-0.001)),
+        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(-0.001)),
                                                      null));
-        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(+0.001)),
+        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(+0.001)),
                                                      null));
-        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(duration - 0.001)),
+        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration - 0.001)),
                                                      null));
-        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(duration + 0.001)),
+        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration + 0.001)),
                                                      null));
         /////////////////// results check /////////////////////////////////
         Assertions.assertEquals(0.0,

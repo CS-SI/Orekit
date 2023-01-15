@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,7 +87,7 @@ public class NeQuickModelTest {
 
     @Test
     public void testFieldHighSolarActivity() {
-        doTestFieldHighSolarActivity(Decimal64Field.getInstance());
+        doTestFieldHighSolarActivity(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldHighSolarActivity(final Field<T> field) {
@@ -132,7 +132,7 @@ public class NeQuickModelTest {
 
     @Test
     public void testFieldMediumSolarActivity() {
-        doTestFieldMediumSolarActivity(Decimal64Field.getInstance());
+        doTestFieldMediumSolarActivity(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldMediumSolarActivity(final Field<T> field) {
@@ -192,7 +192,7 @@ public class NeQuickModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {

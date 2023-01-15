@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -67,7 +67,7 @@ public class FieldDSSTZonalTest {
 
     @Test
     public void testGetMeanElementRate() {
-        doTestGetMeanElementRate(Decimal64Field.getInstance());
+        doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
@@ -130,7 +130,7 @@ public class FieldDSSTZonalTest {
 
     @Test
     public void testShortPeriodTerms() {
-        doTestShortPeriodTerms(Decimal64Field.getInstance());
+        doTestShortPeriodTerms(Binary64Field.getInstance());
     }
 
     @SuppressWarnings("unchecked")
@@ -171,7 +171,7 @@ public class FieldDSSTZonalTest {
 
     @Test
     public void testIssue625() {
-        doTestIssue625(Decimal64Field.getInstance());
+        doTestIssue625(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue625(final Field<T> field) {

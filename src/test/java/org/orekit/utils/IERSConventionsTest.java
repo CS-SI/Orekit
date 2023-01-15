@@ -23,7 +23,7 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
-import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -992,9 +992,9 @@ public class IERSConventionsTest {
         {
         double maxError = 0;
         for (double dt = 0; dt < span; dt += sampleStep) {
-            double rateDouble    = gmstRate.value(date.shiftedBy(dt));
-            double rateDecimal64 = gmstRate.value(new FieldAbsoluteDate<>(date, new Decimal64(dt))).doubleValue();
-            maxError = FastMath.max(maxError, FastMath.abs(rateDouble - rateDecimal64));
+            double rateDouble   = gmstRate.value(date.shiftedBy(dt));
+            double rateBinary64 = gmstRate.value(new FieldAbsoluteDate<>(date, new Binary64(dt))).doubleValue();
+            maxError = FastMath.max(maxError, FastMath.abs(rateDouble - rateBinary64));
         }
         Assertions.assertEquals(0, maxError, tolerance);
     }

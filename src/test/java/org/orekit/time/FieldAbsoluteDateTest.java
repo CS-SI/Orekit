@@ -20,7 +20,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -49,251 +49,251 @@ public class FieldAbsoluteDateTest {
 
     @Test
     public void testStandardEpoch() {
-        doTestStandardEpoch(Decimal64Field.getInstance());
+        doTestStandardEpoch(Binary64Field.getInstance());
     }
 
     @Test
     public void testStandardEpochStrings() {
-        doTestStandardEpochStrings(Decimal64Field.getInstance());
+        doTestStandardEpochStrings(Binary64Field.getInstance());
     }
 
     @Test
     public void testJulianEpochRate() {
-        doTestJulianEpochRate(Decimal64Field.getInstance());
+        doTestJulianEpochRate(Binary64Field.getInstance());
     }
 
     @Test
     public void testBesselianEpochRate() {
-        doTestBesselianEpochRate(Decimal64Field.getInstance());
+        doTestBesselianEpochRate(Binary64Field.getInstance());
     }
 
     @Test
     public void testLieske() {
-        doTestLieske(Decimal64Field.getInstance());
+        doTestLieske(Binary64Field.getInstance());
     }
 
     @Test
     public void testParse() {
-        doTestParse(Decimal64Field.getInstance());
+        doTestParse(Binary64Field.getInstance());
     }
 
     @Test
     public void testLocalTimeParsing() {
-        doTestLocalTimeParsing(Decimal64Field.getInstance());
+        doTestLocalTimeParsing(Binary64Field.getInstance());
     }
 
     @Test
     public void testTimeZoneDisplay() {
-        doTestTimeZoneDisplay(Decimal64Field.getInstance());
+        doTestTimeZoneDisplay(Binary64Field.getInstance());
     }
 
     @Test
     public void testLocalTimeLeapSecond() throws IOException {
-        doTestLocalTimeLeapSecond(Decimal64Field.getInstance());
+        doTestLocalTimeLeapSecond(Binary64Field.getInstance());
     }
 
     @Test
     public void testTimeZoneLeapSecond() {
-        doTestTimeZoneLeapSecond(Decimal64Field.getInstance());
+        doTestTimeZoneLeapSecond(Binary64Field.getInstance());
     }
 
     @Test
     public void testParseLeap() {
-        doTestParseLeap(Decimal64Field.getInstance());
+        doTestParseLeap(Binary64Field.getInstance());
     }
 
     @Test
     public void testOutput() {
-        doTestOutput(Decimal64Field.getInstance());
+        doTestOutput(Binary64Field.getInstance());
     }
 
     @Test
     public void testJ2000() {
-        doTestJ2000(Decimal64Field.getInstance());
+        doTestJ2000(Binary64Field.getInstance());
     }
 
     @Test
     public void testFraction() {
-        doTestFraction(Decimal64Field.getInstance());
+        doTestFraction(Binary64Field.getInstance());
     }
 
     @Test
     public void testScalesOffset() {
-        doTestScalesOffset(Decimal64Field.getInstance());
+        doTestScalesOffset(Binary64Field.getInstance());
     }
 
     @Test
     public void testUTC() {
-        doTestUTC(Decimal64Field.getInstance());
+        doTestUTC(Binary64Field.getInstance());
     }
 
     @Test
     public void test1970() {
-        doTest1970(Decimal64Field.getInstance());
+        doTest1970(Binary64Field.getInstance());
     }
 
     @Test
     public void testUtcGpsOffset() {
-        doTestUtcGpsOffset(Decimal64Field.getInstance());
+        doTestUtcGpsOffset(Binary64Field.getInstance());
     }
 
     @Test
     public void testGpsDate() {
-        doTestGpsDate(Decimal64Field.getInstance());
+        doTestGpsDate(Binary64Field.getInstance());
     }
 
     @Test
     public void testMJDDate() {
-        doTestMJDDate(Decimal64Field.getInstance());
+        doTestMJDDate(Binary64Field.getInstance());
     }
 
     @Test
     public void testJDDate() {
-        doTestJDDate(Decimal64Field.getInstance());
+        doTestJDDate(Binary64Field.getInstance());
     }
 
     @Test
     public void testOffsets() {
-        doTestOffsets(Decimal64Field.getInstance());
+        doTestOffsets(Binary64Field.getInstance());
     }
 
     @Test
     public void testBeforeAndAfterLeap() {
-        doTestBeforeAndAfterLeap(Decimal64Field.getInstance());
+        doTestBeforeAndAfterLeap(Binary64Field.getInstance());
     }
 
     @Test
     public void testSymmetry() {
-        doTestSymmetry(Decimal64Field.getInstance());
+        doTestSymmetry(Binary64Field.getInstance());
     }
 
     @Test
     public void testEquals() {
-        doTestEquals(Decimal64Field.getInstance());
+        doTestEquals(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIsEqualTo() { doTestIsEqualTo(Decimal64Field.getInstance()); }
+    public void testIsEqualTo() { doTestIsEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsCloseTo() { doTestIsCloseTo(Decimal64Field.getInstance()); }
+    public void testIsCloseTo() { doTestIsCloseTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBefore() { doTestIsBefore(Decimal64Field.getInstance()); }
+    public void testIsBefore() { doTestIsBefore(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsAfter() { doTestIsAfter(Decimal64Field.getInstance()); }
+    public void testIsAfter() { doTestIsAfter(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBeforeOrEqualTo() { doTestIsBeforeOrEqualTo(Decimal64Field.getInstance()); }
+    public void testIsBeforeOrEqualTo() { doTestIsBeforeOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsAfterOrEqualTo() { doTestIsAfterOrEqualTo(Decimal64Field.getInstance()); }
+    public void testIsAfterOrEqualTo() { doTestIsAfterOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBetween() { doTestIsBetween(Decimal64Field.getInstance()); }
+    public void testIsBetween() { doTestIsBetween(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBetweenOrEqualTo() { doTestIsBetweenOrEqualTo(Decimal64Field.getInstance()); }
+    public void testIsBetweenOrEqualTo() { doTestIsBetweenOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
     public void testComponents() {
-        doTestComponents(Decimal64Field.getInstance());
+        doTestComponents(Binary64Field.getInstance());
     }
 
     @Test
     public void testMonth() {
-        doTestMonth(Decimal64Field.getInstance());
+        doTestMonth(Binary64Field.getInstance());
     }
 
     @Test
     public void testCCSDSUnsegmentedNoExtension() {
-        doTestCCSDSUnsegmentedNoExtension(Decimal64Field.getInstance());
+        doTestCCSDSUnsegmentedNoExtension(Binary64Field.getInstance());
     }
 
     @Test
     public void testCCSDSUnsegmentedWithExtendedPreamble() {
-        doTestCCSDSUnsegmentedWithExtendedPreamble(Decimal64Field.getInstance());
+        doTestCCSDSUnsegmentedWithExtendedPreamble(Binary64Field.getInstance());
     }
 
     @Test
     public void testCCSDSDaySegmented() {
-        doTestCCSDSDaySegmented(Decimal64Field.getInstance());
+        doTestCCSDSDaySegmented(Binary64Field.getInstance());
     }
 
     @Test
     public void testCCSDSCalendarSegmented() {
-        doTestCCSDSCalendarSegmented(Decimal64Field.getInstance());
+        doTestCCSDSCalendarSegmented(Binary64Field.getInstance());
     }
 
     @Test
     public void testExpandedConstructors() {
-        doTestExpandedConstructors(Decimal64Field.getInstance());
+        doTestExpandedConstructors(Binary64Field.getInstance());
     }
 
     @Test
     public void testHashcode() {
-        doTestHashcode(Decimal64Field.getInstance());
+        doTestHashcode(Binary64Field.getInstance());
     }
 
     @Test
     public void testInfinity() {
-        doTestInfinity(Decimal64Field.getInstance());
+        doTestInfinity(Binary64Field.getInstance());
     }
 
     @Test
     public void testAccuracy() {
-        doTestAccuracy(Decimal64Field.getInstance());
+        doTestAccuracy(Binary64Field.getInstance());
     }
 
     @Test
     public void testAccuracyIssue348() {
-        doTestAccuracyIssue348(Decimal64Field.getInstance());
+        doTestAccuracyIssue348(Binary64Field.getInstance());
     }
 
     @Test
     public void testIterationAccuracy() {
-        doTestIterationAccuracy(Decimal64Field.getInstance());
+        doTestIterationAccuracy(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue142() {
-        doTestIssue142(Decimal64Field.getInstance());
+        doTestIssue142(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue148() {
-        doTestIssue148(Decimal64Field.getInstance());
+        doTestIssue148(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue149() {
-        doTestIssue149(Decimal64Field.getInstance());
+        doTestIssue149(Binary64Field.getInstance());
     }
 
     @Test
     public void testWrapAtMinuteEnd() {
-        doTestWrapAtMinuteEnd(Decimal64Field.getInstance());
+        doTestWrapAtMinuteEnd(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue508() {
-        doTestIssue508(Decimal64Field.getInstance());
+        doTestIssue508(Binary64Field.getInstance());
     }
 
     @Test
     public void testGetComponentsIssue681and676() {
-        doTestGetComponentsIssue681and676(Decimal64Field.getInstance());
+        doTestGetComponentsIssue681and676(Binary64Field.getInstance());
     }
 
     @Test
     public void testNegativeOffsetConstructor() {
-        doTestNegativeOffsetConstructor(Decimal64Field.getInstance());
+        doTestNegativeOffsetConstructor(Binary64Field.getInstance());
     }
 
     @Test
     public void testNegativeOffsetShift() {
-        doTestNegativeOffsetShift(Decimal64Field.getInstance());
+        doTestNegativeOffsetShift(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStandardEpoch(final Field<T> field) {

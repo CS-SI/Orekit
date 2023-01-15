@@ -24,7 +24,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.random.MersenneTwister;
 import org.hipparchus.util.CombinatoricsUtils;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -145,7 +145,7 @@ public class CoefficientFactoryTest {
 
     @Test
     public void testQnsField() {
-        doTestQnsField(Decimal64Field.getInstance());
+        doTestQnsField(Binary64Field.getInstance());
     }
 
     /**
@@ -195,7 +195,7 @@ public class CoefficientFactoryTest {
 
     @Test
     public void testGsHsField() {
-        doTestGsHsField(Decimal64Field.getInstance());
+        doTestGsHsField(Binary64Field.getInstance());
     }
 
     /** Gs and Hs computation test based on 2 independent methods.

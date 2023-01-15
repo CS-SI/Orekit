@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.IntervalEventTrigger;
@@ -65,7 +65,7 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
                                               AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    dates = trigger.getFiringIntervalDetector().getDates();
         Assertions.assertEquals(1,     trigger.getEventsDetectors().count());
-        Assertions.assertEquals(1,     trigger.getFieldEventsDetectors(Decimal64Field.getInstance()).count());
+        Assertions.assertEquals(1,     trigger.getFieldEventsDetectors(Binary64Field.getInstance()).count());
         Assertions.assertEquals(2,     dates.size());
         Assertions.assertEquals(  0.0, dates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);

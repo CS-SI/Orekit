@@ -25,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.AfterEach;
@@ -238,21 +238,21 @@ public class BodyCenterPointingTest {
 
     @Test
     public void testTargetField() {
-        doTestTarget(Decimal64Field.getInstance());
+        doTestTarget(Binary64Field.getInstance());
     }
     @Test
     public void doxBodyCenterInPointingDirectionTest() {
-        doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
+        doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
     @Test
     public void testQDotField() {
-        doTestQDot(Decimal64Field.getInstance());
+        doTestQDot(Binary64Field.getInstance());
     }
 
     @Test
     public void testSpinField() {
-        doTestSpin(Decimal64Field.getInstance());
+        doTestSpin(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>>void doTestTarget(final Field<T> field) {

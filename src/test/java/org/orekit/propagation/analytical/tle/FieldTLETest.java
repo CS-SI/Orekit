@@ -22,8 +22,8 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CombinatoricsUtils;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -57,68 +57,68 @@ public class FieldTLETest {
 
     @Test
     public void testTLEFormat() {
-        doTestTLEFormat(Decimal64Field.getInstance());
+        doTestTLEFormat(Binary64Field.getInstance());
     }
 
     @Test
     public void TestIssue196() {
-        doTestIssue196(Decimal64Field.getInstance());
+        doTestIssue196(Binary64Field.getInstance());
     }
 
     @Test
     public void testSymmetry() {
-        doTestSymmetry(Decimal64Field.getInstance());
+        doTestSymmetry(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug74() {
-        doTestBug74(Decimal64Field.getInstance());
+        doTestBug74(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77() {
-        doTestBug77(Decimal64Field.getInstance());
+        doTestBug77(Binary64Field.getInstance());
     }
 
     @Test
     public void testDirectConstruction() {
-        doTestDirectConstruction(Decimal64Field.getInstance());
+        doTestDirectConstruction(Binary64Field.getInstance());
     }
 
     @Test
     public void testGenerateAlpha5() {
-        doTestGenerateAlpha5(Decimal64Field.getInstance());
+        doTestGenerateAlpha5(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeSecondDerivative() {
-        doTestBug77TooLargeSecondDerivative(Decimal64Field.getInstance());
+        doTestBug77TooLargeSecondDerivative(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeBStar() {
-        doTestBug77TooLargeBStar(Decimal64Field.getInstance());
+        doTestBug77TooLargeBStar(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeEccentricity() {
-        doTestBug77TooLargeEccentricity(Decimal64Field.getInstance());
+        doTestBug77TooLargeEccentricity(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeSatelliteNumber1() {
-        doTestBug77TooLargeSatelliteNumber1(Decimal64Field.getInstance());
+        doTestBug77TooLargeSatelliteNumber1(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeSatelliteNumber2() {
-        doTestBug77TooLargeSatelliteNumber2(Decimal64Field.getInstance());
+        doTestBug77TooLargeSatelliteNumber2(Binary64Field.getInstance());
     }
 
     @Test
     public void testDifferentSatNumbers() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            doTestDifferentSatNumbers(Decimal64Field.getInstance());
+            doTestDifferentSatNumbers(Binary64Field.getInstance());
         });
     }
 
@@ -139,42 +139,42 @@ public class FieldTLETest {
 
     @Test
     public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
-        doTestSatCodeCompliance(Decimal64Field.getInstance());
+        doTestSatCodeCompliance(Binary64Field.getInstance());
     }
 
     @Test
     public void testZeroInclination() {
-        doTestZeroInclination(Decimal64Field.getInstance());
+        doTestZeroInclination(Binary64Field.getInstance());
     }
 
     @Test
     public void testSymmetryAfterLeapSecondIntroduction() {
-        doTestSymmetryAfterLeapSecondIntroduction(Decimal64Field.getInstance());
+        doTestSymmetryAfterLeapSecondIntroduction(Binary64Field.getInstance());
     }
 
     @Test
     public void testOldTLE() {
-        doTestOldTLE(Decimal64Field.getInstance());
+        doTestOldTLE(Binary64Field.getInstance());
     }
 
     @Test
     public void testEqualTLE() {
-        doTestEqualTLE(Decimal64Field.getInstance());
+        doTestEqualTLE(Binary64Field.getInstance());
     }
 
     @Test
     public void testNonEqualTLE() {
-        doTestNonEqualTLE(Decimal64Field.getInstance());
+        doTestNonEqualTLE(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue388() {
-        doTestIssue388(Decimal64Field.getInstance());
+        doTestIssue388(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue664NegativeRaanPa() {
-        doTestIssue664NegativeRaanPa(Decimal64Field.getInstance());
+        doTestIssue664NegativeRaanPa(Binary64Field.getInstance());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class FieldTLETest {
         String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
         final DSFactory factory = new DSFactory(1, 1);
         FieldTLE<DerivativeStructure> tleA = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
-        FieldTLE<Decimal64> tleB = new FieldTLE<>(Decimal64Field.getInstance(), line1, line2);
+        FieldTLE<Binary64> tleB = new FieldTLE<>(Binary64Field.getInstance(), line1, line2);
         try {
             tleA.equals(tleB);
             Assertions.fail("an exception should have been thrown");
@@ -665,7 +665,7 @@ public class FieldTLETest {
 
     @Test
     public void testStateToTLELeo() {
-        doTestStateToTLELeo(Decimal64Field.getInstance());
+        doTestStateToTLELeo(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStateToTLELeo(final Field<T> field) {
@@ -676,7 +676,7 @@ public class FieldTLETest {
 
     @Test
     public void testStateToTLEGeo() {
-        doTestStateToTLEGeo(Decimal64Field.getInstance());
+        doTestStateToTLEGeo(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStateToTLEGeo(final Field<T> field) {
@@ -713,7 +713,7 @@ public class FieldTLETest {
 
     @Test
     public void testStateToTleISS() {
-        doTestStateToTleISS(Decimal64Field.getInstance());
+        doTestStateToTleISS(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStateToTleISS(final Field<T> field) {
@@ -752,7 +752,7 @@ public class FieldTLETest {
 
     @Test
     public void testIssue802() {
-        doTestIssue802(Decimal64Field.getInstance());
+        doTestIssue802(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue802(final Field<T> field) {
@@ -782,7 +782,7 @@ public class FieldTLETest {
 
     @Test
     public void testToTLE() {
-        doTestToTLE(Decimal64Field.getInstance());
+        doTestToTLE(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestToTLE(final Field<T> field) {
