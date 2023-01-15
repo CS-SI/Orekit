@@ -1591,6 +1591,26 @@ public class NumericalPropagatorTest {
         }
     }
 
+    @Test
+    public void testInfinitePropagation() {
+
+        Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        final NumericalPropagator propag = createPropagator(initialState, OrbitType.KEPLERIAN, PositionAngle.TRUE);
+
+        // Stop condition
+        final double convergenceThreshold = 1e-9;
+        propag.addEventDetector(new DateDetector(1e10, convergenceThreshold, initialState.getDate().shiftedBy(60)));
+
+        // Propagate until the stop condition is reached
+        final SpacecraftState finalState =  propag.propagate(AbsoluteDate.FUTURE_INFINITY);
+
+        // Check that the expected final state was reached
+        Assertions.assertEquals(60, finalState.getDate().durationFrom(initialState.getDate()), convergenceThreshold);
+
+    }
+
     /** Record the dates treated by the handler.
      *  If they are out of an interval defined by a start and final date.
      */
