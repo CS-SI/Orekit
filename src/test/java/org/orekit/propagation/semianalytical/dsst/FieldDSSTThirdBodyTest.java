@@ -323,7 +323,7 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel forceModel : forces) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                driver.setValue(driver.getReferenceValue(), null);
+                driver.setValue(driver.getReferenceValue());
                 driver.setSelected(driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT));
             }
         }

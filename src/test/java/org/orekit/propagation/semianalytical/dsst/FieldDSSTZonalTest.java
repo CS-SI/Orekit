@@ -373,7 +373,7 @@ public class FieldDSSTZonalTest {
         final DSSTForceModel zonal   = new DSSTZonal(provider, 2, 1, 5);
 
         for (final ParameterDriver driver : zonal.getParametersDrivers()) {
-            driver.setValue(driver.getReferenceValue(), null);
+            driver.setValue(driver.getReferenceValue());
             driver.setSelected(driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT));
         }
 
@@ -440,28 +440,28 @@ public class FieldDSSTZonalTest {
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
       
-        selected.setValue(p0 - 4 * h, null);
+        selected.setValue(p0 - 4 * h);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, zonal);
   
-        selected.setValue(p0 - 3 * h, null);
+        selected.setValue(p0 - 3 * h);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 - 2 * h, null);
+        selected.setValue(p0 - 2 * h);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 - 1 * h, null);
+        selected.setValue(p0 - 1 * h);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 1 * h, null);
+        selected.setValue(p0 + 1 * h);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 2 * h, null);
+        selected.setValue(p0 + 2 * h);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 3 * h, null);
+        selected.setValue(p0 + 3 * h);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, zonal);
       
-        selected.setValue(p0 + 4 * h, null);
+        selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, zonal);
 
         fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,

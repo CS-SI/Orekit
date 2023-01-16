@@ -58,7 +58,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
         this.ambiguity          = new PhaseAmbiguityModifier(0, ambiguity);
         this.antennaPhaseCenter = antennaPhaseCenter;
         this.satellite          = new ObservableSatellite(0);
-        this.satellite.getClockOffsetDriver().setValue(satClockOffset, null);
+        this.satellite.getClockOffsetDriver().setValue(satClockOffset);
     }
 
     public ObservableSatellite getSatellite() {
@@ -90,7 +90,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double n      = ambiguity.getParametersDrivers().get(0).getValue(null);
+            final double n      = ambiguity.getParametersDrivers().get(0).getValue();
             for (final GroundStation station : context.stations) {
             	final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();

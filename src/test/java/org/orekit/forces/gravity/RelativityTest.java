@@ -489,12 +489,12 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         //actions + verify
         Assertions.assertEquals(
                 Constants.EIGEN5C_EARTH_MU,
-                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(null),
+                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);
-        relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setValue(1, null);
+        relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setValue(1);
         Assertions.assertEquals(
                 1,
-                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(null),
+                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);
     }
 

@@ -799,7 +799,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(1,  drivers.size());
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(null), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(0).getName());
         
         // Extract drag model at an arbitrary epoch and check it is the one added

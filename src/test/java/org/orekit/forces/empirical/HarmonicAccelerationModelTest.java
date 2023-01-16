@@ -96,8 +96,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         Assertions.assertTrue(inertialAcceleration.dependsOnPositionOnly());
-        inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass, null);
-        inertialAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI, null);
+        inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
+        inertialAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 1.0e-15);
     }
 
@@ -449,7 +449,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
             if (driver.getName().equals(name)) {
                 driver.setSelected(true);
-                driver.setValue(value, null);
+                driver.setValue(value);
                 return;
             }
         }

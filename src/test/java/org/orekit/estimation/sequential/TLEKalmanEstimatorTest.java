@@ -157,7 +157,7 @@ public class TLEKalmanEstimatorTest {
 
         // Change X position of 10m as in the batch test
         ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        xDriver.setValue(xDriver.getValue(null) + 10.0, null);
+        xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         // Cartesian covariance matrix initialization
@@ -233,7 +233,7 @@ public class TLEKalmanEstimatorTest {
 
         // Change X position of 10m as in the batch test
         ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        xDriver.setValue(xDriver.getValue(null) + 10.0, null);
+        xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         // Cartesian covariance matrix initialization
@@ -308,7 +308,7 @@ public class TLEKalmanEstimatorTest {
 
         // Change X position of 10m as in the batch test
         ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        xDriver.setValue(xDriver.getValue(null) + 10.0, null);
+        xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         // Cartesian covariance matrix initialization

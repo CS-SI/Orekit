@@ -1141,7 +1141,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     final String coefficientName = names[i] + "[" + k + "]";
                     for (final ParameterDriver driver : drivers) {
                         if (driver.getName().equals(coefficientName)) {
-                            driver.setValue(Double.parseDouble(coefficients[i].get(k)), new AbsoluteDate());
+                            driver.setValue(Double.parseDouble(coefficients[i].get(k)));
                             driver.setSelected(estimated[i]);
                         }
                     }

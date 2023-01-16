@@ -50,9 +50,9 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset, null);
+        this.local.getClockOffsetDriver().setValue(localClockOffset);
         this.remote              = new ObservableSatellite(1);
-        this.remote.getClockOffsetDriver().setValue(remoteClockOffset, null);
+        this.remote.getClockOffsetDriver().setValue(remoteClockOffset);
     }
 
     public ObservableSatellite getLocalSatellite() {

@@ -62,7 +62,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
         this.wavelength          = frequency.getWavelength();
         this.ambiguity           = new OneWayGNSSPhaseAmbiguityModifier(0, ambiguity);
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset, null);
+        this.local.getClockOffsetDriver().setValue(localClockOffset);
     }
 
     public ObservableSatellite getLocalSatellite() {

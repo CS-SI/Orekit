@@ -52,7 +52,7 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
-        this.local.getClockOffsetDriver().setValue(localClockOffset, null);
+        this.local.getClockOffsetDriver().setValue(localClockOffset);
     }
 
     public ObservableSatellite getLocalSatellite() {

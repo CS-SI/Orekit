@@ -212,7 +212,7 @@ public class JacobianPropagatorConverterTest {
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
-        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(null);
+        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
         dP = 1.0;
 
         //use a orbit that comes close to Earth so the drag coefficient has an effect

@@ -377,7 +377,7 @@ public interface DSSTForceModel extends ParametersDriversProvider {
             // Initialize the date detector
             final DateDetector datesDetector = new DateDetector(transitionDates.get(0)).
                     withMaxCheck(60.).
-                    withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
+                    withHandler(( state, d, increasing) -> {
                         return Action.RESET_DERIVATIVES;
                     });
             // Add all transitions' dates to the date detector

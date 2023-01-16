@@ -80,7 +80,7 @@ public class AmbiguitySolver {
                                 // in order to make the code generic and compatible with pDriver having
                                 // 1 or several values driven getValue is called with a "random date"
                                 // it should be OK as we take the near number
-                                final double near   = FastMath.rint(d.getValue(new AbsoluteDate()));
+                                final double near   = FastMath.rint(d.getValue());
                                 final double gapMin = near - d.getMinValue();
                                 final double gapMax = d.getMaxValue() - near;
                                 return FastMath.max(FastMath.abs(gapMin), FastMath.abs(gapMax)) > 1.0e-15;

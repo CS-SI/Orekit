@@ -138,7 +138,7 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(detector));
 
         final double startShift = 5.5;
-        detector.getStartDriver().setValue(startShift, null);
+        detector.getStartDriver().setValue(startShift);
         final double stopShift  = -0.5;
         detector.getStopDriver().setValue(stopShift, null);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -188,9 +188,9 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(detector));
 
         final double startShift = 500.5;
-        detector.getStartDriver().setValue(startShift, null);
+        detector.getStartDriver().setValue(startShift);
         final double stopShift  = -500.5;
-        detector.getStopDriver().setValue(stopShift, null);
+        detector.getStopDriver().setValue(stopShift);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
         Assertions.assertEquals(0, logger.getLoggedEvents().size());

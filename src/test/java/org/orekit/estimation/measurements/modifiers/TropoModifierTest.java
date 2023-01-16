@@ -186,7 +186,7 @@ public class TropoModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset, null);
+            station.getClockOffsetDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
@@ -234,7 +234,7 @@ public class TropoModifierTest {
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset, null);
+            station.getClockOffsetDriver().setValue(groundClockOffset);
         }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =

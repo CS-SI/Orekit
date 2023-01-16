@@ -558,7 +558,7 @@ public class OneWayGNSSPhaseTest {
         Assertions.assertFalse(phase.getAmbiguityDriver().isSelected());
 
         // Perform some changes in ambiguity driver
-        phase.getAmbiguityDriver().setValue(1234.0, null);
+        phase.getAmbiguityDriver().setValue(1234.0);
         phase.getAmbiguityDriver().setSelected(true);
 
         // Second check

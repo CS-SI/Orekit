@@ -158,7 +158,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
         final PolynomialAccelerationModel accelerationModel3 = new PolynomialAccelerationModel("C3", null, 0);
-        accelerationModel3.getParametersDrivers().get(0).setValue(2.7, null);
+        accelerationModel3.getParametersDrivers().get(0).setValue(2.7);
         forceModel.addAccelerationModelValidBefore(accelerationModel3, date3);
 
         // Initialize model

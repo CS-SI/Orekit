@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;

@@ -113,7 +113,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                 ParameterDriver selected = null;
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        driver.setValue(driver.getReferenceValue(), null);
+                        driver.setValue(driver.getReferenceValue(), initialOrbit.getDate());
                         if (driver.getName().equals(parameterName)) {
                             driver.setSelected(true);
                             selected = driver;
@@ -149,56 +149,56 @@ public class IntegrableJacobianColumnGeneratorTest {
                 ParameterDriver selected2 = bound.getDrivers().get(0);
                 double p0 = selected2.getReferenceValue();
                 double h  = selected2.getScale();
-                selected2.setValue(p0 - 4 * h, null);
+                selected2.setValue(p0 - 4 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                selected2.setValue(p0 - 3 * h, null);
+                selected2.setValue(p0 - 3 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                selected2.setValue(p0 - 2 * h, null);
+                selected2.setValue(p0 - 2 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                selected2.setValue(p0 - 1 * h, null);
+                selected2.setValue(p0 - 1 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                selected2.setValue(p0 + 1 * h, null);
+                selected2.setValue(p0 + 1 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sP1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                selected2.setValue(p0 + 2 * h, null);
+                selected2.setValue(p0 + 2 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sP2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                selected2.setValue(p0 + 3 * h, null);
+                selected2.setValue(p0 + 3 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sP3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                selected2.setValue(p0 + 4 * h, null);
+                selected2.setValue(p0 + 4 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
                                                            orbitType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),

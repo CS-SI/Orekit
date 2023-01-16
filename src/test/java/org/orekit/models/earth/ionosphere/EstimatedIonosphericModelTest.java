@@ -459,28 +459,28 @@ public class EstimatedIonosphericModelTest {
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
 
-        selected.setValue(p0 - 4 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 - 4 * h);
         double  delayM4 = model.pathDelay(elevation, frequency, model.getParameters());
         
-        selected.setValue(p0 - 3 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 - 3 * h);
         double  delayM3 = model.pathDelay(elevation, frequency, model.getParameters());
         
-        selected.setValue(p0 - 2 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 - 2 * h);
         double  delayM2 = model.pathDelay(elevation, frequency, model.getParameters());
 
-        selected.setValue(p0 - 1 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 - 1 * h);
         double  delayM1 = model.pathDelay(elevation, frequency, model.getParameters());
 
-        selected.setValue(p0 + 1 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 + 1 * h);
         double  delayP1 = model.pathDelay(elevation, frequency, model.getParameters());
 
-        selected.setValue(p0 + 2 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 + 2 * h);
         double  delayP2 = model.pathDelay(elevation, frequency, model.getParameters());
 
-        selected.setValue(p0 + 3 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 + 3 * h);
         double  delayP3 = model.pathDelay(elevation, frequency, model.getParameters());
 
-        selected.setValue(p0 + 4 * h, dsDate.toAbsoluteDate());
+        selected.setValue(p0 + 4 * h);
         double  delayP4 = model.pathDelay(elevation, frequency, model.getParameters());
             
         fillJacobianColumn(refDeriv, 0, h,

@@ -227,7 +227,7 @@ public class KeplerianBatchLSEstimatorTest {
                                                                                          propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift, null);
+            station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =

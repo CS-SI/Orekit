@@ -308,7 +308,7 @@ public interface ForceModel extends ParametersDriversProvider {
             // Initialize the date detector
             final DateDetector datesDetector = new DateDetector(transitionDates.get(0)).
                     withMaxCheck(60.).
-                    withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
+                    withHandler(( state, d, increasing) -> {
                         return Action.RESET_DERIVATIVES;
                     });
             // Add all transitions' dates to the date detector
@@ -344,7 +344,7 @@ public interface ForceModel extends ParametersDriversProvider {
             final FieldDateDetector<T> datesDetector =
                     new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates.get(0))).
                     withMaxCheck(field.getZero().add(60.)).
-                    withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
+                    withHandler(( state, d, increasing) -> {
                         return Action.RESET_DERIVATIVES;
                     });
             // Add all transitions' dates to the date detector

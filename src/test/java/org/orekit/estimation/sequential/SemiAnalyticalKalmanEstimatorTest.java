@@ -258,7 +258,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
         ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
+        aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization
         // 100m on position / 1e-2m/s on velocity
@@ -362,7 +362,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
         ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
-        aDriver.setValue(aDriver.getValue(null) + 1.2, null);
+        aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization
         // 100m on position / 1e-2m/s on velocity
@@ -566,7 +566,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final ParameterDriversList estimatedDrivers = new ParameterDriversList();
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockDrift, null);
+            station.getClockOffsetDriver().setValue(groundClockDrift);
             station.getClockOffsetDriver().setSelected(true);
             estimatedDrivers.add(station.getClockOffsetDriver());
         }
