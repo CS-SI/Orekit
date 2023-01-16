@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -350,20 +350,17 @@ public class EventSlopeFilterTest {
                 withMaxCheck(300.0).
                 withMaxIter(100).
                 withThreshold(1.0e-3).
-                withHandler(new EventHandler<LatitudeCrossingDetector>() {
+                withHandler(new EventHandler() {
 
                     @Override
-                    public Action eventOccurred(SpacecraftState s,
-                                                LatitudeCrossingDetector detector,
-                                                boolean increasing) {
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                         Assertions.assertEquals(filter.getTriggeredIncreasing(), increasing);
                         count[0]++;
                         return Action.RESET_STATE;
                     }
 
                     @Override
-                    public SpacecraftState resetState(LatitudeCrossingDetector detector,
-                                                      SpacecraftState oldState) {
+                    public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                         count[1]++;
                         return oldState;
                     }
@@ -378,7 +375,7 @@ public class EventSlopeFilterTest {
         Assertions.assertEquals(expected, count[1]);
     }
 
-    private static class Counter implements EventHandler<EclipseDetector> {
+    private static class Counter implements EventHandler {
 
         private int increasingCounter;
         private int decreasingCounter;
@@ -393,7 +390,7 @@ public class EventSlopeFilterTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, EclipseDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector ed, boolean increasing) {
             if (increasing) {
                 increasingCounter++;
             } else {

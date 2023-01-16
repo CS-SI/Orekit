@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,27 +56,27 @@ public class FieldIntegratedEphemerisTest {
 
     @Test
     public void testNormalKeplerIntegration() {
-        doTestNormalKeplerIntegration(Decimal64Field.getInstance());
+        doTestNormalKeplerIntegration(Binary64Field.getInstance());
     }
 
     @Test
     public void testGetFrame() {
-        doTestGetFrame(Decimal64Field.getInstance());
+        doTestGetFrame(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalState() {
-        doTestAdditionalState(Decimal64Field.getInstance());
+        doTestAdditionalState(Binary64Field.getInstance());
     }
 
     @Test
     public void testNoReset() {
-        doTestNoReset(Decimal64Field.getInstance());
+        doTestNoReset(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalDerivatives() {
-        doTestAdditionalDerivatives(Decimal64Field.getInstance());
+        doTestAdditionalDerivatives(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {
@@ -207,9 +207,7 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(finalDate);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         ephemeris.addEventDetector(new FieldDateDetector<>(initialOrbit.getDate().shiftedBy(10)).
-                                   withHandler((FieldSpacecraftState<T> s,
-                                                FieldDateDetector<T> detector,
-                                                boolean increasing) -> Action.RESET_STATE));
+                                   withHandler((s, detector, increasing) -> Action.RESET_STATE));
 
         try {
             ephemeris.propagate(initialOrbit.getDate(), finalDate);

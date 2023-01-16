@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
@@ -67,67 +67,67 @@ public class FieldEquinoctialOrbitTest {
 
     @Test
     public void testEquinoctialToEquinoctialEll() {
-        doTestEquinoctialToEquinoctialEll(Decimal64Field.getInstance());
+        doTestEquinoctialToEquinoctialEll(Binary64Field.getInstance());
     }
 
     @Test
     public void testEquinoctialToEquinoctialCirc() {
-        doTestEquinoctialToEquinoctialCirc(Decimal64Field.getInstance());
+        doTestEquinoctialToEquinoctialCirc(Binary64Field.getInstance());
     }
 
     @Test
     public void testEquinoctialToCartesian() {
-        doTestEquinoctialToCartesian(Decimal64Field.getInstance());
+        doTestEquinoctialToCartesian(Binary64Field.getInstance());
     }
 
     @Test
     public void testEquinoctialToKeplerian() {
-        doTestEquinoctialToKeplerian(Decimal64Field.getInstance());
+        doTestEquinoctialToKeplerian(Binary64Field.getInstance());
     }
 
     @Test
     public void testNumericalIssue25() {
-        doTestNumericalIssue25(Decimal64Field.getInstance());
+        doTestNumericalIssue25(Binary64Field.getInstance());
     }
 
     @Test
     public void testAnomaly() {
-        doTestAnomaly(Decimal64Field.getInstance());
+        doTestAnomaly(Binary64Field.getInstance());
     }
 
     @Test
     public void testPositionVelocityNorms() {
-        doTestPositionVelocityNorms(Decimal64Field.getInstance());
+        doTestPositionVelocityNorms(Binary64Field.getInstance());
     }
 
     @Test
     public void testGeometry() {
-        doTestGeometry(Decimal64Field.getInstance());
+        doTestGeometry(Binary64Field.getInstance());
     }
 
     @Test
     public void testRadiusOfCurvature() {
-        doTestRadiusOfCurvature(Decimal64Field.getInstance());
+        doTestRadiusOfCurvature(Binary64Field.getInstance());
     }
 
     @Test
     public void testSymmetry() {
-        doTestSymmetry(Decimal64Field.getInstance());
+        doTestSymmetry(Binary64Field.getInstance());
     }
 
     @Test
     public void testJacobianReference() {
-        doTestJacobianReference(Decimal64Field.getInstance());
+        doTestJacobianReference(Binary64Field.getInstance());
     }
 
     @Test
     public void testJacobianFinitedifferences() {
-        doTestJacobianFinitedifferences(Decimal64Field.getInstance());
+        doTestJacobianFinitedifferences(Binary64Field.getInstance());
     }
 
     @Test
     public void testInterpolationWithDerivatives() {
-        doTestInterpolation(Decimal64Field.getInstance(), true,
+        doTestInterpolation(Binary64Field.getInstance(), true,
                             397, 1.17e-8,
                             610, 4.49e-6,
                             4870, 115);
@@ -135,7 +135,7 @@ public class FieldEquinoctialOrbitTest {
 
     @Test
     public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(Decimal64Field.getInstance(), false,
+        doTestInterpolation(Binary64Field.getInstance(), false,
                             397, 0.0372,
                             610.0, 1.23,
                             4879, 8871);
@@ -144,60 +144,60 @@ public class FieldEquinoctialOrbitTest {
     @Test
     public void testHyperbolic() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestHyperbolic(Decimal64Field.getInstance());
+            doTestHyperbolic(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testToOrbitWithoutDerivatives() {
-        doTestToOrbitWithoutDerivatives(Decimal64Field.getInstance());
+        doTestToOrbitWithoutDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testToOrbitWithDerivatives() {
-        doTestToOrbitWithDerivatives(Decimal64Field.getInstance());
+        doTestToOrbitWithDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testDerivativesConversionSymmetry() {
-        doTestDerivativesConversionSymmetry(Decimal64Field.getInstance());
+        doTestDerivativesConversionSymmetry(Binary64Field.getInstance());
     }
 
     @Test
     public void testToString() {
-        doTestToString(Decimal64Field.getInstance());
+        doTestToString(Binary64Field.getInstance());
     }
 
     @Test
     public void testNonInertialFrame() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestNonInertialFrame(Decimal64Field.getInstance());
+            doTestNonInertialFrame(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testNonKeplerianDerivatives() {
-        doTestNonKeplerianDerivatives(Decimal64Field.getInstance());
+        doTestNonKeplerianDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testPositionAngleDerivatives() {
-        doTestPositionAngleDerivatives(Decimal64Field.getInstance());
+        doTestPositionAngleDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testEquatorialRetrograde() {
-        doTestEquatorialRetrograde(Decimal64Field.getInstance());
+        doTestEquatorialRetrograde(Binary64Field.getInstance());
     }
 
     @Test
     public void testCopyNonKeplerianAcceleration() {
-        doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
+        doTestCopyNonKeplerianAcceleration(Binary64Field.getInstance());
     }
 
     @Test
     public void testNormalize() {
-        doTestNormalize(Decimal64Field.getInstance());
+        doTestNormalize(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEquinoctialToEquinoctialEll(Field<T> field) {

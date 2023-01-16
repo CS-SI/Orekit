@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,8 +64,8 @@ public interface TransformProvider extends Serializable {
      * <p>The default implementation returns {@link #getTransform(AbsoluteDate)}
      * but implementations may override it for better performance.
      *
+     * @param <T> type of the elements
      * @param date current date.
-     * @param <T> type of the field elements
      * @return the static transform.
      * @since 12.0
      */

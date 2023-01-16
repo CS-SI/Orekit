@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
@@ -57,6 +57,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -77,103 +78,103 @@ public class FieldSpacecraftStateTest {
 
     @Test
     public void testFieldVSReal() {
-        doTestFieldVsReal(Decimal64Field.getInstance());
+        doTestFieldVsReal(Binary64Field.getInstance());
     }
 
     @Test
     public void testShiftVsEcksteinHechlerError() {
-        doTestShiftVsEcksteinHechlerError(Decimal64Field.getInstance());
+        doTestShiftVsEcksteinHechlerError(Binary64Field.getInstance());
     }
 
     @Test
     public void testDatesConsistency() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestDatesConsistency(Decimal64Field.getInstance());
+            doTestDatesConsistency(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testDateConsistencyClose() {
-        doTestDateConsistencyClose(Decimal64Field.getInstance());
+        doTestDateConsistencyClose(Binary64Field.getInstance());
     }
 
     @Test
     public void testFramesConsistency() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistency(Decimal64Field.getInstance());
+            doTestFramesConsistency(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testTransform() {
-        doTestTransform(Decimal64Field.getInstance());
+        doTestTransform(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalStates() {
-        doTestAdditionalStates(Decimal64Field.getInstance());
+        doTestAdditionalStates(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalStatesDerivatives() {
-        doTestAdditionalStatesDerivatives(Decimal64Field.getInstance());
+        doTestAdditionalStatesDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testInterpolation() throws ParseException {
-        doTestInterpolation(Decimal64Field.getInstance());
+        doTestInterpolation(Binary64Field.getInstance());
     }
 
     @Test
     public void testFieldVSRealAbsPV() {
-        doTestFieldVsRealAbsPV(Decimal64Field.getInstance());
+        doTestFieldVsRealAbsPV(Binary64Field.getInstance());
     }
 
     @Test
     public void testDateConsistencyCloseAbsPV() {
-        doTestDateConsistencyCloseAbsPV(Decimal64Field.getInstance());
+        doTestDateConsistencyCloseAbsPV(Binary64Field.getInstance());
     }
 
     @Test
     public void testFramesConsistencyAbsPV() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistencyAbsPV(Decimal64Field.getInstance());
+            doTestFramesConsistencyAbsPV(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testAdditionalStatesAbsPV() {
-        doTestAdditionalStatesAbsPV(Decimal64Field.getInstance());
+        doTestAdditionalStatesAbsPV(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalStatesDerivativesAbsPV() {
-        doTestAdditionalStatesDerivativesAbsPV(Decimal64Field.getInstance());
+        doTestAdditionalStatesDerivativesAbsPV(Binary64Field.getInstance());
     }
 
     @Test
     public void testResetOnEventAnalytical() {
-        doTestAdditionalTestResetOnEventAnalytical(Decimal64Field.getInstance());
+        doTestAdditionalTestResetOnEventAnalytical(Binary64Field.getInstance());
     }
 
     @Test
     public void testResetOnEventNumerical() {
-        doTestAdditionalTestResetOnEventNumerical(Decimal64Field.getInstance());
+        doTestAdditionalTestResetOnEventNumerical(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue775() {
-        doTestIssue775(Decimal64Field.getInstance());
+        doTestIssue775(Binary64Field.getInstance());
     }
 
     @Test
     public void testShiftAdditionalDerivativesDouble() {
-        doTestShiftAdditionalDerivativesDouble(Decimal64Field.getInstance());
+        doTestShiftAdditionalDerivativesDouble(Binary64Field.getInstance());
     }
 
     @Test
     public void testShiftAdditionalDerivativesField() {
-        doTestShiftAdditionalDerivativesField(Decimal64Field.getInstance());
+        doTestShiftAdditionalDerivativesField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
@@ -1069,15 +1070,15 @@ public class FieldSpacecraftStateTest {
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
-                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+                                    withHandler(new FieldEventHandler<T>() {
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return oldState.addAdditionalState(name, zero.add(+1));
             }
 
@@ -1120,15 +1121,15 @@ public class FieldSpacecraftStateTest {
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
-                                    withHandler(new FieldEventHandler<FieldDateDetector<T>, T>() {
+                                    withHandler(new FieldEventHandler<T>() {
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
+            public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return oldState.addAdditionalState(name, zero.add(+1));
             }
 

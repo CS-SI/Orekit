@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.utils.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses the classical thermo-optical coefficients
- * Ca for absorption, Cs for specular reflection and Kd for diffuse
+ * Ca for absorption, Cs for specular reflection and Cd for diffuse
  * reflection. The equation Ca + Cs + Cd = 1 always holds.
  * </p>
  * <p>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -88,7 +88,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
             final T maxCheck,
             final T threshold,
             final int maxIter,
-            final FieldEventHandler<? super FieldLatitudeCrossingDetector<T>, T> handler,
+            final FieldEventHandler<T> handler,
             final OneAxisEllipsoid body,
             final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
@@ -102,7 +102,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
             final T newMaxCheck,
             final T newThreshold,
             final int newMaxIter,
-            final FieldEventHandler<? super FieldLatitudeCrossingDetector<T>, T> newHandler) {
+            final FieldEventHandler<T> newHandler) {
         return new FieldLatitudeCrossingDetector<>(
                 newMaxCheck, newThreshold, newMaxIter, newHandler, body, latitude);
     }

@@ -24,8 +24,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,21 +105,21 @@ public class DSSTJ2SquaredClosedFormTest {
     public void testFieldGetMeanElementRateZeis() {
 
         // Field
-        final Field<Decimal64> field = Decimal64Field.getInstance();
-        final Decimal64 zero = field.getZero();
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final Binary64 zero = field.getZero();
 
         // Spacecraft state
-        final FieldOrbit<Decimal64> orbit = createOrbit(field, 200000.0, 210000.0);
-        final FieldSpacecraftState<Decimal64> state = new FieldSpacecraftState<>(orbit, zero.add(1000.0));
+        final FieldOrbit<Binary64> orbit = createOrbit(field, 200000.0, 210000.0);
+        final FieldSpacecraftState<Binary64> state = new FieldSpacecraftState<>(orbit, zero.add(1000.0));
 
         // Force model
         final DSSTForceModel j2Squared = new DSSTJ2SquaredClosedForm(new ZeisModel(), provider);
 
         // DSST auxiliary elements
-        final FieldAuxiliaryElements<Decimal64> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
+        final FieldAuxiliaryElements<Binary64> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Mean element rates
-        final Decimal64[] elements = j2Squared.getMeanElementRate(state, auxiliaryElements, j2Squared.getParameters(field));
+        final Binary64[] elements = j2Squared.getMeanElementRate(state, auxiliaryElements, j2Squared.getParameters(field));
   
         // Verify
         Assertions.assertEquals(0.0,                     elements[0].getReal(), 1.e-25);
@@ -325,15 +325,15 @@ public class DSSTJ2SquaredClosedFormTest {
 
     }
 
-    private FieldOrbit<Decimal64> createOrbit(final Field<Decimal64> field, final double perigeeAltitude, final double apogeeAltitude) {
+    private FieldOrbit<Binary64> createOrbit(final Field<Binary64> field, final double perigeeAltitude, final double apogeeAltitude) {
 
         // Zero
-        final Decimal64 zero = field.getZero();
+        final Binary64 zero = field.getZero();
 
         // Frame and epoch
         final Frame frame = FramesFactory.getEME2000();
         final AbsoluteDate epoch = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
-        final FieldAbsoluteDate<Decimal64> fieldEpoch = new FieldAbsoluteDate<Decimal64>(field, epoch);
+        final FieldAbsoluteDate<Binary64> fieldEpoch = new FieldAbsoluteDate<Binary64>(field, epoch);
 
         // Orbital elements (very LEO orbit)
         final double apogee  = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + apogeeAltitude;
@@ -347,7 +347,7 @@ public class DSSTJ2SquaredClosedFormTest {
         final PositionAngle angleType = PositionAngle.MEAN;
 
         // Keplerian
-        final FieldKeplerianOrbit<Decimal64> fieldKep = new FieldKeplerianOrbit<Decimal64>(zero.add(sma), zero.add(ecc), zero.add(inc),
+        final FieldKeplerianOrbit<Binary64> fieldKep = new FieldKeplerianOrbit<Binary64>(zero.add(sma), zero.add(ecc), zero.add(inc),
                                                                                            zero.add(aop), zero.add(raan), zero.add(anom),
                                                                                            angleType, frame, fieldEpoch, zero.add(provider.getMu()));
         

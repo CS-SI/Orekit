@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -444,6 +444,15 @@ public class CartesianOrbitTest {
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date,
                                                   324858598826460.);
         testShift(orbit, new KeplerianOrbit(orbit), 6.0e-15);
+    }
+
+    @Test
+    public void testNumericalIssue1015() {
+        Vector3D position = new Vector3D(-1466739.735988, 1586390.713569, 6812901.677773);
+        Vector3D velocity = new Vector3D(-9532.812, -4321.894, -1409.018);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, 3.986004415E14);
+        testShift(orbit, new KeplerianOrbit(orbit), 1.0e-10);
     }
 
     private void testShift(CartesianOrbit tested, Orbit reference, double threshold) {

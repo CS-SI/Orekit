@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -56,6 +57,9 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
 
     /** Event detector. */
     private D detector;
+
+    /** Event handler. */
+    private FieldEventHandler<T> handler;
 
     /** Time of the previous call to g. */
     private FieldAbsoluteDate<T> lastT;
@@ -107,6 +111,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     public FieldEventState(final D detector) {
 
         this.detector = detector;
+        this.handler  = detector.getHandler();
 
         // some dummy values ...
         final Field<T> field   = detector.getMaxCheckInterval().getField();
@@ -491,8 +496,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link FieldEventDetector#resetState(FieldSpacecraftState)}
-     * if necessary.
+     * call including a call to {@link FieldEventHandler#resetState(FieldEventDetector,
+     * FieldSpacecraftState)} if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
@@ -508,10 +513,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = handler.eventOccurred(state, detector, increasing == forward);
         final FieldSpacecraftState<T> newState;
         if (action == Action.RESET_STATE) {
-            newState = detector.resetState(state);
+            newState = handler.resetState(detector, state);
         } else {
             newState = state;
         }

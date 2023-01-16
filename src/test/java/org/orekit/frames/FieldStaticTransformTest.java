@@ -9,7 +9,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -25,7 +25,7 @@ public class FieldStaticTransformTest {
     /** Test creating, composing, and using a StaticTransform. */
     @Test
     public void testSimpleComposition() {
-        doTestSimpleComposition(Decimal64Field.getInstance());
+        doTestSimpleComposition(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimpleComposition(Field<T> field) {

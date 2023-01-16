@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                  final AtmosphericRefractionModel refractionModel) {
         this(groundLocation, sun, dawnDuskElevation, refractionModel,
              DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new ContinueOnEvent<>());
+             new ContinueOnEvent());
     }
 
     /** Private constructor.
@@ -104,7 +104,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                   final double maxCheck,
                                   final double threshold,
                                   final int maxIter,
-                                  final EventHandler<? super GroundAtNightDetector> handler) {
+                                  final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.groundLocation    = groundLocation;
         this.sun               = sun;
@@ -117,7 +117,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
     protected GroundAtNightDetector create(final double newMaxCheck,
                                            final double newThreshold,
                                            final int newMaxIter,
-                                           final EventHandler<? super GroundAtNightDetector> newHandler) {
+                                           final EventHandler newHandler) {
         return new GroundAtNightDetector(groundLocation, sun, dawnDuskElevation, refractionModel,
                                          newMaxCheck, newThreshold, newMaxIter, newHandler);
     }

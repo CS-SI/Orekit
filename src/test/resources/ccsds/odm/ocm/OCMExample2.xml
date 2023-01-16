@@ -58,9 +58,9 @@
            <FIXED_F10P7>105.0</FIXED_F10P7>
            <FIXED_F10P7_MEAN>120.0</FIXED_F10P7_MEAN>
         </pert>
-        <userDef>
+        <user>
            <USER_DEFINED parameter="EARTH_MODEL">WGS-84</USER_DEFINED>
-        </userDef>
+        </user>
       </data>
     </segment>
   </body>

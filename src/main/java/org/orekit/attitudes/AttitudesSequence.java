@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -170,14 +172,23 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
-                    return sw.eventOccurred(s.toSpacecraftState(), increasing);
-                }
+                public FieldEventHandler<T> getHandler() {
+                    return new FieldEventHandler<T>() {
+                        /** {@inheritDoc} */
+                        @Override
+                        public Action eventOccurred(final FieldSpacecraftState<T> s,
+                                                    final FieldEventDetector<T> detector,
+                                                    final boolean increasing) {
+                            return sw.eventOccurred(s.toSpacecraftState(), sw, increasing);
+                        }
 
-                /** {@inheritDoc} */
-                @Override
-                public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
-                    return new FieldSpacecraftState<>(field, sw.resetState(oldState.toSpacecraftState()));
+                        /** {@inheritDoc} */
+                        @Override
+                        public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
+                                                                  final FieldSpacecraftState<T> oldState) {
+                            return new FieldSpacecraftState<>(field, sw.resetState(sw, oldState.toSpacecraftState()));
+                        }
+                    };
                 }
 
             });
@@ -302,7 +313,7 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Switch specification.
      * @param <T> class type for the generic version
      */
-    private class Switch<T extends EventDetector> implements EventDetector {
+    private class Switch<T extends EventDetector> implements EventDetector, EventHandler {
 
         /** Event. */
         private final T event;
@@ -403,7 +414,12 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public EventHandler getHandler() {
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
 
             final AbsoluteDate date = s.getDate();
             if (activated.get(date) == (forward ? past : future) &&
@@ -423,7 +439,7 @@ public class AttitudesSequence implements AttitudeProvider {
                         switchHandler.switchOccurred(past, future, s);
                     }
 
-                    return event.eventOccurred(s, increasing);
+                    return event.getHandler().eventOccurred(s, event, increasing);
 
                 } else {
 
@@ -446,22 +462,22 @@ public class AttitudesSequence implements AttitudeProvider {
                         switchHandler.switchOccurred(future, past, sState);
                     }
 
-                    return event.eventOccurred(sState, increasing);
+                    return event.getHandler().eventOccurred(sState, event, increasing);
 
                 }
 
             } else {
                 // trigger the underlying event despite no attitude switch occurred
-                return event.eventOccurred(s, increasing);
+                return event.getHandler().eventOccurred(s, event, increasing);
             }
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             // delegate to underlying event
-            return event.resetState(oldState);
+            return event.getHandler().resetState(detector, oldState);
         }
 
         /** Provider for transition phases.

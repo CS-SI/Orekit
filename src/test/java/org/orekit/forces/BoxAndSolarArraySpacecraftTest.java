@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
@@ -547,19 +547,19 @@ public class BoxAndSolarArraySpacecraftTest {
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
 
-        // "Field" the inputs using Decimal64
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64[] srpParam = getRadiationParameters(s, field);
+        // "Field" the inputs using Binary64
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64[] srpParam = getRadiationParameters(s, field);
 
-        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
-        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPosition());
-        FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
-        Decimal64 mass = new Decimal64(state.getMass());
-        FieldVector3D<Decimal64> flux = new FieldVector3D<Decimal64>(field.getOne(),
+        FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field, state.getDate());
+        FieldVector3D<Binary64> position = new FieldVector3D<Binary64>(field.getOne(), state.getPosition());
+        FieldRotation<Binary64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
+        Binary64 mass = new Binary64(state.getMass());
+        FieldVector3D<Binary64> flux = new FieldVector3D<Binary64>(field.getOne(),
                         new Vector3D(Precision.SAFE_MIN / 2, Vector3D.PLUS_I));
 
 
-        FieldVector3D<Decimal64> a = s.radiationPressureAcceleration(date, state.getFrame(),
+        FieldVector3D<Binary64> a = s.radiationPressureAcceleration(date, state.getFrame(),
                                                                      position, rotation, mass,
                                                                      flux, srpParam);
         Assertions.assertEquals(0.0, a.getNorm().getReal(), Double.MIN_VALUE);
@@ -573,24 +573,24 @@ public class BoxAndSolarArraySpacecraftTest {
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
 
-        // "Field" the inputs using Decimal64
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64[] srpParam = getRadiationParameters(s, field);
+        // "Field" the inputs using Binary64
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64[] srpParam = getRadiationParameters(s, field);
 
-        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
-        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPosition());
-        FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
-        Decimal64 mass = new Decimal64(state.getMass());
+        FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field, state.getDate());
+        FieldVector3D<Binary64> position = new FieldVector3D<Binary64>(field.getOne(), state.getPosition());
+        FieldRotation<Binary64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
+        Binary64 mass = new Binary64(state.getMass());
 
         // Flux equal to SA normal
-        FieldVector3D<Decimal64> flux = s.getNormal(date, state.getFrame(), position, rotation);
+        FieldVector3D<Binary64> flux = s.getNormal(date, state.getFrame(), position, rotation);
 
         // Forward flux
-        FieldVector3D<Decimal64> aPlus = s.radiationPressureAcceleration(date, state.getFrame(),
+        FieldVector3D<Binary64> aPlus = s.radiationPressureAcceleration(date, state.getFrame(),
                                                                          position, rotation, mass,
                                                                          flux, srpParam);
         // Backward flux
-        FieldVector3D<Decimal64> aMinus = s.radiationPressureAcceleration(date, state.getFrame(),
+        FieldVector3D<Binary64> aMinus = s.radiationPressureAcceleration(date, state.getFrame(),
                                                                           position, rotation, mass,
                                                                           flux.negate(), srpParam);
 
@@ -619,11 +619,11 @@ public class BoxAndSolarArraySpacecraftTest {
         CelestialBody sun = CelestialBodyFactory.getSun();
         BoxAndSolarArraySpacecraft s =
             new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        Field<Decimal64> field = Decimal64Field.getInstance();
+        Field<Binary64> field = Binary64Field.getInstance();
         for (double dt = 0; dt < 4000; dt += 60) {
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
-            FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
+            FieldVector3D<Binary64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
                                                           state.getFrame(),
                                                           new FieldVector3D<>(field, state.getPosition()),
                                                           new FieldRotation<>(field, state.getAttitude().getRotation()));
@@ -657,11 +657,11 @@ public class BoxAndSolarArraySpacecraftTest {
             new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J,
                                            initialDate, Vector3D.PLUS_K, 1.0e-3,
                                            0.0, 1.0, 0.0);
-        Field<Decimal64> field = Decimal64Field.getInstance();
+        Field<Binary64> field = Binary64Field.getInstance();
         for (double dt = 0; dt < 4000; dt += 60) {
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
-            FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
+            FieldVector3D<Binary64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
                                                           state.getFrame(),
                                                           new FieldVector3D<>(field, state.getPosition()),
                                                           new FieldRotation<>(field, state.getAttitude().getRotation()));
@@ -686,8 +686,8 @@ public class BoxAndSolarArraySpacecraftTest {
                         new BoxAndSolarArraySpacecraft(0, 0, 0,
                                                        (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
                                                        20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        FieldVector3D<Decimal64> normal = s.getNormal(FieldAbsoluteDate.getJ2000Epoch(field),
+        Field<Binary64> field = Binary64Field.getInstance();
+        FieldVector3D<Binary64> normal = s.getNormal(FieldAbsoluteDate.getJ2000Epoch(field),
                                                       FramesFactory.getEME2000(),
                                                       FieldVector3D.getZero(field),
                                                       FieldRotation.getIdentity(field));
@@ -695,7 +695,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     /** Test the functions computing drag and SRP acceleration and giving FieldVector3D outputs.
-     *  By comparing the "double" value with a "Decimal64" implementation.
+     *  By comparing the "double" value with a "Binary64" implementation.
      */
     @Test
     public void testFieldAcceleration() {
@@ -736,26 +736,26 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D aSrp = s.radiationPressureAcceleration(date, frame, position, rotation, mass,
                                                             flux, getRadiationParameters(s));
 
-            // "Field" the inputs using Decimal64
-            Field<Decimal64> field = Decimal64Field.getInstance();
+            // "Field" the inputs using Binary64
+            Field<Binary64> field = Binary64Field.getInstance();
 
-            FieldAbsoluteDate<Decimal64> dateF = new FieldAbsoluteDate<>(field, date);
-            FieldVector3D<Decimal64> positionF = new FieldVector3D<Decimal64>(field.getOne(), position);
-            FieldRotation<Decimal64> rotationF = new FieldRotation<>(field, rotation);
-            Decimal64 massF = new Decimal64(mass);
-            FieldVector3D<Decimal64> fluxF = new FieldVector3D<Decimal64>(field.getOne(), flux);
-            Decimal64 densityF = new Decimal64(density);
-            FieldVector3D<Decimal64> relativeVelocityF = new FieldVector3D<Decimal64>(field.getOne(), relativeVelocity);
+            FieldAbsoluteDate<Binary64> dateF = new FieldAbsoluteDate<>(field, date);
+            FieldVector3D<Binary64> positionF = new FieldVector3D<Binary64>(field.getOne(), position);
+            FieldRotation<Binary64> rotationF = new FieldRotation<>(field, rotation);
+            Binary64 massF = new Binary64(mass);
+            FieldVector3D<Binary64> fluxF = new FieldVector3D<Binary64>(field.getOne(), flux);
+            Binary64 densityF = new Binary64(density);
+            FieldVector3D<Binary64> relativeVelocityF = new FieldVector3D<Binary64>(field.getOne(), relativeVelocity);
 
 
-            // Acceleration in Decimal64
-            FieldVector3D<Decimal64> aDragF = s.dragAcceleration(dateF, frame,
+            // Acceleration in Binary64
+            FieldVector3D<Binary64> aDragF = s.dragAcceleration(dateF, frame,
                                                                  positionF, rotationF, massF, densityF,
                                                                  relativeVelocityF, getDragParameters(s, field));
-            FieldVector3D<Decimal64> aSrpF = s.radiationPressureAcceleration(dateF, frame,
+            FieldVector3D<Binary64> aSrpF = s.radiationPressureAcceleration(dateF, frame,
                                                                          positionF, rotationF, massF,
                                                                          fluxF, getRadiationParameters(s, field));
-            // Compare double and Decimal64 accelerations
+            // Compare double and Binary64 accelerations
             Assertions.assertEquals(0.0, Vector3D.distance(aDrag,  aDragF.toVector3D()), Precision.EPSILON);
             Assertions.assertEquals(0.0, Vector3D.distance(aSrp,  aSrpF.toVector3D()), Precision.EPSILON);
         }

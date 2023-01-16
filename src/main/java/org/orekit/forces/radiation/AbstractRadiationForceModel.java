@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEclipseDetector;
@@ -127,15 +126,13 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
                                    withMargin(zero.newInstance(-ANGULAR_MARGIN)).
                                    withMaxCheck(zero.newInstance(ECLIPSE_MAX_CHECK)).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
-                                   withHandler((FieldSpacecraftState<T> state, FieldEclipseDetector<T> detector, boolean increasing) ->
-                                               Action.RESET_DERIVATIVES);
+                                   withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
             detectors[2 * i + 1] = new FieldEclipseDetector<>(field, occulting).
                                    withPenumbra().
                                    withMargin(zero.newInstance(ANGULAR_MARGIN)).
                                    withMaxCheck(zero.newInstance(ECLIPSE_MAX_CHECK)).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
-                                   withHandler((FieldSpacecraftState<T> state, FieldEclipseDetector<T> detector, boolean increasing) ->
-                                                Action.RESET_DERIVATIVES);
+                                   withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
         return Stream.concat(Stream.of(detectors), super.getFieldEventsDetectors(field));
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -373,7 +373,6 @@ public class OmmParserTest {
             parser.parseMessage(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            oe.printStackTrace();
             Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
             Assertions.assertEquals("OBJECT_ID", oe.getParts()[0]);
         }

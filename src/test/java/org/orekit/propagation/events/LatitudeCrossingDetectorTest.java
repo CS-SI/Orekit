@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,7 +49,7 @@ public class LatitudeCrossingDetectorTest {
 
         LatitudeCrossingDetector d =
                 new LatitudeCrossingDetector(60.0, 1.e-6, earth, FastMath.toRadians(60.0)).
-                withHandler(new ContinueOnEvent<LatitudeCrossingDetector>());
+                withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
@@ -110,7 +110,7 @@ public class LatitudeCrossingDetectorTest {
 
         LatitudeCrossingDetector d =
                 new LatitudeCrossingDetector(10.0, 1.e-6, earth, FastMath.toRadians(82.0)).
-                withHandler(new ContinueOnEvent<LatitudeCrossingDetector>());
+                withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(10.0, d.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,18 +110,19 @@ public class InterSatDirectViewDetectorTest {
 
     }
 
-    private static class GrazingHandler implements EventHandler<InterSatDirectViewDetector> {
-        public Action eventOccurred(SpacecraftState s, InterSatDirectViewDetector detector, boolean increasing) {
+    private static class GrazingHandler implements EventHandler {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             // just before increasing events and just after decreasing events,
             // the primary/secondary line intersects Earth limb
-            final OneAxisEllipsoid earth       = detector.getCentralBody();
+            final InterSatDirectViewDetector isdv = (InterSatDirectViewDetector) detector;
+            final OneAxisEllipsoid earth       = isdv.getCentralBody();
             final Frame            frame       = earth.getBodyFrame();
             final double           dt          = increasing ? -1.0e-8 : +1.0e-8;
             final AbsoluteDate     grazingDate = s.getDate().shiftedBy(dt);
             final Vector3D pPrimary = s.shiftedBy(dt).
                                      getPVCoordinates(frame).
                                      getPosition();
-            final Vector3D psecondary  = detector.getSecondary().getPVCoordinates(grazingDate, frame).
+            final Vector3D psecondary  = isdv.getSecondary().getPVCoordinates(grazingDate, frame).
                                      getPosition();
             final Vector3D grazing = earth.getCartesianIntersectionPoint(new Line(pPrimary,  psecondary, 1.0),
                                                                          pPrimary, frame, grazingDate);

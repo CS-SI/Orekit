@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -199,7 +199,7 @@ public class DSSTBatchLSModelTest {
             }
         };
 
-        final DSSTBatchLSModel modelMean = propagatorBuilderMean.buildLSModel(new DSSTPropagatorBuilder[] {propagatorBuilderMean}, measurements, estimatedMeasurementsParameters, observerMean);
+        final DSSTBatchLSModel modelMean = propagatorBuilderMean.buildLeastSquaresModel(new DSSTPropagatorBuilder[] {propagatorBuilderMean}, measurements, estimatedMeasurementsParameters, observerMean);
         modelMean.setIterationsCounter(new Incrementor(100));
         modelMean.setEvaluationsCounter(new Incrementor(100));
 
@@ -224,7 +224,7 @@ public class DSSTBatchLSModelTest {
             }
         };
 
-        final DSSTBatchLSModel modelOsc = propagatorBuilderOsc.buildLSModel(new DSSTPropagatorBuilder[] {propagatorBuilderOsc}, measurements, estimatedMeasurementsParameters, observerOsc);
+        final DSSTBatchLSModel modelOsc = propagatorBuilderOsc.buildLeastSquaresModel(new DSSTPropagatorBuilder[] {propagatorBuilderOsc}, measurements, estimatedMeasurementsParameters, observerOsc);
         modelOsc.setIterationsCounter(new Incrementor(100));
         modelOsc.setEvaluationsCounter(new Incrementor(100));
 

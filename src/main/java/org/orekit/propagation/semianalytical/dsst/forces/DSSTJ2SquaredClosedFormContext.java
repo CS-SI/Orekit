@@ -28,6 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * contribution to the central body gravitational perturbation.
  * <p>
  * @author Bryan Cazabonne
+ * @since 12.0
  */
 public class DSSTJ2SquaredClosedFormContext extends ForceModelContext {
 

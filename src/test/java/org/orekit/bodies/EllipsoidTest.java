@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -91,7 +91,7 @@ public class EllipsoidTest {
 
     @Test
     public void testFieldPrincipalPlanesIntersections() {
-        doTestFieldPrincipalPlanesIntersections(Decimal64Field.getInstance());
+        doTestFieldPrincipalPlanesIntersections(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldPrincipalPlanesIntersections(final Field<T> field) {
@@ -145,7 +145,7 @@ public class EllipsoidTest {
 
     @Test
     public void testFieldNoIntersections() {
-        doTestFieldNoIntersections(Decimal64Field.getInstance());
+        doTestFieldNoIntersections(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldNoIntersections(final Field<T> field) {
@@ -169,7 +169,7 @@ public class EllipsoidTest {
 
     @Test
     public void testFieldSinglePoint() throws IOException {
-        doTestFieldSinglePoint(Decimal64Field.getInstance());
+        doTestFieldSinglePoint(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSinglePoint(final Field<T> field) {
@@ -228,7 +228,7 @@ public class EllipsoidTest {
 
     @Test
     public void testFieldRandomNormalSections() throws IOException {
-        doTestFieldRandomNormalSections(Decimal64Field.getInstance());
+        doTestFieldRandomNormalSections(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldRandomNormalSections(final Field<T> field) {
@@ -286,7 +286,7 @@ public class EllipsoidTest {
 
     @Test
     public void testFieldInside() {
-        doTestFieldInside(Decimal64Field.getInstance());
+        doTestFieldInside(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldInside(final Field<T> field) {
@@ -328,7 +328,7 @@ public class EllipsoidTest {
 
     @Test
     public void testFieldLimb() {
-        doTestFieldLimb(Decimal64Field.getInstance());
+        doTestFieldLimb(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldLimb(final Field<T> field) {
@@ -376,7 +376,7 @@ public class EllipsoidTest {
 
     @Test
     public void testFieldIssue639() {
-        doTestFieldIssue639(Decimal64Field.getInstance());
+        doTestFieldIssue639(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldIssue639(final Field<T> field) {

@@ -23,9 +23,6 @@ import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -36,7 +33,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.3
  */
-public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Default position scale (not used for ephemeris based estimation). */
     private static final double DEFAULT_SCALE = 10.0;
@@ -79,20 +76,11 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implem
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,7 +93,7 @@ public class Rtcm1044Test {
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(qzssMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, qzssMessage.getDate().
-                            durationFrom(new GNSSDate(qzssMessage.getWeek(), 1000.0 * qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);
+                            durationFrom(new GNSSDate(qzssMessage.getWeek(), qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1044,                   rtcm1044.getTypeCode());

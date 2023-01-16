@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -533,10 +533,10 @@ public class GroundStation {
                         estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
 
         // take station offsets into account
-        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
-        final BodyShape       baseShape  = baseFrame.getParentShape();
+        final Gradient                       x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices);
+        final BodyShape                      baseShape  = baseFrame.getParentShape();
         final FieldStaticTransform<Gradient> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
 
         FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));

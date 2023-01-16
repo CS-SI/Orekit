@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -132,7 +132,7 @@ public class GLONASSNumericalPropagatorTest {
 
     @Test
     public void testFromITRF2008ToPZ90Field() {
-        doTestFromITRF2008ToPZ90Field(Decimal64Field.getInstance());
+        doTestFromITRF2008ToPZ90Field(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFromITRF2008ToPZ90Field(final Field<T> field)  {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.ode.events.EventHandlerConfiguration;
+import org.hipparchus.ode.events.ODEEventDetector;
 import org.hipparchus.ode.events.ODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
@@ -54,6 +54,7 @@ import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -315,10 +316,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param detector event detector to wrap
      */
     protected void setUpEventDetector(final ODEIntegrator integ, final EventDetector detector) {
-        integ.addEventHandler(new AdaptedEventDetector(detector),
-                              detector.getMaxCheckInterval(),
-                              detector.getThreshold(),
-                              detector.getMaxIterationCount());
+        integ.addEventDetector(new AdaptedEventDetector(detector));
     }
 
     /** {@inheritDoc} */
@@ -852,13 +850,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Adapt an {@link org.orekit.propagation.events.EventDetector}
-     * to Hipparchus {@link org.hipparchus.ode.events.ODEEventHandler} interface.
+     * to Hipparchus {@link org.hipparchus.ode.events.ODEEventDetector} interface.
      * @author Fabien Maussion
      */
-    private class AdaptedEventDetector implements ODEEventHandler {
+    private class AdaptedEventDetector implements ODEEventDetector {
 
         /** Underlying event detector. */
         private final EventDetector detector;
+
+        /** Underlying event handler.
+         * @since 12.0
+         */
+        private final EventHandler handler;
 
         /** Time of the previous call to g. */
         private double lastT;
@@ -871,8 +874,27 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         */
         AdaptedEventDetector(final EventDetector detector) {
             this.detector = detector;
+            this.handler  = detector.getHandler();
             this.lastT    = Double.NaN;
             this.lastG    = Double.NaN;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getMaxCheckInterval() {
+            return detector.getMaxCheckInterval();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getThreshold() {
+            return detector.getThreshold();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getMaxIterationCount() {
+            return detector.getMaxIterationCount();
         }
 
         /** {@inheritDoc} */
@@ -892,33 +914,41 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            return detector.eventOccurred(convert(s), increasing);
-        }
+        public ODEEventHandler getHandler() {
 
-        /** {@inheritDoc} */
-        public ODEState resetState(final ODEStateAndDerivative s) {
+            return new ODEEventHandler() {
 
-            final SpacecraftState oldState = convert(s);
-            final SpacecraftState newState = detector.resetState(oldState);
-            stateChanged(newState);
+                /** {@inheritDoc} */
+                public Action eventOccurred(final ODEStateAndDerivative s, final ODEEventDetector d, final boolean increasing) {
+                    return handler.eventOccurred(convert(s), detector, increasing);
+                }
 
-            // main part
-            final double[] primary    = new double[s.getPrimaryStateDimension()];
-            stateMapper.mapStateToArray(newState, primary, null);
+                /** {@inheritDoc} */
+                public ODEState resetState(final ODEEventDetector d, final ODEStateAndDerivative s) {
 
-            // secondary part
-            final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-                final String name      = provider.getName();
-                final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = provider.getDimension();
-                System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
-            }
+                    final SpacecraftState oldState = convert(s);
+                    final SpacecraftState newState = handler.resetState(detector, oldState);
+                    stateChanged(newState);
 
-            return new ODEState(newState.getDate().durationFrom(getStartDate()),
-                                primary, secondary);
+                    // main part
+                    final double[] primary    = new double[s.getPrimaryStateDimension()];
+                    stateMapper.mapStateToArray(newState, primary, null);
 
+                    // secondary part
+                    final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
+                    for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                        final String name      = provider.getName();
+                        final int    offset    = secondaryOffsets.get(name);
+                        final int    dimension = provider.getDimension();
+                        System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
+                    }
+
+                    return new ODEState(newState.getDate().durationFrom(getStartDate()),
+                                        primary, secondary);
+
+                }
+
+            };
         }
 
     }
@@ -1158,8 +1188,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Wrapped integrator. */
         private final ODEIntegrator integrator;
 
-        /** Initial event handlers list. */
-        private final List<EventHandlerConfiguration> eventHandlersConfigurations;
+        /** Initial event detectors list. */
+        private final List<ODEEventDetector> detectors;
 
         /** Initial step handlers list. */
         private final List<ODEStepHandler> stepHandlers;
@@ -1168,9 +1198,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @param integrator wrapped integrator
          */
         IntegratorResetter(final ODEIntegrator integrator) {
-            this.integrator                  = integrator;
-            this.eventHandlersConfigurations = new ArrayList<>(integrator.getEventHandlersConfigurations());
-            this.stepHandlers                = new ArrayList<>(integrator.getStepHandlers());
+            this.integrator   = integrator;
+            this.detectors    = new ArrayList<>(integrator.getEventDetectors());
+            this.stepHandlers = new ArrayList<>(integrator.getStepHandlers());
         }
 
         /** {@inheritDoc}
@@ -1182,12 +1212,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void close() {
 
             // reset event handlers
-            integrator.clearEventHandlers();
-            eventHandlersConfigurations.forEach(c -> integrator.addEventHandler(c.getEventHandler(),
-                                                                                c.getMaxCheckInterval(),
-                                                                                c.getConvergence(),
-                                                                                c.getMaxIterationCount(),
-                                                                                c.getSolver()));
+            integrator.clearEventDetectors();
+            detectors.forEach(c -> integrator.addEventDetector(c));
 
             // reset step handlers
             integrator.clearStepHandlers();

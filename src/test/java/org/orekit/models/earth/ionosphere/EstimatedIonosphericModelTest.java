@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -78,7 +78,7 @@ public class EstimatedIonosphericModelTest {
 
     @Test
     public void testFieldL1GPS() {
-        doTestFieldL1GPS(Decimal64Field.getInstance());
+        doTestFieldL1GPS(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldL1GPS(final Field<T> field) {
@@ -114,7 +114,7 @@ public class EstimatedIonosphericModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -165,7 +165,7 @@ public class EstimatedIonosphericModelTest {
 
     @Test
     public void testFieldZeroDelay() {
-        doTestFieldZeroDelay(Decimal64Field.getInstance());
+        doTestFieldZeroDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
@@ -202,7 +202,7 @@ public class EstimatedIonosphericModelTest {
 
     @Test
     public void testEquality() {
-        doTestEquality(Decimal64Field.getInstance());
+        doTestEquality(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEquality(final Field<T> field) {

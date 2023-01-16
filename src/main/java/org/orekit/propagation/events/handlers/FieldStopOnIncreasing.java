@@ -29,10 +29,9 @@ import org.orekit.propagation.events.FieldEventDetector;
  *
  * @author Hank Grabowski
  *
- * @param <KK> class type for the generic version
+ * @param <T> type of the field element
  */
-public class FieldStopOnIncreasing <KK extends FieldEventDetector<T>,
-                    T extends CalculusFieldElement<T>> implements FieldEventHandler<KK, T> {
+public class FieldStopOnIncreasing <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
@@ -45,7 +44,7 @@ public class FieldStopOnIncreasing <KK extends FieldEventDetector<T>,
      * @return {@link Action#STOP} or {@link Action#CONTINUE}
      */
     @Override
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing) {
+    public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
         return increasing ? Action.STOP : Action.CONTINUE;
     }
 

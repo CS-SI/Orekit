@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -76,7 +76,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      */
     public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
         this(field.getZero().newInstance(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
-             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<FieldEclipseDetector<T>, T>(),
+             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              occultationEngine, field.getZero(), true);
     }
 
@@ -96,7 +96,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 12.0
      */
     private FieldEclipseDetector(final T maxCheck, final T threshold,
-                                 final int maxIter, final FieldEventHandler<? super FieldEclipseDetector<T>, T> handler,
+                                 final int maxIter, final FieldEventHandler<T> handler,
                                  final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
         this.occultationEngine = occultationEngine;
@@ -107,7 +107,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     /** {@inheritDoc} */
     @Override
     protected FieldEclipseDetector<T> create(final T newMaxCheck, final T newThreshold, final int nawMaxIter,
-                                             final FieldEventHandler<? super FieldEclipseDetector<T>, T> newHandler) {
+                                             final FieldEventHandler<T> newHandler) {
         return new FieldEclipseDetector<>(newMaxCheck, newThreshold, nawMaxIter, newHandler,
                                           occultationEngine, margin, totalEclipse);
     }

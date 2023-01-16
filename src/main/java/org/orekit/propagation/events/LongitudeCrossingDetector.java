@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
     private final double longitude;
 
     /** Filtering detector. */
-    private final EventEnablingPredicateFilter<RawLongitudeCrossingDetector> filtering;
+    private final EventEnablingPredicateFilter filtering;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -62,7 +62,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      */
     public LongitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double longitude) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LongitudeCrossingDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, longitude);
     }
 
@@ -80,7 +80,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * @param longitude longitude to be crossed
      */
     private LongitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super LongitudeCrossingDetector> handler,
+                                     final int maxIter, final EventHandler handler,
                                      final OneAxisEllipsoid body, final double longitude) {
 
         super(maxCheck, threshold, maxIter, handler);
@@ -90,17 +90,17 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
 
         // we filter out spurious longitude crossings occurring at the antimeridian
         final RawLongitudeCrossingDetector raw = new RawLongitudeCrossingDetector(maxCheck, threshold, maxIter,
-                                                                                  new ContinueOnEvent<>());
-        final EnablingPredicate<RawLongitudeCrossingDetector> predicate =
+                                                                                  new ContinueOnEvent());
+        final EnablingPredicate predicate =
             (state, detector, g) -> FastMath.abs(g) < 0.5 * FastMath.PI;
-        this.filtering = new EventEnablingPredicateFilter<>(raw, predicate);
+        this.filtering = new EventEnablingPredicateFilter(raw, predicate);
 
     }
 
     /** {@inheritDoc} */
     @Override
     protected LongitudeCrossingDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
-                                               final EventHandler<? super LongitudeCrossingDetector> newHandler) {
+                                               final EventHandler newHandler) {
         return new LongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              body, longitude);
     }
@@ -158,7 +158,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
          * @param handler event handler to call at event occurrences
          */
         private RawLongitudeCrossingDetector(final double maxCheck, final double threshold,  final int maxIter,
-                                             final EventHandler<? super RawLongitudeCrossingDetector> handler) {
+                                             final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
@@ -166,7 +166,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
         @Override
         protected RawLongitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
                                                       final int newMaxIter,
-                                                      final EventHandler<? super RawLongitudeCrossingDetector> newHandler) {
+                                                      final EventHandler newHandler) {
             return new RawLongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 

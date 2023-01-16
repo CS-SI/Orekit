@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,7 +80,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -142,10 +142,10 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final boolean useMoon  = true;
         final boolean useSun   = true;
         final boolean useTides = true;
-        final OrbitDeterminationPropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField,
-                                                                                    convention, simpleEop, minStep, maxStep,
-                                                                                    mass, surface, useDrag, useSrp,
-                                                                                    useSun, useMoon, useTides);
+        final PropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField,
+                                                                  convention, simpleEop, minStep, maxStep,
+                                                                  mass, surface, useDrag, useSrp,
+                                                                  useSun, useMoon, useTides);
 
         // Measurements
         final double sigma = 2.0;
@@ -306,21 +306,21 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * @param useTides true if solid Earth tides must be added
      * @return a configured propagator builder
      */
-    private static OrbitDeterminationPropagatorBuilder initializePropagator(final Orbit orbit,
-                                                                            final OneAxisEllipsoid centralBody,
-                                                                            final SphericalHarmonicsProvider gravityField,
-                                                                            final IERSConventions convention, final boolean simpleEop,
-                                                                            final double minStep, final double maxStep,
-                                                                            final double mass, final double surface,
-                                                                            final boolean useDrag, final boolean useSrp,
-                                                                            final boolean useSun, final boolean useMoon,
-                                                                            final boolean useTides) {
+    private static PropagatorBuilder initializePropagator(final Orbit orbit,
+                                                          final OneAxisEllipsoid centralBody,
+                                                          final SphericalHarmonicsProvider gravityField,
+                                                          final IERSConventions convention, final boolean simpleEop,
+                                                          final double minStep, final double maxStep,
+                                                          final double mass, final double surface,
+                                                          final boolean useDrag, final boolean useSrp,
+                                                          final boolean useSun, final boolean useMoon,
+                                                          final boolean useTides) {
 
         // Initialize numerical integrator
         final ODEIntegratorBuilder integrator = new DormandPrince853IntegratorBuilder(minStep, maxStep, 10.0);
 
         // Initialize the builder
-        final OrbitDeterminationPropagatorBuilder builder;
+        final PropagatorBuilder builder;
 
         // Initialize the numerical builder
         final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngle.MEAN, 10.0);
@@ -486,9 +486,9 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * @param measurements list of measurements
      * @param provider covariance matrix provider
      */
-    private static Observer initializeEstimator(final OrbitDeterminationPropagatorBuilder propagator,
-                                            final List<ObservedMeasurement<?>> measurements,
-                                            final CovarianceMatrixProvider provider) {
+    private static Observer initializeEstimator(final PropagatorBuilder propagator,
+                                                final List<ObservedMeasurement<?>> measurements,
+                                                final CovarianceMatrixProvider provider) {
 
         // Initialize builder
         final UnscentedKalmanEstimatorBuilder builder = new UnscentedKalmanEstimatorBuilder();

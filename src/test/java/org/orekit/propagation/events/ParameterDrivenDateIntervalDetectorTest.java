@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,7 +48,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("no-shift", start, stop).
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
-                                                       withHandler(new ContinueOnEvent<>());
+                                                       withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(10.0, detector.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
@@ -75,7 +75,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("small-shift", start, stop).
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
-                                                       withHandler(new ContinueOnEvent<>());
+                                                       withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(10.0, detector.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
@@ -107,7 +107,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("large-shift", median, duration).
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
-                                                       withHandler(new ContinueOnEvent<>());
+                                                       withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(10.0, detector.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
@@ -136,7 +136,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("large-shift", start, stop).
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
-                                                       withHandler(new ContinueOnEvent<>());
+                                                       withHandler(new ContinueOnEvent());
 
         Assertions.assertFalse(detector.getStartDriver().isSelected());
         Assertions.assertFalse(detector.getStopDriver().isSelected());
@@ -171,7 +171,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("large-shift", start, stop).
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
-                                                       withHandler(new ContinueOnEvent<>());
+                                                       withHandler(new ContinueOnEvent());
         Assertions.assertEquals(   0.0, detector.getStartDriver().getValue(),    1.0e-15);
         Assertions.assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
         Assertions.assertEquals(   0.0, detector.getMedianDriver().getValue(),   1.0e-15);
@@ -198,7 +198,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("large-shift", start, stop).
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
-                                                       withHandler(new ContinueOnEvent<>());
+                                                       withHandler(new ContinueOnEvent());
         Assertions.assertEquals(   0.0, detector.getStartDriver().getValue(),    1.0e-15);
         Assertions.assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
         Assertions.assertEquals(   0.0, detector.getMedianDriver().getValue(),   1.0e-15);

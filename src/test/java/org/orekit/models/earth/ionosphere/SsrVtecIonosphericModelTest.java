@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,7 +119,7 @@ public class SsrVtecIonosphericModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -186,7 +186,7 @@ public class SsrVtecIonosphericModelTest {
 
     @Test
     public void testFieldZeroDelay() {
-        doTestFieldZeroDelay(Decimal64Field.getInstance());
+        doTestFieldZeroDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
@@ -354,7 +354,7 @@ public class SsrVtecIonosphericModelTest {
 
     @Test
     public void testFieldDelayRange() {
-        doTestFieldDelayRange(Decimal64Field.getInstance());
+        doTestFieldDelayRange(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelayRange(final Field<T> field) {

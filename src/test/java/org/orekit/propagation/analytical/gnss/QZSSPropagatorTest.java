@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,7 +65,7 @@ public class QZSSPropagatorTest {
         almanac.setAf0(-2.965927124E-04);
         almanac.setAf1(7.275957614E-12);
         almanac.setHealth(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.QZSS).getDate());
+        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.QZSS).getDate());
 
     }
 
@@ -129,11 +129,11 @@ public class QZSSPropagatorTest {
         double errorA = 0;
         GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
         GNSSOrbitalElements elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.QZSS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.QZSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
-            final double h = 10.0;
+            final double h = 60.0;
             List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
@@ -175,7 +175,7 @@ public class QZSSPropagatorTest {
         qoe.setCrs(-305.6875);
         qoe.setCic(1.2032687664031982E-6);
         qoe.setCis(-2.6728957891464233E-6);
-        qoe.setDate(new GNSSDate(qoe.getWeek(), 1000.0 * qoe.getTime(), SatelliteSystem.QZSS).getDate());
+        qoe.setDate(new GNSSDate(qoe.getWeek(), qoe.getTime(), SatelliteSystem.QZSS).getDate());
         // Date of the QZSS orbital elements
         final AbsoluteDate target = qoe.getDate();
         // Build the QZSS propagator

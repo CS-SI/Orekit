@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.time;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -413,10 +413,10 @@ public class UTCScaleTest {
     public void testInfinityFieldDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
         Assertions.assertEquals(-36.0,
-                            scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Decimal64Field.getInstance())).getReal(),
+                            scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Binary64Field.getInstance())).getReal(),
                             1.0e-15);
         Assertions.assertEquals(0.0,
-                            scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Decimal64Field.getInstance())).getReal(),
+                            scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Binary64Field.getInstance())).getReal(),
                             1.0e-15);
     }
 

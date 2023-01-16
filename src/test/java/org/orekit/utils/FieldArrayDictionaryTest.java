@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,87 +31,87 @@ public class FieldArrayDictionaryTest {
 
     @Test
     public void testEmpty() {
-        doTestEmpty(Decimal64Field.getInstance());
+        doTestEmpty(Binary64Field.getInstance());
     }
 
     @Test
     public void testPutGet() {
-        doTestPutGet(Decimal64Field.getInstance());
+        doTestPutGet(Binary64Field.getInstance());
     }
 
     @Test
     public void testFromDictionary() {
-        doTestFromDictionary(Decimal64Field.getInstance());
+        doTestFromDictionary(Binary64Field.getInstance());
     }
 
     @Test
     public void testFromMap() {
-        doTestFromMap(Decimal64Field.getInstance());
+        doTestFromMap(Binary64Field.getInstance());
     }
 
     @Test
     public void testArraysAreCopied() {
-        doTestArraysAreCopied(Decimal64Field.getInstance());
+        doTestArraysAreCopied(Binary64Field.getInstance());
     }
 
     @Test
     public void testIncrementField() {
-        doTestIncrementField(Decimal64Field.getInstance());
+        doTestIncrementField(Binary64Field.getInstance());
     }
 
     @Test
     public void testIncrementDouble() {
-        doTestIncrementDouble(Decimal64Field.getInstance());
+        doTestIncrementDouble(Binary64Field.getInstance());
     }
 
     @Test
     public void testScaledIncrementField() {
-        doTestScaledIncrementField(Decimal64Field.getInstance());
+        doTestScaledIncrementField(Binary64Field.getInstance());
     }
 
     @Test
     public void testScaledIncrementDouble() {
-        doTestScaledIncrementDouble(Decimal64Field.getInstance());
+        doTestScaledIncrementDouble(Binary64Field.getInstance());
     }
 
     @Test
     public void testZero() {
-        doTestZero(Decimal64Field.getInstance());
+        doTestZero(Binary64Field.getInstance());
     }
 
     @Test
     public void testSize() {
-        doTestSize(Decimal64Field.getInstance());
+        doTestSize(Binary64Field.getInstance());
     }
 
     @Test
     public void testDataManagement() {
-        doTestDataManagement(Decimal64Field.getInstance());
+        doTestDataManagement(Binary64Field.getInstance());
     }
 
     @Test
     public void testReplace() {
-        doTestReplace(Decimal64Field.getInstance());
+        doTestReplace(Binary64Field.getInstance());
     }
 
     @Test
     public void testPutAllMap() {
-        doTestPutAllMap(Decimal64Field.getInstance());
+        doTestPutAllMap(Binary64Field.getInstance());
     }
 
     @Test
     public void testPutAllDictionary() {
-        doTestPutAllDictionary(Decimal64Field.getInstance());
+        doTestPutAllDictionary(Binary64Field.getInstance());
     }
 
     @Test
     public void testToMap() {
-        doTestToMap(Decimal64Field.getInstance());
+        doTestToMap(Binary64Field.getInstance());
     }
 
     @Test
     public void testView() {
-        doTestView(Decimal64Field.getInstance());
+        doTestView(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEmpty(Field<T> field) {

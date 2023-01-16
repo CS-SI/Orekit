@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ public class LongitudeCrossingDetectorTest {
                 new LongitudeCrossingDetector(earth, FastMath.toRadians(10.0)).
                 withMaxCheck(60).
                 withThreshold(1.e-6).
-                withHandler(new ContinueOnEvent<LongitudeCrossingDetector>());
+                withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
@@ -117,7 +117,7 @@ public class LongitudeCrossingDetectorTest {
 
         LongitudeCrossingDetector d =
                 new LongitudeCrossingDetector(600.0, 1.e-6, earth, FastMath.toRadians(-100.0)).
-                withHandler(new ContinueOnEvent<LongitudeCrossingDetector>());
+                withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(600.0, d.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
@@ -164,10 +164,10 @@ public class LongitudeCrossingDetectorTest {
 
         final double startLon = FastMath.toRadians(0.0);
         EventDetector lonEntryDetector = new LongitudeCrossingDetector(earth, startLon).
-                                         withHandler(new ContinueOnEvent<>());
+                                         withHandler(new ContinueOnEvent());
         final double endLon = FastMath.toRadians(10.0);
         EventDetector lonExitDetector  = new LongitudeCrossingDetector(earth, endLon).
-                                         withHandler(new ContinueOnEvent<>());
+                                         withHandler(new ContinueOnEvent());
         EventsLogger logger= new EventsLogger();
         sgp4.addEventDetector(logger.monitorDetector(lonEntryDetector));
         sgp4.addEventDetector(logger.monitorDetector(lonExitDetector));

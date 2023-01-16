@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,10 @@ import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.LocalizedODEFormats;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,28 +74,28 @@ public class FieldEclipseDetectorTest {
 
     @Test
     public void testEclipse() {
-        doTestEclipse(Decimal64Field.getInstance());
+        doTestEclipse(Binary64Field.getInstance());
     }
     @Test
     public void testPenumbra() {
-        doTestPenumbra(Decimal64Field.getInstance());
+        doTestPenumbra(Binary64Field.getInstance());
     }
     @Test
     public void testWithMethods() {
-        doTestWithMethods(Decimal64Field.getInstance());
+        doTestWithMethods(Binary64Field.getInstance());
     }
 
     @Test
     public void testInsideOcculting() {
-        doTestInsideOcculting(Decimal64Field.getInstance());
+        doTestInsideOcculting(Binary64Field.getInstance());
     }
     @Test
     public void testInsideOcculted() {
-        doTestInsideOcculted(Decimal64Field.getInstance());
+        doTestInsideOcculted(Binary64Field.getInstance());
     }
     @Test
     public void testTooSmallMaxIterationCount() {
-        testTooSmallMaxIterationCount(Decimal64Field.getInstance());
+        testTooSmallMaxIterationCount(Binary64Field.getInstance());
     }
 
 
@@ -113,7 +114,7 @@ public class FieldEclipseDetectorTest {
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
                                     withMaxCheck(zero.newInstance(60.)).
                                     withThreshold(zero.newInstance(1e-3)).
-                                    withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
+                                    withHandler(new FieldStopOnDecreasing<T>()).
                                     withUmbra();
         Assertions.assertEquals(60.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold().getReal(), 1.0e-15);
@@ -183,7 +184,7 @@ public class FieldEclipseDetectorTest {
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
                                     withMaxCheck(zero.newInstance(120.)).
                                     withThreshold(zero.newInstance(1e-4)).
-                                    withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
+                                    withHandler(new FieldStopOnDecreasing<T>()).
                                     withMaxIter(12).
                                     withMargin(zero.newInstance(0.001));
         Assertions.assertEquals(120.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
@@ -300,14 +301,15 @@ public class FieldEclipseDetectorTest {
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
                                     withMaxCheck(zero.newInstance(120.)).
                                     withThreshold(zero.newInstance(1e-4)).
-                                    withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
+                                    withHandler(new FieldStopOnDecreasing<T>()).
                                     withMaxIter(n);
        propagator.addEventDetector(e);
         try {
             propagator.propagate(iniDate.shiftedBy(6000));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
+            Assertions.assertEquals(LocalizedODEFormats.FIND_ROOT,
+                                    ((MathRuntimeException) oe.getCause()).getSpecifier());
         }
     }
 

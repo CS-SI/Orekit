@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,6 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -47,7 +44,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -263,25 +260,15 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
 
     /** {@inheritDoc} */
     @Override
-    public DSSTBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
+    public DSSTBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                   final List<ObservedMeasurement<?>> measurements,
+                                                   final ParameterDriversList estimatedMeasurementsParameters,
+                                                   final ModelObserver observer) {
         return new DSSTBatchLSModel(builders,
                                     measurements,
                                     estimatedMeasurementsParameters,
                                     observer,
                                     propagationType);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
-                               estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
     /** Check if Newtonian attraction force model is available.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,8 +28,8 @@ import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -146,30 +146,30 @@ public class LocalOrbitalFrameTest {
     @DisplayName("Test transformFromLOFInToLOFOut (field version) method")
     void should_return_expected_field_transform_from_LOFIn_To_LOFOut() {
         // Given
-        final Field<Decimal64> field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field);
-        final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
-                                                             new Decimal64(0),
-                                                             new Decimal64(0)),
-                                         new FieldVector3D<>(new Decimal64(0),
-                                                             new Decimal64(7669),
-                                                             new Decimal64(0)));
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field);
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(7669),
+                                                             new Binary64(0)));
 
         // When
-        final FieldTransform<Decimal64> transformFromTNWToQSW =
+        final FieldTransform<Binary64> transformFromTNWToQSW =
                 LOFType.transformFromLOFInToLOFOut(LOFType.TNW, LOFType.QSW, date, pv);
-        final FieldTransform<Decimal64> transformFromQSWToNTW =
+        final FieldTransform<Binary64> transformFromQSWToNTW =
                 LOFType.transformFromLOFInToLOFOut(LOFType.QSW, LOFType.NTW, date, pv);
-        final FieldTransform<Decimal64> transformFromNTWToTNW =
+        final FieldTransform<Binary64> transformFromNTWToTNW =
                 LOFType.transformFromLOFInToLOFOut(LOFType.NTW, LOFType.TNW, date, pv);
-        final FieldTransform<Decimal64> composedTransform = composeFieldTransform(date,
+        final FieldTransform<Binary64> composedTransform = composeFieldTransform(date,
                                                                                   transformFromTNWToQSW,
                                                                                   transformFromQSWToNTW,
                                                                                   transformFromNTWToTNW);
 
-        final FieldVector3D<Decimal64>    computedTranslation = composedTransform.getTranslation();
-        final BlockFieldMatrix<Decimal64> computedRotation    =
+        final FieldVector3D<Binary64>    computedTranslation = composedTransform.getTranslation();
+        final BlockFieldMatrix<Binary64> computedRotation    =
                 new BlockFieldMatrix<>(composedTransform.getRotation().getMatrix());
 
         // Then
@@ -212,20 +212,20 @@ public class LocalOrbitalFrameTest {
     @DisplayName("Test transformFromInertial (field version) method")
     void should_return_expected_field_transform_from_inertial() {
         // Given
-        final Field<Decimal64>             field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<>(field);
-        final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
-                                                             new Decimal64(0),
-                                                             new Decimal64(0)),
-                                         new FieldVector3D<>(new Decimal64(0),
-                                                             new Decimal64(7669),
-                                                             new Decimal64(0)));
+        final Field<Binary64>             field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field);
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(7669),
+                                                             new Binary64(0)));
 
         // When
-        final FieldTransform<Decimal64> transformFromInertialToLOF = LOFType.TNW.transformFromInertial(date, pv);
-        final FieldVector3D<Decimal64>  computedTranslation        = transformFromInertialToLOF.getTranslation();
-        final BlockFieldMatrix<Decimal64> computedRotation =
+        final FieldTransform<Binary64> transformFromInertialToLOF = LOFType.TNW.transformFromInertial(date, pv);
+        final FieldVector3D<Binary64>  computedTranslation        = transformFromInertialToLOF.getTranslation();
+        final BlockFieldMatrix<Binary64> computedRotation =
                 new BlockFieldMatrix<>(transformFromInertialToLOF.getRotation().getMatrix());
 
         // Then
@@ -325,62 +325,62 @@ public class LocalOrbitalFrameTest {
     @DisplayName("Test all rotation methods (field version)")
     void should_return_initial_value_after_multiple_field_rotations() {
         // Given
-        final Decimal64Field               field = Decimal64Field.getInstance();
-        final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
-                                                             new Decimal64(0),
-                                                             new Decimal64(0)),
-                                         new FieldVector3D<>(new Decimal64(0),
-                                                             new Decimal64(5422.8),
-                                                             new Decimal64(5422.8)));
+        final Binary64Field               field = Binary64Field.getInstance();
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(5422.8),
+                                                             new Binary64(5422.8)));
 
         // When
-        final FieldRotation<Decimal64> rotationFromTNWToTNWInertial =
+        final FieldRotation<Binary64> rotationFromTNWToTNWInertial =
                 LOFType.TNW_INERTIAL.rotationFromLOFType(field, LOFType.TNW, pv);
 
-        final FieldRotation<Decimal64> rotationFromTNWInertialToQSW =
+        final FieldRotation<Binary64> rotationFromTNWInertialToQSW =
                 LOFType.QSW.rotationFromLOFType(field, LOFType.TNW_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromQSWToQSWInertial =
+        final FieldRotation<Binary64> rotationFromQSWToQSWInertial =
                 LOFType.QSW_INERTIAL.rotationFromLOFType(field, LOFType.QSW, pv);
 
-        final FieldRotation<Decimal64> rotationFromQSWInertialToLVLH =
+        final FieldRotation<Binary64> rotationFromQSWInertialToLVLH =
                 LOFType.LVLH.rotationFromLOFType(field, LOFType.QSW_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLHToLVLHInertial =
+        final FieldRotation<Binary64> rotationFromLVLHToLVLHInertial =
                 LOFType.LVLH_INERTIAL.rotationFromLOFType(field, LOFType.LVLH, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLHInertialToLVLH_CCSDS =
+        final FieldRotation<Binary64> rotationFromLVLHInertialToLVLH_CCSDS =
                 LOFType.LVLH_CCSDS.rotationFromLOFType(field, LOFType.LVLH_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
                 LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOFType(field, LOFType.LVLH_CCSDS, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLH_CCSDSInertialToVVLH =
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSInertialToVVLH =
                 LOFType.VVLH.rotationFromLOFType(field, LOFType.LVLH_CCSDS_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromVVLHToVVLHInertial =
+        final FieldRotation<Binary64> rotationFromVVLHToVVLHInertial =
                 LOFType.VVLH_INERTIAL.rotationFromLOFType(field, LOFType.VVLH, pv);
 
-        final FieldRotation<Decimal64> rotationFromVVLHInertialToVNC =
+        final FieldRotation<Binary64> rotationFromVVLHInertialToVNC =
                 LOFType.VNC.rotationFromLOFType(field, LOFType.VVLH_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromVNCToVNCInertial =
+        final FieldRotation<Binary64> rotationFromVNCToVNCInertial =
                 LOFType.VNC_INERTIAL.rotationFromLOFType(field, LOFType.VNC, pv);
 
-        final FieldRotation<Decimal64> rotationFromVNCInertialToNTW =
+        final FieldRotation<Binary64> rotationFromVNCInertialToNTW =
                 LOFType.NTW.rotationFromLOFType(field, LOFType.VNC_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromNTWToNTWInertial =
+        final FieldRotation<Binary64> rotationFromNTWToNTWInertial =
                 LOFType.NTW_INERTIAL.rotationFromLOFType(field, LOFType.NTW, pv);
 
-        final FieldRotation<Decimal64> rotationFromNTWInertialToEQW =
+        final FieldRotation<Binary64> rotationFromNTWInertialToEQW =
                 LOFType.EQW.rotationFromLOFType(field, LOFType.NTW_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromEQWToTNW =
+        final FieldRotation<Binary64> rotationFromEQWToTNW =
                                        LOFType.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, pv);
 
-        final FieldRotation<Decimal64> rotationFromTNWToTNW =
+        final FieldRotation<Binary64> rotationFromTNWToTNW =
                 composeFieldRotations(rotationFromTNWToTNWInertial,
                                       rotationFromTNWInertialToQSW,
                                       rotationFromQSWToQSWInertial,
@@ -397,7 +397,7 @@ public class LocalOrbitalFrameTest {
                                       rotationFromNTWInertialToEQW,
                                       rotationFromEQWToTNW);
 
-        final FieldMatrix<Decimal64> rotationMatrixFromTNWToTNW =
+        final FieldMatrix<Binary64> rotationMatrixFromTNWToTNW =
                 new BlockFieldMatrix<>(rotationFromTNWToTNW.getMatrix());
 
         // Then

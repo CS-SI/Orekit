@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -69,7 +69,7 @@ public class FieldViennaThreeModelTest {
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(Decimal64Field.getInstance());
+        doTestMappingFactors(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
@@ -122,7 +122,7 @@ public class FieldViennaThreeModelTest {
 
     @Test
     public void testLowElevation() {
-        doTestLowElevation(Decimal64Field.getInstance());
+        doTestLowElevation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLowElevation(final Field<T> field) {
@@ -175,7 +175,7 @@ public class FieldViennaThreeModelTest {
 
     @Test
     public void testHightElevation() {
-        doTestHightElevation(Decimal64Field.getInstance());
+        doTestHightElevation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestHightElevation(final Field<T> field) {
@@ -228,7 +228,7 @@ public class FieldViennaThreeModelTest {
 
     @Test
     public void testDelay() {
-        doTestDelay(Decimal64Field.getInstance());
+        doTestDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDelay(final Field<T> field) {
@@ -248,7 +248,7 @@ public class FieldViennaThreeModelTest {
 
     @Test
     public void testFixedHeight() {
-        doTestFixedHeight(Decimal64Field.getInstance());
+        doTestFixedHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {

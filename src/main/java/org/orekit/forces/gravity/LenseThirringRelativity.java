@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.AbstractForceModel;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -136,8 +137,8 @@ public class LenseThirringRelativity extends AbstractForceModel {
         final T r2 = r.multiply(r);
 
         // Earth’s angular momentum per unit mass
-        final FieldTransform<T> t = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
-        final FieldVector3D<T>  j = t.transformVector(Vector3D.PLUS_K).scalarMultiply(J);
+        final FieldStaticTransform<T> t = bodyFrame.getStaticTransformTo(s.getFrame(), s.getDate());
+        final FieldVector3D<T>        j = t.transformVector(Vector3D.PLUS_K).scalarMultiply(J);
 
         return new FieldVector3D<>(p.dotProduct(j).multiply(3.0).divide(r2),
                                    p.crossProduct(v),

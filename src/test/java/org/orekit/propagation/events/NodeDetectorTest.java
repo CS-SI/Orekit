@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ public class NodeDetectorTest {
         // Define 2 instances of NodeDetector:
         EventDetector rawDetector =
                 new NodeDetector(1e-6, initialState.getOrbit(), initialState.getFrame()).
-                withHandler(new ContinueOnEvent<NodeDetector>());
+                withHandler(new ContinueOnEvent());
 
         EventsLogger logger1 = new EventsLogger();
         EventDetector node1 = logger1.monitorDetector(rawDetector);

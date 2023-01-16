@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,23 @@
  * limitations under the License.
  */
 package org.orekit.estimation.common;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -137,7 +154,7 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
@@ -150,30 +167,13 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.regex.Pattern;
-
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
  * @author Julie Bayard
  */
-public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPropagatorBuilder> {
+public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Suffix for range bias. */
     private final String RANGE_BIAS_SUFFIX = "/range bias";
@@ -1837,7 +1837,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
-                                             final OrbitDeterminationPropagatorBuilder propagatorBuilder)
+                                             final PropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
         final boolean optimizerIsLevenbergMarquardt;
@@ -1899,7 +1899,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createSequentialEstimator(final Optimum optimum, final KeyValueFileParser<ParameterKey> parser,
-                                                       final OrbitDeterminationPropagatorBuilder propagatorBuilder)
+                                                       final PropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
 

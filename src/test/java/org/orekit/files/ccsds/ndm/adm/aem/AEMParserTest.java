@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -552,17 +552,17 @@ public class AEMParserTest {
                                                   FramesFactory.getEME2000(),
                                                   new AbsoluteDate("2021-04-15T13:31:22.000", tai),
                                                   Constants.EIGEN5C_EARTH_MU);
-        final FieldCircularOrbit<Decimal64> fo =
-                        new FieldCircularOrbit<>(new Decimal64(o.getA()),
-                                                 new Decimal64(o.getCircularEx()), new Decimal64(o.getCircularEy()),
-                                                 new Decimal64(o.getI()), new Decimal64(o.getRightAscensionOfAscendingNode()),
-                                                 new Decimal64(o.getAlphaM()), PositionAngle.MEAN,
-                                                 o.getFrame(), new FieldAbsoluteDate<>(Decimal64Field.getInstance(), o.getDate()),
-                                                 new Decimal64(o.getMu()));
+        final FieldCircularOrbit<Binary64> fo =
+                        new FieldCircularOrbit<>(new Binary64(o.getA()),
+                                                 new Binary64(o.getCircularEx()), new Binary64(o.getCircularEy()),
+                                                 new Binary64(o.getI()), new Binary64(o.getRightAscensionOfAscendingNode()),
+                                                 new Binary64(o.getAlphaM()), PositionAngle.MEAN,
+                                                 o.getFrame(), new FieldAbsoluteDate<>(Binary64Field.getInstance(), o.getDate()),
+                                                 new Binary64(o.getMu()));
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("2020-012A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
         Attitude                  a = provider.getAttitude(o, o.getDate(), o.getFrame());
-        FieldAttitude<Decimal64> fa = provider.getAttitude(fo, fo.getDate(), fo.getFrame());
+        FieldAttitude<Binary64> fa = provider.getAttitude(fo, fo.getDate(), fo.getFrame());
         Assertions.assertEquals(a.getRotation().getQ0(), fa.getRotation().getQ0().getReal(), 0.00001);
         Assertions.assertEquals(a.getRotation().getQ1(), fa.getRotation().getQ1().getReal(), 0.00001);
         Assertions.assertEquals(a.getRotation().getQ2(), fa.getRotation().getQ2().getReal(), 0.00001);

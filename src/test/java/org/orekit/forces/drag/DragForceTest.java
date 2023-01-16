@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -333,7 +333,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                              CelestialBodyFactory.getSun(), 20.0, Vector3D.PLUS_J,
                                                              1.2, 0.1, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 5.0e-13);
+        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
         checkParameterDerivative(state, forceModel, DragSensitive.LIFT_RATIO,       1.0e-4, 2.0e-11);
 
     }
@@ -358,7 +358,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                              CelestialBodyFactory.getSun(), 20.0, Vector3D.PLUS_J,
                                                              1.2, 0.1, 0.7, 0.2));
 
-        checkParameterDerivativeGradient(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 5.0e-13);
+        checkParameterDerivativeGradient(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
         checkParameterDerivativeGradient(state, forceModel, DragSensitive.LIFT_RATIO,       1.0e-4, 2.0e-11);
 
     }

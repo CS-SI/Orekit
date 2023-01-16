@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -54,29 +54,29 @@ public class FieldAdditionalDerivativesProvidersTest {
      *  with a numerical propagator */
     @Test
     public void testInitNumerical() {
-        doTestInitNumerical(Decimal64Field.getInstance());
+        doTestInitNumerical(Binary64Field.getInstance());
     }
 
     /** Test for issue #401
      *  with a DSST propagator */
     @Test
     public void testInitDSST() {
-        doTestInitDSST(Decimal64Field.getInstance());
+        doTestInitDSST(Binary64Field.getInstance());
     }
 
     @Test
     public void testResetState() {
-        doTestResetState(Decimal64Field.getInstance());
+        doTestResetState(Binary64Field.getInstance());
     }
 
     @Test
     public void testYield() {
-        doTestYield(Decimal64Field.getInstance());
+        doTestYield(Binary64Field.getInstance());
     }
 
     @Test
     public void testCoupling() {
-        doTestCoupling(Decimal64Field.getInstance());
+        doTestCoupling(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInitNumerical(Field<T> field) {

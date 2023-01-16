@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -498,7 +498,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent<NodeDetector>()));
+        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent()));
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
@@ -734,9 +734,9 @@ public class KeplerianPropagatorTest {
 
         // maneuver along Z in attitude aligned with LVLH will change orbital plane
         final AbsoluteDate maneuverDate = date.shiftedBy(1000.0);
-        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
-                                                          new Vector3D(0.0, 0.0, -100.0),
-                                                          350.0));
+        propagator.addEventDetector(new ImpulseManeuver(new DateDetector(maneuverDate),
+                                                        new Vector3D(0.0, 0.0, -100.0),
+                                                        350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
         propagator.setStepHandler(60.0, state -> {
@@ -765,9 +765,9 @@ public class KeplerianPropagatorTest {
 
         // maneuver along Z in attitude aligned with LVLH will change orbital plane
         final AbsoluteDate maneuverDate = date.shiftedBy(-1000.0);
-        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
-                                                          new Vector3D(0.0, 0.0, -100.0),
-                                                          350.0));
+        propagator.addEventDetector(new ImpulseManeuver(new DateDetector(maneuverDate),
+                                                        new Vector3D(0.0, 0.0, -100.0),
+                                                        350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
         propagator.setStepHandler(60.0, state -> {

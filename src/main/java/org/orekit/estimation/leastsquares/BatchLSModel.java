@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
@@ -42,7 +42,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public BatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
+    public BatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                         final List<ObservedMeasurement<?>> measurements,
                         final ParameterDriversList estimatedMeasurementsParameters,
                         final ModelObserver observer) {

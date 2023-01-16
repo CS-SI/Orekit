@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -188,7 +188,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
 
     @Test
     public void testRoughBehaviourField() {
-        doTestRoughBehaviourField(Decimal64Field.getInstance());
+        doTestRoughBehaviourField(Binary64Field.getInstance());
     }
 
     private <S extends CalculusFieldElement<S>> void doTestRoughBehaviourField(Field<S> field) {
@@ -231,7 +231,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
 
     @Test
     public void testBackwardField() {
-        doTestBackwardField(Decimal64Field.getInstance());
+        doTestBackwardField(Binary64Field.getInstance());
     }
 
     private <S extends CalculusFieldElement<S>> void doTestBackwardField(Field<S> field) {

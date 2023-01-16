@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -259,6 +259,12 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      */
     public FieldPVCoordinatesProvider<T> toTaylorProvider() {
         return new FieldPVCoordinatesProvider<T>() {
+            /** {@inheritDoc} */
+            public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> d,  final Frame f) {
+                final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
+                final FieldStaticTransform<T>          transform = frame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
             /** {@inheritDoc} */
             public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> d,  final Frame f) {
                 final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));

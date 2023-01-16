@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -116,6 +117,7 @@ public class ECOM2 extends AbstractRadiationForceModel {
      * @param sun provide for Sun parameter
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      */
+    @DefaultDataContext
     public ECOM2(final int nD, final int nB, final double value,
                  final ExtendedPVCoordinatesProvider sun, final double equatorialRadius) {
         super(sun, new OneAxisEllipsoid(equatorialRadius, 0.0, FramesFactory.getGCRF()));

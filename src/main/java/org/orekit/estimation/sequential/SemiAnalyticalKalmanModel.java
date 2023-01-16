@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -282,7 +282,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                            builder.getPropagationParametersDrivers(),
                                            estimatedMeasurementsParameters);
 
-        final RealMatrix correctedCovariance = normalizeCovarianceMatrix(noiseK);
+        final RealMatrix correctedCovariance = KalmanEstimatorUtil.normalizeCovarianceMatrix(noiseK, scale);
 
         // Initialize corrected estimate
         this.correctedEstimate = new ProcessEstimate(0.0, correctedFilterCorrection, correctedCovariance);
@@ -418,7 +418,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                            builder.getPropagationParametersDrivers(),
                                            estimatedMeasurementsParameters);
 
-        final RealMatrix normalizedProcessNoise = normalizeCovarianceMatrix(noiseK);
+        final RealMatrix normalizedProcessNoise = KalmanEstimatorUtil.normalizeCovarianceMatrix(noiseK, scale);
 
         // Return
         return new NonLinearEvolution(measurement.getTime(), predictedFilterCorrection, stm,
@@ -540,21 +540,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // For each element [i,j] of P the corresponding normalized value is:
         // Pn[i,j] = P[i,j] / (scale[i]*scale[j])
         // Consequently: P[i,j] = Pn[i,j] * scale[i] * scale[j]
-
-        // Normalized covariance matrix
-        final RealMatrix normalizedP = correctedEstimate.getCovariance();
-
-        // Initialize physical covariance matrix
-        final int nbParams = normalizedP.getRowDimension();
-        final RealMatrix physicalP = MatrixUtils.createRealMatrix(nbParams, nbParams);
-
-        // Un-normalize the covairance matrix
-        for (int i = 0; i < nbParams; ++i) {
-            for (int j = 0; j < nbParams; ++j) {
-                physicalP.setEntry(i, j, normalizedP.getEntry(i, j) * scale[i] * scale[j]);
-            }
-        }
-        return physicalP;
+        return KalmanEstimatorUtil.unnormalizeCovarianceMatrix(correctedEstimate.getCovariance(), scale);
     }
 
     /** {@inheritDoc} */
@@ -564,26 +550,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // φ is an mxm matrix where m = nbOrb + nbPropag + nbMeas
         // For each element [i,j] of normalized φ (φn), the corresponding physical value is:
         // φ[i,j] = φn[i,j] * scale[i] / scale[j]
-
-        // Normalized matrix
-        final RealMatrix normalizedSTM = correctedEstimate.getStateTransitionMatrix();
-
-        if (normalizedSTM == null) {
-            return null;
-        } else {
-            // Initialize physical matrix
-            final int nbParams = normalizedSTM.getRowDimension();
-            final RealMatrix physicalSTM = MatrixUtils.createRealMatrix(nbParams, nbParams);
-
-            // Un-normalize the matrix
-            for (int i = 0; i < nbParams; ++i) {
-                for (int j = 0; j < nbParams; ++j) {
-                    physicalSTM.setEntry(i, j,
-                                         normalizedSTM.getEntry(i, j) * scale[i] / scale[j]);
-                }
-            }
-            return physicalSTM;
-        }
+        return correctedEstimate.getStateTransitionMatrix() == null ?
+                null : KalmanEstimatorUtil.unnormalizeStateTransitionMatrix(correctedEstimate.getStateTransitionMatrix(), scale);
     }
 
     /** {@inheritDoc} */
@@ -595,29 +563,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         //  - n is the size of the measurement being processed by the filter
         // For each element [i,j] of normalized H (Hn) the corresponding physical value is:
         // H[i,j] = Hn[i,j] * σ[i] / scale[j]
-
-        // Normalized matrix
-        final RealMatrix normalizedH = correctedEstimate.getMeasurementJacobian();
-
-        if (normalizedH == null) {
-            return null;
-        } else {
-            // Get current measurement sigmas
-            final double[] sigmas = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
-
-            // Initialize physical matrix
-            final int nbLine = normalizedH.getRowDimension();
-            final int nbCol  = normalizedH.getColumnDimension();
-            final RealMatrix physicalH = MatrixUtils.createRealMatrix(nbLine, nbCol);
-
-            // Un-normalize the matrix
-            for (int i = 0; i < nbLine; ++i) {
-                for (int j = 0; j < nbCol; ++j) {
-                    physicalH.setEntry(i, j, normalizedH.getEntry(i, j) * sigmas[i] / scale[j]);
-                }
-            }
-            return physicalH;
-        }
+        return correctedEstimate.getMeasurementJacobian() == null ?
+                null : KalmanEstimatorUtil.unnormalizeMeasurementJacobian(correctedEstimate.getMeasurementJacobian(),
+                                                                          scale,
+                                                                          correctedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
     /** {@inheritDoc} */
@@ -627,28 +576,9 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // S is an nxn matrix where n is the size of the measurement being processed by the filter
         // For each element [i,j] of normalized S (Sn) the corresponding physical value is:
         // S[i,j] = Sn[i,j] * σ[i] * σ[j]
-
-        // Normalized matrix
-        final RealMatrix normalizedS = correctedEstimate.getInnovationCovariance();
-
-        if (normalizedS == null) {
-            return null;
-        } else {
-            // Get current measurement sigmas
-            final double[] sigmas = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
-
-            // Initialize physical matrix
-            final int nbMeas = sigmas.length;
-            final RealMatrix physicalS = MatrixUtils.createRealMatrix(nbMeas, nbMeas);
-
-            // Un-normalize the matrix
-            for (int i = 0; i < nbMeas; ++i) {
-                for (int j = 0; j < nbMeas; ++j) {
-                    physicalS.setEntry(i, j, normalizedS.getEntry(i, j) * sigmas[i] *   sigmas[j]);
-                }
-            }
-            return physicalS;
-        }
+        return correctedEstimate.getInnovationCovariance() == null ?
+                null : KalmanEstimatorUtil.unnormalizeInnovationCovarianceMatrix(correctedEstimate.getInnovationCovariance(),
+                                                                                 predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
     /** {@inheritDoc} */
@@ -660,29 +590,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         //  - n is the size of the measurement being processed by the filter
         // For each element [i,j] of normalized K (Kn) the corresponding physical value is:
         // K[i,j] = Kn[i,j] * scale[i] / σ[j]
-
-        // Normalized matrix
-        final RealMatrix normalizedK = correctedEstimate.getKalmanGain();
-
-        if (normalizedK == null) {
-            return null;
-        } else {
-            // Get current measurement sigmas
-            final double[] sigmas = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
-
-            // Initialize physical matrix
-            final int nbLine = normalizedK.getRowDimension();
-            final int nbCol  = normalizedK.getColumnDimension();
-            final RealMatrix physicalK = MatrixUtils.createRealMatrix(nbLine, nbCol);
-
-            // Un-normalize the matrix
-            for (int i = 0; i < nbLine; ++i) {
-                for (int j = 0; j < nbCol; ++j) {
-                    physicalK.setEntry(i, j, normalizedK.getEntry(i, j) * scale[i] / sigmas[j]);
-                }
-            }
-            return physicalK;
-        }
+        return correctedEstimate.getKalmanGain() == null ?
+                null : KalmanEstimatorUtil.unnormalizeKalmanGainMatrix(correctedEstimate.getKalmanGain(),
+                                                                       scale,
+                                                                       correctedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation());
     }
 
     /** {@inheritDoc} */
@@ -1005,30 +916,6 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
      */
     private void analyticalDerivativeComputations(final SpacecraftState state) {
         harvester.setReferenceState(state);
-    }
-
-    /** Normalize a covariance matrix.
-     * The covariance P is an mxm matrix where m = nbOrb + nbPropag + nbMeas
-     * For each element [i,j] of P the corresponding normalized value is:
-     * Pn[i,j] = P[i,j] / (scale[i]*scale[j])
-     * @param physicalCovarianceMatrix The "physical" covariance matrix in input
-     * @return the normalized covariance matrix
-     */
-    private RealMatrix normalizeCovarianceMatrix(final RealMatrix physicalCovarianceMatrix) {
-
-        // Initialize output matrix
-        final int nbParams = physicalCovarianceMatrix.getRowDimension();
-        final RealMatrix normalizedCovarianceMatrix = MatrixUtils.createRealMatrix(nbParams, nbParams);
-
-        // Normalize the state matrix
-        for (int i = 0; i < nbParams; ++i) {
-            for (int j = 0; j < nbParams; ++j) {
-                normalizedCovarianceMatrix.setEntry(i, j,
-                                                    physicalCovarianceMatrix.getEntry(i, j) /
-                                                    (scale[i] * scale[j]));
-            }
-        }
-        return normalizedCovarianceMatrix;
     }
 
     /** Get the number of estimated orbital parameters.

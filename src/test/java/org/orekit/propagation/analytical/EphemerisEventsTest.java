@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EclipseDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -114,10 +115,9 @@ public class EphemerisEventsTest {
                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                               withMaxCheck(60.0).
                               withThreshold(1.0e-3).
-                              withHandler(new EventHandler<EclipseDetector>() {
-                                public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
-                                                            boolean increasing)
-                                    {
+                              withHandler(new EventHandler() {
+                                public Action eventOccurred(SpacecraftState s, EventDetector detector,
+                                                            boolean increasing) {
                                     Assertions.assertEquals(type, s.getOrbit().getType());
                                     if (increasing) {
                                         ++inEclipsecounter;

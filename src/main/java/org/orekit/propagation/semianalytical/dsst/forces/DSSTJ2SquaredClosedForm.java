@@ -42,6 +42,7 @@ import org.orekit.utils.ParameterDriver;
  * A closed-form is less accurate than a gaussian quadrature, but faster.
  * </p>
  * @author Bryan Cazabonne
+ * @since 12.0
  */
 public class DSSTJ2SquaredClosedForm implements DSSTForceModel {
 
