@@ -28,6 +28,7 @@ import java.util.Queue;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.solvers.FieldBracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -881,14 +882,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         @Override
-        public T getThreshold() {
-            return detector.getThreshold();
+        public int getMaxIterationCount() {
+            return detector.getMaxIterationCount();
         }
 
         /** {@inheritDoc} */
         @Override
-        public int getMaxIterationCount() {
-            return detector.getMaxIterationCount();
+        public FieldBracketingNthOrderBrentSolver<T> getSolver() {
+            final T zero = detector.getThreshold().getField().getZero();
+            return new FieldBracketingNthOrderBrentSolver<>(zero, detector.getThreshold(), zero, 5);
         }
 
         /** {@inheritDoc} */
