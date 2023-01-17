@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -153,7 +153,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // scaled sectorial terms corresponding to equation 28 in Holmes and Featherstone paper
         sectorial    = new double[degree + 1];
         sectorial[0] = FastMath.scalb(1.0, -SCALING);
-        sectorial[1] = FastMath.sqrt(3) * sectorial[0];
+        if (degree > 0) {
+            sectorial[1] = FastMath.sqrt(3) * sectorial[0];
+        }
         for (int m = 2; m < sectorial.length; ++m) {
             sectorial[m] = FastMath.sqrt((2 * m + 1) / (2.0 * m)) * sectorial[m - 1];
         }
@@ -720,7 +722,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // initialize array
         final double[] aOrN = new double[provider.getMaxDegree() + 1];
         aOrN[0] = 1;
-        aOrN[1] = aOr;
+        if (provider.getMaxDegree() > 0) {
+            aOrN[1] = aOr;
+        }
 
         // fill up array
         for (int n = 2; n < aOrN.length; ++n) {
@@ -742,7 +746,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // initialize array
         final T[] aOrN = MathArrays.buildArray(aOr.getField(), provider.getMaxDegree() + 1);
         aOrN[0] = aOr.getField().getOne();
-        aOrN[1] = aOr;
+        if (provider.getMaxDegree() > 0) {
+            aOrN[1] = aOr;
+        }
 
         // fill up array
         for (int n = 2; n < aOrN.length; ++n) {
