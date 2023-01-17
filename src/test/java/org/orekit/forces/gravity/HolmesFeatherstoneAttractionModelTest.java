@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.gravity;
 
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -79,9 +82,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 
 
 public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceModelTest {
@@ -198,7 +198,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     private GradientHessian gradientHessian(final HolmesFeatherstoneAttractionModel hfModel,
-                                           final AbsoluteDate date, final Vector3D position)
+                                            final AbsoluteDate date, final Vector3D position)
         {
         try {
 
@@ -1188,6 +1188,48 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         checkStateJacobianVsFiniteDifferencesGradient(state, hfModel, Utils.defaultLaw(),
                                               10.0, 2.0e-10, false);
+
+    }
+
+    @Test
+    public void testIssue996() {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit  = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+        Vector3D pos = orbit.getPVCoordinates(itrf).getPosition();
+
+        double[] zeroGradient = new double[] {-0., 0., 0.};
+
+        NormalizedSphericalHarmonicsProvider provider00 = GravityFieldFactory.getNormalizedProvider(0,  0);
+        HolmesFeatherstoneAttractionModel hfModel00 = new HolmesFeatherstoneAttractionModel(itrf, provider00);
+
+        Assertions.assertEquals(0., hfModel00.nonCentralPart(date, pos, mu));
+        Assertions.assertEquals(mu / pos.getNorm(), hfModel00.value(date, pos, mu));
+        Assertions.assertArrayEquals(zeroGradient, hfModel00.gradient(date, pos, mu));
+
+        NormalizedSphericalHarmonicsProvider provider10 = GravityFieldFactory.getNormalizedProvider(1,  0);
+        HolmesFeatherstoneAttractionModel hfModel10 = new HolmesFeatherstoneAttractionModel(itrf, provider10);
+
+        Assertions.assertEquals(0., hfModel10.nonCentralPart(date, pos, mu));
+        Assertions.assertEquals(mu / pos.getNorm(), hfModel10.value(date, pos, mu));
+        Assertions.assertArrayEquals(zeroGradient, hfModel10.gradient(date, pos, mu));
+
+        NormalizedSphericalHarmonicsProvider provider11 = GravityFieldFactory.getNormalizedProvider(1,  1);
+        HolmesFeatherstoneAttractionModel hfModel11 = new HolmesFeatherstoneAttractionModel(itrf, provider11);
+
+        Assertions.assertEquals(0., hfModel11.nonCentralPart(date, pos, mu));
+        Assertions.assertEquals(mu / pos.getNorm(), hfModel11.value(date, pos, mu));
+        Assertions.assertArrayEquals(zeroGradient, hfModel11.gradient(date, pos, mu));
 
     }
 

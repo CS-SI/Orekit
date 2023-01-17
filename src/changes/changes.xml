@@ -20,6 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.3.2" date="TBD" description="TBD">
+      <action dev="pascal" type="fix" issue="996">
+        Fixed HolmesFeatherstoneAttractionModel error with a degree 0 gravity field.
+      </action>
+    </release>
     <release version="11.3.1" date="2022-12-24"
              description="Version 11.3.1 is a patch release of Orekit.
              It fixes an issue related to the parsing of dates in the Rinex navigation files.
