@@ -24,6 +24,9 @@
       <action dev="luc" type="update" issue="1017">
         Removed generics in EventHandler.
       </action>
+      <action dev="pascal" type="fix" issue="996">
+        Fixed HolmesFeatherstoneAttractionModel error with a degree 0 gravity field.
+      </action>
       <action dev="luc" type="update" issue="1013">
         Use SI units (i.e. seconds) in GNSSDate.
       </action>
