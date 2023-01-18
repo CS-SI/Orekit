@@ -671,7 +671,7 @@ public class CRDParserTest {
         final double DELTA_CENTI = 1e-2;  // centi, ReturnRate, Snr
 
         final List<CRDDataBlock> dataBlocks = file.getDataBlocks();
-        Assertions.assertEquals(11, dataBlocks.size());
+        Assertions.assertEquals(12, dataBlocks.size());
 
         // block0: Full rate
         final CRDDataBlock block0 = dataBlocks.get(0);
@@ -1071,7 +1071,7 @@ public class CRDParserTest {
         Assertions.assertEquals("H4  1 2022 03 25 23 10 20 2022 03 26 00 14 20 0 0 0 0 1 0 2 0", b9_header.getH4CrdString());
         Assertions.assertEquals("H5  0 00 null null     0", b9_header.getH5CrdString());
 
-       // block10: real npt, c7
+        // block10: real npt, c7
         final CRDDataBlock block10 = dataBlocks.get(10);
         Assertions.assertEquals(2, block10.getHeader().getVersion());
         final List<RangeMeasurement> b10_rangeData = block10.getRangeData();
@@ -1254,8 +1254,15 @@ public class CRDParserTest {
         } catch (RuntimeException oe) {
         }
 
+        // block11: real npt, monthE=-1
+        final CRDDataBlock block11 = dataBlocks.get(11);
+        final AbsoluteDate startEpoch = new AbsoluteDate("2012-01-16T03:11:54", utc);
+        final AbsoluteDate endEpoch = new AbsoluteDate("2012-01-16T00:00:00", utc).shiftedBy(11532.317500081099);
+        Assertions.assertEquals(1, block11.getHeader().getVersion());
+        Assertions.assertEquals(startEpoch, block11.getHeader().getStartEpoch());
+        Assertions.assertEquals(endEpoch, block11.getHeader().getEndEpoch());
     }
-
+    
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");

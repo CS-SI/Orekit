@@ -19,6 +19,7 @@ package org.orekit.files.ilrs;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -418,7 +419,13 @@ public class CRDParser {
                     final int minuteE = Integer.parseInt(values[12]);
                     final double secondE = Integer.parseInt(values[13]);
 
-                    pi.header.setEndEpoch(new AbsoluteDate(yearE, monthE, dayE, hourE, minuteE, secondE, pi.timeScale));
+                    // fixed 2022-12-12
+                    // if yearE or monthE is -1.
+                    if (monthE == -1) {
+                        pi.header.setEndEpoch(null);
+                    } else {
+                        pi.header.setEndEpoch(new AbsoluteDate(yearE, monthE, dayE, hourE, minuteE, secondE, pi.timeScale));
+                    }
                 }
 
                 // Data release
@@ -534,7 +541,7 @@ public class CRDParser {
                 laserRecord.setPulseEnergy(Double.parseDouble(values[6]));
                 laserRecord.setPulseWidth(Double.parseDouble(values[7]));
                 laserRecord.setBeamDivergence(Double.parseDouble(values[8]));
-                laserRecord.setPulseInOutgoingSemiTrain(Integer.parseInt(values[9]));
+                laserRecord.setPulseInOutgoingSemiTrain(readIntegerWithNaN(values[9], 1));
 
                 // Add the laser configuration record
                 pi.configurationRecords.addConfigurationRecord(laserRecord);
@@ -1260,6 +1267,14 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
+
+                // fixed 2022-12-12
+                // For the case of monthE is -1.
+                // Use the date of the last range data as the end epoch.
+                if (pi.header.getEndEpoch() == null) {
+                    final List<RangeMeasurement> rangeData =  pi.dataBlock.getRangeData();
+                    pi.header.setEndEpoch(rangeData.get(rangeData.size() - 1).getDate());
+                }
 
                 // Fill data block
                 pi.dataBlock.setHeader(pi.header);
