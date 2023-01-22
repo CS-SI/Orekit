@@ -308,7 +308,7 @@ public class ParameterDriver {
 
     /** Add an observer for this driver.
      * <p>
-     * The observer {@link ParameterObserver#valueSpanMapChanged(double, ParameterDriver)
+     * The observer {@link ParameterObserver#valueSpanMapChanged(TimeSpanMap, ParameterDriver)
      * valueSpanMapChanged} method is called once automatically when the
      * observer is added, and then called at each value change.
      * </p>

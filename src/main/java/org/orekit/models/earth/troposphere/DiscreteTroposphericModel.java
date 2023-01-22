@@ -84,8 +84,7 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
      * @param date date at which the parameters want to be known, can
      * be new AbsoluteDate() if all the parameters have no validity period
      * that is to say that they have only 1 estimated value over the all
-     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
-     * validity period = 0)
+     * interval.
      * @return tropospheric model parameters
      */
     default double[] getParameters(AbsoluteDate date) {
@@ -117,8 +116,7 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
      * @param date date at which the parameters want to be known, can
      * be new AbsoluteDate() if all the parameters have no validity period
      * that is to say that they have only 1 estimated value over the all
-     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
-     * validity period = 0)
+     * interval.
      * @return tropospheric model parameters
      */
     default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, FieldAbsoluteDate<T> date) {

@@ -208,8 +208,7 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      * @param date date at which the parameters want to be known, can
      * be new AbsoluteDate() if all the parameters have no validity period
      * that is to say that they have only 1 estimated value over the all
-     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
-     * validity period = 0)
+     * interval.
      * @return force model parameters
      * @since 12.0
      */
@@ -250,8 +249,7 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      * @param date field date at which the parameters want to be known, can
      * be new AbsoluteDate() if all the parameters have no validity period
      * that is to say that they have only 1 estimated value over the all
-     * interval ( {@link org.orekit.utils.ParameterDriver#setPeriods} with
-     * validity period = 0)
+     * interval.
      * @return force model parameters
      * @since 12.0
      */
@@ -265,7 +263,7 @@ public interface DSSTForceModel extends ParametersDriversProvider {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #acceleration(SpacecraftState, double[]) acceleration} method.
+     * {@link #updateShortPeriodTerms(double[], SpacecraftState...) updateShortPeriodTerms} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array containing all span values of all drivers
      * from which the parameter values at date date wants to be extracted
@@ -295,8 +293,8 @@ public interface DSSTForceModel extends ParametersDriversProvider {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[]) acceleration} method.
-     *  Parameters are filtered given an input date.
+     * {@link #updateShortPeriodTerms(CalculusFieldElement[], FieldSpacecraftState...)
+     * updateShortPeriodTerms} method. Parameters are filtered given an input date.
      * @param parameters the input parameters array containing all span values of all drivers
      * from which the parameter values at date date wants to be extracted
      * @param date the date
@@ -304,7 +302,7 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      * @return the parameters given the date
      */
     default <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
-                                                                 final FieldAbsoluteDate<T> date) {
+                                                                      final FieldAbsoluteDate<T> date) {
 
         // Find out the indexes of the parameters in the whole array of parameters
         final List<ParameterDriver> allParameters = getParametersDrivers();

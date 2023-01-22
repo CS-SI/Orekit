@@ -160,8 +160,7 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param date date at which the parameters want to be known, can
      * be new AbsoluteDate() if all the parameters have no validity period
      * that is to say that they have only 1 estimated value over the all
-     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
-     * validity period = 0)
+     * interval
      * @return force model parameters
      * @since 12.0
      */
@@ -176,11 +175,7 @@ public interface ForceModel extends ParametersDriversProvider {
     }
 
     /** Get force model parameters, return a list a all span values
-     * of all force parameters. In order to select the right value of
-     * the span accordingly with the date the
-     * {@link AbstractForceModel#extractParameters}
-     * should be called (as in {@link #acceleration}
-     * method).
+     * of all force parameters.
      * @return force model parameters
      * @since 12.0
      */
@@ -241,10 +236,7 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param field field to which the elements belong
      * @param <T> type of the elements
      * @param date field date at which the parameters want to be known, can
-     * be new AbsoluteDate() if all the parameters have no validity period
-     * that is to say that they have only 1 estimated value over the all
-     * interval ( {@link org.orekit.utils.ParameterDriver#setPeriods} with
-     * validity period = 0)
+     * be new AbsoluteDate() if all the parameters have no validity period.
      * @return force model parameters
      * @since 9.0
      */

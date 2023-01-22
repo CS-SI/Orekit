@@ -61,8 +61,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
  * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
  * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
- * {@link #M2Driver}. Beware that M2Driver must have only 1 span on its TimeSpanMap value (that is
- * to say {@link ParameterDriver#setPeriods} method should not be called).
+ * {@link #M2Driver}. Beware that M2Driver must have only 1 span on its TimeSpanMap value.
  *
  * Usually, M2 is adjusted during an orbit determination process and it represents the
  * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
