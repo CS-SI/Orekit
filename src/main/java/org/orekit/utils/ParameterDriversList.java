@@ -70,9 +70,7 @@ public class ParameterDriversList {
      * </p>
      * Warning if a driver is added and a driver with the same name
      * was already added before, they should have the same validity
-     * Period (that is to say that the {@link ParameterDriver#setPeriods}
-     * method should have been called with same arguments for all drivers
-     * having the same name) to avoid surprises. Whatever, all driver having
+     * Period to avoid surprises. Whatever, all driver having
      * same name will have their valueSpanMap, nameSpanMap and validity period
      * overwritten with the last driver added attributes.
      * @param driver driver to add
