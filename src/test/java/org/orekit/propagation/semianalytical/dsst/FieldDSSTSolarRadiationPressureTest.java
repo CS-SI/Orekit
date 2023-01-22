@@ -217,7 +217,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         srp.registerAttitudeProvider(attitudeProvider);
         shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters(field)));
-        srp.updateShortPeriodTerms(srp.getParameters(field), meanState);
+        srp.updateShortPeriodTerms(srp.getParametersAllValues(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
@@ -278,8 +278,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(srp);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, srp);
-
+        
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -287,8 +286,9 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        srp.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                converter.getParametersAtStateDate(dsState, srp)));
+        srp.updateShortPeriodTerms(converter.getParameters(dsState, srp), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -415,8 +415,7 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(srp);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, srp);
-
+      
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -424,8 +423,8 @@ public class FieldDSSTSolarRadiationPressureTest {
 
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        srp.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, converter.getParametersAtStateDate(dsState, srp)));
+        srp.updateShortPeriodTerms(converter.getParameters(dsState, srp), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -472,28 +471,28 @@ public class FieldDSSTSolarRadiationPressureTest {
         ParameterDriver selected = bound.getDrivers().get(0);
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
-
+      
         selected.setValue(p0 - 4 * h);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, srp);
-
+  
         selected.setValue(p0 - 3 * h);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, srp);
-
+      
         selected.setValue(p0 - 2 * h);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, srp);
-
+      
         selected.setValue(p0 - 1 * h);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, srp);
-
+      
         selected.setValue(p0 + 1 * h);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, srp);
-
+      
         selected.setValue(p0 + 2 * h);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, srp);
-
+      
         selected.setValue(p0 + 3 * h);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, srp);
-
+      
         selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, srp);
 
@@ -515,10 +514,9 @@ public class FieldDSSTSolarRadiationPressureTest {
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
-        force.updateShortPeriodTerms(parameters, state);
-
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
+        force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+        
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {
             double[] spVariation = spt.value(state.getOrbit());

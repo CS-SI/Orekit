@@ -404,7 +404,8 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         public void handleStep(SpacecraftState currentState) {
 
             // Get Knocke model acceleration
-            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters());
+
+            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters(currentState.getDate()));
 
             // Get radial direction
             final Vector3D radialUnit = currentState.getOrbit().getPosition().normalize();

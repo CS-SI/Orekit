@@ -24,6 +24,7 @@ import org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * This class implements a configurable low thrust maneuver.
@@ -122,8 +123,18 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
 
     /**
      * Get the thrust.
-     *
+     * @param date at which the Thrust wants to be known
      * @return thrust force (N).
+     */
+    public double getThrust(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector(date).getNorm();
+    }
+
+    /**
+     * Get the thrust.
+     * @return thrust force (N). Will throw
+     * an exception if the Thrust driver has several
+     * values driven
      */
     public double getThrust() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector().getNorm();
@@ -131,8 +142,18 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
 
     /**
      * Get the specific impulse.
-     *
+     * @param date at which the ISP wants to be known
      * @return specific impulse (s).
+     */
+    public double getISP(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp(date);
+    }
+
+    /**
+     * Get the specific impulse.
+     * @return specific impulse (s). Will throw
+     * an exception if the Thrust driver has several
+     * values driven
      */
     public double getISP() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp();

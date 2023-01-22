@@ -44,6 +44,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -594,6 +595,29 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         return parameters;
     }
 
+    /** Get model parameters for a certain date.
+     * @param field field to which the elements belong
+     * @param date date for which the value wants to be known. Only if
+     * parameter driver has 1 value estimated over the all orbit determination
+     * period (not validity period intervals for estimation), the date value can
+     * be <em>{@code null}</em> and then the only estimated value will be
+     * returned
+     * @return model parameters
+     */
+    public T[] getParameters(final Field<T> field, final FieldAbsoluteDate<T> date) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            if (date == null && driver.getNbOfValues() == 1 ) {
+                parameters[i++] = field.getZero().add(driver.getValue(new AbsoluteDate()));
+            } else {
+                parameters[i++] = field.getZero().add(driver.getValue(date.toAbsoluteDate()));
+            }
+        }
+        return parameters;
+    }
+
     /** Get the satellite id.
      * @return the satellite number
      */
@@ -718,7 +742,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * @return bStar
      */
     public double getBStar() {
-        return bStarParameterDriver.getValue();
+        return bStarParameterDriver.getValue(getDate().toAbsoluteDate());
     }
 
     /** Get a string representation of this TLE set.

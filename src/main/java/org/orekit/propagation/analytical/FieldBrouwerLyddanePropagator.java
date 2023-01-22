@@ -40,6 +40,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
@@ -735,7 +736,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         while (i++ < maxIterations) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField()));
+            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField(), current.mean.getDate()));
 
             // adapted parameters residuals
             final T deltaA     = osculating.getA()  .subtract(parameters.getA());
@@ -784,6 +785,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      */
     public double getM2() {
         return M2Driver.getValue();
+    }
+
+    /**
+     * Get the value of the M2 drag parameter.
+     * @param date date at which the model parameters want to be known
+     * @return the value of the M2 drag parameter
+     */
+    public double getM2(final AbsoluteDate date) {
+        return M2Driver.getValue(date);
     }
 
     /** Local class for Brouwer-Lyddane model. */

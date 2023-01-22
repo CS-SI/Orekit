@@ -17,9 +17,7 @@
 package org.orekit.forces.drag;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -29,8 +27,6 @@ import org.orekit.frames.Frame;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -49,6 +45,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
+ * @author Melina Vanel
  */
 
 public class DragForce extends AbstractDragForceModel {
@@ -126,18 +123,6 @@ public class DragForce extends AbstractDragForceModel {
         return spacecraft.getDragParametersDrivers();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
-    }
-
     /** Get the atmospheric model.
      * @return atmosphere model
      */
@@ -151,4 +136,5 @@ public class DragForce extends AbstractDragForceModel {
     public DragSensitive getSpacecraft() {
         return spacecraft;
     }
+
 }

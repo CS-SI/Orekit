@@ -73,7 +73,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         if (elevation > 0) {
             // Delay in meters
             final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(),
-                                                      tropoModel.getParameters(), state.getDate());
+                                                      tropoModel.getParameters(state.getDate()), state.getDate());
             // return delay in seconds
             return delay / Constants.SPEED_OF_LIGHT;
         }

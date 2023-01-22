@@ -166,8 +166,8 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
         int i = 0;
         for (ParameterDriver driver : drivers) {
             parameters[i++] = driver.isSelected() ?
-                              Gradient.variable(freeParameters, index++, driver.getValue()) :
-                              Gradient.constant(freeParameters, driver.getValue());
+                              Gradient.variable(freeParameters, index++, driver.getValue(state.getDate().toAbsoluteDate())) :
+                              Gradient.constant(freeParameters, driver.getValue(state.getDate().toAbsoluteDate()));
         }
         return parameters;
     }

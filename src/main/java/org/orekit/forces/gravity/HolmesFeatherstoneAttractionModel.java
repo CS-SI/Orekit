@@ -19,10 +19,8 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -41,8 +39,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
+
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -174,10 +171,21 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** Get the central attraction coefficient μ.
-     * @return mu central attraction coefficient (m³/s²)
+     * @return mu central attraction coefficient (m³/s²),
+     * will throw an exception if gm PDriver has several
+     * values driven (in this case the method
+     * {@link #getMu(AbsoluteDate)} must be used.
      */
     public double getMu() {
         return gmParameterDriver.getValue();
+    }
+
+    /** Get the central attraction coefficient μ.
+     * @param date date at which mu wants to be known
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu(final AbsoluteDate date) {
+        return gmParameterDriver.getValue(date);
     }
 
     /** Compute the value of the gravity field.
@@ -1081,17 +1089,6 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position, mu)));
 
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    @Override
-    /** {@inheritDoc} */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** Check if a field state corresponds to derivatives with respect to state.

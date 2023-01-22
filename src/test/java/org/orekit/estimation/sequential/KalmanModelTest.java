@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -268,8 +269,8 @@ public class KalmanModelTest {
         final RealMatrix dMdCr = dMdY.multiply(MatrixUtils.createRealMatrix(dYdPpTransition));
         expH.setEntry(0, 6, dMdCr.getEntry(0, 0));
         // Sat range bias part
-        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver)[0]);
-
+        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver, new AbsoluteDate())[0]);
+        
         // Add range measurement and check model afterwards
         checkModelAfterMeasurementAdded(2, range, Ppred, orbitPred, expPhi, expH);
     }
@@ -351,7 +352,7 @@ public class KalmanModelTest {
         // (= value before adding measurement to the filter)
         final double srpCoefPred = srpCoefDriver.getValue();
         final double satRangeBiasPred = satRangeBiasDriver.getValue();
-
+        
         // Expected predicted measurement
         final double[] expMeasPred =
                         meas.estimate(0, 0,
@@ -501,21 +502,27 @@ public class KalmanModelTest {
         // Orbital parameters
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 
         // Propagation parameters
         for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 
         // Measurement parameters
         for (ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 

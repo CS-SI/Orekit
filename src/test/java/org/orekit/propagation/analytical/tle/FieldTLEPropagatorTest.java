@@ -79,7 +79,7 @@ public class FieldTLEPropagatorTest {
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-
+        
         final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         FieldAbsoluteDate<T> initDate = tle.getDate();
@@ -105,7 +105,7 @@ public class FieldTLEPropagatorTest {
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-
+        
         final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();

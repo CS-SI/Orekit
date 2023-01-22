@@ -17,9 +17,7 @@
 package org.orekit.forces.radiation;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
@@ -41,8 +39,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -167,18 +163,6 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.of();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.of();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Vector3D acceleration(final SpacecraftState s,
                                  final double[] parameters) {
 
@@ -241,6 +225,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
+
         return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
                                                         s.getMass(), rediffusedFlux, parameters);
     }
@@ -316,6 +301,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
+
         return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
                                                         s.getMass(), rediffusedFlux, parameters);
     }

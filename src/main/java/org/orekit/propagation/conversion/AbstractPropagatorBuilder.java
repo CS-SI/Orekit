@@ -34,7 +34,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 
 /** Base class for propagator builders.
  * @author Pascal Parraud
@@ -170,7 +172,14 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             muDriver.addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
+                    // getValue(), can be called without argument as mu driver should have only one span
+                    AbstractPropagatorBuilder.this.mu = driver.getValue();
+                }
+
+                @Override
+                public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap, final ParameterDriver driver) {
+                    // getValue(), can be called without argument as mu driver should have only one span
                     AbstractPropagatorBuilder.this.mu = driver.getValue();
                 }
             });
@@ -244,24 +253,24 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         return mu;
     }
 
-    /** Get the number of selected parameters.
-     * @return number of selected parameters
+    /** Get the number of estimated values for selected parameters.
+     * @return number of estimated values for selected parameters
      */
-    private int getNbSelected() {
+    private int getNbValuesForSelected() {
 
         int count = 0;
 
         // count orbital parameters
         for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
             if (driver.isSelected()) {
-                ++count;
+                count += driver.getNbOfValues();
             }
         }
 
         // count propagation parameters
         for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
-                ++count;
+                count += driver.getNbOfValues();
             }
         }
 
@@ -273,18 +282,22 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     public double[] getSelectedNormalizedParameters() {
 
         // allocate array
-        final double[] selected = new double[getNbSelected()];
+        final double[] selected = new double[getNbValuesForSelected()];
 
         // fill data
         int index = 0;
         for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
             if (driver.isSelected()) {
-                selected[index++] = driver.getNormalizedValue();
+                for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
+                    selected[index++] = driver.getNormalizedValue(new AbsoluteDate());
+                }
             }
         }
         for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
-                selected[index++] = driver.getNormalizedValue();
+                for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
+                    selected[index++] = driver.getNormalizedValue(new AbsoluteDate());
+                }
             }
         }
 
@@ -303,7 +316,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     protected Orbit createInitialOrbit() {
         final double[] unNormalized = new double[orbitalDrivers.getNbParams()];
         for (int i = 0; i < unNormalized.length; ++i) {
-            unNormalized[i] = orbitalDrivers.getDrivers().get(i).getValue();
+            unNormalized[i] = orbitalDrivers.getDrivers().get(i).getValue(initialOrbitDate);
         }
         return getOrbitType().mapArrayToOrbit(unNormalized, null, positionAngle, initialOrbitDate, mu, frame);
     }
@@ -314,10 +327,10 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     protected void setParameters(final double[] normalizedParameters) {
 
 
-        if (normalizedParameters.length != getNbSelected()) {
+        if (normalizedParameters.length != getNbValuesForSelected()) {
             throw new OrekitIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
                                                      normalizedParameters.length,
-                                                     getNbSelected());
+                                                     getNbValuesForSelected());
         }
 
         int index = 0;
@@ -325,17 +338,30 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         // manage orbital parameters
         for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
             if (driver.isSelected()) {
-                driver.setNormalizedValue(normalizedParameters[index++]);
+                // If the parameter driver contains only 1 value to estimate over the all time range, which
+                // is normally always the case for orbital drivers
+                if (driver.getNbOfValues() == 1) {
+                    driver.setNormalizedValue(normalizedParameters[index++], null);
+
+                } else {
+
+                    for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                        driver.setNormalizedValue(normalizedParameters[index++], span.getStart());
+                    }
+                }
             }
         }
 
         // manage propagation parameters
         for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
+
             if (driver.isSelected()) {
-                driver.setNormalizedValue(normalizedParameters[index++]);
+
+                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    driver.setNormalizedValue(normalizedParameters[index++], span.getStart());
+                }
             }
         }
-
     }
 
     /** Add a supported parameter.
@@ -361,7 +387,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         int i = 0;
         for (DelegatingDriver driver : orbitalDriversList) {
             driver.setReferenceValue(orbitArray[i]);
-            driver.setValue(orbitArray[i++]);
+            driver.setValue(orbitArray[i++], newOrbit.getDate());
         }
 
         // Change the initial orbit date in the builder

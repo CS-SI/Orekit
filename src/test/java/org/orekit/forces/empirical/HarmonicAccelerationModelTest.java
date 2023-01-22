@@ -456,15 +456,16 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         Assertions.fail("unknown parameter " + name);
     }
 
+    // if Pdriver has only 1 value driven
     private double getParameter(BatchLSEstimator estimator, String name)
-        {
-        for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
-            if (driver.getName().equals(name)) {
-                return driver.getValue();
-            }
+    {
+    for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
+        if (driver.getName().equals(name)) {
+            return driver.getValue();
         }
-        Assertions.fail("unknown parameter " + name);
-        return Double.NaN;
+    }
+    Assertions.fail("unknown parameter " + name);
+    return Double.NaN;
     }
 
     @BeforeEach

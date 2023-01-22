@@ -734,8 +734,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // update space dynamics view
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
-            currentState = updateAdditionalStates(currentState);
 
+            currentState = updateAdditionalStates(currentState);
             // compute main state differentials
             return main.computeDerivatives(currentState);
 

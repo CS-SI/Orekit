@@ -31,6 +31,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Phase measurement between two satellites.
  * <p>
@@ -121,7 +122,10 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
             if (phaseMeasurementDriver.isSelected()) {
-                indices.put(phaseMeasurementDriver.getName(), nbParams++);
+                for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
 
@@ -133,7 +137,7 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
         // Compute propagation times
         // Downlink delay
-        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, new AbsoluteDate());
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
@@ -156,11 +160,11 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
                                                    });
 
         // Clock offsets
-        final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices, new AbsoluteDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices);
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices, new AbsoluteDate());
         final Gradient phase       = tauD.add(dtl).subtract(dtr).multiply(cOverLambda).add(ambiguity);
 
         estimatedPhase.setEstimatedValue(phase.getValue());
@@ -172,9 +176,12 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimatedPhase.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimatedPhase.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

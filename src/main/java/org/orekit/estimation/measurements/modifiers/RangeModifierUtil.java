@@ -28,6 +28,7 @@ import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Utility class modifying theoretical range measurement.
  * @author Maxime Journot
@@ -76,10 +77,12 @@ public class RangeModifierUtil {
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += derivatives[index + converter.getFreeStateParameters()];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index = index + 1;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += derivatives[index + converter.getFreeStateParameters()];
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                    index = index + 1;
+                }
             }
 
         }
@@ -90,10 +93,12 @@ public class RangeModifierUtil {
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += Differentiation.differentiate(d -> modelEffect.evaluate(station, state),
-                                                                     3, 10.0 * driver.getScale()).value(driver);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(station, state),
+                                                                     3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
             }
         }
 

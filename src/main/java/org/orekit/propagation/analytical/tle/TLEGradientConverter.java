@@ -78,7 +78,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
         final int ephemerisType           = tle.getEphemerisType();
         final int elementNumber           = tle.getElementNumber();
         final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-        final double bStar                = tle.getBStar();
+        final double bStar                = tle.getBStar(state.getDate().toAbsoluteDate());
 
         // Initialize the new TLE
         final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,

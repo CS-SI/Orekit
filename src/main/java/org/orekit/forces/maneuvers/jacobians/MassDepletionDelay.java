@@ -89,14 +89,16 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
         if (forward == manageStart) {
 
             // current acceleration
-            final double[] parameters   = maneuver.getParameters();
+            final double[] parameters   = maneuver.getParameters(state.getDate());
+            // for the acceleration method we need all the span values of all the parameters driver
+            // as in the acceleration method an exctractParameter method is called
             final Vector3D acceleration = maneuver.acceleration(state, parameters);
 
             // we have acceleration Γ = F/m and m = m₀ - q (t - tₛ)
             // where m is current mass, m₀ is initial mass and tₛ is maneuver trigger time
             // a delay dtₛ on trigger time induces delaying mass depletion
             // we get: dΓ = -F/m² dm = -F/m² q dtₛ = -Γ q/m dtₛ
-            final double minusQ = maneuver.getPropulsionModel().getMassDerivatives(state, parameters);
+            final double minusQ = maneuver.getPropulsionModel().getMassDerivatives(state, maneuver.getParameters(state.getDate()));
             final double m      = state.getMass();
             final double ratio  = minusQ / m;
 

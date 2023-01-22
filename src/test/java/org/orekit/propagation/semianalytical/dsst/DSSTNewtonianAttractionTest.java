@@ -69,6 +69,7 @@ public class DSSTNewtonianAttractionTest {
         Arrays.fill(elements, 0.0);
 
         final double[] daidt = newton.getMeanElementRate(state, auxiliaryElements, newton.getParameters());
+
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

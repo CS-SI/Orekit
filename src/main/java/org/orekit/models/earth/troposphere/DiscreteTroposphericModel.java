@@ -62,7 +62,7 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
-     * @param parameters tropospheric model parameters
+     * @param parameters tropospheric model parameters at current date
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
@@ -81,6 +81,23 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
     }
 
     /** Get tropospheric model parameters.
+     * @param date date at which the parameters want to be known, can
+     * be new AbsoluteDate() if all the parameters have no validity period
+     * that is to say that they have only 1 estimated value over the all
+     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
+     * validity period = 0)
+     * @return tropospheric model parameters
+     */
+    default double[] getParameters(AbsoluteDate date) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue(date);
+        }
+        return parameters;
+    }
+
+    /** Get tropospheric model parameters.
      * @param field field to which the elements belong
      * @param <T> type of the elements
      * @return tropospheric model parameters
@@ -90,6 +107,25 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
             parameters[i] = field.getZero().add(drivers.get(i).getValue());
+        }
+        return parameters;
+    }
+
+    /** Get tropospheric model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @param date date at which the parameters want to be known, can
+     * be new AbsoluteDate() if all the parameters have no validity period
+     * that is to say that they have only 1 estimated value over the all
+     * interval ({@link org.orekit.utils.ParameterDriver#setPeriods} with
+     * validity period = 0)
+     * @return tropospheric model parameters
+     */
+    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, FieldAbsoluteDate<T> date) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
         }
         return parameters;
     }

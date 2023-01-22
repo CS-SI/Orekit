@@ -18,9 +18,7 @@ package org.orekit.forces.inertia;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -35,8 +33,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -136,19 +132,6 @@ public class InertialForces extends AbstractForceModel  {
         // because we want only the coupling effect of the frames transforms
         return r1.applyTo(a1).subtract(new FieldVector3D<>(2, crossV, 1, crossCrossP, 1, crossDotP));
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>>
-        getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

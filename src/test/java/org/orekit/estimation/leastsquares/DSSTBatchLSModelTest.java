@@ -37,6 +37,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -102,7 +103,7 @@ public class DSSTBatchLSModelTest {
         System.arraycopy(normalizedProp, 0, normalized, 0, normalizedProp.length);
         int i = normalizedProp.length;
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            normalized[i++] = driver.getNormalizedValue();
+            normalized[i++] = driver.getNormalizedValue(new AbsoluteDate());
         }
         Pair<RealVector, RealMatrix> value = model.value(new ArrayRealVector(normalized));
         int index = 0;

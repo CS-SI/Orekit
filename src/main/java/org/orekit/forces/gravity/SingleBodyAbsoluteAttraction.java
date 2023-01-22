@@ -18,9 +18,7 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -30,8 +28,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.ParameterDriver;
 
 /** Body attraction force model computed as absolute acceleration towards a body.
@@ -130,17 +126,6 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
         // compute absolute acceleration
         return new FieldVector3D<>(parameters[0].divide(r2Sat.multiply(r2Sat.sqrt())), satToBody);
 
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    @Override
-    /** {@inheritDoc} */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

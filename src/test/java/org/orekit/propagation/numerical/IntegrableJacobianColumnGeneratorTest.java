@@ -113,7 +113,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                 ParameterDriver selected = null;
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        driver.setValue(driver.getReferenceValue());
+                        driver.setValue(driver.getReferenceValue(), initialOrbit.getDate());
                         if (driver.getName().equals(parameterName)) {
                             driver.setSelected(true);
                             selected = driver;
@@ -125,7 +125,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
                 SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getName());
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getNameSpan(new AbsoluteDate()));
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 RealMatrix dYdP = pickUp.getdYdP();

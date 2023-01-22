@@ -35,6 +35,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Class modifying theoretical phase measurement with tropospheric delay.
@@ -75,7 +76,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         // only consider measures above the horizon
         if (elevation > 0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
 
             return delay / wavelength;
         }
@@ -142,10 +143,10 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state,
                                                  final double wavelength) {
-        final ParameterFunction rangeError = parameterDriver -> phaseErrorTroposphericModel(station, state, wavelength);
+        final ParameterFunction rangeError = (parameterDriver, date) -> phaseErrorTroposphericModel(station, state, wavelength);
         final ParameterFunction phaseErrorDerivative =
                         Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
-        return phaseErrorDerivative.value(driver);
+        return phaseErrorDerivative.value(driver, state.getDate());
 
     }
 
@@ -188,7 +189,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         // update estimated derivatives with Jacobian of the measure wrt state
         final ModifierGradientConverter converter = new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
-        final Gradient[] gParameters = converter.getParameters(gState, tropoModel);
+        final Gradient[] gParameters = converter.getParametersAtStateDate(gState, tropoModel);
         final Gradient gDelay = phaseErrorTroposphericModel(station, gState, gParameters, measurement.getWavelength());
         final double[] derivatives = gDelay.getGradient();
 
@@ -207,12 +208,15 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         int index = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt tropospheric parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
-                parameterDerivative += dDelaydP[index];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index = index + 1;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    // update estimated derivatives with derivative of the modification wrt tropospheric parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
+                    parameterDerivative += dDelaydP[index];
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                    index = index + 1;
+                }
             }
         }
 
@@ -222,10 +226,12 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += phaseErrorParameterDerivative(station, driver, state, measurement.getWavelength());
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    // update estimated derivatives with derivative of the modification wrt station parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += phaseErrorParameterDerivative(station, driver, state, measurement.getWavelength());
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
             }
         }
 

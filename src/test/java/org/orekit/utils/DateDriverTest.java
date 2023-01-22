@@ -24,6 +24,7 @@ public class DateDriverTest {
 
     @Test
     public void testBase() {
+    	// Date driver has 1 value estimated on the all time range
         DateDriver driver = new DateDriver(AbsoluteDate.J2000_EPOCH, "start", true);
         Assertions.assertEquals("start", driver.getName());
         Assertions.assertTrue(driver.isStart());

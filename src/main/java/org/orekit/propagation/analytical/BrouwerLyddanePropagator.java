@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * This class propagates a {@link org.orekit.propagation.SpacecraftState}
@@ -60,7 +61,8 @@ import org.orekit.utils.TimeSpanMap;
  * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
  * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
  * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
- * {@link #M2Driver}.
+ * {@link #M2Driver}. Beware that M2Driver must have only 1 span on its TimeSpanMap value (that is
+ * to say {@link ParameterDriver#setPeriods} method should not be called).
  *
  * Usually, M2 is adjusted during an orbit determination process and it represents the
  * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
@@ -785,10 +787,14 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     }
 
     /**
-     * Get the value of the M2 drag parameter.
+     * Get the value of the M2 drag parameter. Beware that M2Driver
+     * must have only 1 span on its TimeSpanMap value (that is
+     * to say setPeriod method should not be called)
      * @return the value of the M2 drag parameter
      */
     public double getM2() {
+        // As Brouwer Lyddane is an analytical propagator, for now it is not possible for
+        // M2Driver to have several values estimated
         return M2Driver.getValue();
     }
 
@@ -843,8 +849,10 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
-                columnsNames.add(driver.getName());
+            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    columnsNames.add(span.getData());
+                }
             }
         }
         Collections.sort(columnsNames);

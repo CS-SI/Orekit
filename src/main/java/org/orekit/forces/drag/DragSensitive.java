@@ -36,7 +36,7 @@ import org.orekit.utils.ParameterDriver;
  */
 public interface DragSensitive {
 
-    /** Parameter name for drag coefficient enabling Jacobian processing. */
+    /** Parameter name for drag coefficient. */
     String DRAG_COEFFICIENT = "drag coefficient";
 
     /** Parameter name for lift ration enabling Jacobian processing.

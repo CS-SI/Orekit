@@ -76,7 +76,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         return delay;
     }
 

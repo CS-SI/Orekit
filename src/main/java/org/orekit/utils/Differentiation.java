@@ -28,6 +28,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.AbsoluteDate;
 
 /** Utility class for differentiating various kinds of functions.
  * @author Luc Maisonobe
@@ -61,21 +62,21 @@ public class Differentiation {
 
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver driver) {
+            public double value(final ParameterDriver driver, final AbsoluteDate date) {
 
                 final UnivariateFunction uf = new UnivariateFunction() {
                     /** {@inheritDoc} */
                     @Override
                     public double value(final double value) {
-                        final double saved = driver.getValue();
-                        driver.setValue(value);
-                        final double functionValue = function.value(driver);
-                        driver.setValue(saved);
+                        final double saved = driver.getValue(date);
+                        driver.setValue(value, date);
+                        final double functionValue = function.value(driver, date);
+                        driver.setValue(saved, date);
                         return functionValue;
                     }
                 };
 
-                final DerivativeStructure dsParam = FACTORY.variable(0, driver.getValue());
+                final DerivativeStructure dsParam = FACTORY.variable(0, driver.getValue(date));
                 final DerivativeStructure dsValue = differentiator.differentiate(uf).value(dsParam);
                 return dsValue.getPartialDerivative(1);
 

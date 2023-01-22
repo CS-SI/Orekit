@@ -70,6 +70,62 @@ public class BatchLSEstimatorTest {
      * Perfect PV measurements with a perfect start
      */
     @Test
+    public void testKeplerPVMultipleDrag() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0, Force.DRAG);
+
+        for (ParameterDriver driver:propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+            if (driver.getName().equals("drag coefficient")) {
+                driver.setSelected(true);
+                driver.addSpanAtDate(context.initialOrbit.getDate());
+            }
+        }
+        
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               -3.0, 3.0, 300.0);
+
+
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 7.8e-8,
+                                     0.0, 6.0e-7,
+                                     0.0, 3.2e-7,
+                                     0.0, 1.3e-10);
+
+        
+        List<DelegatingDriver> Orbparameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
+        Assertions.assertEquals(context.initialOrbit.getA(), Orbparameters.get(0).getValue() , 1.0e-8);
+        Assertions.assertEquals(context.initialOrbit.getE(), Orbparameters.get(1).getValue() , 1.0e-12);
+        Assertions.assertEquals(context.initialOrbit.getI(), Orbparameters.get(2).getValue() , 1.0e-12);
+        
+        RealMatrix jacobian = estimator.getOptimum().getJacobian();
+        Assertions.assertEquals(8,      jacobian.getColumnDimension());
+
+    }
+
+    /**
+     * Perfect PV measurements with a perfect start
+     */
+    @Test
     public void testKeplerPV() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -111,7 +167,7 @@ public class BatchLSEstimatorTest {
         Assertions.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
-
+    
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
     public void testKeplerPVBackward() {
@@ -655,7 +711,7 @@ public class BatchLSEstimatorTest {
 
         ParameterDriver a1Driver = parameters.get(6);
         Assertions.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        a1Driver.setValue(a1Driver.getValue() - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
@@ -1058,9 +1114,11 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
+
         for (final ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
+
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;

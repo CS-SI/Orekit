@@ -107,7 +107,9 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
                                    withThreshold(ECLIPSE_THRESHOLD).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.of(detectors);
+        // Fusion between Date detector for parameter driver span change and
+        // Detector for umbra / penumbra events
+        return Stream.concat(Stream.of(detectors), super.getEventsDetectors());
     }
 
     /** {@inheritDoc} */
@@ -132,7 +134,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.of(detectors);
+        return Stream.concat(Stream.of(detectors), super.getFieldEventsDetectors(field));
     }
 
     /**

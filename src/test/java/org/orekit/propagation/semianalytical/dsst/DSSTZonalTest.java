@@ -82,7 +82,7 @@ public class DSSTZonalTest {
         final DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
 
         // Force model parameters
-        final double[] parameters = zonal.getParameters();
+        final double[] parameters = zonal.getParameters(orbit.getDate());
 
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
@@ -120,8 +120,8 @@ public class DSSTZonalTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters()));
-        zonal.updateShortPeriodTerms(zonal.getParameters(), meanState);
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(meanState.getDate())));
+        zonal.updateShortPeriodTerms(zonal.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -175,17 +175,17 @@ public class DSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters());
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(orbit.getDate()));
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters());
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the zonal force model
-        final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters());
+        final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the "default" zonal force model
-        final double[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters());
+        final double[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(orbit.getDate()));
 
         // Verify
         for (int i = 0; i < 6; i++) {

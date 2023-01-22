@@ -266,6 +266,7 @@ public class EstimationTestUtils {
                                                          propagatorBuilder.getPositionAngle(),
                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
+        	// here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }
 

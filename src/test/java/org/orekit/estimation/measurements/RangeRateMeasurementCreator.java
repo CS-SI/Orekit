@@ -75,13 +75,13 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         for (final GroundStation station : context.getStations()) {
-            final double           groundDft = station.getClockDriftDriver().getValue();
-            final double           satDft    = satellite.getClockDriftDriver().getValue();
-            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPosition();
             final Vector3D         velocity  = currentState.getPVCoordinates().getVelocity();
+            final double           groundDft = station.getClockDriftDriver().getValue(date);
+            final double           satDft    = satellite.getClockDriftDriver().getValue(date);
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
 
             if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

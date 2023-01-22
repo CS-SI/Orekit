@@ -146,7 +146,7 @@ public class JacobianPropagatorConverterTest {
             for (final String name : names) {
                 if (name.equals(driver.getName())) {
                     found = true;
-                    normalized[index++] = driver.getNormalizedValue() + (2 * random.nextDouble() - 1);
+                    normalized[index++] = driver.getNormalizedValue(new AbsoluteDate()) + (2 * random.nextDouble() - 1);
                     selected.add(driver);
                 }
             }

@@ -32,6 +32,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Base class harvester between two-dimensional Jacobian
@@ -190,21 +192,24 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         for (ParameterDriver driver : converter.getParametersDrivers()) {
             if (driver.isSelected()) {
 
-                // get the partials derivatives for this driver
-                DoubleArrayDictionary.Entry entry = analyticalDerivativesJacobianColumns.getEntry(driver.getName());
-                if (entry == null) {
-                    // create an entry filled with zeroes
-                    analyticalDerivativesJacobianColumns.put(driver.getName(), new double[STATE_DIMENSION]);
-                    entry = analyticalDerivativesJacobianColumns.getEntry(driver.getName());
+                final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+                // for each span (for each estimated value) corresponding name is added
+                for (Span<String> span = driverNameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+                    // get the partials derivatives for this driver
+                    DoubleArrayDictionary.Entry entry = analyticalDerivativesJacobianColumns.getEntry(span.getData());
+                    if (entry == null) {
+                        // create an entry filled with zeroes
+                        analyticalDerivativesJacobianColumns.put(span.getData(), new double[STATE_DIMENSION]);
+                        entry = analyticalDerivativesJacobianColumns.getEntry(span.getData());
+                    }
+
+                    // add the contribution of the current force model
+                    entry.increment(new double[] {
+                        derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
+                        derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
+                    });
+                    ++paramsIndex;
                 }
-
-                // add the contribution of the current force model
-                entry.increment(new double[] {
-                    derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
-                    derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
-                });
-                ++paramsIndex;
-
             }
         }
 

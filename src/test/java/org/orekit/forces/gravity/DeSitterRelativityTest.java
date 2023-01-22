@@ -79,7 +79,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final double c2 = c * c;
 
         // Sun's gravitational parameter
-        final double gm = model.getParametersDrivers().get(0).getValue();
+        final double gm = model.getParametersDrivers().get(0).getValue(date);
 
         // Coordinates of the Earth with respect to the Sun
         final FieldPVCoordinates<DerivativeStructure> pvEarth = model.getEarth().getPVCoordinates(new FieldAbsoluteDate<>(mass.getField(), date), model.getSun().getInertiallyOrientedFrame());
@@ -109,7 +109,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
 
         // Sun's gravitational parameter
-        final double gm = model.getParametersDrivers().get(0).getValue();
+        final double gm = model.getParametersDrivers().get(0).getValue(date);
 
         // Coordinates of the Earth with respect to the Sun
         final FieldPVCoordinates<Gradient> pvEarth = model.getEarth().getPVCoordinates(new FieldAbsoluteDate<>(mass.getField(), date), model.getSun().getInertiallyOrientedFrame());

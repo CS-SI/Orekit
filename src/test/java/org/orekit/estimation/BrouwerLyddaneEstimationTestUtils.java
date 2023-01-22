@@ -126,7 +126,7 @@ public class BrouwerLyddaneEstimationTestUtils {
                                                          propagatorBuilder.getPositionAngle(),
                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
-            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
+            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
         }
 
         return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());

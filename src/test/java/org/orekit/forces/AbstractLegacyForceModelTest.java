@@ -51,7 +51,7 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
                                                         final double checkTolerance, final boolean print) {
         FieldSpacecraftState<DerivativeStructure> fState = toDS(state, attitudeProvider);
         FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState,
-                                                                           forceModel.getParameters(fState.getDate().getField()));
+                                                                           forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
         FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState.getDate().toAbsoluteDate(),
                                                                            fState.getFrame(),
                                                                            fState.getPosition(),
@@ -117,7 +117,7 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
         {
         FieldSpacecraftState<Gradient> fState = toGradient(state, attitudeProvider);
         FieldVector3D<Gradient> gNew = forceModel.acceleration(fState,
-                                                                           forceModel.getParameters(fState.getDate().getField()));
+                                                                           forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
         FieldVector3D<Gradient> gOld = accelerationDerivativesGradient(forceModel, fState.getDate().toAbsoluteDate(),
                                                                        fState.getFrame(),
                                                                        fState.getPosition(),

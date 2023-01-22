@@ -283,6 +283,12 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = données inattendues, deux val
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = paramètre {0} inconnu, paramètres connus : {1}
 
+# {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
+PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES = le paramètre {0} contient plusieurs intervals dans sa TimeSpanMap de valeurs, il faut utiliser la méthode {1}
+
+# setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
+PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la fonction setPeriod a déjà été utilisée pour le paramètre {0}, il faut créer un nouveau paramètre pour changer à nouveau les intervals d''estimation 
+
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = le facteur d''échelle pour le paramètre {0} est trop petit : {1}
 

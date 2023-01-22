@@ -38,9 +38,11 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
+ * @author Melina Vanel
  * @since 11.1
  */
 class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
@@ -240,11 +242,12 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         // evaluate contribution of all force models
         final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(state, STATE_DIMENSION, attitudeProvider);
         final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, attitudeProvider);
+
         for (final ForceModel forceModel : forceModels) {
 
             final NumericalGradientConverter     converter    = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
             final FieldSpacecraftState<Gradient> dsState      = converter.getState(forceModel);
-            final Gradient[]                     parameters   = converter.getParameters(dsState, forceModel);
+            final Gradient[]                     parameters   = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldVector3D<Gradient>        acceleration = forceModel.acceleration(dsState, parameters);
             final double[]                       gradX        = acceleration.getX().getGradient();
             final double[]                       gradY        = acceleration.getY().getGradient();
@@ -279,20 +282,23 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
 
-                    // get the partials derivatives for this driver
-                    DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(driver.getName());
-                    if (entry == null) {
-                        // create an entry filled with zeroes
-                        accelerationPartials.put(driver.getName(), new double[SPACE_DIMENSION]);
-                        entry = accelerationPartials.getEntry(driver.getName());
+                    // for each span (for each estimated value) corresponding name is added
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                        // get the partials derivatives for this driver
+                        DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(span.getData());
+                        if (entry == null) {
+                            // create an entry filled with zeroes
+                            accelerationPartials.put(span.getData(), new double[SPACE_DIMENSION]);
+                            entry = accelerationPartials.getEntry(span.getData());
+                        }
+
+                        // add the contribution of the current force model
+                        entry.increment(new double[] {
+                            gradX[paramsIndex], gradY[paramsIndex], gradZ[paramsIndex]
+                        });
+                        ++paramsIndex;
                     }
-
-                    // add the contribution of the current force model
-                    entry.increment(new double[] {
-                        gradX[paramsIndex], gradY[paramsIndex], gradZ[paramsIndex]
-                    });
-                    ++paramsIndex;
-
                 }
             }
 

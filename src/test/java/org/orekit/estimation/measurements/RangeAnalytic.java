@@ -32,6 +32,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -234,13 +235,13 @@ public class RangeAnalytic extends Range {
             final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
 
             if (groundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), dRdQT.getX());
+                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQT.getX());
             }
             if (groundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), dRdQT.getY());
+                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQT.getY());
             }
             if (groundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), dRdQT.getZ());
+                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQT.getZ());
             }
 
         }
@@ -268,8 +269,11 @@ public class RangeAnalytic extends Range {
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                if (driver.isSelected()) {
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -342,9 +346,12 @@ public class RangeAnalytic extends Range {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

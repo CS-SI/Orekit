@@ -45,6 +45,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 
 /** This class provides elements to propagate TLE's.
@@ -609,8 +610,13 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : tle.getParametersDrivers()) {
-            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
-                columnsNames.add(driver.getName());
+
+            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                // As driver with same name should have same NamesSpanMap we only check the if condition on the
+                // first span map and then if the condition is OK all the span names are added to the jacobian column names
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    columnsNames.add(span.getData());
+                }
             }
         }
         Collections.sort(columnsNames);

@@ -65,6 +65,7 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters        parameters values of the force model parameters
+     *                          only 1 value for each parameterDriver
      */
     AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 

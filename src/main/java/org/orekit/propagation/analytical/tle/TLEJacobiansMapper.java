@@ -26,6 +26,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -92,11 +93,11 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
             }
         }
 
-        if (parameters.getNbParams() != 0) {
+        if (parameters.getNbValuesToEstimate() != 0) {
 
             // map the converted parameters Jacobian to one-dimensional array
             for (int i = 0; i < STATE_DIMENSION; ++i) {
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
+                for (int j = 0; j < parameters.getNbValuesToEstimate(); ++j) {
                     p[index++] = dY1dP[i][j];
                 }
             }
@@ -121,13 +122,13 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     @Override
     public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
 
-        if (parameters.getNbParams() != 0) {
+        if (parameters.getNbValuesToEstimate() != 0) {
 
             computeDerivatives(state);
             for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] row = dYdP[i];
-                for (int j = 0; j < parameters.getNbParams(); j++) {
-                    row[j] = stateTransition[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
+                for (int j = 0; j < parameters.getNbValuesToEstimate(); j++) {
+                    row[j] = stateTransition[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbValuesToEstimate() * i)];
                 }
             }
 
@@ -143,7 +144,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         // Initialize Jacobians to zero
         final int dim = STATE_DIMENSION;
-        final int paramDim = parameters.getNbParams();
+        final int paramDim = parameters.getNbValuesToEstimate();
         final double[][] stateGrad = new double[dim][dim];
         final double[][] paramGrad = new double[dim][paramDim];
 
@@ -178,15 +179,19 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         int parameterIndex = 0;
         for (ParameterDriver driver : parameters.getDrivers()) {
             if (driver.isSelected()) {
-                paramGrad[0][parameterIndex] += derivativesX[index];
-                paramGrad[1][parameterIndex] += derivativesY[index];
-                paramGrad[2][parameterIndex] += derivativesZ[index];
-                paramGrad[3][parameterIndex] += derivativesVx[index];
-                paramGrad[4][parameterIndex] += derivativesVy[index];
-                paramGrad[5][parameterIndex] += derivativesVz[index];
-                ++index;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    paramGrad[0][parameterIndex] += derivativesX[index];
+                    paramGrad[1][parameterIndex] += derivativesY[index];
+                    paramGrad[2][parameterIndex] += derivativesZ[index];
+                    paramGrad[3][parameterIndex] += derivativesVx[index];
+                    paramGrad[4][parameterIndex] += derivativesVy[index];
+                    paramGrad[5][parameterIndex] += derivativesVz[index];
+                    ++index;
+                    ++parameterIndex;
+                }
+            } else {
+                parameterIndex += driver.getNbOfValues();
             }
-            ++parameterIndex;
         }
 
         // State derivatives

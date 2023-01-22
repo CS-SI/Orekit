@@ -311,7 +311,7 @@ public class StateTransitionMatrixGeneratorTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
-        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getNameSpan(new AbsoluteDate()), gmDriver.getNameSpan(new AbsoluteDate()));
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
         Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
@@ -345,7 +345,7 @@ public class StateTransitionMatrixGeneratorTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
-        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getNameSpan(new AbsoluteDate()), gmDriver.getNameSpan(new AbsoluteDate()));
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
         Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
@@ -643,7 +643,7 @@ public class StateTransitionMatrixGeneratorTest {
         propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalState(SpacecraftState state) {
-                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(), 0, propulsionModel.getParametersDrivers().size());
+                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                     propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
                 };

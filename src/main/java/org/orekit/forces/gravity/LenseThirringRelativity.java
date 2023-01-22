@@ -18,10 +18,8 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -31,8 +29,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -148,18 +144,6 @@ public class LenseThirringRelativity extends AbstractForceModel {
                                    r.getField().getOne(),
                                    v.crossProduct(j))
                                    .scalarMultiply(gm.multiply(2.0).divide(r2.multiply(r).multiply(c2)));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

@@ -175,7 +175,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
-                            model.getParameters());
+                            model.getParameters(new AbsoluteDate()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
@@ -195,7 +195,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
-                            model.getParameters(field));
+                            model.getParameters(field, new FieldAbsoluteDate<>(field)));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
@@ -211,7 +211,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
-                            model.getParameters());
+                            model.getParameters(new AbsoluteDate()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
@@ -231,7 +231,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
                             Frequency.G01.getMHzFrequency() * 1.0e6,
-                            model.getParameters(field));
+                            model.getParameters(field, new FieldAbsoluteDate<>(field)));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());

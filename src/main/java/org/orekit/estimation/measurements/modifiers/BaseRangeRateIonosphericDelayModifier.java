@@ -75,11 +75,11 @@ public abstract class BaseRangeRateIonosphericDelayModifier {
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
-        final double delay1 = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay1 = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         // propagate spacecraft state forward by dt
         final SpacecraftState state2 = state.shiftedBy(dt);
         // ionospheric delay dt after in meters
-        final double delay2 = ionoModel.pathDelay(state2, baseFrame, frequency, ionoModel.getParameters());
+        final double delay2 = ionoModel.pathDelay(state2, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         // delay in meters
         return (delay2 - delay1) / dt;
     }

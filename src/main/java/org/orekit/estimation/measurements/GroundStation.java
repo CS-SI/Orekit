@@ -484,7 +484,8 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at <em>real</em> measurement
      * date (i.e. with clock, Earth and station offsets applied)
      * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, int, Map)
@@ -495,7 +496,7 @@ public class GroundStation {
                                                         final int freeParameters,
                                                         final Map<String, Integer> indices) {
         // take clock offset into account
-        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices);
+        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices, clockDate);
         final FieldAbsoluteDate<Gradient> offsetCompensatedDate =
                         new FieldAbsoluteDate<>(clockDate, offset.negate());
 
@@ -512,7 +513,8 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at specified date
      * @since 10.2
      */

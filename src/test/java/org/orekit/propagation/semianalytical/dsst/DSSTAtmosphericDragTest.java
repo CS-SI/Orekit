@@ -111,7 +111,7 @@ public class DSSTAtmosphericDragTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = drag.getParameters();
+        final double[] parameters = drag.getParameters(orbit.getDate());
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
@@ -180,8 +180,8 @@ public class DSSTAtmosphericDragTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters()));
-        drag.updateShortPeriodTerms(drag.getParameters(), meanState);
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(meanState.getDate())));
+        drag.updateShortPeriodTerms(drag.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {

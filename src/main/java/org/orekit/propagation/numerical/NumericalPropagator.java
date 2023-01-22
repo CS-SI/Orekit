@@ -68,7 +68,9 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -249,6 +251,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             superSetMu(mu);
         } else {
             addForceModel(new NewtonianAttraction(mu));
+            superSetMu(mu);
         }
     }
 
@@ -288,7 +291,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                        superSetMu(driver.getValue());
+                    }
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         superSetMu(driver.getValue());
                     }
                 });
@@ -406,8 +414,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final List<String> columnsNames = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
-                    columnsNames.add(driver.getName());
+                if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                    // As driver with same name should have same NamesSpanMap we only check if the first span is present,
+                    // if not we add all span names to columnsNames
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                        columnsNames.add(span.getData());
+                    }
                 }
             }
         }
@@ -502,25 +514,65 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                         filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
                         map (d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
+                            TriggerDate start;
+                            TriggerDate stop;
+
                             if (d.getStartDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
-                                final TriggerDate start =
-                                                manageTriggerDate(stmName, maneuver, amt, d.getStartDriver().getName(), true,  d.getThreshold());
-                                names.add(start.getName());
+                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                                // be no problem here
+                                for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                    start = manageTriggerDate(stmName, maneuver, amt, span.getData(), true,  d.getThreshold());
+                                    names.add(start.getName());
+                                    start = null;
+                                }
                             }
                             if (d.getStopDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
-                                final TriggerDate stop =
-                                                manageTriggerDate(stmName, maneuver, amt, d.getStopDriver().getName(),  false, d.getThreshold());
-                                names.add(stop.getName());
+                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                                // be no problem here
+                                for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                    stop = manageTriggerDate(stmName, maneuver, amt, span.getData(),  false, d.getThreshold());
+                                    names.add(stop.getName());
+                                    stop = null;
+                                }
                             }
                             if (d.getMedianDriver().isSelected()) {
-                                final MedianDate median =
-                                                manageMedianDate(d.getStartDriver().getName(), d.getStopDriver().getName(), d.getMedianDriver().getName());
+                                // for first span
+                                Span<String> currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getFirstSpan();
+                                MedianDate median =
+                                        manageMedianDate(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
+                                                         d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentMedianNameSpan.getData());
                                 names.add(median.getName());
+                                // for all span
+                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                                // be no problem here. /!\ medianDate driver, startDate driver and stopDate driver must have same span number
+                                for (int spanNumber = 1; spanNumber < d.getMedianDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
+                                    currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getEnd());
+                                    median =
+                                            manageMedianDate(d.getStartDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
+                                                             d.getStopDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
+                                                             currentMedianNameSpan.getData());
+                                    names.add(median.getName());
+
+                                }
+
                             }
                             if (d.getDurationDriver().isSelected()) {
-                                final Duration duration =
-                                                manageManeuverDuration(d.getStartDriver().getName(), d.getStopDriver().getName(), d.getDurationDriver().getName());
+                                // for first span
+                                Span<String> currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getFirstSpan();
+                                Duration duration =
+                                         manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
+                                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentDurationNameSpan.getData());
                                 names.add(duration.getName());
+                                // for all span
+                                for (int spanNumber = 1; spanNumber < d.getDurationDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
+                                    currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getEnd());
+                                    duration =
+                                            manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
+                                                                   d.getStopDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
+                                                                   currentDurationNameSpan.getData());
+                                    names.add(duration.getName());
+
+                                }
                             }
                         });
 
@@ -666,7 +718,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final ParameterDriversList selected = new ParameterDriversList();
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                if (!triggerDates.contains(driver.getName())) {
+                if (!triggerDates.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                    // if the first span is not in triggerdate means that the driver is not a trigger
+                    // date and can be selected here
                     selected.add(driver);
                 }
             }
@@ -680,30 +734,35 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         selected.sort();
 
         // add the Jacobians column generators corresponding to parameters, and setup state accordingly
+        // a new column is needed for each value estimated so for each span of the parameterDriver
         for (final DelegatingDriver driver : selected.getDrivers()) {
 
-            IntegrableJacobianColumnGenerator generator = null;
+            for (Span<String> currentNameSpan = driver.getNamesSpanMap().getFirstSpan(); currentNameSpan != null; currentNameSpan = currentNameSpan.next()) {
 
-            // check if we already have set up the providers
-            for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
-                if (provider instanceof IntegrableJacobianColumnGenerator &&
-                    provider.getName().equals(driver.getName())) {
-                    // the Jacobian column generator has already been set up in a previous propagation
-                    generator = (IntegrableJacobianColumnGenerator) provider;
-                    break;
+                IntegrableJacobianColumnGenerator generator = null;
+                // check if we already have set up the providers
+                for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
+                    if (provider instanceof IntegrableJacobianColumnGenerator &&
+                        provider.getName().equals(currentNameSpan.getData())) {
+                        // the Jacobian column generator has already been set up in a previous propagation
+                        generator = (IntegrableJacobianColumnGenerator) provider;
+                        break;
+                    }
+
                 }
-            }
 
-            if (generator == null) {
-                // this is the first time we need the Jacobian column generator, create it
-                generator = new IntegrableJacobianColumnGenerator(stmGenerator, driver.getName());
-                addAdditionalDerivativesProvider(generator);
-            }
+                if (generator == null) {
+                    // this is the first time we need the Jacobian column generator, create it
+                    generator = new IntegrableJacobianColumnGenerator(stmGenerator, currentNameSpan.getData());
+                    addAdditionalDerivativesProvider(generator);
+                }
 
-            if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
-                // add the initial Jacobian column if it is not already there
-                // (perhaps due to a previous propagation)
-                setInitialColumn(driver.getName(), getHarvester().getInitialJacobianColumn(driver.getName()));
+                if (!getInitialIntegrationState().hasAdditionalState(currentNameSpan.getData())) {
+                    // add the initial Jacobian column if it is not already there
+                    // (perhaps due to a previous propagation)
+                    setInitialColumn(currentNameSpan.getData(), getHarvester().getInitialJacobianColumn(currentNameSpan.getData()));
+                }
+
             }
 
         }
@@ -917,7 +976,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         @Override
         public void addKeplerContribution(final double mu) {
             if (getOrbitType() == null) {
-
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu > 0) {
                     // velocity derivative is Newtonian acceleration

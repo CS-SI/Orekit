@@ -84,7 +84,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                          final DerivativeStructure mass) {
         try {
             final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
-
+            
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();
@@ -110,7 +110,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                       final Gradient mass) {
         try {
             final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
-
+            
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();

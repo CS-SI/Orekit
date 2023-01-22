@@ -60,10 +60,12 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldFixedNumberInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpolationGrid;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 
 /**
  * This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using the DSST theory.
@@ -415,7 +417,14 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                 force.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
+                        // mu PDriver should have only 1 span
+                        superSetMu(field.getZero().add(driver.getValue()));
+                    }
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                        // mu PDriver should have only 1 span
                         superSetMu(field.getZero().add(driver.getValue()));
                     }
                 });
@@ -519,10 +528,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // Set the force models
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
         for (final DSSTForceModel force : forces) {
-            final T[] parameters = force.getParameters(mean.getDate().getField());
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, parameters));
-            force.updateShortPeriodTerms(parameters, mean);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(mean.getDate().getField(), mean.getDate())));
+            force.updateShortPeriodTerms(force.getParametersAllValues(mean.getDate().getField()), mean);
         }
 
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
@@ -641,7 +649,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // initialize all perturbing forces
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(field, initialState.getDate())));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -650,7 +658,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             final FieldShortPeriodicsHandler spHandler = new FieldShortPeriodicsHandler(forceModels);
             // Compute short periodic coefficients for this point
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParameters(field), initialState);
+                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(field), initialState);
 
             }
             final Collection<FieldODEStepHandler<T>> stepHandlers = new ArrayList<FieldODEStepHandler<T>>();
@@ -735,9 +743,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             // Set the force models
             final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
             for (final DSSTForceModel force : forceModel) {
-                final T[] parameters = force.getParameters(osculating.getDate().getField());
-                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, parameters));
-                force.updateShortPeriodTerms(parameters, meanState);
+                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING,
+                                 force.getParameters(osculating.getDate().getField(), osculating.getDate())));
+                force.updateShortPeriodTerms(force.getParametersAllValues(osculating.getDate().getField()), meanState);
             }
 
             // recompute the osculating parameters from the current mean parameters
@@ -1033,7 +1041,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             // compute the contributions of all perturbing forces
             for (final DSSTForceModel forceModel : forceModels) {
-                final T[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParameters(field));
+                final T[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParametersAllValues(field));
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] = yDot[i].add(daidt[i]);
                 }
@@ -1047,7 +1055,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit
-         *  @param parameters force model parameters
+         *  @param parameters force model parameters (all span values for each parameters)
+     *  the extract parameter method {@link #extractParameters(double[], AbsoluteDate)} is called in
+     *  the method to select the right parameter.
          *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
          */
         private T[] elementRates(final DSSTForceModel forceModel,
@@ -1153,7 +1163,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             // Compute short periodic coefficients for this step
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParameters(field), meanStates);
+                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(field), meanStates);
             }
 
         }

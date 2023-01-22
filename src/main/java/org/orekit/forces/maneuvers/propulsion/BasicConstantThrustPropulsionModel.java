@@ -24,6 +24,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -93,14 +94,33 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     @Override
     public Vector3D getThrustVector() {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
+        // thrustDriver as only 1 value estimated over the all time period
+        // by construction thrustDriver has only 1 value estimated over the all period
+        // that is why no argument is acceptable
         return direction.scalarMultiply(thrustDriver.getValue());
     }
 
     /** {@inheritDoc} */
     @Override
+    public Vector3D getThrustVector(final AbsoluteDate date) {
+        // Thrust vector does not depend on spacecraft state for a constant maneuver.
+        return direction.scalarMultiply(thrustDriver.getValue(date));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getFlowRate() {
-        // Flow rate does not depend on spacecraft state for a constant maneuver.
+        // Thrust vector does not depend on spacecraft state for a constant maneuver.
+        // thrustDriver as only 1 value estimated over the all time period
+        // by construction thrustDriver has only 1 value estimated over the all period
+        // that is why no argument is acceptable
         return flowRateDriver.getValue();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getFlowRate(final AbsoluteDate date) {
+        return flowRateDriver.getValue(date);
     }
 
     /** {@inheritDoc} */

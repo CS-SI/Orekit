@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** This abstract class simply serve as a container for a constant thrust maneuver.
@@ -86,8 +87,10 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
         return name;
     }
 
-    /** Get the specific impulse.
-     * @return specific impulse (s).
+    /** Get the specific impulse at given date.
+     * @return specific impulse (s), will throw exception if
+     * used on PDriver having several driven values, because
+     * in this case a date is needed.
      */
     public double getIsp() {
         final double thrust   = getThrust();
@@ -95,19 +98,53 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
         return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
+    /** Get the specific impulse at given date.
+     * @param date date at which the Isp wants to be known
+     * @return specific impulse (s).
+     */
+    public double getIsp(final AbsoluteDate date) {
+        final double thrust   = getThrust(date);
+        final double flowRate = getFlowRate(date);
+        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
+    }
+
     /** Get the thrust direction in S/C frame.
+     * @param date date at which the direction wants to be known
      * @return the thrust direction in S/C frame
+     */
+    public Vector3D getDirection(final AbsoluteDate date) {
+        return getThrustVector(date).normalize();
+    }
+
+    /** Get the thrust direction in S/C frame.
+     * @return the thrust direction in S/C frame,  will throw exception if
+     * used on PDriver having several driven values, because
+     * in this case a date is needed.
      */
     public Vector3D getDirection() {
         return getThrustVector().normalize();
     }
 
     /** Get the thrust value (N).
-     * @return the thrust value (N)
+     * @return the thrust value (N), will throw
+     * an exception if called of a driver having several
+     * values driven
      */
     public double getThrust() {
         return getThrustVector().getNorm();
     }
+
+    /** Get the thrust value (N) at given date.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return the thrust value (N)
+     */
+    public double getThrust(final AbsoluteDate date) {
+        return getThrustVector(date).getNorm();
+    }
+
 
     /** {@inheritDoc}
      * Here the thrust vector do not depend on current S/C state.
@@ -115,7 +152,7 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
     @Override
     public Vector3D getThrustVector(final SpacecraftState s) {
         // Call the abstract function that do not depend on current S/C state
-        return getThrustVector();
+        return getThrustVector(s.getDate());
     }
 
     /** {@inheritDoc}
@@ -124,7 +161,7 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
     @Override
     public double getFlowRate(final SpacecraftState s) {
         // Call the abstract function that do not depend on current S/C state
-        return getFlowRate();
+        return getFlowRate(s.getDate());
     }
 
     /** {@inheritDoc}
@@ -163,15 +200,39 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
 
     /** Get the thrust vector in spacecraft frame (N).
      * Here it does not depend on current S/C state.
-     * @return thrust vector in spacecraft frame (N)
+     * @return thrust vector in spacecraft frame (N),
+     * will throw an exception if used on driver
+     * containing several value spans
      */
     public abstract Vector3D getThrustVector();
+
+    /** Get the thrust vector in spacecraft frame (N).
+     * Here it does not depend on current S/C state.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return thrust vector in spacecraft frame (N)
+     */
+    public abstract Vector3D getThrustVector(AbsoluteDate date);
 
     /** Get the flow rate (kg/s).
      * Here it does not depend on current S/C.
      * @return flow rate (kg/s)
+     * will throw an exception if used on driver
+     * containing several value spans
      */
     public abstract double getFlowRate();
+
+    /** Get the flow rate (kg/s).
+     * Here it does not depend on current S/C.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return flow rate (kg/s)
+     */
+    public abstract double getFlowRate(AbsoluteDate date);
 
     /** Get the thrust vector in spacecraft frame (N).
      * Here it does not depend on current S/C state.

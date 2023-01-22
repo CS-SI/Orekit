@@ -112,13 +112,22 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
-        return null;
+        if (drag.getEventsDetectors().count() == 0) {
+            return null;
+        } else {
+            return (EventDetector[]) drag.getEventsDetectors().toArray();
+        }
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
+        if (drag.getEventsDetectors().count() == 0) {
+            return null;
+        } else {
+            return (FieldEventDetector<T>[]) drag.getFieldEventsDetectors(field).toArray();
+        }
     }
 
     /** {@inheritDoc} */

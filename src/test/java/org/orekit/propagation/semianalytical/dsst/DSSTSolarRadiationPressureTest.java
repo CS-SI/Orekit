@@ -107,7 +107,7 @@ public class DSSTSolarRadiationPressureTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = srp.getParameters();
+        final double[] parameters = srp.getParameters(orbit.getDate());
         // Initialize force model
         srp.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
@@ -176,8 +176,8 @@ public class DSSTSolarRadiationPressureTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters()));
-        srp.updateShortPeriodTerms(srp.getParameters(), meanState);
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters(meanState.getDate())));
+        srp.updateShortPeriodTerms(srp.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {

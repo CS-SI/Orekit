@@ -504,11 +504,11 @@ public class PhaseTest {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) {
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
+                        final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));

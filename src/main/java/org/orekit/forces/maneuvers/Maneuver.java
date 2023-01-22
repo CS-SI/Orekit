@@ -144,7 +144,7 @@ public class Maneuver extends AbstractForceModel {
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final double[] parameters = getParameters();
+        final double[] parameters = getParameters(s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -166,7 +166,7 @@ public class Maneuver extends AbstractForceModel {
                         final FieldTimeDerivativesEquations<T> adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final T[] parameters = getParameters(s.getDate().getField());
+        final T[] parameters = getParameters(s.getDate().getField(), s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -174,6 +174,8 @@ public class Maneuver extends AbstractForceModel {
         if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Compute thrust acceleration in inertial frame
+            // the acceleration method extracts the parameter in its core, that is why we call it with
+            // parameters and not extracted parameters
             adder.addNonKeplerianAcceleration(acceleration(s, parameters));
 
             // Compute flow rate using the propulsion model

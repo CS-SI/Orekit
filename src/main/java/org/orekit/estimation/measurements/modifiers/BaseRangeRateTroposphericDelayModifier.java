@@ -82,7 +82,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
         // only consider measures above the horizon
         if (elevation1 > 0) {
             // tropospheric delay in meters
-            final double d1 = tropoModel.pathDelay(elevation1, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state.getDate());
+            final double d1 = tropoModel.pathDelay(elevation1, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
 
             // propagate spacecraft state forward by dt
             final SpacecraftState state2 = state.shiftedBy(dt);
@@ -96,7 +96,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
                                                                           state2.getDate());
 
             // tropospheric delay dt after
-            final double d2 = tropoModel.pathDelay(elevation2, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state2.getDate());
+            final double d2 = tropoModel.pathDelay(elevation2, station.getBaseFrame().getPoint(), tropoModel.getParameters(state2.getDate()), state2.getDate());
 
             return (d2 - d1) / dt;
         }

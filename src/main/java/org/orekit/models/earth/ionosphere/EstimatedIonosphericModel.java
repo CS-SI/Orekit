@@ -141,7 +141,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @param elevation elevation of the satellite in radians
      * @param frequency frequency of the signal in Hz
-     * @param parameters ionospheric model parameters
+     * @param parameters ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final double frequency, final T[] parameters) {

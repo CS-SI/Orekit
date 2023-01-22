@@ -1298,7 +1298,7 @@ public class GroundStationTest {
                                                               station.getEastOffsetDriver(),
                                                               station.getNorthOffsetDriver(),
                                                               station.getZenithOffsetDriver())) {
-                indices.put(driver.getName(), indices.size());
+                indices.put(driver.getNameSpan(date), indices.size());
             }
             station.getOffsetToInertial(eme2000, date, freeParameters, indices);
             Assertions.fail("an exception should have been thrown");
@@ -1337,7 +1337,7 @@ public class GroundStationTest {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getName(), k);
+                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
         };
@@ -1445,7 +1445,7 @@ public class GroundStationTest {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getName(), k);
+                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
         };
@@ -1549,10 +1549,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[6];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
+                    final double previouspI = driver.getValue(date);
+                    driver.setValue(x, new AbsoluteDate());
                     Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    driver.setValue(previouspI, date);
                     PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
                     result[ 0] = stationPV.getPosition().getX();
                     result[ 1] = stationPV.getPosition().getY();
@@ -1586,10 +1586,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[7];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
+                    final double previouspI = driver.getValue(date);
+                    driver.setValue(x, date);
                     Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    driver.setValue(previouspI, date);
                     final double sign;
                     if (Double.isNaN(previous0)) {
                         sign = +1;

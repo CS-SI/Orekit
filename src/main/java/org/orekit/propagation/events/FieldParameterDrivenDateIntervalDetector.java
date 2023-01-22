@@ -31,6 +31,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * <p>
@@ -234,9 +236,19 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
 
         /** {@inheritDoc} */
         @Override
-        public void valueChanged(final double previousValue, final ParameterDriver driver) {
+        public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
             if (driver.isSelected()) {
-                setDelta(driver.getValue() - previousValue);
+                setDelta(driver.getValue(date) - previousValue, date);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+            if (driver.isSelected()) {
+                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    setDelta(span.getData() - previousValue.get(span.getStart()), span.getStart());
+                }
             }
         }
 
@@ -252,9 +264,10 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
         }
 
         /** Change a value.
+         * @param date date for which the value wants to be change
          * @param delta change of value
          */
-        protected abstract void setDelta(double delta);
+        protected abstract void setDelta(double delta, AbsoluteDate date);
 
     }
 
@@ -262,9 +275,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class StartObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta) {
-            median.setValue(median.getValue() + 0.5 * delta);
-            duration.setValue(duration.getValue() - delta);
+        protected void setDelta(final double delta, final AbsoluteDate date) {
+            median.setValue(median.getValue(date) + 0.5 * delta, date);
+            duration.setValue(duration.getValue(date) - delta, date);
         }
     }
 
@@ -272,9 +285,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class StopObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta) {
-            median.setValue(median.getValue() + 0.5 * delta);
-            duration.setValue(duration.getValue() + delta);
+        protected void setDelta(final double delta, final AbsoluteDate date) {
+            median.setValue(median.getValue(date) + 0.5 * delta, date);
+            duration.setValue(duration.getValue(date) + delta, date);
         }
     }
 
@@ -282,9 +295,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class MedianObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta) {
-            start.setValue(start.getValue() + delta);
-            stop.setValue(stop.getValue() + delta);
+        protected void setDelta(final double delta, final AbsoluteDate date) {
+            start.setValue(start.getValue(date) + delta, date);
+            stop.setValue(stop.getValue(date) + delta, date);
         }
     }
 
@@ -292,9 +305,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class DurationObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta) {
-            start.setValue(start.getValue() - 0.5 * delta);
-            stop.setValue(stop.getValue() + 0.5 * delta);
+        protected void setDelta(final double delta, final AbsoluteDate date) {
+            start.setValue(start.getValue(date) - 0.5 * delta, date);
+            stop.setValue(stop.getValue(date) + 0.5 * delta, date);
         }
     }
 
