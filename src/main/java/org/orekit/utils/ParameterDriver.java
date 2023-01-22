@@ -686,7 +686,7 @@ public class ParameterDriver {
      */
     public double getValueContinuousEstimation(final AbsoluteDate date) {
         //TODO
-        return getValueStepEstimation(date);
+        throw new UnsupportedOperationException();
     }
 
     /** Get the value as a gradient at special date.
