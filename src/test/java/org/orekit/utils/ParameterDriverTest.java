@@ -35,9 +35,6 @@ public class ParameterDriverTest {
 
         p1.addSpanAtDate(date);
         p1.setValue(3.0, date.shiftedBy(10));
-        for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	System.out.println(span.getData());
-        }
         Assertions.assertEquals(3.0, p1.getValue(date.shiftedBy(10)), 1e-10);
         Assertions.assertEquals(0.0, p1.getValue(date.shiftedBy(-10)), 1e-10);
         Assertions.assertEquals("Span" + p1.getName() + Integer.toString(0), p1.getNameSpan(date.shiftedBy(-10)));
