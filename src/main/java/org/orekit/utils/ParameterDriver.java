@@ -51,6 +51,7 @@ import org.orekit.utils.TimeSpanMap.Transition;
  * each time period. In order to allow several values to be estimated, the PDriver has
  * a name and a value {@link TimeSpanMap} as attribute. In order,
  * to cut the time span map there are 2 options :
+ * </p>
  * <ul>
  * <li>Passive cut calling the {@link #addSpans(AbsoluteDate, AbsoluteDate, double)} method.
  * Given a start date, an end date and and a validity period (in sec)
@@ -66,10 +67,10 @@ import org.orekit.utils.TimeSpanMap.Transition;
  * converge for orbit determination, if the method is called several time, the start date must be wisely choosen </b>.
  * There must be enough measurements on each interval or convergence won't reach or singular matrixes will appear.  </li>
  * </ul>
- * </p>
  * <p>
  * Several ways exist in order to get a ParameterDriver value at a certain
  * date for parameters having several values on several intervals.
+ * </p>
  * <ul>
  * <li>First of all, the step estimation, that is to say, if a value wants
  * to be known at a certain date, the value returned is the one of span
@@ -82,7 +83,6 @@ import org.orekit.utils.TimeSpanMap.Transition;
  * (which is also the beginning of next span). NOT IMPLEMENTED FOR NOW
  * </li>
  * </ul>
- * </p>
  * Each time the value is set, the physical model
  * will be notified as it will register a {@link ParameterObserver
  * ParameterObserver} for this purpose.
@@ -392,22 +392,29 @@ public class ParameterDriver {
     }
 
     /** Cut values and names time span map given orbit determination start and end and driver
-     * periodicity. For example for a drag coefficient the validity period would be
+     * periodicity.
+     * <p>
+     * For example for a drag coefficient the validity period would be
      * 1 days = 86400sec. To be called after constructor to cut the temporal axis with
      * the wanted parameter driver temporality for estimations on the wanted interval.
-     * <b>Must be called only once at the beginning of orbit
+     * </p>
+     * <p>
+     * Must be called only once at the beginning of orbit
      * determination for example. If called several times, will throw exception. If parameter
      * estimations intervals want to be changed then a new ParameterDriver must be created or the
      * function {@link #addSpanAtDate} should be used.
-     * </b> This function should not be called on {@link DateDriver} and
+     * </p>
+     * <p>
+     * This function should not be called on {@link DateDriver} and
      * any of {@link ParameterDrivenDateIntervalDetector} attribute, because there is no sense to
      * estimate several values for dateDriver.
-     * <p>
      * </p>
-     * <b>The choice of orbitDeterminationStartDate, orbitDeterminationEndDate and
-     * validityPeriodForDriver </b> in a case of orbit determination <b> must be done carefully</b>,
+     * <p>
+     * The choice of {@code orbitDeterminationStartDate}, {@code orbitDeterminationEndDate} and
+     * {@code validityPeriodForDriver} in a case of orbit determination must be done carefully,
      * indeed, enough measurement should be available for each time interval or
      * the orbit determination won't converge.
+     * </p>
      * @param orbitDeterminationStartDate start date for which the parameter driver
      * starts to be estimated.
      * @param orbitDeterminationEndDate end date for which the parameter driver
