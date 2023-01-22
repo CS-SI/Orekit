@@ -246,7 +246,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             @SuppressWarnings("unchecked")
             final EventSlopeFilter<T> esf = (EventSlopeFilter<T>) detector;
-            return esf.rawDetector.getHandler().eventOccurred(s, esf, esf.filter.getTriggeredIncreasing());
+            return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
@@ -254,7 +254,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
         public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             @SuppressWarnings("unchecked")
             final EventSlopeFilter<T> esf = (EventSlopeFilter<T>) detector;
-            return esf.rawDetector.getHandler().resetState(esf, oldState);
+            return esf.rawDetector.getHandler().resetState(esf.rawDetector, oldState);
         }
 
     }

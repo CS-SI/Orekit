@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ExpandableODE;
@@ -887,14 +890,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public double getThreshold() {
-            return detector.getThreshold();
+        public int getMaxIterationCount() {
+            return detector.getMaxIterationCount();
         }
 
         /** {@inheritDoc} */
         @Override
-        public int getMaxIterationCount() {
-            return detector.getMaxIterationCount();
+        public BracketedUnivariateSolver<UnivariateFunction> getSolver() {
+            return new BracketingNthOrderBrentSolver(0, detector.getThreshold(), 0, 5);
         }
 
         /** {@inheritDoc} */
