@@ -256,7 +256,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements C
                                                          driver,
                                                          builder.length() > 0 ? builder.toString() : " <none>");
             }
-            return p.get(new AbsoluteDate());
+            return p.get(AbsoluteDate.ARBITRARY_EPOCH);
         } else {
             throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, driver.getName(), "getParameterDerivatives(driver, date)");
         }

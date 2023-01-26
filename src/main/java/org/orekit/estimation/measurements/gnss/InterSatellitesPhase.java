@@ -137,7 +137,7 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
         // Compute propagation times
         // Downlink delay
-        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, new AbsoluteDate());
+        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, AbsoluteDate.ARBITRARY_EPOCH);
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
@@ -160,11 +160,11 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
                                                    });
 
         // Clock offsets
-        final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices, new AbsoluteDate());
+        final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices, AbsoluteDate.ARBITRARY_EPOCH);
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices, new AbsoluteDate());
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices, AbsoluteDate.ARBITRARY_EPOCH);
         final Gradient phase       = tauD.add(dtl).subtract(dtr).multiply(cOverLambda).add(ambiguity);
 
         estimatedPhase.setEstimatedValue(phase.getValue());

@@ -753,7 +753,7 @@ public class ParameterDriver {
     public void setValue(final double newValue, final AbsoluteDate date) {
 
         double previousValue = Double.NaN;
-        AbsoluteDate referenceDateSpan = new AbsoluteDate();
+        AbsoluteDate referenceDateSpan = AbsoluteDate.ARBITRARY_EPOCH;
 
         // if valid for infinity (only 1 value estimation for the orbit determination )
         if (getNbOfValues() == 1) {
@@ -798,7 +798,7 @@ public class ParameterDriver {
      */
     public void setValue(final double newValue) {
         if (getNbOfValues() == 1) {
-            final AbsoluteDate referenceDateSpan = new AbsoluteDate();
+            final AbsoluteDate referenceDateSpan = AbsoluteDate.ARBITRARY_EPOCH;
             final double previousValue = this.getValue(referenceDateSpan);
             this.valueSpanMap = new TimeSpanMap<>(FastMath.max(minValue, FastMath.min(maxValue, newValue)));
             for (final ParameterObserver observer : observers) {
@@ -875,7 +875,7 @@ public class ParameterDriver {
      * @return text representation of the parameter, in the form name = value.
      */
     public String toString() {
-        return name + " = " + valueSpanMap.get(new AbsoluteDate());
+        return name + " = " + valueSpanMap.get(AbsoluteDate.ARBITRARY_EPOCH);
     }
 
 }

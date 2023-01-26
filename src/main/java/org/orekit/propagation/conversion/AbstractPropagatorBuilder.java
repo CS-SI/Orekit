@@ -289,14 +289,14 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
             if (driver.isSelected()) {
                 for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
-                    selected[index++] = driver.getNormalizedValue(new AbsoluteDate());
+                    selected[index++] = driver.getNormalizedValue(AbsoluteDate.ARBITRARY_EPOCH);
                 }
             }
         }
         for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
                 for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
-                    selected[index++] = driver.getNormalizedValue(new AbsoluteDate());
+                    selected[index++] = driver.getNormalizedValue(AbsoluteDate.ARBITRARY_EPOCH);
                 }
             }
         }

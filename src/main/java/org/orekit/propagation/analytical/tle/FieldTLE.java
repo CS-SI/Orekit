@@ -610,7 +610,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         int i = 0;
         for (ParameterDriver driver : drivers) {
             if (date == null && driver.getNbOfValues() == 1 ) {
-                parameters[i++] = field.getZero().add(driver.getValue(new AbsoluteDate()));
+                parameters[i++] = field.getZero().add(driver.getValue(AbsoluteDate.ARBITRARY_EPOCH));
             } else {
                 parameters[i++] = field.getZero().add(driver.getValue(date.toAbsoluteDate()));
             }
