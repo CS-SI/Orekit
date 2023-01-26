@@ -16,6 +16,13 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
+import org.orekit.propagation.analytical.gnss.SBASPropagator;
+import org.orekit.propagation.analytical.gnss.SBASPropagatorBuilder;
+
 /**
  * Container for data contained in a SBAS navigation message.
  * @author Bryan Cazabonne
@@ -41,6 +48,75 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
     /** Constructor. */
     public SBASNavigationMessage() {
         // Nothing to do ...
+    }
+
+    /**
+     * Get the propagator corresponding to the navigation message.
+     <p>The attitude provider is set by default be aligned with the EME2000 frame.<br>
+     * The Earth gravity coefficient is set by default to the
+     *  {@link org.orekit.propagation.analytical.gnss.data.GNSSConstants#SBAS_MU SBAS_MU}.<br>
+     * The mass is set by default to the
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
+     * </p><p>
+     * This constructor uses the {@link DataContext#getDefault() default data context}
+     * </p>
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator(Frames)
+     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double, double)
+     * @since 12.0
+     */
+    public SBASPropagator getPropagator() {
+        return new SBASPropagatorBuilder(this).build();
+    }
+
+    /**
+     * Get the propagator corresponding to the navigation message.
+     * <p>The attitude provider is set by default be aligned with the EME2000 frame.<br>
+     * The Earth gravity coefficient is set by default to the
+     *  {@link org.orekit.propagation.analytical.gnss.data.GNSSConstants#SBAS_MU SBAS_MU}.<br>
+     * The mass is set by default to the
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
+     * </p>
+     * @param frames set of frames to use
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator()
+     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double, double)
+     * @since 12.0
+     */
+    public SBASPropagator getPropagator(final Frames frames) {
+        return new SBASPropagatorBuilder(this, frames).build();
+    }
+
+    /**
+     * Get the propagator corresponding to the navigation message.
+     * @param frames set of frames to use
+     * @param provider attitude provider
+     * @param inertial inertial frame, use to provide the propagated orbit
+     * @param bodyFixed body fixed frame, corresponding to the navigation message
+     * @param mass spacecraft mass in kg
+     * @param mu central attraction coefficient
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator()
+     * @see #getPropagator(Frames)
+     * @since 12.0
+     */
+    public SBASPropagator getPropagator(final Frames frames, final AttitudeProvider provider,
+                                        final Frame inertial, final Frame bodyFixed,
+                                        final double mass, final double mu) {
+        return new SBASPropagatorBuilder(this, frames).attitudeProvider(provider)
+                                                      .eci(inertial)
+                                                      .ecef(bodyFixed)
+                                                      .mass(mass)
+                                                      .mu(mu)
+                                                      .build();
     }
 
     /** {@inheritDoc} */

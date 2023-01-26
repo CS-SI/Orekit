@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="1018">
+        Improved documentation of glonass propagators.
+      </action>
+      <action dev="bryan" type="add" issue="1019">
+        Added getPropagator() methods for GNSS almanacs and navigation messages.
+      </action>
       <action dev="pascal" type="fix" issue="1021">
         Fixed regression introduced in EventEnablingPredicateFilter when fixing issue 1017.
       </action>

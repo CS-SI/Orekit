@@ -26,7 +26,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @since 10.1
  *
  */
-public class IRNSSAlmanac extends AbstractAlmanac implements GNSSOrbitalElements {
+public class IRNSSAlmanac extends AbstractAlmanac {
 
     /**
      * Constructor.

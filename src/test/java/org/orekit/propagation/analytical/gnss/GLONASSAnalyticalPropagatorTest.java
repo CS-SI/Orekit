@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -66,12 +67,9 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testPerfectValues() {
         // Build the propagator
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).
-                        attitudeProvider(Utils.defaultLaw()).
-                        mass(1521.0).
-                        eci(FramesFactory.getEME2000()).
-                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
-                        build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator(DataContext.getDefault(), Utils.defaultLaw(),
+                                                                             FramesFactory.getEME2000(),
+                                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, false), 1521.0);
 
         // Target
         final AbsoluteDate target = new AbsoluteDate(new DateComponents(2007, 12, 23),
@@ -108,7 +106,7 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the GLONASSAnalyticalPropagator from the almanac
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals("EME2000", propagator.getECI().getName());
         Assertions.assertEquals(3.986004418e+14, GNSSConstants.GLONASS_MU, 1.0e6);
@@ -131,7 +129,7 @@ public class GLONASSAnalyticalPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
         GLONASSOrbitalElements elements = propagator.getGLONASSOrbitalElements();
         AbsoluteDate t0 = new GLONASSDate(elements.getNa(), elements.getN4(), elements.getTime()).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -159,7 +157,7 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+            final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
             propagator.resetInitialState(propagator.getInitialState());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -177,7 +175,7 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the GLONASSAnalyticalPropagator from the almanac
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator(DataContext.getDefault());
         // In order to test the issue, we volontary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);

@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -69,7 +70,7 @@ public class GPSPropagatorTest {
 
     @Test
     public void testClockCorrections() {
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = almanacs.get(0).getPropagator();
         propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0)));
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
@@ -92,12 +93,8 @@ public class GPSPropagatorTest {
     @Test
     public void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).
-                        attitudeProvider(Utils.defaultLaw()).
-                        mass(1521.0).
-                        eci(FramesFactory.getEME2000()).
-                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
-                        build();
+        final GNSSPropagator propagator = almanacs.get(0).getPropagator(DataContext.getDefault().getFrames(),
+                Utils.defaultLaw(), FramesFactory.getEME2000(), FramesFactory.getITRF(IERSConventions.IERS_2010, false), 1521.0);
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -112,7 +109,7 @@ public class GPSPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = almanacs.get(0).getPropagator();
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals(3.986005e14, almanacs.get(0).getMu(), 1.0e6);
         // Defines some date
@@ -130,7 +127,7 @@ public class GPSPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+            final GNSSPropagator propagator = almanacs.get(0).getPropagator();
             propagator.resetInitialState(propagator.getInitialState());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -150,7 +147,7 @@ public class GPSPropagatorTest {
 
         List<GNSSPropagator> gpsPropagators = new ArrayList<>();
         for (final GPSAlmanac almanac : almanacs) {
-            gpsPropagators.add(new GNSSPropagatorBuilder(almanac).build());
+            gpsPropagators.add(almanac.getPropagator());
         }
 
         // the following map corresponds to the GPS constellation status in early 2016
@@ -275,7 +272,7 @@ public class GPSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         for (final GPSAlmanac almanac : almanacs) {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+            final GNSSPropagator propagator = almanac.getPropagator();
             GNSSOrbitalElements elements = propagator.getOrbitalElements();
             AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GPS).getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -328,7 +325,7 @@ public class GPSPropagatorTest {
         // Date of the GPS orbital elements
         final AbsoluteDate target = goe.getDate();
         // Build the GPS propagator
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
+        final GNSSPropagator propagator = goe.getPropagator();
         // Compute the PV coordinates at the date of the GPS orbital elements
         final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Computed position

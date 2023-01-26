@@ -21,7 +21,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class QZSSNavigationMessage extends AbstractNavigationMessage implements GNSSOrbitalElements {
+public class QZSSNavigationMessage extends AbstractNavigationMessage {
 
     /** Issue of Data, Ephemeris. */
     private int iode;

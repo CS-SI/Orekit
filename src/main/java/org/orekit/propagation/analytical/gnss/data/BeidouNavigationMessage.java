@@ -21,7 +21,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class BeidouNavigationMessage extends AbstractNavigationMessage implements GNSSOrbitalElements {
+public class BeidouNavigationMessage extends AbstractNavigationMessage {
 
     /** Age of Data, Ephemeris. */
     private int aode;

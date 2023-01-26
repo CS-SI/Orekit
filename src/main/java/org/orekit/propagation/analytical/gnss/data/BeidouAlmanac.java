@@ -26,7 +26,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @since 10.0
  *
  */
-public class BeidouAlmanac extends AbstractAlmanac implements GNSSOrbitalElements {
+public class BeidouAlmanac extends AbstractAlmanac {
 
     /** Health status. */
     private int health;

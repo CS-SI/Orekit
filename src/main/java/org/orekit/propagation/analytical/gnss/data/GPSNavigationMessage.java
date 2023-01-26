@@ -21,7 +21,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class GPSNavigationMessage extends AbstractNavigationMessage implements GNSSOrbitalElements, GNSSClockElements {
+public class GPSNavigationMessage extends AbstractNavigationMessage implements GNSSClockElements {
 
     /** Issue of Data, Ephemeris. */
     private int iode;
