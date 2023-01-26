@@ -21,7 +21,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class GalileoNavigationMessage extends AbstractNavigationMessage implements GNSSOrbitalElements {
+public class GalileoNavigationMessage extends AbstractNavigationMessage {
 
     /** Issue of Data of the navigation batch. */
     private int iodNav;

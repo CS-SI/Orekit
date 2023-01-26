@@ -23,7 +23,7 @@ import org.hipparchus.util.FastMath;
  * @author Pascal Parraud
  * @since 11.0
  */
-public abstract class AbstractAlmanac extends CommonGnssData {
+public abstract class AbstractAlmanac extends CommonGnssData implements GNSSOrbitalElements {
 
     /**
      * Constructor.

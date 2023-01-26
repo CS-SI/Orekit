@@ -23,7 +23,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @since 10.0
  *
  */
-public class QZSSAlmanac extends AbstractAlmanac implements GNSSOrbitalElements  {
+public class QZSSAlmanac extends AbstractAlmanac {
 
     /** Source of the almanac. */
     private String src;

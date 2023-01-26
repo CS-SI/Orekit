@@ -27,7 +27,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @since 8.0
  *
  */
-public class GPSAlmanac extends AbstractAlmanac implements GNSSOrbitalElements, GNSSClockElements {
+public class GPSAlmanac extends AbstractAlmanac implements GNSSClockElements {
 
     /** Source of the almanac. */
     private String src;

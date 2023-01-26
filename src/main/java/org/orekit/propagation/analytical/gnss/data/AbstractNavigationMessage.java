@@ -30,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * @see QZSSNavigationMessage
  * @see IRNSSNavigationMessage
  */
-public abstract class AbstractNavigationMessage extends CommonGnssData {
+public abstract class AbstractNavigationMessage extends CommonGnssData implements GNSSOrbitalElements {
 
     /** Mean Motion Difference from Computed Value. */
     private double deltaN;

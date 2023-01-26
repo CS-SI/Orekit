@@ -16,8 +16,10 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.Propagator;
@@ -50,6 +52,33 @@ public class SBASPropagatorBuilder {
 
     /** The ECEF frame. */
     private Frame ecef;
+
+    /** Initializes the builder.
+     * <p>The SBAS orbital elements is the only requested parameter to build a SBASPropagator.</p>
+     * <p>The attitude provider is set by default be aligned with the EME2000 frame.<br>
+     * The Earth gravity coefficient is set by default to the
+     *  {@link org.orekit.propagation.analytical.gnss.data.GNSSConstants#SBAS_MU SBAS_MU}.<br>
+     * The mass is set by default to the
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
+     * </p>
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.</p>
+     *
+     * @param sbasOrbElt the SBAS orbital elements to be used by the SBAS propagator.
+     * @see #attitudeProvider(AttitudeProvider provider)
+     * @see #mu(double coefficient)
+     * @see #mass(double mass)
+     * @see #eci(Frame inertial)
+     * @see #ecef(Frame bodyFixed)
+     * @since 12.0
+     */
+    @DefaultDataContext
+    public SBASPropagatorBuilder(final SBASOrbitalElements sbasOrbElt) {
+        this(sbasOrbElt, DataContext.getDefault().getFrames());
+    }
 
     /** Initializes the builder.
      * <p>The SBAS orbital elements is the only requested parameter to build a SBASPropagator.</p>

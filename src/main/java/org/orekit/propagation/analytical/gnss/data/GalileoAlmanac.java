@@ -28,7 +28,7 @@ import org.hipparchus.util.FastMath;
  * @since 10.0
  *
  */
-public class GalileoAlmanac extends AbstractAlmanac implements GNSSOrbitalElements {
+public class GalileoAlmanac extends AbstractAlmanac {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
     private static final double I0 = FastMath.toRadians(56.0);
