@@ -33,6 +33,8 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.time.AbsoluteDate;
@@ -42,6 +44,10 @@ import org.orekit.utils.PVCoordinates;
 
 /**
  * This class aims at propagating a GLONASS orbit from {@link GLONASSOrbitalElements}.
+ * <p>
+ * <b>Caution:</b> The Glonass analytical propagator can only be used with {@link GLONASSAlmanac}.
+ * Using this propagator with a {@link GLONASSNavigationMessage} is prone to error.
+ * </p>
  *
  * @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
  *       GLONASS Interface Control Document</a>

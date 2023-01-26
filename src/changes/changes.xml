@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="1018">
+        Improved documentation of glonass propagators.
+      </action>
       <action dev="pascal" type="fix" issue="996">
         Fixed HolmesFeatherstoneAttractionModel error with a degree 0 gravity field.
       </action>
