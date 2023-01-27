@@ -79,7 +79,8 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
      * @param tau specular reflection coefficient τ between 0.0 an 1.0
      */
     public IsotropicRadiationCNES95Convention(final double crossSection, final double alpha, final double tau) {
-        this.parameterDrivers = new ArrayList<>(2);
+        this.parameterDrivers = new ArrayList<>(3);
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR, 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY));
         parameterDrivers.add(new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT, alpha, SCALE, 0.0, 1.0));
         parameterDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT, tau, SCALE, 0.0, 1.0));
         this.crossSection = crossSection;
@@ -95,9 +96,9 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
     @Override
     public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux,
                                                   final double[] parameters) {
-        final double alpha = parameters[0];
-        final double tau   = parameters[1];
-        final double kP = crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
+        final double alpha = parameters[1];
+        final double tau   = parameters[2];
+        final double kP = parameters[0] * crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
         return new Vector3D(kP / state.getMass(), flux);
     }
 
@@ -107,9 +108,10 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
         radiationPressureAcceleration(final FieldSpacecraftState<T> state,
                                       final FieldVector3D<T> flux,
                                       final T[] parameters) {
-        final T alpha = parameters[0];
-        final T tau   = parameters[1];
-        final T kP    = alpha.negate().add(1).multiply(tau.negate().add(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
+        final T alpha = parameters[1];
+        final T tau   = parameters[2];
+        final T kP    = alpha.negate().add(1).multiply(tau.negate().add(1)).multiply(4.0 / 9.0).add(1).
+                        multiply(parameters[0]).multiply(crossSection);
         return new FieldVector3D<>(state.getMass().reciprocal().multiply(kP), flux);
     }
 }

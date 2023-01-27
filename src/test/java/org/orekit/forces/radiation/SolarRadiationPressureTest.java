@@ -317,45 +317,39 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight()
-        {
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight() {
         // here, lighting ratio is exactly 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 1000.0, 3.0e-8, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientFullLight()
-        {
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientFullLight() {
         // here, lighting ratio is exactly 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(250.0, 1000.0, 3.0e-8, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra()
-        {
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra() {
         // here, lighting ratio is about 0.57,
         // and remains strictly between 0 and 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientPenumbra()
-        {
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientPenumbra() {
         // here, lighting ratio is about 0.57,
         // and remains strictly between 0 and 1 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(275.5, 100.0, 8.0e-7, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse()
-        {
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse() {
         // here, lighting ratio is exactly 0 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(300.0, 1000.0, 1.0e-50, false);
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientEclipse()
-        {
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientEclipse() {
         // here, lighting ratio is exactly 0 for all points used for finite differences
         doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(300.0, 1000.0, 1.0e-50, false);
     }

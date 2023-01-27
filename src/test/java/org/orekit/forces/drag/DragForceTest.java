@@ -791,16 +791,20 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         DragForce forceModel = new DragForce(atmosphere, new IsotropicDrag(dragArea, dragCd0));
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
-        Assertions.assertEquals(1,  drivers.size());
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(0).getName());
+        Assertions.assertEquals(2,  drivers.size());
+        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
         
         // Extract drag model at an arbitrary epoch and check it is the one added
         IsotropicDrag isoDrag = (IsotropicDrag) forceModel.getSpacecraft();
         drivers = isoDrag.getDragParametersDrivers();
-        Assertions.assertEquals(1, drivers.size());
-        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(new AbsoluteDate()), 0.);
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(0).getName());
+        Assertions.assertEquals(2, drivers.size());
+        Assertions.assertEquals(1.0,  drivers.get(0).getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
         
         // 3 IsotropicDrag models added, with one default
         // ----------------------------------------------

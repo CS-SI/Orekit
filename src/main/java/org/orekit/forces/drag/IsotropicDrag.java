@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class IsotropicDrag implements DragSensitive {
     private final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Drivers for drag coefficient parameter. */
-    private final ParameterDriver dragParametersDrivers;
+    private final List<ParameterDriver> dragParametersDrivers;
 
     /** Cross section (m²). */
     private final double crossSection;
@@ -71,16 +72,24 @@ public class IsotropicDrag implements DragSensitive {
                          final double dragCoeffMin, final double dragCoeffMax) {
         // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
         // the single coefficient may be arbitrary, and even negative
-        this.dragParametersDrivers = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                         dragCoeff, SCALE,
-                                                         dragCoeffMin, dragCoeffMax);
+        // the DRAG_COEFFICIENT parameter should be sufficient, but GLOBAL_DRAG_FACTOR
+        // was added as of 12.0 for consistency with BoxAndSolarArraySpacecraft
+        // that only has a global multiplicatof factor, hence allowing this name
+        // to be used for both models
+        this.dragParametersDrivers = new ArrayList<>(2);
+        dragParametersDrivers.add(new ParameterDriver(DragSensitive.GLOBAL_DRAG_FACTOR,
+                                                      1.0, SCALE,
+                                                      0.0, Double.POSITIVE_INFINITY));
+        dragParametersDrivers.add(new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
+                                                      dragCoeff, SCALE,
+                                                      dragCoeffMin, dragCoeffMax));
         this.crossSection = crossSection;
     }
 
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getDragParametersDrivers() {
-        return Collections.singletonList(dragParametersDrivers);
+        return Collections.unmodifiableList(dragParametersDrivers);
     }
 
     /** {@inheritDoc} */
@@ -88,7 +97,7 @@ public class IsotropicDrag implements DragSensitive {
     public Vector3D dragAcceleration(final SpacecraftState state,
                                      final double density, final Vector3D relativeVelocity,
                                      final double[] parameters) {
-        final double dragCoeff = parameters[0];
+        final double dragCoeff = parameters[0] * parameters[1];
         return new Vector3D(relativeVelocity.getNorm() * density * dragCoeff * crossSection / (2 * state.getMass()),
                             relativeVelocity);
     }
@@ -99,7 +108,7 @@ public class IsotropicDrag implements DragSensitive {
         dragAcceleration(final FieldSpacecraftState<T> state, final T density,
                          final FieldVector3D<T> relativeVelocity,
                          final T[] parameters) {
-        final T dragCoeff = parameters[0];
+        final T dragCoeff = parameters[0].multiply(parameters[1]);
         return new FieldVector3D<>(relativeVelocity.getNorm().
                                    multiply(density.multiply(dragCoeff).multiply(crossSection / 2)).
                                    divide(state.getMass()),
