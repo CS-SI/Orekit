@@ -21,7 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -77,23 +76,20 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass) {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
-            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
+            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(state);
             
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();
 
             if (firing) {
-                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+                return new FieldVector3D<>(state.getMass().reciprocal().multiply(thrust),
+                                           state.getAttitude().getRotation().applyInverseTo(direction));
             } else {
                 // constant (and null) acceleration when not firing
-                return FieldVector3D.getZero(mass.getField());
+                return FieldVector3D.getZero(state.getMass().getField());
             }
         } catch (IllegalArgumentException | SecurityException e) {
             Assertions.fail(e.getLocalizedMessage());
@@ -103,23 +99,20 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass) {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
-            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
+            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(state);
             
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();
 
             if (firing) {
-                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+                return new FieldVector3D<>(state.getMass().reciprocal().multiply(thrust),
+                                           state.getAttitude().getRotation().applyInverseTo(direction));
             } else {
                 // constant (and null) acceleration when not firing
-                return FieldVector3D.getZero(mass.getField());
+                return FieldVector3D.getZero(state.getMass().getField());
             }
         } catch (IllegalArgumentException | SecurityException e) {
             Assertions.fail(e.getLocalizedMessage());

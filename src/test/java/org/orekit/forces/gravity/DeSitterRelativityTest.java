@@ -19,7 +19,6 @@ package org.orekit.forces.gravity;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
@@ -66,12 +65,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure>
-        accelerationDerivatives(ForceModel forceModel, AbsoluteDate date,
-                                Frame frame,
-                                FieldVector3D<DerivativeStructure> position,
-                                FieldVector3D<DerivativeStructure> velocity,
-                                FieldRotation<DerivativeStructure> rotation,
-                                DerivativeStructure mass) {
+        accelerationDerivatives(ForceModel forceModel, FieldSpacecraftState<DerivativeStructure> state) {
 
         final DeSitterRelativity model = (DeSitterRelativity) forceModel;
 
@@ -79,10 +73,10 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final double c2 = c * c;
 
         // Sun's gravitational parameter
-        final double gm = model.getParametersDrivers().get(0).getValue(date);
+        final double gm = model.getParametersDrivers().get(0).getValue(state.getDate().toAbsoluteDate());
 
         // Coordinates of the Earth with respect to the Sun
-        final FieldPVCoordinates<DerivativeStructure> pvEarth = model.getEarth().getPVCoordinates(new FieldAbsoluteDate<>(mass.getField(), date), model.getSun().getInertiallyOrientedFrame());
+        final FieldPVCoordinates<DerivativeStructure> pvEarth = model.getEarth().getPVCoordinates(state.getDate(), model.getSun().getInertiallyOrientedFrame());
         final FieldVector3D<DerivativeStructure> pEarth = pvEarth.getPosition();
         final FieldVector3D<DerivativeStructure> vEarth = pvEarth .getVelocity();
 
@@ -91,17 +85,14 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final DerivativeStructure r3 = r.multiply(r).multiply(r);
 
         // Eq. 10.12
-        return new FieldVector3D<>(r3.multiply(c2).reciprocal().multiply(-3.0 * gm), vEarth.crossProduct(pEarth).crossProduct(velocity));
+        return new FieldVector3D<>(r3.multiply(c2).reciprocal().multiply(-3.0 * gm),
+                        vEarth.crossProduct(pEarth).crossProduct(state.getPVCoordinates().getVelocity()));
     }
 
     @Override
     protected FieldVector3D<Gradient>
         accelerationDerivativesGradient(ForceModel forceModel,
-                                        AbsoluteDate date, Frame frame,
-                                        FieldVector3D<Gradient> position,
-                                        FieldVector3D<Gradient> velocity,
-                                        FieldRotation<Gradient> rotation,
-                                        Gradient mass) {
+                                        FieldSpacecraftState<Gradient> state) {
 
         final DeSitterRelativity model = (DeSitterRelativity) forceModel;
 
@@ -109,10 +100,10 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
 
         // Sun's gravitational parameter
-        final double gm = model.getParametersDrivers().get(0).getValue(date);
+        final double gm = model.getParametersDrivers().get(0).getValue(state.getDate().toAbsoluteDate());
 
         // Coordinates of the Earth with respect to the Sun
-        final FieldPVCoordinates<Gradient> pvEarth = model.getEarth().getPVCoordinates(new FieldAbsoluteDate<>(mass.getField(), date), model.getSun().getInertiallyOrientedFrame());
+        final FieldPVCoordinates<Gradient> pvEarth = model.getEarth().getPVCoordinates(state.getDate(), model.getSun().getInertiallyOrientedFrame());
         final FieldVector3D<Gradient> pEarth = pvEarth.getPosition();
         final FieldVector3D<Gradient> vEarth = pvEarth .getVelocity();
 
@@ -121,7 +112,8 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final Gradient r3 = r.multiply(r).multiply(r);
 
         // Eq. 10.12
-        return new FieldVector3D<>(r3.multiply(c2).reciprocal().multiply(-3.0 * gm), vEarth.crossProduct(pEarth).crossProduct(velocity));
+        return new FieldVector3D<>(r3.multiply(c2).reciprocal().multiply(-3.0 * gm),
+                        vEarth.crossProduct(pEarth).crossProduct(state.getPVCoordinates().getVelocity()));
     }
 
     /**

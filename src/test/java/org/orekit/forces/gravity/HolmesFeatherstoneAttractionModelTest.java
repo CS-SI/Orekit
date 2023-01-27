@@ -24,7 +24,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.dfp.Dfp;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
@@ -90,19 +89,16 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyFrameField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
 
             // get the position in body frame
-            final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
+            final Transform fromBodyFrame = bodyFrame.getTransformTo(state.getFrame(), date);
             final Transform toBodyFrame   = fromBodyFrame.getInverse();
             final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 
@@ -119,7 +115,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
             // distribute all partial derivatives in a compact acceleration vector
-            final double[] derivatives = new double[1 + mass.getFreeParameters()];
+            final double[] derivatives = new double[1 + state.getMass().getFreeParameters()];
             final DerivativeStructure[] accDer = new DerivativeStructure[3];
             for (int i = 0; i < 3; ++i) {
 
@@ -133,7 +129,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
                 // next elements (three or four depending on mass being used or not) are left as 0
 
-                accDer[i] = mass.getFactory().build(derivatives);
+                accDer[i] = state.getMass().getFactory().build(derivatives);
 
             }
 
@@ -146,19 +142,16 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass)
-        {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyFrameField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
 
             // get the position in body frame
-            final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
+            final Transform fromBodyFrame = bodyFrame.getTransformTo(state.getFrame(), date);
             final Transform toBodyFrame   = fromBodyFrame.getInverse();
             final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 
@@ -175,7 +168,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
             // distribute all partial derivatives in a compact acceleration vector
-            final double[] derivatives = new double[mass.getFreeParameters()];
+            final double[] derivatives = new double[state.getMass().getFreeParameters()];
             final Gradient[] accDer = new Gradient[3];
             for (int i = 0; i < 3; ++i) {
 

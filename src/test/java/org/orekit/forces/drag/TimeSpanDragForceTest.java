@@ -20,7 +20,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
@@ -82,14 +81,12 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      */
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
 
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field atmosphereField = TimeSpanDragForce.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
@@ -99,11 +96,11 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
             DragSensitive spacecraft = ((TimeSpanDragForce) (forceModel)).getDragSensitive(date);
 
             // retrieve derivation properties
-            final DSFactory factory = mass.getFactory();
+            final DSFactory factory = state.getMass().getFactory();
 
             // get atmosphere properties in atmosphere own frame
             final Frame      atmFrame  = atmosphere.getFrame();
-            final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+            final Transform  toBody    = state.getFrame().getTransformTo(atmFrame, date);
             final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position);
             final Vector3D   posBody   = posBodyDS.toVector3D();
             final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
@@ -152,12 +149,12 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
             // Extract drag parameters of the proper model
             DerivativeStructure[] allParameters = forceModel.getParameters(factory.getDerivativeField());
-            DerivativeStructure[] parameters = ((TimeSpanDragForce) (forceModel)).extractParameters(allParameters,
-                                                                                                    new FieldAbsoluteDate<>(factory.getDerivativeField(), date));
+            DerivativeStructure[] parameters = ((TimeSpanDragForce) (forceModel)).extractParameters(allParameters, state.getDate());
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(factory.getDerivativeField(), date),
-                                               frame, position, rotation, mass, rho, relativeVelocity,
+            return spacecraft.dragAcceleration(state.getDate(),
+                                               state.getFrame(), position, state.getAttitude().getRotation(),
+                                               state.getMass(), rho, relativeVelocity,
                                                parameters);
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -169,14 +166,12 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      */
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass)
-        {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
 
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field atmosphereField = TimeSpanDragForce.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
@@ -185,11 +180,11 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
             // Get the DragSensitive model at date
             DragSensitive spacecraft = ((TimeSpanDragForce) (forceModel)).getDragSensitive(date);
 
-            final int freeParameters = mass.getFreeParameters();
+            final int freeParameters = state.getMass().getFreeParameters();
 
             // get atmosphere properties in atmosphere own frame
             final Frame      atmFrame  = atmosphere.getFrame();
-            final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+            final Transform  toBody    = state.getFrame().getTransformTo(atmFrame, date);
             final FieldVector3D<Gradient> posBodyG = toBody.transformPosition(position);
             final Vector3D   posBody   = posBodyG.toVector3D();
             final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
@@ -233,13 +228,13 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
 
             // Extract drag parameters of the proper model
-            Gradient[] allParameters = forceModel.getParameters(mass.getField());
-            Gradient[] parameters = ((TimeSpanDragForce) (forceModel)).extractParameters(allParameters,
-                                                                                         new FieldAbsoluteDate<>(mass.getField(), date));
+            Gradient[] allParameters = forceModel.getParameters(state.getDate().getField());
+            Gradient[] parameters = ((TimeSpanDragForce) (forceModel)).extractParameters(allParameters, state.getDate());
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(mass.getField(), date),
-                                               frame, position, rotation, mass, rho, relativeVelocity,
+            return spacecraft.dragAcceleration(state.getDate(),
+                                               state.getFrame(), position, state.getAttitude().getRotation(),
+                                               state.getMass(), rho, relativeVelocity,
                                                parameters);
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
