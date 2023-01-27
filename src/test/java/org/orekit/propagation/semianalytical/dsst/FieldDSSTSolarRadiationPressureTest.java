@@ -229,12 +229,12 @@ public class FieldDSSTSolarRadiationPressureTest {
             }
         }
 
-        Assertions.assertEquals(0.3668654523023674,     y[0].getReal(), 1.0e-16);
-        Assertions.assertEquals(-2.567333228302908E-10, y[1].getReal(), 1.0e-25);
-        Assertions.assertEquals(-3.849598776918734E-9,  y[2].getReal(), 1.0e-24);
-        Assertions.assertEquals(-3.069285299519464E-9,  y[3].getReal(), 1.0e-24);
-        Assertions.assertEquals(-4.90887054227722E-9,   y[4].getReal(), 1.0e-23);
-        Assertions.assertEquals(-2.3854933842837777E-9, y[5].getReal(), 1.0e-25);
+        Assertions.assertEquals(0.3668654523023674,    y[0].getReal(), 1.0e-16);
+        Assertions.assertEquals(-2.5673332283029E-10,  y[1].getReal(), 1.0e-23);
+        Assertions.assertEquals(-3.84959877691874E-9,  y[2].getReal(), 1.0e-23);
+        Assertions.assertEquals(-3.069285299519465E-9, y[3].getReal(), 1.0e-23);
+        Assertions.assertEquals(-4.90887054227722E-9,  y[4].getReal(), 1.0e-23);
+        Assertions.assertEquals(-2.38549338428378E-9,  y[5].getReal(), 1.0e-23);
     }
 
     @Test

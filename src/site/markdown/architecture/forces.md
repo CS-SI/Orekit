@@ -89,10 +89,26 @@ accurate `BoxAndSolarArraySpacraft` shape.
 
 The spherical shape will be independent of attitude.
 
-The box and solar array will consider the contribution of all box facets facing
+The box and solar array will consider the contribution of all box panels facing
 the flux as computed from the current attitude, and also the contribution of a
 pivoting solar array, whose orientation is a combination of the spacecraft body
 attitude and either the true Sun direction or a regularized rotation angle.
-The box can have any number of facets, and they can have any orientation as long
-as the body remains convex. As of 9.0, the box and solar array does not compute
+The box can have any number of panels, and they can have any orientation as long
+as the body remains convex. The coefficients (drag, lift, absorption, reflection)
+are panel-dependent. As of 12.0, the box and solar array does not compute
 yet shadowing effects.
+
+All these shapes define various `ParameterDrivers` that can be used to control
+dynamic parameters like drag coefficient or absorption coefficient. Several
+conventions are available. For estimation purposes, it is possible to use a global
+multiplication factor that is applied to the acceleration rather than attempting
+to estimate several coefficients at once like absorption and specular reflection
+for solar radiation pressure. For `BoxAndSolarArraySpacraft` shape, as each
+panel has its own set of coefficients and this would not be observable, the
+coefficients are fixed and only the global multiplication factor is available
+and can be estimated. For `Isotropic` shapes, it is possible to estimate
+either the coefficients or the global multiplication factor. Of course in
+order to avoid ill-conditioned systems, users should not attempt to estimate
+both a coefficient and a global multiplication factor at the same time in
+`Isotropic` cases; they should select one parameter to estimate and let the
+other one fixed.

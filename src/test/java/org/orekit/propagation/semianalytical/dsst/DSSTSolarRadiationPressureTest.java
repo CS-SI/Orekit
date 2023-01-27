@@ -186,13 +186,12 @@ public class DSSTSolarRadiationPressureTest {
                 y[i] += shortPeriodic[i];
             }
         }
-
-        Assertions.assertEquals(0.3668654523023707,     y[0], 1.e-15);
-        Assertions.assertEquals(-2.567333228310714E-10, y[1], 1.e-25);
-        Assertions.assertEquals(-3.849598776919689E-9,  y[2], 1.e-24);
-        Assertions.assertEquals(-3.069285299519558E-9,  y[3], 1.e-24);
-        Assertions.assertEquals(-4.908870542277221E-9,  y[4], 1.e-24);
-        Assertions.assertEquals(-2.3854933842835932E-9, y[5], 1.e-24);
+        Assertions.assertEquals( 0.3668654523023707,   y[0], 1.e-15);
+        Assertions.assertEquals(-2.5673332283107E-10,  y[1], 1.e-23);
+        Assertions.assertEquals(-3.84959877691969E-9,  y[2], 1.e-23);
+        Assertions.assertEquals(-3.069285299519558E-9, y[3], 1.e-24);
+        Assertions.assertEquals(-4.908870542277221E-9, y[4], 1.e-24);
+        Assertions.assertEquals(-2.38549338428359E-9,  y[5], 1.e-23);
     }
 
     @BeforeEach

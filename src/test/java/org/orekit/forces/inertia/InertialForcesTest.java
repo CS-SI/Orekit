@@ -67,20 +67,16 @@ import org.orekit.utils.PVCoordinates;
 public class InertialForcesTest extends AbstractLegacyForceModelTest {
 
     @Override
-    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final AbsoluteDate date,
-                                                                         final Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass) {
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final FieldSpacecraftState<DerivativeStructure> state) {
         try {
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field refInertialFrameField = InertialForces.class.getDeclaredField("referenceInertialFrame");
             refInertialFrameField.setAccessible(true);
             Frame refInertialFrame = (Frame) refInertialFrameField.get(forceModel);
 
-            final Field<DerivativeStructure> field = position.getX().getField();
-            final FieldTransform<DerivativeStructure> inertToStateFrame = refInertialFrame.getTransformTo(frame,
-                                                                                                          new FieldAbsoluteDate<>(field, date));
+            final FieldTransform<DerivativeStructure> inertToStateFrame = refInertialFrame.getTransformTo(state.getFrame(),
+                                                                                                          state.getDate());
             final FieldVector3D<DerivativeStructure>  a1                = inertToStateFrame.getCartesian().getAcceleration();
             final FieldRotation<DerivativeStructure>  r1                = inertToStateFrame.getAngular().getRotation();
             final FieldVector3D<DerivativeStructure>  o1                = inertToStateFrame.getAngular().getRotationRate();
@@ -103,20 +99,16 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     }
 
     @Override
-    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final AbsoluteDate date,
-                                                                      final Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass) {
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final FieldSpacecraftState<Gradient> state) {
         try {
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field refInertialFrameField = InertialForces.class.getDeclaredField("referenceInertialFrame");
             refInertialFrameField.setAccessible(true);
             Frame refInertialFrame = (Frame) refInertialFrameField.get(forceModel);
 
-            final Field<Gradient> field = position.getX().getField();
-            final FieldTransform<Gradient> inertToStateFrame = refInertialFrame.getTransformTo(frame,
-                                                                                               new FieldAbsoluteDate<>(field, date));
+            final FieldTransform<Gradient> inertToStateFrame = refInertialFrame.getTransformTo(state.getFrame(),
+                                                                                               state.getDate());
             final FieldVector3D<Gradient>  a1                = inertToStateFrame.getCartesian().getAcceleration();
             final FieldRotation<Gradient>  r1                = inertToStateFrame.getAngular().getRotation();
             final FieldVector3D<Gradient>  o1                = inertToStateFrame.getAngular().getRotationRate();

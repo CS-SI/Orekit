@@ -194,8 +194,8 @@ public class DSSTAtmosphericDragTest {
         Assertions.assertEquals(0.03966657233280967,    y[0], 1.e-15);
         Assertions.assertEquals(-1.5294381443173415E-8, y[1], 1.e-23);
         Assertions.assertEquals(-2.3614929828516364E-8, y[2], 1.e-23);
-        Assertions.assertEquals(-5.901580336558653E-11, y[3], 1.e-26);
-        Assertions.assertEquals(1.0287639743124977E-11, y[4], 1.e-26);
+        Assertions.assertEquals(-5.90158033655866E-11,  y[3], 1.e-25);
+        Assertions.assertEquals(1.0287639743125E-11,    y[4], 1.e-24);
         Assertions.assertEquals(2.538427523777691E-8,   y[5], 1.e-23);
     }
 

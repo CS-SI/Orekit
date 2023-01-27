@@ -21,6 +21,17 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+         Added DragSensitive.GLOBAL_DRAG_FACTOR as a new global multiplication
+         factor that can be applied to all drag coefficients
+      </action>
+      <action dev="luc" type="add">
+         Added RadiationSensitive.GLOBAL_RADIATION_FACTOR as a new global multiplication
+         factor that can be applied to all radiation coefficients
+      </action>
+      <action dev="luc" type="fix" issue="989">
+        Added panel dependent coefficients in BoxAndSolarArraySpacecraft.
+      </action>
       <action dev="bryan" type="update" issue="1018">
         Improved documentation of glonass propagators.
       </action>
