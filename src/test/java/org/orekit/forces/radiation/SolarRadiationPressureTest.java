@@ -118,10 +118,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.radiationPressureAcceleration(state.getDate(),
-                                                            state.getFrame(), position, state.getAttitude().getRotation(),
-                                                            state.getMass(), flux,
-                                                            forceModel.getParameters(field));
+            return spacecraft.radiationPressureAcceleration(state, flux, forceModel.getParameters(field));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
         }
@@ -153,10 +150,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             final FieldVector3D<Gradient> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.radiationPressureAcceleration(state.getDate(),
-                                                            state.getFrame(), position, state.getAttitude().getRotation(),
-                                                            state.getMass(), flux,
-                                                            forceModel.getParameters(field));
+            return spacecraft.radiationPressureAcceleration(state, flux, forceModel.getParameters(field));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
         }
@@ -503,10 +497,9 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                 Constants.WGS84_EARTH_FLATTENING,
                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                             Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.1e-15);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 6.9e-15);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.GLOBAL_RADIATION_FACTOR, 0.25,  8.8e-16);
 
     }
 
@@ -527,10 +520,9 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                 Constants.WGS84_EARTH_FLATTENING,
                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                             Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
 
-        checkParameterDerivativeGradient(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.1e-15);
-        checkParameterDerivativeGradient(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 6.9e-10);
+        checkParameterDerivativeGradient(state, forceModel, RadiationSensitive.GLOBAL_RADIATION_FACTOR, 0.25, 8.8e-16);
 
     }
 
@@ -560,7 +552,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                                 Constants.WGS84_EARTH_FLATTENING,
                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                            new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                          Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                                          Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
 

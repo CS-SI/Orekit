@@ -95,7 +95,7 @@
           EGM and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
-        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies)
+        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for bow and wing models)
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared

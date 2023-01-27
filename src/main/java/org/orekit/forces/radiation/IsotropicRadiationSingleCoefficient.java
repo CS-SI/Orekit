@@ -20,14 +20,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
@@ -91,23 +88,20 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                  final Rotation rotation, final double mass, final Vector3D flux,
+    public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux,
                                                   final double[] parameters) {
         final double cr = parameters[0];
-        return new Vector3D(crossSection * cr / mass, flux);
+        return new Vector3D(crossSection * cr / state.getMass(), flux);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T>
-        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
-                                      final FieldVector3D<T> position,
-                                      final FieldRotation<T> rotation, final T mass,
+        radiationPressureAcceleration(final FieldSpacecraftState<T> state,
                                       final FieldVector3D<T> flux,
                                       final T[] parameters) {
         final T cr = parameters[0];
-        return new FieldVector3D<>(mass.reciprocal().multiply(crossSection).multiply(cr), flux);
+        return new FieldVector3D<>(state.getMass().reciprocal().multiply(crossSection).multiply(cr), flux);
 
     }
 }

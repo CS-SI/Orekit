@@ -89,10 +89,11 @@ accurate `BoxAndSolarArraySpacraft` shape.
 
 The spherical shape will be independent of attitude.
 
-The box and solar array will consider the contribution of all box facets facing
+The box and solar array will consider the contribution of all box panels facing
 the flux as computed from the current attitude, and also the contribution of a
 pivoting solar array, whose orientation is a combination of the spacecraft body
 attitude and either the true Sun direction or a regularized rotation angle.
-The box can have any number of facets, and they can have any orientation as long
-as the body remains convex. As of 9.0, the box and solar array does not compute
+The box can have any number of panels, and they can have any orientation as long
+as the body remains convex. The coefficients (drag, lift, absorption, reflection)
+are panel-dependent. As of 12.0, the box and solar array does not compute
 yet shadowing effects.

@@ -226,8 +226,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
             }
         }
 
-        return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
-                                                        s.getMass(), rediffusedFlux, parameters);
+        return spacecraft.radiationPressureAcceleration(s, rediffusedFlux, parameters);
     }
 
 
@@ -302,8 +301,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
             }
         }
 
-        return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
-                                                        s.getMass(), rediffusedFlux, parameters);
+        return spacecraft.radiationPressureAcceleration(s, rediffusedFlux, parameters);
     }
 
 

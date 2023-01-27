@@ -255,8 +255,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final double[] extractedParameters = extractParameters(parameters, date);
 
         // Compute and return drag acceleration
-        return getDragSensitive(date).dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                       s.getMass(), rho, relativeVelocity, extractedParameters);
+        return getDragSensitive(date).dragAcceleration(s, rho, relativeVelocity, extractedParameters);
 
     }
 
@@ -292,8 +291,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final T[] extractedParameters = extractParameters(parameters, date);
 
         // Compute and return drag acceleration
-        return getDragSensitive(date.toAbsoluteDate()).dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                                        s.getMass(), rho, relativeVelocity, extractedParameters);
+        return getDragSensitive(date.toAbsoluteDate()).dragAcceleration(s, rho, relativeVelocity, extractedParameters);
     }
 
     /**{@inheritDoc}
@@ -481,7 +479,9 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
 
             // If the name is the default name for DragSensitive parameter drivers
             // Modify the name to add the prefix and the date
-            if (driverName.equals(DragSensitive.DRAG_COEFFICIENT) || driverName.equals(DragSensitive.LIFT_RATIO)) {
+            if (driverName.equals(DragSensitive.GLOBAL_DRAG_FACTOR) ||
+                driverName.equals(DragSensitive.DRAG_COEFFICIENT) ||
+                driverName.equals(DragSensitive.LIFT_RATIO)) {
                 driver.setName(driverName + datePrefix + date.toString(timeScale));
             }
         }
