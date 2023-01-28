@@ -1139,12 +1139,6 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public EventDetector[] getEventsDetectors() {
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
             return null;
         }
