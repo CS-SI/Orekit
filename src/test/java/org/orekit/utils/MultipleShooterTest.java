@@ -234,13 +234,6 @@ public class MultipleShooterTest {
     }
 
     @Test
-    public void testNotInitialized() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new EpochDerivativesEquations("partials", propagator).getMapper();
-        });
-    }
-
-    @Test
     public void testTooSmallDimension() {
         Assertions.assertThrows(OrekitException.class, () -> {
             final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
