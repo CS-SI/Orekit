@@ -664,13 +664,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
         return nComps;
     }
 
-    /** Get the number of free variables.
-     * @return the number of free variables
-     */
-    protected int getNumberOfFreeVariables() {
-        return nComps + nDuration + nEpoch;
-    }
-
     /** Get the total number of constraints.
      * @return the total number of constraints
      */
@@ -703,9 +696,15 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     /** Get the list of propagators.
      * @return a list of propagators
      */
-    protected List<NumericalPropagator> getPropagatorList() {
+    private List<NumericalPropagator> getPropagatorList() {
         return propagatorList;
     }
 
+    /** Get the number of free variables.
+     * @return the number of free variables
+     */
+    private int getNumberOfFreeVariables() {
+        return nComps + nDuration + nEpoch;
+    }
 
 }
