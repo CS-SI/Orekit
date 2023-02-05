@@ -142,12 +142,6 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
     /** {@inheritDoc} */
     @Override
-    protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
-        return new double[0][0];
-    }
-
-    /** {@inheritDoc} */
-    @Override
     protected double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
 
         // The additional constraint vector has the following form :
