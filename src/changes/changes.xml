@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="afossa" type="add" issue="876">
+        Added scaling of linear system and allowed different arc duration in multiple shooting.
+      </action>
+      <action dev="afossa" type="fix" issue="876">
+        Avoided computation of inverse of Jacobian, allowed under-determined
+        linear systems and fixed sign of epoch partials in multiple shooting.
+      </action>
       <action dev="luc" type="add">
          Added DragSensitive.GLOBAL_DRAG_FACTOR as a new global multiplication
          factor that can be applied to all drag coefficients

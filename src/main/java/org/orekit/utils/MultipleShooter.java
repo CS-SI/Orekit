@@ -28,6 +28,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * Not suited for closed orbits.
  * @see "TRAJECTORY DESIGN AND ORBIT MAINTENANCE STRATEGIES IN MULTI-BODY DYNAMICAL REGIMES by Thomas A. Pavlak, Purdue University"
  * @author William Desprats
+ * @author Alberto Foss&agrave;
  * @since 10.2
  */
 public class MultipleShooter extends AbstractMultipleShooting {
@@ -41,18 +42,18 @@ public class MultipleShooter extends AbstractMultipleShooting {
     private final List<EpochDerivativesEquations> epochEquations;
 
     /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
-     * @param initialGuessList initial patch points to be corrected.
-     * @param propagatorList list of propagators associated to each patch point.
-     * @param epochEquations list of additional derivatives providers linked to propagatorList.
-     * @param arcDuration initial guess of the duration of each arc.
+     * <p> Standard constructor for multiple shooting which can be used with non-autonomous systems.</p>
+     * @param initialGuessList initial patch points to be corrected
+     * @param propagatorList list of propagators associated to each patch point
+     * @param epochEquations list of additional derivatives providers linked to propagatorList
      * @param tolerance convergence tolerance on the constraint vector
      * @param maxIter maximum number of iterations
      */
-    public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                           final List<EpochDerivativesEquations> epochEquations, final double arcDuration,
+    public MultipleShooter(final List<SpacecraftState> initialGuessList,
+                           final List<NumericalPropagator> propagatorList,
+                           final List<EpochDerivativesEquations> epochEquations,
                            final double tolerance, final int maxIter) {
-        super(initialGuessList, propagatorList, arcDuration, tolerance, maxIter, DERIVATIVES);
+        super(initialGuessList, propagatorList, tolerance, maxIter, false, DERIVATIVES);
         this.epochEquations = epochEquations;
     }
 
@@ -63,16 +64,13 @@ public class MultipleShooter extends AbstractMultipleShooting {
 
     /** {@inheritDoc} */
     protected double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
+
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
-
-        final int n = mapConstraints.size();
-        final int ncolumns = getNumberOfFreeVariables() - 1;
-
-        final double[][] M = new double[n][ncolumns];
+        final double[][] M = new double[mapConstraints.size()][getNumberOfFreeComponents()];
 
         int k = 0;
         for (int index : mapConstraints.keySet()) {
-            M[k][index] = 1;
+            M[k][index] = 1.0;
             k++;
         }
         return M;
@@ -87,12 +85,11 @@ public class MultipleShooter extends AbstractMultipleShooting {
         //           [vz2i - vz2d]----  desired value)
 
         // Number of additional constraints
-        final int      n             = getConstraintsMap().size();
-        final double[] fxAdditionnal = new double[n];
+        final double[] fxAdditional = new double[getConstraintsMap().size()];
 
         // Update additional constraints
-        updateAdditionalConstraints(0, fxAdditionnal);
-        return fxAdditionnal;
+        updateAdditionalConstraints(0, fxAdditional);
+        return fxAdditional;
     }
 
 }
