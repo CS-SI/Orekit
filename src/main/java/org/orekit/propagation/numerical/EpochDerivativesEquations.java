@@ -29,7 +29,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -256,12 +255,6 @@ public class EpochDerivativesEquations
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
         return new AbsoluteJacobiansMapper(name, selected);
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        AdditionalDerivativesProvider.super.init(initialState, target);
     }
 
     /** {@inheritDoc} */
