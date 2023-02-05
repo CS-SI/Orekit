@@ -81,7 +81,6 @@ public class AbsoluteJacobiansMapper implements MatricesHarvester {
      * @param dY1dP Jacobian of current state at time t₁
      * with respect to parameters (may be null if there are no parameters)
      * @param p placeholder where to put the one-dimensional additional state
-     * @see #getStateJacobian(SpacecraftState, double[][])
      */
     public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
                                     final double[][] dY1dP, final double[] p) {

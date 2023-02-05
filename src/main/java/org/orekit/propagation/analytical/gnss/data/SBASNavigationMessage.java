@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -69,6 +70,7 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
      * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double, double)
      * @since 12.0
      */
+    @DefaultDataContext
     public SBASPropagator getPropagator() {
         return new SBASPropagatorBuilder(this).build();
     }
