@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -654,6 +654,47 @@ public class EquinoctialOrbit extends Orbit {
                                       dCdP[5][3] * hxDot + dCdP[5][4] * hyDot + dCdP[5][5] * nonKeplerianMeanMotion;
 
         return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
+    /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+
+        // get equinoctial parameters
+        final double lE = getLE();
+
+        // inclination-related intermediate parameters
+        final double hx2   = hx * hx;
+        final double hy2   = hy * hy;
+        final double factH = 1. / (1 + hx2 + hy2);
+
+        // reference axes defining the orbital plane
+        final double ux = (1 + hx2 - hy2) * factH;
+        final double uy =  2 * hx * hy * factH;
+        final double uz = -2 * hy * factH;
+
+        final double vx = uy;
+        final double vy = (1 - hx2 + hy2) * factH;
+        final double vz =  2 * hx * factH;
+
+        // eccentricity-related intermediate parameters
+        final double exey = ex * ey;
+        final double ex2  = ex * ex;
+        final double ey2  = ey * ey;
+        final double e2   = ex2 + ey2;
+        final double eta  = 1 + FastMath.sqrt(1 - e2);
+        final double beta = 1. / eta;
+
+        // eccentric longitude argument
+        final SinCos scLe   = FastMath.sinCos(lE);
+        final double cLe    = scLe.cos();
+        final double sLe    = scLe.sin();
+
+        // coordinates of position and velocity in the orbital plane
+        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
+        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
+
+        return new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
 
     }
 

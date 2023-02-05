@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *  <p>
  *  Most of them are defined in Danielson paper at § 2.1.
  *  </p>
+ *  @author Bryan Cazabonne
  */
 public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 
@@ -85,6 +86,9 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
      */
     private final int    I;
 
+    /** Orbit. */
+    private FieldOrbit<T> orbit;
+
     /** B = sqrt(1 - h² - k²). */
     private final T B;
 
@@ -116,6 +120,9 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
     public FieldAuxiliaryElements(final FieldOrbit<T> orbit, final int retrogradeFactor) {
 
         final T pi = orbit.getDate().getField().getZero().getPi();
+
+        // Orbit
+        this.orbit = orbit;
 
         // Date of the orbit
         date = orbit.getDate();
@@ -167,6 +174,13 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
         alpha = (T) f.getZ();
         beta  = (T) g.getZ();
         gamma = (T) w.getZ();
+    }
+
+    /** Get the orbit.
+     * @return the orbit
+     */
+    public FieldOrbit<T> getOrbit() {
+        return orbit;
     }
 
     /** Get the date of the orbit.

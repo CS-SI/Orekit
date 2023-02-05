@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,16 +64,15 @@ import org.orekit.utils.PVCoordinates;
  * node on an equatorial orbit! This is a real case that has been encountered
  * during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
- * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<ImpulseManeuver<T>> {
+public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
 
     /** The attitude to override during the maneuver, if set. */
     private final AttitudeProvider attitudeOverride;
 
     /** Triggering event. */
-    private final T trigger;
+    private final EventDetector trigger;
 
     /** Velocity increment in satellite frame. */
     private final Vector3D deltaVSat;
@@ -92,9 +91,9 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
-    public ImpulseManeuver(final T trigger, final Vector3D deltaVSat, final double isp) {
+    public ImpulseManeuver(final EventDetector trigger, final Vector3D deltaVSat, final double isp) {
         this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
-             trigger.getMaxIterationCount(), new Handler<T>(),
+             trigger.getMaxIterationCount(), new Handler(),
              trigger, null, deltaVSat, isp);
     }
 
@@ -105,9 +104,9 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
-    public ImpulseManeuver(final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat, final double isp) {
+    public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat, final double isp) {
         this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
-             trigger.getMaxIterationCount(), new Handler<T>(),
+             trigger.getMaxIterationCount(), new Handler(),
              trigger, attitudeOverride, deltaVSat, isp);
     }
 
@@ -128,8 +127,8 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
      * @since 6.1
      */
     private ImpulseManeuver(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler<? super ImpulseManeuver<T>> handler,
-                            final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
+                            final int maxIter, final EventHandler handler,
+                            final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
                             final double isp) {
         super(maxCheck, threshold, maxIter, handler);
         this.attitudeOverride = attitudeOverride;
@@ -141,10 +140,10 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
     /** {@inheritDoc} */
     @Override
-    protected ImpulseManeuver<T> create(final double newMaxCheck, final double newThreshold,
-                                        final int newMaxIter, final EventHandler<? super ImpulseManeuver<T>> newHandler) {
-        return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                      trigger, attitudeOverride, deltaVSat, isp);
+    protected ImpulseManeuver create(final double newMaxCheck, final double newThreshold,
+                                     final int newMaxIter, final EventHandler newHandler) {
+        return new ImpulseManeuver(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                   trigger, attitudeOverride, deltaVSat, isp);
     }
 
     /** {@inheritDoc} */
@@ -170,7 +169,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     /** Get the triggering event.
      * @return triggering event
      */
-    public T getTrigger() {
+    public EventDetector getTrigger() {
         return trigger;
     }
 
@@ -188,17 +187,16 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
         return isp;
     }
 
-    /** Local handler.
-     * @param <T> class type for the generic version
-     */
-    private static class Handler<T extends EventDetector> implements EventHandler<ImpulseManeuver<T>> {
+    /** Local handler. */
+    private static class Handler implements EventHandler {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing) {
 
             // filter underlying event
-            final Action underlyingAction = im.trigger.eventOccurred(s, increasing);
+            final ImpulseManeuver im = (ImpulseManeuver) detector;
+            final Action underlyingAction = im.trigger.getHandler().eventOccurred(s, im.trigger, increasing);
 
             return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
 
@@ -206,8 +204,9 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
 
+            final ImpulseManeuver im = (ImpulseManeuver) detector;
             final AbsoluteDate date = oldState.getDate();
             final AttitudeProvider override = im.getAttitudeOverride();
             final Attitude attitude;

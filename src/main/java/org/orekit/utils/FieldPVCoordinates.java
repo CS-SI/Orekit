@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -642,12 +642,29 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldPVCoordinates<T> shiftedBy(final T dt) {
         final T one = dt.getField().getOne();
-        return new FieldPVCoordinates<>(new FieldVector3D<>(one, position,
-                                                            dt, velocity,
-                                                            dt.multiply(dt).multiply(0.5), acceleration),
-                                        new FieldVector3D<>(one, velocity,
-                                                            dt, acceleration),
+        return new FieldPVCoordinates<>(positionShiftedBy(dt),
+                                        new FieldVector3D<>(one, velocity, dt, acceleration),
                                         acceleration);
+    }
+
+    /**
+     * Get a time-shifted position. Same as {@link #shiftedBy(CalculusFieldElement)} except
+     * that only the sifted position is returned.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement
+     * for proper orbit propagation (it is not even Keplerian!) but should be
+     * sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     *
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is
+     * immutable)
+     * @since 11.2
+     */
+    public FieldVector3D<T> positionShiftedBy(final T dt) {
+        final T one = dt.getField().getOne();
+        return new FieldVector3D<>(one, position, dt, velocity, dt.multiply(dt).multiply(0.5), acceleration);
     }
 
     /** Gets the position.

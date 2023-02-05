@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,6 +40,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
@@ -735,7 +736,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         while (i++ < maxIterations) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField()));
+            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField(), current.mean.getDate()));
 
             // adapted parameters residuals
             final T deltaA     = osculating.getA()  .subtract(parameters.getA());
@@ -784,6 +785,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      */
     public double getM2() {
         return M2Driver.getValue();
+    }
+
+    /**
+     * Get the value of the M2 drag parameter.
+     * @param date date at which the model parameters want to be known
+     * @return the value of the M2 drag parameter
+     */
+    public double getM2(final AbsoluteDate date) {
+        return M2Driver.getValue(date);
     }
 
     /** Local class for Brouwer-Lyddane model. */
@@ -1241,18 +1251,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             // mean mean anomaly
             final FieldUnivariateDerivative2<T> dtM2  = dt.multiply(m2);
             final FieldUnivariateDerivative2<T> dt2M2 = dt.multiply(dtM2);
-            final FieldUnivariateDerivative2<T> lpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()),
-                                                                                        one.getPi()),
+            final FieldUnivariateDerivative2<T> lpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()), zero),
                                                                                         lt.multiply(xnotDot).add(dtM2.multiply(2.0).getValue()),
                                                                                         m2.multiply(2.0));
             // mean argument of perigee
-            final FieldUnivariateDerivative2<T> gpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())),
-                                                                                        one.getPi()),
+            final FieldUnivariateDerivative2<T> gpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())), zero),
                                                                                         gt.multiply(xnotDot),
                                                                                         zero);
             // mean longitude of ascending node
-            final FieldUnivariateDerivative2<T> hpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ht.multiply(xnot.getValue())),
-                                                                                        one.getPi()),
+            final FieldUnivariateDerivative2<T> hpp = new FieldUnivariateDerivative2<T>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ht.multiply(xnot.getValue())), zero),
                                                                                         ht.multiply(xnotDot),
                                                                                         zero);
 

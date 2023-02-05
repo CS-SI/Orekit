@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -107,19 +107,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     }
 
     /**
-     * Adds a new P/V coordinate to the satellite.
-     * <p>
-     * If the header has not been read, the {@link #DEFAULT_ID} is used.
-     * </p>
-     * @param coord the P/V coordinate of the satellite
-     * @deprecated as of 11.0.1, replaced by {@link CPF#addSatelliteCoordinate(String, CPFCoordinate)}
-     */
-    @Deprecated
-    public void addSatelliteCoordinate(final CPFCoordinate coord) {
-        addSatelliteCoordinate(DEFAULT_ID, coord);
-    }
-
-    /**
      * Adds a set of P/V coordinates to the satellite.
      * @param id satellite ILRS identifier
      * @param coord set of coordinates
@@ -213,15 +200,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
         /** Ephemeris Data. */
         private final List<CPFCoordinate> coordinates;
-
-        /**
-         * Constructor.
-         * @deprecated as of 11.0.1, replaced by
-         */
-        @Deprecated
-        public CPFEphemeris() {
-            this(null);
-        }
 
         /**
          * Constructor.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.3
  */
 public class Position extends AbstractMeasurement<Position> {
+
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "Position";
 
     /** Identity matrix, for states derivatives. */
     private static final double[][] IDENTITY = new double[][] {

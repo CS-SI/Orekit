@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,7 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -41,8 +39,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
+
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -153,7 +150,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // scaled sectorial terms corresponding to equation 28 in Holmes and Featherstone paper
         sectorial    = new double[degree + 1];
         sectorial[0] = FastMath.scalb(1.0, -SCALING);
-        sectorial[1] = FastMath.sqrt(3) * sectorial[0];
+        if (degree > 0) {
+            sectorial[1] = FastMath.sqrt(3) * sectorial[0];
+        }
         for (int m = 2; m < sectorial.length; ++m) {
             sectorial[m] = FastMath.sqrt((2 * m + 1) / (2.0 * m)) * sectorial[m - 1];
         }
@@ -172,10 +171,21 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** Get the central attraction coefficient μ.
-     * @return mu central attraction coefficient (m³/s²)
+     * @return mu central attraction coefficient (m³/s²),
+     * will throw an exception if gm PDriver has several
+     * values driven (in this case the method
+     * {@link #getMu(AbsoluteDate)} must be used.
      */
     public double getMu() {
         return gmParameterDriver.getValue();
+    }
+
+    /** Get the central attraction coefficient μ.
+     * @param date date at which mu wants to be known
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu(final AbsoluteDate date) {
+        return gmParameterDriver.getValue(date);
     }
 
     /** Compute the value of the gravity field.
@@ -720,7 +730,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // initialize array
         final double[] aOrN = new double[provider.getMaxDegree() + 1];
         aOrN[0] = 1;
-        aOrN[1] = aOr;
+        if (provider.getMaxDegree() > 0) {
+            aOrN[1] = aOr;
+        }
 
         // fill up array
         for (int n = 2; n < aOrN.length; ++n) {
@@ -742,7 +754,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // initialize array
         final T[] aOrN = MathArrays.buildArray(aOr.getField(), provider.getMaxDegree() + 1);
         aOrN[0] = aOr.getField().getOne();
-        aOrN[1] = aOr;
+        if (provider.getMaxDegree() > 0) {
+            aOrN[1] = aOr;
+        }
 
         // fill up array
         for (int n = 2; n < aOrN.length; ++n) {
@@ -1033,7 +1047,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final StaticTransform fromBodyFrame =
                 bodyFrame.getStaticTransformTo(s.getFrame(), date);
         final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final Vector3D position       = toBodyFrame.transformPosition(s.getPosition());
 
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new Vector3D(gradient(date, position, mu)));
@@ -1049,7 +1063,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // check for faster computation dedicated to derivatives with respect to state
         if (isGradientStateDerivative(s)) {
             @SuppressWarnings("unchecked")
-            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
@@ -1057,7 +1071,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
             return a;
         } else if (isDSStateDerivative(s)) {
             @SuppressWarnings("unchecked")
-            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
@@ -1070,22 +1084,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final StaticTransform      fromBodyFrame =
                 bodyFrame.getStaticTransformTo(s.getFrame(), date.toAbsoluteDate());
         final StaticTransform      toBodyFrame   = fromBodyFrame.getInverse();
-        final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPosition());
 
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position, mu)));
 
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    @Override
-    /** {@inheritDoc} */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** Check if a field state corresponds to derivatives with respect to state.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-
 import org.hipparchus.geometry.euclidean.twod.PolygonsSet;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -50,6 +46,11 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.UnitsConverter;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * test class for MagneticFieldDetector
@@ -66,14 +67,14 @@ public class MagneticFieldDetectorTest {
     GeoMagneticField wmm;
     GeoMagneticField igrf;
 
-    double saaValidationThreshold = 500;
-    double saaValidationWidth = 200;
+    double saaValidationThreshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(500);
+    double saaValidationWidth = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(200);
 
 
     /**
      * Prepare the Orekit library.
      */
-    @Before
+    @BeforeEach
     public void setup()
     {
         // Prepare the Orekit library
@@ -98,7 +99,7 @@ public class MagneticFieldDetectorTest {
     /**
      * Remove the Orekit configuration
      */
-    @After
+    @AfterEach
     public void tearDown()
     {
         DataContext.getDefault().getDataProvidersManager().clearProviders();
@@ -121,7 +122,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorWMMSeaLevelTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.WMM, earth, true).withHandler(handler);
@@ -137,7 +138,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorIGRFSeaLevelTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.IGRF, earth, true).withHandler(handler);
@@ -153,7 +154,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorWMMTrueAltitudeTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.WMM, earth).withHandler(handler);
@@ -169,7 +170,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorIGRFTrueAltitudeTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.IGRF, earth).withHandler(handler);
@@ -187,7 +188,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 0;
-        double threshold = 32000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(32000);
 
         PolygonsSet saaIn = generateGeomagneticMap(wmm, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(wmm, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -209,7 +210,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 0;
-        double threshold = 32000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(32000);
 
         PolygonsSet saaIn = generateGeomagneticMap(igrf, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(igrf, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -231,7 +232,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 600000;
-        double threshold = 23000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(23000);
 
         PolygonsSet saaIn = generateGeomagneticMap(wmm, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(wmm, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -253,7 +254,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 600000;
-        double threshold = 23000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(23000);
 
         PolygonsSet saaIn = generateGeomagneticMap(igrf, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(igrf, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -400,7 +401,7 @@ public class MagneticFieldDetectorTest {
      * the custom event handler used in tests to check if the event detected is located between the inside and the outside geographical zones
      * @author Romaric Her
      */
-    private class CustomEventHandler implements EventHandler<EventDetector>{
+    private class CustomEventHandler implements EventHandler {
 
         ArrayList<SpacecraftState> events = new ArrayList<SpacecraftState>();
 
@@ -428,13 +429,13 @@ public class MagneticFieldDetectorTest {
 
         for (SpacecraftState s : events) {
             //Get the geodetic point corresponding to the event
-            GeodeticPoint geo = earth.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+            GeodeticPoint geo = earth.transform(s.getPosition(), s.getFrame(), s.getDate());
             double altitude = geo.getAltitude();
             if(sea) {
                 altitude = 0;
             }
             double meas = field.calculateField(geo.getLatitude(), geo.getLongitude(), altitude).getTotalIntensity();
-            Assert.assertEquals(threshold, meas, 1e-3);
+            Assertions.assertEquals(threshold, meas, 1e-12);
         }
     }
 
@@ -448,13 +449,13 @@ public class MagneticFieldDetectorTest {
 
         for (SpacecraftState s : events) {
             //Get the geodetic point corresponding to the event
-            GeodeticPoint geo = earth.transform(s.getPVCoordinates(itrf).getPosition(), itrf, s.getDate());
+            GeodeticPoint geo = earth.transform(s.getPosition(itrf), itrf, s.getDate());
             Vector2D point = new Vector2D(geo.getLongitude(), geo.getLatitude());
 
             //Check that the event is outside the "smaller than SAA" geographical zone
-            Assert.assertTrue(saaIn.checkPoint(point).equals(Location.OUTSIDE));
+            Assertions.assertTrue(saaIn.checkPoint(point).equals(Location.OUTSIDE));
             //Check that the event is inside the "bigger than SAA" geographical zone
-            Assert.assertTrue(saaOut.checkPoint(point).equals(Location.INSIDE));
+            Assertions.assertTrue(saaOut.checkPoint(point).equals(Location.INSIDE));
 
         }
     }

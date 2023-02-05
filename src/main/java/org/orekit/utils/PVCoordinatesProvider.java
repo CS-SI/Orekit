@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 
 package org.orekit.utils;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -30,12 +31,21 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface PVCoordinatesProvider {
 
+    /** Get the position of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @return position of the body (m and)
+     * @since 12.0
+     */
+    default Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return getPVCoordinates(date, frame).getPosition();
+    }
+
     /** Get the {@link PVCoordinates} of the body in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
      * @return time-stamped position/velocity of the body (m and m/s)
      */
-    TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
-                                              Frame frame);
+    TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame);
 
 }

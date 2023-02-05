@@ -3,11 +3,11 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
+import org.orekit.gnss.metric.messages.ParsedMessage;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.orekit.gnss.metric.messages.ParsedMessage;
 
 
 /** {@link RTCMMessageObserver Message observer} that simply logs messages counts.

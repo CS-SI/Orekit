@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,15 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -63,11 +57,17 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class FieldDSSTZonalTest {
 
     @Test
     public void testGetMeanElementRate() {
-        doTestGetMeanElementRate(Decimal64Field.getInstance());
+        doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
@@ -106,7 +106,7 @@ public class FieldDSSTZonalTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = zonal.getParameters(field);
+        final T[] parameters = zonal.getParameters(field, state.getDate());
         // Initialize force model
         zonal.initializeShortPeriodTerms(auxiliaryElements,
                          PropagationType.MEAN, parameters);
@@ -119,59 +119,59 @@ public class FieldDSSTZonalTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(0.0,                     elements[0].getReal(), 1.e-25);
-        Assert.assertEquals(1.3909396722346468E-11,  elements[1].getReal(), 3.e-26);
-        Assert.assertEquals(-2.0275977261372793E-13, elements[2].getReal(), 3.e-27);
-        Assert.assertEquals(3.087141512018238E-9,    elements[3].getReal(), 1.e-24);
-        Assert.assertEquals(2.6606317310148797E-9,   elements[4].getReal(), 4.e-24);
-        Assert.assertEquals(-3.659904725206694E-9,   elements[5].getReal(), 1.e-24);
+        Assertions.assertEquals(0.0,                     elements[0].getReal(), 1.e-25);
+        Assertions.assertEquals(1.3909396722346468E-11,  elements[1].getReal(), 3.e-26);
+        Assertions.assertEquals(-2.0275977261372793E-13, elements[2].getReal(), 3.e-27);
+        Assertions.assertEquals(3.087141512018238E-9,    elements[3].getReal(), 1.e-24);
+        Assertions.assertEquals(2.6606317310148797E-9,   elements[4].getReal(), 4.e-24);
+        Assertions.assertEquals(-3.659904725206694E-9,   elements[5].getReal(), 1.e-24);
 
     }
 
     @Test
     public void testShortPeriodTerms() {
-        doTestShortPeriodTerms(Decimal64Field.getInstance());
+        doTestShortPeriodTerms(Binary64Field.getInstance());
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
-        final T zero = field.getZero();
-
-        final FieldSpacecraftState<T> meanState = getGEOState(field);
-
-        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
-        final DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
-
-        //Create the auxiliary object
-        final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
-
-        // Set the force models
-        final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
-
-        zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
-        zonal.updateShortPeriodTerms(zonal.getParameters(field), meanState);
-
-        T[] y = MathArrays.buildArray(field, 6);
-        Arrays.fill(y, zero);
-        for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
-            final T[] shortPeriodic = spt.value(meanState.getOrbit());
-            for (int i = 0; i < shortPeriodic.length; i++) {
-                y[i] = y[i].add(shortPeriodic[i]);
-            }
-        }
-
-        Assert.assertEquals(35.005618980090276,     y[0].getReal(), 1.e-15);
-        Assert.assertEquals(3.75891551882889E-5,    y[1].getReal(), 1.e-20);
-        Assert.assertEquals(3.929119925563796E-6,   y[2].getReal(), 1.e-21);
-        Assert.assertEquals(-1.1781951949124315E-8, y[3].getReal(), 1.e-24);
-        Assert.assertEquals(-3.2134924513679615E-8, y[4].getReal(), 1.e-24);
-        Assert.assertEquals(-1.1607392915997098E-6, y[5].getReal(), 1.e-21);
+	private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
+	    final T zero = field.getZero();
+	
+	    final FieldSpacecraftState<T> meanState = getGEOState(field);
+	    
+	    final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
+	    final DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+	
+	    //Create the auxiliary object
+	    final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
+	
+	    // Set the force models
+	    final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
+	
+	    zonal.registerAttitudeProvider(null);
+	    shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
+	    zonal.updateShortPeriodTerms(zonal.getParametersAllValues(field), meanState);
+	
+	    T[] y = MathArrays.buildArray(field, 6);
+	    Arrays.fill(y, zero);
+	    for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
+	        final T[] shortPeriodic = spt.value(meanState.getOrbit());
+	        for (int i = 0; i < shortPeriodic.length; i++) {
+	            y[i] = y[i].add(shortPeriodic[i]);
+	        }
+	    }
+	    
+        Assertions.assertEquals(35.005618980090276,     y[0].getReal(), 1.e-15);
+        Assertions.assertEquals(3.75891551882889E-5,    y[1].getReal(), 1.e-20);
+        Assertions.assertEquals(3.929119925563796E-6,   y[2].getReal(), 1.e-21);
+        Assertions.assertEquals(-1.1781951949124315E-8, y[3].getReal(), 1.e-24);
+        Assertions.assertEquals(-3.2134924513679615E-8, y[4].getReal(), 1.e-24);
+        Assertions.assertEquals(-1.1607392915997098E-6, y[5].getReal(), 1.e-21);
     }
 
     @Test
     public void testIssue625() {
-        doTestIssue625(Decimal64Field.getInstance());
+        doTestIssue625(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue625(final Field<T> field) {
@@ -211,21 +211,21 @@ public class FieldDSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field));
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field, state.getDate()));
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field));
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field, state.getDate()));
 
         // Compute mean element rate for the zonal force model
-        final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field));
+        final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field, state.getDate()));
 
         // Compute mean element rate for the "default" zonal force model
-        final T[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(field));
+        final T[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(field, state.getDate()));
 
         // Verify
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
+            Assertions.assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
         }
 
     }
@@ -261,8 +261,7 @@ public class FieldDSSTZonalTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, zonal);
-
+        
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -270,8 +269,9 @@ public class FieldDSSTZonalTest {
 
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        zonal.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                converter.getParametersAtStateDate(dsState, zonal)));
+        zonal.updateShortPeriodTerms(converter.getParameters(dsState, zonal), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -337,7 +337,7 @@ public class FieldDSSTZonalTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assert.assertEquals(0, error, 9.6e-10);
+                Assertions.assertEquals(0, error, 9.6e-10);
             }
         }
 
@@ -382,8 +382,7 @@ public class FieldDSSTZonalTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, zonal);
-
+      
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -391,8 +390,9 @@ public class FieldDSSTZonalTest {
 
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        zonal.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                converter.getParametersAtStateDate(dsState, zonal)));
+        zonal.updateShortPeriodTerms(converter.getParameters(dsState, zonal), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -439,28 +439,28 @@ public class FieldDSSTZonalTest {
         ParameterDriver selected = bound.getDrivers().get(0);
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
-
+      
         selected.setValue(p0 - 4 * h);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, zonal);
-
+  
         selected.setValue(p0 - 3 * h);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, zonal);
-
+      
         selected.setValue(p0 - 2 * h);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, zonal);
-
+      
         selected.setValue(p0 - 1 * h);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, zonal);
-
+      
         selected.setValue(p0 + 1 * h);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, zonal);
-
+      
         selected.setValue(p0 + 2 * h);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, zonal);
-
+      
         selected.setValue(p0 + 3 * h);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, zonal);
-
+      
         selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, zonal);
 
@@ -470,7 +470,7 @@ public class FieldDSSTZonalTest {
 
         for (int i = 0; i < 6; ++i) {
             double error = FastMath.abs((shortPeriodJacobian[i][0] - shortPeriodJacobianRef[i][0]) / stateVector[i]) * h;
-            Assert.assertEquals(0, error, 1.3e-18);
+            Assertions.assertEquals(0, error, 1.3e-18);
         }
 
     }
@@ -500,10 +500,9 @@ public class FieldDSSTZonalTest {
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
-        force.updateShortPeriodTerms(parameters, state);
-
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
+        force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+        
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {
             double[] spVariation = spt.value(state.getOrbit());
@@ -569,7 +568,7 @@ public class FieldDSSTZonalTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -95,22 +95,7 @@ public interface AdditionalDerivativesProvider {
         return false;
     }
 
-    /** Compute the derivatives related to the additional state parameters.
-     * @param s current state information: date, kinematics, attitude, and
-     * additional states this equations depend on (according to the
-     * {@link #yield(SpacecraftState) yield} method)
-     * @return computed derivatives
-     * @deprecated as of 11.2, replaced by {@link #combinedDerivatives(SpacecraftState)}
-     */
-    @Deprecated
-    double[] derivatives(SpacecraftState s);
-
     /** Compute the derivatives related to the additional state (and optionally main state increments).
-     * <p>
-     * As of 11.2, there is a default implementation that calls the deprecated
-     * {@link #derivatives(SpacecraftState)} method. This has been done for
-     * backward compatibility only and will be removed in 12.0.
-     * </p>
      * @param s current state information: date, kinematics, attitude, and
      * additional states this equations depend on (according to the
      * {@link #yield(SpacecraftState) yield} method)
@@ -118,10 +103,6 @@ public interface AdditionalDerivativesProvider {
      * coupling effect to add to main state derivatives
      * @since 11.2
      */
-    default CombinedDerivatives combinedDerivatives(SpacecraftState s) {
-        // this default implementation will be removed
-        // when the deprecated derivatives method above is removed
-        return new CombinedDerivatives(derivatives(s), null);
-    }
+    CombinedDerivatives combinedDerivatives(SpacecraftState s);
 
 }

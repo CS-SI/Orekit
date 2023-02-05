@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -103,11 +104,14 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Apm.ROOT, Apm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, parsedUnitsBehavior);
+              missionReferenceDate, parsedUnitsBehavior, filters);
     }
 
     /** {@inheritDoc} */

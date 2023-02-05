@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,14 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
@@ -50,6 +46,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** Test class for Kalman model.
  * This class is deeply entangled with KalmanEstimator class. Thus it is difficult to test as a stand-alone.
@@ -111,7 +112,7 @@ public class KalmanModelTest {
      * Create one perfect PV measurement at t0
      * Create one range measurement at t0 + 10s, modified by the satellite range bias mentionned above.
      */
-    @Before
+    @BeforeEach
     public void setup() {
         // Create context
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -127,7 +128,7 @@ public class KalmanModelTest {
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
         this.pv = new PV(date0,
-                             context.initialOrbit.getPVCoordinates().getPosition(),
+                             context.initialOrbit.getPosition(),
                              context.initialOrbit.getPVCoordinates().getVelocity(),
                              new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
                              sat);
@@ -268,8 +269,8 @@ public class KalmanModelTest {
         final RealMatrix dMdCr = dMdY.multiply(MatrixUtils.createRealMatrix(dYdPpTransition));
         expH.setEntry(0, 6, dMdCr.getEntry(0, 0));
         // Sat range bias part
-        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver)[0]);
-
+        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver, new AbsoluteDate())[0]);
+        
         // Add range measurement and check model afterwards
         checkModelAfterMeasurementAdded(2, range, Ppred, orbitPred, expPhi, expH);
     }
@@ -287,15 +288,15 @@ public class KalmanModelTest {
         // --------------
 
         // Time
-        Assert.assertEquals(0., model.getEstimate().getTime(), 0.);
-        Assert.assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
+        Assertions.assertEquals(0., model.getEstimate().getTime(), 0.);
+        Assertions.assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
 
         // Measurement number
-        Assert.assertEquals(0, model.getCurrentMeasurementNumber());
+        Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
 
         // Normalized state - is zeros
         final RealVector stateN = model.getEstimate().getState();
-        Assert.assertArrayEquals(new double[M], stateN.toArray(), tol);
+        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
 
         // Physical state - = initialized
         final RealVector x = model.getPhysicalEstimatedState();
@@ -306,7 +307,7 @@ public class KalmanModelTest {
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
         final double[] dX = x.subtract(expX).toArray();
-        Assert.assertArrayEquals(new double[M], dX, tol);
+        Assertions.assertArrayEquals(new double[M], dX, tol);
 
         // Normalized covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
@@ -315,7 +316,7 @@ public class KalmanModelTest {
             for (int j = 0; j < M; j++) {
                 expPn[i][j] = 1.;
             }
-            Assert.assertArrayEquals("Failed on line " + i, expPn[i], Pn[i], tol);
+            Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
 
         // Physical covariance = initialized
@@ -323,18 +324,18 @@ public class KalmanModelTest {
         final RealMatrix expP = covMatrixProvider.getInitialCovarianceMatrix(new SpacecraftState(orbit0));
         final double[][] dP = P.subtract(expP).getData();
         for (int i = 0; i < M; i++) {
-            Assert.assertArrayEquals("Failed on line " + i, new double[M], dP[i], tol);
+            Assertions.assertArrayEquals(new double[M], dP[i], tol, "Failed on line " + i);
         }
 
         // Check that other "physical" matrices are null
-        Assert.assertNull(model.getEstimate().getInnovationCovariance());
-        Assert.assertNull(model.getPhysicalInnovationCovarianceMatrix());
-        Assert.assertNull(model.getEstimate().getKalmanGain());
-        Assert.assertNull(model.getPhysicalKalmanGain());
-        Assert.assertNull(model.getEstimate().getMeasurementJacobian());
-        Assert.assertNull(model.getPhysicalMeasurementJacobian());
-        Assert.assertNull(model.getEstimate().getStateTransitionMatrix());
-        Assert.assertNull(model.getPhysicalStateTransitionMatrix());
+        Assertions.assertNull(model.getEstimate().getInnovationCovariance());
+        Assertions.assertNull(model.getPhysicalInnovationCovarianceMatrix());
+        Assertions.assertNull(model.getEstimate().getKalmanGain());
+        Assertions.assertNull(model.getPhysicalKalmanGain());
+        Assertions.assertNull(model.getEstimate().getMeasurementJacobian());
+        Assertions.assertNull(model.getPhysicalMeasurementJacobian());
+        Assertions.assertNull(model.getEstimate().getStateTransitionMatrix());
+        Assertions.assertNull(model.getPhysicalStateTransitionMatrix());
     }
 
     /** Add a measurement to the Kalman filter.
@@ -351,7 +352,7 @@ public class KalmanModelTest {
         // (= value before adding measurement to the filter)
         final double srpCoefPred = srpCoefDriver.getValue();
         final double satRangeBiasPred = satRangeBiasDriver.getValue();
-
+        
         // Expected predicted measurement
         final double[] expMeasPred =
                         meas.estimate(0, 0,
@@ -365,23 +366,23 @@ public class KalmanModelTest {
         final int N = meas.getDimension();
 
         // Time
-        Assert.assertEquals(0., model.getCurrentDate().durationFrom(expOrbitPred.getDate()), 0.);
+        Assertions.assertEquals(0., model.getCurrentDate().durationFrom(expOrbitPred.getDate()), 0.);
 
         // Measurement number
-        Assert.assertEquals(expMeasurementNumber, model.getCurrentMeasurementNumber());
+        Assertions.assertEquals(expMeasurementNumber, model.getCurrentMeasurementNumber());
 
         // State transition matrix
         final RealMatrix phi    = model.getPhysicalStateTransitionMatrix();
         final double[][] dPhi   = phi.subtract(expPhi).getData();
         for (int i = 0; i < M; i++) {
-            Assert.assertArrayEquals("Failed on line " + i, new double[M], dPhi[i], tol*100);
+            Assertions.assertArrayEquals(new double[M], dPhi[i], tol*100, "Failed on line " + i);
         }
 
         // Measurement matrix
         final RealMatrix H = model.getPhysicalMeasurementJacobian();
         final double[][] dH = H.subtract(expH).getData();
         for (int i = 0; i < N; i++) {
-            Assert.assertArrayEquals("Failed on line " + i, new double[M], dH[i], tol);
+            Assertions.assertArrayEquals(new double[M], dH[i], tol, "Failed on line " + i);
         }
 
         // Measurement covariance matrix
@@ -396,7 +397,7 @@ public class KalmanModelTest {
         final RealMatrix S = model.getPhysicalInnovationCovarianceMatrix();
         final double[][] dS = S.subtract(expS).getData();
         for (int i = 0; i < N; i++) {
-            Assert.assertArrayEquals("Failed on line " + i, new double[N], dS[i], tol*1e4);
+            Assertions.assertArrayEquals(new double[N], dS[i], tol*1e4, "Failed on line \" + i");
         }
 
         // Kalman gain
@@ -404,7 +405,7 @@ public class KalmanModelTest {
         final RealMatrix K = model.getPhysicalKalmanGain();
         final double[][] dK = K.subtract(expK).getData();
         for (int i = 0; i < M; i++) {
-            Assert.assertArrayEquals("Failed on line " + i, new double[N], dK[i], tol*1e5);
+            Assertions.assertArrayEquals(new double[N], dK[i], tol*1e5, "Failed on line " + i);
         }
 
         // Predicted orbit
@@ -413,12 +414,12 @@ public class KalmanModelTest {
         final PVCoordinates expPVOrbitPred = expOrbitPred.getPVCoordinates();
         final double dpOrbitPred = Vector3D.distance(expPVOrbitPred.getPosition(), pvOrbitPred.getPosition());
         final double dvOrbitPred = Vector3D.distance(expPVOrbitPred.getVelocity(), pvOrbitPred.getVelocity());
-        Assert.assertEquals(0., dpOrbitPred, tol);
-        Assert.assertEquals(0., dvOrbitPred, tol);
+        Assertions.assertEquals(0., dpOrbitPred, tol);
+        Assertions.assertEquals(0., dvOrbitPred, tol);
 
         // Predicted measurement
         final double[] measPred = model.getPredictedMeasurement().getEstimatedValue();
-        Assert.assertArrayEquals(expMeasPred, measPred, tol);
+        Assertions.assertArrayEquals(expMeasPred, measPred, tol);
 
         // Predicted state
         final double[] orbitPredState = new double[6];
@@ -439,7 +440,7 @@ public class KalmanModelTest {
         final RealVector expectedXcor = expXpred.add(expK.operate(innovation));
         final RealVector Xcor = model.getPhysicalEstimatedState();
         final double[] dXcor = Xcor.subtract(expectedXcor).toArray();
-        Assert.assertArrayEquals(new double[M], dXcor, tol);
+        Assertions.assertArrayEquals(new double[M], dXcor, tol);
 
         // Corrected covariance
         final RealMatrix expectedPcor =
@@ -448,7 +449,7 @@ public class KalmanModelTest {
         final RealMatrix Pcor = model.getPhysicalEstimatedCovarianceMatrix();
         final double[][] dPcor = Pcor.subtract(expectedPcor).getData();
         for (int i = 0; i < M; i++) {
-            Assert.assertArrayEquals("Failed on line " + i, new double[M], dPcor[i], tol*1e5);
+            Assertions.assertArrayEquals(new double[M], dPcor[i], tol*1e5, "Failed on line " + i);
         }
     }
 
@@ -501,21 +502,27 @@ public class KalmanModelTest {
         // Orbital parameters
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 
         // Propagation parameters
         for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 
         // Measurement parameters
         for (ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 

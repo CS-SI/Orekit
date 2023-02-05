@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,12 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -66,6 +58,14 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 
 public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
@@ -164,8 +164,8 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final NumericalPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
-        final ForceModel srpModel = new SolarRadiationPressure(sun, equatorialRadius, spacecraft);
+                                                              final OneAxisEllipsoid earth, final RadiationSensitive spacecraft) {
+        final ForceModel srpModel = new SolarRadiationPressure(sun, earth, spacecraft);
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
     }
@@ -250,7 +250,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
                                                cartesianOrbitalP, cartesianOrbitalQ,
                                                null, null,
-                                               measurementP, measurementQ);
+                                               measurementP, measurementQ, false);
 
         // Definition of the accuracy for the test
         final double distanceAccuracy = 0.86;
@@ -262,7 +262,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // Number of measurements processed
         final int numberOfMeas  = 258;
-        Assert.assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
+        Assertions.assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
 
         // Estimated position and velocity
         final Vector3D estimatedPos = kalmanLageos2.getEstimatedPV().getPosition();
@@ -275,14 +275,14 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // Run the reference until Kalman last date
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
-        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D refPos = refOrbit.getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
 
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        Assert.assertEquals(0.0, dP, distanceAccuracy);
-        Assert.assertEquals(0.0, dV, velocityAccuracy);
+        Assertions.assertEquals(0.0, dP, distanceAccuracy);
+        Assertions.assertEquals(0.0, dV, velocityAccuracy);
 
         // Print orbit deltas
         if (print) {
@@ -304,21 +304,21 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         //final double rangeBias = -0.286275;
         final double[] stationOffSet = { 0.298867,  -0.137456,  0.013315 };
         final double rangeBias = 0.002390;
-        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
-        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
+        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
+        Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
+        Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
+        Assertions.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 258;
         // Batch LS values
         //final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
         final double[] RefStatRange = { -23.561314, 20.436464, 0.964164, 5.687187 };
-        Assert.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[2], kalmanLageos2.getRangeStat().getMean(),              distanceAccuracy);
-        Assert.assertEquals(RefStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
+        Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
+        Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
+        Assertions.assertEquals(RefStatRange[2], kalmanLageos2.getRangeStat().getMean(),              distanceAccuracy);
+        Assertions.assertEquals(RefStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
     }
 
@@ -390,7 +390,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         ResultKalman kalmanW3B = runKalman(input, orbitType, print,
                                            cartesianOrbitalP, cartesianOrbitalQ,
                                            propagationP, propagationQ,
-                                           measurementP, measurementQ);
+                                           measurementP, measurementQ, false);
 
         // Tests
         // -----
@@ -401,7 +401,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
         // Number of measurements processed
         final int numberOfMeas  = 521;
-        Assert.assertEquals(numberOfMeas, kalmanW3B.getNumberOfMeasurements());
+        Assertions.assertEquals(numberOfMeas, kalmanW3B.getNumberOfMeasurements());
 
 
         // Test on propagator parameters
@@ -411,21 +411,21 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // final double dragCoef  = -0.2154;
         final double dragCoef  = 0.1931;
         final ParameterDriversList propagatorParameters = kalmanW3B.getPropagatorParameters();
-        Assert.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
+        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
                                      propagatorParameters.getDrivers().get(5).getValue());
         // Batch LS results
-        //Assert.assertEquals(8.002e-6, leakAcceleration0.getNorm(), 1.0e-8);
-        Assert.assertEquals(5.994e-6, leakAcceleration0.getNorm(), 1.0e-8);
+        //Assertions.assertEquals(8.002e-6, leakAcceleration0.getNorm(), 1.0e-8);
+        Assertions.assertEquals(5.994e-6, leakAcceleration0.getNorm(), 1.0e-8);
         final Vector3D leakAcceleration1 =
                         new Vector3D(propagatorParameters.getDrivers().get(2).getValue(),
                                      propagatorParameters.getDrivers().get(4).getValue(),
                                      propagatorParameters.getDrivers().get(6).getValue());
         // Batch LS results
-        //Assert.assertEquals(3.058e-10, leakAcceleration1.getNorm(), 1.0e-12);
-        Assert.assertEquals(1.831e-10, leakAcceleration1.getNorm(), 1.0e-12);
+        //Assertions.assertEquals(3.058e-10, leakAcceleration1.getNorm(), 1.0e-12);
+        Assertions.assertEquals(1.831e-10, leakAcceleration1.getNorm(), 1.0e-12);
 
         // Test on measurements parameters
         // -------------------------------
@@ -440,9 +440,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double   CastleRangeBias = 11274.4677;
         final double[] CastleAzElBias  = { 0.062635, -0.003672};
         final double   CastleRangeBias = 11289.3678;
-        Assert.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
-        Assert.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
-        Assert.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
+        Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        Assertions.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
+        Assertions.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 
         // Station Fucino
         // Batch LS results
@@ -450,9 +450,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double   FucRangeBias = 13467.8256;
         final double[] FucAzElBias  = { -0.053298, 0.075589 };
         final double   FucRangeBias = 13482.0715;
-        Assert.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
-        Assert.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
-        Assert.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
+        Assertions.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
+        Assertions.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
+        Assertions.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
 
         // Station Kumsan
         // Batch LS results
@@ -460,9 +460,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double   KumRangeBias = 13512.57594;
         final double[] KumAzElBias  = { -0.022805, -0.055057 };
         final double   KumRangeBias = 13502.7459;
-        Assert.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
-        Assert.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
-        Assert.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
+        Assertions.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
+        Assertions.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
+        Assertions.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
 
         // Station Pretoria
         // Batch LS results
@@ -470,9 +470,9 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double PreRangeBias = 13594.11889;
         final double[] PreAzElBias = { 0.030353, 0.009658 };
         final double PreRangeBias = 13609.2516;
-        Assert.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
-        Assert.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
-        Assert.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
+        Assertions.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
+        Assertions.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
+        Assertions.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
 
         // Station Uralla
         // Batch LS results
@@ -480,54 +480,54 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double UraRangeBias = 13450.26738;
         final double[] UraAzElBias = { 0.167519, -0.122842 };
         final double UraRangeBias = 13441.7019;
-        Assert.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
-        Assert.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
-        Assert.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
+        Assertions.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
+        Assertions.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
+        Assertions.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
 
         // Test on statistic for the range residuals
         final long nbRange = 182;
         //statistics for the range residual (min, max, mean, std)
         final double[] RefStatRange = { -12.981, 18.046, -1.133, 5.312 };
-        Assert.assertEquals(nbRange, kalmanW3B.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], kalmanW3B.getRangeStat().getMin(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[1], kalmanW3B.getRangeStat().getMax(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[2], kalmanW3B.getRangeStat().getMean(),              distanceAccuracy);
-        Assert.assertEquals(RefStatRange[3], kalmanW3B.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        Assertions.assertEquals(nbRange, kalmanW3B.getRangeStat().getN());
+        Assertions.assertEquals(RefStatRange[0], kalmanW3B.getRangeStat().getMin(),               distanceAccuracy);
+        Assertions.assertEquals(RefStatRange[1], kalmanW3B.getRangeStat().getMax(),               distanceAccuracy);
+        Assertions.assertEquals(RefStatRange[2], kalmanW3B.getRangeStat().getMean(),              distanceAccuracy);
+        Assertions.assertEquals(RefStatRange[3], kalmanW3B.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
         //test on statistic for the azimuth residuals
         final long nbAzi = 339;
         //statistics for the azimuth residual (min, max, mean, std)
         final double[] RefStatAzi = { -0.041441, 0.023473, -0.004426, 0.009911 };
-        Assert.assertEquals(nbAzi, kalmanW3B.getAzimStat().getN());
-        Assert.assertEquals(RefStatAzi[0], kalmanW3B.getAzimStat().getMin(),               angleAccuracy);
-        Assert.assertEquals(RefStatAzi[1], kalmanW3B.getAzimStat().getMax(),               angleAccuracy);
-        Assert.assertEquals(RefStatAzi[2], kalmanW3B.getAzimStat().getMean(),              angleAccuracy);
-        Assert.assertEquals(RefStatAzi[3], kalmanW3B.getAzimStat().getStandardDeviation(), angleAccuracy);
+        Assertions.assertEquals(nbAzi, kalmanW3B.getAzimStat().getN());
+        Assertions.assertEquals(RefStatAzi[0], kalmanW3B.getAzimStat().getMin(),               angleAccuracy);
+        Assertions.assertEquals(RefStatAzi[1], kalmanW3B.getAzimStat().getMax(),               angleAccuracy);
+        Assertions.assertEquals(RefStatAzi[2], kalmanW3B.getAzimStat().getMean(),              angleAccuracy);
+        Assertions.assertEquals(RefStatAzi[3], kalmanW3B.getAzimStat().getStandardDeviation(), angleAccuracy);
 
         //test on statistic for the elevation residuals
         final long nbEle = 339;
         final double[] RefStatEle = { -0.025399, 0.043345, 0.001011, 0.010636 };
-        Assert.assertEquals(nbEle, kalmanW3B.getElevStat().getN());
-        Assert.assertEquals(RefStatEle[0], kalmanW3B.getElevStat().getMin(),               angleAccuracy);
-        Assert.assertEquals(RefStatEle[1], kalmanW3B.getElevStat().getMax(),               angleAccuracy);
-        Assert.assertEquals(RefStatEle[2], kalmanW3B.getElevStat().getMean(),              angleAccuracy);
-        Assert.assertEquals(RefStatEle[3], kalmanW3B.getElevStat().getStandardDeviation(), angleAccuracy);
+        Assertions.assertEquals(nbEle, kalmanW3B.getElevStat().getN());
+        Assertions.assertEquals(RefStatEle[0], kalmanW3B.getElevStat().getMin(),               angleAccuracy);
+        Assertions.assertEquals(RefStatEle[1], kalmanW3B.getElevStat().getMax(),               angleAccuracy);
+        Assertions.assertEquals(RefStatEle[2], kalmanW3B.getElevStat().getMean(),              angleAccuracy);
+        Assertions.assertEquals(RefStatEle[3], kalmanW3B.getElevStat().getStandardDeviation(), angleAccuracy);
 
         RealMatrix covariances = kalmanW3B.getCovariances();
-        Assert.assertEquals(28, covariances.getRowDimension());
-        Assert.assertEquals(28, covariances.getColumnDimension());
+        Assertions.assertEquals(28, covariances.getRowDimension());
+        Assertions.assertEquals(28, covariances.getColumnDimension());
 
         // drag coefficient variance
-        Assert.assertEquals(0.016349, covariances.getEntry(6, 6), 1.0e-5);
+        Assertions.assertEquals(0.016349, covariances.getEntry(6, 6), 1.0e-5);
 
         // leak-X constant term variance
-        Assert.assertEquals(2.047303E-13, covariances.getEntry(7, 7), 1.0e-16);
+        Assertions.assertEquals(2.047303E-13, covariances.getEntry(7, 7), 1.0e-16);
 
         // leak-Y constant term variance
-        Assert.assertEquals(5.462497E-13, covariances.getEntry(9, 9), 1.0e-15);
+        Assertions.assertEquals(5.462497E-13, covariances.getEntry(9, 9), 1.0e-15);
 
         // leak-Z constant term variance
-        Assert.assertEquals(1.717781E-11, covariances.getEntry(11, 11), 1.0e-15);
+        Assertions.assertEquals(1.717781E-11, covariances.getEntry(11, 11), 1.0e-15);
 
 
         // Test on orbital parameters
@@ -567,7 +567,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
                                             kalmanW3B.getEstimatedPV().getDate());
 
         // Test on last orbit
-        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D refPos = refOrbit.getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
 
         // Check distances
@@ -577,8 +577,8 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         // FIXME: debug - Comparison with batch LS is bad
         final double debugDistanceAccuracy = 234.82;
         final double debugVelocityAccuracy = 0.086;
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), debugDistanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), debugVelocityAccuracy);
+        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), debugDistanceAccuracy);
+        Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), debugVelocityAccuracy);
 
         // Print orbit deltas
         if (print) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,14 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.dfp.Dfp;
+import org.hipparchus.dfp.DfpField;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.dfp.Dfp;
-import org.hipparchus.dfp.DfpField;
 
 /** Implementation of associated Legendre functions from defining formulas.
  * <p>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,26 +18,28 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;;
+import org.orekit.time.TimeScalesFactory;
+
+;
 
 public class MendesPavlisModelTest {
 
     private static double epsilon = 1e-6;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
@@ -83,9 +85,9 @@ public class MendesPavlisModelTest {
 
         final double[] computedDelay = model.computeZenithDelay(point, model.getParameters(), date);
 
-        Assert.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
-        Assert.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
-        Assert.assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
+        Assertions.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
+        Assertions.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
+        Assertions.assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
 
     }
 
@@ -126,8 +128,8 @@ public class MendesPavlisModelTest {
 
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
 
-        Assert.assertEquals(expectedMapping, computedMapping[0], 5.0e-8);
-        Assert.assertEquals(expectedMapping, computedMapping[1], 5.0e-8);
+        Assertions.assertEquals(expectedMapping, computedMapping[0], 5.0e-8);
+        Assertions.assertEquals(expectedMapping, computedMapping[1], 5.0e-8);
     }
 
     @Test
@@ -138,8 +140,8 @@ public class MendesPavlisModelTest {
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943);
         final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
-        Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
 
     @Test
@@ -151,7 +153,7 @@ public class MendesPavlisModelTest {
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(), date);
-            Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,19 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -57,19 +57,19 @@ public class FieldViennaOneModelTest {
 
     private static double epsilon = 1e-6;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(Decimal64Field.getInstance());
+        doTestMappingFactors(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
@@ -115,13 +115,13 @@ public class FieldViennaOneModelTest {
 
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
 
-        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
-        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
+        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
+        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
     }
 
     @Test
     public void testDelay() {
-        doTestDelay(Decimal64Field.getInstance());
+        doTestDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDelay(final Field<T> field) {
@@ -134,13 +134,13 @@ public class FieldViennaOneModelTest {
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(height));
         ViennaOneModel model = new ViennaOneModel(a, z);
         final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), point, model.getParameters(field), date);
-        Assert.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
+        Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
     }
 
     @Test
     public void testFixedHeight() {
-        doTestFixedHeight(Decimal64Field.getInstance());
+        doTestFixedHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
@@ -154,7 +154,7 @@ public class FieldViennaOneModelTest {
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), point, model.getParameters(field), date);
-            Assert.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
@@ -205,7 +205,7 @@ public class FieldViennaOneModelTest {
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
         final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
 
         // Compute delay state derivatives
@@ -226,52 +226,52 @@ public class FieldViennaOneModelTest {
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
-            final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
+            final Vector3D positionM4 = stateM4.getPosition();
             final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
             double  delayM4 = model.pathDelay(elevationM4, point, model.getParameters(), stateM4.getDate());
-
+            
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
-            final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
+            final Vector3D positionM3 = stateM3.getPosition();
             final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
             double  delayM3 = model.pathDelay(elevationM3, point, model.getParameters(), stateM3.getDate());
-
+            
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
-            final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
+            final Vector3D positionM2 = stateM2.getPosition();
             final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
             double  delayM2 = model.pathDelay(elevationM2, point, model.getParameters(), stateM2.getDate());
-
+ 
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
-            final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
+            final Vector3D positionM1 = stateM1.getPosition();
             final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
             double  delayM1 = model.pathDelay(elevationM1, point, model.getParameters(), stateM1.getDate());
-
+           
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
-            final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
+            final Vector3D positionP1 = stateP1.getPosition();
             final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
             double  delayP1 = model.pathDelay(elevationP1, point, model.getParameters(), stateP1.getDate());
-
+            
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
-            final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
+            final Vector3D positionP2 = stateP2.getPosition();
             final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
             double  delayP2 = model.pathDelay(elevationP2, point, model.getParameters(), stateP2.getDate());
-
+            
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
-            final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
+            final Vector3D positionP3 = stateP3.getPosition();
             final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
             double  delayP3 = model.pathDelay(elevationP3, point, model.getParameters(), stateP3.getDate());
-
+            
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
-            final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
+            final Vector3D positionP4 = stateP4.getPosition();
             final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
             double  delayP4 = model.pathDelay(elevationP4, point, model.getParameters(), stateP4.getDate());
-
+            
             fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.0e-11);
+            Assertions.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.0e-11);
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
+import org.orekit.gnss.metric.messages.ParsedMessage;
+
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-
-import org.orekit.gnss.metric.messages.ParsedMessage;
 
 
 
@@ -61,3 +61,4 @@ public class CountingObserver implements MessageObserver {
     }
 
 }
+

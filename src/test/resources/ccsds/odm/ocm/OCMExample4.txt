@@ -3,6 +3,7 @@ CCSDS_OCM_VERS            = 3.0
 COMMENT  This file is a dummy example with inconsistent data
 COMMENT  it is used to exercise all possible keys in Key-Value Notation
 
+CLASSIFICATION            = dummy-classification
 CREATION_DATE             = 2019-07-23T10:29:31.576Z
 ORIGINATOR                = JPL
 MESSAGE_ID                = ABC-12_34

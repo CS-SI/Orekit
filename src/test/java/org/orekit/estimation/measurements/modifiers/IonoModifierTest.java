@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,10 +24,9 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.attitudes.InertialProvider;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -52,7 +51,6 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
@@ -74,7 +72,7 @@ public class IonoModifierTest {
     /** frequency [Hz]. */
     private double frequency;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
@@ -125,8 +123,8 @@ public class IonoModifierTest {
 
             Phase phase = (Phase) measurement;
             EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             phase.addModifier(modifier);
@@ -134,24 +132,24 @@ public class IonoModifierTest {
             for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             //
             EstimatedMeasurement<Phase> eval = phase.estimate(0, 0,  new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
             eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
             }
 
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
-            Assert.assertTrue(diffMeters < 0);
-            Assert.assertEquals(0.0, diffMeters, 30.0);
+            Assertions.assertTrue(diffMeters < 0);
+            Assertions.assertEquals(0.0, diffMeters, 30.0);
 
         }
     }
@@ -198,8 +196,8 @@ public class IonoModifierTest {
 
             Phase phase = (Phase) measurement;
             EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             phase.addModifier(modifier);
@@ -207,23 +205,23 @@ public class IonoModifierTest {
             for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             //
             EstimatedMeasurement<Phase> eval = phase.estimate(0, 0,  new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
             eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
             }
 
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
-            Assert.assertEquals(-12.0, diffMeters, 0.1);
+            Assertions.assertEquals(-12.0, diffMeters, 0.1);
 
         }
     }
@@ -262,8 +260,8 @@ public class IonoModifierTest {
 
             Range range = (Range) measurement;
             EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             range.addModifier(modifier);
@@ -271,24 +269,24 @@ public class IonoModifierTest {
             for (final EstimationModifier<Range> existing : range.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             //
             EstimatedMeasurement<Range> eval = range.estimate(0, 0,  new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
             eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
             }
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffMeters, 30.0);
+            Assertions.assertEquals(0.0, diffMeters, 30.0);
 
         }
     }
@@ -336,7 +334,7 @@ public class IonoModifierTest {
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffMetersSec, 0.015);
+            Assertions.assertEquals(0.0, diffMetersSec, 0.015);
 
         }
     }
@@ -381,8 +379,8 @@ public class IonoModifierTest {
 
             TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
             EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(12, evalNoMod.getIteration());
-            Assert.assertEquals(17, evalNoMod.getCount());
+            Assertions.assertEquals(12, evalNoMod.getIteration());
+            Assertions.assertEquals(17, evalNoMod.getCount());
 
             // Add modifier
             turnAroundRange.addModifier(modifier);
@@ -390,24 +388,24 @@ public class IonoModifierTest {
             for (final EstimationModifier<TurnAroundRange> existing : turnAroundRange.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assert.assertTrue(found);
+            Assertions.assertTrue(found);
             //
             EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
-            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            Assertions.assertEquals(evalNoMod.getStatus(), eval.getStatus());
             eval.setStatus(EstimatedMeasurement.Status.REJECTED);
-            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            Assertions.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
             eval.setStatus(evalNoMod.getStatus());
 
             try {
                 eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
-                Assert.fail("an exception should have been thrown");
+                Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
-                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+                Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
             }
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffMeters, 30.0);
+            Assertions.assertEquals(0.0, diffMeters, 30.0);
 
         }
     }
@@ -457,8 +455,8 @@ public class IonoModifierTest {
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
-            Assert.assertTrue(diffMeters < 12.0);
-            Assert.assertTrue(diffMeters >  4.0);
+            Assertions.assertTrue(diffMeters < 12.0);
+            Assertions.assertTrue(diffMeters >  4.0);
         }
     }
 
@@ -507,8 +505,8 @@ public class IonoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
             final double epsilon = 1e-5;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec,  0.002, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.010, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.002, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.010, epsilon) > 0);
 
         }
     }
@@ -560,8 +558,8 @@ public class IonoModifierTest {
 
             // TODO: check threshold
             final double epsilon = 1.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec, 2.90e-9, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, 0.85e-9, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, 2.90e-9, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, 0.85e-9, epsilon) > 0);
         }
     }
 
@@ -608,8 +606,8 @@ public class IonoModifierTest {
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffAz, 5.0e-5);
-            Assert.assertEquals(0.0, diffEl, 5.0e-6);
+            Assertions.assertEquals(0.0, diffAz, 5.0e-5);
+            Assertions.assertEquals(0.0, diffEl, 5.0e-6);
         }
     }
 
@@ -645,21 +643,10 @@ public class IonoModifierTest {
             double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters());
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
         }
 
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        // dummy test, just to ensure coverage for deprecated class
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        IonosphericGradientConverter igc =
-                        new IonosphericGradientConverter(new SpacecraftState(context.initialOrbit), 6,
-                                                         new InertialProvider(FramesFactory.getEME2000()));
-        Assert.assertEquals(6, igc.getFreeStateParameters());
     }
 
     private class MockIonosphericModel implements IonosphericModel {

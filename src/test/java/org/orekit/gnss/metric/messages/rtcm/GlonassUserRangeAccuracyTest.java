@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,10 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.GlonassUserRangeAccuracy;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
+import org.orekit.gnss.metric.messages.common.GlonassUserRangeAccuracy;
 
 public class GlonassUserRangeAccuracyTest {
 
@@ -31,52 +31,52 @@ public class GlonassUserRangeAccuracyTest {
 
         // Index = 0
         ura = new GlonassUserRangeAccuracy(0);
-        Assert.assertEquals(1.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(1.0, ura.getAccuracy(), eps);
         // Index = 1
         ura = new GlonassUserRangeAccuracy(1);
-        Assert.assertEquals(2.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(2.0, ura.getAccuracy(), eps);
         // Index = 2
         ura = new GlonassUserRangeAccuracy(2);
-        Assert.assertEquals(2.5, ura.getAccuracy(), eps);
+        Assertions.assertEquals(2.5, ura.getAccuracy(), eps);
         // Index = 3
         ura = new GlonassUserRangeAccuracy(3);
-        Assert.assertEquals(4.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(4.0, ura.getAccuracy(), eps);
         // Index = 4
         ura = new GlonassUserRangeAccuracy(4);
-        Assert.assertEquals(5.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(5.0, ura.getAccuracy(), eps);
         // Index = 5
         ura = new GlonassUserRangeAccuracy(5);
-        Assert.assertEquals(7.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(7.0, ura.getAccuracy(), eps);
         // Index = 6
         ura = new GlonassUserRangeAccuracy(6);
-        Assert.assertEquals(10.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(10.0, ura.getAccuracy(), eps);
         // Index = 7
         ura = new GlonassUserRangeAccuracy(7);
-        Assert.assertEquals(12.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(12.0, ura.getAccuracy(), eps);
         // Index = 8
         ura = new GlonassUserRangeAccuracy(8);
-        Assert.assertEquals(14.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(14.0, ura.getAccuracy(), eps);
         // Index = 9
         ura = new GlonassUserRangeAccuracy(9);
-        Assert.assertEquals(16.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(16.0, ura.getAccuracy(), eps);
         // Index = 10
         ura = new GlonassUserRangeAccuracy(10);
-        Assert.assertEquals(32.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(32.0, ura.getAccuracy(), eps);
         // Index = 11
         ura = new GlonassUserRangeAccuracy(11);
-        Assert.assertEquals(64.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(64.0, ura.getAccuracy(), eps);
         // Index = 12
         ura = new GlonassUserRangeAccuracy(12);
-        Assert.assertEquals(128.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(128.0, ura.getAccuracy(), eps);
         // Index = 13
         ura = new GlonassUserRangeAccuracy(13);
-        Assert.assertEquals(256.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(256.0, ura.getAccuracy(), eps);
         // Index = 14
         ura = new GlonassUserRangeAccuracy(14);
-        Assert.assertEquals(512.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(512.0, ura.getAccuracy(), eps);
         // Index = 15
         ura = new GlonassUserRangeAccuracy(15);
-        Assert.assertEquals(1024.0, ura.getAccuracy(), eps);
+        Assertions.assertEquals(1024.0, ura.getAccuracy(), eps);
     }
 
 }

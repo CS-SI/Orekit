@@ -20,9 +20,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.spherical.twod.Circle;
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.LoxodromeArc;
@@ -54,7 +54,7 @@ public class WaypointPVBuilderTest {
     private OneAxisEllipsoid body;
 
     /** Test setup. */
-    @Before
+    @BeforeEach
     public void setUpBefore() {
         Utils.setDataRoot("regular-data");
 
@@ -72,11 +72,13 @@ public class WaypointPVBuilderTest {
     /** Verify cartesian interpolation. */
     @Test
     public void cartesian() {
-        final PVCoordinatesProvider pvProv = WaypointPVBuilder.cartesianBuilder(body)
-                .addWaypoint(philadelphia, date1)
-                .addWaypoint(newYork, date2)
-                .addWaypoint(london, date3)
-                .build();
+        final WaypointPVBuilder builder = WaypointPVBuilder.cartesianBuilder(body)
+                        .addWaypoint(philadelphia, date1)
+                        .addWaypoint(newYork, date2)
+                        .addWaypoint(london, date3)
+                        .invalidBefore()
+                        .invalidAfter();
+        final PVCoordinatesProvider pvProv = builder.build();
 
         final Vector3D expectedPhillyPos = body.transform(philadelphia);
         final Vector3D expectedNyPos = body.transform(newYork);
@@ -87,46 +89,52 @@ public class WaypointPVBuilderTest {
 
         // check initial waypoint
         final PVCoordinates pv1 = pvProv.getPVCoordinates(date1, body.getBodyFrame());
-        Assert.assertEquals(expectedPhillyPos, pv1.getPosition());
-        Assert.assertEquals(segmentOneVel, pv1.getVelocity());
+        Assertions.assertEquals(expectedPhillyPos, pv1.getPosition());
+        Assertions.assertEquals(segmentOneVel, pv1.getVelocity());
 
         // check within segment 1
         final PVCoordinates pv2 = pvProv.getPVCoordinates(date1.shiftedBy(900.), body.getBodyFrame());
-        Assert.assertEquals(expectedPhillyPos.add(segmentOneVel.scalarMultiply(900.)), pv2.getPosition());
-        Assert.assertEquals(segmentOneVel, pv2.getVelocity());
+        Assertions.assertEquals(expectedPhillyPos.add(segmentOneVel.scalarMultiply(900.)), pv2.getPosition());
+        Assertions.assertEquals(segmentOneVel, pv2.getVelocity());
 
         // check second waypoint
         final PVCoordinates pv3 = pvProv.getPVCoordinates(date2, body.getBodyFrame());
-        Assert.assertEquals(expectedNyPos, pv3.getPosition());
-        Assert.assertEquals(segmentTwoVel, pv3.getVelocity());
+        Assertions.assertEquals(expectedNyPos, pv3.getPosition());
+        Assertions.assertEquals(segmentTwoVel, pv3.getVelocity());
 
         // check within segment 2
-        final PVCoordinates pv4 = pvProv.getPVCoordinates(date2.shiftedBy(1800.), body.getBodyFrame());
-        Assert.assertEquals(expectedNyPos.add(segmentTwoVel.scalarMultiply(1800.)), pv4.getPosition());
-        Assert.assertEquals(segmentTwoVel, pv4.getVelocity());
+        final TimeStampedPVCoordinates pv4 = pvProv.getPVCoordinates(date2.shiftedBy(1800.), body.getBodyFrame());
+        Assertions.assertEquals(expectedNyPos.add(segmentTwoVel.scalarMultiply(1800.)),
+                                pvProv.getPosition(pv4.getDate(), body.getBodyFrame()));
+        Assertions.assertEquals(segmentTwoVel, pv4.getVelocity());
 
         // check third waypoint
         final PVCoordinates pv5 = pvProv.getPVCoordinates(date3, body.getBodyFrame());
-        Assert.assertEquals(expectedLondonPos, pv5.getPosition());
-        Assert.assertEquals(Vector3D.ZERO, pv5.getVelocity());
+        Assertions.assertEquals(expectedLondonPos, pvProv.getPosition(date3, body.getBodyFrame()));
+        Assertions.assertEquals(Vector3D.ZERO, pv5.getVelocity());
 
         // check invalid before
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1e-16), body.getBodyFrame());
-            Assert.fail("expected exception, but none was thrown.");
+            Assertions.fail("expected exception, but none was thrown.");
         }
         catch (final OrekitIllegalArgumentException ex) {
             // test passes
         }
+        Vector3D pBefore = builder.constantBefore().build().getPosition(date1.shiftedBy(-60.0), body.getBodyFrame());
+        Assertions.assertEquals(0.0, Vector3D.distance(expectedPhillyPos, pBefore), 1.0e-15);
 
         // check invalid after
         try {
             pvProv.getPVCoordinates(date3.shiftedBy(2 * Double.MIN_VALUE), body.getBodyFrame());
-            Assert.fail("expected exception, but none was thrown.");
+            Assertions.fail("expected exception, but none was thrown.");
         }
         catch (final OrekitIllegalArgumentException ex) {
             // test passes
         }
+        Vector3D pAfter = builder.constantAfter().build().getPosition(date3.shiftedBy(+60.0), body.getBodyFrame());
+        Assertions.assertEquals(0.0, Vector3D.distance(expectedLondonPos, pAfter), 1.0e-15);
+
     }
 
     /** Verify loxodrome interpolation. */
@@ -165,20 +173,20 @@ public class WaypointPVBuilderTest {
         assertVectorsEqual(loxVelocity(arc2, expectedNyPos, vel2), pv3.getVelocity());
 
         // check within segment 2
-        final PVCoordinates pv4 = pvProv.getPVCoordinates(date2.shiftedBy(1800.), body.getBodyFrame());
+        final TimeStampedPVCoordinates pv4 = pvProv.getPVCoordinates(date2.shiftedBy(1800.), body.getBodyFrame());
         final Vector3D p4 = body.transform(arc2.calculatePointAlongArc(1800. / 3600.));
-        assertVectorsEqual(p4, pv4.getPosition());
+        assertVectorsEqual(p4, pvProv.getPosition(pv4.getDate(),  body.getBodyFrame()));
         assertVectorsEqual(loxVelocity(arc2, p4, vel2), pv4.getVelocity());
 
         // check third waypoint
         final PVCoordinates pv5 = pvProv.getPVCoordinates(date3, body.getBodyFrame());
-        assertVectorsEqual(expectedLondonPos, pv5.getPosition());
+        assertVectorsEqual(expectedLondonPos, pvProv.getPosition(date3, body.getBodyFrame()));
         assertVectorsEqual(Vector3D.ZERO, pv5.getVelocity());
 
         // check invalid before
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1e-16), body.getBodyFrame());
-            Assert.fail("expected exception, but none was thrown.");
+            Assertions.fail("expected exception, but none was thrown.");
         }
         catch (final OrekitIllegalArgumentException ex) {
             // test passes
@@ -187,7 +195,7 @@ public class WaypointPVBuilderTest {
         // check invalid after
         try {
             pvProv.getPVCoordinates(date3.shiftedBy(2 * Double.MIN_VALUE), body.getBodyFrame());
-            Assert.fail("expected exception, but none was thrown.");
+            Assertions.fail("expected exception, but none was thrown.");
         }
         catch (final OrekitIllegalArgumentException ex) {
             // test passes
@@ -224,20 +232,20 @@ public class WaypointPVBuilderTest {
         assertVectorsEqual(greatCircleVelocity(newYork, london, 0), pv3.getVelocity());
 
         // check within segment 2
-        final PVCoordinates pv4 = pvProv.getPVCoordinates(date2.shiftedBy(1800.), body.getBodyFrame());
+        final TimeStampedPVCoordinates pv4 = pvProv.getPVCoordinates(date2.shiftedBy(1800.), body.getBodyFrame());
         final Vector3D p4 = interpolateGreatCircle(newYork, london, 1800. / 3600.);
-        assertVectorsEqual(p4, pv4.getPosition());
+        assertVectorsEqual(p4, pvProv.getPosition(pv4.getDate(), body.getBodyFrame()));
         assertVectorsEqual(greatCircleVelocity(newYork, london, 0.5), pv4.getVelocity());
 
         // check third waypoint
         final PVCoordinates pv5 = pvProv.getPVCoordinates(date3, body.getBodyFrame());
-        assertVectorsEqual(expectedLondonPos, pv5.getPosition());
+        assertVectorsEqual(expectedLondonPos, pvProv.getPosition(date3, body.getBodyFrame()));
         assertVectorsEqual(Vector3D.ZERO, pv5.getVelocity());
 
         // check invalid before
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1e-16), body.getBodyFrame());
-            Assert.fail("expected exception, but none was thrown.");
+            Assertions.fail("expected exception, but none was thrown.");
         }
         catch (final OrekitIllegalArgumentException ex) {
             // test passes
@@ -246,7 +254,7 @@ public class WaypointPVBuilderTest {
         // check invalid after
         try {
             pvProv.getPVCoordinates(date3.shiftedBy(2 * Double.MIN_VALUE), body.getBodyFrame());
-            Assert.fail("expected exception, but none was thrown.");
+            Assertions.fail("expected exception, but none was thrown.");
         }
         catch (final OrekitIllegalArgumentException ex) {
             // test passes
@@ -263,7 +271,7 @@ public class WaypointPVBuilderTest {
 
     private static void assertVectorsEqual(final Vector3D expected, final Vector3D actual) {
         if (Vector3D.distance(expected, actual) > EPSILON) {
-            Assert.fail("Expected " + expected + " but was " + actual);
+            Assertions.fail("Expected " + expected + " but was " + actual);
         }
     }
 

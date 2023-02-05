@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Harvester between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -237,7 +239,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
 
             // Convert to Gradient
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] dsParameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             // Initialize the "Field" short periodic terms in OSCULATING mode
@@ -316,21 +318,25 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
 
-                    // get the partials derivatives for this driver
-                    DoubleArrayDictionary.Entry entry = shortPeriodDerivativesJacobianColumns.getEntry(driver.getName());
-                    if (entry == null) {
-                        // create an entry filled with zeroes
-                        shortPeriodDerivativesJacobianColumns.put(driver.getName(), new double[STATE_DIMENSION]);
-                        entry = shortPeriodDerivativesJacobianColumns.getEntry(driver.getName());
+                    final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+                    // for each span (for each estimated value) corresponding name is added
+
+                    for (Span<String> span = driverNameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+                        // get the partials derivatives for this driver
+                        DoubleArrayDictionary.Entry entry = shortPeriodDerivativesJacobianColumns.getEntry(span.getData());
+                        if (entry == null) {
+                            // create an entry filled with zeroes
+                            shortPeriodDerivativesJacobianColumns.put(span.getData(), new double[STATE_DIMENSION]);
+                            entry = shortPeriodDerivativesJacobianColumns.getEntry(span.getData());
+                        }
+
+                        // add the contribution of the current force model
+                        entry.increment(new double[] {
+                            derivativesASP[paramsIndex], derivativesExSP[paramsIndex], derivativesEySP[paramsIndex],
+                            derivativesHxSP[paramsIndex], derivativesHySP[paramsIndex], derivativesLSP[paramsIndex]
+                        });
+                        ++paramsIndex;
                     }
-
-                    // add the contribution of the current force model
-                    entry.increment(new double[] {
-                        derivativesASP[paramsIndex], derivativesExSP[paramsIndex], derivativesEySP[paramsIndex],
-                        derivativesHxSP[paramsIndex], derivativesHySP[paramsIndex], derivativesLSP[paramsIndex]
-                    });
-                    ++paramsIndex;
-
                 }
             }
         }

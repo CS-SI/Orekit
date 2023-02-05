@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class HansenThirdBodyLinearTest {
 
@@ -109,7 +109,7 @@ public class HansenThirdBodyLinearTest {
             }
         }
 
-        Assert.assertEquals(0.0, maxRelativeError, tol);
+        Assertions.assertEquals(0.0, maxRelativeError, tol);
 
     }
 

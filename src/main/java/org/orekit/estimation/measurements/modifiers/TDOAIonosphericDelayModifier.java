@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,7 +70,7 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         // base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         // return delay in seconds
         return delay / Constants.SPEED_OF_LIGHT;
     }

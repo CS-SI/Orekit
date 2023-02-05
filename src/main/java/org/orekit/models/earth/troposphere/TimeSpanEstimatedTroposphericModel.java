@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NavigableSet;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
@@ -32,7 +31,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeSpanMap.Transition;
 
 /**
  * Time span estimated tropospheric model.
@@ -141,15 +139,6 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      */
     public EstimatedTroposphericModel getTroposphericModel(final AbsoluteDate date) {
         return troposphericModelMap.get(date);
-    }
-
-    /** Get the {@link Transition}s of the tropospheric model time span map.
-     * @return the {@link Transition}s for the tropospheric model time span map
-     * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}
-     */
-    @Deprecated
-    public NavigableSet<Transition<EstimatedTroposphericModel>> getTransitions() {
-        return troposphericModelMap.getTransitions();
     }
 
     /** Get the first {@link Span time span} of the tropospheric model time span map.

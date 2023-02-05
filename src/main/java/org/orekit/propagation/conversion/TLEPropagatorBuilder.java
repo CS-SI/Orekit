@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,9 +25,6 @@ import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -44,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Default value for epsilon. */
     private static final double EPSILON_DEFAULT = 1.0e-10;
@@ -216,20 +213,12 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
     @Override
-    public AbstractKalmanModel
-        buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                         final ParameterDriversList estimatedMeasurementsParameters,
-                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -42,12 +39,15 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IRNSSPropagatorTest {
 
     private static IRNSSAlmanac almanac;
     private static Frames frames;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
 
@@ -65,7 +65,7 @@ public class IRNSSPropagatorTest {
         almanac.setM0(-1.396094758025);
         almanac.setAf0(-9.473115205765e-04);
         almanac.setAf1(1.250555214938e-12);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.IRNSS).getDate());
+        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.IRNSS).getDate());
 
         frames = DataContext.getDefault().getFrames();
     }
@@ -73,7 +73,7 @@ public class IRNSSPropagatorTest {
     @Test
     public void testIRNSSCycle() {
         // Builds the IRNSS propagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
         // Propagate at the IRNSS date and one IRNSS cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -82,15 +82,15 @@ public class IRNSSPropagatorTest {
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
         // Checks
-        Assert.assertEquals(0., p0.distance(p1), 0.);
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
     }
 
     @Test
     public void testFrames() {
         // Builds the IRNSS propagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
-        Assert.assertEquals("EME2000", propagator.getFrame().getName());
-        Assert.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
+        Assertions.assertEquals("EME2000", propagator.getFrame().getName());
+        Assertions.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -99,25 +99,25 @@ public class IRNSSPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
-        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
+        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
+        Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
     }
 
     @Test
     public void testNoReset() {
         try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+            final GNSSPropagator propagator = almanac.getPropagator(frames);
             propagator.resetInitialState(propagator.getInitialState());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
             GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
@@ -128,9 +128,9 @@ public class IRNSSPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
         GNSSOrbitalElements elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.IRNSS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.IRNSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
@@ -148,22 +148,22 @@ public class IRNSSPropagatorTest {
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
 
-        Assert.assertEquals(0.0, errorP, 3.8e-9);
-        Assert.assertEquals(0.0, errorV, 2.6e-7);
-        Assert.assertEquals(0.0, errorA, 6.5e-8);
+        Assertions.assertEquals(0.0, errorP, 3.8e-9);
+        Assertions.assertEquals(0.0, errorV, 2.6e-7);
+        Assertions.assertEquals(0.0, errorA, 6.5e-8);
 
     }
 
     @Test
     public void testIssue544() {
         // Builds the IRNSSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
-        Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
-        Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
+        Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
+        Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
     }
 
 }

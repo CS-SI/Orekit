@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class GnssDataTest {
 
@@ -29,6 +29,6 @@ public class GnssDataTest {
         };
         final GnssData gnssData = new GnssData(data, data.length);
         // Verify
-        Assert.assertEquals("123456789", gnssData.toString());
+        Assertions.assertEquals("123456789", gnssData.toString());
     }
 }

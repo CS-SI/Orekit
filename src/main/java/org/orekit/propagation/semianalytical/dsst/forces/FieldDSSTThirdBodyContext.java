@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * This class is a container for the common "field" parameters used in {@link DSSTThirdBody}.
@@ -126,7 +127,10 @@ public class FieldDSSTThirdBodyContext<T extends CalculusFieldElement <T>> exten
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters (only 1 values for
+     * each parameters corresponding to state date) obtained by calling the extract
+     * parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     * to selected the right value for state date or by getting the parameters for a specific date
      */
     FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                      final CelestialBody thirdBody,
@@ -148,7 +152,7 @@ public class FieldDSSTThirdBodyContext<T extends CalculusFieldElement <T>> exten
         motion = FastMath.sqrt(mu.divide(absA)).divide(absA);
 
         // Distance from center of mass of the central body to the 3rd body
-        final FieldVector3D<T> bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
+        final FieldVector3D<T> bodyPos = thirdBody.getPosition(auxiliaryElements.getDate(), auxiliaryElements.getFrame());
         R3 = bodyPos.getNorm();
 
         // Direction cosines

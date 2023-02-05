@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.function.DoubleFunction;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -28,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -52,6 +55,9 @@ public class EventState<T extends EventDetector> {
 
     /** Event detector. */
     private T detector;
+
+    /** Event handler. */
+    private EventHandler handler;
 
     /** Time of the previous call to g. */
     private AbsoluteDate lastT;
@@ -102,6 +108,7 @@ public class EventState<T extends EventDetector> {
      */
     public EventState(final T detector) {
         this.detector     = detector;
+        this.handler      = detector.getHandler();
 
         // some dummy values ...
         lastT                  = AbsoluteDate.PAST_INFINITY;
@@ -327,31 +334,29 @@ public class EventState<T extends EventDetector> {
                 final AbsoluteDate fT0 = loopT;
                 final double tbDouble = tb.durationFrom(fT0);
                 final double middle = 0.5 * tbDouble;
-                final UnivariateFunction f = dt -> {
+                final DoubleFunction<AbsoluteDate> date = dt -> {
                     // use either fT0 or tb as the base time for shifts
                     // in order to ensure we reproduce exactly those times
                     // using only one reference time like fT0 would imply
                     // to use ft0.shiftedBy(tbDouble), which may be different
                     // from tb due to numerical noise (see issue 921)
-                    final AbsoluteDate t;
                     if (forward == dt <= middle) {
                         // use start of interval as reference
-                        t = fT0.shiftedBy(dt);
+                        return fT0.shiftedBy(dt);
                     } else {
                         // use end of interval as reference
-                        t = tb.shiftedBy(dt - tbDouble);
+                        return tb.shiftedBy(dt - tbDouble);
                     }
-                    return g(interpolator.getInterpolatedState(t));
                 };
-                // tb as a double for use in f
+                final UnivariateFunction f = dt -> g(interpolator.getInterpolatedState(date.apply(dt)));
                 if (forward) {
                     try {
                         final Interval interval =
                                 solver.solveInterval(maxIterationCount, f, 0, tbDouble);
-                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        beforeRootT = date.apply(interval.getLeftAbscissa());
                         beforeRootG = interval.getLeftValue();
-                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        afterRootG = interval.getRightValue();
+                        afterRootT  = date.apply(interval.getRightAbscissa());
+                        afterRootG  = interval.getRightValue();
                         // CHECKSTYLE: stop IllegalCatch check
                     } catch (RuntimeException e) {
                         // CHECKSTYLE: resume IllegalCatch check
@@ -362,10 +367,10 @@ public class EventState<T extends EventDetector> {
                     try {
                         final Interval interval =
                                 solver.solveInterval(maxIterationCount, f, tbDouble, 0);
-                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        beforeRootT = date.apply(interval.getRightAbscissa());
                         beforeRootG = interval.getRightValue();
-                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        afterRootG = interval.getLeftValue();
+                        afterRootT  = date.apply(interval.getLeftAbscissa());
+                        afterRootG  = interval.getLeftValue();
                         // CHECKSTYLE: stop IllegalCatch check
                     } catch (RuntimeException e) {
                         // CHECKSTYLE: resume IllegalCatch check
@@ -484,7 +489,7 @@ public class EventState<T extends EventDetector> {
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link EventDetector#resetState(SpacecraftState)}
+     * call including a call to {@link EventHandler#resetState(EventDetector, SpacecraftState)}
      * if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as
@@ -501,10 +506,10 @@ public class EventState<T extends EventDetector> {
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = handler.eventOccurred(state, detector, increasing == forward);
         final SpacecraftState newState;
         if (action == Action.RESET_STATE) {
-            newState = detector.resetState(state);
+            newState = handler.resetState(detector, state);
         } else {
             newState = state;
         }

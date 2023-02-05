@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -53,14 +53,14 @@ public class ElevationExtremumDetectorTest {
                 new ElevationExtremumDetector(new TopocentricFrame(earth, gp, "test")).
                 withMaxCheck(60).
                 withThreshold(1.e-6).
-                withHandler(new ContinueOnEvent<ElevationExtremumDetector>());
+                withHandler(new ContinueOnEvent());
         final EventSlopeFilter<ElevationExtremumDetector> maxElevationDetector =
                 new EventSlopeFilter<ElevationExtremumDetector>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 
-        Assert.assertEquals(60.0, raw.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
-        Assert.assertEquals("test", raw.getTopocentricFrame().getName());
+        Assertions.assertEquals(60.0, raw.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
+        Assertions.assertEquals("test", raw.getTopocentricFrame().getName());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -92,15 +92,15 @@ public class ElevationExtremumDetectorTest {
             if (e0 > FastMath.toRadians(5.0)) {
                 ++visibleEvents;
             }
-            Assert.assertTrue(e0 > eMinus);
-            Assert.assertTrue(e0 > ePlus);
+            Assertions.assertTrue(e0 > eMinus);
+            Assertions.assertTrue(e0 > ePlus);
         }
-        Assert.assertEquals(15, logger.getLoggedEvents().size());
-        Assert.assertEquals( 6, visibleEvents);
+        Assertions.assertEquals(15, logger.getLoggedEvents().size());
+        Assertions.assertEquals( 6, visibleEvents);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

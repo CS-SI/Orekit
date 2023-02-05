@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
  * The motion of the spacecraft during the signal flight time is taken into
@@ -43,6 +44,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 8.0
  */
 public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
+
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "AngularAzEl";
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
@@ -102,7 +106,12 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
         final Field<Gradient>         field   = GradientField.getField(nbParams);
@@ -175,9 +184,12 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         // Set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, azDerivatives[index], elDerivatives[index]);
+
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), azDerivatives[index], elDerivatives[index]);
+                }
             }
         }
 

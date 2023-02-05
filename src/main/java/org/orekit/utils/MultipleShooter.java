@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.EpochDerivativesEquations;
@@ -41,40 +40,6 @@ public class MultipleShooter extends AbstractMultipleShooting {
      * @since 11.1
      */
     private final List<EpochDerivativesEquations> epochEquations;
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with non-autonomous systems. </p>
-     * @param initialGuessList initial patch points to be corrected
-     * @param propagatorList list of propagators associated to each patch point
-     * @param additionalEquations list of additional equations linked to propagatorList
-     * @param arcDuration initial guess of the duration of each arc (ignored)
-     * @param tolerance convergence tolerance on the constraint vector
-     * @deprecated as of 11.1, replaced by {@link #MultipleShooter(List, List, List, double, double, int)}
-     */
-    @Deprecated
-    public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                           final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
-                           final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, tolerance, false, DERIVATIVES);
-        epochEquations = additionalEquations.stream().map(ae -> (EpochDerivativesEquations) ae).collect(Collectors.toList());
-    }
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with non-autonomous systems.</p>
-     * @param initialGuessList initial patch points to be corrected
-     * @param propagatorList list of propagators associated to each patch point
-     * @param epochEquations list of additional derivatives providers linked to propagatorList
-     * @param arcDuration initial guess of the duration of each arc (ignored)
-     * @param tolerance convergence tolerance on the constraint vector
-     * @param maxIter maximum number of iterations
-     * @deprecated replaced by {@link #MultipleShooter(List, List, List, double, int)}
-     */
-    @Deprecated
-    public MultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                           final List<EpochDerivativesEquations> epochEquations, final double arcDuration,
-                           final double tolerance, final int maxIter) {
-        this(initialGuessList, propagatorList, epochEquations, tolerance, maxIter);
-    }
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with non-autonomous systems.</p>

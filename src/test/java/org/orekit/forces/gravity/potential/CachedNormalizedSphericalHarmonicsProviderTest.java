@@ -16,10 +16,10 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.junit.Assert;
 import org.hipparchus.util.Precision;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -34,46 +34,34 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     private static final int interpolationPoints = 3, maxSlots = 100;
     private CachedNormalizedSphericalHarmonicsProvider cache;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         raw = new QuadraticProvider(date);
         cache = new CachedNormalizedSphericalHarmonicsProvider(raw, step, interpolationPoints, maxSlots, slotSpan, newSlotInterval);
     }
 
-    @Deprecated
     @Test
     public void testGetReferenceDate() {
         AbsoluteDate actualDate = cache.getReferenceDate();
-        Assert.assertEquals(actualDate, date);
+        Assertions.assertEquals(actualDate, date);
     }
 
     @Test
     public void testLimits() {
-        Assert.assertEquals(2, cache.getMaxDegree());
-        Assert.assertEquals(2, cache.getMaxOrder());
+        Assertions.assertEquals(2, cache.getMaxDegree());
+        Assertions.assertEquals(2, cache.getMaxOrder());
     }
 
     @Test
     public void testBody() {
-        Assert.assertEquals(1, cache.getMu(), 1.0e-15);
-        Assert.assertEquals(1, cache.getAe(), 1.0e-15);
+        Assertions.assertEquals(1, cache.getMu(), 1.0e-15);
+        Assertions.assertEquals(1, cache.getAe(), 1.0e-15);
     }
 
     @Test
     public void testGetTideSystem() {
         TideSystem actualSystem = cache.getTideSystem();
-        Assert.assertEquals(actualSystem, TideSystem.UNKNOWN);
-    }
-
-    @Deprecated
-    @Test
-    public void testGetOffset() {
-        final double epsilon = 1e-12;
-        AbsoluteDate offsetDate = AbsoluteDate.GALILEO_EPOCH;
-        double targetOffset = offsetDate.durationFrom(date);
-        double actualOffset = cache.getOffset(offsetDate);
-
-        Assert.assertEquals(targetOffset, actualOffset, epsilon);
+        Assertions.assertEquals(actualSystem, TideSystem.UNKNOWN);
     }
 
     @Test
@@ -93,8 +81,8 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         double tol = Precision.EPSILON;
         for (int n = 0; n < raw.getMaxDegree(); n++) {
             for (int m = 0; m < n; m++) {
-                Assert.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
-                Assert.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
+                Assertions.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
+                Assertions.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
             }
         }
     }
@@ -115,8 +103,8 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         double tol = Precision.EPSILON;
         for (int n = 0; n < raw.getMaxDegree(); n++) {
             for (int m = 0; m < n; m++) {
-                Assert.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
-                Assert.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
+                Assertions.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
+                Assertions.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
             }
         }
     }
@@ -175,12 +163,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
             return date;
         }
 
-        @Override
-        public double getOffset(AbsoluteDate date) {
-            return date.durationFrom(this.date);
-        }
-
-        @Override
+       @Override
         public TideSystem getTideSystem() {
             return TideSystem.UNKNOWN;
         }

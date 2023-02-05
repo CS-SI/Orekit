@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,24 +16,24 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargeNegativeBeta()  {
-        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2G.txt", 6.4e-15, 6.3e-16, false);
+        doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2G.txt", 6.6e-15, 6.7e-16, false);
     }
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 8.0e-15, 7.4e-16, false);
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2G.txt", 8.0e-15, 8.3e-16, false);
     }
 
     @Test
     public void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-BEIDOU-2G.txt", 6.2e-15, 5.8e-16, false);
+        doTestAxes("patched-eclips/beta-crossing-BEIDOU-2G.txt", 6.2e-15, 8.6e-16, false);
     }
 
     @Test
@@ -43,17 +43,17 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalLargeNegativeBeta()  {
-        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2G.txt", 7.6e-4, 6.3e-16, false);
+        doTestAxes("original-eclips/beta-large-negative-BEIDOU-2G.txt", 7.6e-4, 6.7e-16, false);
     }
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2G.txt", 5.0e-4, 7.4e-16, false);
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2G.txt", 5.0e-4, 8.6e-16, false);
     }
 
     @Test
     public void testOriginalCrossingBeta() {
-        doTestAxes("original-eclips/beta-crossing-BEIDOU-2G.txt", 9.0e-4, 5.8e-16, false);
+        doTestAxes("original-eclips/beta-crossing-BEIDOU-2G.txt", 9.0e-4, 8.6e-16, false);
     }
 
     @Test

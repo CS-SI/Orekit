@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,8 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.EphemerisPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for a Kalman filter estimator.
@@ -37,7 +38,7 @@ public class KalmanEstimatorBuilder {
     private MatrixDecomposer decomposer;
 
     /** Builders for propagators. */
-    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
+    private List<PropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
@@ -61,7 +62,7 @@ public class KalmanEstimatorBuilder {
 
     /** Construct a {@link KalmanEstimator} from the data in this builder.
      * <p>
-     * Before this method is called, {@link #addPropagationConfiguration(OrbitDeterminationPropagatorBuilder,
+     * Before this method is called, {@link #addPropagationConfiguration(PropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
      * </p>
@@ -94,21 +95,24 @@ public class KalmanEstimatorBuilder {
      * <p>
      * The {@code provider} should return a matrix with dimensions and ordering
      * consistent with the {@code builder} configuration. The first 6 rows/columns
-     * correspond to the 6 orbital parameters which must all be present, regardless
-     * of the fact they are estimated or not. The remaining elements correspond
+     * correspond to the 6 orbital parameters. The remaining elements correspond
      * to the subset of propagation parameters that are estimated, in the
      * same order as propagatorBuilder.{@link
      * org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
      * getPropagationParametersDrivers()}.{@link org.orekit.utils.ParameterDriversList#getDrivers()
      * getDrivers()} (but filtering out the non selected drivers).
      * </p>
-     * @param builder The propagator builder to use in the Kalman filter.
+     * @param builder  The propagator builder to use in the Kalman filter.
      * @param provider The process noise matrices provider to use, consistent with the builder.
+     *                 This parameter can be equal to {@code null} if the input builder is
+     *                 an {@link EphemerisPropagatorBuilder}. Indeed, for ephemeris based estimation
+     *                 only measurement parameters are estimated. Therefore, the covariance related
+     *                 to dynamical parameters can be null.
      * @return this object.
      * @see CovarianceMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
      * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      */
-    public KalmanEstimatorBuilder addPropagationConfiguration(final OrbitDeterminationPropagatorBuilder builder,
+    public KalmanEstimatorBuilder addPropagationConfiguration(final PropagatorBuilder builder,
                                                               final CovarianceMatrixProvider provider) {
         propagatorBuilders.add(builder);
         processNoiseMatricesProviders.add(provider);

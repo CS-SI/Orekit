@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataContext;
@@ -113,12 +114,15 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
      * @param mu gravitational coefficient
      * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public OmmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
-                     final double mu, final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final double mu, final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Omm.ROOT, Omm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu, parsedUnitsBehavior);
+              missionReferenceDate, mu, parsedUnitsBehavior, filters);
         this.defaultMass = defaultMass;
     }
 

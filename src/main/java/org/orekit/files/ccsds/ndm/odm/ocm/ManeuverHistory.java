@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,8 +36,8 @@ public class ManeuverHistory {
      * @param metadata metadata
      * @param maneuvers maneuvers
      */
-    ManeuverHistory(final ManeuverHistoryMetadata metadata,
-                    final List<Maneuver> maneuvers) {
+    public ManeuverHistory(final ManeuverHistoryMetadata metadata,
+                           final List<Maneuver> maneuvers) {
         this.metadata  = metadata;
         this.maneuvers = maneuvers;
     }

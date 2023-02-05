@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,9 @@ public class ODParameters extends CommentsContainer {
 
     /** The weighted Root Mean Square (RMS) of the residuals from a batch least squares OD. */
     private double weightedRMS;
+
+    /** The epoch of the orbit determination used for this message (UTC). */
+    private AbsoluteDate odEpoch;
 
     /** Simple constructor.
      */
@@ -239,6 +242,20 @@ public class ODParameters extends CommentsContainer {
     public void setWeightedRMS(final double WeightedRMS) {
         refuseFurtherComments();
         this.weightedRMS = WeightedRMS;
+    }
+
+    /** Get the epoch of the orbit determination used for this message.
+     * @return the odEpoch the epoch of the orbit determination used for this message
+     */
+    public AbsoluteDate getOdEpoch() {
+        return odEpoch;
+    }
+
+    /** Set the epoch of the orbit determination used for this message.
+     * @param odEpoch the odEpoch to set
+     */
+    public void setOdEpoch(final AbsoluteDate odEpoch) {
+        this.odEpoch = odEpoch;
     }
 
 }

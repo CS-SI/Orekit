@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,6 @@ import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -69,7 +66,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Parameters scaling factor.
      * <p>
@@ -249,6 +246,8 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
         boolean isSelected = false;
         for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
             if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
+                // setPeriod method should not be called on this driver (to have several values estimated)
                 newM2      = driver.getValue();
                 isSelected = driver.isSelected();
             }
@@ -265,20 +264,11 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

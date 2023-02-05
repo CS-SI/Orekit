@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -41,9 +41,10 @@ one segment whereas `Oem` may contain several segments).
 There are as many sub-packages as there are CCSDS message types, with
 intermediate sub-packages for each officially published recommendation:
 `org.orekit.files.ccsds.ndm.adm.apm`, `org.orekit.files.ccsds.ndm.adm.aem`,
-`org.orekit.files.ccsds.ndm.odm.opm`, `org.orekit.files.ccsds.ndm.odm.oem`,
-`org.orekit.files.ccsds.ndm.odm.omm`, `org.orekit.files.ccsds.ndm.odm.ocm`,
-and `org.orekit.files.ccsds.ndm.tdm`. Each contain the logical structures
+`org.orekit.files.ccsds.ndm.cdm`, `org.orekit.files.ccsds.ndm.odm.opm`,
+`org.orekit.files.ccsds.ndm.odm.oem`, `org.orekit.files.ccsds.ndm.odm.omm`,
+`org.orekit.files.ccsds.ndm.odm.ocm`, and `org.orekit.files.ccsds.ndm.tdm`.
+Each contain the logical structures
 that correspond to the message type, among which at least one `##m`
 class that represents a complete message. As some data are common to
 several types, there may be some intermediate classes in order to avoid
@@ -151,6 +152,25 @@ a file name, or from a standard Java `File` instance. The `DataSource` object de
 the real opening of the file until the `parseMessage` method is called and takes care
 to close it properly after parsing, even if parsing is interrupted due to some parse
 error.
+
+Since 12.0, there is a filtering capability that can be used by all parsers. Users can
+add in the `ParserBuilder` as many filters as they want to change parsed tokens on the fly
+between the time they are extracted form the `DataSource` and the time they are fed to
+the parsers. There are several use cases for this feature.
+
+   1) change data found in the parsed message. One real life example (the one that motivated
+      the development of this feature) is OMM files in XML format that had an empty `OBJECT_ID`,
+      which is forbidden by CCSDS standard. These non compliant messages could be fixed by
+      setting a filter that recognizes `OBJECT_ID` entries with empty value and replace them
+      with a value set to `unknown` before passing the changed token back to the parser
+   2) remove unwanted data, for example removing all user-defined data is done by setting
+      a filter that returns an empty list of tokens when presented with a user-defined entry
+   3) add data not originally present in the file. For example one could add generated ODM
+      V3 `MESSAGE_ID` to an ODM V2 message that lacks it, by setting first a filter that would
+      replace the value 2.0 by 3.0 in the `CCSDS_##M_VERS` entry, and setting a second filter
+      that would replace the `ORIGINATOR` entry by a list containing both the initial entry
+      and an additional made up `MESSAGE_ID` entry
+
 
 The `OemParser` and `OcmParser` have an additional feature: they also implement
 the generic `EphemerisFileParser` interface, so they can be used in a more

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,13 @@
  */
 package org.orekit.propagation;
 
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
@@ -57,6 +52,10 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 public class PropagatorsParallelizerEphemerisTest {
 
@@ -66,7 +65,7 @@ public class PropagatorsParallelizerEphemerisTest {
     private UnnormalizedSphericalHarmonicsProvider unnormalizedGravityField;
     private NormalizedSphericalHarmonicsProvider normalizedGravityField;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data:potential/icgem-format");
@@ -93,11 +92,11 @@ public class PropagatorsParallelizerEphemerisTest {
             attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         } catch (OrekitException oe) {
-            Assert.fail(oe.getLocalizedMessage());
+            Assertions.fail(oe.getLocalizedMessage());
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         mass                     = Double.NaN;
         orbit                    = null;
@@ -136,9 +135,9 @@ public class PropagatorsParallelizerEphemerisTest {
 
         parallelizer.propagate(startDate, endDate);
         for ( EphemerisGenerator generator : generators ) {
-            Assert.assertNotNull(generator.getGeneratedEphemeris());
-            Assert.assertEquals(endDate, generator.getGeneratedEphemeris().getMaxDate());
-            Assert.assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
+            Assertions.assertNotNull(generator.getGeneratedEphemeris());
+            Assertions.assertEquals(endDate, generator.getGeneratedEphemeris().getMaxDate());
+            Assertions.assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
         }
     }
 
@@ -166,9 +165,9 @@ public class PropagatorsParallelizerEphemerisTest {
 
         // Check for all generators
         for ( EphemerisGenerator generator : generators ) {
-            Assert.assertNotNull(generator.getGeneratedEphemeris());
-            Assert.assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
-            Assert.assertEquals(detectorDate, generator.getGeneratedEphemeris().getMaxDate());
+            Assertions.assertNotNull(generator.getGeneratedEphemeris());
+            Assertions.assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
+            Assertions.assertEquals(detectorDate, generator.getGeneratedEphemeris().getMaxDate());
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.utils;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,17 +32,20 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
 public class AbsolutePVCoordinatesTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -61,14 +62,14 @@ public class AbsolutePVCoordinatesTest {
         AbsolutePVCoordinates actual = new AbsolutePVCoordinates(frame, date, p, v);
 
         //verify
-        Assert.assertEquals(date, actual.getDate());
-        Assert.assertEquals(1, actual.getPosition().getX(), 0);
-        Assert.assertEquals(2, actual.getPosition().getY(), 0);
-        Assert.assertEquals(3, actual.getPosition().getZ(), 0);
-        Assert.assertEquals(4, actual.getVelocity().getX(), 0);
-        Assert.assertEquals(5, actual.getVelocity().getY(), 0);
-        Assert.assertEquals(6, actual.getVelocity().getZ(), 0);
-        Assert.assertEquals(Vector3D.ZERO, actual.getAcceleration());
+        Assertions.assertEquals(date, actual.getDate());
+        Assertions.assertEquals(1, actual.getPosition().getX(), 0);
+        Assertions.assertEquals(2, actual.getPosition().getY(), 0);
+        Assertions.assertEquals(3, actual.getPosition().getZ(), 0);
+        Assertions.assertEquals(4, actual.getVelocity().getX(), 0);
+        Assertions.assertEquals(5, actual.getVelocity().getY(), 0);
+        Assertions.assertEquals(6, actual.getVelocity().getZ(), 0);
+        Assertions.assertEquals(Vector3D.ZERO, actual.getAcceleration());
     }
 
     @Test
@@ -82,14 +83,14 @@ public class AbsolutePVCoordinatesTest {
         AbsolutePVCoordinates actual = new AbsolutePVCoordinates(frame, date, pv);
 
         //verify
-        Assert.assertEquals(date, actual.getDate());
-        Assert.assertEquals(1, actual.getPosition().getX(), 0);
-        Assert.assertEquals(2, actual.getPosition().getY(), 0);
-        Assert.assertEquals(3, actual.getPosition().getZ(), 0);
-        Assert.assertEquals(4, actual.getVelocity().getX(), 0);
-        Assert.assertEquals(5, actual.getVelocity().getY(), 0);
-        Assert.assertEquals(6, actual.getVelocity().getZ(), 0);
-        Assert.assertEquals(Vector3D.ZERO, actual.getAcceleration());
+        Assertions.assertEquals(date, actual.getDate());
+        Assertions.assertEquals(1, actual.getPosition().getX(), 0);
+        Assertions.assertEquals(2, actual.getPosition().getY(), 0);
+        Assertions.assertEquals(3, actual.getPosition().getZ(), 0);
+        Assertions.assertEquals(4, actual.getVelocity().getX(), 0);
+        Assertions.assertEquals(5, actual.getVelocity().getY(), 0);
+        Assertions.assertEquals(6, actual.getVelocity().getZ(), 0);
+        Assertions.assertEquals(Vector3D.ZERO, actual.getAcceleration());
     }
 
     @Test
@@ -130,6 +131,24 @@ public class AbsolutePVCoordinatesTest {
     }
 
     @Test
+    public void testDifferentFrames() {
+        final AbsolutePVCoordinates apv1 = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                                                                     AbsoluteDate.ARBITRARY_EPOCH,
+                                                                     Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+        final AbsolutePVCoordinates apv2 = new AbsolutePVCoordinates(FramesFactory.getGCRF(),
+                                                                     AbsoluteDate.ARBITRARY_EPOCH,
+                                                                     Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+        try {
+            new AbsolutePVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, apv1, apv2);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_FRAMES, oe.getSpecifier());
+            Assertions.assertEquals(apv1.getFrame().getName(), oe.getParts()[0]);
+            Assertions.assertEquals(apv2.getFrame().getName(), oe.getParts()[1]);
+        }
+    }
+
+    @Test
     public void testToDerivativeStructureVector1() {
         FieldVector3D<DerivativeStructure> fv =
                 new AbsolutePVCoordinates(FramesFactory.getEME2000(),
@@ -137,14 +156,14 @@ public class AbsolutePVCoordinatesTest {
                                           new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(1);
-        Assert.assertEquals(1, fv.getX().getFreeParameters());
-        Assert.assertEquals(1, fv.getX().getOrder());
-        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(1, fv.getX().getFreeParameters());
+        Assertions.assertEquals(1, fv.getX().getOrder());
+        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
         checkPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                           AbsoluteDate.GALILEO_EPOCH,
                                           new Vector3D( 1,  0.1,  10),
@@ -156,20 +175,20 @@ public class AbsolutePVCoordinatesTest {
         for (double dt = 0; dt < 10; dt += 0.125) {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
-            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
 
         AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                                              AbsoluteDate.GALILEO_EPOCH,
                                                              fv);
-        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
 
     }
 
@@ -181,17 +200,17 @@ public class AbsolutePVCoordinatesTest {
                                           new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(2);
-        Assert.assertEquals(1, fv.getX().getFreeParameters());
-        Assert.assertEquals(2, fv.getX().getOrder());
-        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
-        Assert.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
-        Assert.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
+        Assertions.assertEquals(1, fv.getX().getFreeParameters());
+        Assertions.assertEquals(2, fv.getX().getOrder());
+        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
+        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
+        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
         checkPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                           AbsoluteDate.GALILEO_EPOCH,
                                           new Vector3D( 1,  0.1,  10),
@@ -204,23 +223,23 @@ public class AbsolutePVCoordinatesTest {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10),
                                            new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
 
         AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                                              AbsoluteDate.GALILEO_EPOCH,
                                                              fv);
-        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-        Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
-        Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
-        Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assertions.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
 
     }
 
@@ -232,14 +251,14 @@ public class AbsolutePVCoordinatesTest {
                                           new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative1Vector();
-        Assert.assertEquals(1, fv.getX().getFreeParameters());
-        Assert.assertEquals(1, fv.getX().getOrder());
-        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(1, fv.getX().getFreeParameters());
+        Assertions.assertEquals(1, fv.getX().getOrder());
+        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
         checkPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                           AbsoluteDate.GALILEO_EPOCH,
                                           new Vector3D( 1,  0.1,  10),
@@ -251,20 +270,20 @@ public class AbsolutePVCoordinatesTest {
         for (double dt = 0; dt < 10; dt += 0.125) {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10)).shiftedBy(dt).getPosition();
-            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
 
         AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                                              AbsoluteDate.GALILEO_EPOCH,
                                                              fv);
-        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
 
     }
 
@@ -276,17 +295,17 @@ public class AbsolutePVCoordinatesTest {
                                           new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative2Vector();
-        Assert.assertEquals(1, fv.getX().getFreeParameters());
-        Assert.assertEquals(2, fv.getX().getOrder());
-        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        Assert.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
-        Assert.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
-        Assert.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
+        Assertions.assertEquals(1, fv.getX().getFreeParameters());
+        Assertions.assertEquals(2, fv.getX().getOrder());
+        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
+        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
+        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
         checkPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                           AbsoluteDate.GALILEO_EPOCH,
                                           new Vector3D( 1,  0.1,  10),
@@ -299,23 +318,23 @@ public class AbsolutePVCoordinatesTest {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10),
                                            new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
 
         AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                                                              AbsoluteDate.GALILEO_EPOCH,
                                                              fv);
-        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-        Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
-        Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
-        Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assertions.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
 
     }
 
@@ -329,7 +348,7 @@ public class AbsolutePVCoordinatesTest {
         Vector3D a2 = new Vector3D( 10,  1.0,  100);
         checkPV(new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, p2, v2, a2),
                 new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH.shiftedBy(1.0), p1, v1, a1).shiftedBy(-1.0), 1.0e-15);
-        Assert.assertEquals(0.0, AbsolutePVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(new Vector3D(-6, -0.6, -60)).getNorm(), 1.0e-15);
+        Assertions.assertEquals(0.0, AbsolutePVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(new Vector3D(-6, -0.6, -60)).getNorm(), 1.0e-15);
     }
 
     @Test
@@ -340,7 +359,7 @@ public class AbsolutePVCoordinatesTest {
                                       new Vector3D( 1,   0.1,  10),
                                       new Vector3D(-1,  -0.1, -10),
                                       new Vector3D(10,   1.0, 100));
-        Assert.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
+        Assertions.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
     }
 
     @Test
@@ -374,15 +393,15 @@ public class AbsolutePVCoordinatesTest {
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
                 Vector3D a = interpolated.getAcceleration();
-                Assert.assertEquals(px.value(dt),       p.getX(), 4.0e-16 * p.getNorm());
-                Assert.assertEquals(py.value(dt),       p.getY(), 4.0e-16 * p.getNorm());
-                Assert.assertEquals(pz.value(dt),       p.getZ(), 4.0e-16 * p.getNorm());
-                Assert.assertEquals(pxDot.value(dt),    v.getX(), 9.0e-16 * v.getNorm());
-                Assert.assertEquals(pyDot.value(dt),    v.getY(), 9.0e-16 * v.getNorm());
-                Assert.assertEquals(pzDot.value(dt),    v.getZ(), 9.0e-16 * v.getNorm());
-                Assert.assertEquals(pxDotDot.value(dt), a.getX(), 9.0e-15 * a.getNorm());
-                Assert.assertEquals(pyDotDot.value(dt), a.getY(), 9.0e-15 * a.getNorm());
-                Assert.assertEquals(pzDotDot.value(dt), a.getZ(), 9.0e-15 * a.getNorm());
+                Assertions.assertEquals(px.value(dt),       p.getX(), 4.0e-16 * p.getNorm());
+                Assertions.assertEquals(py.value(dt),       p.getY(), 4.0e-16 * p.getNorm());
+                Assertions.assertEquals(pz.value(dt),       p.getZ(), 4.0e-16 * p.getNorm());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX(), 9.0e-16 * v.getNorm());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY(), 9.0e-16 * v.getNorm());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ(), 9.0e-16 * v.getNorm());
+                Assertions.assertEquals(pxDotDot.value(dt), a.getX(), 9.0e-15 * a.getNorm());
+                Assertions.assertEquals(pyDotDot.value(dt), a.getY(), 9.0e-15 * a.getNorm());
+                Assertions.assertEquals(pzDotDot.value(dt), a.getZ(), 9.0e-15 * a.getNorm());
             }
 
         }
@@ -419,15 +438,15 @@ public class AbsolutePVCoordinatesTest {
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
                 Vector3D a = interpolated.getAcceleration();
-                Assert.assertEquals(px.value(dt),       p.getX(), 4.0e-16 * p.getNorm());
-                Assert.assertEquals(py.value(dt),       p.getY(), 4.0e-16 * p.getNorm());
-                Assert.assertEquals(pz.value(dt),       p.getZ(), 4.0e-16 * p.getNorm());
-                Assert.assertEquals(pxDot.value(dt),    v.getX(), 9.0e-16 * v.getNorm());
-                Assert.assertEquals(pyDot.value(dt),    v.getY(), 9.0e-16 * v.getNorm());
-                Assert.assertEquals(pzDot.value(dt),    v.getZ(), 9.0e-16 * v.getNorm());
-                Assert.assertEquals(pxDotDot.value(dt), a.getX(), 1.0e-14 * a.getNorm());
-                Assert.assertEquals(pyDotDot.value(dt), a.getY(), 1.0e-14 * a.getNorm());
-                Assert.assertEquals(pzDotDot.value(dt), a.getZ(), 1.0e-14 * a.getNorm());
+                Assertions.assertEquals(px.value(dt),       p.getX(), 4.0e-16 * p.getNorm());
+                Assertions.assertEquals(py.value(dt),       p.getY(), 4.0e-16 * p.getNorm());
+                Assertions.assertEquals(pz.value(dt),       p.getZ(), 4.0e-16 * p.getNorm());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX(), 9.0e-16 * v.getNorm());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY(), 9.0e-16 * v.getNorm());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ(), 9.0e-16 * v.getNorm());
+                Assertions.assertEquals(pxDotDot.value(dt), a.getX(), 1.0e-14 * a.getNorm());
+                Assertions.assertEquals(pyDotDot.value(dt), a.getY(), 1.0e-14 * a.getNorm());
+                Assertions.assertEquals(pzDotDot.value(dt), a.getZ(), 1.0e-14 * a.getNorm());
             }
 
         }
@@ -464,15 +483,15 @@ public class AbsolutePVCoordinatesTest {
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
                 Vector3D a = interpolated.getAcceleration();
-                Assert.assertEquals(px.value(dt),       p.getX(), 5.0e-16 * p.getNorm());
-                Assert.assertEquals(py.value(dt),       p.getY(), 5.0e-16 * p.getNorm());
-                Assert.assertEquals(pz.value(dt),       p.getZ(), 5.0e-16 * p.getNorm());
-                Assert.assertEquals(pxDot.value(dt),    v.getX(), 7.0e-15 * v.getNorm());
-                Assert.assertEquals(pyDot.value(dt),    v.getY(), 7.0e-15 * v.getNorm());
-                Assert.assertEquals(pzDot.value(dt),    v.getZ(), 7.0e-15 * v.getNorm());
-                Assert.assertEquals(pxDotDot.value(dt), a.getX(), 2.0e-13 * a.getNorm());
-                Assert.assertEquals(pyDotDot.value(dt), a.getY(), 2.0e-13 * a.getNorm());
-                Assert.assertEquals(pzDotDot.value(dt), a.getZ(), 2.0e-13 * a.getNorm());
+                Assertions.assertEquals(px.value(dt),       p.getX(), 5.0e-16 * p.getNorm());
+                Assertions.assertEquals(py.value(dt),       p.getY(), 5.0e-16 * p.getNorm());
+                Assertions.assertEquals(pz.value(dt),       p.getZ(), 5.0e-16 * p.getNorm());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX(), 7.0e-15 * v.getNorm());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY(), 7.0e-15 * v.getNorm());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ(), 7.0e-15 * v.getNorm());
+                Assertions.assertEquals(pxDotDot.value(dt), a.getX(), 2.0e-13 * a.getNorm());
+                Assertions.assertEquals(pyDotDot.value(dt), a.getY(), 2.0e-13 * a.getNorm());
+                Assertions.assertEquals(pzDotDot.value(dt), a.getZ(), 2.0e-13 * a.getNorm());
             }
 
         }
@@ -497,15 +516,15 @@ public class AbsolutePVCoordinatesTest {
             Vector3D p = interpolated.getPosition();
             Vector3D v = interpolated.getVelocity();
             Vector3D a = interpolated.getAcceleration();
-            Assert.assertEquals( FastMath.cos(dt),   p.getX(), 3.0e-10 * p.getNorm());
-            Assert.assertEquals( FastMath.sin(dt),   p.getY(), 3.0e-10 * p.getNorm());
-            Assert.assertEquals(0,                   p.getZ(), 3.0e-10 * p.getNorm());
-            Assert.assertEquals(-FastMath.sin(dt),   v.getX(), 3.0e-9  * v.getNorm());
-            Assert.assertEquals( FastMath.cos(dt),   v.getY(), 3.0e-9  * v.getNorm());
-            Assert.assertEquals(0,                   v.getZ(), 3.0e-9  * v.getNorm());
-            Assert.assertEquals(-FastMath.cos(dt),   a.getX(), 4.0e-8  * a.getNorm());
-            Assert.assertEquals(-FastMath.sin(dt),   a.getY(), 4.0e-8  * a.getNorm());
-            Assert.assertEquals(0,                   a.getZ(), 4.0e-8  * a.getNorm());
+            Assertions.assertEquals( FastMath.cos(dt),   p.getX(), 3.0e-10 * p.getNorm());
+            Assertions.assertEquals( FastMath.sin(dt),   p.getY(), 3.0e-10 * p.getNorm());
+            Assertions.assertEquals(0,                   p.getZ(), 3.0e-10 * p.getNorm());
+            Assertions.assertEquals(-FastMath.sin(dt),   v.getX(), 3.0e-9  * v.getNorm());
+            Assertions.assertEquals( FastMath.cos(dt),   v.getY(), 3.0e-9  * v.getNorm());
+            Assertions.assertEquals(0,                   v.getZ(), 3.0e-9  * v.getNorm());
+            Assertions.assertEquals(-FastMath.cos(dt),   a.getX(), 4.0e-8  * a.getNorm());
+            Assertions.assertEquals(-FastMath.sin(dt),   a.getY(), 4.0e-8  * a.getNorm());
+            Assertions.assertEquals(0,                   a.getZ(), 4.0e-8  * a.getNorm());
         }
 
     }
@@ -522,16 +541,16 @@ public class AbsolutePVCoordinatesTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(pv);
 
-        Assert.assertTrue(bos.size() > 320);
-        Assert.assertTrue(bos.size() < 340);
+        Assertions.assertTrue(bos.size() > 320);
+        Assertions.assertTrue(bos.size() < 340);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         AbsolutePVCoordinates deserialized  = (AbsolutePVCoordinates) ois.readObject();
-        Assert.assertEquals(0.0, deserialized.getDate().durationFrom(pv.getDate()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(deserialized.getPosition(),     pv.getPosition()),     1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(deserialized.getVelocity(),     pv.getVelocity()),     1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(deserialized.getAcceleration(), pv.getAcceleration()), 1.0e-15);
+        Assertions.assertEquals(0.0, deserialized.getDate().durationFrom(pv.getDate()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getPosition(),     pv.getPosition()),     1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getVelocity(),     pv.getVelocity()),     1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getAcceleration(), pv.getAcceleration()), 1.0e-15);
 
     }
 
@@ -542,13 +561,42 @@ public class AbsolutePVCoordinatesTest {
         Frame frame = FramesFactory.getEME2000();
         Vector3D p = new Vector3D(1, 2, 3);
         Vector3D v = new Vector3D(4, 5, 6);
+        Frame otherEme2000 = new Frame(frame, Transform.IDENTITY, "other-EME2000");
 
         //action
         AbsolutePVCoordinates actual = new AbsolutePVCoordinates(frame, date, p, v);
 
         //verify
-        assertEquals(actual.getPVCoordinates().toString(), actual.getPVCoordinates(frame).toString());
-        assertEquals(actual.getPVCoordinates(frame).toString(), actual.getPVCoordinates(date, frame).toString());
+        Assertions.assertSame(actual.getPosition(), actual.getPosition(frame));
+        Assertions.assertNotSame(actual.getPosition(), actual.getPosition(otherEme2000));
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPosition(frame),
+                                                  actual.getPosition(otherEme2000)),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                                                  actual.getPVCoordinates(date, frame).getPosition()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                                                  actual.getPVCoordinates(date, frame).getVelocity()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                                                  actual.getPVCoordinates(date, frame).getAcceleration()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                                                  actual.getPVCoordinates(date, otherEme2000).getPosition()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                                                  actual.getPVCoordinates(date, otherEme2000).getVelocity()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                                                  actual.getPVCoordinates(date, otherEme2000).getAcceleration()),
+                                1.0e-15);
     }
 
     @Test
@@ -563,8 +611,12 @@ public class AbsolutePVCoordinatesTest {
         AbsolutePVCoordinates actual = new AbsolutePVCoordinates(frame, date, p, v);
         final PVCoordinatesProvider pv = actual.toTaylorProvider();
 
-        //verify
-        Assert.assertEquals(actual.getPVCoordinates(date, frame).toString(), pv.getPVCoordinates(date, frame).toString());
+        //verify 
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPosition(date, frame), pv.getPosition(date, frame)),
+                                1.0e-15);
+        Assertions.assertEquals(actual.getPVCoordinates(date, frame).toString(), pv.getPVCoordinates(date, frame).toString());
+
     }
 
     private PolynomialFunction randomPolynomial(int degree, Random random) {
@@ -576,16 +628,16 @@ public class AbsolutePVCoordinatesTest {
     }
 
     private void checkPV(AbsolutePVCoordinates expected, AbsolutePVCoordinates real, double epsilon) {
-        Assert.assertEquals(expected.getDate(), real.getDate());
-        Assert.assertEquals(expected.getPosition().getX(),     real.getPosition().getX(),     epsilon);
-        Assert.assertEquals(expected.getPosition().getY(),     real.getPosition().getY(),     epsilon);
-        Assert.assertEquals(expected.getPosition().getZ(),     real.getPosition().getZ(),     epsilon);
-        Assert.assertEquals(expected.getVelocity().getX(),     real.getVelocity().getX(),     epsilon);
-        Assert.assertEquals(expected.getVelocity().getY(),     real.getVelocity().getY(),     epsilon);
-        Assert.assertEquals(expected.getVelocity().getZ(),     real.getVelocity().getZ(),     epsilon);
-        Assert.assertEquals(expected.getAcceleration().getX(), real.getAcceleration().getX(), epsilon);
-        Assert.assertEquals(expected.getAcceleration().getY(), real.getAcceleration().getY(), epsilon);
-        Assert.assertEquals(expected.getAcceleration().getZ(), real.getAcceleration().getZ(), epsilon);
+        Assertions.assertEquals(expected.getDate(), real.getDate());
+        Assertions.assertEquals(expected.getPosition().getX(),     real.getPosition().getX(),     epsilon);
+        Assertions.assertEquals(expected.getPosition().getY(),     real.getPosition().getY(),     epsilon);
+        Assertions.assertEquals(expected.getPosition().getZ(),     real.getPosition().getZ(),     epsilon);
+        Assertions.assertEquals(expected.getVelocity().getX(),     real.getVelocity().getX(),     epsilon);
+        Assertions.assertEquals(expected.getVelocity().getY(),     real.getVelocity().getY(),     epsilon);
+        Assertions.assertEquals(expected.getVelocity().getZ(),     real.getVelocity().getZ(),     epsilon);
+        Assertions.assertEquals(expected.getAcceleration().getX(), real.getAcceleration().getX(), epsilon);
+        Assertions.assertEquals(expected.getAcceleration().getY(), real.getAcceleration().getY(), epsilon);
+        Assertions.assertEquals(expected.getAcceleration().getZ(), real.getAcceleration().getZ(), epsilon);
     }
 
 }

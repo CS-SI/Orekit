@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -108,8 +108,9 @@ public class OcmData implements Data {
 
     /** Get trajectory state histories logical blocks.
      * @return trajectory state histories logical blocks (may be null)
+     * @since 12.0
      */
-    public List<TrajectoryStateHistory> getOTrajectoryBlocks() {
+    public List<TrajectoryStateHistory> getTrajectoryBlocks() {
         return trajectoryBlocks;
     }
 

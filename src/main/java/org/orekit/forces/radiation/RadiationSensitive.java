@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,10 @@ package org.orekit.forces.radiation;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
 /** Interface for spacecraft that are sensitive to radiation pressure forces.
@@ -35,6 +32,11 @@ import org.orekit.utils.ParameterDriver;
  * @author Pascal Parraud
  */
 public interface RadiationSensitive {
+
+    /** Parameter name for global multiplicative factor.
+     * @since 12.0
+     */
+    String GLOBAL_RADIATION_FACTOR = "global radiation factor";
 
     /** Parameter name for absorption coefficient. */
     String ABSORPTION_COEFFICIENT = "absorption coefficient";
@@ -49,31 +51,23 @@ public interface RadiationSensitive {
     List<ParameterDriver> getRadiationParametersDrivers();
 
     /** Compute the acceleration due to radiation pressure.
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass current mass
+     * @param state current state
      * @param flux radiation flux in the same inertial frame as spacecraft orbit
      * @param parameters values of the force model parameters
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
+     * @since 12.0
      */
-    Vector3D radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
-                                           Rotation rotation, double mass, Vector3D flux,
-                                           double[] parameters);
+    Vector3D radiationPressureAcceleration(SpacecraftState state, Vector3D flux, double[] parameters);
 
     /** Compute the acceleration due to radiation pressure.
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass current mass
+     * @param state current state
      * @param flux radiation flux in the same inertial frame as spacecraft orbit
      * @param parameters values of the force model parameters
      * @param <T> extends CalculusFieldElement
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
+     * @since 12.0
      */
-    <T extends CalculusFieldElement<T>> FieldVector3D<T> radiationPressureAcceleration(FieldAbsoluteDate<T> date, Frame frame, FieldVector3D<T> position,
-                                                                                   FieldRotation<T> rotation, T mass, FieldVector3D<T> flux,
-                                                                                   T[] parameters);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> radiationPressureAcceleration(FieldSpacecraftState<T> state,
+                                                                                       FieldVector3D<T> flux,
+                                                                                       T[] parameters);
 }

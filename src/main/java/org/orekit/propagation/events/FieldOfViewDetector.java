@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,7 +82,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<FieldOfViewDetector>(),
+             new StopOnIncreasing(),
              pvTarget, radiusTarget, trigger, fov);
     }
 
@@ -102,7 +102,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * @param fov Field Of View
      */
     private FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
-                                final EventHandler<? super FieldOfViewDetector> handler,
+                                final EventHandler handler,
                                 final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                 final VisibilityTrigger trigger, final FieldOfView fov) {
         super(maxCheck, threshold, maxIter, handler);
@@ -116,7 +116,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
     @Override
     protected FieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
                                          final int newMaxIter,
-                                         final EventHandler<? super FieldOfViewDetector> newHandler) {
+                                         final EventHandler newHandler) {
         return new FieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                        targetPVProvider, radiusTarget, trigger, fov);
     }
@@ -156,7 +156,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
         // get line of sight in spacecraft frame
         final Vector3D targetPosInert =
-                targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+                targetPVProvider.getPosition(s.getDate(), s.getFrame());
         final Vector3D lineOfSightSC = s.toTransform().transformPosition(targetPosInert);
 
         final double angularRadius = FastMath.asin(radiusTarget / lineOfSightSC.getNorm());

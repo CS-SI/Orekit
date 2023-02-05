@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,13 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -64,7 +60,67 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 public class BatchLSEstimatorTest {
+
+    /**
+     * Perfect PV measurements with a perfect start
+     */
+    @Test
+    public void testKeplerPVMultipleDrag() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0, Force.DRAG);
+
+        for (ParameterDriver driver:propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+            if (driver.getName().equals("drag coefficient")) {
+                driver.setSelected(true);
+                driver.addSpanAtDate(context.initialOrbit.getDate());
+            }
+        }
+        
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               -3.0, 3.0, 300.0);
+
+
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 7.8e-8,
+                                     0.0, 6.0e-7,
+                                     0.0, 3.2e-7,
+                                     0.0, 1.3e-10);
+
+        
+        List<DelegatingDriver> Orbparameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
+        Assertions.assertEquals(context.initialOrbit.getA(), Orbparameters.get(0).getValue() , 1.0e-8);
+        Assertions.assertEquals(context.initialOrbit.getE(), Orbparameters.get(1).getValue() , 1.0e-12);
+        Assertions.assertEquals(context.initialOrbit.getI(), Orbparameters.get(2).getValue() , 1.0e-12);
+        
+        RealMatrix jacobian = estimator.getOptimum().getJacobian();
+        Assertions.assertEquals(8,      jacobian.getColumnDimension());
+
+    }
 
     /**
      * Perfect PV measurements with a perfect start
@@ -104,14 +160,14 @@ public class BatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assertions.assertEquals(6, normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6, normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6, physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6, physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
-
+    
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
     public void testKeplerPVBackward() {
@@ -148,11 +204,11 @@ public class BatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assertions.assertEquals(6, normalizedCovariances.getRowDimension());
+        Assertions.assertEquals(6, normalizedCovariances.getColumnDimension());
+        Assertions.assertEquals(6, physicalCovariances.getRowDimension());
+        Assertions.assertEquals(6, physicalCovariances.getColumnDimension());
+        Assertions.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -197,36 +253,36 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                    Assertions.assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                    Assertions.assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assert.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                Assertions.assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(measurements.size());
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    Assertions.assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
         });
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assert.assertEquals("a", aDriver.getName());
+        Assertions.assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -241,10 +297,11 @@ public class BatchLSEstimatorTest {
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if ("a".equals(driver.getName())) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
             }
         }
 
@@ -295,36 +352,36 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                    Assertions.assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                    Assertions.assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assert.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                Assertions.assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(measurements.size());
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    Assertions.assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
         });
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assert.assertEquals("a", aDriver.getName());
+        Assertions.assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -339,10 +396,11 @@ public class BatchLSEstimatorTest {
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if ("a".equals(driver.getName())) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
             }
         }
 
@@ -417,29 +475,29 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                    Assertions.assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                    Assertions.assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assert.assertEquals(r12.size() + r1.size(), evaluationsProvider.getNumber());
+                Assertions.assertEquals(r12.size() + r1.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(r12.size() + r1.size());
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    Assertions.assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
@@ -447,12 +505,12 @@ public class BatchLSEstimatorTest {
 
         List<DelegatingDriver> parameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assert.assertEquals("a[0]", a0Driver.getName());
+        Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assert.assertEquals("a[1]", a1Driver.getName());
+        Assertions.assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -466,14 +524,10 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
-                            1.0e-3);
-        Assert.assertEquals(0.0010514,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              before.getPVCoordinates().getVelocity()),
-                            1.0e-6);
+        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
+                          before.getPosition()), 1.0e-3);
+        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                          before.getPVCoordinates().getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 2.9e-06,
                                      0.0, 1.1e-05,
@@ -490,24 +544,21 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              determined.getPVCoordinates().getPosition()),
-                            6.2e-6);
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              determined.getPVCoordinates().getVelocity()),
-                            1.6e-9);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
+                          determined.getPosition()), 6.2e-6);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                          determined.getPVCoordinates().getVelocity()), 1.6e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
             }
         }
 
@@ -636,9 +687,9 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                    Assertions.assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                    Assertions.assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
@@ -646,7 +697,7 @@ public class BatchLSEstimatorTest {
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    Assertions.assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
@@ -654,13 +705,13 @@ public class BatchLSEstimatorTest {
 
         List<DelegatingDriver> parameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assert.assertEquals("a[0]", a0Driver.getName());
+        Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assert.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4);
+        Assertions.assertEquals("a[1]", a1Driver.getName());
+        a1Driver.setValue(a1Driver.getValue() - 5.4, null);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),
@@ -673,19 +724,15 @@ public class BatchLSEstimatorTest {
                                                 closeOrbit.getFrame(),
                                                 closeOrbit.getDate(),
                                                 closeOrbit.getMu());
-        Assert.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
-                            1.0e-3);
-        Assert.assertEquals(0.0010514,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              before.getPVCoordinates().getVelocity()),
-                            1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 6,
+        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
+                          before.getPosition()), 1.0e-3);
+        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                          before.getPVCoordinates().getVelocity()), 1.0e-6);
+        EstimationTestUtils.checkFit(context, estimator, 4, 5,
                                      0.0, 4.7e-06,
                                      0.0, 1.4e-05,
-                                     0.0, 4.7e-07,
-                                     0.0, 2.0e-10);
+                                     0.0, 8.8e-07,
+                                     0.0, 3.6e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -697,24 +744,21 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              determined.getPVCoordinates().getPosition()),
-                            1.3e-6);
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              determined.getPVCoordinates().getVelocity()),
-                            1.2e-9);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
+                          determined.getPosition()), 2.7e-6);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                          determined.getPVCoordinates().getVelocity()), 2.9e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
             }
         }
 
@@ -798,29 +842,29 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                    Assertions.assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                    Assertions.assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assert.assertEquals(multiplexed.size(), evaluationsProvider.getNumber());
+                Assertions.assertEquals(multiplexed.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(r12.size() + r1.size());
-                    Assert.fail("an exception should have been thrown");
+                    Assertions.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    Assertions.assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
@@ -828,12 +872,12 @@ public class BatchLSEstimatorTest {
 
         List<DelegatingDriver> parameters = estimator.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assert.assertEquals("a[0]", a0Driver.getName());
+        Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assert.assertEquals("a[1]", a1Driver.getName());
+        Assertions.assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -847,14 +891,10 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
-                            1.0e-3);
-        Assert.assertEquals(0.0010514,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              before.getPVCoordinates().getVelocity()),
-                            1.0e-6);
+        Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
+                          before.getPosition()), 1.0e-3);
+        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                          before.getPVCoordinates().getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.9e-06,
                                      0.0, 8.1e-06,
@@ -871,24 +911,21 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              determined.getPVCoordinates().getPosition()),
-                            3.3e-6);
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              determined.getPVCoordinates().getVelocity()),
-                            1.6e-9);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
+                          determined.getPosition()), 3.3e-6);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
+                          determined.getPVCoordinates().getVelocity()), 1.6e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
             }
         }
 
@@ -939,7 +976,7 @@ public class BatchLSEstimatorTest {
                                          0.0, 3.2e-6,
                                          0.0, 3.8e-7,
                                          0.0, 1.5e-10);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
         }
@@ -1077,17 +1114,19 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
+
         for (final ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
+
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        Assert.assertTrue(propagator.getAllForceModels().get(0) instanceof NewtonianAttraction);
-        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof NewtonianAttraction);
-        Assert.assertNotNull(estimatedParameters.findByName(driverName));
-        Assert.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
-        Assert.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
+        Assertions.assertTrue(propagator.getAllForceModels().get(0) instanceof NewtonianAttraction);
+        Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof NewtonianAttraction);
+        Assertions.assertNotNull(estimatedParameters.findByName(driverName));
+        Assertions.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
+        Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
     }
 
     @Test
@@ -1149,7 +1188,8 @@ public class BatchLSEstimatorTest {
         IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
             if (orbitalParametersEstimated[i]) {
                 final ParameterDriver driver = orbitalElementsDrivers.get(i);
-                Assert.assertEquals(driver.getReferenceValue(), driver.getValue(), driver.getReferenceValue() * 1.0e-3);
+                Assertions.assertEquals(driver.getReferenceValue(), driver.getValue(),
+                        driver.getReferenceValue() * 1.0e-3);
             }
         });
 

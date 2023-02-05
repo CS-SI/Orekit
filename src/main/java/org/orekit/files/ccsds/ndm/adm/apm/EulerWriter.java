@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.Units;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.units.Unit;
@@ -61,7 +61,7 @@ class EulerWriter extends AbstractWriter {
         generator.writeEntry(EulerKey.EULER_FRAME_A.name(), euler.getEndpoints().getFrameA().getName(), null, true);
         generator.writeEntry(EulerKey.EULER_FRAME_B.name(), euler.getEndpoints().getFrameB().getName(), null, true);
         generator.writeEntry(EulerKey.EULER_DIR.name(),
-                             euler.getEndpoints().isA2b() ? AttitudeEndoints.A2B : AttitudeEndoints.B2A,
+                             euler.getEndpoints().isA2b() ? AttitudeEndpoints.A2B : AttitudeEndpoints.B2A,
                              null, true);
 
         // angles

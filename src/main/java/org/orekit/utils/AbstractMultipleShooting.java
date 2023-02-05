@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,12 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.LUDecomposition;
@@ -29,12 +35,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Multiple shooting method using only constraints on state vectors of patch points (and possibly on epoch and integration time).
  * @see "TRAJECTORY DESIGN AND ORBIT MAINTENANCE STRATEGIES IN MULTI-BODY DYNAMICAL REGIMES by Thomas A. Pavlak, Purdue University"
@@ -46,12 +46,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
     /** Patch points along the trajectory. */
     private final List<SpacecraftState> patchedSpacecraftStates;
-
-    /** Derivatives linked to the Propagators.
-     * @deprecated as of 11.1 not used anymore
-     */
-    @Deprecated
-    private List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations;
 
     /** List of Propagators. */
     private final List<NumericalPropagator> propagatorList;
@@ -96,25 +90,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
 
     /** Expected name of the additional equations. */
     private final String additionalName;
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting </p>
-     * @param initialGuessList initial patch points to be corrected
-     * @param propagatorList list of propagators associated to each patch point
-     * @param additionalEquations list of additional equations linked to propagatorList
-     * @param tolerance convergence tolerance on the constraint vector
-     * @param isAutonomous true if the dynamical system is autonomous
-     * @param additionalName name of the additional equations
-     * @deprecated as of 11.1, replaced by {@link #AbstractMultipleShooting(List, List, double, int, boolean, String)}
-     */
-    @Deprecated
-    protected AbstractMultipleShooting(final List<SpacecraftState> initialGuessList,
-                                       final List<NumericalPropagator> propagatorList,
-                                       final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
-                                       final double tolerance, final boolean isAutonomous, final String additionalName) {
-        this(initialGuessList, propagatorList, tolerance, 1, isAutonomous, additionalName);
-        this.additionalEquations = additionalEquations;
-    }
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting </p>
@@ -676,29 +651,11 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     protected abstract double[][] computeAdditionalJacobianMatrix(List<SpacecraftState> propagatedSP);
 
     /** Compute the additional state from the additionalEquations.
-     *  @param initialState SpacecraftState without the additional state
-     *  @param additionalEquations2 Additional Equations.
-     *  @return augmentedSP SpacecraftState with the additional state within.
-     *  @deprecated as of 11.1, replaced by {@link #getAugmentedInitialState(int)}
-     */
-    @Deprecated
-    protected SpacecraftState getAugmentedInitialState(final SpacecraftState initialState,
-                                                       final org.orekit.propagation.integration.AdditionalEquations additionalEquations2) {
-        // should never be called, only implementations by derived classes should be called
-        throw new UnsupportedOperationException();
-    }
-
-    /** Compute the additional state from the additionalEquations.
      *  @param i index of the state
      *  @return augmentedSP SpacecraftState with the additional state within.
      *  @since 11.1
      */
-    protected SpacecraftState getAugmentedInitialState(final int i) {
-        // FIXME: this base implementation is only intended for version 11.1 to delegate to a deprecated method
-        // it should be removed in 12.0 when getAugmentedInitialState(SpacecraftState, AdditionalDerivativesProvider)
-        // is removed and the method should remain abstract in this class and be implemented by derived classes only
-        return getAugmentedInitialState(patchedSpacecraftStates.get(i), additionalEquations.get(i));
-    }
+    protected abstract SpacecraftState getAugmentedInitialState(int i);
 
     /** Get the number of free state components.
      * @return number of free components
@@ -749,5 +706,6 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
     protected List<NumericalPropagator> getPropagatorList() {
         return propagatorList;
     }
+
 
 }

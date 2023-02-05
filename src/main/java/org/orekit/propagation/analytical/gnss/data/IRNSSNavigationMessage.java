@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class IRNSSNavigationMessage extends AbstractNavigationMessage implements GNSSOrbitalElements {
+public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;

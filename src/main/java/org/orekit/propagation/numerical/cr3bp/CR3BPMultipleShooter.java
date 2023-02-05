@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -45,40 +44,6 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
     /** True if orbit is closed. */
     private boolean isClosedOrbit;
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model. </p>
-     * @param initialGuessList initial patch points to be corrected
-     * @param propagatorList list of propagators associated to each patch point
-     * @param additionalEquations list of additional equations linked to propagatorList
-     * @param arcDuration initial guess of the duration of each arc (ignored)
-     * @param tolerance convergence tolerance on the constraint vector
-     * @deprecated as of 11.1, replaced by {@link #CR3BPMultipleShooter(List, List, List, double, double, int)}
-     */
-    @Deprecated
-    public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                 final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
-                                 final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, tolerance, true, STM);
-        stmEquations = additionalEquations.stream().map(ae -> (STMEquations) ae).collect(Collectors.toList());
-    }
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model. </p>
-     * @param initialGuessList initial patch points to be corrected
-     * @param propagatorList list of propagators associated to each patch point
-     * @param stmEquations list of additional derivatives providers linked to propagatorList
-     * @param arcDuration initial guess of the duration of each arc (ignored)
-     * @param tolerance convergence tolerance on the constraint vector
-     * @param maxIter maximum number of iterations
-     * @deprecated replaced by {@link #CR3BPMultipleShooter(List, List, List, double, int)}
-     */
-    @Deprecated
-    public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                final List<STMEquations> stmEquations, final double arcDuration,
-                                final double tolerance, final int maxIter) {
-        this(initialGuessList, propagatorList, stmEquations, tolerance, maxIter);
-    }
 
     /** Simple Constructor.
      * <p> Standard constructor for multiple shooting which can be used with the CR3BP model. </p>

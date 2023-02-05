@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,11 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
-
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
-import org.junit.Assert;
-import org.junit.Test;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -35,6 +32,8 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+
+import java.util.stream.Stream;
 
 public class ManeuverTriggersTest {
 
@@ -61,9 +60,9 @@ public class ManeuverTriggersTest {
                                                                        AbsoluteDate.J2000_EPOCH,
                                                                        Constants.EIGEN5C_EARTH_MU));
         dummy.init(state, state.getDate().shiftedBy(60));
-        dummy.init(new FieldSpacecraftState<>(Decimal64Field.getInstance(), state),
-                   new FieldAbsoluteDate<>(Decimal64Field.getInstance(), state.getDate().shiftedBy(60)));
-        Assert.assertEquals("", dummy.getName());
+        dummy.init(new FieldSpacecraftState<>(Binary64Field.getInstance(), state),
+                   new FieldAbsoluteDate<>(Binary64Field.getInstance(), state.getDate().shiftedBy(60)));
+        Assertions.assertEquals("", dummy.getName());
 
     }
 

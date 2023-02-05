@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,7 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -30,8 +28,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -83,7 +79,7 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
 
         // compute bodies separation vectors and squared norm
         final PVCoordinates bodyPV   = body.getPVCoordinates(s.getDate(), s.getFrame());
-        final Vector3D satToBody     = bodyPV.getPosition().subtract(s.getPVCoordinates().getPosition());
+        final Vector3D satToBody     = bodyPV.getPosition().subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
         // compute relative acceleration
@@ -99,7 +95,7 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
 
         // compute bodies separation vectors and squared norm
         final FieldPVCoordinates<T> bodyPV = body.getPVCoordinates(s.getDate(), s.getFrame());
-        final FieldVector3D<T> satToBody   = bodyPV.getPosition().subtract(s.getPVCoordinates().getPosition());
+        final FieldVector3D<T> satToBody   = bodyPV.getPosition().subtract(s.getPosition());
         final T                r2Sat       = satToBody.getNormSq();
 
         // compute relative acceleration
@@ -107,17 +103,6 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
         final T a  = gm.divide(r2Sat);
         return new FieldVector3D<>(a, satToBody.normalize()).add(bodyPV.getAcceleration());
 
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    @Override
-    /** {@inheritDoc} */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -148,10 +148,10 @@ public class IodGibbs {
 
         //check which orbit is correct
         final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                getPosition();
         final double dist = estP3.subtract(r3).getNorm();
         final Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                getPosition();
         final double dist2 = estP3_2.subtract(r3).getNorm();
 
         if (dist <= dist2) {

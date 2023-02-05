@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,14 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -50,12 +46,17 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 public class GPSPropagatorTest {
 
     private static List<GPSAlmanac> almanacs;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
         GNSSDate.setRolloverReference(new DateComponents(DateComponents.GPS_EPOCH, 7 * 512));
@@ -69,7 +70,7 @@ public class GPSPropagatorTest {
 
     @Test
     public void testClockCorrections() {
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+        final GNSSPropagator propagator = almanacs.get(0).getPropagator();
         propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0)));
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
@@ -78,26 +79,22 @@ public class GPSPropagatorTest {
         for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
             SpacecraftState state = propagator.propagate(date0.shiftedBy(dt));
             double[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
-            Assert.assertEquals(3, corrections.length);
-            Assert.assertEquals(1.33514404296875E-05, corrections[0], 1.0e-19);
+            Assertions.assertEquals(3, corrections.length);
+            Assertions.assertEquals(1.33514404296875E-05, corrections[0], 1.0e-19);
             dtRelMin = FastMath.min(dtRelMin, corrections[1]);
             dtRelMax = FastMath.max(dtRelMax, corrections[1]);
-            Assert.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
+            Assertions.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
         }
-        Assert.assertEquals(0.0,        almanacs.get(0).getToc(), 1.0e-12);
-        Assert.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
-        Assert.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
+        Assertions.assertEquals(0.0,        almanacs.get(0).getToc(), 1.0e-12);
+        Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
+        Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
 
     @Test
     public void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).
-                        attitudeProvider(Utils.defaultLaw()).
-                        mass(1521.0).
-                        eci(FramesFactory.getEME2000()).
-                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
-                        build();
+        final GNSSPropagator propagator = almanacs.get(0).getPropagator(DataContext.getDefault().getFrames(),
+                Utils.defaultLaw(), FramesFactory.getEME2000(), FramesFactory.getITRF(IERSConventions.IERS_2010, false), 1521.0);
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -106,15 +103,15 @@ public class GPSPropagatorTest {
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
         // Checks
-        Assert.assertEquals(0., p0.distance(p1), 0.);
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
     }
 
     @Test
     public void testFrames() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
-        Assert.assertEquals("EME2000", propagator.getFrame().getName());
-        Assert.assertEquals(3.986005e14, almanacs.get(0).getMu(), 1.0e6);
+        final GNSSPropagator propagator = almanacs.get(0).getPropagator();
+        Assertions.assertEquals("EME2000", propagator.getFrame().getName());
+        Assertions.assertEquals(3.986005e14, almanacs.get(0).getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -123,25 +120,25 @@ public class GPSPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
-        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
+        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
+        Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
     }
 
     @Test
     public void testNoReset() {
         try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+            final GNSSPropagator propagator = almanacs.get(0).getPropagator();
             propagator.resetInitialState(propagator.getInitialState());
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
             GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
@@ -150,7 +147,7 @@ public class GPSPropagatorTest {
 
         List<GNSSPropagator> gpsPropagators = new ArrayList<>();
         for (final GPSAlmanac almanac : almanacs) {
-            gpsPropagators.add(new GNSSPropagatorBuilder(almanac).build());
+            gpsPropagators.add(almanac.getPropagator());
         }
 
         // the following map corresponds to the GPS constellation status in early 2016
@@ -260,7 +257,7 @@ public class GPSPropagatorTest {
                 final AbsoluteDate date = tlePropagator.getInitialState().getDate().shiftedBy(dt);
                 final PVCoordinates gpsPV = gpsPropagator.getPVCoordinates(date, gpsPropagator.getECI());
                 final PVCoordinates tlePV = tlePropagator.getPVCoordinates(date, gpsPropagator.getECI());
-                Assert.assertEquals(0.0,
+                Assertions.assertEquals(0.0,
                                     Vector3D.distance(gpsPV.getPosition(), tlePV.getPosition()),
                                     8400.0);
             }
@@ -275,13 +272,13 @@ public class GPSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         for (final GPSAlmanac almanac : almanacs) {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+            final GNSSPropagator propagator = almanac.getPropagator();
             GNSSOrbitalElements elements = propagator.getOrbitalElements();
-            AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.GPS).getDate();
+            AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GPS).getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate central = t0.shiftedBy(dt);
                 final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
-                final double h = 10.0;
+                final double h = 60.0;
                 List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
                 for (int i = -3; i <= 3; ++i) {
                     sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
@@ -295,9 +292,9 @@ public class GPSPropagatorTest {
                 errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
             }
         }
-        Assert.assertEquals(0.0, errorP, 3.8e-9);
-        Assert.assertEquals(0.0, errorV, 3.5e-8);
-        Assert.assertEquals(0.0, errorA, 1.1e-8);
+        Assertions.assertEquals(0.0, errorP, 3.8e-9);
+        Assertions.assertEquals(0.0, errorV, 3.5e-8);
+        Assertions.assertEquals(0.0, errorA, 1.1e-8);
 
     }
 
@@ -323,12 +320,12 @@ public class GPSPropagatorTest {
         goe.setCrs(87.03125);
         goe.setCic(3.203749656677246E-7);
         goe.setCis(4.0978193283081055E-8);
-        goe.setDate(new GNSSDate(goe.getWeek(), 1000.0 * goe.getTime(), SatelliteSystem.GPS).getDate());
+        goe.setDate(new GNSSDate(goe.getWeek(), goe.getTime(), SatelliteSystem.GPS).getDate());
 
         // Date of the GPS orbital elements
         final AbsoluteDate target = goe.getDate();
         // Build the GPS propagator
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
+        final GNSSPropagator propagator = goe.getPropagator();
         // Compute the PV coordinates at the date of the GPS orbital elements
         final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Computed position
@@ -336,7 +333,7 @@ public class GPSPropagatorTest {
         // Expected position (reference from IGS file igu20484_00.sp3)
         final Vector3D expectedPos = new Vector3D(-4920705.292, 24248099.200, 9236130.101);
 
-        Assert.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 3.2);
+        Assertions.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 3.2);
     }
 
     @Test
@@ -350,7 +347,7 @@ public class GPSPropagatorTest {
                         build();
         try {
             propagator.setupMatricesComputation("stm", null, null);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (UnsupportedOperationException uoe) {
             // expected
         }
@@ -364,8 +361,8 @@ public class GPSPropagatorTest {
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
-        Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
-        Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
+        Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
+        Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
 
     }
 

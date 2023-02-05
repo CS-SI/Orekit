@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,7 @@
 package org.orekit.files.ccsds.utils.lexical;
 
 import java.util.List;
-
-import org.xml.sax.Attributes;
+import java.util.Map;
 
 /** Builder for building {@link ParseToken} from XML elements.
  * <p>
@@ -39,15 +38,17 @@ public interface XmlTokenBuilder {
 
     /** Create a list of parse tokens.
      * @param startTag if true we are parsing the start tag from an XML element
+     * @param isLeaf if true and startTag is false, we are processing the end tag of a leaf XML element
      * @param qName element qualified name
      * @param content element content
      * @param attributes element attributes
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
      * @return list of parse tokens
+     * @since 12.0
      */
-    List<ParseToken> buildTokens(boolean startTag, String qName,
-                                 String content, Attributes attributes,
+    List<ParseToken> buildTokens(boolean startTag, boolean isLeaf, String qName,
+                                 String content, Map<String, String> attributes,
                                  int lineNumber, String fileName);
 
 }

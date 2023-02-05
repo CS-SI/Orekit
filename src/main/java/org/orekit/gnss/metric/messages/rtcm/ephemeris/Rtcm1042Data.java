@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,8 +82,8 @@ public class Rtcm1042Data extends RtcmEphemerisData {
         final double toe  = beidouNavigationMessage.getTime();
 
         // Set the ephemeris reference data
-        beidouNavigationMessage.setDate(new GNSSDate(week, SEC_TO_MILLI * toe, system, timeScales).getDate());
-        beidouNavigationMessage.setEpochToc(new GNSSDate(week, SEC_TO_MILLI * beidouToc, system, timeScales).getDate());
+        beidouNavigationMessage.setDate(new GNSSDate(week, toe, system, timeScales).getDate());
+        beidouNavigationMessage.setEpochToc(new GNSSDate(week, beidouToc, system, timeScales).getDate());
 
         // Return the navigation message
         return beidouNavigationMessage;

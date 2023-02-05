@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,6 @@
  */
 package org.orekit.estimation.measurements.filtering;
 
-import java.util.ArrayList;
-import java.util.SortedSet;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -28,9 +25,9 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -63,13 +60,16 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import java.util.ArrayList;
+import java.util.SortedSet;
+
 public class ElevationFilteringTest {
 
 
     //Elevation threshold
     final double threshold = FastMath.toRadians(5);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -154,11 +154,11 @@ public class ElevationFilteringTest {
                 processMeasurements.add(meas);
             }
         }
-        Assert.assertEquals(processMeasurements.size(), measurementsPlusThreshold.size());
+        Assertions.assertEquals(processMeasurements.size(), measurementsPlusThreshold.size());
         int i = 0;
         for(ObservedMeasurement<?> meas: measurementsPlusThreshold) {
-            Assert.assertEquals(0.0,  meas.getDate().durationFrom(processMeasurements.get(i).getDate()), 1.0e-9);
-            Assert.assertEquals(0.0, meas.getObservedValue()[0] - processMeasurements.get(i).getObservedValue()[0], 1);
+            Assertions.assertEquals(0.0,  meas.getDate().durationFrom(processMeasurements.get(i).getDate()), 1.0e-9);
+            Assertions.assertEquals(0.0, meas.getObservedValue()[0] - processMeasurements.get(i).getObservedValue()[0], 1);
             i++;
         }
     }

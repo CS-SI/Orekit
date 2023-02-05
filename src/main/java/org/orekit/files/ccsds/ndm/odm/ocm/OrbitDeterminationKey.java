@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -120,6 +121,12 @@ public enum OrbitDeterminationKey {
 
     /** Description of consider parameters. */
     CONSIDER_PARAMS((token, context, container) -> token.processAsNormalizedList(container::setConsiderParameters)),
+
+    /** Specific Energy Dissipation Rate.
+     * @since 12.0
+     */
+    SEDR((token, context, container) -> token.processAsDouble(Units.W_PER_KG, context.getParsedUnitsBehavior(),
+                                                              container::setSedr)),
 
     /** Number of sensors used. */
     SENSORS_N((token, context, container) -> token.processAsInteger(container::setSensorsN)),

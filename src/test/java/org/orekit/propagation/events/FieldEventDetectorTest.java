@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,11 +30,11 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -68,7 +68,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testEventHandlerInit() {
-        doTestEventHandlerInit(Decimal64Field.getInstance());
+        doTestEventHandlerInit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEventHandlerInit(Field<T> field) {
@@ -86,12 +86,11 @@ public class FieldEventDetectorTest {
                                                              FramesFactory.getEME2000(), date, zero.add(mu));
         // mutable boolean
         final boolean[] eventOccurred = new boolean[1];
-        FieldEventHandler<FieldDateDetector<T>, T> handler =
-                new FieldEventHandler<FieldDateDetector<T>, T>() {
+        FieldEventHandler<T> handler = new FieldEventHandler<T>() {
             private boolean initCalled;
             @Override
             public Action eventOccurred(FieldSpacecraftState<T> s,
-                                        FieldDateDetector<T> detector,
+                                        FieldEventDetector<T> detector,
                                         boolean increasing) {
                 if (!initCalled) {
                     throw new RuntimeException("init() not called before eventOccurred()");
@@ -103,7 +102,7 @@ public class FieldEventDetectorTest {
             @Override
             public void init(final FieldSpacecraftState<T> initialState,
                              final FieldAbsoluteDate<T> target,
-                             final FieldDateDetector<T> detector) {
+                             final FieldEventDetector<T> detector) {
                 initCalled = true;
             }
         };
@@ -112,13 +111,13 @@ public class FieldEventDetectorTest {
         T stepSize = zero.add(60.0);
         propagator.addEventDetector(new FieldDateDetector<>(date.shiftedBy(stepSize.multiply(5.25))).withHandler(handler));
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
-        Assert.assertTrue(eventOccurred[0]);
+        Assertions.assertTrue(eventOccurred[0]);
 
     }
 
     @Test
     public void testBasicScheduling() {
-        doTestBasicScheduling(Decimal64Field.getInstance());
+        doTestBasicScheduling(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestBasicScheduling(Field<T> field) {
@@ -141,12 +140,12 @@ public class FieldEventDetectorTest {
         propagator.addEventDetector(new FieldDateDetector<>(date.shiftedBy(stepSize.multiply(5.25))).withHandler(checker));
         propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
-        Assert.assertTrue(checker.outOfOrderCallDetected());
+        Assertions.assertTrue(checker.outOfOrderCallDetected());
 
     }
 
     private static class OutOfOrderChecker<T extends CalculusFieldElement<T>>
-        implements FieldEventHandler<FieldDateDetector<T>, T>, FieldOrekitFixedStepHandler<T> {
+        implements FieldEventHandler<T>, FieldOrekitFixedStepHandler<T> {
 
         private FieldAbsoluteDate<T> triggerDate;
         private boolean outOfOrderCallDetected;
@@ -158,7 +157,7 @@ public class FieldEventDetectorTest {
             this.stepSize = stepSize;
         }
 
-        public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T> detector, boolean increasing) {
+        public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
             triggerDate = s.getDate();
             return Action.CONTINUE;
         }
@@ -171,7 +170,7 @@ public class FieldEventDetectorTest {
                 double dt = currentState.getDate().durationFrom(triggerDate).getReal();
                 if (dt < 0) {
                     outOfOrderCallDetected = true;
-                    Assert.assertTrue(FastMath.abs(dt) < (2 * stepSize.getReal()));
+                    Assertions.assertTrue(FastMath.abs(dt) < (2 * stepSize.getReal()));
                 }
             }
         }
@@ -184,7 +183,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testIssue108Numerical() {
-        doTestIssue108Numerical(Decimal64Field.getInstance());
+        doTestIssue108Numerical(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue108Numerical(Field<T> field) {
@@ -205,15 +204,15 @@ public class FieldEventDetectorTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
-                                                       new FieldStopOnEvent<GCallsCounter<T>, T>());
+                                                       new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(step.multiply(n)));
-        Assert.assertEquals(n + 1, counter.getCount());
+        Assertions.assertEquals(n + 1, counter.getCount());
     }
 
     @Test
     public void testIssue108Analytical() {
-        doTestIssue108Analytical(Decimal64Field.getInstance());
+        doTestIssue108Analytical(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue108Analytical(Field<T> field) {
@@ -232,12 +231,12 @@ public class FieldEventDetectorTest {
         final int    n    = 100;
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
-                                                       new FieldStopOnEvent<GCallsCounter<T>, T>());
+                                                       new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
         // analytical propagator can take one big step, further reducing calls to g()
-        Assert.assertEquals(2, counter.getCount());
+        Assertions.assertEquals(2, counter.getCount());
     }
 
     private static class GCallsCounter<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {
@@ -245,14 +244,14 @@ public class FieldEventDetectorTest {
         private int count;
 
         public GCallsCounter(final T maxCheck, final T threshold,
-                             final int maxIter, final FieldEventHandler<? super GCallsCounter<T>, T> handler) {
+                             final int maxIter, final FieldEventHandler<T> handler) {
             super(maxCheck, threshold, maxIter, handler);
             count = 0;
         }
 
         protected GCallsCounter<T> create(final T newMaxCheck, final T newThreshold,
                                           final int newMaxIter,
-                                          final FieldEventHandler<? super GCallsCounter<T>, T> newHandler) {
+                                          final FieldEventHandler<T> newHandler) {
             return new GCallsCounter<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -269,7 +268,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testNoisyGFunction() {
-        doTestNoisyGFunction(Decimal64Field.getInstance());
+        doTestNoisyGFunction(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNoisyGFunction(Field<T> field) {
@@ -303,19 +302,20 @@ public class FieldEventDetectorTest {
                                                                                                                         zero.add(-5172.2177085540500))),
                                                              eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
         k2.addEventDetector(new FieldCloseApproachDetector<>(zero.add(2015.243454166727), zero.add(0.0001), 100,
-                                                             new FieldContinueOnEvent<FieldCloseApproachDetector<T>, T>(),
+                                                             new FieldContinueOnEvent<T>(),
                                                              k1));
         k2.addEventDetector(new FieldDateDetector<>(zero.add(Constants.JULIAN_DAY), zero.add(1.0e-6), interruptDates));
         FieldSpacecraftState<T> s = k2.propagate(startDate, targetDate);
-        Assert.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
+        Assertions.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
     }
 
-    private static class FieldCloseApproachDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
+    private static class FieldCloseApproachDetector<T extends CalculusFieldElement<T>>
+        extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
 
         private final FieldPVCoordinatesProvider<T> provider;
 
         public FieldCloseApproachDetector(T maxCheck, T threshold,
-                                          final int maxIter, final FieldEventHandler<? super FieldCloseApproachDetector<T>, T> handler,
+                                          final int maxIter, final FieldEventHandler<T> handler,
                                           FieldPVCoordinatesProvider<T> provider) {
             super(maxCheck, threshold, maxIter, handler);
             this.provider = provider;
@@ -332,7 +332,7 @@ public class FieldEventDetectorTest {
 
         protected FieldCloseApproachDetector<T> create(final T newMaxCheck, final T newThreshold,
                                                        final int newMaxIter,
-                                                       final FieldEventHandler<? super FieldCloseApproachDetector<T>, T> newHandler) {
+                                                       final FieldEventHandler<T> newHandler) {
             return new FieldCloseApproachDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                     provider);
         }
@@ -341,7 +341,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testWrappedException() {
-        doTestWrappedException(Decimal64Field.getInstance());
+        doTestWrappedException(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
@@ -372,10 +372,10 @@ public class FieldEventDetectorTest {
                 }
             });
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertSame(OrekitException.class, oe.getClass());
-            Assert.assertSame(dummyCause, oe.getCause().getCause());
+            Assertions.assertSame(OrekitException.class, oe.getClass());
+            Assertions.assertSame(dummyCause, oe.getCause().getCause());
             String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
                     "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
                     "Last iteration at 2011-05-11T01:00:00.000Z (g=-3.6E3)";
@@ -386,7 +386,7 @@ public class FieldEventDetectorTest {
 
     @Test
     public void testDefaultMethods() {
-        doTestDefaultMethods(Decimal64Field.getInstance());
+        doTestDefaultMethods(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDefaultMethods(final Field<T> field) {
@@ -413,8 +413,8 @@ public class FieldEventDetectorTest {
             }
 
             @Override
-            public Action eventOccurred(FieldSpacecraftState<T> s, boolean increasing) {
-                return Action.RESET_STATE;
+            public FieldEventHandler<T> getHandler() {
+                return (state, detector, increasing) ->  Action.RESET_STATE;
             }
        };
 
@@ -431,13 +431,13 @@ public class FieldEventDetectorTest {
                                                                                         FramesFactory.getEME2000(),
                                                                                         FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU)));
-       Assert.assertSame(s, dummyDetector.resetState(s));
+       Assertions.assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
 
     }
 
     @Test
     public void testWrongConfiguration() {
-        doTestWrongConfiguration(Decimal64Field.getInstance());
+        doTestWrongConfiguration(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestWrongConfiguration(final Field<T> field) {
@@ -445,31 +445,31 @@ public class FieldEventDetectorTest {
             new FieldDateDetector<>(field.getZero().newInstance(-1.0),
                                     field.getZero().newInstance(1.0e-6),
                                     FieldAbsoluteDate.getArbitraryEpoch(field));
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
-            Assert.assertEquals(-1.0, ((Double) oe.getParts()[0]).doubleValue(), 1.0e-15);
+            Assertions.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
+            Assertions.assertEquals(-1.0, ((Double) oe.getParts()[0]).doubleValue(), 1.0e-15);
         }
     }
 
     @Test
     public void testForwardAnalytical() {
-        doTestScheduling(Decimal64Field.getInstance(), 0.0, 1.0, 21, this::buildAnalytical);
+        doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 21, this::buildAnalytical);
     }
 
     @Test
     public void testBackwardAnalytical() {
-        doTestScheduling(Decimal64Field.getInstance(), 1.0, 0.0, 21, this::buildAnalytical);
+        doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 21, this::buildAnalytical);
     }
 
     @Test
     public void testForwardNumerical() {
-        doTestScheduling(Decimal64Field.getInstance(), 0.0, 1.0, 23, this::buildNumerical);
+        doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 23, this::buildNumerical);
     }
 
     @Test
     public void testBackwardNumerical() {
-        doTestScheduling(Decimal64Field.getInstance(), 1.0, 0.0, 23, this::buildNumerical);
+        doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 23, this::buildNumerical);
     }
 
     private <T extends CalculusFieldElement<T>> FieldPropagator<T> buildAnalytical(final FieldOrbit<T> orbit) {
@@ -515,7 +515,7 @@ public class FieldEventDetectorTest {
 
         for (int i = 0; i < 10; ++i) {
             propagator.addEventDetector(new FieldDateDetector<>(initialDate.shiftedBy(0.0625 * (i + 1))).
-                               withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> detector, boolean increasing) -> {
+                               withHandler((state, detector, increasing) -> {
                                    checker.callDate(state.getDate());
                                    return Action.CONTINUE;
                                }));
@@ -523,7 +523,7 @@ public class FieldEventDetectorTest {
 
         propagator.propagate(initialDate.shiftedBy(start), initialDate.shiftedBy(stop));
 
-        Assert.assertEquals(expectedCalls, checker.calls);
+        Assertions.assertEquals(expectedCalls, checker.calls);
 
     }
 
@@ -547,14 +547,14 @@ public class FieldEventDetectorTest {
                 // check scheduling is always consistent with integration direction
                 if (start.isBefore(stop)) {
                     // forward direction
-                    Assert.assertTrue(date.isAfterOrEqualTo(start));
-                    Assert.assertTrue(date.isBeforeOrEqualTo(stop));
-                    Assert.assertTrue(date.isAfterOrEqualTo(last));
+                    Assertions.assertTrue(date.isAfterOrEqualTo(start));
+                    Assertions.assertTrue(date.isBeforeOrEqualTo(stop));
+                    Assertions.assertTrue(date.isAfterOrEqualTo(last));
                } else {
                     // backward direction
-                   Assert.assertTrue(date.isBeforeOrEqualTo(start));
-                   Assert.assertTrue(date.isAfterOrEqualTo(stop));
-                   Assert.assertTrue(date.isBeforeOrEqualTo(last));
+                   Assertions.assertTrue(date.isBeforeOrEqualTo(start));
+                   Assertions.assertTrue(date.isAfterOrEqualTo(stop));
+                   Assertions.assertTrue(date.isBeforeOrEqualTo(last));
                 }
             }
             last = date;
@@ -563,7 +563,7 @@ public class FieldEventDetectorTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         mu = Constants.EIGEN5C_EARTH_MU;

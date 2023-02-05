@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -886,6 +886,51 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
                                  add(dCdP[5][5].multiply(nonKeplerianMeanMotion));
 
         return new FieldVector3D<>(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
+    /** {@inheritDoc} */
+    protected FieldVector3D<T> initPosition() {
+        // get equinoctial parameters
+        final T equEx = getEquinoctialEx();
+        final T equEy = getEquinoctialEy();
+        final T hx = getHx();
+        final T hy = getHy();
+        final T lE = getLE();
+        // inclination-related intermediate parameters
+        final T hx2   = hx.multiply(hx);
+        final T hy2   = hy.multiply(hy);
+        final T factH = (hx2.add(1).add(hy2)).reciprocal();
+
+        // reference axes defining the orbital plane
+        final T ux = (hx2.add(1).subtract(hy2)).multiply(factH);
+        final T uy =  hx.multiply(2).multiply(hy).multiply(factH);
+        final T uz = hy.multiply(-2).multiply(factH);
+
+        final T vx = uy;
+        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
+        final T vz =  hx.multiply(factH).multiply(2);
+
+        // eccentricity-related intermediate parameters
+        final T exey = equEx.multiply(equEy);
+        final T ex2  = equEx.multiply(equEx);
+        final T ey2  = equEy.multiply(equEy);
+        final T e2   = ex2.add(ey2);
+        final T eta  = e2.negate().add(1).sqrt().add(1);
+        final T beta = eta.reciprocal();
+
+        // eccentric latitude argument
+        final FieldSinCos<T> scLe = FastMath.sinCos(lE);
+        final T cLe    = scLe.cos();
+        final T sLe    = scLe.sin();
+
+        // coordinates of position and velocity in the orbital plane
+        final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
+        final T y      = a.multiply(beta.negate().multiply(ex2).add(1).multiply(sLe).add(beta.multiply(exey).multiply(cLe)).subtract(equEy));
+
+        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
+                                   x.multiply(uy).add(y.multiply(vy)),
+                                   x.multiply(uz).add(y.multiply(vz)));
 
     }
 

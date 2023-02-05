@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.Arrays;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -40,13 +36,17 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.Arrays;
+
 public class FieldDSSTNewtonianAttractionTest {
 
     private static final double eps  = 1.0e-19;
 
     @Test
     public void testGetMeanElementRate() {
-        doTestGetMeanElementRate(Decimal64Field.getInstance());
+        doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
@@ -84,16 +84,16 @@ public class FieldDSSTNewtonianAttractionTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(0.0,                   elements[0].getReal(), eps);
-        Assert.assertEquals(0.0,                   elements[1].getReal(), eps);
-        Assert.assertEquals(0.0,                   elements[2].getReal(), eps);
-        Assert.assertEquals(0.0,                   elements[3].getReal(), eps);
-        Assert.assertEquals(0.0,                   elements[4].getReal(), eps);
-        Assert.assertEquals(1.4585773985530907E-4, elements[5].getReal(), eps);
+        Assertions.assertEquals(0.0,                   elements[0].getReal(), eps);
+        Assertions.assertEquals(0.0,                   elements[1].getReal(), eps);
+        Assertions.assertEquals(0.0,                   elements[2].getReal(), eps);
+        Assertions.assertEquals(0.0,                   elements[3].getReal(), eps);
+        Assertions.assertEquals(0.0,                   elements[4].getReal(), eps);
+        Assertions.assertEquals(1.4585773985530907E-4, elements[5].getReal(), eps);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }

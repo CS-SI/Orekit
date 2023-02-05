@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.models.earth.weather;
 
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -73,11 +73,11 @@ public class GlobalPressureTemperature2ModelTest {
         final double pressure    = model.getPressure();
         final double e           = model.getWaterVaporPressure();
 
-        Assert.assertEquals(22.12,     temperature, 2.3e-1);
-        Assert.assertEquals(1002.56,   pressure,    5.1e-1);
-        Assert.assertEquals(0.0012647, a[0],        1.1e-7);
-        Assert.assertEquals(0.0005726, a[1],        8.6e-8);
-        Assert.assertEquals(15.63,     e,           5.0e-2);
+        Assertions.assertEquals(22.12,     temperature, 2.3e-1);
+        Assertions.assertEquals(1002.56,   pressure,    5.1e-1);
+        Assertions.assertEquals(0.0012647, a[0],        1.1e-7);
+        Assertions.assertEquals(0.0005726, a[1],        8.6e-8);
+        Assertions.assertEquals(15.63,     e,           5.0e-2);
 
     }
 
@@ -111,11 +111,11 @@ public class GlobalPressureTemperature2ModelTest {
         model1.weatherParameters(height, date);
         model2.weatherParameters(height, date);
 
-        Assert.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
-        Assert.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
-        Assert.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
-        Assert.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
-        Assert.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
+        Assertions.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
+        Assertions.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
+        Assertions.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
+        Assertions.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
+        Assertions.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
 
         // Test longitude = 180° and longitude = -180°
         longitude1 = FastMath.toRadians(180.0);
@@ -127,11 +127,11 @@ public class GlobalPressureTemperature2ModelTest {
         model1.weatherParameters(height, date);
         model2.weatherParameters(height, date);
 
-        Assert.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
-        Assert.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
-        Assert.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
-        Assert.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
-        Assert.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
+        Assertions.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
+        Assertions.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
+        Assertions.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
+        Assertions.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
+        Assertions.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
 
         // Test longitude = 0° and longitude = 360°
         longitude1 = FastMath.toRadians(0.0);
@@ -143,11 +143,11 @@ public class GlobalPressureTemperature2ModelTest {
         model1.weatherParameters(height, date);
         model2.weatherParameters(height, date);
 
-        Assert.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
-        Assert.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
-        Assert.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
-        Assert.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
-        Assert.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
+        Assertions.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
+        Assertions.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
+        Assertions.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
+        Assertions.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
+        Assertions.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
 
     }
 
@@ -167,11 +167,11 @@ public class GlobalPressureTemperature2ModelTest {
         final String fileName = "corrupted-bad-data-gpt2_5.grd";
         try {
         new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
     }
@@ -192,10 +192,10 @@ public class GlobalPressureTemperature2ModelTest {
         final String fileName = "corrupted-irregular-grid-gpt2_5.grd";
         try {
         new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
-            Assert.assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
+            Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
+            Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
         }
 
     }

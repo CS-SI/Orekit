@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -37,12 +34,16 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EclipseDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EphemerisEventsTest {
 
@@ -114,11 +115,10 @@ public class EphemerisEventsTest {
                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                               withMaxCheck(60.0).
                               withThreshold(1.0e-3).
-                              withHandler(new EventHandler<EclipseDetector>() {
-                                public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
-                                                            boolean increasing)
-                                    {
-                                    Assert.assertEquals(type, s.getOrbit().getType());
+                              withHandler(new EventHandler() {
+                                public Action eventOccurred(SpacecraftState s, EventDetector detector,
+                                                            boolean increasing) {
+                                    Assertions.assertEquals(type, s.getOrbit().getType());
                                     if (increasing) {
                                         ++inEclipsecounter;
                                     } else {
@@ -152,12 +152,12 @@ public class EphemerisEventsTest {
 
         ephem.clearStepHandlers();
         SpacecraftState state = ephem.propagate(computeEnd);
-        Assert.assertEquals(computeEnd, state.getDate());
-        Assert.assertEquals(14, inEclipsecounter);
-        Assert.assertEquals(14, outEclipsecounter);
+        Assertions.assertEquals(computeEnd, state.getDate());
+        Assertions.assertEquals(14, inEclipsecounter);
+        Assertions.assertEquals(14, outEclipsecounter);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         inEclipsecounter = 0;

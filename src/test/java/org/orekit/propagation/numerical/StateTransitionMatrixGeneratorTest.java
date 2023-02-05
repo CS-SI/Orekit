@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import static org.hamcrest.CoreMatchers.is;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -38,9 +31,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -84,10 +77,17 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.hamcrest.CoreMatchers.is;
+
 /** Unit tests for {@link StateTransitionMatrixGenerator}. */
 public class StateTransitionMatrixGeneratorTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -142,10 +142,9 @@ public class StateTransitionMatrixGeneratorTest {
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
-            public double[] derivatives(SpacecraftState s) { return null; }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[1], null);
-                }
+            }
         });
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
         propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
@@ -161,8 +160,8 @@ public class StateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
 
         // intermediate state has really different matrices, they are still building up
-        Assert.assertEquals(0.1253, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-4);
-        Assert.assertEquals(0.0225, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-4);
+        Assertions.assertEquals(0.1253, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-4);
+        Assertions.assertEquals(0.0225, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-4);
 
         // restarting propagation where we left it
         final SpacecraftState     state2       = propagator2.propagate(firing.shiftedBy(2 * duration));
@@ -170,8 +169,8 @@ public class StateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
-        Assert.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.3e-13 * stm1.getNorm1());
-        Assert.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-11 * jacobian1.getNorm1());
+        Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.3e-13 * stm1.getNorm1());
+        Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-11 * jacobian1.getNorm1());
 
     }
 
@@ -243,7 +242,7 @@ public class StateTransitionMatrixGeneratorTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 6.0e-2);
+                        Assertions.assertEquals(0, error, 6.0e-2);
 
                     }
                 }
@@ -284,7 +283,7 @@ public class StateTransitionMatrixGeneratorTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 1.0e-3);
+                        Assertions.assertEquals(0, error, 1.0e-3);
 
                     }
                 }
@@ -312,17 +311,17 @@ public class StateTransitionMatrixGeneratorTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
-        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getNameSpan(new AbsoluteDate()), gmDriver.getNameSpan(new AbsoluteDate()));
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
-        Assert.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
-        final Vector3D position = pickUp.getState().getPVCoordinates().getPosition();
+        Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
+        final Vector3D position = pickUp.getState().getPosition();
         final double   r        = position.getNorm();
 
         // here, we check that the trivial partial derivative of Newton acceleration is computed correctly
-        Assert.assertEquals(-position.getX() / (r * r * r), pickUp.getAccPartial()[0], 1.0e-15 / (r * r));
-        Assert.assertEquals(-position.getY() / (r * r * r), pickUp.getAccPartial()[1], 1.0e-15 / (r * r));
-        Assert.assertEquals(-position.getZ() / (r * r * r), pickUp.getAccPartial()[2], 1.0e-15 / (r * r));
+        Assertions.assertEquals(-position.getX() / (r * r * r), pickUp.getAccPartial()[0], 1.0e-15 / (r * r));
+        Assertions.assertEquals(-position.getY() / (r * r * r), pickUp.getAccPartial()[1], 1.0e-15 / (r * r));
+        Assertions.assertEquals(-position.getZ() / (r * r * r), pickUp.getAccPartial()[2], 1.0e-15 / (r * r));
 
     }
 
@@ -346,16 +345,16 @@ public class StateTransitionMatrixGeneratorTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
-        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getNameSpan(new AbsoluteDate()), gmDriver.getNameSpan(new AbsoluteDate()));
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
-        Assert.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
-        final Vector3D position = pickUp.getState().getPVCoordinates().getPosition();
+        Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
+        final Vector3D position = pickUp.getState().getPosition();
         final double   r        = position.getNorm();
         // here we check that when µ appear is another force model, partial derivatives are not Newton-only anymore
-        Assert.assertTrue(FastMath.abs(-position.getX() / (r * r * r) - pickUp.getAccPartial()[0]) > 2.0e-4 / (r * r));
-        Assert.assertTrue(FastMath.abs(-position.getY() / (r * r * r) - pickUp.getAccPartial()[1]) > 2.0e-4 / (r * r));
-        Assert.assertTrue(FastMath.abs(-position.getZ() / (r * r * r) - pickUp.getAccPartial()[2]) > 2.0e-4 / (r * r));
+        Assertions.assertTrue(FastMath.abs(-position.getX() / (r * r * r) - pickUp.getAccPartial()[0]) > 2.0e-4 / (r * r));
+        Assertions.assertTrue(FastMath.abs(-position.getY() / (r * r * r) - pickUp.getAccPartial()[1]) > 2.0e-4 / (r * r));
+        Assertions.assertTrue(FastMath.abs(-position.getZ() / (r * r * r) - pickUp.getAccPartial()[2]) > 2.0e-4 / (r * r));
 
     }
 
@@ -403,7 +402,7 @@ public class StateTransitionMatrixGeneratorTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUpA.getStm().getEntry(i, j) - dYdY0RefA[i][j]) / dYdY0RefA[i][j]);
-                        Assert.assertEquals(0, error, 6.0e-2);
+                        Assertions.assertEquals(0, error, 6.0e-2);
 
                     }
                 }
@@ -413,7 +412,7 @@ public class StateTransitionMatrixGeneratorTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUpB.getStm().getEntry(i, j) - dYdY0RefB[i][j]) / dYdY0RefB[i][j]);
-                        Assert.assertEquals(0, error, 6.0e-2);
+                        Assertions.assertEquals(0, error, 6.0e-2);
 
                     }
                 }
@@ -456,8 +455,8 @@ public class StateTransitionMatrixGeneratorTest {
         p1.setupMatricesComputation("stm1", null, null);
         final List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
                                               propagate(startDate, endDate);
-        Assert.assertEquals(-0.07953750951271785, results.get(0).getAdditionalState("stm0")[0], 1.0e-10);
-        Assert.assertEquals(-0.07953750951271785, results.get(1).getAdditionalState("stm1")[0], 1.0e-10);
+        Assertions.assertEquals(-0.07953750951271785, results.get(0).getAdditionalState("stm0")[0], 1.0e-10);
+        Assertions.assertEquals(-0.07953750951271785, results.get(1).getAdditionalState("stm1")[0], 1.0e-10);
     }
 
     @Test
@@ -474,7 +473,7 @@ public class StateTransitionMatrixGeneratorTest {
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
         propagator.addAdditionalDerivativesProvider(stmGenerator);
-        Assert.assertTrue(stmGenerator.yield(new SpacecraftState(initialOrbit)));
+        Assertions.assertTrue(stmGenerator.yield(new SpacecraftState(initialOrbit)));
      }
 
     @Test
@@ -497,11 +496,11 @@ public class StateTransitionMatrixGeneratorTest {
                                                          propagator.getOrbitType(),
                                                          propagator.getPositionAngleType());
         } catch (OrekitException oe) {
-            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2, oe.getSpecifier());
-            Assert.assertEquals(5, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[1]).intValue());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[2]).intValue());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[3]).intValue());
+            Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2, oe.getSpecifier());
+            Assertions.assertEquals(5, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[3]).intValue());
         }
 
         try {
@@ -510,11 +509,11 @@ public class StateTransitionMatrixGeneratorTest {
                                                          propagator.getOrbitType(),
                                                          propagator.getPositionAngleType());
         } catch (OrekitException oe) {
-            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2, oe.getSpecifier());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(5, ((Integer) oe.getParts()[1]).intValue());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[2]).intValue());
-            Assert.assertEquals(6, ((Integer) oe.getParts()[3]).intValue());
+            Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2, oe.getSpecifier());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(5, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[3]).intValue());
         }
 
     }
@@ -644,7 +643,7 @@ public class StateTransitionMatrixGeneratorTest {
         propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalState(SpacecraftState state) {
-                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(), 0, propulsionModel.getParametersDrivers().size());
+                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                     propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
                 };
@@ -706,7 +705,7 @@ public class StateTransitionMatrixGeneratorTest {
         @Override
         public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
             {
-            return s.getPVCoordinates().getPosition();
+            return s.getPosition();
         }
 
         @SuppressWarnings("unchecked")
@@ -714,9 +713,9 @@ public class StateTransitionMatrixGeneratorTest {
         public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
             {
-            this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPosition();
             this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
-            return s.getPVCoordinates().getPosition();
+            return s.getPosition();
         }
 
         @Override

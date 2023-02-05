@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,11 @@
 
 package org.orekit.estimation.iod;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -49,6 +47,8 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.List;
 
 /**
  *
@@ -115,9 +115,9 @@ public class IodLambertTest {
                                             /*stapos1.add*/(position1), date1,
                                             /*stapos2.add*/(position2), date2);
 
-        Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-9 * context.initialOrbit.getA());
-        Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-9 * context.initialOrbit.getE());
-        Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-9 * context.initialOrbit.getI());
+        Assertions.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-9 * context.initialOrbit.getA());
+        Assertions.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-9 * context.initialOrbit.getE());
+        Assertions.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-9 * context.initialOrbit.getI());
     }
 
     /** Testing IOD Lambert estimation for several orbital periods.
@@ -144,7 +144,7 @@ public class IodLambertTest {
         final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
         double[] refOrbitArray = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
-        final Vector3D position1 = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();
 
         // Orbit period
@@ -168,7 +168,7 @@ public class IodLambertTest {
 
             // Propagate to test date
             final AbsoluteDate date2 = date1.shiftedBy(dts[i]);
-            final Vector3D position2 = propagator.propagate(date2).getPVCoordinates().getPosition();
+            final Vector3D position2 = propagator.propagate(date2).getPosition();
 
             // Instantiate the IOD method
             final IodLambert iod = new IodLambert(mu);
@@ -178,12 +178,12 @@ public class IodLambertTest {
 
             // Test relative values
             final double relTol = 1e-12;
-            Assert.assertEquals(refOrbit.getA(),                             orbit.getA(),                             relTol * refOrbit.getA());
-            Assert.assertEquals(refOrbit.getE(),                             orbit.getE(),                             relTol * refOrbit.getE());
-            Assert.assertEquals(refOrbit.getI(),                             orbit.getI(),                             relTol * refOrbit.getI());
-            Assert.assertEquals(refOrbit.getPerigeeArgument(),               orbit.getPerigeeArgument(),               relTol * refOrbit.getPerigeeArgument());
-            Assert.assertEquals(refOrbit.getRightAscensionOfAscendingNode(), orbit.getRightAscensionOfAscendingNode(), relTol * refOrbit.getRightAscensionOfAscendingNode());
-            Assert.assertEquals(refOrbit.getTrueAnomaly(),                   orbit.getTrueAnomaly(),                   relTol * refOrbit.getTrueAnomaly());
+            Assertions.assertEquals(refOrbit.getA(),                             orbit.getA(),                             relTol * refOrbit.getA());
+            Assertions.assertEquals(refOrbit.getE(),                             orbit.getE(),                             relTol * refOrbit.getE());
+            Assertions.assertEquals(refOrbit.getI(),                             orbit.getI(),                             relTol * refOrbit.getI());
+            Assertions.assertEquals(refOrbit.getPerigeeArgument(),               orbit.getPerigeeArgument(),               relTol * refOrbit.getPerigeeArgument());
+            Assertions.assertEquals(refOrbit.getRightAscensionOfAscendingNode(), orbit.getRightAscensionOfAscendingNode(), relTol * refOrbit.getRightAscensionOfAscendingNode());
+            Assertions.assertEquals(refOrbit.getTrueAnomaly(),                   orbit.getTrueAnomaly(),                   relTol * refOrbit.getTrueAnomaly());
         }
     }
 
@@ -198,24 +198,24 @@ public class IodLambertTest {
         final Frame teme = FramesFactory.getTEME();
 
         final AbsoluteDate t1 = new AbsoluteDate("2017-03-25T23:48:31.282", TimeScalesFactory.getUTC());
-        final Vector3D p1 = propagator.propagate(t1).getPVCoordinates(teme).getPosition();
+        final Vector3D p1 = propagator.propagate(t1).getPosition(teme);
         final AbsoluteDate t2 = t1.shiftedBy(40000);
-        final Vector3D p2 = propagator.propagate(t2).getPVCoordinates(teme).getPosition();
+        final Vector3D p2 = propagator.propagate(t2).getPosition(teme);
         final AbsoluteDate t3 = t1.shiftedBy(115200.0);
-        final Vector3D p3 = propagator.propagate(t3).getPVCoordinates(teme).getPosition();
+        final Vector3D p3 = propagator.propagate(t3).getPosition(teme);
 
         IodLambert lambert = new IodLambert(Constants.WGS84_EARTH_MU);
         KeplerianOrbit k0 = lambert.estimate(teme, true, 0, p1, t1, p2, t2);
-        Assert.assertEquals(6.08e-4, k0.getE(), 1.0e-6);
-        Assert.assertEquals(8.55, FastMath.toDegrees(k0.getI()), 0.01);
-        Assert.assertEquals(0.0, Vector3D.distance(p1, k0.getPVCoordinates(t1, teme).getPosition()), 2.0e-8);
-        Assert.assertEquals(0.0, Vector3D.distance(p2, k0.getPVCoordinates(t2, teme).getPosition()), 2.0e-7);
+        Assertions.assertEquals(6.08e-4, k0.getE(), 1.0e-6);
+        Assertions.assertEquals(8.55, FastMath.toDegrees(k0.getI()), 0.01);
+        Assertions.assertEquals(0.0, Vector3D.distance(p1, k0.getPosition(t1, teme)), 2.0e-8);
+        Assertions.assertEquals(0.0, Vector3D.distance(p2, k0.getPosition(t2, teme)), 2.0e-7);
 
         KeplerianOrbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
-        Assert.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
-        Assert.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
-        Assert.assertEquals(0.0, Vector3D.distance(p1, k1.getPVCoordinates(t1, teme).getPosition()), 1.4e-8);
-        Assert.assertEquals(0.0, Vector3D.distance(p3, k1.getPVCoordinates(t3, teme).getPosition()), 3.0e-7);
+        Assertions.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
+        Assertions.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
+        Assertions.assertEquals(0.0, Vector3D.distance(p1, k1.getPosition(t1, teme)), 1.4e-8);
+        Assertions.assertEquals(0.0, Vector3D.distance(p3, k1.getPosition(t3, teme)), 3.0e-7);
 
     }
 
@@ -241,7 +241,7 @@ public class IodLambertTest {
         double[] refOrbitArray = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
 
-        final Vector3D position1 = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();
 
         // Orbit period
@@ -256,7 +256,7 @@ public class IodLambertTest {
 
         // Propagate to test date
         final AbsoluteDate date2 = date1.shiftedBy(dts);
-        final Vector3D position2 = propagator.propagate(date2).getPVCoordinates().getPosition();
+        final Vector3D position2 = propagator.propagate(date2).getPosition();
 
         // Instantiate the IOD method
         final IodLambert iod = new IodLambert(mu);
@@ -264,10 +264,10 @@ public class IodLambertTest {
         // Estimate the orbit
         try {
             iod.estimate(frame, posigrades, nRevs, position1, date1, position2, date2);
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
         }
     }
 
@@ -321,7 +321,7 @@ public class IodLambertTest {
             // Assign position and velocity @t1 (defined as the position and velocity vectors and the periapse)
             AbsoluteDate t1 = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
             KeplerianOrbit kep1 = new KeplerianOrbit(a, e, i, aop, raan, nu0, PositionAngle.TRUE, j2000, t1, mu);
-            Vector3D p1 = kep1.getPVCoordinates().getPosition();
+            Vector3D p1 = kep1.getPosition();
             Vector3D v1 = kep1.getPVCoordinates().getVelocity();
 
             // Assign t2 date (defined as the date after a swept angle of "trueAnomalyDifference" after periapsis)
@@ -370,10 +370,10 @@ public class IodLambertTest {
             }
 
             // Check results
-            Assert.assertEquals(0., dP1, dP1Tol);
-            Assert.assertEquals(0., dV1, dV1Tol);
-            Assert.assertEquals(0., dP2, dP2Tol);
-            Assert.assertEquals(0., dV2, dV2Tol);
+            Assertions.assertEquals(0., dP1, dP1Tol);
+            Assertions.assertEquals(0., dV1, dV1Tol);
+            Assertions.assertEquals(0., dP2, dP2Tol);
+            Assertions.assertEquals(0., dV2, dV2Tol);
         }
     }
 
@@ -410,16 +410,16 @@ public class IodLambertTest {
                                                       new Position(date2,   posR2, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
-        Assert.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
 
         // Test the norm of the second velocity
         final KeplerianPropagator kepler = new KeplerianPropagator(orbit);
-        Assert.assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

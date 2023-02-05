@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -322,7 +322,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
         // Position of the satellite expressed as a gradient
         // The components of the position are the 3 first derivative parameters
-        final Vector3D p = state.getPVCoordinates().getPosition();
+        final Vector3D p = state.getPosition();
         final FieldVector3D<Gradient> pDS =
                         new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative + 0, p.getX()),
                                             Gradient.variable(freeParameters, firstDerivative + 1, p.getY()),

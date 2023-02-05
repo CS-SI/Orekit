@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -221,6 +222,12 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public PVCoordinatesProvider toTaylorProvider(final Frame instanceFrame) {
         return new PVCoordinatesProvider() {
+            /** {@inheritDoc} */
+            public Vector3D getPosition(final AbsoluteDate d,  final Frame f) {
+                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
+                final StaticTransform          transform = instanceFrame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
             /** {@inheritDoc} */
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(date));

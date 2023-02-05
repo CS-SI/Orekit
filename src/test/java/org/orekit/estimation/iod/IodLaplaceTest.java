@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,9 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -57,7 +57,7 @@ public class IodLaplaceTest {
 
     private GroundStation observer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 
@@ -86,8 +86,8 @@ public class IodLaplaceTest {
 
         // With only 3 measurements, we can expect ~400 meters error in position and ~1 m/s in velocity
         final double[] error = estimateOrbit(prop, date, 30.0, 60.0).getErrorNorm();
-        Assert.assertEquals(0.0, error[0], 275.0);
-        Assert.assertEquals(0.0, error[1], 0.8);
+        Assertions.assertEquals(0.0, error[0], 275.0);
+        Assertions.assertEquals(0.0, error[1], 0.8);
     }
 
     // Estimate the orbit of Galaxy 15 based on Keplerian motion
@@ -101,8 +101,8 @@ public class IodLaplaceTest {
         final KeplerianPropagator prop = new KeplerianPropagator(kep);
 
         final double[] error = estimateOrbit(prop, date, 60.0, 120.0).getErrorNorm();
-        Assert.assertEquals(0.0, error[0], 395.0);
-        Assert.assertEquals(0.0, error[1], 0.03);
+        Assertions.assertEquals(0.0, error[0], 395.0);
+        Assertions.assertEquals(0.0, error[1], 0.03);
     }
 
     // Estimate the orbit of ISS (ZARYA) based on TLE propagation
@@ -119,8 +119,8 @@ public class IodLaplaceTest {
 
         // With only 3 measurements, an error of 5km in position and 10 m/s in velocity is acceptable
         // because the Laplace method uses only two-body dynamics
-        Assert.assertEquals(0.0, error[0], 5000.0);
-        Assert.assertEquals(0.0, error[1], 10.0);
+        Assertions.assertEquals(0.0, error[0], 5000.0);
+        Assertions.assertEquals(0.0, error[1], 10.0);
     }
 
     // Estimate the orbit of COSMOS 382 based on TLE propagation
@@ -134,8 +134,8 @@ public class IodLaplaceTest {
         final AbsoluteDate obsDate1 = tleParser.getDate();
 
         final double[] error = estimateOrbit(tleProp, obsDate1, 30.0, 60.0).getErrorNorm();
-        Assert.assertEquals(0.0, error[0], 5000.0);
-        Assert.assertEquals(0.0, error[1], 10.0);
+        Assertions.assertEquals(0.0, error[0], 5000.0);
+        Assertions.assertEquals(0.0, error[1], 10.0);
     }
 
     // Estimate the orbit of GALAXY 15 based on TLE propagation
@@ -149,8 +149,8 @@ public class IodLaplaceTest {
         final AbsoluteDate obsDate1 = tleParser.getDate();
 
         final double[] error = estimateOrbit(tleProp, obsDate1, 300.0, 600.0).getErrorNorm();
-        Assert.assertEquals(0.0, error[0], 5000.0);
-        Assert.assertEquals(0.0, error[1], 10.0);
+        Assertions.assertEquals(0.0, error[0], 5000.0);
+        Assertions.assertEquals(0.0, error[1], 10.0);
     }
 
     @Test
@@ -189,8 +189,8 @@ public class IodLaplaceTest {
         final TimeStampedPVCoordinates ref = prop.getPVCoordinates(raDec2.getDate(), gcrf);
 
         // Verify
-        Assert.assertEquals(0.0, ref.getPosition().distance(orbit.getPVCoordinates().getPosition()), 275.0);
-        Assert.assertEquals(0.0, ref.getVelocity().distance(orbit.getPVCoordinates().getVelocity()), 0.8);
+        Assertions.assertEquals(0.0, ref.getPosition().distance(orbit.getPosition()), 275.0);
+        Assertions.assertEquals(0.0, ref.getVelocity().distance(orbit.getPVCoordinates().getVelocity()), 0.8);
 
     }
 
@@ -244,7 +244,7 @@ public class IodLaplaceTest {
     {
         this.errorNorm = new double[2];
         this.errorNorm[0] = Vector3D.distance(truth.getPosition(),
-                          estOrbit.getPVCoordinates().getPosition());
+                          estOrbit.getPosition());
         this.errorNorm[1] = Vector3D.distance(truth.getVelocity(),
                           estOrbit.getPVCoordinates().getVelocity());
     }

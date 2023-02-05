@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,15 +28,13 @@ import org.orekit.forces.gravity.ThirdBodyAttractionEpoch;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
-import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
-/** This class is a copy of {@link AbsolutePartialDerivativesEquations}
- *  The computation of the derivatives of the acceleration due to a ThirdBodyAttraction
- *  has been added.
+/** Computes derivatives of the acceleration, including ThirdBodyAttraction.
  *
  * {@link AdditionalDerivativesProvider Provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -70,10 +68,8 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 10.2
  */
-@SuppressWarnings("deprecation")
 public class EpochDerivativesEquations
-    implements AdditionalDerivativesProvider,
-    org.orekit.propagation.integration.AdditionalEquations  {
+    implements AdditionalDerivativesProvider  {
 
     /** Propagator computing state evolution. */
     private final NumericalPropagator propagator;
@@ -82,7 +78,7 @@ public class EpochDerivativesEquations
     private ParameterDriversList selected;
 
     /** Parameters map. */
-    private Map<ParameterDriver, Integer> map;
+    private Map<String, Integer> map;
 
     /** Name. */
     private final String name;
@@ -94,7 +90,7 @@ public class EpochDerivativesEquations
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
      * the propagator by calling its {@link
-     * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
+     * NumericalPropagator#addAdditionalDerivativesProvider(AdditionalDerivativesProvider)} method. So
      * there is no need to call this method explicitly for these equations.
      * </p>
      * @param name name of the partial derivatives equations
@@ -144,15 +140,19 @@ public class EpochDerivativesEquations
             // fourth pass: set up a map between parameters drivers and matrices columns
             map = new IdentityHashMap<>();
             int parameterIndex = 0;
+            int previousParameterIndex = 0;
             for (final ParameterDriver selectedDriver : selected.getDrivers()) {
                 for (final ForceModel provider : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : provider.getParametersDrivers()) {
                         if (driver.getName().equals(selectedDriver.getName())) {
-                            map.put(driver, parameterIndex);
+                            previousParameterIndex = parameterIndex;
+                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                map.put(span.getData(), previousParameterIndex++);
+                            }
                         }
                     }
                 }
-                ++parameterIndex;
+                parameterIndex = previousParameterIndex;
             }
 
         }
@@ -192,7 +192,7 @@ public class EpochDerivativesEquations
         freezeParametersSelection();
         final int epochStateDimension = 6;
         final double[][] dYdY0 = new double[epochStateDimension][epochStateDimension];
-        final double[][] dYdP  = new double[epochStateDimension][selected.getNbParams() + 6];
+        final double[][] dYdP  = new double[epochStateDimension][selected.getNbValuesToEstimate() + 6];
         for (int i = 0; i < epochStateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
@@ -265,24 +265,10 @@ public class EpochDerivativesEquations
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
-    }
-
-    /** {@inheritDoc} */
     public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
-        final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
+        final int paramDimEpoch = selected.getNbValuesToEstimate() + 1; // added epoch
         final int dimEpoch      = 3;
         final double[][] dAccdParam = new double[dimEpoch][paramDimEpoch];
         final double[][] dAccdPos   = new double[dimEpoch][dimEpoch];
@@ -295,7 +281,7 @@ public class EpochDerivativesEquations
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
             final NumericalGradientConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
 
             final FieldVector3D<Gradient> acceleration = forceModel.acceleration(dsState, parameters);
             final double[] derivativesX = acceleration.getX().getGradient();
@@ -310,11 +296,13 @@ public class EpochDerivativesEquations
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    final int parameterIndex = map.get(driver);
-                    dAccdParam[0][parameterIndex] += derivativesX[index];
-                    dAccdParam[1][parameterIndex] += derivativesY[index];
-                    dAccdParam[2][parameterIndex] += derivativesZ[index];
-                    ++index;
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                        final int parameterIndex = map.get(span.getData());
+                        dAccdParam[0][parameterIndex] += derivativesX[index];
+                        dAccdParam[1][parameterIndex] += derivativesY[index];
+                        dAccdParam[2][parameterIndex] += derivativesZ[index];
+                        ++index;
+                    }
                 }
             }
 

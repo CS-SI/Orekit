@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,11 @@
  */
 package org.orekit.forces.maneuvers;
 
-
-import java.util.List;
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,9 +31,9 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -71,6 +67,8 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.List;
+
 public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
     // Body mu
@@ -78,52 +76,46 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass) {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
-            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
-
+            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(state);
+            
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();
 
             if (firing) {
-                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+                return new FieldVector3D<>(state.getMass().reciprocal().multiply(thrust),
+                                           state.getAttitude().getRotation().applyInverseTo(direction));
             } else {
                 // constant (and null) acceleration when not firing
-                return FieldVector3D.getZero(mass.getField());
+                return FieldVector3D.getZero(state.getMass().getField());
             }
         } catch (IllegalArgumentException | SecurityException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass) {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
-            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
-
+            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(state);
+            
             final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
             final double thrust = thrustVector.getNorm();
             final Vector3D direction = thrustVector.normalize();
 
             if (firing) {
-                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+                return new FieldVector3D<>(state.getMass().reciprocal().multiply(thrust),
+                                           state.getAttitude().getRotation().applyInverseTo(direction));
             } else {
                 // constant (and null) acceleration when not firing
-                return FieldVector3D.getZero(mass.getField());
+                return FieldVector3D.getZero(state.getMass().getField());
             }
         } catch (IllegalArgumentException | SecurityException e) {
-            Assert.fail(e.getLocalizedMessage());
+            Assertions.fail(e.getLocalizedMessage());
             return null;
         }
     }
@@ -168,7 +160,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // in maneuver
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
-        maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
+        EventDetector d = maneuver.getEventsDetectors().findFirst().get();
+        d.getHandler().eventOccurred(startState, d, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
         checkStateJacobianVs80Implementation(midState, maneuver, law, 1.0e-20, false);
 
@@ -209,7 +202,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // in maneuver
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
-        maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
+        EventDetector d = maneuver.getEventsDetectors().findFirst().get();
+        d.getHandler().eventOccurred(startState, d, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
         checkStateJacobianVs80ImplementationGradient(midState, maneuver, law, 1.0e-20, false);
 
@@ -222,27 +216,27 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                              TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
-        Assert.assertFalse(maneuver.dependsOnPositionOnly());
-        Assert.assertNull(maneuver.getAttitudeOverride());
-        Assert.assertEquals(0.0, Vector3D.distance(maneuver.getDirection(), Vector3D.PLUS_K), 1.0e-15);
-        Assert.assertEquals(10.0, maneuver.getDuration(), 1.0e-15);
-        Assert.assertEquals(0.0, date.durationFrom(maneuver.getStartDate()), 1.0e-15);
-        Assert.assertEquals(0.0, date.shiftedBy(10.0).durationFrom(maneuver.getEndDate()), 1.0e-15);
-        Assert.assertEquals("", maneuver.getName());
+        Assertions.assertFalse(maneuver.dependsOnPositionOnly());
+        Assertions.assertNull(maneuver.getAttitudeOverride());
+        Assertions.assertEquals(0.0, Vector3D.distance(maneuver.getDirection(), Vector3D.PLUS_K), 1.0e-15);
+        Assertions.assertEquals(10.0, maneuver.getDuration(), 1.0e-15);
+        Assertions.assertEquals(0.0, date.durationFrom(maneuver.getStartDate()), 1.0e-15);
+        Assertions.assertEquals(0.0, date.shiftedBy(10.0).durationFrom(maneuver.getEndDate()), 1.0e-15);
+        Assertions.assertEquals("", maneuver.getName());
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(6, drivers.size());
-        Assert.assertEquals("thrust", drivers.get(0).getName());
-        Assert.assertEquals("flow rate", drivers.get(1).getName());
+        Assertions.assertEquals(6, drivers.size());
+        Assertions.assertEquals("thrust", drivers.get(0).getName());
+        Assertions.assertEquals("flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventsDetectors().findFirst().get();
 
         Orbit o1 = dummyOrbit(date.shiftedBy(- 1.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(date.shiftedBy(  1.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o2)) > 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(date.shiftedBy(  9.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o3)) > 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o3)) > 0);
         Orbit o4 = dummyOrbit(date.shiftedBy( 11.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o4)) < 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o4)) < 0);
     }
 
     @Test
@@ -254,19 +248,19 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        "1A-");
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(6, drivers.size());
-        Assert.assertEquals("1A-thrust", drivers.get(0).getName());
-        Assert.assertEquals("1A-flow rate", drivers.get(1).getName());
+        Assertions.assertEquals(6, drivers.size());
+        Assertions.assertEquals("1A-thrust", drivers.get(0).getName());
+        Assertions.assertEquals("1A-flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventsDetectors().findFirst().get();
 
         Orbit o1 = dummyOrbit(date.shiftedBy(-11.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
         Orbit o2 = dummyOrbit(date.shiftedBy( -9.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o2)) > 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o2)) > 0);
         Orbit o3 = dummyOrbit(date.shiftedBy( -1.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o3)) > 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o3)) > 0);
         Orbit o4 = dummyOrbit(date.shiftedBy(  1.0));
-        Assert.assertTrue(detector.g(new SpacecraftState(o4)) < 0);
+        Assertions.assertTrue(detector.g(new SpacecraftState(o4)) < 0);
     }
 
     @Test
@@ -300,8 +294,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                        TimeScalesFactory.getUTC());
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
-        Assert.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
-        Assert.assertEquals(isp, maneuver.getISP(),    1.0e-10);
+        Assertions.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
+        Assertions.assertEquals(isp, maneuver.getISP(),    1.0e-10);
 
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -320,9 +314,9 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         final double massTolerance =
                 FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventsDetectors().findFirst().get().getThreshold();
-        Assert.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
-        Assert.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
-        Assert.assertEquals(28970, finalorb.getA()/1000, 1);
+        Assertions.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
+        Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
+        Assertions.assertEquals(28970, finalorb.getA()/1000, 1);
 
     }
 
@@ -510,9 +504,9 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
 
     @Test
@@ -546,8 +540,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                        TimeScalesFactory.getUTC());
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
-        Assert.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
-        Assert.assertEquals(isp, maneuver.getISP(),    1.0e-10);
+        Assertions.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
+        Assertions.assertEquals(isp, maneuver.getISP(),    1.0e-10);
 
         final OrbitType orbitType = OrbitType.KEPLERIAN;
         double[][] tol = NumericalPropagator.tolerances(1.0e-5, orbit, orbitType);
@@ -560,11 +554,11 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         propagator1.setAttitudeProvider(law);
         propagator1.addForceModel(maneuver);
         final SpacecraftState finalState = propagator1.propagate(fireDate.shiftedBy(3800));
-        Assert.assertFalse(maneuver.isFiring(fireDate.shiftedBy(-1.0e-6)));
-        Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(+1.0e-6)));
-        Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(0.5 * duration)));
-        Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(duration - 1.0e-6)));
-        Assert.assertFalse(maneuver.isFiring(fireDate.shiftedBy(duration + 1.0e-6)));
+        Assertions.assertFalse(maneuver.isFiring(fireDate.shiftedBy(-1.0e-6)));
+        Assertions.assertTrue(maneuver.isFiring(fireDate.shiftedBy(+1.0e-6)));
+        Assertions.assertTrue(maneuver.isFiring(fireDate.shiftedBy(0.5 * duration)));
+        Assertions.assertTrue(maneuver.isFiring(fireDate.shiftedBy(duration - 1.0e-6)));
+        Assertions.assertFalse(maneuver.isFiring(fireDate.shiftedBy(duration + 1.0e-6)));
 
         AdaptiveStepsizeIntegrator integrator2 =
                         new DormandPrince853Integrator(1.0e-5, 1000, tol[0], tol[1]);
@@ -575,15 +569,15 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         propagator2.setAttitudeProvider(law);
         propagator2.addForceModel(maneuver);
         final SpacecraftState recoveredState = propagator2.propagate(orbit.getDate());
-        final Vector3D refPosition = initialState.getPVCoordinates().getPosition();
-        final Vector3D recoveredPosition = recoveredState.getPVCoordinates().getPosition();
-        Assert.assertEquals(0.0, Vector3D.distance(refPosition, recoveredPosition), 1.1e-3);
-        Assert.assertEquals(initialState.getMass(), recoveredState.getMass(), 1.4e-8);
-        Assert.assertFalse(maneuver.isFiring(fireDate.shiftedBy(-1.0e-6)));
-        Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(+1.0e-6)));
-        Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(0.5 * duration)));
-        Assert.assertTrue(maneuver.isFiring(fireDate.shiftedBy(duration - 1.0e-6)));
-        Assert.assertFalse(maneuver.isFiring(fireDate.shiftedBy(duration + 1.0e-6)));
+        final Vector3D refPosition = initialState.getPosition();
+        final Vector3D recoveredPosition = recoveredState.getPosition();
+        Assertions.assertEquals(0.0, Vector3D.distance(refPosition, recoveredPosition), 1.1e-3);
+        Assertions.assertEquals(initialState.getMass(), recoveredState.getMass(), 1.4e-8);
+        Assertions.assertFalse(maneuver.isFiring(fireDate.shiftedBy(-1.0e-6)));
+        Assertions.assertTrue(maneuver.isFiring(fireDate.shiftedBy(+1.0e-6)));
+        Assertions.assertTrue(maneuver.isFiring(fireDate.shiftedBy(0.5 * duration)));
+        Assertions.assertTrue(maneuver.isFiring(fireDate.shiftedBy(duration - 1.0e-6)));
+        Assertions.assertFalse(maneuver.isFiring(fireDate.shiftedBy(duration + 1.0e-6)));
 
     }
 
@@ -664,8 +658,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                        TimeScalesFactory.getUTC());
         final ConstantThrustManeuver maneuverWithoutOverride =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
-        Assert.assertEquals(f,   maneuverWithoutOverride.getThrust(), 1.0e-10);
-        Assert.assertEquals(isp, maneuverWithoutOverride.getISP(),    1.0e-10);
+        Assertions.assertEquals(f,   maneuverWithoutOverride.getThrust(), 1.0e-10);
+        Assertions.assertEquals(isp, maneuverWithoutOverride.getISP(),    1.0e-10);
 
         // reference propagation:
         // propagator already uses inertial law
@@ -687,8 +681,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final ConstantThrustManeuver maneuverWithOverride =
                         new ConstantThrustManeuver(fireDate, duration, f, isp,
                                                    inertialLaw, Vector3D.PLUS_I);
-        Assert.assertEquals(f,   maneuverWithoutOverride.getThrust(), 1.0e-10);
-        Assert.assertEquals(isp, maneuverWithoutOverride.getISP(),    1.0e-10);
+        Assertions.assertEquals(f,   maneuverWithoutOverride.getThrust(), 1.0e-10);
+        Assertions.assertEquals(isp, maneuverWithoutOverride.getISP(),    1.0e-10);
 
         AdaptiveStepsizeIntegrator integrator2 =
                         new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
@@ -701,11 +695,11 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         MatcherAssert.assertThat(finalState2.getPVCoordinates(),
                                  OrekitMatchers.pvCloseTo(finalState1.getPVCoordinates(),
                                                           1.0e-10));
-        Assert.assertFalse(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(-1.0e-6)));
-        Assert.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(+1.0e-6)));
-        Assert.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(0.5 * duration)));
-        Assert.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(duration - 1.0e-6)));
-        Assert.assertFalse(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(duration + 1.0e-6)));
+        Assertions.assertFalse(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(-1.0e-6)));
+        Assertions.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(+1.0e-6)));
+        Assertions.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(0.5 * duration)));
+        Assertions.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(duration - 1.0e-6)));
+        Assertions.assertFalse(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(duration + 1.0e-6)));
 
         // intentionally wrong propagation, that will produce a very different state
         // propagator uses LOF attitude,
@@ -718,9 +712,9 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         propagator3.setAttitudeProvider(lofLaw);
         propagator3.addForceModel(maneuverWithoutOverride);
         final SpacecraftState finalState3 = propagator3.propagate(finalState1.getDate());
-        Assert.assertEquals(345859.0,
-                           Vector3D.distance(finalState1.getPVCoordinates().getPosition(),
-                                             finalState3.getPVCoordinates().getPosition()),
+        Assertions.assertEquals(345859.0,
+                           Vector3D.distance(finalState1.getPosition(),
+                                             finalState3.getPosition()),
                            1.0);
     }
 
@@ -756,13 +750,13 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                        TimeScalesFactory.getUTC());
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
-        Assert.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
-        Assert.assertEquals(isp, maneuver.getISP(),    1.0e-10);
+        Assertions.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
+        Assertions.assertEquals(isp, maneuver.getISP(),    1.0e-10);
 
         // before events have been encountered, the maneuver is not yet allowed to generate non zero acceleration
         for (double dt = 0 ; dt < fireDate.durationFrom(initDate) + duration + 100; dt += 0.1) {
-            Assert.assertFalse(maneuver.isFiring(initDate.shiftedBy(dt)));
-            Assert.assertEquals(0.0,
+            Assertions.assertFalse(maneuver.isFiring(initDate.shiftedBy(dt)));
+            Assertions.assertEquals(0.0,
                                 maneuver.acceleration(initialState.shiftedBy(dt), maneuver.getParameters()).getNorm(),
                                 1.0e-15);
         }
@@ -780,16 +774,16 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         propagator1.addForceModel(maneuver);
         final SpacecraftState middleState = propagator1.propagate(fireDate.shiftedBy(0.5 * duration));
 
-        Assert.assertFalse(maneuver.isFiring(initialState));
-        Assert.assertEquals(0.0,
+        Assertions.assertFalse(maneuver.isFiring(initialState));
+        Assertions.assertEquals(0.0,
                             maneuver.acceleration(initialState, maneuver.getParameters()).getNorm(),
                             1.0e-15);
-        Assert.assertTrue(maneuver.isFiring(middleState));
-        Assert.assertEquals(0.186340263,
+        Assertions.assertTrue(maneuver.isFiring(middleState));
+        Assertions.assertEquals(0.186340263,
                             maneuver.acceleration(middleState, maneuver.getParameters()).getNorm(),
                             1.0e-9);
-        Assert.assertTrue(maneuver.isFiring(middleState.shiftedBy(3 * duration)));
-        Assert.assertEquals(0.186340263,
+        Assertions.assertTrue(maneuver.isFiring(middleState.shiftedBy(3 * duration)));
+        Assertions.assertEquals(0.186340263,
                             maneuver.acceleration(middleState.shiftedBy(3 * duration), maneuver.getParameters()).getNorm(),
                             1.0e-9);
 
@@ -838,11 +832,11 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // Propagation
         final SpacecraftState finalState = numProp.propagate(initialDate.shiftedBy(60));
-        Assert.assertEquals(cartesianOrbit.getA(), finalState.getA(), 1.0e-15);
+        Assertions.assertEquals(cartesianOrbit.getA(), finalState.getA(), 1.0e-15);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 

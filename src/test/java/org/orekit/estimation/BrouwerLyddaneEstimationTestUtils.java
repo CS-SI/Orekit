@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,12 @@
  */
 package org.orekit.estimation;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -56,6 +51,11 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Utility class for orbit determination tests. */
 public class BrouwerLyddaneEstimationTestUtils {
@@ -126,7 +126,7 @@ public class BrouwerLyddaneEstimationTestUtils {
                                                          propagatorBuilder.getPositionAngle(),
                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
-            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
+            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
         }
 
         return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
@@ -181,14 +181,14 @@ public class BrouwerLyddaneEstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
-        Assert.assertEquals(iterations, estimator.getIterationsCount());
-        Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Assertions.assertEquals(iterations, estimator.getIterationsCount());
+        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
         Optimum optimum = estimator.getOptimum();
-        Assert.assertEquals(iterations, optimum.getIterations());
-        Assert.assertEquals(evaluations, optimum.getEvaluations());
+        Assertions.assertEquals(iterations, optimum.getIterations());
+        Assertions.assertEquals(evaluations, optimum.getEvaluations());
 
         int    k   = 0;
         double sum = 0;
@@ -210,18 +210,18 @@ public class BrouwerLyddaneEstimationTestUtils {
         }
 
         final double rms = FastMath.sqrt(sum / k);
-        final double deltaPos = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        final double deltaPos = Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition);
         final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
-        Assert.assertEquals(expectedRMS,
+        Assertions.assertEquals(expectedRMS,
                             rms,
                             rmsEps);
-        Assert.assertEquals(expectedMax,
+        Assertions.assertEquals(expectedMax,
                             max,
                             maxEps);
-        Assert.assertEquals(expectedDeltaPos,
+        Assertions.assertEquals(expectedDeltaPos,
                             deltaPos,
                             posEps);
-        Assert.assertEquals(expectedDeltaVel,
+        Assertions.assertEquals(expectedDeltaVel,
                             deltaVel,
                             velEps);
 
@@ -287,12 +287,12 @@ public class BrouwerLyddaneEstimationTestUtils {
         Propagator[] estimated = kalman.processMeasurements(measurements);
 
         // Check the number of measurements processed by the filter
-        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated[k].getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
             final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
@@ -315,14 +315,14 @@ public class BrouwerLyddaneEstimationTestUtils {
             }
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
-            Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
-            Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+            Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 
             for (int i = 0; i < 3; i++) {
-                Assert.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
-                Assert.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
+                Assertions.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
+                Assertions.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
             }
         }
     }

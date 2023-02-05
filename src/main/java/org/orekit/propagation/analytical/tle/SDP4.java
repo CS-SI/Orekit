@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -96,7 +96,7 @@ abstract class SDP4  extends TLEPropagator {
 
         final double tempa = 1 - c1 * tSince;
         a   = FastMath.pow(TLEConstants.XKE / xn, TLEConstants.TWO_THIRD) * tempa * tempa;
-        em -= tle.getBStar() * c4 * tSince;
+        em -= tle.getBStar(tle.getDate().shiftedBy(tSince)) * c4 * tSince;
 
         // Update for deep-space periodic effects
         xll += xn0dp * t2cof * tSinceSq;

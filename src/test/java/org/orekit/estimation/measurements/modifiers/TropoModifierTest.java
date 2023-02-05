@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,10 @@ import java.util.Map;
 
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.orekit.attitudes.InertialProvider;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -47,7 +46,6 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
@@ -64,12 +62,12 @@ import org.orekit.utils.ParameterDriver;
 
 public class TropoModifierTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
 
     }
@@ -116,8 +114,8 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -162,8 +160,8 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -217,8 +215,8 @@ public class TropoModifierTest {
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -272,8 +270,8 @@ public class TropoModifierTest {
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -325,8 +323,8 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
@@ -375,8 +373,8 @@ public class TropoModifierTest {
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
-            Assert.assertTrue(diffMeters < 9.0);
-            Assert.assertTrue(diffMeters > 5.0);
+            Assertions.assertTrue(diffMeters < 9.0);
+            Assertions.assertTrue(diffMeters > 5.0);
         }
     }
 
@@ -425,8 +423,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 5e-5;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec,  0.005, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.007, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.005, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.007, epsilon) > 0);
         }
     }
 
@@ -482,8 +480,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-4;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec,  0.010, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.014, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.010, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.014, epsilon) > 0);
         }
     }
 
@@ -533,8 +531,8 @@ public class TropoModifierTest {
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec,  2.35e-9, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, -1.05e-9, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec,  2.35e-9, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, -1.05e-9, epsilon) > 0);
         }
     }
 
@@ -590,8 +588,8 @@ public class TropoModifierTest {
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 5.e-11;
-            Assert.assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffSec, -2.20e-9, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, -2.20e-9, epsilon) > 0);
         }
     }
 
@@ -639,8 +637,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }
 
@@ -688,8 +686,8 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }
 
@@ -735,8 +733,8 @@ public class TropoModifierTest {
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffAz, 5.0e-5);
-            Assert.assertEquals(0.0, diffEl, 5.0e-6);
+            Assertions.assertEquals(0.0, diffAz, 5.0e-5);
+            Assertions.assertEquals(0.0, diffEl, 5.0e-6);
         }
     }
 
@@ -788,8 +786,8 @@ public class TropoModifierTest {
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
 
-            Assert.assertEquals(0.0, diffAz, 1.9e-5);
-            Assert.assertEquals(0.0, diffEl, 2.1e-6);
+            Assertions.assertEquals(0.0, diffAz, 1.9e-5);
+            Assertions.assertEquals(0.0, diffEl, 2.1e-6);
         }
     }
 
@@ -838,19 +836,8 @@ public class TropoModifierTest {
 
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffEl, 1.0e-3);
+            Assertions.assertEquals(0.0, diffEl, 1.0e-3);
         }
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        // dummy test, just to ensure coverage for deprecated class
-        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        TroposphericGradientConverter tgc =
-                        new TroposphericGradientConverter(new SpacecraftState(context.initialOrbit), 6,
-                                                         new InertialProvider(FramesFactory.getEME2000()));
-        Assert.assertEquals(6, tgc.getFreeStateParameters());
     }
 
 }

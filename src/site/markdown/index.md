@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -52,7 +52,7 @@
 
   * Spacecraft state
 
-    * Cartesian, elliptical Keplerian, circular and equinoctial parameters, with non-Keplerian
+    * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
     * Two-Line Elements
     * transparent conversion between all parameters
@@ -62,6 +62,13 @@
     * mass management
     * user-defined associated state
       (for example battery status, or higher order derivatives, or anything else)
+
+  * Covariance
+
+    * covariance propagation using the state transition matrix
+	* covariance extrapolation using a Keplerian model
+    * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
+    * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
 
   * Maneuvers
 
@@ -88,7 +95,7 @@
           EGM and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
-        * radiation pressure with eclipses
+        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for bow and wing models)
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared
@@ -163,6 +170,7 @@
         * ground at night
         * impulse maneuvers occurrence
         * geomagnetic intensity
+		* extremum approach for TCA (Time of Closest Approach) computing
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
@@ -199,7 +207,10 @@
     *  Kalman filtering
         * customizable process noise matrices providers
         * time dependent process noise provider
+        * implementation of the Extended Kalman Filter
         * implementation of the Extended Semi-analytical Kalman Filter
+        * implementation of the Unscented Kalman Filter
+        * implementation of the Unscented Semi-analytical Kalman Filter
     * parameters estimation
         * orbital parameters estimation (or only a subset if desired)
         * force model parameters estimation (drag coefficients, radiation pressure coefficients,
@@ -208,6 +219,7 @@
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
     * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
+    * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
@@ -264,7 +276,7 @@
     * loading of SINEX file (can load station positions, eccentricities and EOPs)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
-    * parsing of RTCM messages
+    * parsing of RTCM messages (both ephemeris and correction messages)
     * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
 
@@ -295,6 +307,7 @@
     * displacement of ground points due to tides
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
+	* construction of trajectories using loxodromes (commonly, a rhumb line)
 
   * Collisions
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -51,6 +43,14 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DSSTTesseralTest {
 
@@ -90,7 +90,7 @@ public class DSSTTesseralTest {
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
         // Force model parameters
-        final double[] parameters = tesseral.getParameters();
+        final double[] parameters = tesseral.getParameters(orbit.getDate());
 
         // Initialize force model
         tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
@@ -103,12 +103,12 @@ public class DSSTTesseralTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(7.120011500375922E-5,   elements[0], 1.e-20);
-        Assert.assertEquals(-1.109767646425212E-11, elements[1], 1.e-26);
-        Assert.assertEquals(2.3036711391089307E-11, elements[2], 1.e-26);
-        Assert.assertEquals(2.499304852807308E-12,  elements[3], 1.e-27);
-        Assert.assertEquals(1.3899097178558372E-13, elements[4], 1.e-28);
-        Assert.assertEquals(5.795522421338584E-12,  elements[5], 1.e-27);
+        Assertions.assertEquals(7.120011500375922E-5,   elements[0], 1.e-20);
+        Assertions.assertEquals(-1.109767646425212E-11, elements[1], 1.e-26);
+        Assertions.assertEquals(2.3036711391089307E-11, elements[2], 1.e-26);
+        Assertions.assertEquals(2.499304852807308E-12,  elements[3], 1.e-27);
+        Assertions.assertEquals(1.3899097178558372E-13, elements[4], 1.e-28);
+        Assertions.assertEquals(5.795522421338584E-12,  elements[5], 1.e-27);
 
     }
 
@@ -141,8 +141,9 @@ public class DSSTTesseralTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
-        force.updateShortPeriodTerms(force.getParameters(), meanState);
+
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
+        force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -152,12 +153,12 @@ public class DSSTTesseralTest {
             }
         }
 
-        Assert.assertEquals(5.192409957353236,      y[0], 1.e-15);
-        Assert.assertEquals(9.660364749662076E-7,   y[1], 1.e-22);
-        Assert.assertEquals(1.542008987162059E-6,   y[2], 1.e-21);
-        Assert.assertEquals(-4.9944146013126755E-8, y[3], 1.e-22);
-        Assert.assertEquals(-4.500974242661177E-8,  y[4], 1.e-22);
-        Assert.assertEquals(-2.785213556107612E-7,  y[5], 1.e-21);
+        Assertions.assertEquals(5.192409957353236,      y[0], 1.e-15);
+        Assertions.assertEquals(9.660364749662076E-7,   y[1], 1.e-22);
+        Assertions.assertEquals(1.542008987162059E-6,   y[2], 1.e-21);
+        Assertions.assertEquals(-4.9944146013126755E-8, y[3], 1.e-22);
+        Assertions.assertEquals(-4.500974242661177E-8,  y[4], 1.e-22);
+        Assertions.assertEquals(-2.785213556107612E-7,  y[5], 1.e-21);
     }
 
     @Test
@@ -196,23 +197,23 @@ public class DSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters());
+        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(orbit.getDate()));
 
         // Tesseral force model with default constructor
         final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
                                                                 Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                                 provider);
-        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters());
+        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the tesseral force model
-        final double[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters());
+        final double[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the "default" tesseral force model
-        final double[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters());
+        final double[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(orbit.getDate()));
 
         // Verify
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(elements[i], elementsDefault[i], Double.MIN_VALUE);
+            Assertions.assertEquals(elements[i], elementsDefault[i], Double.MIN_VALUE);
         }
 
     }
@@ -237,7 +238,7 @@ public class DSSTTesseralTest {
 
         // Force model
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        final double[] parameters = tesseral.getParameters();
+        final double[] parameters = tesseral.getParameters(orbit.getDate());
 
         // Initialize force model
         tesseral.initializeShortPeriodTerms(new AuxiliaryElements(orbit, 1), PropagationType.MEAN, parameters);
@@ -254,7 +255,7 @@ public class DSSTTesseralTest {
         // Its purpose is to verify that a NullPointerException does not
         // occur when calculating initial values of Hansen Coefficients
         for (int i = 0; i < elements.length; i++) {
-            Assert.assertTrue(elements[i] != 0);
+            Assertions.assertTrue(elements[i] != 0);
         }
 
     }
@@ -273,9 +274,9 @@ public class DSSTTesseralTest {
             final DSSTForceModel tesseral = new DSSTTesseral(earth.getBodyFrame(),
                                                           Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                           provider);
-            Assert.fail("An exception should have been thrown");
+            Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+            Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
         }
     }
 
@@ -288,16 +289,16 @@ public class DSSTTesseralTest {
         final DSSTTesseral force = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
         Method getMaxEccPow = DSSTTesseral.class.getDeclaredMethod("getMaxEccPow", Double.TYPE);
         getMaxEccPow.setAccessible(true);
-        Assert.assertEquals(3,  getMaxEccPow.invoke(force, 0.0));
-        Assert.assertEquals(4,  getMaxEccPow.invoke(force, 0.01));
-        Assert.assertEquals(7,  getMaxEccPow.invoke(force, 0.08));
-        Assert.assertEquals(10, getMaxEccPow.invoke(force, 0.15));
-        Assert.assertEquals(12, getMaxEccPow.invoke(force, 0.25));
-        Assert.assertEquals(15, getMaxEccPow.invoke(force, 0.35));
-        Assert.assertEquals(20, getMaxEccPow.invoke(force, 1.0));
+        Assertions.assertEquals(3,  getMaxEccPow.invoke(force, 0.0));
+        Assertions.assertEquals(4,  getMaxEccPow.invoke(force, 0.01));
+        Assertions.assertEquals(7,  getMaxEccPow.invoke(force, 0.08));
+        Assertions.assertEquals(10, getMaxEccPow.invoke(force, 0.15));
+        Assertions.assertEquals(12, getMaxEccPow.invoke(force, 0.25));
+        Assertions.assertEquals(15, getMaxEccPow.invoke(force, 0.35));
+        Assertions.assertEquals(20, getMaxEccPow.invoke(force, 1.0));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }

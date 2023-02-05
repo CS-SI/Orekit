@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -35,6 +29,7 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -53,7 +48,14 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DSSTSolarRadiationPressureTest {
 
@@ -82,7 +84,9 @@ public class DSSTSolarRadiationPressureTest {
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                             mu);
         // Attitude of the satellite
         Rotation rotation =  new Rotation(0.9999999999999984,
@@ -103,7 +107,7 @@ public class DSSTSolarRadiationPressureTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = srp.getParameters();
+        final double[] parameters = srp.getParameters(orbit.getDate());
         // Initialize force model
         srp.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
@@ -119,12 +123,12 @@ public class DSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(6.843966348263062E-8, elements[0], 1.e-23);
-        Assert.assertEquals(-2.990913371084091E-11, elements[1], 1.-26);
-        Assert.assertEquals(-2.538374405334012E-10, elements[2], 1.e-25);
-        Assert.assertEquals(2.0384702426501394E-13, elements[3], 1.e-28);
-        Assert.assertEquals(-2.3346333406116967E-14, elements[4], 1.e-29);
-        Assert.assertEquals(1.6087485237156322E-11, elements[5], 1.e-26);
+        Assertions.assertEquals(6.840751151317499E-8,    elements[0], 1.e-23);
+        Assertions.assertEquals(-2.9909441926876346E-11, elements[1], 1.e-26);
+        Assertions.assertEquals(-2.5384005535097657E-10, elements[2], 1.e-25);
+        Assertions.assertEquals(2.0378281752739904E-13,  elements[3], 1.e-28);
+        Assertions.assertEquals(-2.3338771085259606E-14, elements[4], 1.e-29);
+        Assertions.assertEquals(1.608238526154956E-11,   elements[5], 1.e-26);
 
     }
 
@@ -159,7 +163,9 @@ public class DSSTSolarRadiationPressureTest {
                                                                 0.0, 0.0, 0.0);
 
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(sun,
-                                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                       Constants.WGS84_EARTH_FLATTENING,
+                                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                                   boxAndWing,
                                                                   meanState.getMu());
 
@@ -170,8 +176,8 @@ public class DSSTSolarRadiationPressureTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters()));
-        srp.updateShortPeriodTerms(srp.getParameters(), meanState);
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters(meanState.getDate())));
+        srp.updateShortPeriodTerms(srp.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -180,16 +186,15 @@ public class DSSTSolarRadiationPressureTest {
                 y[i] += shortPeriodic[i];
             }
         }
-
-        Assert.assertEquals(0.36637346843285684,     y[0], 1.e-15);
-        Assert.assertEquals(-2.4294913010512626E-10, y[1], 1.e-25);
-        Assert.assertEquals(-3.858954680824408E-9,   y[2], 1.e-24);
-        Assert.assertEquals(-3.0648619902684686E-9,  y[3], 1.e-24);
-        Assert.assertEquals(-4.9023731169635814E-9,  y[4], 1.e-24);
-        Assert.assertEquals(-2.385357916413363E-9,   y[5], 1.e-24);
+        Assertions.assertEquals( 0.3668654523023707,   y[0], 1.e-15);
+        Assertions.assertEquals(-2.5673332283107E-10,  y[1], 1.e-23);
+        Assertions.assertEquals(-3.84959877691969E-9,  y[2], 1.e-23);
+        Assertions.assertEquals(-3.069285299519558E-9, y[3], 1.e-24);
+        Assertions.assertEquals(-4.908870542277221E-9, y[4], 1.e-24);
+        Assertions.assertEquals(-2.38549338428359E-9,  y[5], 1.e-23);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }

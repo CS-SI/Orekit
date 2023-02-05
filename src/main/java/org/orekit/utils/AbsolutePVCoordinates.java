@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
@@ -247,6 +248,12 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     public PVCoordinatesProvider toTaylorProvider() {
         return new PVCoordinatesProvider() {
             /** {@inheritDoc} */
+            public Vector3D getPosition(final AbsoluteDate d,  final Frame f) {
+                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
+                final StaticTransform          transform = frame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
+            /** {@inheritDoc} */
             public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
                 final Transform                transform = frame.getTransformTo(f, d);
@@ -267,6 +274,24 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
         return this;
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position
+     * @see #getPVCoordinates(Frame)
+     * @since 12.0
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        // If output frame requested is the same as definition frame,
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return getPosition();
+        }
+
+        // Else, PV coordinates are transformed to output frame
+        final StaticTransform t = frame.getStaticTransformTo(outputFrame, getDate());
+        return t.transformPosition(getPosition());
     }
 
     /** Get the TimeStampedPVCoordinates in a specified frame.

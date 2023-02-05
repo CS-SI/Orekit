@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,17 @@
  */
 package org.orekit.attitudes;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -58,6 +54,9 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TabulatedProviderTest {
 
     // Computation date
@@ -83,25 +82,25 @@ public class TabulatedProviderTest {
         Attitude attE = provider.getAttitude((date, frame) -> new TimeStampedPVCoordinates(date, PVCoordinates.ZERO),
                                              date,
                                              circOrbit.getFrame());
-        Assert.assertEquals(circOrbit.getFrame().getName(), attE.getReferenceFrame().getName());
+        Assertions.assertEquals(circOrbit.getFrame().getName(), attE.getReferenceFrame().getName());
         Frame gcrf = FramesFactory.getGCRF();
         Attitude attG = provider.getAttitude((date, frame) -> new TimeStampedPVCoordinates(date, PVCoordinates.ZERO),
                                              date,
                                              gcrf);
-        Assert.assertEquals(gcrf.getName(), attG.getReferenceFrame().getName());
+        Assertions.assertEquals(gcrf.getName(), attG.getReferenceFrame().getName());
 
-        Assert.assertEquals(1.12e-7,
+        Assertions.assertEquals(1.12e-7,
                             Rotation.distance(attE.getRotation(), attG.getRotation()), 1.0e-9);
-        Assert.assertEquals(circOrbit.getFrame().getTransformTo(gcrf, date).getRotation().getAngle(),
+        Assertions.assertEquals(circOrbit.getFrame().getTransformTo(gcrf, date).getRotation().getAngle(),
                             Rotation.distance(attE.getRotation(), attG.getRotation()),
                             1.0e-14);
 
-        FieldAttitude<Decimal64> attG64 =
+        FieldAttitude<Binary64> attG64 =
                         provider.getAttitude((date, frame) -> new TimeStampedFieldPVCoordinates<>(date,
-                                                                        FieldPVCoordinates.getZero(Decimal64Field.getInstance())),
-                                             new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date),
+                                                                        FieldPVCoordinates.getZero(Binary64Field.getInstance())),
+                                             new FieldAbsoluteDate<>(Binary64Field.getInstance(), date),
                                              gcrf);
-        Assert.assertEquals(gcrf.getName(), attG64.getReferenceFrame().getName());
+        Assertions.assertEquals(gcrf.getName(), attG64.getReferenceFrame().getName());
 
     }
 
@@ -117,7 +116,7 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_R);
-        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.2e-14);
+        Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.2e-14);
     }
 
     @Test
@@ -132,7 +131,7 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RR);
-        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.3e-11);
+        Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.3e-11);
     }
 
     @Test
@@ -147,8 +146,8 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RRA);
-        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 4.3e-9);
-        checkField(Decimal64Field.getInstance(), provider, circOrbit, circOrbit.getDate(), circOrbit.getFrame());
+        Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 4.3e-9);
+        checkField(Binary64Field.getInstance(), provider, circOrbit, circOrbit.getDate(), circOrbit.getFrame());
     }
 
     private List<TimeStampedAngularCoordinates> createSample(double samplingRate, AttitudeProvider referenceProvider) {
@@ -206,12 +205,12 @@ public class TabulatedProviderTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
@@ -238,12 +237,12 @@ public class TabulatedProviderTest {
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         } catch (OrekitException oe) {
-            Assert.fail(oe.getMessage());
+            Assertions.fail(oe.getMessage());
         }
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         date = null;
         itrf = null;

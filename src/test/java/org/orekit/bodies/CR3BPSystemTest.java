@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,9 @@ package org.orekit.bodies;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -34,7 +34,7 @@ import org.orekit.utils.PVCoordinates;
 
 public class CR3BPSystemTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("cr3bp:regular-data");
     }
@@ -45,13 +45,13 @@ public class CR3BPSystemTest {
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
         final double lDim = syst.getDdim();
-        Assert.assertNotNull(lDim);
+        Assertions.assertNotNull(lDim);
 
         final double vDim = syst.getVdim();
-        Assert.assertNotNull(vDim);
+        Assertions.assertNotNull(vDim);
 
         final double tDim = syst.getTdim();
-        Assert.assertNotNull(tDim);
+        Assertions.assertNotNull(tDim);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class CR3BPSystemTest {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final Frame baryFrame = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getRotatingFrame();
-        Assert.assertNotNull(baryFrame);
+        Assertions.assertNotNull(baryFrame);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class CR3BPSystemTest {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final CelestialBody primaryBody = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getPrimary();
-        Assert.assertNotNull(primaryBody);
+        Assertions.assertNotNull(primaryBody);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class CR3BPSystemTest {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final CelestialBody secondaryBody = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getSecondary();
-        Assert.assertNotNull(secondaryBody);
+        Assertions.assertNotNull(secondaryBody);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class CR3BPSystemTest {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final double mu = CR3BPFactory.getSunJupiterCR3BP(date, timeScale).getMassRatio();
-        Assert.assertNotNull(mu);
+        Assertions.assertNotNull(mu);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class CR3BPSystemTest {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final String name = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getName();
-        Assert.assertNotNull(name);
+        Assertions.assertNotNull(name);
     }
 
     @Test
@@ -99,29 +99,29 @@ public class CR3BPSystemTest {
         final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 
         final Vector3D l1Position = syst.getLPosition(LagrangianPoints.L1);
-        Assert.assertEquals(3.23E8, l1Position.getX() * syst.getDdim(),3E6);
-        Assert.assertEquals(0.0, l1Position.getY() * syst.getDdim(),1E3);
-        Assert.assertEquals(0.0, l1Position.getZ() * syst.getDdim(),1E3);
+        Assertions.assertEquals(3.23E8, l1Position.getX() * syst.getDdim(),3E6);
+        Assertions.assertEquals(0.0, l1Position.getY() * syst.getDdim(),1E3);
+        Assertions.assertEquals(0.0, l1Position.getZ() * syst.getDdim(),1E3);
 
         final Vector3D l2Position = syst.getLPosition(LagrangianPoints.L2);
-        Assert.assertEquals(4.45E8, l2Position.getX() * syst.getDdim(),3E6);
-        Assert.assertEquals(0.0, l2Position.getY() * syst.getDdim(),1E3);
-        Assert.assertEquals(0.0, l2Position.getZ() * syst.getDdim(),1E3);
+        Assertions.assertEquals(4.45E8, l2Position.getX() * syst.getDdim(),3E6);
+        Assertions.assertEquals(0.0, l2Position.getY() * syst.getDdim(),1E3);
+        Assertions.assertEquals(0.0, l2Position.getZ() * syst.getDdim(),1E3);
 
         final Vector3D l3Position = syst.getLPosition(LagrangianPoints.L3);
-        Assert.assertEquals(-3.86E8, l3Position.getX() * syst.getDdim(),3E6);
-        Assert.assertEquals(0.0, l3Position.getY() * syst.getDdim(),1E3);
-        Assert.assertEquals(0.0, l3Position.getZ() * syst.getDdim(),1E3);
+        Assertions.assertEquals(-3.86E8, l3Position.getX() * syst.getDdim(),3E6);
+        Assertions.assertEquals(0.0, l3Position.getY() * syst.getDdim(),1E3);
+        Assertions.assertEquals(0.0, l3Position.getZ() * syst.getDdim(),1E3);
 
         final Vector3D l4Position = syst.getLPosition(LagrangianPoints.L4);
-        Assert.assertEquals(1.87E8, l4Position.getX() * syst.getDdim(),3E6);
-        Assert.assertEquals(3.32E8, l4Position.getY() * syst.getDdim(),3E6);
-        Assert.assertEquals(0.0, l4Position.getZ() * syst.getDdim(),1E3);
+        Assertions.assertEquals(1.87E8, l4Position.getX() * syst.getDdim(),3E6);
+        Assertions.assertEquals(3.32E8, l4Position.getY() * syst.getDdim(),3E6);
+        Assertions.assertEquals(0.0, l4Position.getZ() * syst.getDdim(),1E3);
 
         final Vector3D l5Position = syst.getLPosition(LagrangianPoints.L5);
-        Assert.assertEquals(1.87E8, l5Position.getX() * syst.getDdim(),3E6);
-        Assert.assertEquals(-3.32E8, l5Position.getY() * syst.getDdim(),3E6);
-        Assert.assertEquals(0.0, l5Position.getZ() * syst.getDdim(),1E3);
+        Assertions.assertEquals(1.87E8, l5Position.getX() * syst.getDdim(),3E6);
+        Assertions.assertEquals(-3.32E8, l5Position.getY() * syst.getDdim(),3E6);
+        Assertions.assertEquals(0.0, l5Position.getZ() * syst.getDdim(),1E3);
     }
 
     @Test
@@ -131,15 +131,15 @@ public class CR3BPSystemTest {
         final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
 
         final double l1Gamma = syst.getGamma(LagrangianPoints.L1);
-        Assert.assertEquals(1.497655E9, l1Gamma * syst.getDdim(),1E3);
+        Assertions.assertEquals(1.497655E9, l1Gamma * syst.getDdim(),1E3);
 
 
         final double l2Gamma = syst.getGamma(LagrangianPoints.L2);
-        Assert.assertEquals(1.507691E9, l2Gamma * syst.getDdim(),1E3);
+        Assertions.assertEquals(1.507691E9, l2Gamma * syst.getDdim(),1E3);
 
 
         final double l3Gamma = syst.getGamma(LagrangianPoints.L3);
-        Assert.assertEquals(1.495981555E11, l3Gamma * syst.getDdim(),9E3);
+        Assertions.assertEquals(1.495981555E11, l3Gamma * syst.getDdim(),9E3);
     }
 
     @Test
@@ -214,15 +214,15 @@ public class CR3BPSystemTest {
         final AbsolutePVCoordinates apv0 = new AbsolutePVCoordinates(outputFrame,initialDate,pv0);
         final AbsolutePVCoordinates apvTrans = syst.getRealAPV(apv0,initialDate,outputFrame);
 
-        Assert.assertEquals(pvMat.getPosition().getX(),apvTrans.getPosition().getX(),1E-5);
-        Assert.assertEquals(pvMat.getPosition().getY(),apvTrans.getPosition().getY(),1E-15);
-        Assert.assertEquals(pvMat.getPosition().getZ(),apvTrans.getPosition().getZ(),1E-4);
+        Assertions.assertEquals(pvMat.getPosition().getX(),apvTrans.getPosition().getX(),1E-5);
+        Assertions.assertEquals(pvMat.getPosition().getY(),apvTrans.getPosition().getY(),1E-15);
+        Assertions.assertEquals(pvMat.getPosition().getZ(),apvTrans.getPosition().getZ(),1E-4);
 
-        Assert.assertEquals(pvMat.getVelocity().getX(),apvTrans.getVelocity().getX(),1E-2);
-        Assert.assertEquals(pvMat.getVelocity().getY(),apvTrans.getVelocity().getY(),4E-2);
-        Assert.assertEquals(pvMat.getVelocity().getZ(),apvTrans.getVelocity().getZ(),2E-2);
+        Assertions.assertEquals(pvMat.getVelocity().getX(),apvTrans.getVelocity().getX(),1E-2);
+        Assertions.assertEquals(pvMat.getVelocity().getY(),apvTrans.getVelocity().getY(),4E-2);
+        Assertions.assertEquals(pvMat.getVelocity().getZ(),apvTrans.getVelocity().getZ(),2E-2);
 
-        Assert.assertEquals(initialDate.durationFrom(AbsoluteDate.J2000_EPOCH),
+        Assertions.assertEquals(initialDate.durationFrom(AbsoluteDate.J2000_EPOCH),
                             apvTrans.getDate().durationFrom(AbsoluteDate.J2000_EPOCH),
                             1E-10);
     }

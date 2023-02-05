@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.estimation.measurements.gnss;
-
-import java.util.Arrays;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -36,6 +34,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Arrays;
 
 public class PhaseMeasurementCreator extends MeasurementCreator {
 
@@ -92,12 +92,12 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
         try {
             final double n      = ambiguity.getParametersDrivers().get(0).getValue();
             for (final GroundStation station : context.stations) {
-                final double           groundClk = station.getClockOffsetDriver().getValue();
-                final double           satClk    = satellite.getClockOffsetDriver().getValue();
-                final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundClk - satClk);
-                final AbsoluteDate     date      = currentState.getDate();
+            	final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
                 final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
+                final double           groundClk = station.getClockOffsetDriver().getValue(date);
+                final double           satClk    = satellite.getClockOffsetDriver().getValue(date);
+                final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundClk - satClk);
 
                 if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

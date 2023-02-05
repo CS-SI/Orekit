@@ -18,20 +18,27 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.SortedSet;
+
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragForce;
@@ -43,6 +50,7 @@ import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
+import org.orekit.models.earth.atmosphere.data.CssiSpaceWeatherDataLoader.LineParameters;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -63,7 +71,7 @@ import org.orekit.utils.IERSConventions;
 public class CssiSpaceWeatherLoaderTest {
     private TimeScale utc;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
@@ -77,13 +85,13 @@ public class CssiSpaceWeatherLoaderTest {
     @Test
     public void testMinDate() {
         CssiSpaceWeatherData cswl = loadCswl();
-        Assert.assertEquals(new AbsoluteDate("1957-10-01", utc), cswl.getMinDate());
+        Assertions.assertEquals(new AbsoluteDate("1957-10-01", utc), cswl.getMinDate());
     }
 
     @Test
     public void testMaxDate() {
         CssiSpaceWeatherData cswl = loadCswl();
-        Assert.assertEquals(new AbsoluteDate("2044-06-01", utc), cswl.getMaxDate());
+        Assertions.assertEquals(new AbsoluteDate("2044-06-01", utc), cswl.getMaxDate());
     }
 
     @Test
@@ -116,9 +124,9 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -133,9 +141,9 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(1957, 10, 2, 3, 14, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -150,9 +158,9 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(1957, 10, 3, 3, 14, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -325,6 +333,18 @@ public class CssiSpaceWeatherLoaderTest {
         expected = propagator.propagate(end);
 
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));
+    }
+
+    @Test
+    public void testIssue841() throws OrekitException, IOException, ParseException {
+        final CssiSpaceWeatherDataLoader loader = new CssiSpaceWeatherDataLoader(utc);
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+        manager.feed("SpaceWeather-All-v1.2_reduced.txt", loader);
+        final SortedSet<LineParameters> set = loader.getDataSet();
+        Assertions.assertEquals(4, set.size());
+
+        CssiSpaceWeatherData cswl = new CssiSpaceWeatherData("SpaceWeather-All-v1.2_reduced.txt");
+        Assertions.assertEquals(71.6, cswl.getInstantFlux(new AbsoluteDate("2020-02-20T00:00:00.000", utc)), 0.01);
     }
 
     /**

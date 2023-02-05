@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class RinexFrequencyTest {
 
@@ -27,19 +27,19 @@ public class RinexFrequencyTest {
             final char c = rf.toString().charAt(0);
             switch (rf.getMeasurementType()) {
                 case PSEUDO_RANGE :
-                    Assert.assertTrue(c == 'C' || c == 'P');
+                    Assertions.assertTrue(c == 'C' || c == 'P');
                     break;
                 case CARRIER_PHASE :
-                    Assert.assertTrue(c == 'L');
+                    Assertions.assertTrue(c == 'L');
                     break;
                 case DOPPLER :
-                    Assert.assertTrue(c == 'D');
+                    Assertions.assertTrue(c == 'D');
                     break;
                 case SIGNAL_STRENGTH :
-                    Assert.assertTrue(c == 'S');
+                    Assertions.assertTrue(c == 'S');
                     break;
                 default :
-                    Assert.fail("unknown " + rf.getMeasurementType());
+                    Assertions.fail("unknown " + rf.getMeasurementType());
             }
         }
     }

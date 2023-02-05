@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,15 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -67,11 +61,17 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class FieldDSSTTesseralTest {
 
     @Test
     public void testGetMeanElementRate(){
-        doTestGetMeanElementRate(Decimal64Field.getInstance());
+        doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(final Field<T> field) {
@@ -112,7 +112,7 @@ public class FieldDSSTTesseralTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = tesseral.getParameters(field);
+        final T[] parameters = tesseral.getParameters(field, state.getDate());
         // Initialize force model
         tesseral.initializeShortPeriodTerms(auxiliaryElements,
                             PropagationType.MEAN, parameters);
@@ -125,18 +125,18 @@ public class FieldDSSTTesseralTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(7.120011500375922E-5,   elements[0].getReal(), 6.0e-19);
-        Assert.assertEquals(-1.109767646425212E-11, elements[1].getReal(), 2.0e-26);
-        Assert.assertEquals(2.3036711391089307E-11, elements[2].getReal(), 1.5e-26);
-        Assert.assertEquals(2.499304852807308E-12,  elements[3].getReal(), 1.0e-27);
-        Assert.assertEquals(1.3899097178558372E-13, elements[4].getReal(), 3.0e-27);
-        Assert.assertEquals(5.795522421338584E-12,  elements[5].getReal(), 1.0e-26);
+        Assertions.assertEquals(7.120011500375922E-5,   elements[0].getReal(), 6.0e-19);
+        Assertions.assertEquals(-1.109767646425212E-11, elements[1].getReal(), 2.0e-26);
+        Assertions.assertEquals(2.3036711391089307E-11, elements[2].getReal(), 1.5e-26);
+        Assertions.assertEquals(2.499304852807308E-12,  elements[3].getReal(), 1.0e-27);
+        Assertions.assertEquals(1.3899097178558372E-13, elements[4].getReal(), 3.0e-27);
+        Assertions.assertEquals(5.795522421338584E-12,  elements[5].getReal(), 1.0e-26);
 
     }
 
     @Test
     public void testShortPeriodTerms() {
-        doTestShortPeriodTerms(Decimal64Field.getInstance());
+        doTestShortPeriodTerms(Binary64Field.getInstance());
     }
 
     @SuppressWarnings("unchecked")
@@ -175,9 +175,9 @@ public class FieldDSSTTesseralTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
-        force.updateShortPeriodTerms(force.getParameters(field), meanState);
-
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field, orbit.getDate())));
+        force.updateShortPeriodTerms(force.getParametersAllValues(field), meanState);
+        
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
         for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
@@ -187,17 +187,17 @@ public class FieldDSSTTesseralTest {
             }
         }
 
-        Assert.assertEquals(5.192409957353236,      y[0].getReal(), 1.e-15);
-        Assert.assertEquals(9.660364749662076E-7,   y[1].getReal(), 1.e-22);
-        Assert.assertEquals(1.542008987162059E-6,   y[2].getReal(), 1.e-21);
-        Assert.assertEquals(-4.9944146013126755E-8, y[3].getReal(), 1.e-22);
-        Assert.assertEquals(-4.500974242661177E-8,  y[4].getReal(), 1.e-22);
-        Assert.assertEquals(-2.785213556107612E-7,  y[5].getReal(), 1.e-21);
+        Assertions.assertEquals(5.192409957353236,      y[0].getReal(), 1.e-15);
+        Assertions.assertEquals(9.660364749662076E-7,   y[1].getReal(), 1.e-22);
+        Assertions.assertEquals(1.542008987162059E-6,   y[2].getReal(), 1.e-21);
+        Assertions.assertEquals(-4.9944146013126755E-8, y[3].getReal(), 1.e-22);
+        Assertions.assertEquals(-4.500974242661177E-8,  y[4].getReal(), 1.e-22);
+        Assertions.assertEquals(-2.785213556107612E-7,  y[5].getReal(), 1.e-21);
     }
 
     @Test
     public void testIssue625() {
-        doTestIssue625(Decimal64Field.getInstance());
+        doTestIssue625(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue625(final Field<T> field) {
@@ -236,29 +236,29 @@ public class FieldDSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(field));
+        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(field, state.getDate()));
 
         // Tesseral force model with default constructor
         final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
                                                              Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(field));
+        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(field, state.getDate()));
 
         // Compute mean element rate for the tesseral force model
-        final T[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field));
+        final T[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field, state.getDate()));
 
         // Compute mean element rate for the "default" tesseral force model
-        final T[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(field));
+        final T[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(field, state.getDate()));
 
         // Verify
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
+            Assertions.assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
         }
 
     }
 
     @Test
     public void testIssue736() {
-        doTestIssue736(Decimal64Field.getInstance());
+        doTestIssue736(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue736(final Field<T> field) {
@@ -281,7 +281,7 @@ public class FieldDSSTTesseralTest {
 
         // Force model
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        final T[] parameters = tesseral.getParameters(field);
+        final T[] parameters = tesseral.getParameters(field, orbit.getDate());
 
         // Initialize force model
         tesseral.initializeShortPeriodTerms(new FieldAuxiliaryElements<>(orbit, 1), PropagationType.MEAN, parameters);
@@ -298,7 +298,7 @@ public class FieldDSSTTesseralTest {
         // Its purpose is to verify that a NullPointerException does not
         // occur when calculating initial values of Hansen Coefficients
         for (int i = 0; i < elements.length; i++) {
-            Assert.assertTrue(elements[i].getReal() != 0);
+            Assertions.assertTrue(elements[i].getReal() != 0);
         }
 
     }
@@ -339,8 +339,7 @@ public class FieldDSSTTesseralTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(tesseral);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, tesseral);
-
+        
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -348,8 +347,9 @@ public class FieldDSSTTesseralTest {
 
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        tesseral.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                converter.getParametersAtStateDate(dsState, tesseral)));
+        tesseral.updateShortPeriodTerms(converter.getParameters(dsState, tesseral), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -415,7 +415,7 @@ public class FieldDSSTTesseralTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assert.assertEquals(0, error, 7.6e-10);
+                Assertions.assertEquals(0, error, 7.6e-10);
             }
         }
 
@@ -462,8 +462,7 @@ public class FieldDSSTTesseralTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(tesseral);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, tesseral);
-
+      
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -471,8 +470,9 @@ public class FieldDSSTTesseralTest {
 
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        tesseral.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                converter.getParametersAtStateDate(dsState, tesseral)));
+        tesseral.updateShortPeriodTerms(converter.getParameters(dsState, tesseral), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -522,25 +522,25 @@ public class FieldDSSTTesseralTest {
 
         selected.setValue(p0 - 4 * h);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, tesseral);
-
+  
         selected.setValue(p0 - 3 * h);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, tesseral);
-
+      
         selected.setValue(p0 - 2 * h);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, tesseral);
-
+      
         selected.setValue(p0 - 1 * h);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, tesseral);
-
+      
         selected.setValue(p0 + 1 * h);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, tesseral);
-
+      
         selected.setValue(p0 + 2 * h);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, tesseral);
-
+      
         selected.setValue(p0 + 3 * h);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, tesseral);
-
+      
         selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, tesseral);
 
@@ -549,7 +549,7 @@ public class FieldDSSTTesseralTest {
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+            Assertions.assertEquals(shortPeriodJacobianRef[i][0],
                                 shortPeriodJacobian[i][0],
                                 FastMath.abs(shortPeriodJacobianRef[i][0] * 2e-10));
         }
@@ -562,10 +562,9 @@ public class FieldDSSTTesseralTest {
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
-        force.updateShortPeriodTerms(parameters, state);
-
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
+        force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+        
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {
             double[] spVariation = spt.value(state.getOrbit());
@@ -631,7 +630,7 @@ public class FieldDSSTTesseralTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
     private double angularErrorTroposphericModel(final GroundStation station,
                                                  final SpacecraftState state) {
         //
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
         final double elevation = station.getBaseFrame().getElevation(position,
@@ -74,7 +74,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         // only consider measures above the horizon
         if (elevation > 0.0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
 
             // one-way measurement.
             return delay;
@@ -104,7 +104,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
 
         // Update measurement value taking into account the ionospheric delay.
         final AbsoluteDate date      = transitState.getDate();
-        final Vector3D     position  = transitState.getPVCoordinates().getPosition();
+        final Vector3D     position  = transitState.getPosition();
         final Frame        inertial  = transitState.getFrame();
 
         // Elevation and azimuth in radians

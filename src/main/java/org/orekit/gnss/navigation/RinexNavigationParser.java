@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,9 +74,6 @@ public class RinexNavigationParser {
 
     /** File Type. */
     private static final String FILE_TYPE = "N";
-
-    /** Seconds to milliseconds converter. */
-    private static final Double SEC_TO_MILLI = 1000.0;
 
     /** Kilometer to meters converter. */
     private static final Double KM_TO_M = 1000.0;
@@ -646,7 +643,7 @@ public class RinexNavigationParser {
                 // GPS week (to go with Toe)
                 pi.gpsNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.gpsNav.setDate(new GNSSDate(pi.gpsNav.getWeek(),
-                                               SEC_TO_MILLI * pi.gpsNav.getTime(),
+                                               pi.gpsNav.getTime(),
                                                SatelliteSystem.GPS,
                                                pi.timeScales).getDate());
             }
@@ -762,8 +759,8 @@ public class RinexNavigationParser {
                 // GAL week (to go with Toe)
                 pi.galileoNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.galileoNav.setDate(new GNSSDate(pi.galileoNav.getWeek(),
-                                                   SEC_TO_MILLI * pi.galileoNav.getTime(),
-                                                   SatelliteSystem.GALILEO,
+                                                   pi.galileoNav.getTime(),
+                                                   SatelliteSystem.GPS, // in Rinex files, week number is aligned to GPS week!
                                                    pi.timeScales).getDate());
             }
 
@@ -876,7 +873,7 @@ public class RinexNavigationParser {
                 // BDT week (to go with Toe)
                 pi.beidouNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.beidouNav.setDate(new GNSSDate(pi.beidouNav.getWeek(),
-                                                  SEC_TO_MILLI * pi.beidouNav.getTime(),
+                                                  pi.beidouNav.getTime(),
                                                   SatelliteSystem.BEIDOU,
                                                   pi.timeScales).getDate());
             }
@@ -997,8 +994,8 @@ public class RinexNavigationParser {
                 // GPS week (to go with Toe)
                 pi.qzssNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.qzssNav.setDate(new GNSSDate(pi.qzssNav.getWeek(),
-                                                SEC_TO_MILLI * pi.qzssNav.getTime(),
-                                                SatelliteSystem.QZSS,
+                                                pi.qzssNav.getTime(),
+                                                SatelliteSystem.GPS, // in Rinex files, week number is aligned to GPS week!
                                                 pi.timeScales).getDate());
             }
 
@@ -1111,8 +1108,8 @@ public class RinexNavigationParser {
                 // IRNSS week (to go with Toe)
                 pi.irnssNav.setWeek((int) parseDouble(line, 42, 19));
                 pi.irnssNav.setDate(new GNSSDate(pi.irnssNav.getWeek(),
-                                                 SEC_TO_MILLI * pi.irnssNav.getTime(),
-                                                 SatelliteSystem.IRNSS,
+                                                 pi.irnssNav.getTime(),
+                                                 SatelliteSystem.GPS, // in Rinex files, week number is aligned to GPS week!
                                                  pi.timeScales).getDate());
             }
 
@@ -1164,8 +1161,9 @@ public class RinexNavigationParser {
                 // Toc rounded by 15 min in UTC
                 final double secInWeek = FastMath.floor((0.001 * gpsEpoch.getMilliInWeek() + 450.0) / 900.0) * 900.0;
                 final AbsoluteDate rounded = new GNSSDate(gpsEpoch.getWeekNumber(),
-                                                          SEC_TO_MILLI * secInWeek,
-                                                          SatelliteSystem.GPS, pi.timeScales).getDate();
+                                                          secInWeek,
+                                                          SatelliteSystem.GPS, // in Rinex files, week number is aligned to GPS week!
+                                                          pi.timeScales).getDate();
 
                 pi.glonassNav.setEpochToc(rounded);
 

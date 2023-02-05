@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,10 @@
  */
 package org.orekit.forces.gravity;
 
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -30,9 +28,9 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
@@ -70,20 +68,19 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.
+                        getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
+                        getValue(date);
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
+            final Vector3D centralToBody    = body.getPosition(date, state.getFrame());
             final double r2Central          = centralToBody.getNormSq();
             final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
             final DerivativeStructure r2Sat = satToBody.getNormSq();
@@ -103,20 +100,19 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass)
-        {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.
+                        getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
+                        getValue(date);
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
+            final Vector3D centralToBody    = body.getPosition(date, state.getFrame());
             final double r2Central          = centralToBody.getNormSq();
             final FieldVector3D<Gradient> satToBody = position.subtract(centralToBody).negate();
             final Gradient r2Sat = satToBody.getNormSq();
@@ -135,39 +131,39 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
 
-    @Test(expected= OrekitException.class)
+    @Test
     public void testSunContrib() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            // initialization
+            AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
+                    new TimeComponents(13, 59, 27.816),
+                    TimeScalesFactory.getUTC());
+            Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
+                    FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                    FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
+                    0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+            double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
-        // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
-                                             new TimeComponents(13, 59, 27.816),
-                                             TimeScalesFactory.getUTC());
-        Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
-                                           FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
-                                           FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
-                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
-        double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
+            // set up propagator
+            NumericalPropagator calc =
+                    new NumericalPropagator(new GraggBulirschStoerIntegrator(10.0, period, 0, 1.0e-5));
+            calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
 
-        // set up propagator
-        NumericalPropagator calc =
-            new NumericalPropagator(new GraggBulirschStoerIntegrator(10.0, period, 0, 1.0e-5));
-        calc.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
-
-        // set up step handler to perform checks
-        calc.setStepHandler(FastMath.floor(period), new ReferenceChecker(date) {
-            protected double hXRef(double t) {
-                return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
-                FastMath.cos(3.9820426e-7*t) - 7.59983e-5 * FastMath.sin(3.9820426e-7*t);
-            }
-            protected double hYRef(double t) {
-                return 1.43526e-3 + 7.49765e-11 * t + 6.9448e-5 *
-                FastMath.cos(3.9820426e-7*t) + 17.6083e-5 * FastMath.sin(3.9820426e-7*t);
-            }
+            // set up step handler to perform checks
+            calc.setStepHandler(FastMath.floor(period), new ReferenceChecker(date) {
+                protected double hXRef(double t) {
+                    return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
+                            FastMath.cos(3.9820426e-7*t) - 7.59983e-5 * FastMath.sin(3.9820426e-7*t);
+                }
+                protected double hYRef(double t) {
+                    return 1.43526e-3 + 7.49765e-11 * t + 6.9448e-5 *
+                            FastMath.cos(3.9820426e-7*t) + 17.6083e-5 * FastMath.sin(3.9820426e-7*t);
+                }
+            });
+            AbsoluteDate finalDate = date.shiftedBy(365 * period);
+            calc.setInitialState(new SpacecraftState(orbit));
+            calc.propagate(finalDate);
         });
-        AbsoluteDate finalDate = date.shiftedBy(365 * period);
-        calc.setInitialState(new SpacecraftState(orbit));
-        calc.propagate(finalDate);
-
     }
 
     /**Testing if the propagation between the FieldPropagation and the propagation
@@ -352,9 +348,9 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
     @Test
     public void testMoonContrib() {
@@ -404,8 +400,8 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         public void handleStep(SpacecraftState currentState) {
             double t = currentState.getDate().durationFrom(reference);
-            Assert.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
-            Assert.assertEquals(hYRef(t), currentState.getHy(), 1e-4);
+            Assertions.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
+            Assertions.assertEquals(hYRef(t), currentState.getHy(), 1e-4);
         }
 
         protected abstract double hXRef(double t);
@@ -427,7 +423,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
-        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
         final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivative(state, forceModel, name, 1.0, 7.0e-15);
 
@@ -446,7 +442,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
-        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
         final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, forceModel, name, 1.0, 7.0e-15);
 
@@ -521,7 +517,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mu = 3.986e14;
         Utils.setDataRoot("regular-data");

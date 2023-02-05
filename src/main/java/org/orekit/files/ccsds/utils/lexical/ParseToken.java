@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@ import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.cdm.Maneuvrable;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
@@ -64,6 +65,9 @@ public class ParseToken {
 
     /** Pattern for splitting comma-separated lists. */
     private static final Pattern SPLIT_AT_COMMAS = Pattern.compile("\\p{Space}*,\\p{Space}*");
+
+    /** Pattern for splitting comma-separated lists with no space in between. */
+    private static final Pattern SPLIT_AT_COMMAS_NO_SPACE = Pattern.compile(",");
 
     /** Pattern for true boolean value. */
     private static final Pattern BOOLEAN_TRUE = Pattern.compile("(?:yes)|(?:true)",
@@ -391,14 +395,35 @@ public class ParseToken {
         return true;
     }
 
-    /** Process the content as an array of integers.
+    /** Process the content as an array of integers. No spaces between commas are allowed.
+     * @param consumer consumer of the array
+     * @return always returns {@code true}
+     */
+    public boolean processAsIntegerArrayNoSpace(final IntegerArrayConsumer consumer) {
+        try {
+            if (type == TokenType.ENTRY) {
+                // Do not allow spaces
+                final String[] fields = SPLIT_AT_COMMAS_NO_SPACE.split(getRawContent());
+                final int[] integers = new int[fields.length];
+                for (int i = 0; i < fields.length; ++i) {
+                    integers[i] = Integer.parseInt(fields[i]);
+                }
+                consumer.accept(integers);
+            }
+            return true;
+        } catch (NumberFormatException nfe) {
+            throw generateException(nfe);
+        }
+    }
+
+    /** Process the content as an array of integers. Spaces are replaced by commas.
      * @param consumer consumer of the array
      * @return always returns {@code true}
      */
     public boolean processAsIntegerArray(final IntegerArrayConsumer consumer) {
         try {
             if (type == TokenType.ENTRY) {
-                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent());
+                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
                 final int[] integers = new int[fields.length];
                 for (int i = 0; i < fields.length; ++i) {
                     integers[i] = Integer.parseInt(fields[i]);
@@ -598,6 +623,48 @@ public class ParseToken {
                 // one unit is unknown
                 throw generateException(oe);
             }
+        }
+        return true;
+    }
+
+     /** Process the content as free text string.
+     * @param consumer consumer of the string
+     * @return always returns {@code true}
+     */
+    public boolean processAsFreeTextString(final StringConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getRawContent());
+        }
+        return true;
+    }
+
+    /** Process the content as an array of doubles.
+     * @param consumer consumer of the array
+     * @return always returns {@code true}
+     */
+    public boolean processAsDoubleArray(final DoubleArrayConsumer consumer) {
+        try {
+            if (type == TokenType.ENTRY) {
+                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
+                final double[] doubles = new double[fields.length];
+                for (int i = 0; i < fields.length; ++i) {
+                    doubles[i] = Double.parseDouble(fields[i]);
+                }
+                consumer.accept(doubles);
+            }
+            return true;
+        } catch (NumberFormatException nfe) {
+            throw generateException(nfe);
+        }
+    }
+
+    /** Process the content of the Maneuvrable enum.
+     * @param consumer consumer of the enum
+     * @return always returns {@code true}
+     */
+    public boolean processAsManeuvrableEnum(final ManeuvrableConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(Maneuvrable.getEnum(getRawContent()));
         }
         return true;
     }
@@ -830,4 +897,19 @@ public class ParseToken {
         void accept(List<Unit> value);
     }
 
+    /** Interface representing instance methods that consume double array. */
+    public interface DoubleArrayConsumer {
+        /** Consume an array of doubles.
+         * @param doubles array of doubles
+         */
+        void accept(double[] doubles);
+    }
+
+    /** Interface representing instance methods that consume Maneuvrable values. */
+    public interface ManeuvrableConsumer {
+        /** Consume a Maneuvrable.
+         * @param value value to consume
+         */
+        void accept(Maneuvrable value);
+    }
 }

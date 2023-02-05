@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -37,11 +37,11 @@ public class TLEConverterTest {
 
         TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1.0);
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assert.assertTrue(driver.isSelected());
+            Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assert.assertFalse(driver.isSelected());
+            Assertions.assertFalse(driver.isSelected());
         }
     }
 
@@ -59,7 +59,7 @@ public class TLEConverterTest {
         try {
             propagatorBuilderError.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
         }
 
         // Now try using different convergence threshold
@@ -68,11 +68,11 @@ public class TLEConverterTest {
         final TLE newTLE = propagator.getTLE();
 
         // Verify
-        Assert.assertEquals(0.0, newTLE.getDate().durationFrom(tle.getDate()), Utils.epsilonTest);
+        Assertions.assertEquals(0.0, newTLE.getDate().durationFrom(tle.getDate()), Utils.epsilonTest);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

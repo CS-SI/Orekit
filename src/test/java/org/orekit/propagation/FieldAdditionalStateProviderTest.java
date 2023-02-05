@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,11 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -44,7 +44,7 @@ public class FieldAdditionalStateProviderTest {
 
     private double mu;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -71,7 +71,7 @@ public class FieldAdditionalStateProviderTest {
 
     @Test
     public void testIssue900Numerical() {
-        doTestIssue900Numerical(Decimal64Field.getInstance());
+        doTestIssue900Numerical(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue900Numerical(final Field<T> field) {
@@ -85,7 +85,7 @@ public class FieldAdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider<T> provider = new TimeDifferenceProvider<>(name, field);
-        Assert.assertFalse(provider.wasCalled());
+        Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -95,14 +95,14 @@ public class FieldAdditionalStateProviderTest {
         final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
 
         // Verify
-        Assert.assertTrue(provider.wasCalled());
-        Assert.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 
     @Test
     public void testIssue900Dsst() {
-        doTestIssue900Dsst(Decimal64Field.getInstance());
+        doTestIssue900Dsst(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue900Dsst(final Field<T> field) {
@@ -116,7 +116,7 @@ public class FieldAdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider<T> provider = new TimeDifferenceProvider<>(name, field);
-        Assert.assertFalse(provider.wasCalled());
+        Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -126,14 +126,14 @@ public class FieldAdditionalStateProviderTest {
         final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
 
         // Verify
-        Assert.assertTrue(provider.wasCalled());
-        Assert.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 
     @Test
     public void testIssue900BrouwerLyddane() {
-        doTestIssue900BrouwerLyddane(Decimal64Field.getInstance());
+        doTestIssue900BrouwerLyddane(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue900BrouwerLyddane(final Field<T> field) {
@@ -146,7 +146,7 @@ public class FieldAdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider<T> provider = new TimeDifferenceProvider<>(name, field);
-        Assert.assertFalse(provider.wasCalled());
+        Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -156,8 +156,8 @@ public class FieldAdditionalStateProviderTest {
         final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
 
         // Verify
-        Assert.assertTrue(provider.wasCalled());
-        Assert.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 

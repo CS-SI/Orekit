@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,21 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class AbstractPropagatorBuilderTest {
@@ -46,6 +52,15 @@ public class AbstractPropagatorBuilderTest {
                 setParameters(normalizedParameters);
                 return new KeplerianPropagator(createInitialOrbit());
             }
+
+            @Override
+            public AbstractBatchLSModel buildLeastSquaresModel(PropagatorBuilder[] builders,
+                                                               List<ObservedMeasurement<?>> measurements,
+                                                               ParameterDriversList estimatedMeasurementsParameters,
+                                                               ModelObserver observer) {
+                // The test don't use orbit determination. So, the method can return null
+                return null;
+            }
         };
 
         // Shift the orbit of a minute
@@ -54,14 +69,14 @@ public class AbstractPropagatorBuilderTest {
         propagatorBuilder.resetOrbit(newOrbit);
 
         // Check that the new orbit was properly set in the builder and
-        Assert.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
+        Assertions.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
         final double[] stateVector = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit, PositionAngle.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             final double expectedValue = stateVector[i++];
-            Assert.assertEquals(expectedValue, driver.getValue(), 0.);
-            Assert.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
+            Assertions.assertEquals(expectedValue, driver.getValue(), 0.);
+            Assertions.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
         }
     }
 }

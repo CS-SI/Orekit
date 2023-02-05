@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,19 @@
  */
 package org.orekit.attitudes;
 
-
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -72,12 +71,12 @@ public class InertialAttitudeTest {
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
             SpacecraftState state = propagator.propagate(t0.shiftedBy(t));
-            checkField(Decimal64Field.getInstance(), law, state.getOrbit(), state.getDate(), state.getFrame());
+            checkField(Binary64Field.getInstance(), law, state.getOrbit(), state.getDate(), state.getFrame());
             Attitude attitude = state.getAttitude();
             Rotation evolution = attitude.getRotation().compose(initial.getRotation().revert(),
                                                                 RotationConvention.VECTOR_OPERATOR);
-            Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
-            Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
+            Assertions.assertEquals(0, evolution.getAngle(), 1.0e-10);
+            Assertions.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -90,8 +89,8 @@ public class InertialAttitudeTest {
             Attitude attitude = propagator.propagate(t0.shiftedBy(t)).getAttitude();
             Rotation evolution = attitude.getRotation().compose(initial.getRotation().revert(),
                                                                 RotationConvention.VECTOR_OPERATOR);
-            Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
-            Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
+            Assertions.assertEquals(0, evolution.getAngle(), 1.0e-10);
+            Assertions.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
@@ -122,21 +121,21 @@ public class InertialAttitudeTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         // compute spin axis using finite differences
         Rotation rMinus = sMinus.getAttitude().getRotation();
         Rotation rPlus  = sPlus.getAttitude().getRotation();
         Rotation dr     = rPlus.compose(rMinus.revert(), RotationConvention.VECTOR_OPERATOR);
-        Assert.assertEquals(0, dr.getAngle(), 1.0e-10);
+        Assertions.assertEquals(0, dr.getAngle(), 1.0e-10);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
-        Assert.assertEquals(0, spin0.getNorm(), 1.0e-10);
+        Assertions.assertEquals(0, spin0.getNorm(), 1.0e-10);
 
     }
 
@@ -148,9 +147,9 @@ public class InertialAttitudeTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
     @Test
@@ -202,16 +201,16 @@ public class InertialAttitudeTest {
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
         AttitudeProvider law = InertialProvider.of(eci);
-        Decimal64 one = Decimal64.ONE;
-        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(one.getField(), t0);
-        FieldOrbit<Decimal64> orbit = new FieldCartesianOrbit<>(
+        Binary64 one = Binary64.ONE;
+        FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(one.getField(), t0);
+        FieldOrbit<Binary64> orbit = new FieldCartesianOrbit<>(
                 new FieldPVCoordinates<>(one, this.orbit0.getPVCoordinates()),
                 eci,
                 date,
                 one.multiply(orbit0.getMu()));
 
         // action + verify
-        FieldAttitude<Decimal64> actual = law.getAttitude(orbit, date, eci);
+        FieldAttitude<Binary64> actual = law.getAttitude(orbit, date, eci);
         MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
         MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
         actual = law.getAttitude(orbit.shiftedBy(1e3), date.shiftedBy(1e3), eci);
@@ -243,7 +242,7 @@ public class InertialAttitudeTest {
 
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
@@ -255,11 +254,11 @@ public class InertialAttitudeTest {
                                    PositionAngle.TRUE, FramesFactory.getEME2000(),
                                    t0, 3.986004415e14);
         } catch (OrekitException oe) {
-            Assert.fail(oe.getMessage());
+            Assertions.fail(oe.getMessage());
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         t0     = null;
         orbit0 = null;
