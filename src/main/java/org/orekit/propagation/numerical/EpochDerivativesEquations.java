@@ -174,8 +174,6 @@ public class EpochDerivativesEquations
      * </p>
      * @param s0 initial state
      * @return state with initial Jacobians added
-     * @see #getSelectedParameters()
-     * @since 9.0
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
@@ -205,7 +203,6 @@ public class EpochDerivativesEquations
      * @param dY1dP Jacobian of current state at time t₁ with respect
      * to parameters (may be null if no parameters are selected)
      * @return state with initial Jacobians added
-     * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0, final double[][] dY1dP) {
@@ -243,7 +240,6 @@ public class EpochDerivativesEquations
      * @param dY1dP Jacobian of current state at time t₁
      * with respect to parameters (may be null if there are no parameters)
      * @param p placeholder where to put the one-dimensional additional state
-     * @see #getStateJacobian(SpacecraftState, double[][])
      */
     public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
                                     final double[][] dY1dP, final double[] p) {
