@@ -129,10 +129,8 @@ public interface EOPHistoryLoader {
                 final IERSConventions conventions,
                 final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
-            return new EOPC04FilesLoader.Parser(
-                    conventions.getNutationCorrectionConverter(timeScales),
-                    itrfVersionProvider,
-                    timeScales.getUTC());
+            return new EOPC04FilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
+                                                timeScales.getUTC());
         }
 
         /**

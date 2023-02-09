@@ -179,7 +179,7 @@ public class LazyLoadedEop {
                                                 final Supplier<TimeScale> utcSupplier) {
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME :
+                        FramesFactory.RAPID_DATA_PREDICTION_COLUMNS_2000_FILENAME :
                         rapidDataColumnsSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
                 new RapidDataAndPredictionColumnsLoader(
@@ -189,7 +189,7 @@ public class LazyLoadedEop {
                         true, rapidColNames, dataProvidersManager, utcSupplier));
         final String rapidXmlNames =
                 (rapidDataXMLSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICITON_XML_2000_FILENAME :
+                        FramesFactory.RAPID_DATA_PREDICTION_XML_2000_FILENAME :
                         rapidDataXMLSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
                 new RapidDataAndPredictionXMLLoader(
