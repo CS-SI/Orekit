@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
@@ -1155,26 +1154,16 @@ public class RinexNavigationParser {
                 final int glonassTocHours = parseInt(line, 15, 2);
                 final int glonassTocMin   = parseInt(line, 18, 2);
                 final int glonassTocSec   = parseInt(line, 21, 2);
-                final AbsoluteDate date = new AbsoluteDate(glonassTocYear, glonassTocMonth, glonassTocDay, glonassTocHours,
-                                                           glonassTocMin, glonassTocSec, pi.timeScales.getUTC());
+                final AbsoluteDate date = new AbsoluteDate(glonassTocYear, glonassTocMonth, glonassTocDay, glonassTocHours, glonassTocMin, glonassTocSec, pi.timeScales.getUTC());
 
-                // Build a GPS date
-                final GNSSDate gpsEpoch = new GNSSDate(date, SatelliteSystem.GPS, pi.timeScales);
-
-                // Toc rounded by 15 min in UTC
-                final double secInWeek = FastMath.floor((0.001 * gpsEpoch.getMilliInWeek() + 450.0) / 900.0) * 900.0;
-                final AbsoluteDate rounded = new GNSSDate(gpsEpoch.getWeekNumber(),
-                                                          SEC_TO_MILLI * secInWeek,
-                                                          SatelliteSystem.GPS, pi.timeScales).getDate();
-
-                pi.glonassNav.setEpochToc(rounded);
+                pi.glonassNav.setEpochToc(date);
 
                 // TauN (we read -TauN) and GammaN
                 pi.glonassNav.setTauN(-parseDouble(line, 23, 19));
                 pi.glonassNav.setGammaN(parseDouble(line, 42, 19));
 
                 // Date
-                pi.glonassNav.setDate(rounded);
+                pi.glonassNav.setDate(date.getDate());
 
                 // Time
                 pi.glonassNav.setTime(fmod(parseDouble(line, 61, 19), Constants.JULIAN_DAY));
