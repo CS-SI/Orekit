@@ -16,6 +16,13 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -23,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
+import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,17 +119,22 @@ public class TorqueFreeTest {
                         new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                           new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, frame, initialDate, 3.986004415e14);
-        doTestMomentum(initialAttitude, inertia, orbit, 1.4e-15);
+        Stream<TorqueFree> useCases = permute(inertia).map(i -> new TorqueFree(initialAttitude, i));
 
-        // TODO: generate all permutations on initial conditions and inertia
-        // to test all code paths (see the various permute methods in EmbeddedRungeKuttaIntegratorAbstractTest)
+         useCases.forEach(tf -> {
+            System.out.println(tf.getInertia().getInertiaAxis1().getI() + " " + tf.getInertia().getInertiaAxis1().getA() + " " +
+                               tf.getInertia().getInertiaAxis2().getI() + " " + tf.getInertia().getInertiaAxis2().getA() + " " +
+                               tf.getInertia().getInertiaAxis3().getI() + " " + tf.getInertia().getInertiaAxis3().getA());
+            doTestMomentum(tf, orbit, 1.6e-15);
+        });
 
     }
 
-    private void doTestMomentum(final Attitude initialAttitude, final Inertia inertia, final Orbit orbit,
-                                final double tol) {
-        final Vector3D initialMomentum = initialAttitude.getRotation().applyInverseTo(inertia.momentum(initialAttitude.getSpin()));
-        final TorqueFree torqueFree = new TorqueFree(initialAttitude, inertia);
+    private void doTestMomentum(final TorqueFree torqueFree, final Orbit orbit, final double tol) {
+        final Attitude initialAttitude = torqueFree.getInitialAttitude();
+        final Inertia  inertia         = torqueFree.getInertia();
+        final Vector3D initialMomentum = initialAttitude.getRotation().
+                                         applyInverseTo(torqueFree.getInertia().momentum(initialAttitude.getSpin()));
 
         double   maxError      = 0;
         for (double dt = -40; dt < 40; dt += 0.01) {
@@ -152,7 +165,7 @@ public class TorqueFreeTest {
                         new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                           new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, frame, initialDate, 3.986004415e14);
-        doTestMomentum(Binary64Field.getInstance(), initialAttitude, inertia, orbit, 1.4e-15);
+        doTestMomentum(Binary64Field.getInstance(), new TorqueFree(initialAttitude, inertia), orbit, 1.4e-15);
 
         // TODO: generate all permutations on initial conditions and inertia
         // to test all code paths (see the various permute methods in EmbeddedRungeKuttaIntegratorAbstractTest)
@@ -160,14 +173,14 @@ public class TorqueFreeTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMomentum(final Field<T> field,
-                                                                    final Attitude initialAttitude,
-                                                                    final Inertia inertia,
+                                                                    final TorqueFree torqueFree,
                                                                     final Orbit orbit,
                                                                     final double tol) {
         final T zero = field.getZero();
+        final Attitude initialAttitude = torqueFree.getInitialAttitude();
+        final Inertia  inertia         = torqueFree.getInertia();
         final Vector3D initialMomentum = initialAttitude.getRotation().applyInverseTo(inertia.momentum(initialAttitude.getSpin()));
         final FieldVector3D<T> fInitialMomentum = new FieldVector3D<>(field, initialMomentum);
-        final TorqueFree torqueFree = new TorqueFree(initialAttitude, inertia);
         final FieldInertia<T> fInertia =
                         new FieldInertia<>(new FieldInertiaAxis<>(zero.newInstance(inertia.getInertiaAxis1().getI()),
                                                                   new FieldVector3D<>(field, inertia.getInertiaAxis1().getA())),
@@ -235,6 +248,43 @@ public class TorqueFreeTest {
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+
+    /** Generate all permutations of inertia.
+     * @param inertia inertia to permute
+     * @return permuted inertia
+     */
+    private Stream<Inertia> permute(final Inertia inertia) {
+        List<Inertia> permuted = new ArrayList<>();
+        // the external "loop" permutes the inertia axes as a whole
+        // the internal "loop" permutes the moment of inertia within a fixed triad
+        CombinatoricsUtils.
+            permutations(Arrays.asList(inertia.getInertiaAxis1(), inertia.getInertiaAxis2(), inertia.getInertiaAxis3())).
+            forEach(ia ->
+                    permuted.addAll(CombinatoricsUtils.permutations(Arrays.asList(0, 1, 2)).
+                                    map(i -> new Inertia(new InertiaAxis(ia.get(i.get(0)).getI(), ia.get(0).getA()),
+                                                         new InertiaAxis(ia.get(i.get(1)).getI(), ia.get(1).getA()),
+                                                         new InertiaAxis(ia.get(i.get(2)).getI(), ia.get(2).getA()))).
+                                    collect(Collectors.toList())));
+        return permuted.stream();
+    }
+
+    /** Generate all permutations of rotation coordinates.
+     * @param r rotation to permute
+     * @return permuted rotation
+     */
+    private Stream<Rotation> permute(final Rotation r) {
+        return CombinatoricsUtils.
+                        permutations(Arrays.asList(r.getQ0(), r.getQ1(), r.getQ2(), r.getQ3())).
+                        map(a -> new Rotation(a.get(0), a.get(1), a.get(2), a.get(3), false));
+    }
+
+    /** Generate all permutations of a list.
+     * @param list list to permute
+     * @return permuted list
+     */
+    private Stream<List<Double>> permute(final List<Double> list) {
+        return CombinatoricsUtils.permutations(list);
     }
 
 }
