@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,12 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.Ephemeris;
+import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -36,8 +41,14 @@ import org.orekit.utils.ParameterDriversList;
 /**
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
- * or {@link DSSTPropagator}.
+ * The filter uses a {@link PropagatorBuilder} to initialize its reference trajectory.
+ * The Kalman estimator can be used with a {@link NumericalPropagator}, {@link TLEPropagator},
+ * {@link BrouwerLyddanePropagator}, {@link EcksteinHechlerPropagator}, {@link KeplerianPropagator},
+ * or {@link Ephemeris}.
+ * </p>
+ * <p>
+ * Kalman estimation using a {@link DSSTPropagator semi-analytical orbit propagator} must be done using
+ * the {@link SemiAnalyticalKalmanEstimator}.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
@@ -71,7 +82,7 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
     private final AbsoluteDate referenceDate;
 
     /** Kalman filter process model. */
-    private final AbstractKalmanModel processModel;
+    private final KalmanModel processModel;
 
     /** Filter. */
     private final ExtendedKalmanFilter<MeasurementDecorator> filter;
@@ -88,7 +99,7 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
      * @since 10.3
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                    final List<PropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
@@ -97,10 +108,10 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
         this.observer           = null;
 
         // Build the process model and measurement model
-        this.processModel = propagatorBuilders.get(0).buildKalmanModel(propagatorBuilders,
-                                                                       processNoiseMatricesProviders,
-                                                                       estimatedMeasurementParameters,
-                                                                       measurementProcessNoiseMatrix);
+        this.processModel = new KalmanModel(propagatorBuilders,
+                                            processNoiseMatricesProviders,
+                                            estimatedMeasurementParameters,
+                                            measurementProcessNoiseMatrix);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 

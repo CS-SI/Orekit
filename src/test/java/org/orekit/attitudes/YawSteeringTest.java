@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -116,7 +116,7 @@ public class YawSteeringTest {
 
         // Get sun direction in satellite frame
         Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
-        Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
+        Vector3D sunEME2000 = sun.getPosition(date, FramesFactory.getEME2000());
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
 
         // Check sun is in (X, Z) plane
@@ -140,7 +140,7 @@ public class YawSteeringTest {
         Rotation rotNoYaw = nadirLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
         Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
 
-        checkField(Decimal64Field.getInstance(), yawCompensLaw, circOrbit, circOrbit.getDate(), circOrbit.getFrame());
+        checkField(Binary64Field.getInstance(), yawCompensLaw, circOrbit, circOrbit.getDate(), circOrbit.getFrame());
 
         // Compose rotations composition
         Rotation compoRot = rotYaw.compose(rotNoYaw.revert(), RotationConvention.VECTOR_OPERATOR);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -301,7 +301,7 @@ public class RinexObservationLoader {
                 }
 
                 //File Type must be Observation_Data
-                if (!(parseString(20, 1)).equals(FILE_TYPE)) {
+                if (!parseString(20, 1).equals(FILE_TYPE)) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
                 satelliteSystem = SatelliteSystem.parseSatelliteSystem(parseString(40, 1));

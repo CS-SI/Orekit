@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -188,8 +188,8 @@ public class JPLEphemeridesLoaderTest {
         Frame eme2000   = FramesFactory.getEME2000();
         for (double dt = 0; dt < 30 * Constants.JULIAN_DAY; dt += 3600) {
             AbsoluteDate date        = t0.shiftedBy(dt);
-            Vector3D pInpopTCBBig    = bodysInpopTCBBig.getPVCoordinates(date, eme2000).getPosition();
-            Vector3D pInpopTCBLittle = bodysInpopTCBLittle.getPVCoordinates(date, eme2000).getPosition();
+            Vector3D pInpopTCBBig    = bodysInpopTCBBig.getPosition(date, eme2000);
+            Vector3D pInpopTCBLittle = bodysInpopTCBLittle.getPosition(date, eme2000);
             Assertions.assertEquals(0.0, pInpopTCBBig.distance(pInpopTCBLittle), 1.0e-10);
         }
         for (String name : DataContext.getDefault().getDataProvidersManager().getLoadedDataNames()) {
@@ -216,9 +216,9 @@ public class JPLEphemeridesLoaderTest {
         Frame eme2000   = FramesFactory.getEME2000();
         for (double dt = 0; dt < 30 * Constants.JULIAN_DAY; dt += 3600) {
             AbsoluteDate date = t0.shiftedBy(dt);
-            Vector3D pDE405          = bodysDE405.getPVCoordinates(date, eme2000).getPosition();
-            Vector3D pInpopTDBBig    = bodysInpopTDBBig.getPVCoordinates(date, eme2000).getPosition();
-            Vector3D pInpopTCBBig    = bodysInpopTCBBig.getPVCoordinates(date, eme2000).getPosition();
+            Vector3D pDE405          = bodysDE405.getPosition(date, eme2000);
+            Vector3D pInpopTDBBig    = bodysInpopTDBBig.getPosition(date, eme2000);
+            Vector3D pInpopTCBBig    = bodysInpopTCBBig.getPosition(date, eme2000);
             Assertions.assertTrue(pDE405.distance(pInpopTDBBig) >  650.0);
             Assertions.assertTrue(pDE405.distance(pInpopTDBBig) < 1050.0);
             Assertions.assertTrue(pDE405.distance(pInpopTCBBig) > 1000.0);
@@ -269,14 +269,14 @@ public class JPLEphemeridesLoaderTest {
 
         // eight points finite differences estimation of the velocity
         Frame eme2000 = FramesFactory.getEME2000();
-        Vector3D pm4h = body.getPVCoordinates(date.shiftedBy(-4 * h), eme2000).getPosition();
-        Vector3D pm3h = body.getPVCoordinates(date.shiftedBy(-3 * h), eme2000).getPosition();
-        Vector3D pm2h = body.getPVCoordinates(date.shiftedBy(-2 * h), eme2000).getPosition();
-        Vector3D pm1h = body.getPVCoordinates(date.shiftedBy(    -h), eme2000).getPosition();
-        Vector3D pp1h = body.getPVCoordinates(date.shiftedBy(     h), eme2000).getPosition();
-        Vector3D pp2h = body.getPVCoordinates(date.shiftedBy( 2 * h), eme2000).getPosition();
-        Vector3D pp3h = body.getPVCoordinates(date.shiftedBy( 3 * h), eme2000).getPosition();
-        Vector3D pp4h = body.getPVCoordinates(date.shiftedBy( 4 * h), eme2000).getPosition();
+        Vector3D pm4h = body.getPosition(date.shiftedBy(-4 * h), eme2000);
+        Vector3D pm3h = body.getPosition(date.shiftedBy(-3 * h), eme2000);
+        Vector3D pm2h = body.getPosition(date.shiftedBy(-2 * h), eme2000);
+        Vector3D pm1h = body.getPosition(date.shiftedBy(    -h), eme2000);
+        Vector3D pp1h = body.getPosition(date.shiftedBy(     h), eme2000);
+        Vector3D pp2h = body.getPosition(date.shiftedBy( 2 * h), eme2000);
+        Vector3D pp3h = body.getPosition(date.shiftedBy( 3 * h), eme2000);
+        Vector3D pp4h = body.getPosition(date.shiftedBy( 4 * h), eme2000);
         Vector3D d4   = pp4h.subtract(pm4h);
         Vector3D d3   = pp3h.subtract(pm3h);
         Vector3D d2   = pp2h.subtract(pm2h);

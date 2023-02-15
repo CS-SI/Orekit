@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -564,76 +564,6 @@ public class KeplerianOrbit extends Orbit {
                                                                                    getTrueAnomalyDot());
     }
 
-    /** Computes the true anomaly from the elliptic eccentric anomaly.
-     * @param E eccentric anomaly (rad)
-     * @param e eccentricity
-     * @return v the true anomaly
-     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticEccentricToTrue(double, double)}.
-     */
-    public static double ellipticEccentricToTrue(final double E, final double e) {
-        return KeplerianAnomalyUtility.ellipticEccentricToTrue(e, E);
-    }
-
-    /** Computes the elliptic eccentric anomaly from the true anomaly.
-     * @param v true anomaly (rad)
-     * @param e eccentricity
-     * @return E the elliptic eccentric anomaly
-     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticTrueToEccentric(double, double)}.
-     */
-    public static double trueToEllipticEccentric(final double v, final double e) {
-        return KeplerianAnomalyUtility.ellipticTrueToEccentric(e, v);
-    }
-
-    /** Computes the true anomaly from the hyperbolic eccentric anomaly.
-     * @param H hyperbolic eccentric anomaly (rad)
-     * @param e eccentricity
-     * @return v the true anomaly
-     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#hyperbolicEccentricToTrue(double, double)}.
-     */
-    public static double hyperbolicEccentricToTrue(final double H, final double e) {
-        return KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, H);
-    }
-
-    /** Computes the hyperbolic eccentric anomaly from the true anomaly.
-     * @param v true anomaly (rad)
-     * @param e eccentricity
-     * @return H the hyperbolic eccentric anomaly
-     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#hyperbolicTrueToEccentric(double, double)}.
-     */
-    public static double trueToHyperbolicEccentric(final double v, final double e) {
-        return KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, v);
-    }
-
-    /** Computes the elliptic eccentric anomaly from the mean anomaly.
-     * @param M mean anomaly (rad)
-     * @param e eccentricity
-     * @return E the eccentric anomaly
-     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticMeanToEccentric(double, double)}.
-     */
-    public static double meanToEllipticEccentric(final double M, final double e) {
-        return KeplerianAnomalyUtility.ellipticEccentricToMean(e, M);
-    }
-
-    /** Computes the mean anomaly from the elliptic eccentric anomaly.
-     * @param E eccentric anomaly (rad)
-     * @param e eccentricity
-     * @return M the mean anomaly
-     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticEccentricToMean(double, double)}.
-     */
-    public static double ellipticEccentricToMean(final double E, final double e) {
-        return KeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
-    }
-
-    /** Computes the mean anomaly from the hyperbolic eccentric anomaly.
-     * @param H hyperbolic eccentric anomaly (rad)
-     * @param e eccentricity
-     * @return M the mean anomaly
-     * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#hyperbolicEccentricToMean(double, double)}.
-     */
-    public static double hyperbolicEccentricToMean(final double H, final double e) {
-        return KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, H);
-    }
-
     /** {@inheritDoc} */
     public double getEquinoctialEx() {
         return e * FastMath.cos(pa + raan);
@@ -728,15 +658,11 @@ public class KeplerianOrbit extends Orbit {
         return paDot + raanDot + getMeanAnomalyDot();
     }
 
-    /** Compute position and velocity but not acceleration.
+    /** Compute reference axes.
+     * @return referecne axes
+     * @since 12.0
      */
-    private void computePVWithoutA() {
-
-        if (partialPV != null) {
-            // already computed
-            return;
-        }
-
+    private Vector3D[] referenceAxes() {
         // preliminary variables
         final SinCos scRaan  = FastMath.sinCos(raan);
         final SinCos scPa    = FastMath.sinCos(pa);
@@ -754,8 +680,23 @@ public class KeplerianOrbit extends Orbit {
         final double srsp    = sinRaan * sinPa;
 
         // reference axes defining the orbital plane
-        final Vector3D p = new Vector3D( crcp - cosI * srsp,  srcp + cosI * crsp, sinI * sinPa);
-        final Vector3D q = new Vector3D(-crsp - cosI * srcp, -srsp + cosI * crcp, sinI * cosPa);
+        return new Vector3D[] {
+            new Vector3D( crcp - cosI * srsp,  srcp + cosI * crsp, sinI * sinPa),
+            new Vector3D(-crsp - cosI * srcp, -srsp + cosI * crcp, sinI * cosPa)
+        };
+
+    }
+
+    /** Compute position and velocity but not acceleration.
+     */
+    private void computePVWithoutA() {
+
+        if (partialPV != null) {
+            // already computed
+            return;
+        }
+
+        final Vector3D[] axes = referenceAxes();
 
         if (a > 0) {
 
@@ -775,8 +716,8 @@ public class KeplerianOrbit extends Orbit {
             final double xDot   = -sinE * factor;
             final double yDot   =  cosE * s1Me2 * factor;
 
-            final Vector3D position = new Vector3D(x, p, y, q);
-            final Vector3D velocity = new Vector3D(xDot, p, yDot, q);
+            final Vector3D position = new Vector3D(x, axes[0], y, axes[1]);
+            final Vector3D velocity = new Vector3D(xDot, axes[0], yDot, axes[1]);
             partialPV = new PVCoordinates(position, velocity);
 
         } else {
@@ -796,8 +737,8 @@ public class KeplerianOrbit extends Orbit {
             final double   xDot         = -velFactor * sinV;
             final double   yDot         =  velFactor * (e + cosV);
 
-            final Vector3D position     = new Vector3D(x, p, y, q);
-            final Vector3D velocity     = new Vector3D(xDot, p, yDot, q);
+            final Vector3D position = new Vector3D(x, axes[0], y, axes[1]);
+            final Vector3D velocity = new Vector3D(xDot, axes[0], yDot, axes[1]);
             partialPV = new PVCoordinates(position, velocity);
 
         }
@@ -824,6 +765,41 @@ public class KeplerianOrbit extends Orbit {
                                       dCdP[5][3] * paDot   + dCdP[5][4] * raanDot + dCdP[5][5] * nonKeplerianMeanMotion;
 
         return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
+    /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+
+        final Vector3D[] axes = referenceAxes();
+
+        if (a > 0) {
+
+            // elliptical case
+
+            // elliptic eccentric anomaly
+            final double uME2   = (1 - e) * (1 + e);
+            final double s1Me2  = FastMath.sqrt(uME2);
+            final SinCos scE    = FastMath.sinCos(getEccentricAnomaly());
+            final double cosE   = scE.cos();
+            final double sinE   = scE.sin();
+
+            return new Vector3D(a * (cosE - e), axes[0], a * sinE * s1Me2, axes[1]);
+
+        } else {
+
+            // hyperbolic case
+
+            // compute position and velocity factors
+            final SinCos scV       = FastMath.sinCos(v);
+            final double sinV      = scV.sin();
+            final double cosV      = scV.cos();
+            final double f         = a * (1 - e * e);
+            final double posFactor = f / (1 + e * cosV);
+
+            return new Vector3D(posFactor * cosV, axes[0], posFactor * sinV, axes[1]);
+
+        }
 
     }
 

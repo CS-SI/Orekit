@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -371,7 +371,7 @@ public class SecularAndHarmonicTest {
             public double value(double x) {
                 try {
                     final SpacecraftState state = propagator.propagate(guessDate.shiftedBy(x));
-                    final Vector3D position = state.getPVCoordinates(earth.getBodyFrame()).getPosition();
+                    final Vector3D position = state.getPosition(earth.getBodyFrame());
                     final GeodeticPoint point = earth.transform(position, earth.getBodyFrame(), state.getDate());
                     return point.getLatitude() - latitude;
                 } catch (OrekitException oe) {
@@ -415,7 +415,7 @@ public class SecularAndHarmonicTest {
     private double meanSolarTime(final Orbit orbit) {
 
         // compute angle between Sun and spacecraft in the equatorial plane
-        final Vector3D position = orbit.getPVCoordinates().getPosition();
+        final Vector3D position = orbit.getPosition();
         final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInUTCDay();
         final double theta      = gmst.value(orbit.getDate());
         final double sunAlpha   = theta + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));

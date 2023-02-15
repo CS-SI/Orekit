@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -531,6 +531,10 @@ public enum AttitudeType {
         return filter;
     }
 
+    /** Format data for CCSDS ADM writing.
+     * @param data data to format
+     * @return formated data
+     */
     private String[] formatData(final double[] data) {
         final String[] fields = new String[data.length];
         for (int i = 0; i < data.length; ++i) {

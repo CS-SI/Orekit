@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -157,7 +157,6 @@ public class DataProvidersManagerTest {
         Assertions.assertNotNull(manager.removeProvider(provider));
         Assertions.assertEquals(1, manager.getProviders().size());
         Assertions.assertNull(manager.removeProvider(new DataProvider() {
-            @Deprecated
             public boolean feed(Pattern supported, DataLoader visitor, DataProvidersManager manager) {
                 throw new OrekitException(new DummyLocalizable("oops!"));
             }

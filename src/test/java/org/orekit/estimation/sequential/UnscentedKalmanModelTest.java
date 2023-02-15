@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -113,7 +113,7 @@ public class UnscentedKalmanModelTest {
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
         this.pv = new PV(date0,
-                             context.initialOrbit.getPVCoordinates().getPosition(),
+                             context.initialOrbit.getPosition(),
                              context.initialOrbit.getPVCoordinates().getVelocity(),
                              new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
                              sat);

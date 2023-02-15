@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,35 +56,32 @@ public class EventShifterTest {
     public void testNegNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         EclipseDetector raw = createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3);
-        final EventHandler<? super EclipseDetector> h = raw.getHandler();
-        raw = raw.withHandler(new EventHandler<EclipseDetector>() {
+        final EventHandler h = raw.getHandler();
+        raw = raw.withHandler(new EventHandler() {
 
             @Override
             public Action eventOccurred(SpacecraftState s,
-                                        EclipseDetector detector,
-                                        boolean increasing)
-              {
+                                        EventDetector detector,
+                                        boolean increasing) {
                 h.eventOccurred(s, detector, increasing);
                 return Action.RESET_STATE;
             }
 
             @Override
-            public SpacecraftState resetState(EclipseDetector detector,
-                                              SpacecraftState oldState)
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState)
                                                   {
                 return h.resetState(detector, oldState);
             }
 
         });
-        EventShifter<EclipseDetector> shifter = new EventShifter<EclipseDetector>(raw, true, -15, -20).
-                                                withMaxIter(200);
+        EventShifter shifter = new EventShifter(raw, true, -15, -20).withMaxIter(200);
         Assertions.assertEquals(-15, shifter.getIncreasingTimeShift(), 1.0e-15);
         Assertions.assertEquals(-20, shifter.getDecreasingTimeShift(), 1.0e-15);
         Assertions.assertEquals(200, shifter.getMaxIterationCount());
         Assertions.assertEquals(100, raw.getMaxIterationCount());
         propagator.addEventDetector(shifter);
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                                      false, -5, -10));
+        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                     false, -5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
         log.get(0).checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
@@ -96,10 +93,10 @@ public class EventShifterTest {
     @Test
     public void testNegPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                                      true, -15,  20));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                                      false, -5,  10));
+        propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
+                                                     true, -15,  20));
+        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                     false, -5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
         log.get(1).checkExpected(log.get(0).getDT(),      "unshifted decreasing");
@@ -111,10 +108,10 @@ public class EventShifterTest {
     @Test
     public void testPosNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                                      true,  15, -20));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                                      false,  5, -10));
+        propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
+                                                     true,  15, -20));
+        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                     false,  5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
         log.get(0).checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
@@ -126,10 +123,10 @@ public class EventShifterTest {
     @Test
     public void testPosPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                                      true,  15,  20));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                                      false,  5,  10));
+        propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
+                                                     true,  15,  20));
+        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                     false,  5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(6, log.size());
         log.get(1).checkExpected(log.get(0).getDT(),      "unshifted decreasing");
@@ -144,9 +141,9 @@ public class EventShifterTest {
         final EclipseDetector raw0010 = createRawDetector("-10s increasing",   "-10s decreasing", 2.0e-3);
         final EclipseDetector raw0100 = createRawDetector("-100s increasing",  "-100s decreasing", 3.0e-2);
         final EclipseDetector raw1000 = createRawDetector("-1000s increasing", "-1000s decreasing", 5.0);
-        final EventShifter<EclipseDetector> shift0010 = new EventShifter<>(raw0010, true,   -10,   -10);
-        final EventShifter<EclipseDetector> shift0100 = new EventShifter<>(raw0100, true,  -100,  -100);
-        final EventShifter<EclipseDetector> shift1000 = new EventShifter<>(raw1000, true, -1000, -1000);
+        final EventShifter shift0010 = new EventShifter(raw0010, true,   -10,   -10);
+        final EventShifter shift0100 = new EventShifter(raw0100, true,  -100,  -100);
+        final EventShifter shift1000 = new EventShifter(raw1000, true, -1000, -1000);
         Assertions.assertSame(raw0010, shift0010.getDetector());
         Assertions.assertSame(raw0100, shift0100.getDetector());
         Assertions.assertSame(raw1000, shift1000.getDetector());
@@ -196,9 +193,8 @@ public class EventShifterTest {
                                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                withMaxCheck(60.0).
                withThreshold(1.0e-10).
-               withHandler(new EventHandler<EclipseDetector>() {
-                                       public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
-                                                                   boolean increasing) {
+               withHandler(new EventHandler() {
+                                       public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                                            log.add(new EventEntry(s.getDate().durationFrom(iniDate), tolerance,
                                                                   increasing ? nameIncreasing : nameDecreasing));
                                            return Action.CONTINUE;

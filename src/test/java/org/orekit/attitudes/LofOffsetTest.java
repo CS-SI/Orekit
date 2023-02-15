@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -291,14 +291,14 @@ public class LofOffsetTest {
             double alpha2 = 0.456;
             double alpha3 = 0.789;
             LofOffset law = new LofOffset(orbit.getFrame(), type, order, alpha1, alpha2, alpha3);
-            checkField(Decimal64Field.getInstance(), law, orbit, date, orbit.getFrame());
+            checkField(Binary64Field.getInstance(), law, orbit, date, orbit.getFrame());
         }
     }
 
     private void checkSatVector(Orbit o, Attitude a, Vector3D satVector,
                                 double expectedX, double expectedY, double expectedZ,
                                 double threshold) {
-        Vector3D zLof = o.getPVCoordinates().getPosition().normalize().negate();
+        Vector3D zLof = o.getPosition().normalize().negate();
         Vector3D yLof = o.getPVCoordinates().getMomentum().normalize().negate();
         Vector3D xLof = Vector3D.crossProduct(yLof, zLof);
         Assertions.assertTrue(Vector3D.dotProduct(xLof, o.getPVCoordinates().getVelocity()) > 0);

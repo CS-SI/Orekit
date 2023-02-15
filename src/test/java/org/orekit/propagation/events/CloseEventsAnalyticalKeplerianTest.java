@@ -46,7 +46,7 @@ public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest 
         propagator.setStepHandler(interpolator -> {});
         double period = 2 * initialOrbit.getKeplerianPeriod();
 
-        RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
+        RecordAndContinue handler = new RecordAndContinue();
         TimeDetector detector = new TimeDetector(1, period - 1)
                 .withHandler(handler)
                 .withMaxCheck(1e100)
@@ -68,7 +68,7 @@ public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest 
         propagator.setStepHandler(interpolator -> {});
         double period = -2 * initialOrbit.getKeplerianPeriod();
 
-        RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
+        RecordAndContinue handler = new RecordAndContinue();
         TimeDetector detector = new TimeDetector(-1, period + 1)
                 .withHandler(handler)
                 .withMaxCheck(1e100)

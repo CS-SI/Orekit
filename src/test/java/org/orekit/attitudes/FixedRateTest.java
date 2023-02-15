@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -152,7 +152,7 @@ public class FixedRateTest {
 
     @Test
     public void testZeroRateField() {
-        doTestZeroRate(Decimal64Field.getInstance());
+        doTestZeroRate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestZeroRate(final Field<T> field)
@@ -184,7 +184,7 @@ public class FixedRateTest {
 
     @Test
     public void testNonZeroRateField() {
-        doTestNonZeroRate(Decimal64Field.getInstance());
+        doTestNonZeroRate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNonZeroRate(final Field<T> field) {
@@ -217,7 +217,7 @@ public class FixedRateTest {
 
     @Test
     public void testSpinField() {
-        doTestSpin(Decimal64Field.getInstance());
+        doTestSpin(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {

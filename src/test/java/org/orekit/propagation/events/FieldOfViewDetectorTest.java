@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -183,7 +183,7 @@ public class FieldOfViewDetectorTest {
         final Vector3D centerInert = toInert.applyTo(center);
         final Vector3D axis1Inert  = toInert.applyTo(axis1);
         final Vector3D axis2Inert  = toInert.applyTo(axis2);
-        final Vector3D direction   = target.getPosition().subtract(s.getPVCoordinates().getPosition()).normalize();
+        final Vector3D direction   = target.getPosition().subtract(s.getPosition()).normalize();
         return new double[] {
             dihedralAngle(centerInert, axis1Inert, direction),
             dihedralAngle(centerInert, axis2Inert, direction)
@@ -263,7 +263,7 @@ public class FieldOfViewDetectorTest {
                         new FieldOfViewDetector(sun, fov).
                         withMaxCheck(maxCheck).
                         withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
+                        withHandler(new ContinueOnEvent());
 
         final EventDetector sunFull =
                         new FieldOfViewDetector(sun, Constants.SUN_RADIUS,
@@ -271,7 +271,7 @@ public class FieldOfViewDetectorTest {
                                                 fov).
                         withMaxCheck(maxCheck).
                         withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
+                        withHandler(new ContinueOnEvent());
 
         final EventDetector sunPartial =
                         new FieldOfViewDetector(sun, Constants.SUN_RADIUS,
@@ -279,7 +279,7 @@ public class FieldOfViewDetectorTest {
                                                 fov).
                         withMaxCheck(maxCheck).
                         withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
+                        withHandler(new ContinueOnEvent());
 
         Assertions.assertSame(sun, ((FieldOfViewDetector) sunCenter).getPVTarget());
         Assertions.assertEquals(0, ((FieldOfViewDetector) sunCenter).getFOV().getMargin(), 1.0e-15);
@@ -339,7 +339,7 @@ public class FieldOfViewDetectorTest {
                             new FieldOfViewDetector(sun, circFov).
                             withMaxCheck(maxCheck).
                             withThreshold(threshold).
-                            withHandler(new ContinueOnEvent<>());
+                            withHandler(new ContinueOnEvent());
             detectors.add(circDetector);
             propagator.addEventDetector(logger.monitorDetector(circDetector));
 
@@ -352,7 +352,7 @@ public class FieldOfViewDetectorTest {
                             new FieldOfViewDetector(sun, polyFov).
                             withMaxCheck(maxCheck).
                             withThreshold(threshold).
-                            withHandler(new ContinueOnEvent<>());
+                            withHandler(new ContinueOnEvent());
             detectors.add(polyDetector);
             propagator.addEventDetector(logger.monitorDetector(polyDetector));
 
@@ -403,7 +403,7 @@ public class FieldOfViewDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(new FieldOfViewDetector(sun, fov).
                                                            withMaxCheck(maxCheck).
                                                            withThreshold(threshold).
-                                                           withHandler(new ContinueOnEvent<>())));
+                                                           withHandler(new ContinueOnEvent())));
 
        // Extrapolate from the initial to the final date
         propagator.propagate(initDate.shiftedBy(6000.));
@@ -454,9 +454,9 @@ public class FieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
-    private static class DihedralSunVisiHandler implements EventHandler<FieldOfViewDetector> {
+    private static class DihedralSunVisiHandler implements EventHandler {
 
-        public Action eventOccurred(final SpacecraftState s, final FieldOfViewDetector detector,
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing) {
             if (increasing) {
                 //System.err.println(" Sun visibility starts " + s.getDate());

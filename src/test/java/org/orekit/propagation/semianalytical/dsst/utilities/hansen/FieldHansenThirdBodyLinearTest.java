@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -47,62 +47,62 @@ public class FieldHansenThirdBodyLinearTest {
 
     @Test
     public void testLinearVsRecursive00() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero, zero.add(1.1e-12), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero, zero.add(1.1e-12), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive01() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.1), zero.add(2.8e-13), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.1), zero.add(2.8e-13), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive02() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.2), zero.add(9.5e-14), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.2), zero.add(9.5e-14), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive03() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.3), zero.add(6.0e-14), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.3), zero.add(6.0e-14), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive04() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.4), zero.add(1.5e-14), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.4), zero.add(1.5e-14), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive05() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.5), zero.add(6.4e-15), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.5), zero.add(6.4e-15), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive06() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.6), zero.add(3.7e-15), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.6), zero.add(3.7e-15), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive07() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.7), zero.add(1.7e-15), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.7), zero.add(1.7e-15), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive08() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.8), zero.add(1.6e-15), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.8), zero.add(1.6e-15), Binary64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive09() {
-        final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.9), zero.add(8.9e-16), Decimal64Field.getInstance());
+        final Binary64 zero = Binary64Field.getInstance().getZero();
+        doTestLinearVsRecursive(zero.add(0.9), zero.add(8.9e-16), Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLinearVsRecursive(final T ecc, final T tol, final Field<T> field) {

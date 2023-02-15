@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,6 @@ import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
-
-import java.util.Iterator;
 
 public class TimeSpanMapTest {
 
@@ -103,51 +101,6 @@ public class TimeSpanMapTest {
         Assertions.assertEquals(-99, map.get(ref.shiftedBy( -100.0)).intValue());
         Assertions.assertEquals(-99, map.get(ref.shiftedBy(-1000.0)).intValue());
         checkCountConsistency(map);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedAddValid() {
-        final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
-        TimeSpanMap<Integer> map = new TimeSpanMap<>(Integer.valueOf(0));
-        map.addValidAfter(Integer.valueOf(10), ref.shiftedBy(10.0));
-        map.addValidAfter(Integer.valueOf( 3), ref.shiftedBy( 2.0));
-        map.addValidAfter(Integer.valueOf( 9), ref.shiftedBy( 5.0));
-        map.addValidBefore(Integer.valueOf( 2), ref.shiftedBy( 3.0));
-        map.addValidBefore(Integer.valueOf( 5), ref.shiftedBy( 9.0));
-        Assertions.assertEquals( 0, map.get(ref.shiftedBy( -1.0)).intValue());
-        Assertions.assertEquals( 0, map.get(ref.shiftedBy(  1.9)).intValue());
-        Assertions.assertEquals( 2, map.get(ref.shiftedBy(  2.1)).intValue());
-        Assertions.assertEquals( 2, map.get(ref.shiftedBy(  2.9)).intValue());
-        Assertions.assertEquals( 3, map.get(ref.shiftedBy(  3.1)).intValue());
-        Assertions.assertEquals( 3, map.get(ref.shiftedBy(  4.9)).intValue());
-        Assertions.assertEquals( 5, map.get(ref.shiftedBy(  5.1)).intValue());
-        Assertions.assertEquals( 5, map.get(ref.shiftedBy(  8.9)).intValue());
-        Assertions.assertEquals( 9, map.get(ref.shiftedBy(  9.1)).intValue());
-        Assertions.assertEquals( 9, map.get(ref.shiftedBy(  9.9)).intValue());
-        Assertions.assertEquals(10, map.get(ref.shiftedBy( 10.1)).intValue());
-        Assertions.assertEquals(10, map.get(ref.shiftedBy(100.0)).intValue());
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedNavigableMap() {
-
-        TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
-        Assertions.assertEquals(1, map.getSpansNumber());
-        Assertions.assertTrue(map.getTransitions().isEmpty());
-
-        map.addValidAfter(0, AbsoluteDate.ARBITRARY_EPOCH, false);
-        map.addValidAfter(1, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1.0), false);
-        map.addValidAfter(2, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2.0), false);
-        Assertions.assertEquals(4, map.getSpansNumber());
-        Assertions.assertFalse(map.getTransitions().isEmpty());
-        Assertions.assertEquals(3, map.getTransitions().size());
-        final Iterator<Transition<Integer>> iterator = map.getTransitions().iterator();
-        Assertions.assertEquals(0.0, iterator.next().getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH), 1.0e-15);
-        Assertions.assertEquals(1.0, iterator.next().getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH), 1.0e-15);
-        Assertions.assertEquals(2.0, iterator.next().getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH), 1.0e-15);
-
     }
 
     @Test

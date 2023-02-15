@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -827,8 +827,8 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
         Assertions.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
@@ -1040,8 +1040,8 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
         Assertions.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
@@ -1141,13 +1141,13 @@ public class KalmanEstimatorTest {
 
         // Perform an estimation at the first measurment epoch (estimated states must be identical to initial orbit)
         Propagator[] estimated = kalman.estimationStep(multiplexed);
-        final Vector3D pos1 = estimated[0].getInitialState().getPVCoordinates().getPosition();
-        final Vector3D pos2 = estimated[1].getInitialState().getPVCoordinates().getPosition();
+        final Vector3D pos1 = estimated[0].getInitialState().getPosition();
+        final Vector3D pos2 = estimated[1].getInitialState().getPosition();
 
         // Verify
         Assertions.assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
-        Assertions.assertEquals(0.0, pos1.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
-        Assertions.assertEquals(0.0, pos2.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
+        Assertions.assertEquals(0.0, pos1.distance(context.initialOrbit.getPosition()), 1.0e-12);
+        Assertions.assertEquals(0.0, pos2.distance(context.initialOrbit.getPosition()), 1.0e-12);
 
     }
 

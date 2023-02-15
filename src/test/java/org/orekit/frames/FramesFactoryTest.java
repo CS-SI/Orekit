@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,8 @@ import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
@@ -504,8 +504,8 @@ public class FramesFactoryTest {
                 for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
                     final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
                     final Transform transformDouble = parent.getTransformTo(frame, date);
-                    final FieldTransform<Decimal64> transformD64 =
-                                    parent.getTransformTo(frame, new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
+                    final FieldTransform<Binary64> transformD64 =
+                                    parent.getTransformTo(frame, new FieldAbsoluteDate<>(Binary64Field.getInstance(), date));
                     maxPositionError             = FastMath.max(maxPositionError,
                                                                 Vector3D.distance(transformDouble.getTranslation(),
                                                                                   transformD64.getTranslation().toVector3D()));

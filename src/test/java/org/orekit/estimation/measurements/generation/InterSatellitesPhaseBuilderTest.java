@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -95,7 +95,7 @@ public class InterSatellitesPhaseBuilderTest {
         generator.addPropagator(buildPropagator()); // dummy fourth propagator
         final Orbit o1 = context.initialOrbit;
         // for the second satellite, we simply reverse velocity
-        final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPVCoordinates().getPosition(),
+        final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPosition(),
                                                               o1.getPVCoordinates().getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
         ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2)); // useful sixth propagator

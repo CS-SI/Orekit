@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -191,10 +191,32 @@ public class ConstantThrustManeuver extends Maneuver {
     }
 
     /** Get the thrust vector (N) in S/C frame.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return thrust vector (N) in S/C frame.
+     */
+    public Vector3D getThrustVector(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector(date);
+    }
+
+    /** Get the thrust vector (N) in S/C frame.
      * @return thrust vector (N) in S/C frame.
      */
     public Vector3D getThrustVector() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector();
+    }
+
+    /** Get the thrust.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return thrust force (N).
+     */
+    public double getThrust(final AbsoluteDate date) {
+        return getThrustVector(date).getNorm();
     }
 
     /** Get the thrust.
@@ -204,6 +226,17 @@ public class ConstantThrustManeuver extends Maneuver {
         return getThrustVector().getNorm();
     }
 
+    /** Get the specific impulse at given date.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return specific impulse (s).
+     */
+    public double getISP(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp(date);
+    }
+
     /** Get the specific impulse.
      * @return specific impulse (s).
      */
@@ -211,11 +244,28 @@ public class ConstantThrustManeuver extends Maneuver {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp();
     }
 
+    /** Get the flow rate at given date.
+     * @param date at which the Thrust wants to be known
+     * @return flow rate (negative, kg/s).
+     */
+    public double getFlowRate(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getFlowRate(date);
+    }
+
     /** Get the flow rate.
      * @return flow rate (negative, kg/s).
      */
     public double getFlowRate() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getFlowRate();
+    }
+
+    /** Get the direction.
+     * @param date at which the Thrust wants to be known
+     * @return the direction
+     * @since 9.2
+     */
+    public Vector3D getDirection(final AbsoluteDate date) {
+        return getThrustVector(date).normalize();
     }
 
     /** Get the direction.

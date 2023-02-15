@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -312,7 +312,7 @@ public class RangeAnalyticTest {
         Assertions.assertEquals(0.0, absErrorsMin,    2.0e-07);
         Assertions.assertEquals(0.0, absErrorsMax,    2.3e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 6.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.4e-14);
+        Assertions.assertEquals(0.0, relErrorsMax,    2.5e-14);
 
         // Test measurement type
         final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.get(0));

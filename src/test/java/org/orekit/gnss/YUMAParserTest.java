@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -101,7 +101,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488 * 1000., SatelliteSystem.GPS).getDate()) == 0);
+        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()) == 0);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
@@ -142,7 +142,7 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(866, 589824 * 1000., SatelliteSystem.GPS).getDate()) == 0);
+        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(866, 589824.0, SatelliteSystem.GPS).getDate()) == 0);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);

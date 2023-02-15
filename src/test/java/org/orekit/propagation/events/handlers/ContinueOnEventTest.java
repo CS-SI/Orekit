@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -36,7 +35,7 @@ public class ContinueOnEventTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(s, new ContinueOnEvent<EventDetector>().resetState(null, s));
+        Assertions.assertSame(s, new ContinueOnEvent().resetState(null, s));
     }
 
     @Test
@@ -46,7 +45,7 @@ public class ContinueOnEventTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, true));
+        Assertions.assertSame(Action.CONTINUE, new ContinueOnEvent().eventOccurred(s, null, true));
     }
 
     @Test
@@ -56,7 +55,7 @@ public class ContinueOnEventTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(Action.CONTINUE, new ContinueOnEvent<EventDetector>().eventOccurred(s, null, false));
+        Assertions.assertSame(Action.CONTINUE, new ContinueOnEvent().eventOccurred(s, null, false));
     }
 
 }

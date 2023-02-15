@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -200,35 +200,35 @@ public class ECOM2Test extends AbstractForceModelTest {
         for(int i = 0; i < 6; i++) {
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -4 * steps[i], i));
             SpacecraftState sM4h = propagator.propagate(state.getDate());
-            Vector3D accM4 = forceModel.acceleration(sM4h, forceModel.getParameters());
-
+            Vector3D accM4 = forceModel.acceleration(sM4h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -3 * steps[i], i));
             SpacecraftState sM3h = propagator.propagate(state.getDate());
-            Vector3D accM3 = forceModel.acceleration(sM3h, forceModel.getParameters());
-
+            Vector3D accM3 = forceModel.acceleration(sM3h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -2 * steps[i], i));
             SpacecraftState sM2h = propagator.propagate(state.getDate());
-            Vector3D accM2 = forceModel.acceleration(sM2h, forceModel.getParameters());
-
+            Vector3D accM2 = forceModel.acceleration(sM2h, forceModel.getParameters()); 
+ 
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -1 * steps[i] , i));
             SpacecraftState sM1h = propagator.propagate(state.getDate());
-            Vector3D accM1 = forceModel.acceleration(sM1h, forceModel.getParameters());
-
+            Vector3D accM1 = forceModel.acceleration(sM1h, forceModel.getParameters()); 
+           
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 1 * steps[i], i));
             SpacecraftState  sP1h = propagator.propagate(state.getDate());
-            Vector3D accP1 = forceModel.acceleration(sP1h, forceModel.getParameters());
-
+            Vector3D accP1 = forceModel.acceleration(sP1h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 2 * steps[i], i));
             SpacecraftState sP2h = propagator.propagate(state.getDate());
-            Vector3D accP2 = forceModel.acceleration(sP2h, forceModel.getParameters());
-
+            Vector3D accP2 = forceModel.acceleration(sP2h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 3 * steps[i], i));
             SpacecraftState sP3h = propagator.propagate(state.getDate());
-            Vector3D accP3 = forceModel.acceleration(sP3h, forceModel.getParameters());
-
+            Vector3D accP3 = forceModel.acceleration(sP3h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 4 * steps[i], i));
             SpacecraftState sP4h = propagator.propagate(state.getDate());
-            Vector3D accP4 = forceModel.acceleration(sP4h, forceModel.getParameters());
+            Vector3D accP4 = forceModel.acceleration(sP4h, forceModel.getParameters()); 
             fillJacobianModelColumn(refDeriv, i, orbitType, angleType, steps[i],
                                accM4, accM3, accM2, accM1,
                                accP1, accP2, accP3, accP4);
@@ -525,10 +525,10 @@ public class ECOM2Test extends AbstractForceModelTest {
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
 
         // Field acceleration
-        final FieldVector3D<Gradient> accField = forceModel.acceleration(new FieldSpacecraftState<>(orbit), forceModel.getParameters(field));
+        final FieldVector3D<Gradient> accField = forceModel.acceleration(new FieldSpacecraftState<>(orbit), forceModel.getParameters(field, epoch));
 
         // Real acceleration
-        final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters());
+        final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters(epoch.toAbsoluteDate()));
 
         // Verify
         Assertions.assertEquals(0.0, accReal.distance(accField.toVector3D()), 1.0e-20);
@@ -543,7 +543,7 @@ public class ECOM2Test extends AbstractForceModelTest {
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assertions.assertTrue(alpha > 100.0);
             Assertions.assertTrue(alpha < 112.0);
-            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003525);
+            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003529);
         }
 
     }

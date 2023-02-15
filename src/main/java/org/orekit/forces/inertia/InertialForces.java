@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,7 @@ package org.orekit.forces.inertia;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -35,8 +33,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -101,7 +97,7 @@ public class InertialForces extends AbstractForceModel  {
         final Vector3D  o1                = inertToStateFrame.getAngular().getRotationRate();
         final Vector3D  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
 
-        final Vector3D  p2                = s.getPVCoordinates().getPosition();
+        final Vector3D  p2                = s.getPosition();
         final Vector3D  v2                = s.getPVCoordinates().getVelocity();
 
         final Vector3D crossCrossP        = Vector3D.crossProduct(o1,    Vector3D.crossProduct(o1, p2));
@@ -125,7 +121,7 @@ public class InertialForces extends AbstractForceModel  {
         final FieldVector3D<T>  o1                = inertToStateFrame.getAngular().getRotationRate();
         final FieldVector3D<T>  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
 
-        final FieldVector3D<T>  p2                = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>  p2                = s.getPosition();
         final FieldVector3D<T>  v2                = s.getPVCoordinates().getVelocity();
 
         final FieldVector3D<T> crossCrossP        = FieldVector3D.crossProduct(o1,    FieldVector3D.crossProduct(o1, p2));
@@ -136,19 +132,6 @@ public class InertialForces extends AbstractForceModel  {
         // because we want only the coupling effect of the frames transforms
         return r1.applyTo(a1).subtract(new FieldVector3D<>(2, crossV, 1, crossCrossP, 1, crossDotP));
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>>
-        getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

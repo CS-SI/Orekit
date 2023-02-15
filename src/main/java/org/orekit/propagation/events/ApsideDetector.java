@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,7 +58,7 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
         super(orbit.getKeplerianPeriod() / 3, threshold,
-              DEFAULT_MAX_ITER, new StopOnIncreasing<ApsideDetector>());
+              DEFAULT_MAX_ITER, new StopOnIncreasing());
     }
 
     /** Private constructor with full parameters.
@@ -74,14 +74,14 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @since 6.1
      */
     private ApsideDetector(final double maxCheck, final double threshold,
-                           final int maxIter, final EventHandler<? super ApsideDetector> handler) {
+                           final int maxIter, final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
     protected ApsideDetector create(final double newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler<? super ApsideDetector> newHandler) {
+                                    final int newMaxIter, final EventHandler newHandler) {
         return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 

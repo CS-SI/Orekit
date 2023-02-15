@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -404,10 +404,11 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         public void handleStep(SpacecraftState currentState) {
 
             // Get Knocke model acceleration
-            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters());
+
+            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters(currentState.getDate()));
 
             // Get radial direction
-            final Vector3D radialUnit = currentState.getOrbit().getPVCoordinates().getPosition().normalize();
+            final Vector3D radialUnit = currentState.getOrbit().getPosition().normalize();
 
             // Get along track direction
             final Vector3D velocity = currentState.getOrbit().getPVCoordinates().getVelocity();

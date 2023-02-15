@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -616,102 +617,6 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         return aDot != null;
     }
 
-    /** Computes the true anomaly from the elliptic eccentric anomaly.
-     * @param E eccentric anomaly (rad)
-     * @param e eccentricity
-     * @param <T> type of the field elements
-     * @return v the true anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#ellipticEccentricToMean(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T ellipticEccentricToTrue(final T E, final T e) {
-        return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
-    }
-
-    /** Computes the elliptic eccentric anomaly from the true anomaly.
-     * @param v true anomaly (rad)
-     * @param e eccentricity
-     * @param <T> type of the field elements
-     * @return E the elliptic eccentric anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#ellipticTrueToEccentric(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T trueToEllipticEccentric(final T v, final T e) {
-        return FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, v);
-    }
-
-    /** Computes the true anomaly from the hyperbolic eccentric anomaly.
-     * @param H hyperbolic eccentric anomaly (rad)
-     * @param e eccentricity
-     * @param <T> type of the field elements
-     * @return v the true anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#hyperbolicEccentricToTrue(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T hyperbolicEccentricToTrue(final T H, final T e) {
-        return FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, H);
-    }
-
-    /** Computes the hyperbolic eccentric anomaly from the true anomaly.
-     * @param v true anomaly (rad)
-     * @param e eccentricity
-     * @param <T> type of the field elements
-     * @return H the hyperbolic eccentric anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#hyperbolicTrueToEccentric(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T trueToHyperbolicEccentric(final T v, final T e) {
-        return FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, v);
-    }
-
-    /** Computes the mean anomaly from the hyperbolic eccentric anomaly.
-     * @param H hyperbolic eccentric anomaly (rad)
-     * @param e eccentricity
-     * @param <T> type of the field elements
-     * @return M the mean anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#hyperbolicEccentricToMean(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T hyperbolicEccentricToMean(final T H, final T e) {
-        return FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, H);
-    }
-
-    /** Computes the elliptic eccentric anomaly from the mean anomaly.
-     * @param M mean anomaly (rad)
-     * @param e eccentricity
-     * @param <T> type of the field elements
-     * @return E the eccentric anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#ellipticMeanToEccentric(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
-        return FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, M);
-    }
-
-    /** Computes the hyperbolic eccentric anomaly from the mean anomaly.
-     * @param M mean anomaly (rad)
-     * @param e eccentricity
-     * @param <T> Type of the field elements
-     * @return H the hyperbolic eccentric anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#hyperbolicMeanToEccentric(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T meanToHyperbolicEccentric(final T M, final T e) {
-        return FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, M);
-    }
-
-    /** Computes the mean anomaly from the elliptic eccentric anomaly.
-     * @param E eccentric anomaly (rad)
-     * @param e eccentricity
-     * @param <T> type of the field elements
-     * @return M the mean anomaly
-     * @deprecated As of 11.3, replaced by
-     * {@link FieldKeplerianAnomalyUtility#ellipticEccentricToMean(CalculusFieldElement, CalculusFieldElement)}.
-     */
-    public static <T extends CalculusFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
-        return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, E);
-    }
-
     /** {@inheritDoc} */
     public T getEquinoctialEx() {
         return e.multiply(pa.add(raan).cos());
@@ -840,14 +745,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                null;
     }
 
-    /** Compute position and velocity but not acceleration.
+    /** Compute reference axes.
+     * @return referecne axes
+     * @since 12.0
      */
-    private void computePVWithoutA() {
-
-        if (partialPV != null) {
-            // already computed
-            return;
-        }
+    private FieldVector3D<T>[] referenceAxes() {
 
         // preliminary variables
         final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
@@ -865,8 +767,25 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T srsp    = sinRaan.multiply(sinPa);
 
         // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+        @SuppressWarnings("unchecked")
+        final FieldVector3D<T>[] axes = (FieldVector3D<T>[]) Array.newInstance(FieldVector3D.class, 2);
+        axes[0] = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
+        axes[1] = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+
+        return axes;
+
+    }
+
+    /** Compute position and velocity but not acceleration.
+     */
+    private void computePVWithoutA() {
+
+        if (partialPV != null) {
+            // already computed
+            return;
+        }
+
+        final FieldVector3D<T>[] axes = referenceAxes();
 
         if (a.getReal() > 0) {
 
@@ -886,8 +805,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final T xDot   = sinE.negate().multiply(factor);
             final T yDot   = cosE.multiply(s1Me2).multiply(factor);
 
-            final FieldVector3D<T> position = new FieldVector3D<>(x, p, y, q);
-            final FieldVector3D<T> velocity = new FieldVector3D<>(xDot, p, yDot, q);
+            final FieldVector3D<T> position = new FieldVector3D<>(x, axes[0], y, axes[1]);
+            final FieldVector3D<T> velocity = new FieldVector3D<>(xDot, axes[0], yDot, axes[1]);
             partialPV = new FieldPVCoordinates<>(position, velocity);
 
         } else {
@@ -902,8 +821,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final T posFactor        = f.divide(e.multiply(cosV).add(1));
             final T velFactor        = FastMath.sqrt(getMu().divide(f));
 
-            final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
-            final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
+            final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), axes[0], posFactor.multiply(sinV), axes[1]);
+            final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), axes[0], velFactor.multiply(e.add(cosV)), axes[1]);
             partialPV = new FieldPVCoordinates<>(position, velocity);
 
         }
@@ -942,6 +861,40 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                  add(dCdP[5][5].multiply(nonKeplerianMeanMotion));
 
         return new FieldVector3D<>(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
+    /** {@inheritDoc} */
+    protected FieldVector3D<T> initPosition() {
+        final FieldVector3D<T>[] axes = referenceAxes();
+
+        if (a.getReal() > 0) {
+
+            // elliptical case
+
+            // elliptic eccentric anomaly
+            final T uME2             = e.negate().add(1).multiply(e.add(1));
+            final T s1Me2            = uME2.sqrt();
+            final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+            final T cosE             = scE.cos();
+            final T sinE             = scE.sin();
+
+            return new FieldVector3D<>(a.multiply(cosE.subtract(e)), axes[0], a.multiply(sinE).multiply(s1Me2), axes[1]);
+
+        } else {
+
+            // hyperbolic case
+
+            // compute position and velocity factors
+            final FieldSinCos<T> scV = FastMath.sinCos(v);
+            final T sinV             = scV.sin();
+            final T cosV             = scV.cos();
+            final T f                = a.multiply(e.multiply(e).negate().add(1));
+            final T posFactor        = f.divide(e.multiply(cosV).add(1));
+
+            return new FieldVector3D<>(posFactor.multiply(cosV), axes[0], posFactor.multiply(sinV), axes[1]);
+
+        }
 
     }
 

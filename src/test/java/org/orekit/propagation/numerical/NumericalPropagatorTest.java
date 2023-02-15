@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -231,8 +231,7 @@ public class NumericalPropagatorTest {
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         AbsoluteDate eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
-        DateDetector detector = new DateDetector(10, 1e-9, eventDate)
-                .withHandler(handler);
+        DateDetector detector = new DateDetector(10, 1e-9, eventDate).withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
 
@@ -245,8 +244,7 @@ public class NumericalPropagatorTest {
     }
 
     /** Counts the number of events that have occurred. */
-    private static class CountingHandler
-            implements EventHandler<EventDetector> {
+    private static class CountingHandler implements EventHandler {
 
         /**
          * number of calls to {@link #eventOccurred(SpacecraftState,
@@ -276,10 +274,8 @@ public class NumericalPropagatorTest {
     @Test
     public void testCloseEventDates() {
         // setup
-        DateDetector d1 = new DateDetector(10, 1, initDate.shiftedBy(15))
-                .withHandler(new ContinueOnEvent<DateDetector>());
-        DateDetector d2 = new DateDetector(10, 1, initDate.shiftedBy(15.5))
-                .withHandler(new ContinueOnEvent<DateDetector>());
+        DateDetector d1 = new DateDetector(10, 1, initDate.shiftedBy(15)).withHandler(new ContinueOnEvent());
+        DateDetector d2 = new DateDetector(10, 1, initDate.shiftedBy(15.5)).withHandler(new ContinueOnEvent());
         propagator.addEventDetector(d1);
         propagator.addEventDetector(d2);
 
@@ -378,11 +374,11 @@ public class NumericalPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Initial orbit definition
-        final Vector3D initialPosition = initialState.getPVCoordinates().getPosition();
+        final Vector3D initialPosition = initialState.getPosition();
         final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final Vector3D finalPosition   = finalState.getPVCoordinates().getPosition();
+        final Vector3D finalPosition   = finalState.getPosition();
         final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -616,7 +612,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testStopEvent() {
         final AbsoluteDate stopDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.STOP);
+        CheckingHandler checking = new CheckingHandler(Action.STOP);
         propagator.addEventDetector(new DateDetector(stopDate).withHandler(checking));
         Assertions.assertEquals(1, propagator.getEventsDetectors().size());
         checking.assertEvent(false);
@@ -631,8 +627,8 @@ public class NumericalPropagatorTest {
     @Test
     public void testResetStateEvent() {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.RESET_STATE) {
-            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+        CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
             }
         };
@@ -646,7 +642,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testResetDerivativesEvent() {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.RESET_DERIVATIVES);
+        CheckingHandler checking = new CheckingHandler(Action.RESET_DERIVATIVES);
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
@@ -668,7 +664,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testContinueEvent() {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.CONTINUE);
+        CheckingHandler checking = new CheckingHandler(Action.CONTINUE);
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
@@ -699,10 +695,6 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
@@ -717,10 +709,6 @@ public class NumericalPropagatorTest {
 
                 public int getDimension() {
                     return 1;
-                }
-
-                public double[] derivatives(final SpacecraftState state) {
-                    return null;
                 }
 
                 public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -740,10 +728,6 @@ public class NumericalPropagatorTest {
 
                public int getDimension() {
                    return 1;
-               }
-
-               public double[] derivatives(final SpacecraftState state) {
-                   return null;
                }
 
                public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -769,8 +753,7 @@ public class NumericalPropagatorTest {
         Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
-        CheckingHandler<AdditionalStateLinearDetector> checking =
-                new CheckingHandler<AdditionalStateLinearDetector>(Action.STOP);
+        CheckingHandler checking = new CheckingHandler(Action.STOP);
         propagator.addEventDetector(new AdditionalStateLinearDetector(10.0, 1.0e-8).withHandler(checking));
 
         final double dt = 3200;
@@ -786,17 +769,15 @@ public class NumericalPropagatorTest {
     private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
 
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
-            this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<AdditionalStateLinearDetector>());
+            this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent());
         }
 
-        private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter,
-                                              EventHandler<? super AdditionalStateLinearDetector> handler) {
+        private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter, EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         protected AdditionalStateLinearDetector create(final double newMaxCheck, final double newThreshold,
-                                                       final int newMaxIter,
-                                                       final EventHandler<? super AdditionalStateLinearDetector> newHandler) {
+                                                       final int newMaxIter, final EventHandler newHandler) {
             return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -818,19 +799,14 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
-        CheckingHandler<AdditionalStateLinearDetector> checking =
-            new CheckingHandler<AdditionalStateLinearDetector>(Action.RESET_STATE) {
-            public SpacecraftState resetState(AdditionalStateLinearDetector detector, SpacecraftState oldState)
+        CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState)
                 {
                 return oldState.addAdditionalState("linear", oldState.getAdditionalState("linear")[0] * 2);
             }
@@ -960,9 +936,6 @@ public class NumericalPropagatorTest {
             public int getDimension() {
                 return 1;
             }
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { rate }, null);
             }
@@ -1050,7 +1023,7 @@ public class NumericalPropagatorTest {
 
     }
 
-    private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
+    private static class CheckingHandler implements EventHandler {
 
         private final Action actionOnEvent;
         private boolean gotHere;
@@ -1064,7 +1037,7 @@ public class NumericalPropagatorTest {
             Assertions.assertEquals(expected, gotHere);
         }
 
-        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             gotHere = true;
             return actionOnEvent;
         }
@@ -1371,7 +1344,7 @@ public class NumericalPropagatorTest {
         np.propagate(reference.shiftedBy(1000.0));
     }
 
-    private static class ShiftChecker implements EventHandler<DateDetector> {
+    private static class ShiftChecker implements EventHandler {
 
         private final boolean       withDerivatives;
         private final OrbitType     orbitType;
@@ -1399,9 +1372,8 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public Action eventOccurred(final SpacecraftState s, final DateDetector detector,
-                                    final boolean increasing)
-            {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
+                                    final boolean increasing) {
             if (referenceState == null) {
                 // first event, we retrieve the reference state for later use
                 if (withDerivatives) {
@@ -1419,8 +1391,8 @@ public class NumericalPropagatorTest {
                 // recurring event, we compare with the shifted reference state
                 final double dt = s.getDate().durationFrom(referenceState.getDate());
                 final SpacecraftState shifted = referenceState.shiftedBy(dt);
-                final double error = Vector3D.distance(shifted.getPVCoordinates().getPosition(),
-                                                       s.getPVCoordinates().getPosition());
+                final double error = Vector3D.distance(shifted.getPosition(),
+                                                       s.getPosition());
                 switch ((int) FastMath.rint(dt)) {
                     case 60 :
                         Assertions.assertEquals(error60s,  error, 0.01 * error60s);
@@ -1458,7 +1430,7 @@ public class NumericalPropagatorTest {
     public void testEventAndStepHandlerDeactivationIssue449() {
 
         // Setup
-        RecordAndContinue<DateDetector> recordAndContinue = new RecordAndContinue<>();
+        RecordAndContinue recordAndContinue = new RecordAndContinue();
         DateDetector dateDetector = new DateDetector(1, 1E-1,
                                                      initDate.shiftedBy(10.),
                                                      initDate.shiftedBy(15.),
@@ -1500,9 +1472,9 @@ public class NumericalPropagatorTest {
 
         // maneuver along Z in attitude aligned with LVLH will change orbital plane
         final AbsoluteDate maneuverDate = date.shiftedBy(1000.0);
-        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
-                                                          new Vector3D(0.0, 0.0, -100.0),
-                                                          350.0));
+        propagator.addEventDetector(new ImpulseManeuver(new DateDetector(maneuverDate),
+                                                        new Vector3D(0.0, 0.0, -100.0),
+                                                        350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
         propagator.setStepHandler(60.0, state -> {
@@ -1534,9 +1506,9 @@ public class NumericalPropagatorTest {
 
         // maneuver along Z in attitude aligned with LVLH will change orbital plane
         final AbsoluteDate maneuverDate = date.shiftedBy(-1000.0);
-        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
-                                                          new Vector3D(0.0, 0.0, -100.0),
-                                                          350.0));
+        propagator.addEventDetector(new ImpulseManeuver(new DateDetector(maneuverDate),
+                                                        new Vector3D(0.0, 0.0, -100.0),
+                                                        350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
         propagator.setStepHandler(60.0, state -> {
@@ -1600,12 +1572,6 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        @Deprecated
-        public double[] derivatives(final SpacecraftState state) {
-            return null;
-        }
-
-        @Override
         public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
             return new CombinedDerivatives(new double[getDimension()], null);
         }
@@ -1623,6 +1589,26 @@ public class NumericalPropagatorTest {
         public double[] getInitialState() {
             return state;
         }
+    }
+
+    @Test
+    public void testInfinitePropagation() {
+
+        Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        final NumericalPropagator propag = createPropagator(initialState, OrbitType.KEPLERIAN, PositionAngle.TRUE);
+
+        // Stop condition
+        final double convergenceThreshold = 1e-9;
+        propag.addEventDetector(new DateDetector(1e10, convergenceThreshold, initialState.getDate().shiftedBy(60)));
+
+        // Propagate until the stop condition is reached
+        final SpacecraftState finalState =  propag.propagate(AbsoluteDate.FUTURE_INFINITY);
+
+        // Check that the expected final state was reached
+        Assertions.assertEquals(60, finalState.getDate().durationFrom(initialState.getDate()), convergenceThreshold);
+
     }
 
     /** Record the dates treated by the handler.
@@ -1715,8 +1701,7 @@ public class NumericalPropagatorTest {
         np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
         // solar radiation pressure
-        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                    earth.getEquatorialRadius(),
+        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
 
         return np;

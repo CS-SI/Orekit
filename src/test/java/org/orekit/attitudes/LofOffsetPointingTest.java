@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -205,7 +205,7 @@ public class LofOffsetPointingTest {
                     continue;
             }
             LofOffsetPointing lop = new LofOffsetPointing(orbit.getFrame(), earthSpheric, law, dir);
-            checkField(Decimal64Field.getInstance(), lop, orbit, date, orbit.getFrame());
+            checkField(Binary64Field.getInstance(), lop, orbit, date, orbit.getFrame());
         }
     }
 

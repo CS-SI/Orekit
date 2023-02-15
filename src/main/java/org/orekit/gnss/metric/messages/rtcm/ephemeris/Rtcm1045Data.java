@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,8 +82,8 @@ public class Rtcm1045Data extends RtcmEphemerisData {
         final double toe  = galileoNavigationMessage.getTime();
 
         // Set the ephemeris reference data
-        galileoNavigationMessage.setDate(new GNSSDate(week, SEC_TO_MILLI * toe, system, timeScales).getDate());
-        galileoNavigationMessage.setEpochToc(new GNSSDate(week, SEC_TO_MILLI * galileoToc, system, timeScales).getDate());
+        galileoNavigationMessage.setDate(new GNSSDate(week, toe, system, timeScales).getDate());
+        galileoNavigationMessage.setEpochToc(new GNSSDate(week, galileoToc, system, timeScales).getDate());
 
         // Return the navigation message
         return galileoNavigationMessage;

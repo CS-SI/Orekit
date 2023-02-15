@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a Time Difference of Arrival measurement with a satellite as emitter
  * and two ground stations as receivers.
@@ -135,8 +136,13 @@ public class TDOA extends AbstractMeasurement<TDOA> {
             // we have to check for duplicate keys because primary and secondary station share
             // pole and prime meridian parameters names that must be considered
             // as one set only (they are combined together by the estimation engine)
-            if (driver.isSelected() && !indices.containsKey(driver.getName())) {
-                indices.put(driver.getName(), nbParams++);
+            if (driver.isSelected()) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -193,8 +199,8 @@ public class TDOA extends AbstractMeasurement<TDOA> {
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2.getValue()));
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final Gradient offset1 = primeStation.getClockOffsetDriver().getValue(nbParams, indices);
-        final Gradient offset2 = secondStation.getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient offset1 = primeStation.getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
+        final Gradient offset2 = secondStation.getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
         final Gradient tdoaG   = tau1.add(offset1).subtract(tau2.add(offset2));
         final double tdoa      = tdoaG.getValue();
 
@@ -222,9 +228,11 @@ public class TDOA extends AbstractMeasurement<TDOA> {
 
         // set partial derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

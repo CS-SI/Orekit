@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,22 +55,22 @@ public class FieldTLEPropagatorTest {
 
     @Test
     public void testsecondaryMode() {
-        doTestsecondaryMode(Decimal64Field.getInstance());
+        doTestsecondaryMode(Binary64Field.getInstance());
     }
 
     @Test
     public void testEphemerisMode() {
-        doTestEphemerisMode(Decimal64Field.getInstance());
+        doTestEphemerisMode(Binary64Field.getInstance());
     }
 
     @Test
     public void testBodyCenterInPointingDirection() {
-        doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
+        doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
     @Test
     public void testComparisonWithNonField() {
-        doTestComparisonWithNonField(Decimal64Field.getInstance());
+        doTestComparisonWithNonField(Binary64Field.getInstance());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestsecondaryMode(Field<T> field) {
@@ -79,7 +79,7 @@ public class FieldTLEPropagatorTest {
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-
+        
         final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         FieldAbsoluteDate<T> initDate = tle.getDate();
@@ -105,7 +105,7 @@ public class FieldTLEPropagatorTest {
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-
+        
         final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
@@ -286,7 +286,7 @@ public class FieldTLEPropagatorTest {
         Assertions.assertEquals(0, Vector3D.distance(finalGPS.getPosition(), fieldfinalGPS.getPosition().toVector3D()), 3.8e-9);
         Assertions.assertEquals(0, Vector3D.distance(finalGPS.getVelocity(), fieldfinalGPS.getVelocity().toVector3D()), 0.);
 
-        Assertions.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
+        Assertions.assertEquals(0, Vector3D.distance(finalISS.getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
         Assertions.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getVelocity(), fieldfinalISS.getPVCoordinates().getVelocity().toVector3D()), 0.);
 
     }

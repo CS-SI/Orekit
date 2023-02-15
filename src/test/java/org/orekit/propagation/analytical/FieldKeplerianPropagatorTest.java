@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Min;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Tuple;
@@ -119,7 +119,7 @@ public class FieldKeplerianPropagatorTest {
         Max maxRadial     = new Max();
         propagator.setStepHandler(field.getZero().add(10.0),
                                  s -> {
-                                     FieldVector3D<Tuple> p = s.getPVCoordinates().getPosition();
+                                     FieldVector3D<Tuple> p = s.getPosition();
                                      FieldVector3D<Tuple> v = s.getPVCoordinates().getVelocity();
                                      Vector3D p0 = new Vector3D(p.getX().getComponent(0),
                                                                 p.getY().getComponent(0),
@@ -149,125 +149,125 @@ public class FieldKeplerianPropagatorTest {
 
     @Test
     public void testSameDateCartesian() {
-        doTestSameDateCartesian(Decimal64Field.getInstance());
+        doTestSameDateCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testSameDateKeplerian() {
-        doTestSameDateKeplerian(Decimal64Field.getInstance());
+        doTestSameDateKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testPropagatedCartesian() {
-        doTestPropagatedCartesian(Decimal64Field.getInstance());
+        doTestPropagatedCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testPropagatedKeplerian() {
-        doTestPropagatedKeplerian(Decimal64Field.getInstance());
+        doTestPropagatedKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testAscendingNode() {
-        doTestAscendingNode(Decimal64Field.getInstance());
+        doTestAscendingNode(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testStopAtTargetDate() {
-        doTestStopAtTargetDate(Decimal64Field.getInstance());
+        doTestStopAtTargetDate(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testFixedStep() {
-        doTestFixedStep(Decimal64Field.getInstance());
+        doTestFixedStep(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testVariableStep() {
-        doTestVariableStep(Decimal64Field.getInstance());
+        doTestVariableStep(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testEphemeris() {
-        doTestEphemeris(Decimal64Field.getInstance());
+        doTestEphemeris(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testAdditionalState() {
-        doTestAdditionalState(Decimal64Field.getInstance());
+        doTestAdditionalState(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testIssue14() {
-        doTestIssue14(Decimal64Field.getInstance());
+        doTestIssue14(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testIssue107() {
-        doTestIssue107(Decimal64Field.getInstance());
+        doTestIssue107(Binary64Field.getInstance());
     }
 
 
     @Test
     public void testMu() {
-        doTestMu(Decimal64Field.getInstance());
+        doTestMu(Binary64Field.getInstance());
     }
 
     @Test
     public void testNoDerivatives() {
-        doTestNoDerivatives(Decimal64Field.getInstance());
+        doTestNoDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testWrongAttitude() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            doTestWrongAttitude(Decimal64Field.getInstance());
+            doTestWrongAttitude(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testStepException() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            doTestStepException(Decimal64Field.getInstance());
+            doTestStepException(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testWrappedAttitudeException() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            doTestWrappedAttitudeException(Decimal64Field.getInstance());
+            doTestWrappedAttitudeException(Binary64Field.getInstance());
         });
     }
 
     @Test
     public void testPerigee() {
-        doTestPerigee(Decimal64Field.getInstance());
+        doTestPerigee(Binary64Field.getInstance());
     }
 
     @Test
     public void testAltitude() {
-        doTestAltitude(Decimal64Field.getInstance());
+        doTestAltitude(Binary64Field.getInstance());
     }
 
     @Test
     public void testDate() {
-        doTestDate(Decimal64Field.getInstance());
+        doTestDate(Binary64Field.getInstance());
     }
 
     @Test
     public void testSetting() {
-        doTestSetting(Decimal64Field.getInstance());
+        doTestSetting(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSameDateCartesian(Field<T> field) {
@@ -440,7 +440,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -530,7 +530,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -624,7 +624,7 @@ public class FieldKeplerianPropagatorTest {
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>()));
+        propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).withHandler(new FieldContinueOnEvent<>()));
         FieldAbsoluteDate<T> farTarget = orbit.getDate().shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
@@ -662,7 +662,7 @@ public class FieldKeplerianPropagatorTest {
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 5400.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 5500.0);
-        FieldGeodeticPoint<T> gp = bodyShape.transform(propagated.getPVCoordinates().getPosition(),
+        FieldGeodeticPoint<T> gp = bodyShape.transform(propagated.getPosition(),
                                                        propagated.getFrame(), propagated.getDate());
         Assertions.assertEquals(1500000, gp.getAltitude().getReal(), 0.1);
     }
@@ -695,7 +695,7 @@ public class FieldKeplerianPropagatorTest {
                                                                  topo).withConstantElevation(0.09));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition().toVector3D(),
+        final double elevation = topo.getElevation(propagated.getPosition().toVector3D(),
                                                    propagated.getFrame(),
                                                    propagated.getDate().toAbsoluteDate());
         final T zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();

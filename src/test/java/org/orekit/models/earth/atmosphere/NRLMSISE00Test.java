@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -274,7 +274,7 @@ public class NRLMSISE00Test {
                                                       FastMath.toRadians(lon),
                                                       alt * 1000.);
         final Vector3D pos = earth.transform(point);
-        Field<Decimal64> field = Decimal64Field.getInstance();
+        Field<Binary64> field = Binary64Field.getInstance();
 
         // Run
         try {
@@ -287,7 +287,7 @@ public class NRLMSISE00Test {
         }
 
         final double    rho = atm.getDensity(date, pos, itrf);
-        final Decimal64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+        final Binary64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
                                                new FieldVector3D<>(field.getOne(), pos),
                                                itrf);
 
@@ -570,7 +570,7 @@ public class NRLMSISE00Test {
             double[] p = new double[150];
 
             Object output = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
-            Object fieldOutput = createFieldOutput(Decimal64Field.getInstance(),
+            Object fieldOutput = createFieldOutput(Binary64Field.getInstance(),
                                                    atm, doy, sec, lat, lon, hl, f107a, f107, ap);
             double maxAbsoluteError = 0;
             double maxRelativeError = 0;
@@ -616,14 +616,14 @@ public class NRLMSISE00Test {
             methodF.setAccessible(true);
 
             Object output = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
-            Object fieldOutput = createFieldOutput(Decimal64Field.getInstance(),
+            Object fieldOutput = createFieldOutput(Binary64Field.getInstance(),
                                                    atm, doy, sec, lat, lon, hl, f107a, f107, ap);
             double maxTemperatureError = 0;
             double maxDensityError     = 0;
             for (int i = 0; i < 100; ++i) {
                 double alt = 500.0 * random.nextDouble();
                 methodD.invoke(output, alt);
-                methodF.invoke(fieldOutput, new Decimal64(alt));
+                methodF.invoke(fieldOutput, new Binary64(alt));
                 for (int index = 0; index < 2; ++index) {
                     double tD = getOutputTemperature(output, index);
                     double tF = getFieldOutputTemperature(fieldOutput, index);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -189,7 +189,7 @@ public class IodLaplaceTest {
         final TimeStampedPVCoordinates ref = prop.getPVCoordinates(raDec2.getDate(), gcrf);
 
         // Verify
-        Assertions.assertEquals(0.0, ref.getPosition().distance(orbit.getPVCoordinates().getPosition()), 275.0);
+        Assertions.assertEquals(0.0, ref.getPosition().distance(orbit.getPosition()), 275.0);
         Assertions.assertEquals(0.0, ref.getVelocity().distance(orbit.getPVCoordinates().getVelocity()), 0.8);
 
     }
@@ -244,7 +244,7 @@ public class IodLaplaceTest {
     {
         this.errorNorm = new double[2];
         this.errorNorm[0] = Vector3D.distance(truth.getPosition(),
-                          estOrbit.getPVCoordinates().getPosition());
+                          estOrbit.getPosition());
         this.errorNorm[1] = Vector3D.distance(truth.getVelocity(),
                           estOrbit.getPVCoordinates().getVelocity());
     }

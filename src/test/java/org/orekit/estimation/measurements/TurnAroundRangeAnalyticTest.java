@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -582,7 +582,7 @@ public class TurnAroundRangeAnalyticTest {
                 if (isModifier) {
                   modifier.modify(TAR);
                 }
-                final double[] gradient  = TAR.getParameterDerivatives(drivers[i]);
+                final double[] gradient  = TAR.getParameterDerivatives(drivers[i], new AbsoluteDate());
 
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
@@ -595,14 +595,14 @@ public class TurnAroundRangeAnalyticTest {
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) {
+                                        public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                         }
                                     }, 3, 20.0 * drivers[i].getScale());
-                    ref = dMkdP.value(drivers[i]);
+                    ref = dMkdP.value(drivers[i], date);
                 } else {
                     // Compute a reference value using TurnAroundRange function
-                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i])[0];
+                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate())[0];
                 }
 
                 // Deltas

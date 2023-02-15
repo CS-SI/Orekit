@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,23 @@
  * limitations under the License.
  */
 package org.orekit.estimation.common;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -137,7 +154,7 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
@@ -148,23 +165,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.regex.Pattern;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
@@ -172,7 +173,7 @@ import java.util.regex.Pattern;
  * @author Bryan Cazabonne
  * @author Julie Bayard
  */
-public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPropagatorBuilder> {
+public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Suffix for range bias. */
     private final String RANGE_BIAS_SUFFIX = "/range bias";
@@ -275,12 +276,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     /** Set solar radiation pressure force model.
      * @param propagatorBuilder propagator builder
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param body central body (for shadow computation)
      * @param spacecraft spacecraft model
      * @return drivers for the force model
      */
     protected abstract List<ParameterDriver> setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
-                                                                       double equatorialRadius, RadiationSensitive spacecraft);
+                                                                       OneAxisEllipsoid body, RadiationSensitive spacecraft);
 
     /** Set Earth's albedo and infrared force model.
      * @param propagatorBuilder propagator builder
@@ -947,7 +948,10 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
              for (DelegatingDriver refDriver : refPropagationParameters.getDrivers()) {
                  for (DelegatingDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                      if (driver.getName().equals(refDriver.getName())) {
-                         driver.setValue(refDriver.getValue());
+                         for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                             driver.setValue(refDriver.getValue(initialRefOrbit.getDate()), span.getStart());
+                         }
                      }
                  }
              }
@@ -1088,7 +1092,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final double  area        = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
             final boolean cREstimated = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
             final List<ParameterDriver> drivers = setSolarRadiationPressure(propagatorBuilder, CelestialBodyFactory.getSun(),
-                                                                            body.getEquatorialRadius(),
+                                                                            body,
                                                                             new IsotropicRadiationSingleCoefficient(area, cr));
             if (cREstimated) {
                 for (final ParameterDriver driver : drivers) {
@@ -1810,6 +1814,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         final ObservableSatellite obsSat = new ObservableSatellite(0);
         final ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
+        	// date = null okay if validity period is infinite = only 1 estimation over the all period
             clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
             clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
         }
@@ -1832,7 +1837,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
-                                             final OrbitDeterminationPropagatorBuilder propagatorBuilder)
+                                             final PropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
         final boolean optimizerIsLevenbergMarquardt;
@@ -1894,7 +1899,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createSequentialEstimator(final Optimum optimum, final KeyValueFileParser<ParameterKey> parser,
-                                                       final OrbitDeterminationPropagatorBuilder propagatorBuilder)
+                                                       final PropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
 
@@ -2840,9 +2845,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 final String lineFormat = "%4d\t%-25s\t%15.3f\t%-10s\t%-10s\t%-20s\t%20.9e\t%20.9e";
 
                 // Orbital correction = DP & DV between predicted orbit and estimated orbit
-                final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPosition();
                 final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getVelocity();
-                final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPosition();
                 final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getVelocity();
                 final double DPcorr       = Vector3D.distance(predictedP, estimatedP);
                 final double DVcorr       = Vector3D.distance(predictedV, estimatedV);

@@ -17,10 +17,12 @@
 package org.orekit.models.earth;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Contains the elements to represent a magnetic field at a single point.
  * @author Thomas Neidhart
@@ -39,10 +41,10 @@ public class GeoMagneticElements implements Serializable {
     /** The magnetic declination in radians. */
     private double declination;
 
-    /** The magnetic total intensity, in nano Teslas. */
+    /** The magnetic total intensity, in Teslas. */
     private double totalIntensity;
 
-    /** The magnetic horizontal intensity, in nano Teslas. */
+    /** The magnetic horizontal intensity, in Teslas. */
     private double horizontalIntensity;
 
     /** Construct a new element with the given field vector. The other elements
@@ -50,16 +52,17 @@ public class GeoMagneticElements implements Serializable {
      * @param b the magnetic field vector
      */
     public GeoMagneticElements(final Vector3D b) {
-        this.b = b;
+        this.b = new Vector3D(UnitsConverter.NANO_TESLAS_TO_TESLAS.getFrom().getScale(), b);
 
-        horizontalIntensity = FastMath.hypot(b.getX(), b.getY());
-        totalIntensity = b.getNorm();
+        final double intensityNanoTesla = FastMath.hypot(b.getX(), b.getY());
+        horizontalIntensity = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(intensityNanoTesla);
+        totalIntensity = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(b.getNorm());
         declination = FastMath.atan2(b.getY(), b.getX());
-        inclination = FastMath.atan2(b.getZ(), horizontalIntensity);
+        inclination = FastMath.atan2(b.getZ(), intensityNanoTesla);
     }
 
-    /** Returns the magnetic field vector in nTesla.
-     * @return the magnetic field vector in nTesla
+    /** Returns the magnetic field vector in Tesla.
+     * @return the magnetic field vector in Tesla
      */
     public Vector3D getFieldVector() {
         return b;
@@ -80,7 +83,7 @@ public class GeoMagneticElements implements Serializable {
     }
 
     /** Returns the total intensity of the magnetic field (= norm of the field vector).
-     * @return the total intensity in nTesla
+     * @return the total intensity in Tesla
      */
     public double getTotalIntensity() {
         return totalIntensity;
@@ -88,7 +91,7 @@ public class GeoMagneticElements implements Serializable {
 
     /** Returns the horizontal intensity of the magnetic field (= norm of the
      * vector in the plane spanned by the x/y components of the field vector).
-     * @return the horizontal intensity in nTesla
+     * @return the horizontal intensity in Tesla
      */
     public double getHorizontalIntensity() {
         return horizontalIntensity;
@@ -97,14 +100,15 @@ public class GeoMagneticElements implements Serializable {
     @Override
     public String toString() {
         final NumberFormat f = NumberFormat.getInstance();
+        final DecimalFormat d = new DecimalFormat("0.######E0");
         final StringBuilder sb = new StringBuilder();
         sb.append("MagneticField[");
         sb.append("B=");
-        sb.append(b.toString(f));
+        sb.append(b.toString(d));
         sb.append(",H=");
-        sb.append(f.format(getHorizontalIntensity()));
+        sb.append(d.format(getHorizontalIntensity()));
         sb.append(",F=");
-        sb.append(f.format(getTotalIntensity()));
+        sb.append(d.format(getTotalIntensity()));
         sb.append(",I=");
         sb.append(f.format(getInclination()));
         sb.append(",D=");

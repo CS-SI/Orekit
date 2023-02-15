@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,7 +106,7 @@ public class ElevationDetectorTest {
 
     }
 
-    private static class Checking implements EventHandler<ElevationDetector>, OrekitFixedStepHandler {
+    private static class Checking implements EventHandler, OrekitFixedStepHandler {
 
         private TopocentricFrame topo;
         private boolean visible;
@@ -116,7 +116,7 @@ public class ElevationDetectorTest {
             this.visible = false;
         }
 
-        public Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             visible = increasing;
             return Action.CONTINUE;
         }
@@ -125,7 +125,7 @@ public class ElevationDetectorTest {
             {
             BodyShape shape = topo.getParentShape();
             GeodeticPoint p =
-                            shape.transform(currentState.getPVCoordinates().getPosition(),
+                            shape.transform(currentState.getPosition(),
                                             currentState.getFrame(), currentState.getDate());
             Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
             double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
@@ -180,14 +180,14 @@ public class ElevationDetectorTest {
         ElevationMask mask = new ElevationMask(maskValues);
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)
-                                            .withHandler(new StopOnIncreasing<ElevationDetector>());
+                                            .withHandler(new StopOnIncreasing());
         Assertions.assertSame(mask, detector.getElevationMask());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
+        double elevation = topo.getElevation(fs.getPosition(), fs.getFrame(), fs.getDate());
         Assertions.assertEquals(0.065, elevation, 2.0e-5);
 
     }
@@ -218,14 +218,14 @@ public class ElevationDetectorTest {
         AtmosphericRefractionModel refractionModel = new EarthStandardAtmosphereRefraction();
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withRefraction(refractionModel)
-                                            .withHandler(new StopOnIncreasing<ElevationDetector>());
+                                            .withHandler(new StopOnIncreasing());
         Assertions.assertSame(refractionModel, detector.getRefractionModel());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
+        double elevation = topo.getElevation(fs.getPosition(), fs.getFrame(), fs.getDate());
         Assertions.assertEquals(FastMath.toRadians(-0.5746255623877098), elevation, 2.0e-5);
 
     }
@@ -266,7 +266,7 @@ public class ElevationDetectorTest {
         final double threshold = 10.0;
         final EventDetector rawEvent = new ElevationDetector(maxcheck, threshold, sta1Frame)
                                                 .withConstantElevation(elevation)
-                                                .withHandler(new ContinueOnEvent<ElevationDetector>());
+                                                .withHandler(new ContinueOnEvent());
         final EventsLogger logger = new EventsLogger();
         kepler.addEventDetector(logger.monitorDetector(rawEvent));
 
@@ -315,7 +315,7 @@ public class ElevationDetectorTest {
         final double threshold = 1.0e-3;
         final EventDetector rawEvent = new ElevationDetector(maxCheck, threshold, station)
                                                     .withConstantElevation(FastMath.toRadians(5.0))
-                                                    .withHandler(new ContinueOnEvent<ElevationDetector>());
+                                                    .withHandler(new ContinueOnEvent());
         final EventsLogger logger = new EventsLogger();
         kProp.addEventDetector(logger.monitorDetector(rawEvent));
 
@@ -357,7 +357,7 @@ public class ElevationDetectorTest {
         EarthStandardAtmosphereRefraction refractionModel = new EarthStandardAtmosphereRefraction();
         ElevationDetector detector = new ElevationDetector(topo)
                                                  .withRefraction(refractionModel)
-                                                 .withHandler(new StopOnIncreasing<ElevationDetector>());
+                                                 .withHandler(new StopOnIncreasing());
         refractionModel.setPressure(101325);
         refractionModel.setTemperature(290);
 
@@ -365,7 +365,7 @@ public class ElevationDetectorTest {
         propagator.resetInitialState(propagator.propagate(startDate));
         propagator.addEventDetector(detector);
         final SpacecraftState fs = propagator.propagate(startDate.shiftedBy(Constants.JULIAN_DAY));
-        double elevation = topo.getElevation(fs.getPVCoordinates().getPosition(), fs.getFrame(), fs.getDate());
+        double elevation = topo.getElevation(fs.getPosition(), fs.getFrame(), fs.getDate());
         Assertions.assertEquals(FastMath.toRadians(1.7026104902251749), elevation, 2.0e-5);
 
     }
@@ -495,11 +495,11 @@ public class ElevationDetectorTest {
         final EventDetector sta1Visi =
                 new ElevationDetector(maxcheck, threshold, sta1Frame).
                 withElevationMask(mask).
-                withHandler(new EventHandler<ElevationDetector>() {
+                withHandler(new EventHandler() {
 
                     private int count = 6;
                     @Override
-                    public Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                         return (--count > 0) ? Action.CONTINUE : Action.STOP;
                     }
 

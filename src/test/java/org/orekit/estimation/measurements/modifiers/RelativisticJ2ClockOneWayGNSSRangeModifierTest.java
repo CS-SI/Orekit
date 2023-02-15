@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,8 +58,8 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifierTest {
 
         // Measurement
         final OneWayGNSSRange range = new OneWayGNSSRange(states[1].getOrbit(), 0.0, date,
-                                                          Vector3D.distance(states[0].getPVCoordinates().getPosition(),
-                                                                            states[1].getPVCoordinates().getPosition()),
+                                                          Vector3D.distance(states[0].getPosition(),
+                                                                            states[1].getPosition()),
                                                           1.0, 1.0, new ObservableSatellite(0));
 
         // Inter-satellites range before applying the modifier

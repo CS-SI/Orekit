@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 package org.orekit.files.ccsds.ndm.odm.omm;
+
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
@@ -36,6 +45,8 @@ import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -43,15 +54,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 
 public class OmmParserTest {
 
@@ -314,6 +316,146 @@ public class OmmParserTest {
             Assertions.assertEquals(9, ((Integer) oe.getParts()[0]).intValue());
             Assertions.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
+    }
+
+    @Test
+    public void testEmptyObjectID() throws URISyntaxException {
+        // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
+        final String name = "/ccsds/odm/omm/OMM-empty-object-id.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OmmParser parser = new ParserBuilder().
+                                 withMu(Constants.EIGEN5C_EARTH_MU).
+                                 withMissionReferenceDate(new AbsoluteDate()).
+                                 withDefaultMass(1000.0).
+                                 buildOmmParser();
+        try {
+            parser.parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals("OBJECT_ID", oe.getParts()[0]);
+        }
+
+        final String replacement = "replacement-object-id";
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("OBJECT_ID".equals(token.getName()) &&
+                                            (token.getRawContent() == null || token.getRawContent().isEmpty())) {
+                                // replace null/empty entries with specified value
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                replacement, token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        // note that object id is always converted to uppercase during parsing
+        Assertions.assertEquals(replacement.toUpperCase(), omm.getMetadata().getObjectID());
+
+    }
+
+    @Test
+    public void testEmptyObjectIDXml() throws URISyntaxException {
+        // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
+        String name = "/ccsds/odm/omm/OMM-empty-object-id.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OmmParser parser = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        buildOmmParser();
+        try {
+            parser.parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals("OBJECT_ID", oe.getParts()[0]);
+        }
+
+        final String replacement = "replacement-object-id";
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("OBJECT_ID".equals(token.getName()) &&
+                                (token.getRawContent() == null || token.getRawContent().isEmpty())) {
+                                // replace null/empty entries with specified value
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                replacement, token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        // note that object id is always converted to uppercase during parsing
+        Assertions.assertEquals(replacement.toUpperCase(), omm.getMetadata().getObjectID());
+    }
+
+    @Test
+    public void testRemoveUserData() throws URISyntaxException {
+        final String name = "/ccsds/odm/omm/OMMExample3.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(missionReferenceDate).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if (token.getName().startsWith("USER_DEFINED")) {
+                                return Collections.emptyList();
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        Assertions.assertNull(omm.getData().getUserDefinedBlock());
+    }
+
+    @Test
+    public void testChangeVersionAndAddMessageId() throws URISyntaxException {
+        final String name = "/ccsds/odm/omm/OMMExample3.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
+        final String myMessageId = "custom-message-id";
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(missionReferenceDate).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("CCSDS_OMM_VERS".equals(token.getName())) {
+                                // enforce ODM V3
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                "3.0", token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        withFilter(token -> {
+                            if ("ORIGINATOR".equals(token.getName())) {
+                                // add generated message ID after ORIGINATOR entry
+                                return Arrays.asList(token,
+                                                     new ParseToken(TokenType.ENTRY, "MESSAGE_ID",
+                                                                    myMessageId, null,
+                                                                    -1, token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        Assertions.assertEquals(3.0, omm.getHeader().getFormatVersion(), 1.0e-10);
+        Assertions.assertEquals("NOAA/USA", omm.getHeader().getOriginator());
+        Assertions.assertEquals(myMessageId.toUpperCase(), omm.getHeader().getMessageId());
     }
 
     @Test

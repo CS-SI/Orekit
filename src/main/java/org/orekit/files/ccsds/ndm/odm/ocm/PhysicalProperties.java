@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,7 +110,7 @@ public class PhysicalProperties extends CommonPhysicalProperties {
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      */
-    PhysicalProperties(final AbsoluteDate epochT0) {
+    public PhysicalProperties(final AbsoluteDate epochT0) {
 
         // Call to CommonPhysicalProperties constructor
         super();

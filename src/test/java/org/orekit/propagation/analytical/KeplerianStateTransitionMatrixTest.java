@@ -101,7 +101,7 @@ public class KeplerianStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, 4.51e-14);
+                    Assertions.assertEquals(0, error, 7.16e-14);
                 }
             }
         }

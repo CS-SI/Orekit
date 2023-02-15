@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** One-way GNSS range measurement.
  * <p>
@@ -103,7 +104,9 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final Map<String, Integer> parameterIndices = new HashMap<>();
         for (ParameterDriver measurementDriver : getParametersDrivers()) {
             if (measurementDriver.isSelected()) {
-                parameterIndices.put(measurementDriver.getName(), nbEstimatedParams++);
+                for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parameterIndices.put(span.getData(), nbEstimatedParams++);
+                }
             }
         }
 
@@ -113,7 +116,7 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final TimeStampedPVCoordinates                pvaRemote = remote.getPVCoordinates(getDate(), localState.getFrame());
 
         // Downlink delay
-        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParams, parameterIndices);
+        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParams, parameterIndices, localState.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
@@ -144,9 +147,12 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver measurementDriver : getParametersDrivers()) {
-            final Integer index = parameterIndices.get(measurementDriver.getName());
-            if (index != null) {
-                estimatedRange.setParameterDerivatives(measurementDriver, rangeDerivatives[index]);
+            for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = parameterIndices.get(span.getData());
+                if (index != null) {
+                    estimatedRange.setParameterDerivatives(measurementDriver, span.getStart(), rangeDerivatives[index]);
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -159,7 +159,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
+                                                              final OneAxisEllipsoid body, final RadiationSensitive spacecraft) {
         return Collections.emptyList();
     }
 
@@ -441,8 +441,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         propagator.addForceModel(drag);
 
         // Solar radiation pressure
-        propagator.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                    earth.getEquatorialRadius(),
+        propagator.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
 
         // Propagation

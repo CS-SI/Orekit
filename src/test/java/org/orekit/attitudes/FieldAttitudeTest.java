@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,17 +43,17 @@ public class FieldAttitudeTest {
 
     @Test
     public void testShift() {
-        doTestShift(Decimal64Field.getInstance());
+        doTestShift(Binary64Field.getInstance());
     }
 
     @Test
     public void testSpin() {
-        doTestSpin(Decimal64Field.getInstance());
+        doTestSpin(Binary64Field.getInstance());
     }
 
     @Test
     public void testInterpolation() {
-        doTestInterpolation(Decimal64Field.getInstance());
+        doTestInterpolation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShift(final Field<T> field){
@@ -174,10 +174,10 @@ public class FieldAttitudeTest {
             maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
 
         }
-        Assertions.assertTrue(maxShiftAngleError         > 6.0e-6);
-        Assertions.assertTrue(maxInterpolationAngleError < 6.0e-15);
-        Assertions.assertTrue(maxShiftRateError          > 7.0e-8);
-        Assertions.assertTrue(maxInterpolationRateError  < 2.0e-16);
+        Assertions.assertEquals(0.0, maxShiftAngleError,         6.9e-6);
+        Assertions.assertEquals(0.0, maxInterpolationAngleError, 8.8e-15);
+        Assertions.assertEquals(0.0, maxShiftRateError,          7.6e-8);
+        Assertions.assertEquals(0.0, maxInterpolationRateError,  2.0e-16);
 
         // past sample end, interpolation error should increase, but still be far better than quadratic shift
         maxShiftAngleError = 0;
@@ -201,10 +201,10 @@ public class FieldAttitudeTest {
             maxShiftRateError           = FastMath.max(maxShiftRateError, shiftRateError.getReal());
             maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
         }
-        Assertions.assertTrue(maxShiftAngleError         > 1.0e-5);
-        Assertions.assertTrue(maxInterpolationAngleError < 8.0e-13);
-        Assertions.assertTrue(maxShiftRateError          > 1.0e-7);
-        Assertions.assertTrue(maxInterpolationRateError  < 6.0e-14);
+        Assertions.assertEquals(0.0, maxShiftAngleError,         1.3e-5);
+        Assertions.assertEquals(0.0, maxInterpolationAngleError, 1.2e-12);
+        Assertions.assertEquals(0.0, maxShiftRateError,          1.2e-7);
+        Assertions.assertEquals(0.0, maxInterpolationRateError,  8.4e-14);
 
     }
 

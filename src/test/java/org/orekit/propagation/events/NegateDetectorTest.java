@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,8 +41,7 @@ public class NegateDetectorTest {
         EventDetector a = Mockito.mock(EventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
         Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
-        @SuppressWarnings("unchecked")
-        EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
+        EventHandler c = Mockito.mock(EventHandler.class);
         NegateDetector detector = new NegateDetector(a).withHandler(c);
         AbsoluteDate t = AbsoluteDate.GPS_EPOCH;
         SpacecraftState s = Mockito.mock(SpacecraftState.class);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -29,7 +29,7 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 public class SpinStabilized extends CommentsContainer {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
-    private final AttitudeEndoints endpoints;
+    private final AttitudeEndpoints endpoints;
 
     /** Right ascension of spin axis vector (rad). */
     private double spinAlpha;
@@ -55,7 +55,7 @@ public class SpinStabilized extends CommentsContainer {
     /** Simple constructor.
      */
     public SpinStabilized() {
-        endpoints      = new AttitudeEndoints();
+        endpoints      = new AttitudeEndpoints();
         spinAlpha      = Double.NaN;
         spinDelta      = Double.NaN;
         spinAngle      = Double.NaN;
@@ -88,7 +88,7 @@ public class SpinStabilized extends CommentsContainer {
     /** Get the endpoints (i.e. frames A, B and their relationship).
      * @return endpoints
      */
-    public AttitudeEndoints getEndpoints() {
+    public AttitudeEndpoints getEndpoints() {
         return endpoints;
     }
 

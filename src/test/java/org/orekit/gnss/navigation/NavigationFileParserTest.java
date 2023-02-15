@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,27 +16,40 @@
  */
 package org.orekit.gnss.navigation;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frames;
+import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.SBASPropagator;
 import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
+import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 public class NavigationFileParserTest {
 
@@ -116,6 +129,21 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  gps.getTGD(), 1.0e-15);
         Assertions.assertEquals(389,                 gps.getIODC());
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gps.getWeek(), gps.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gps.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
+        
+        // check the propagator
+        final GNSSPropagator propagator = gps.getPropagator();
+        final AbsoluteDate date0 = gps.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = gps.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
     }
 
     @Test
@@ -162,6 +190,23 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-2132.000000000E-03, sbas.getZDot(), 1.0e-10);
         Assertions.assertEquals(1875.000000000E-07,  sbas.getZDotDot(), 1.0e-10);
         Assertions.assertEquals(192,                 sbas.getIODN(), 1.0e-10);
+
+        // check the propagator
+        final SBASPropagator propagator = sbas.getPropagator();
+        final PVCoordinates pv = propagator.propagateInEcef(sbas.getDate());
+        final Vector3D position = pv.getPosition();
+        final Vector3D velocity = pv.getVelocity();
+        final Vector3D acceleration = pv.getAcceleration();
+        double eps = 1.0e-15;
+        Assertions.assertEquals(sbas.getX(),       position.getX(),     eps);
+        Assertions.assertEquals(sbas.getY(),       position.getY(),     eps);
+        Assertions.assertEquals(sbas.getZ(),       position.getZ(),     eps);
+        Assertions.assertEquals(sbas.getXDot(),    velocity.getX(),     eps);
+        Assertions.assertEquals(sbas.getYDot(),    velocity.getY(),     eps);
+        Assertions.assertEquals(sbas.getZDot(),    velocity.getZ(),     eps);
+        Assertions.assertEquals(sbas.getXDotDot(), acceleration.getX(), eps);
+        Assertions.assertEquals(sbas.getYDotDot(), acceleration.getY(), eps);
+        Assertions.assertEquals(sbas.getZDotDot(), acceleration.getZ(), eps);
 
     }
 
@@ -217,6 +262,22 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2.000000000000e+00,  bdt.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(1.500000000000e-09,  bdt.getTGD1(), 1.0e-15);
         Assertions.assertEquals(-1.370000000000e-08, bdt.getTGD2(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with Beidou weeks (not GPS weeks as other systems)
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getWeek(), bdt.getTime(), SatelliteSystem.BEIDOU).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(bdt.getDate()), 1.0e-15);
+
+        // check the propagator
+        final GNSSPropagator propagator = bdt.getPropagator(DataContext.getDefault().getFrames());
+        final AbsoluteDate date0 = bdt.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = bdt.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
 
     }
 
@@ -286,6 +347,22 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  gal.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-7.450580596924E-09, gal.getBGDE1E5a(), 1.0e-15);
         Assertions.assertEquals(0.000000000000E+00,  gal.getBGDE5bE1(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gal.getWeek(), gal.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gal.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
+
+        // check the propagator
+        final GNSSPropagator propagator = gal.getPropagator(DataContext.getDefault().getFrames());
+        final AbsoluteDate date0 = gal.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = gal.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
 
     }
 
@@ -358,6 +435,24 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-0.605359673500e-08, qzs.getTGD(), 1.0e-15);
         Assertions.assertEquals(957,                 qzs.getIODC(), 1.0e-15);
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(qzs.getWeek(), qzs.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(qzs.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzs.getDate()), 1.0e-15);
+
+        // check the propagator
+        final Frames frames = DataContext.getDefault().getFrames();
+        final GNSSPropagator propagator = qzs.getPropagator(DataContext.getDefault().getFrames(), Propagator.getDefaultLaw(frames),
+                FramesFactory.getEME2000(), FramesFactory.getITRF(IERSConventions.IERS_2010, true), Propagator.DEFAULT_MASS);
+        final AbsoluteDate date0 = qzs.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = qzs.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
+
     }
 
     @Test
@@ -411,6 +506,16 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-1884.816169739e+00, glo.getZDot(), 1.0e-10);
         Assertions.assertEquals(-1862.645149231e-09, glo.getZDotDot(), 1.0e-10);
 
+        // check the propagator
+        final GLONASSNumericalPropagator propagator1 = glo.getPropagator(60.0);
+        final GLONASSNumericalPropagator propagator2 = glo.getPropagator(60, DataContext.getDefault());
+        final GLONASSNumericalPropagator propagator3 = glo.getPropagator(60, DataContext.getDefault(),
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()),
+                FramesFactory.getEME2000(), Propagator.DEFAULT_MASS);
+        Assertions.assertNotNull(propagator1);
+        Assertions.assertNotNull(propagator2);
+        Assertions.assertNotNull(propagator3);
+        
     }
 
     @Test
@@ -465,6 +570,22 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2.000000000000e+00,  irnss.getURA(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  irnss.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-4.656613000000e-10, irnss.getTGD(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(irnss.getWeek(), irnss.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(irnss.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(irnss.getDate()), 1.0e-15);
+
+        // check the propagator
+        final GNSSPropagator propagator = irnss.getPropagator();
+        final AbsoluteDate date0 = irnss.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = irnss.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
 
     }
 
@@ -584,6 +705,22 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  qzs.getTGD(), 1.0e-15);
         Assertions.assertEquals(961,                 qzs.getIODC(), 1.0e-15);
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(qzs.getWeek(), qzs.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(qzs.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzs.getDate()), 1.0e-15);
+
+        // check the propagator
+        final GNSSPropagator propagator = qzs.getPropagator(DataContext.getDefault().getFrames());
+        final AbsoluteDate date0 = qzs.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = qzs.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
+
     }
 
     @Test
@@ -656,6 +793,24 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(4.656612873077E-09,  gps.getTGD(), 1.0e-15);
         Assertions.assertEquals(9,                   gps.getIODC());
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gps.getWeek(), gps.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gps.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
+
+        // check the propagator
+        final Frames frames = DataContext.getDefault().getFrames();
+        final GNSSPropagator propagator = gps.getPropagator(DataContext.getDefault().getFrames(), Propagator.getDefaultLaw(frames),
+                FramesFactory.getEME2000(), FramesFactory.getITRF(IERSConventions.IERS_2010, true), Propagator.DEFAULT_MASS);
+        final AbsoluteDate date0 = gps.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = gps.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
+
     }
 
     @Test
@@ -718,6 +873,24 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(4.656612873077e-10,  gal.getBGDE1E5a(), 1.0e-15);
         Assertions.assertEquals(2.328306436539e-10,  gal.getBGDE5bE1(), 1.0e-15);
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(gal.getWeek(), gal.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(gal.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
+
+        // check the propagator
+        final Frames frames = DataContext.getDefault().getFrames();
+        final GNSSPropagator propagator = gal.getPropagator(DataContext.getDefault().getFrames(), Propagator.getDefaultLaw(frames),
+                FramesFactory.getEME2000(), FramesFactory.getITRF(IERSConventions.IERS_2010, true), Propagator.DEFAULT_MASS);
+        final AbsoluteDate date0 = gal.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = gal.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
+        
     }
 
     @Test
@@ -765,6 +938,26 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000E+00, sbas.getZDot(), 1.0e-10);
         Assertions.assertEquals(0.000000000000E+00, sbas.getZDotDot(), 1.0e-10);
         Assertions.assertEquals(155,                sbas.getIODN(), 1.0e-10);
+
+        // check the propagator
+        final Frames frames = DataContext.getDefault().getFrames();
+        final SBASPropagator propagator = sbas.getPropagator(frames, Propagator.getDefaultLaw(frames),
+                FramesFactory.getEME2000(), FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                Propagator.DEFAULT_MASS, GNSSConstants.SBAS_MU);
+        final PVCoordinates pv = propagator.propagateInEcef(sbas.getDate());
+        final Vector3D position = pv.getPosition();
+        final Vector3D velocity = pv.getVelocity();
+        final Vector3D acceleration = pv.getAcceleration();
+        double eps = 1.0e-15;
+        Assertions.assertEquals(sbas.getX(),       position.getX(),     eps);
+        Assertions.assertEquals(sbas.getY(),       position.getY(),     eps);
+        Assertions.assertEquals(sbas.getZ(),       position.getZ(),     eps);
+        Assertions.assertEquals(sbas.getXDot(),    velocity.getX(),     eps);
+        Assertions.assertEquals(sbas.getYDot(),    velocity.getY(),     eps);
+        Assertions.assertEquals(sbas.getZDot(),    velocity.getZ(),     eps);
+        Assertions.assertEquals(sbas.getXDotDot(), acceleration.getX(), eps);
+        Assertions.assertEquals(sbas.getYDotDot(), acceleration.getY(), eps);
+        Assertions.assertEquals(sbas.getZDotDot(), acceleration.getZ(), eps);
 
     }
 
@@ -822,6 +1015,22 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000000e+00,  irnss.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-4.656613000000e-10, irnss.getTGD(), 1.0e-15);
 
+        // check weeks reference in Rinex navigation are aligned with GPS weeks
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(irnss.getWeek(), irnss.getTime(), SatelliteSystem.GPS).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(irnss.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+        Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(irnss.getDate()), 1.0e-15);
+
+        // check the propagator
+        final GNSSPropagator propagator = irnss.getPropagator();
+        final AbsoluteDate date0 = irnss.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = irnss.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
+
     }
 
     @Test
@@ -877,6 +1086,21 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2.000000000000e+00,  bdt.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(1.220000000000e-08,  bdt.getTGD1(), 1.0e-15);
         Assertions.assertEquals(1.220000000000e-08,  bdt.getTGD2(), 1.0e-15);
+
+        // check weeks reference in Rinex navigation are aligned with Beidou weeks (not GPS weeks as other systems)
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getWeek(), bdt.getTime(), SatelliteSystem.BEIDOU).
+                                            getDate();
+        final double relativeTime = obsRebuiltDate.durationFrom(bdt.getEpochToc());
+        Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
+
+        // check the propagator
+        final GNSSPropagator propagator = bdt.getPropagator();
+        final AbsoluteDate date0 = bdt.getDate();
+        final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
+        final double gpsCycleDuration = bdt.getCycleDuration();
+        final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
+        final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
+        Assertions.assertEquals(0., p0.distance(p1), 0.);
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,15 @@
  */
 package org.orekit.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
@@ -27,18 +36,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 public class AbsolutePVCoordinatesTest {
 
@@ -125,6 +128,24 @@ public class AbsolutePVCoordinatesTest {
         checkPV(new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 5, pv4),
                 new AbsolutePVCoordinates(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4),
                 1.0e-15);
+    }
+
+    @Test
+    public void testDifferentFrames() {
+        final AbsolutePVCoordinates apv1 = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                                                                     AbsoluteDate.ARBITRARY_EPOCH,
+                                                                     Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+        final AbsolutePVCoordinates apv2 = new AbsolutePVCoordinates(FramesFactory.getGCRF(),
+                                                                     AbsoluteDate.ARBITRARY_EPOCH,
+                                                                     Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+        try {
+            new AbsolutePVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, apv1, apv2);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_FRAMES, oe.getSpecifier());
+            Assertions.assertEquals(apv1.getFrame().getName(), oe.getParts()[0]);
+            Assertions.assertEquals(apv2.getFrame().getName(), oe.getParts()[1]);
+        }
     }
 
     @Test
@@ -540,13 +561,42 @@ public class AbsolutePVCoordinatesTest {
         Frame frame = FramesFactory.getEME2000();
         Vector3D p = new Vector3D(1, 2, 3);
         Vector3D v = new Vector3D(4, 5, 6);
+        Frame otherEme2000 = new Frame(frame, Transform.IDENTITY, "other-EME2000");
 
         //action
         AbsolutePVCoordinates actual = new AbsolutePVCoordinates(frame, date, p, v);
 
         //verify
-        Assertions.assertEquals(actual.getPVCoordinates().toString(), actual.getPVCoordinates(frame).toString());
-        Assertions.assertEquals(actual.getPVCoordinates(frame).toString(), actual.getPVCoordinates(date, frame).toString());
+        Assertions.assertSame(actual.getPosition(), actual.getPosition(frame));
+        Assertions.assertNotSame(actual.getPosition(), actual.getPosition(otherEme2000));
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPosition(frame),
+                                                  actual.getPosition(otherEme2000)),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                                                  actual.getPVCoordinates(date, frame).getPosition()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                                                  actual.getPVCoordinates(date, frame).getVelocity()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                                                  actual.getPVCoordinates(date, frame).getAcceleration()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getPosition(),
+                                                  actual.getPVCoordinates(date, otherEme2000).getPosition()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getVelocity(),
+                                                  actual.getPVCoordinates(date, otherEme2000).getVelocity()),
+                                1.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
+                                                  actual.getPVCoordinates(date, otherEme2000).getAcceleration()),
+                                1.0e-15);
     }
 
     @Test
@@ -561,8 +611,12 @@ public class AbsolutePVCoordinatesTest {
         AbsolutePVCoordinates actual = new AbsolutePVCoordinates(frame, date, p, v);
         final PVCoordinatesProvider pv = actual.toTaylorProvider();
 
-        //verify
+        //verify 
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(actual.getPosition(date, frame), pv.getPosition(date, frame)),
+                                1.0e-15);
         Assertions.assertEquals(actual.getPVCoordinates(date, frame).toString(), pv.getPVCoordinates(date, frame).toString());
+
     }
 
     private PolynomialFunction randomPolynomial(int degree, Random random) {

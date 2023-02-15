@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -254,11 +254,11 @@ public class AngularAzElTest {
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) {
+                                        public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());
-                    final double ref = dMkdP.value(drivers[i]);
+                    final double ref = dMkdP.value(drivers[i], date);
 
                     if (ref > 1.e-12) {
                         Assertions.assertEquals(ref, gradient[k], 3e-10 * FastMath.abs(ref));

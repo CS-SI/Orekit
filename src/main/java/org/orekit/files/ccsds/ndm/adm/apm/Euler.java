@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -32,7 +32,7 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 public class Euler extends CommentsContainer {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
-    private final AttitudeEndoints endpoints;
+    private final AttitudeEndpoints endpoints;
 
     /** Rotation order of the Euler angles. */
     private RotationOrder eulerRotSeq;
@@ -52,7 +52,7 @@ public class Euler extends CommentsContainer {
     /** Simple constructor.
      */
     public Euler() {
-        this.endpoints        = new AttitudeEndoints();
+        this.endpoints        = new AttitudeEndpoints();
         this.rotationAngles   = new double[3];
         this.rotationRates    = new double[3];
         this.inRotationAngles = false;
@@ -102,7 +102,7 @@ public class Euler extends CommentsContainer {
     /** Get the endpoints (i.e. frames A, B and their relationship).
      * @return endpoints
      */
-    public AttitudeEndoints getEndpoints() {
+    public AttitudeEndpoints getEndpoints() {
         return endpoints;
     }
 
@@ -123,15 +123,15 @@ public class Euler extends CommentsContainer {
         this.eulerRotSeq = eulerRotSeq;
     }
 
-    /** Check if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}.
-     * @return true if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
+    /** Check if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}.
+     * @return true if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public boolean rateFrameIsA() {
         return rateFrameIsA == null ? false : rateFrameIsA;
     }
 
     /** Set the frame in which rates are specified.
-     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
+     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public void setRateFrameIsA(final boolean rateFrameIsA) {
         refuseFurtherComments();

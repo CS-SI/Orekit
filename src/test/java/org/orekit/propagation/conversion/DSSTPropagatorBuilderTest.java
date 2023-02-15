@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -227,13 +227,6 @@ public class DSSTPropagatorBuilderTest {
                 return 1;
             }
 
-            /** {@inheritDoc} */
-            @Override
-            @Deprecated
-            public double[] derivatives(final SpacecraftState state) {
-                return combinedDerivatives(state).getAdditionalDerivatives();
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
@@ -248,13 +241,6 @@ public class DSSTPropagatorBuilderTest {
 
             public int getDimension() {
                 return 1;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            @Deprecated
-            public double[] derivatives(final SpacecraftState state) {
-                return combinedDerivatives(state).getAdditionalDerivatives();
             }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {

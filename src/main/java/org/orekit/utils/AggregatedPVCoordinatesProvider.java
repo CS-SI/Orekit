@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 import java.util.Objects;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -80,6 +81,14 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
      */
     public AbsoluteDate getMaxDate() {
         return maxDate;
+    }
+
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        if (date.isBefore(minDate) || date.isAfter(maxDate)) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, minDate, maxDate);
+        }
+        return pvProvMap.get(date).getPosition(date, frame);
     }
 
     @Override

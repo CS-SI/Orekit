@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -197,9 +197,9 @@ public class TidalDisplacement implements StationDisplacement {
 
         // preliminary computation (we hold everything in local variables so method is thread-safe)
         final PointData      pointData    = new PointData(referencePoint);
-        final Vector3D       sunPosition  = sun.getPVCoordinates(date, earthFrame).getPosition();
+        final Vector3D       sunPosition  = sun.getPosition(date, earthFrame);
         final BodyData       sunData      = new BodyData(sunPosition, ratio2S, ratio3S, pointData);
-        final Vector3D       moonPosition = moon.getPVCoordinates(date, earthFrame).getPosition();
+        final Vector3D       moonPosition = moon.getPosition(date, earthFrame);
         final BodyData       moonData     = new BodyData(moonPosition, ratio2M, ratio3M, pointData);
 
         // step 1 in IERS procedure: corrections in the time domain

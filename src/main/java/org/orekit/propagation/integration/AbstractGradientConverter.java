@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Converter for states and parameters arrays.
  *  @author Luc Maisonobe
@@ -116,7 +117,7 @@ public abstract class AbstractGradientConverter {
         int nbParams = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                ++nbParams;
+                nbParams += driver.getNbOfValues();
             }
         }
 
@@ -160,24 +161,67 @@ public abstract class AbstractGradientConverter {
 
     }
 
-    /** Get the parametric model parameters.
+    /** Get the parametric model parameters, return gradient values for each span of each driver (several gradient
+     * values for each parameter).
+     * Different from {@link #getParametersAtStateDate(FieldSpacecraftState, ParametersDriversProvider)}
+     * which return a Gradient list containing for each driver the gradient value at state date (only 1 gradient
+     * value for each parameter).
      * @param state state as returned by {@link #getState(ParametersDriversProvider) getState(parametricModel)}
      * @param parametricModel parametric model associated with the parameters
-     * @return parametric model parameters
+     * @return parametric model parameters (for all span of each driver)
      */
     public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
                                     final ParametersDriversProvider parametricModel) {
         final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
+        int sizeDrivers = 0;
+        for ( ParameterDriver driver : drivers) {
+            sizeDrivers += driver.getNbOfValues();
+        }
+        final Gradient[] parameters = new Gradient[sizeDrivers];
+        int index = freeStateParameters;
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            // Loop on the spans
+            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                parameters[i++] = driver.isSelected() ?
+                                  Gradient.variable(freeParameters, index++, span.getData()) :
+                                  Gradient.constant(freeParameters, span.getData());
+            }
+        }
+        return parameters;
+    }
+
+    /** Get the parametric model parameters, return gradient values at state date for each driver (only 1 gradient
+     * value for each parameter).
+     * Different from {@link #getParameters(FieldSpacecraftState, ParametersDriversProvider)}
+     * which return a Gradient list containing for each driver the gradient values for each span value (several gradient
+     * values for each parameter).
+     * @param state state as returned by {@link #getState(ParametersDriversProvider) getState(parametricModel)}
+     * @param parametricModel parametric model associated with the parameters
+     * @return parametric model parameters (for all span of each driver)
+     */
+    public Gradient[] getParametersAtStateDate(final FieldSpacecraftState<Gradient> state,
+            final ParametersDriversProvider parametricModel) {
+        final int freeParameters = state.getMass().getFreeParameters();
+        final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
+
         final Gradient[] parameters = new Gradient[drivers.size()];
         int index = freeStateParameters;
         int i = 0;
         for (ParameterDriver driver : drivers) {
-            parameters[i++] = driver.isSelected() ?
-                              Gradient.variable(freeParameters, index++, driver.getValue()) :
-                              Gradient.constant(freeParameters, driver.getValue());
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                if (span.getData().equals(driver.getNameSpan(state.getDate().toAbsoluteDate()))) {
+                    parameters[i++] = driver.isSelected() ?
+                                          Gradient.variable(freeParameters, index, driver.getValue(state.getDate().toAbsoluteDate())) :
+                                          Gradient.constant(freeParameters, driver.getValue(state.getDate().toAbsoluteDate()));
+                }
+                index = driver.isSelected() ? index + 1 : index;
+            }
         }
         return parameters;
     }
+
 
 }

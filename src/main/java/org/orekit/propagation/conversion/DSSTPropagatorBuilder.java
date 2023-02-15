@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,6 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -46,7 +44,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -228,7 +226,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("deprecation")
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -257,41 +254,21 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
             propagator.addAdditionalDerivativesProvider(provider);
         }
 
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
-            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
-        }
-
         return propagator;
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public DSSTBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
+    public DSSTBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                   final List<ObservedMeasurement<?>> measurements,
+                                                   final ParameterDriversList estimatedMeasurementsParameters,
+                                                   final ModelObserver observer) {
         return new DSSTBatchLSModel(builders,
                                     measurements,
                                     estimatedMeasurementsParameters,
                                     observer,
-                                    propagationType, stateType);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @SuppressWarnings("deprecation")
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        // FIXME: remove in 12.0 when DSSTKalmanModel is removed
-        return new org.orekit.estimation.sequential.DSSTKalmanModel(propagatorBuilders,
-                                                                    covarianceMatricesProviders,
-                                                                    estimatedMeasurementsParameters,
-                                                                    measurementProcessNoiseMatrix,
-                                                                    propagationType, stateType);
+                                    propagationType);
     }
 
     /** Check if Newtonian attraction force model is available.

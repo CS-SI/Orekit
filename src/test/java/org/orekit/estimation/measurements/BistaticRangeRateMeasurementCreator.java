@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,7 +78,7 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
 
         final AbsoluteDate  date     = currentState.getDate();
         final Frame         inertial = currentState.getFrame();
-        final Vector3D      position = currentState.getPVCoordinates().getPosition();
+        final Vector3D      position = currentState.getPosition();
         final Vector3D      velocity = currentState.getPVCoordinates().getVelocity();
 
         // Create a BRR measurement only if elevation for both stations is higher than 30°

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -113,7 +113,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                 ParameterDriver selected = null;
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        driver.setValue(driver.getReferenceValue());
+                        driver.setValue(driver.getReferenceValue(), initialOrbit.getDate());
                         if (driver.getName().equals(parameterName)) {
                             driver.setSelected(true);
                             selected = driver;
@@ -125,7 +125,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
                 SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getName());
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getNameSpan(new AbsoluteDate()));
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 RealMatrix dYdP = pickUp.getdYdP();

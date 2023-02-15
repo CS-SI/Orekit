@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** One-way or two-way range measurements between two satellites.
  * <p>
@@ -126,7 +127,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
 
@@ -141,7 +147,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         //  we will have delta == tauD and transitState will be the same as state)
 
         // downlink delay
-        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, local.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate =
                         new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
@@ -190,7 +196,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                    });
 
             // Clock offsets
-            final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices);
+            final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices, remote.getDate());
 
             // Range value
             range  = tauD.add(dtl).subtract(dtr).multiply(Constants.SPEED_OF_LIGHT);
@@ -205,9 +211,11 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

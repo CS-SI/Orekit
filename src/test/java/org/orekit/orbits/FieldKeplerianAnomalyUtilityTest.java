@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -26,67 +26,67 @@ public class FieldKeplerianAnomalyUtilityTest {
 
     @Test
     public void testEllipticMeanToTrue() {
-        doTestEllipticMeanToTrue(Decimal64Field.getInstance());
+        doTestEllipticMeanToTrue(Binary64Field.getInstance());
     }
 
     @Test
     public void testEllipticTrueToMean() {
-        doTestEllipticTrueToMean(Decimal64Field.getInstance());
+        doTestEllipticTrueToMean(Binary64Field.getInstance());
     }
 
     @Test
     public void testEllipticEccentricToTrue() {
-        doTestEllipticEccentricToTrue(Decimal64Field.getInstance());
+        doTestEllipticEccentricToTrue(Binary64Field.getInstance());
     }
 
     @Test
     public void testEllipticTrueToEccentric() {
-        doTestEllipticTrueToEccentric(Decimal64Field.getInstance());
+        doTestEllipticTrueToEccentric(Binary64Field.getInstance());
     }
 
     @Test
     public void testEllipticMeanToEccentric() {
-        doTestEllipticMeanToEccentric(Decimal64Field.getInstance());
+        doTestEllipticMeanToEccentric(Binary64Field.getInstance());
     }
 
     @Test
     public void testEllipticEccentricToMean() {
-        doTestEllipticEccentricToMean(Decimal64Field.getInstance());
+        doTestEllipticEccentricToMean(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbolicMeanToTrue() {
-        doTestHyperbolicMeanToTrue(Decimal64Field.getInstance());
+        doTestHyperbolicMeanToTrue(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbolicTrueToMean() {
-        doTestHyperbolicTrueToMean(Decimal64Field.getInstance());
+        doTestHyperbolicTrueToMean(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbolicEccentricToTrue() {
-        doTestHyperbolicEccentricToTrue(Decimal64Field.getInstance());
+        doTestHyperbolicEccentricToTrue(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbolicTrueToEccentric() {
-        doTestHyperbolicTrueToEccentric(Decimal64Field.getInstance());
+        doTestHyperbolicTrueToEccentric(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbolicMeanToEccentric() {
-        doTestHyperbolicMeanToEccentric(Decimal64Field.getInstance());
+        doTestHyperbolicMeanToEccentric(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbolicEccentricToMean() {
-        doTestHyperbolicEccentricToMean(Decimal64Field.getInstance());
+        doTestHyperbolicEccentricToMean(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue544() {
-        doTestIssue544(Decimal64Field.getInstance());
+        doTestIssue544(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEllipticMeanToTrue(final Field<T> field) {

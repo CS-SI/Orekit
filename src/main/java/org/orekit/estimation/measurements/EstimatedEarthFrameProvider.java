@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
@@ -290,6 +291,33 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+
+        // take parametric prime meridian shift into account
+        final T theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
+        final FieldStaticTransform<T> meridianShift = FieldStaticTransform.of(
+                date,
+                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), theta, RotationConvention.FRAME_TRANSFORM)
+        );
+
+        // take parametric pole shift into account
+        final T xpNeg     = linearModel(date, polarOffsetXDriver, polarDriftXDriver).negate();
+        final T ypNeg     = linearModel(date, polarOffsetYDriver, polarDriftYDriver).negate();
+        final FieldStaticTransform<T> poleShift = FieldStaticTransform.compose(
+                date,
+                FieldStaticTransform.of(
+                        date,
+                        new FieldRotation<>(FieldVector3D.getPlusJ(date.getField()), xpNeg, RotationConvention.FRAME_TRANSFORM)),
+                FieldStaticTransform.of(
+                        date,
+                        new FieldRotation<>(FieldVector3D.getPlusI(date.getField()), ypNeg, RotationConvention.FRAME_TRANSFORM)));
+
+        return FieldStaticTransform.compose(date, meridianShift, poleShift);
+
+    }
+
     /** Get the transform with derivatives.
      * @param date date of the transform
      * @param freeParameters total number of free parameters in the gradient
@@ -305,15 +333,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final Gradient theta    = linearModel(freeParameters, date,
                                               primeMeridianOffsetDriver, primeMeridianDriftDriver,
                                               indices);
-        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices);
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
 
         // pole shift parameters
         final Gradient xpNeg    = linearModel(freeParameters, date,
                                                          polarOffsetXDriver, polarDriftXDriver, indices).negate();
         final Gradient ypNeg    = linearModel(freeParameters, date,
                                                          polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices).negate();
-        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -415,8 +443,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                       offsetDriver.getName());
         }
         final Gradient dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final Gradient offset = offsetDriver.getValue(freeParameters, indices);
-        final Gradient drift  = driftDriver.getValue(freeParameters, indices);
+        final Gradient offset = offsetDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient drift  = driftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
         return dt.multiply(drift).add(offset);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,17 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 
 /**
  * This nested class aims at building a GLONASSNumericalPropagator.
  * <p>It implements the classical builder pattern.</p>
+ * <p>
+ * <b>Caution:</b> The Glonass numerical propagator can only be used with {@link GLONASSNavigationMessage}.
+ * Using this propagator with a {@link GLONASSAlmanac} is prone to error.
+ * </p>
  * @author Bryan Cazabonne
  * @since 11.0
  */

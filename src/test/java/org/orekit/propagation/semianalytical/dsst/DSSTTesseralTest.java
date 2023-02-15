@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -90,7 +90,7 @@ public class DSSTTesseralTest {
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
         // Force model parameters
-        final double[] parameters = tesseral.getParameters();
+        final double[] parameters = tesseral.getParameters(orbit.getDate());
 
         // Initialize force model
         tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
@@ -141,8 +141,9 @@ public class DSSTTesseralTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
-        force.updateShortPeriodTerms(force.getParameters(), meanState);
+
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
+        force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -196,19 +197,19 @@ public class DSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters());
+        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(orbit.getDate()));
 
         // Tesseral force model with default constructor
         final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
                                                                 Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                                 provider);
-        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters());
+        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the tesseral force model
-        final double[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters());
+        final double[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the "default" tesseral force model
-        final double[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters());
+        final double[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(orbit.getDate()));
 
         // Verify
         for (int i = 0; i < 6; i++) {
@@ -237,7 +238,7 @@ public class DSSTTesseralTest {
 
         // Force model
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        final double[] parameters = tesseral.getParameters();
+        final double[] parameters = tesseral.getParameters(orbit.getDate());
 
         // Initialize force model
         tesseral.initializeShortPeriodTerms(new AuxiliaryElements(orbit, 1), PropagationType.MEAN, parameters);

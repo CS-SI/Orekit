@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,6 +52,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 public class InterSatellitesPhaseTest {
 
@@ -503,28 +504,30 @@ public class InterSatellitesPhaseTest {
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i]);
-                        Assertions.assertEquals(1, measurement.getDimension());
-                        Assertions.assertEquals(1, gradient.length);
-
-                        // Compute a reference value using finite differences
-                        final ParameterFunction dMkdP =
-                                        Differentiation.differentiate(new ParameterFunction() {
-                                            /** {@inheritDoc} */
-                                            @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, states).getEstimatedValue()[0];
-                                            }
-                                        }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
-
-                        if (printResults) {
-                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
+                            Assertions.assertEquals(1, measurement.getDimension());
+                            Assertions.assertEquals(1, gradient.length);
+                            
+                            // Compute a reference value using finite differences
+                            final ParameterFunction dMkdP =
+                                            Differentiation.differentiate(new ParameterFunction() {
+                                                /** {@inheritDoc} */
+                                                @Override
+                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                    return measurement.estimate(0, 0, states).getEstimatedValue()[0];
+                                                }
+                                            }, 3, 20.0 * drivers[i].getScale());
+                            final double ref = dMkdP.value(drivers[i], span.getStart());
+                            
+                            if (printResults) {
+                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                            }
+                            
+                            final double relError = FastMath.abs((ref-gradient[0])/ref);
+                            relErrorList.add(relError);
+//                            Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                         }
-
-                        final double relError = FastMath.abs((ref-gradient[0])/ref);
-                        relErrorList.add(relError);
-//                        Assertions.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");

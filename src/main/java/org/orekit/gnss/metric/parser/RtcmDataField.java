@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,6 +62,15 @@ public enum RtcmDataField implements DataField {
         public int intValue(final EncodedMessage message) {
             final int id = DataType.U_INT_5.decode(message).intValue();
             return id - 7;
+        }
+    },
+
+    /** GNSS satellite ID. */
+    DF068 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_6.decode(message).intValue();
         }
     },
 
@@ -907,6 +916,186 @@ public enum RtcmDataField implements DataField {
         }
     },
 
+    /** Delta Orbit Radial (m). */
+    DF365 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_22.decode(message).intValue() * 0.1);
+        }
+    },
+
+    /** Delta Along-Track (m). */
+    DF366 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_20.decode(message).intValue() * 0.4);
+        }
+    },
+
+    /** Delta Cross-Track (m). */
+    DF367 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_20.decode(message).intValue() * 0.4);
+        }
+    },
+
+    /** Dot Delta Radial (m/s). */
+    DF368 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_21.decode(message).intValue() * 0.001);
+        }
+    },
+
+    /** Dot Delta Along-Track (m/s). */
+    DF369 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_19.decode(message).intValue() * 0.004);
+        }
+    },
+
+    /** Dot Delta Cross-Track (m/s). */
+    DF370 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_19.decode(message).intValue() * 0.004);
+        }
+    },
+
+    /** Satellite Reference Datum. */
+    DF375 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message).byteValue();
+        }
+    },
+
+    /** Delta Clock C0. */
+    DF376 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_22.decode(message).intValue() * 0.1);
+        }
+    },
+
+    /** Delta Clock C1. */
+    DF377 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_21.decode(message).intValue() * 0.001);
+        }
+    },
+
+    /** Delta Clock C2. */
+    DF378 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S2.toSI(DataType.INT_27.decode(message).intValue() * 0.00002);
+        }
+    },
+
+    /** GLONASS Satellite ID. */
+    DF384 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_5.decode(message).byteValue();
+        }
+    },
+
+    /** GPS Epoch Time 1s. */
+    DF385 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_20.decode(message).intValue();
+        }
+    },
+
+    /** GLONASS Epoch Time 1s. */
+    DF386 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_17.decode(message).intValue();
+        }
+    },
+
+    /** No. of Satellites. */
+    DF387 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_6.decode(message).byteValue();
+        }
+    },
+
+    /** Multiple Message Indicator. */
+    DF388 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message).byteValue();
+        }
+    },
+
+    /** SSR Update Interval. */
+    DF391 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_4.decode(message).byteValue();
+        }
+    },
+
+    /** GLONASS Issue Of Date (IOD). */
+    DF392 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_8.decode(message).intValue();
+        }
+    },
+
+    /** IOD SSR. */
+    DF413 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_4.decode(message).byteValue();
+        }
+    },
+
+    /** SSR Provider ID. */
+    DF414 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_16.decode(message).intValue();
+        }
+    },
+
+    /** SSR Solution ID. */
+    DF415 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_4.decode(message).byteValue();
+        }
+    },
+
     /** QZSS Satellite ID. */
     DF429 {
         /** {@inheritDoc} */
@@ -1166,6 +1355,19 @@ public enum RtcmDataField implements DataField {
         @Override
         public int intValue(final EncodedMessage message) {
             return DataType.BIT_1.decode(message).intValue();
+        }
+    },
+
+    /** Galileo Epoch Time 1s. */
+    DF458 {
+        // Ref: 1°/ "RTCM SPECIAL COMMITTEE NO.104, RTCM Paper 107-2014-SC104-818,
+        //           Proposal of new RTCM SSR Messages SSR Stage 1: Galileo, QZSS, SBAS, BDS for RTCM STANDARD 10403.2"
+        //      2°/ "Interface Specification for MADOCA-SEAD, Japan Aerospace Exploration Agency,
+        //           October 2016, rev February 2017"
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_20.decode(message).intValue();
         }
     },
 

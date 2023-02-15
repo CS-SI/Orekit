@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -112,7 +112,7 @@ public class ExtremumApproachDetectorTest {
 
         // Initializing detector with custom handler
         final ExtremumApproachDetector detector =
-                new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent<>());
+                new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent());
 
         // Initializing propagator
         final Propagator propagator = new KeplerianPropagator(orbit);

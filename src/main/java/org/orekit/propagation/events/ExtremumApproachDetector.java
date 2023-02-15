@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,7 +89,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      *                            approach.
      */
     public ExtremumApproachDetector(final PVCoordinatesProvider secondaryPVProvider) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing<>(), secondaryPVProvider);
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing(), secondaryPVProvider);
     }
 
     /**
@@ -108,7 +108,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      */
     public ExtremumApproachDetector(
             final double maxCheck, final double threshold, final int maxIter,
-            final EventHandler<? super ExtremumApproachDetector> handler,
+            final EventHandler handler,
             final PVCoordinatesProvider secondaryPVProvider) {
         super(maxCheck, threshold, maxIter, handler);
         this.secondaryPVProvider = secondaryPVProvider;
@@ -140,7 +140,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
     /** {@inheritDoc} */
     @Override
     protected ExtremumApproachDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
-                                              final EventHandler<? super ExtremumApproachDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new ExtremumApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider);
     }
 }

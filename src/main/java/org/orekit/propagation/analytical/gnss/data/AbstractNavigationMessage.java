@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * @see QZSSNavigationMessage
  * @see IRNSSNavigationMessage
  */
-public abstract class AbstractNavigationMessage extends CommonGnssData {
+public abstract class AbstractNavigationMessage extends CommonGnssData implements GNSSOrbitalElements {
 
     /** Mean Motion Difference from Computed Value. */
     private double deltaN;

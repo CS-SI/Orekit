@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -25,7 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,13 +70,10 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AttitudesSequenceTest {
 
@@ -98,14 +98,14 @@ public class AttitudesSequenceTest {
         final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                         new EclipseDetector(sun, 696000000.,
                                             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                  0.0,
                                                                  FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
-                withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+                withHandler(new ContinueOnEvent() {
+                    public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         return Action.RESET_STATE;
                     }
@@ -184,7 +184,7 @@ public class AttitudesSequenceTest {
 
     @Test
     public void testDayNightSwitchField() {
-        doTestDayNightSwitchField(Decimal64Field.getInstance());
+        doTestDayNightSwitchField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
@@ -206,16 +206,16 @@ public class AttitudesSequenceTest {
         final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000.,
                                     new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          0.0,
                                                          FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
-                withHandler(new ContinueOnEvent<EclipseDetector>() {
+                withHandler(new ContinueOnEvent() {
                     int count = 0;
                     public Action eventOccurred(final SpacecraftState s,
-                                                             final EclipseDetector d,
+                                                             final EventDetector d,
                                                              final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         if (count++ == 7) {
@@ -393,7 +393,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final Handler nadirToTarget =  new Handler(nadirPointing, targetPointing);
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -469,7 +469,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final List<AbsoluteDate> nadirToTarget = new ArrayList<>();
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -537,7 +537,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final List<AbsoluteDate> nadirToTarget = new ArrayList<>();
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -590,8 +590,8 @@ public class AttitudesSequenceTest {
         // Define attitude sequence
         final AbsoluteDate forwardSwitchDate = initialDate.shiftedBy(600);
         final AbsoluteDate backwardSwitchDate = initialDate.shiftedBy(-600);
-        final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
-        final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
+        final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent());
+        final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent());
 
         // Initialize the attitude sequence
         final AttitudesSequence attitudeSequence = new AttitudesSequence();

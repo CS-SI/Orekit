@@ -52,7 +52,7 @@ import org.orekit.time.AbsoluteDate;
  * in order to avoid wasting time looking for uninteresting events.
  * The wrapper will intercept the calls to the {@link
  * EventDetector#g(SpacecraftState) g function} and to the {@link
- * EventDetector#eventOccurred(SpacecraftState, boolean)
+ * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
  * eventOccurred} method in order to ignore uninteresting events. The
  * wrapped regular {@link EventDetector event detector} will then see only
  * the interesting events, i.e. either only {@code increasing} events or
@@ -90,7 +90,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      */
     public EventSlopeFilter(final T rawDetector, final FilterType filter) {
         this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
-             rawDetector.getMaxIterationCount(), new LocalHandler<T>(),
+             rawDetector.getMaxIterationCount(), new LocalHandler<>(),
              rawDetector, filter);
     }
 
@@ -109,7 +109,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @since 6.1
      */
     private EventSlopeFilter(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler<? super EventSlopeFilter<T>> handler,
+                             final int maxIter, final EventHandler handler,
                              final T rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
@@ -121,7 +121,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     /** {@inheritDoc} */
     @Override
     protected EventSlopeFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                         final int newMaxIter, final EventHandler<? super EventSlopeFilter<T>> newHandler) {
+                                         final int newMaxIter, final EventHandler newHandler) {
         return new EventSlopeFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 
@@ -130,7 +130,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @return the wrapped raw detector
      * @since 11.1
      */
-    public EventDetector getDetector() {
+    public T getDetector() {
         return rawDetector;
     }
 
@@ -240,17 +240,21 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     }
 
     /** Local handler. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventSlopeFilter<T>> {
+    private static class LocalHandler<T extends EventDetector> implements EventHandler {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventSlopeFilter<T> ef, final boolean increasing) {
-            return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+            @SuppressWarnings("unchecked")
+            final EventSlopeFilter<T> esf = (EventSlopeFilter<T>) detector;
+            return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventSlopeFilter<T> ef, final SpacecraftState oldState) {
-            return ef.rawDetector.resetState(oldState);
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+            @SuppressWarnings("unchecked")
+            final EventSlopeFilter<T> esf = (EventSlopeFilter<T>) detector;
+            return esf.rawDetector.getHandler().resetState(esf.rawDetector, oldState);
         }
 
     }

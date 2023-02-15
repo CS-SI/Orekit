@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -670,6 +670,13 @@ public class CdmRelativeMetadata {
         this.screenPcThreshold = screenPcThreshold;
     }
 
+    /**
+     * Check screen volume conditions.
+     * <p>
+     * The method verifies that all keys are present.
+     * Otherwise, an exception is thrown.
+     * </p>
+     */
     public void checkScreenVolumeConditions() {
 
         if (this.getScreenType() == ScreenType.SHAPE) {

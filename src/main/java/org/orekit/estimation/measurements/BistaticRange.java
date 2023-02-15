@@ -32,6 +32,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Class modeling a bistatic range measurement using
@@ -108,10 +109,16 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
         this.receiver = receiver;
     }
 
+    /** Get the emitter ground station.
+     * @return emitter ground station
+     */
     public GroundStation getEmitterStation() {
         return emitter;
     }
 
+    /** Get the receiver ground station.
+     * @return receiver ground station
+     */
     public GroundStation getReceiverStation() {
         return receiver;
     }
@@ -138,7 +145,11 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -222,9 +233,11 @@ public class BistaticRange extends AbstractMeasurement<BistaticRange> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,11 @@
  */
 package org.orekit.propagation.numerical.cr3bp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.Assertions;
@@ -40,10 +44,64 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class CR3BPMultipleShooterTest {
+
+    @Test
+    public void testCannotSetEpochFreedom() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+            final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
+            final int narcs = 1;
+            final List<STMEquations> cr3bpAdditionalEquations = new ArrayList<>(narcs);
+            cr3bpAdditionalEquations.add(new STMEquations(syst));
+            final PVCoordinates firstGuess1 = h1.getInitialPV();
+            List<SpacecraftState> firstGuessList = new ArrayList<>(narcs + 1);
+            firstGuessList.add(new SpacecraftState(new AbsolutePVCoordinates(syst.getRotatingFrame(),
+                                                                             date,
+                                                                             firstGuess1)));
+
+            new CR3BPMultipleShooter(firstGuessList, new ArrayList<NumericalPropagator>(), cr3bpAdditionalEquations, 1E-8, 20).setEpochFreedom(1, false);
+        });
+    }
+
+    @Test
+    public void testCannotSetScaleLength() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+            final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
+            final int narcs = 1;
+            final List<STMEquations> cr3bpAdditionalEquations = new ArrayList<>(narcs);
+            cr3bpAdditionalEquations.add(new STMEquations(syst));
+            final PVCoordinates firstGuess1 = h1.getInitialPV();
+            List<SpacecraftState> firstGuessList = new ArrayList<>(narcs + 1);
+            firstGuessList.add(new SpacecraftState(new AbsolutePVCoordinates(syst.getRotatingFrame(),
+                                                                             date,
+                                                                             firstGuess1)));
+
+            new CR3BPMultipleShooter(firstGuessList, new ArrayList<NumericalPropagator>(), cr3bpAdditionalEquations, 1E-8, 20).setScaleLength(1);
+        });
+    }
+
+    @Test
+    public void testCannotSetScaleTime() {
+        Assertions.assertThrows(OrekitException.class, () -> {
+            final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
+            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+            final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
+            final int narcs = 1;
+            final List<STMEquations> cr3bpAdditionalEquations = new ArrayList<>(narcs);
+            cr3bpAdditionalEquations.add(new STMEquations(syst));
+            final PVCoordinates firstGuess1 = h1.getInitialPV();
+            List<SpacecraftState> firstGuessList = new ArrayList<>(narcs + 1);
+            firstGuessList.add(new SpacecraftState(new AbsolutePVCoordinates(syst.getRotatingFrame(),
+                                                                             date,
+                                                                             firstGuess1)));
+
+            new CR3BPMultipleShooter(firstGuessList, new ArrayList<NumericalPropagator>(), cr3bpAdditionalEquations, 1E-8, 20).setScaleTime(1);
+        });
+    }
 
     @Test
     public void testHaloOrbit() {
@@ -70,11 +128,11 @@ public class CR3BPMultipleShooterTest {
                                                        vecAbsoluteTolerances,
                                                        vecRelativeTolerances);
         final int narcs = 1;
-        final List<STMEquations> cr3bpAdditionalEquations = new ArrayList<>(narcs) ;
+        final List<STMEquations> cr3bpAdditionalEquations = new ArrayList<>(narcs);
         cr3bpAdditionalEquations.add(new STMEquations(syst));
 
         // Propagator definition for CR3BP
-        final List<NumericalPropagator> propagatorList = new ArrayList<NumericalPropagator>(narcs);
+        final List<NumericalPropagator> propagatorList = new ArrayList<>(narcs);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(null);
         propagator.setIgnoreCentralAttraction(true);
@@ -92,7 +150,7 @@ public class CR3BPMultipleShooterTest {
         final double arcDuration = h1.getOrbitalPeriod()/2;
 
 
-        List<SpacecraftState> firstGuessList = new ArrayList<SpacecraftState>(narcs + 1) ;;
+        List<SpacecraftState> firstGuessList = new ArrayList<>(narcs + 1);
         firstGuessList.add(new SpacecraftState(new AbsolutePVCoordinates(syst.getRotatingFrame(),
                                                                          date,
                                                                          firstGuess1)));
@@ -101,17 +159,14 @@ public class CR3BPMultipleShooterTest {
                                                                          firstGuess2)));
 
         // Multiple Shooting definition
-        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, cr3bpAdditionalEquations, arcDuration, 1E-8, 1);
+        final CR3BPMultipleShooter multipleShooting = new CR3BPMultipleShooter(firstGuessList, propagatorList, cr3bpAdditionalEquations, 1E-8, 20);
+        multipleShooting.setPatchPointComponentFreedom(0, 1, false);
+        multipleShooting.setPatchPointComponentFreedom(0, 2, false); // Halo corrector is Z-fix
+        multipleShooting.setPatchPointComponentFreedom(0, 3, false);
+        multipleShooting.setPatchPointComponentFreedom(0, 5, false);
         multipleShooting.setPatchPointComponentFreedom(1, 1, false);
-        multipleShooting.setPatchPointComponentFreedom(1, 2, false);
         multipleShooting.setPatchPointComponentFreedom(1, 3, false);
         multipleShooting.setPatchPointComponentFreedom(1, 5, false);
-        multipleShooting.setPatchPointComponentFreedom(2, 1, false);
-        multipleShooting.setPatchPointComponentFreedom(2, 3, false);
-        multipleShooting.setPatchPointComponentFreedom(2, 5, false);
-        multipleShooting.setEpochFreedom(1, false);
-        multipleShooting.setEpochFreedom(2, false);
-        multipleShooting.addConstraint(1, 1, 1.0e-5);
 
         // Differential correction
         h1.applyDifferentialCorrection();
@@ -131,11 +186,142 @@ public class CR3BPMultipleShooterTest {
         Assertions.assertEquals(0.0, initialPVMS.getVelocity().getX(), 1E-15);
         Assertions.assertEquals(0.0, initialPVMS.getVelocity().getZ(), 1E-15);
 
-        Assertions.assertEquals(initialPVDC.getPosition().getX(), initialPVMS.getPosition().getX(), 6.6E-4);
-        Assertions.assertEquals(initialPVDC.getPosition().getZ(), initialPVMS.getPosition().getZ(), 1.0E-15);
-        Assertions.assertEquals(initialPVDC.getVelocity().getY(), initialPVMS.getVelocity().getY(), 7.2E-3);
+        Assertions.assertEquals(initialPVDC.getPosition().getX(), initialPVMS.getPosition().getX(), 1E-9);
+        Assertions.assertEquals(initialPVDC.getPosition().getZ(), initialPVMS.getPosition().getZ(), 1E-15);
+        Assertions.assertEquals(initialPVDC.getVelocity().getY(), initialPVMS.getVelocity().getY(), 1E-7);
 
-        Assertions.assertEquals(periodDC, periodMS, 3.0E-2);
+        Assertions.assertEquals(periodDC, periodMS, 7E-9);
+    }
+
+    @Test
+    public void testClosedOrbit() {
+
+        // Earth-Moon system and L2 southern Halo
+        final CR3BPSystem earthMoon = CR3BPFactory.getEarthMoonCR3BP();
+        final HaloOrbit halo        = new HaloOrbit(new RichardsonExpansion(earthMoon, LagrangianPoints.L2), 30e6, LibrationOrbitFamily.SOUTHERN);
+        halo.applyDifferentialCorrection();
+        final double periodGuess    = halo.getOrbitalPeriod();
+
+        // reference frame and date
+        final Frame frame           = earthMoon.getRotatingFrame();
+        final AbsoluteDate date     = AbsoluteDate.J2000_EPOCH;
+
+        // propagators and additional equations
+        final int nArcs = 2;
+        final List<NumericalPropagator> propagators = new ArrayList<>(nArcs);
+        final List<STMEquations> stmEquations       = new ArrayList<>(nArcs);
+        for (int i = 0; i < nArcs; i++) {
+            final ODEIntegrator integ      = new DormandPrince853Integrator(1e-16, 1e16, 1e-14, 3e-14);
+            final NumericalPropagator prop = new NumericalPropagator(integ);
+            prop.setOrbitType(null);
+            prop.setIgnoreCentralAttraction(true);
+            prop.addForceModel(new CR3BPForceModel(earthMoon));
+            propagators.add(prop);
+            stmEquations.add(new STMEquations(earthMoon));
+            propagators.get(i).addAdditionalDerivativesProvider(stmEquations.get(i));
+        }
+
+        // initial guess
+        final List<SpacecraftState> initialGuess = new ArrayList<>(nArcs + 1);
+        initialGuess.add(new SpacecraftState(new AbsolutePVCoordinates(frame, date, halo.getInitialPV())));
+
+        final ODEIntegrator integ            = new DormandPrince853Integrator(1e-16, 1e16, 1e-6, 3e-6);
+        final NumericalPropagator propagator = new NumericalPropagator(integ);
+        propagator.setOrbitType(null);
+        propagator.setIgnoreCentralAttraction(true);
+        propagator.addForceModel(new CR3BPForceModel(earthMoon));
+        propagator.setInitialState(initialGuess.get(0));
+        initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess / 2.0)));
+
+        propagator.setInitialState(initialGuess.get(0));
+        initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess)));
+
+        // shooting
+        final CR3BPMultipleShooter shooter = new CR3BPMultipleShooter(initialGuess, propagators, stmEquations, 1e-13, 20);
+        shooter.setClosedOrbitConstraint(true);
+        shooter.setPatchPointComponentFreedom(0, 1, false);
+        shooter.setPatchPointComponentFreedom(0, 3, false);
+        shooter.setPatchPointComponentFreedom(0, 5, false);
+
+        final List<SpacecraftState> corrStates = shooter.compute();
+
+        final PVCoordinates pv0 = corrStates.get(0).getPVCoordinates();
+        final PVCoordinates pv2 = corrStates.get(nArcs).getPVCoordinates();
+        Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-13);
+        Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-13);
+        Assertions.assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-13);
+        Assertions.assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1e-13);
+        Assertions.assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1e-13);
+        Assertions.assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1e-13);
+        Assertions.assertEquals(0.0, pv0.getPosition().getY(), 1e-16);
+        Assertions.assertEquals(0.0, pv2.getVelocity().getX(), 1e-16);
+        Assertions.assertEquals(0.0, pv2.getVelocity().getZ(), 1e-16);
+
+    }
+
+    // Non regression test
+    @Test
+    public void testWithConstraint() {
+
+        // Earth-Moon system and L2 southern Halo
+        final CR3BPSystem earthMoon = CR3BPFactory.getEarthMoonCR3BP();
+        final HaloOrbit halo        = new HaloOrbit(new RichardsonExpansion(earthMoon, LagrangianPoints.L2), 30e6, LibrationOrbitFamily.SOUTHERN);
+        halo.applyDifferentialCorrection();
+        final double periodGuess    = halo.getOrbitalPeriod();
+
+        // reference frame and date
+        final Frame frame           = earthMoon.getRotatingFrame();
+        final AbsoluteDate date     = AbsoluteDate.J2000_EPOCH;
+
+        // propagators and additional equations
+        final int nArcs = 2;
+        final List<NumericalPropagator> propagators = new ArrayList<>(nArcs);
+        final List<STMEquations> stmEquations       = new ArrayList<>(nArcs);
+        for (int i = 0; i < nArcs; i++) {
+            final ODEIntegrator integ      = new DormandPrince853Integrator(1e-16, 1e16, 1e-14, 3e-14);
+            final NumericalPropagator prop = new NumericalPropagator(integ);
+            prop.setOrbitType(null);
+            prop.setIgnoreCentralAttraction(true);
+            prop.addForceModel(new CR3BPForceModel(earthMoon));
+            propagators.add(prop);
+            stmEquations.add(new STMEquations(earthMoon));
+            propagators.get(i).addAdditionalDerivativesProvider(stmEquations.get(i));
+        }
+
+        // initial guess
+        final List<SpacecraftState> initialGuess = new ArrayList<>(nArcs + 1);
+        initialGuess.add(new SpacecraftState(new AbsolutePVCoordinates(frame, date, halo.getInitialPV())));
+
+        final ODEIntegrator integ            = new DormandPrince853Integrator(1e-16, 1e16, 1e-6, 3e-6);
+        final NumericalPropagator propagator = new NumericalPropagator(integ);
+        propagator.setOrbitType(null);
+        propagator.setIgnoreCentralAttraction(true);
+        propagator.addForceModel(new CR3BPForceModel(earthMoon));
+        propagator.setInitialState(initialGuess.get(0));
+        initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess / 2.0)));
+
+        propagator.setInitialState(initialGuess.get(0));
+        initialGuess.add(propagator.propagate(date.shiftedBy(periodGuess)));
+
+        // shooting
+        final CR3BPMultipleShooter shooter = new CR3BPMultipleShooter(initialGuess, propagators, stmEquations, 1e-13, 20);
+        shooter.setClosedOrbitConstraint(true);
+        shooter.setPatchPointComponentFreedom(0, 1, false);
+        shooter.setPatchPointComponentFreedom(0, 3, false);
+        shooter.setPatchPointComponentFreedom(0, 5, false);
+        shooter.addConstraint(1, 1, 1.0);
+
+        final List<SpacecraftState> corrStates = shooter.compute();
+
+        final PVCoordinates pv0 = corrStates.get(0).getPVCoordinates();
+        final PVCoordinates pv2 = corrStates.get(nArcs).getPVCoordinates();
+        Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-6);
+        Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-6);
+        Assertions.assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-6);
+        Assertions.assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1e-6);
+        Assertions.assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1e-6);
+        Assertions.assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1e-6);
+
     }
 
     @Test

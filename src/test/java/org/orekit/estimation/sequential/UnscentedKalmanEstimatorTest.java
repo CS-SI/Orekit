@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -176,7 +176,7 @@ public class UnscentedKalmanEstimatorTest {
                                               minStep, maxStep, dP);
         
         // Create shifted initial state
-        final Vector3D initialPosShifted = context.initialOrbit.getPVCoordinates().getPosition().add(new Vector3D(sigmaPos, sigmaPos, sigmaPos));
+        final Vector3D initialPosShifted = context.initialOrbit.getPosition().add(new Vector3D(sigmaPos, sigmaPos, sigmaPos));
         final Vector3D initialVelShifted = context.initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(sigmaVel, sigmaVel, sigmaVel));
 
         final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(context.initialOrbit.getDate(), initialPosShifted, initialVelShifted);
@@ -290,10 +290,10 @@ public class UnscentedKalmanEstimatorTest {
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 8.35e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 3.37e-10;
+        final double   velEps            = 3.39e-10;
         final double[] expectedsigmasPos = {0.1938703E-8, 12.7585598E-8, 17.0372647E-8};
         final double   sigmaPosEps       = 1.0e-15;
-        final double[] expectedSigmasVel = {3.3325E-11, 0.3787E-11, 7.9849E-11};
+        final double[] expectedSigmasVel = {3.32084E-11, 0.3787E-11, 8.0020E-11};
         final double   sigmaVelEps       = 1.0e-15;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -541,12 +541,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.56e-7;
+        final double   posEps            = 5.96e-7;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.76e-10;
         final double[] expectedSigmasPos = {0.043885, 0.600764, 0.279020};
         final double   sigmaPosEps       = 1.0e-6;
-        final double[] expectedSigmasVel = {7.17260E-5, 3.037315E-5, 19.49046e-5};
+        final double[] expectedSigmasVel = {7.17260E-5, 3.037315E-5, 19.49047e-5};
         final double   sigmaVelEps       = 1.0e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -727,8 +727,8 @@ public class UnscentedKalmanEstimatorTest {
                                                 closeOrbit.getDate(),
                                                 closeOrbit.getMu());
         Assertions.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),

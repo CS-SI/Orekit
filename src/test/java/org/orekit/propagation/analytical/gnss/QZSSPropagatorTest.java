@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,14 +65,14 @@ public class QZSSPropagatorTest {
         almanac.setAf0(-2.965927124E-04);
         almanac.setAf1(7.275957614E-12);
         almanac.setHealth(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.QZSS).getDate());
+        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.QZSS).getDate());
 
     }
 
     @Test
     public void testQZSSCycle() {
         // Builds the QZSS propagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final GNSSPropagator propagator = almanac.getPropagator();
         // Propagate at the QZSS date and one QZSS cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -87,7 +87,7 @@ public class QZSSPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the QZSS propagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final GNSSPropagator propagator = almanac.getPropagator();
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
         // Defines some date
@@ -105,7 +105,7 @@ public class QZSSPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+            final GNSSPropagator propagator = almanac.getPropagator();
             propagator.resetInitialState(propagator.getInitialState());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -127,13 +127,13 @@ public class QZSSPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final GNSSPropagator propagator = almanac.getPropagator();
         GNSSOrbitalElements elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.QZSS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.QZSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
-            final double h = 10.0;
+            final double h = 60.0;
             List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
@@ -175,11 +175,11 @@ public class QZSSPropagatorTest {
         qoe.setCrs(-305.6875);
         qoe.setCic(1.2032687664031982E-6);
         qoe.setCis(-2.6728957891464233E-6);
-        qoe.setDate(new GNSSDate(qoe.getWeek(), 1000.0 * qoe.getTime(), SatelliteSystem.QZSS).getDate());
+        qoe.setDate(new GNSSDate(qoe.getWeek(), qoe.getTime(), SatelliteSystem.QZSS).getDate());
         // Date of the QZSS orbital elements
         final AbsoluteDate target = qoe.getDate();
         // Build the QZSS propagator
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(qoe).build();
+        final GNSSPropagator propagator = qoe.getPropagator();
         // Compute the PV coordinates at the date of the QZSS orbital elements
         final PVCoordinates pv = propagator.getPVCoordinates(target, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Computed position
@@ -192,7 +192,7 @@ public class QZSSPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the QZSSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final GNSSPropagator propagator = almanac.getPropagator();
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);

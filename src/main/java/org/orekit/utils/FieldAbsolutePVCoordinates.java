@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
@@ -259,6 +260,12 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
     public FieldPVCoordinatesProvider<T> toTaylorProvider() {
         return new FieldPVCoordinatesProvider<T>() {
             /** {@inheritDoc} */
+            public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> d,  final Frame f) {
+                final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
+                final FieldStaticTransform<T>          transform = frame.getStaticTransformTo(f, d);
+                return transform.transformPosition(shifted.getPosition());
+            }
+            /** {@inheritDoc} */
             public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> d,  final Frame f) {
                 final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
                 final FieldTransform<T>                transform = frame.getTransformTo(f, d);
@@ -279,6 +286,24 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         return this;
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position
+     * @see #getPVCoordinates(Frame)
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition(final Frame outputFrame) {
+        // If output frame requested is the same as definition frame,
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return getPosition();
+        }
+
+        // Else, PV coordinates are transformed to output frame
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, getDate());
+        return t.transformPosition(getPosition());
     }
 
     /** Get the TimeStampedFieldPVCoordinates in a specified frame.

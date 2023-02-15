@@ -25,10 +25,9 @@ import org.orekit.propagation.events.EventDetector;
  *
  * @author Hank Grabowski
  *
- * @param <T> class type for the generic version
  * @since 6.1
  */
-public class StopOnEvent <T extends EventDetector> implements EventHandler<T> {
+public class StopOnEvent implements EventHandler {
 
     /**
      * Specific implementation of the eventOccurred interface.
@@ -39,7 +38,7 @@ public class StopOnEvent <T extends EventDetector> implements EventHandler<T> {
      * @return {@link Action#STOP stop} under all circumstances
      */
     @Override
-    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
         return Action.STOP;
     }
 

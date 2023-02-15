@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,11 @@ public enum HeaderKey {
     /** Header comment. */
     COMMENT((token, context, header) ->
             token.getType() == TokenType.ENTRY ? header.addComment(token.getContentAsNormalizedString()) : true),
+
+    /** Classification.
+     * @since 12.0
+     */
+    CLASSIFICATION((token, context, header) -> token.processAsNormalizedString(header::setClassification)),
 
     /** Creation date. */
     CREATION_DATE((token, context, header) -> token.processAsDate(header::setCreationDate, context)),

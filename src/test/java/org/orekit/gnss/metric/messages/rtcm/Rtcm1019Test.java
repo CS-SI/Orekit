@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -95,7 +95,7 @@ public class Rtcm1019Test {
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(gpsMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, gpsMessage.getDate().
-                            durationFrom(new GNSSDate(gpsMessage.getWeek(), 1000.0 * gpsMessage.getTime(), SatelliteSystem.GPS).getDate()), eps);
+                            durationFrom(new GNSSDate(gpsMessage.getWeek(), gpsMessage.getTime(), SatelliteSystem.GPS).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1019,                   rtcm1019.getTypeCode());

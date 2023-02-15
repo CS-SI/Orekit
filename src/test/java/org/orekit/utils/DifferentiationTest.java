@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.time.AbsoluteDate;
 
 public class DifferentiationTest {
 
@@ -44,13 +45,13 @@ public class DifferentiationTest {
     private void doTestScale(final double scale, final double step, final double tolerance) {
         ParameterDriver   driver = new ParameterDriver("", -100.0, scale,
                                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        ParameterFunction f0     = d -> 3 * d.getValue() * d.getValue() - 2 * d.getValue();
+        ParameterFunction f0     = (d,t) -> 3 * d.getValue(t) * d.getValue(t) - 2 * d.getValue(t);
         ParameterFunction f1Diff = Differentiation.differentiate(f0, 4, step);
-        ParameterFunction f1Ref  = d -> 6 * d.getValue() - 2;
+        ParameterFunction f1Ref  = (d,t) -> 6 * d.getValue(t) - 2;
 
         for (double x = -3.0; x < 3.0; x += 0.125) {
             driver.setValue(x);
-            Assertions.assertEquals(f1Ref.value(driver), f1Diff.value(driver), tolerance);
+            Assertions.assertEquals(f1Ref.value(driver, new AbsoluteDate()), f1Diff.value(driver, new AbsoluteDate()), tolerance);
         }
 
     }
