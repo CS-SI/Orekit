@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3.2" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="980">
+      Fixed wrong wrapper in deprecated KeplerianOrbit's and FieldKeplerianOrbit's methods for anomaly conversions.
+      </action>
       <action dev="bryan" type="update" issue="1018">
         Improved documentation of glonass propagators.
       </action>
