@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3.2" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="1026">
+          Fixed theoretical evaluation of AngularRaDec when the reference frame is not Earth-centered.
+      </action>
       <action dev="serrof" type="fix" issue="980">
       Fixed wrong wrapper in deprecated KeplerianOrbit's and FieldKeplerianOrbit's methods for anomaly conversions.
       </action>
