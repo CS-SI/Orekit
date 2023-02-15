@@ -16,6 +16,22 @@
  */
 package org.orekit.files.stk;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataSource;
@@ -33,22 +49,6 @@ import org.orekit.time.UTCScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Parser of {@link STKEphemerisFile}s.
@@ -137,6 +137,9 @@ import java.util.stream.Stream;
  * </ul>
  * Any ephemeris format in the format specification which is not explicitly named in the above list is not recognized
  * and will cause an exception.
+ *
+ * @author Andrew Goetz
+ * @since 12.0
  */
 public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisFile> {
 
@@ -150,17 +153,17 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
     private static final String MATCH_ANY_REGEX = ".*";
 
     /** Recognized keywords. */
-    private static final List<LineParser> KEYWORDS = Arrays.asList(//
-            LineParser.NUMBER_OF_EPHEMERIS_POINTS, //
-            LineParser.SCENARIO_EPOCH, //
-            LineParser.INTERPOLATION_METHOD, //
-            LineParser.INTERPOLATION_SAMPLESM1, //
-            LineParser.CENTRAL_BODY, //
-            LineParser.COORDINATE_SYSTEM, //
-            LineParser.BEGIN_SEGMENT_BOUNDARY_TIMES, //
-            LineParser.EPHEMERIS_TIME_POS, //
-            LineParser.EPHEMERIS_TIME_POS_VEL, //
-            LineParser.EPHEMERIS_TIME_POS_VEL_ACC //
+    private static final List<LineParser> KEYWORDS = Arrays.asList(
+            LineParser.NUMBER_OF_EPHEMERIS_POINTS,
+            LineParser.SCENARIO_EPOCH,
+            LineParser.INTERPOLATION_METHOD,
+            LineParser.INTERPOLATION_SAMPLESM1,
+            LineParser.CENTRAL_BODY,
+            LineParser.COORDINATE_SYSTEM,
+            LineParser.BEGIN_SEGMENT_BOUNDARY_TIMES,
+            LineParser.EPHEMERIS_TIME_POS,
+            LineParser.EPHEMERIS_TIME_POS_VEL,
+            LineParser.EPHEMERIS_TIME_POS_VEL_ACC
     );
 
     /** Satellite id. */
@@ -194,7 +197,7 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
     public STKEphemerisFile parse(final DataSource source) {
 
         try (Reader reader = source.getOpener().openReaderOnce();
-                BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
+             BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
 
             if (br == null) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());

@@ -35,11 +35,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * STK ephemeris file.
+ *
+ * @author Andrew Goetz
+ * @since 12.0
  */
 public class STKEphemerisFile implements EphemerisFile<TimeStampedPVCoordinates, STKEphemerisSegment> {
 
     /** STK version. */
     private final String stkVersion;
+
     /** Unmodifiable mapping with a single key-value pair from satellite id to ephemeris. */
     private final Map<String, STKEphemeris> satellites;
 
@@ -83,12 +87,16 @@ public class STKEphemerisFile implements EphemerisFile<TimeStampedPVCoordinates,
 
         /** Gravitational parameter (m^3/s^2). */
         private final double mu;
+
         /** Reference frame. */
         private final Frame frame;
+
         /** Number of samples to use in interpolation. */
         private final int interpolationSamples;
+
         /** Cartesian derivatives filter. */
         private final CartesianDerivativesFilter cartesianDerivativesFilter;
+
         /** Time-sorted time/position/velocity data. */
         private final List<TimeStampedPVCoordinates> timeStampedPVCoordinates;
 
@@ -154,8 +162,10 @@ public class STKEphemerisFile implements EphemerisFile<TimeStampedPVCoordinates,
 
         /** Satellite id.*/
         private final String satelliteId;
+
         /** Gravitational parameter (m^3/s^2). */
         private final double mu;
+
         /** Unmodifiable list of ephemeris segments. */
         private final List<STKEphemerisSegment> segments;
 

@@ -18,6 +18,6 @@
  * This package provides a parser for STK ephemeris files.
  *
  * @author Andrew Goetz
- * @since 11.4
+ * @since 12.0
  */
 package org.orekit.files.stk;
