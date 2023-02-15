@@ -17,6 +17,8 @@
 package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -53,7 +55,7 @@ public class LocalOrbitalFrame extends Frame {
                              final PVCoordinatesProvider provider,
                              final String name)
         throws IllegalArgumentException {
-        super(parent, new LocalProvider(type, provider, parent, name), name, false);
+        super(parent, new LocalProvider(type, provider, parent), name, false);
     }
 
     /** Local provider for transforms. */
@@ -71,21 +73,16 @@ public class LocalOrbitalFrame extends Frame {
         /** Reference frame. */
         private final Frame reference;
 
-        /** Name of the frame. */
-        private final String name;
-
         /** Simple constructor.
          * @param type frame type
          * @param provider provider used to compute frame motion
          * @param reference reference frame
-         * @param name name of the frame
          */
         LocalProvider(final LOFType type, final PVCoordinatesProvider provider,
-                      final Frame reference, final String name) {
+                      final Frame reference) {
             this.type           = type;
             this.provider       = provider;
             this.reference      = reference;
-            this.name           = name;
         }
 
         /** {@inheritDoc} */
@@ -103,9 +100,7 @@ public class LocalOrbitalFrame extends Frame {
         public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(
                 final FieldAbsoluteDate<T> date) throws UnsupportedOperationException {
             throw new UnsupportedOperationException(
-                    "FieldTransforms are not supported for a LocalOrbitalFrame: " + name +
-                            ". Please contact orekit-developers@orekit.org if you " +
-                            "would like to add this feature.");
+                    new OrekitException(OrekitMessages.INTERNAL_ERROR, "https://forum.orekit.org"));
         }
 
     }

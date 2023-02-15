@@ -48,6 +48,15 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class LocalOrbitalFrameTest {
 
     @Test
+    public void testIssue977() {
+        LOFType type = LOFType.TNW;
+        LocalOrbitalFrame lof = new LocalOrbitalFrame(FramesFactory.getGCRF(), type, provider, type.name());
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            lof.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()));
+        });
+    }
+
+    @Test
     public void testTNW() {
         AbsoluteDate  date = initDate.shiftedBy(400);
         PVCoordinates pv   = provider.getPVCoordinates(date, inertialFrame);
