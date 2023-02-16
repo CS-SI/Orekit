@@ -216,7 +216,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     public NumericalPropagator(final ODEIntegrator integrator,
                                final AttitudeProvider attitudeProvider) {
-        super(integrator, PropagationType.MEAN);
+        super(integrator, PropagationType.OSCULATING);
         forceModels             = new ArrayList<ForceModel>();
         ignoreCentralAttraction = false;
         initMapper();

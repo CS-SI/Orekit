@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="1032">
+        Fixed ambiguous propagation type for numerical orbit propagators.
+      </action>
       <action dev="bryan" type="fix" issue="977">
         Removed reference to old Orekit mailing list in LocalOrbitalFrame.
       </action>

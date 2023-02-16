@@ -191,7 +191,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     public FieldNumericalPropagator(final Field<T> field,
                                     final FieldODEIntegrator<T> integrator,
                                     final AttitudeProvider attitudeProvider) {
-        super(field, integrator, PropagationType.MEAN);
+        super(field, integrator, PropagationType.OSCULATING);
         this.field = field;
         forceModels = new ArrayList<ForceModel>();
         initMapper(field);

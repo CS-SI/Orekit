@@ -163,7 +163,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                                       final Frame eci, final AttitudeProvider provider,
                                       final double mass, final DataContext context,
                                       final boolean isAccAvailable) {
-        super(integrator, PropagationType.MEAN);
+        super(integrator, PropagationType.OSCULATING);
         this.dataContext = context;
         this.isAccAvailable = isAccAvailable;
         // Stores the GLONASS orbital elements
