@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3.2" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="1034" due-to="Dimuthu Jayasingha">
+        Fixed convergence of unscented kalman filter by using measurement covariance.
+      </action>
       <action dev="bryan" type="add" issue="984">
         Added missing Onsala Space Observatory BLQ file formats.
       </action>

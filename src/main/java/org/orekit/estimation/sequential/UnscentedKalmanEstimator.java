@@ -118,7 +118,7 @@ public class UnscentedKalmanEstimator extends AbstractKalmanEstimator {
      * @return estimated propagator
      */
     public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
-        final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
+        final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorateUnscented(observedMeasurement, referenceDate));
         processModel.finalizeEstimation(observedMeasurement, estimate);
         if (observer != null) {
             observer.evaluationPerformed(processModel);
