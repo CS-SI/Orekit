@@ -146,7 +146,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
                                                                       useSun, useMoon);
 
         // Measurements
-        final double sigma = 2.0;
+        final double sigma = 1.0;
         final List<ObservedMeasurement<?>> measurements = initializeMeasurements(observations, initialOrbit, sigma);
 
         // Covariance

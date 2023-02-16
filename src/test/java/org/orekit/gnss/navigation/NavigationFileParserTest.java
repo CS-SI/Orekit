@@ -427,7 +427,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
 
         final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R02").get(0);
-        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 45, 0.0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-4.674419760704e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(9.094947017729e-13,  glo.getGammaN(), 1.0e-10);
         Assertions.assertEquals(84600.0,             glo.getTime(), 1.0e-10);
@@ -551,7 +551,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2, file.getGPSNavigationMessages().size());
 
         final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R05").get(0);
-        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2020, 2, 10, 23, 45, 0.0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2020, 2, 10, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-0.447863712907e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(0.909494701773e-12,  glo.getGammaN(), 1.0e-10);
         Assertions.assertEquals(86370.0,             glo.getTime(), 1.0e-10);

@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.3.1</version>
+  <version>11.3.2</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -269,10 +269,16 @@
       <name>Romaric Her</name>
     </contributor>
     <contributor>
+      <name>Jonathan Hood</name>
+    </contributor>
+    <contributor>
       <name>James Housden</name>
     </contributor>
     <contributor>
       <name>Shiva Iyer</name>
+    </contributor>
+    <contributor>
+      <name>Dimuthu Jayasingha</name>
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>

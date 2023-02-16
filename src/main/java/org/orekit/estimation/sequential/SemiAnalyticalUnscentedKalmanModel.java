@@ -273,7 +273,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                 Double.POSITIVE_INFINITY);
 
         // Initialize step handler and set it to a parallelized propagator
-        final SemiAnalyticalMeasurementHandler  stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate());
+        final SemiAnalyticalMeasurementHandler  stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate(), true);
         dsstPropagator.getMultiplexer().add(stepHandler);
         dsstPropagator.propagate(tStart, tStart.shiftedBy(overshootTimeRange));
 

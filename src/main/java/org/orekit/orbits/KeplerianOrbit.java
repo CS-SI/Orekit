@@ -611,7 +611,7 @@ public class KeplerianOrbit extends Orbit {
      * @deprecated As of 11.3, replaced by {@link KeplerianAnomalyUtility#ellipticMeanToEccentric(double, double)}.
      */
     public static double meanToEllipticEccentric(final double M, final double e) {
-        return KeplerianAnomalyUtility.ellipticEccentricToMean(e, M);
+        return KeplerianAnomalyUtility.ellipticMeanToEccentric(e, M);
     }
 
     /** Computes the mean anomaly from the elliptic eccentric anomaly.

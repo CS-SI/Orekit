@@ -162,7 +162,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
                         state.getFrame().getTransformTo(referenceFrame, downlinkDateDS);
 
         // Station-satellite vector in reference frame
-        final FieldVector3D<Gradient> staSatReference = inertialToReferenceDownlink.transformPosition(staSatInertial);
+        final FieldVector3D<Gradient> staSatReference = inertialToReferenceDownlink.transformVector(staSatInertial);
 
         // Compute right ascension and declination
         final Gradient baseRightAscension = staSatReference.getAlpha();

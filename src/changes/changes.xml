@@ -20,6 +20,43 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.3.2" date="2023-02-17"
+             description="Version 11.3.2 is a patch release of Orekit.
+             It fixes issues related to the measurement covariance used by the Unscented Kalman Filter,
+             the theoritical evaluation of angulare Ra-Dec measurements, the epoch used for Glonass
+             navigation messages, and the numerical accuracy of the shiftedBy method of cartesian orbits.
+             Finally, it includes some improvements in the class documentation">
+      <action dev="Jonathan Hood" type="fix" issue="1033">
+        Fixed GLONASS parser to set ToC and Date directly to ingested date instead of rounded GPS date.
+      </action>
+      <action dev="andrewsgoetz" type="fix" issue="1015">
+        Fixed numerical issue in CartesianOrbit#shiftedBy().
+      </action>
+      <action dev="bryan" type="fix" issue="1034" due-to="Dimuthu Jayasingha">
+        Fixed convergence of unscented kalman filter by using measurement covariance.
+      </action>
+      <action dev="bryan" type="add" issue="984">
+        Added missing Onsala Space Observatory BLQ file formats.
+      </action>
+      <action dev="bryan" type="fix" issue="1032">
+        Fixed ambiguous propagation type for numerical orbit propagators.
+      </action>
+      <action dev="bryan" type="fix" issue="977">
+        Removed reference to old Orekit mailing list in LocalOrbitalFrame.
+      </action>
+      <action dev="serrof" type="fix" issue="1026">
+          Fixed theoretical evaluation of AngularRaDec when the reference frame is not Earth-centered.
+      </action>
+      <action dev="serrof" type="fix" issue="980">
+      Fixed wrong wrapper in deprecated KeplerianOrbit's and FieldKeplerianOrbit's methods for anomaly conversions.
+      </action>
+      <action dev="bryan" type="update" issue="1018">
+        Improved documentation of glonass propagators.
+      </action>
+      <action dev="pascal" type="fix" issue="996">
+        Fixed HolmesFeatherstoneAttractionModel error with a degree 0 gravity field.
+      </action>
+    </release>
     <release version="11.3.1" date="2022-12-24"
              description="Version 11.3.1 is a patch release of Orekit.
              It fixes an issue related to the parsing of dates in the Rinex navigation files.

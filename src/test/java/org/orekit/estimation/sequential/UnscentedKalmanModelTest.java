@@ -115,7 +115,7 @@ public class UnscentedKalmanModelTest {
         this.pv = new PV(date0,
                              context.initialOrbit.getPVCoordinates().getPosition(),
                              context.initialOrbit.getPVCoordinates().getVelocity(),
-                             new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
+                             new double[] {1., 1., 1., 1.e-3, 1.e-3, 1.e-3}, 1.,
                              sat);
 
         // Create one 0m range measurement at t0 + 10s

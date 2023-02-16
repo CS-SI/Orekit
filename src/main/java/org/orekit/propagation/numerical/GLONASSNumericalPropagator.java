@@ -36,6 +36,8 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -66,6 +68,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * are available in the navigation message; a transformation is performed to convert these
  * accelerations into the correct coordinate system. In the case where they are not
  * available into the navigation message, these accelerations are computed.
+ * </p>
+ * <p>
+ * <b>Caution:</b> The Glonass numerical propagator can only be used with {@link GLONASSNavigationMessage}.
+ * Using this propagator with a {@link GLONASSAlmanac} is prone to error.
  * </p>
  *
  * @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
@@ -157,7 +163,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                                       final Frame eci, final AttitudeProvider provider,
                                       final double mass, final DataContext context,
                                       final boolean isAccAvailable) {
-        super(integrator, PropagationType.MEAN);
+        super(integrator, PropagationType.OSCULATING);
         this.dataContext = context;
         this.isAccAvailable = isAccAvailable;
         // Stores the GLONASS orbital elements
