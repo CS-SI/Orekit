@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.3.2" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="984">
+        Added missing Onsala Space Observatory BLQ file formats.
+      </action>
       <action dev="bryan" type="fix" issue="1032">
         Fixed ambiguous propagation type for numerical orbit propagators.
       </action>
