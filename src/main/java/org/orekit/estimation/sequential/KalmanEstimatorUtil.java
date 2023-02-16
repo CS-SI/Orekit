@@ -92,6 +92,46 @@ public class KalmanEstimatorUtil {
 
     }
 
+    /** Decorate an observed measurement for an Unscented Kalman Filter.
+     * <p>
+     * This method uses directly the measurement's covariance matrix, without any normalization.
+     * </p>
+     * @param observedMeasurement the measurement
+     * @param referenceDate reference date
+     * @return decorated measurement
+     * @since 11.3.2
+     */
+    public static MeasurementDecorator decorateUnscented(final ObservedMeasurement<?> observedMeasurement,
+                                                         final AbsoluteDate referenceDate) {
+
+        // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
+        // of the measurement on its non-diagonal elements.
+        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
+
+        final RealMatrix covariance;
+        if (observedMeasurement.getMeasurementType().equals(PV.MEASUREMENT_TYPE)) {
+            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final PV pv = (PV) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(pv.getCovarianceMatrix());
+        } else if (observedMeasurement.getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
+            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final Position position = (Position) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(position.getCovarianceMatrix());
+        } else {
+            // For other measurements we do not have a covariance matrix.
+            // Thus the correlation coefficients matrix is an identity matrix.
+            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
+            final double[] sigma = observedMeasurement.getTheoreticalStandardDeviation();
+            for (int i = 0; i < sigma.length; i++) {
+                covariance.setEntry(i, i, sigma[i] * sigma[i]);
+            }
+
+        }
+
+        return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
+
+    }
+
     /** Check dimension.
      * @param dimension dimension to check
      * @param orbitalParameters orbital parameters

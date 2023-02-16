@@ -53,20 +53,44 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
     /** Underlying measurements. */
     private final List<ObservedMeasurement<?>> observedMeasurements;
 
+    /** Flag indicating if the handler is used by a unscented kalman filter. */
+    private final boolean isUnscented;
+
     /** Simple constructor.
+     * <p>
+     * Using this constructor, the Kalman filter is supposed to be extended.
+     * </p>
      * @param model semi-analytical kalman model
      * @param filter kalman filter instance
      * @param observedMeasurements list of observed measurements
      * @param referenceDate reference date
+     * @see #SemiAnalyticalMeasurementHandler(SemiAnalyticalProcess, KalmanFilter, List, AbsoluteDate, boolean)
      */
     public SemiAnalyticalMeasurementHandler(final SemiAnalyticalProcess model,
                                   final KalmanFilter<MeasurementDecorator> filter,
                                   final List<ObservedMeasurement<?>> observedMeasurements,
                                   final AbsoluteDate referenceDate) {
+        this(model, filter, observedMeasurements, referenceDate, false);
+    }
+
+    /** Simple constructor.
+     * @param model semi-analytical kalman model
+     * @param filter kalman filter instance
+     * @param observedMeasurements list of observed measurements
+     * @param referenceDate reference date
+     * @param isUnscented true if the Kalman filter is unscented
+     * @since 11.3.2
+     */
+    public SemiAnalyticalMeasurementHandler(final SemiAnalyticalProcess model,
+                                  final KalmanFilter<MeasurementDecorator> filter,
+                                  final List<ObservedMeasurement<?>> observedMeasurements,
+                                  final AbsoluteDate referenceDate,
+                                  final boolean isUnscented) {
         this.model                = model;
         this.filter               = filter;
         this.observedMeasurements = observedMeasurements;
         this.referenceDate        = referenceDate;
+        this.isUnscented          = isUnscented;
     }
 
     /** {@inheritDoc} */
@@ -97,7 +121,10 @@ public class SemiAnalyticalMeasurementHandler implements OrekitStepHandler {
                 model.updateNominalSpacecraftState(interpolator.getInterpolatedState(observedMeasurements.get(index).getDate()));
 
                 // Process the current observation
-                final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurements.get(index), referenceDate));
+                final MeasurementDecorator decorated = isUnscented ?
+                        KalmanEstimatorUtil.decorateUnscented(observedMeasurements.get(index), referenceDate) :
+                            KalmanEstimatorUtil.decorate(observedMeasurements.get(index), referenceDate);
+                final ProcessEstimate estimate = filter.estimationStep(decorated);
 
                 // Finalize the estimation
                 model.finalizeEstimation(observedMeasurements.get(index), estimate);

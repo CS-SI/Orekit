@@ -25,18 +25,26 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.UnscentedEstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -48,6 +56,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
@@ -214,12 +224,12 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.05e-3;
+        final double   posEps            = 3.58e-3;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.47e-6;
-        final double[] expectedsigmasPos = {0.196283, 0.177933, 0.317294};
+        final double   velEps            = 1.30e-6;
+        final double[] expectedsigmasPos = {0.184985, 0.167475, 0.297570};
         final double   sigmaPosEps       = 1.0e-6;
-        final double[] expectedSigmasVel = {7.34904E-5, 13.28603E-5, 4.28682E-5};
+        final double[] expectedSigmasVel = {6.93330E-5, 12.37128E-5, 4.11890E-5};
         final double   sigmaVelEps       = 1.0e-10;
         UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -842,6 +852,54 @@ public class UnscentedKalmanEstimatorTest {
         } catch (DummyException de) {
             // expected
         }
+
+    }
+
+    /**
+     * This test verifies issue 1034. The purpose is to verify the consistency of the covariance
+     * of the decorated measurement.
+     */
+    @Test
+    public void testIssue1034() {
+
+        UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Reference date
+        final AbsoluteDate reference = AbsoluteDate.J2000_EPOCH;
+
+        // Create a station
+        final OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final GroundStation station = new GroundStation(new TopocentricFrame(shape, new GeodeticPoint(1.44, 0.2, 100.0), "topo"));
+
+        // Create three different measurement types
+        final double sigmaPos = 2.0;
+        final double sigmaVel = 2.0e-3;
+        final double sigmaRange = 2.0;
+        final Position pos = new Position(reference, Vector3D.PLUS_I, sigmaPos, 1.0, new ObservableSatellite(0));
+        final PV pv = new PV(reference, Vector3D.PLUS_I, Vector3D.PLUS_J, sigmaPos, sigmaVel, 1.0, new ObservableSatellite(0));
+        final Range range = new Range(station, false, reference, 100.0, sigmaRange, 1.0, new ObservableSatellite(0));
+
+        // Decorated measurements
+        final MeasurementDecorator decoratedPos = KalmanEstimatorUtil.decorateUnscented(pos, reference);
+        final MeasurementDecorator decoratedPv = KalmanEstimatorUtil.decorateUnscented(pv, reference);
+        final MeasurementDecorator decoratedRange = KalmanEstimatorUtil.decorateUnscented(range, reference);
+
+        // Verify Position
+        for (int row = 0; row < decoratedPos.getCovariance().getRowDimension(); row++) {
+            Assertions.assertEquals(sigmaPos * sigmaPos, decoratedPos.getCovariance().getEntry(row, row));
+        }
+
+        // Verify PV
+        for (int row = 0; row < decoratedPv.getCovariance().getRowDimension(); row++) {
+            if (row < 3) {
+                Assertions.assertEquals(sigmaPos * sigmaPos, decoratedPv.getCovariance().getEntry(row, row));
+            } else {
+                Assertions.assertEquals(sigmaVel * sigmaVel, decoratedPv.getCovariance().getEntry(row, row));
+            }
+        }
+
+        // Verify Range
+        Assertions.assertEquals(sigmaRange * sigmaRange, decoratedRange.getCovariance().getEntry(0, 0));
 
     }
 

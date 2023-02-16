@@ -186,6 +186,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return propagationType;
     }
 
+    /** Get the propagation type.
+     * @return propagation type.
+     * @since 11.3.2
+     */
+    public PropagationType getPropagationType() {
+        return propagationType;
+    }
+
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link

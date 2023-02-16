@@ -1195,6 +1195,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit  = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                           0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
         Vector3D pos = orbit.getPosition(itrf);
 
         double[] zeroGradient = new double[] {-0., 0., 0.};
