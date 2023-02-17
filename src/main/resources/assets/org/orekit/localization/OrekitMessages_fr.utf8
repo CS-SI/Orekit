@@ -391,6 +391,15 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = {0} époques trouvées dans le fichier {1} au lie
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = fin inattendue d''un fichier sp3 (après la ligne {0})
 
+# STK coordinate system "{0}" is invalid or not yet supported
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+
+# STK coordinate system "{0}" has not been mapped to an Orekit frame
+STK_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+
+# unexpected end of STK file (after line {0})
+STK_UNEXPECTED_END_OF_FILE = fin inattendue d''un fichier STK (après la ligne {0})
+
 # unsupported clock file version {0}
 CLOCK_FILE_UNSUPPORTED_VERSION = version de fichier d''horloge {0} non prise en charge
 
