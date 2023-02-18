@@ -1182,7 +1182,15 @@ public class CRDParser {
                 final double rms               = PS.toSI(Double.parseDouble(values[2]));
                 final double skewness          = Double.parseDouble(values[3]);
                 final double kurtosis          = Double.parseDouble(values[4]);
-                final double peakMinusMean     = PS.toSI(Double.parseDouble(values[5]));
+                //
+                // The peak minus mean may be "*"
+                // 50 shao     35.0  -0.509   2.221 ****** 0
+                final double peakMinusMean;
+                if (values[5].contains("*")) {
+                    peakMinusMean = Double.NaN;
+                } else {
+                    peakMinusMean     = PS.toSI(Double.parseDouble(values[5]));
+                }
                 final int dataQualityIndicator = Integer.parseInt(values[6]);
 
                 final SessionStatistics stat = new SessionStatistics(systemConfigId, rms, skewness, kurtosis, peakMinusMean,
