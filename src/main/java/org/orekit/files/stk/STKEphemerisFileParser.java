@@ -100,7 +100,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *         <tr>
  *             <td>InterpolationMethod</td>
  *             <td>No</td>
- *             <td>The Orekit {@link org.orekit.files.general.EphemerisSegmentPropagator} class uses
+ *             <td>The Orekit EphemerisSegmentPropagator class uses
  *             {@link TimeStampedPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Stream)}
  *             to do Hermite interpolation, so the value of <code>InterpolationMethod</code>, if present, is
  *             ignored.</td>
