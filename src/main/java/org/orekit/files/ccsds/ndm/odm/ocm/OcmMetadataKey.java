@@ -177,13 +177,13 @@ public enum OcmMetadataKey {
                                                                           container::setUt1mutcT0)),
 
     /** Source and version of Earth Orientation Parameters. */
-    EOP_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setEopSource)),
+    EOP_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setEopSource)),
 
     /** Interpolation method for Earth Orientation Parameters. */
     INTERP_METHOD_EOP((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodEOP)),
 
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
-    CELESTIAL_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setCelestialSource));
+    CELESTIAL_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setCelestialSource));
 
     /** Processing method. */
     private final TokenProcessor processor;
