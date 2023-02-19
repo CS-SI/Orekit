@@ -34,22 +34,22 @@ public enum ManeuverHistoryMetadataKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Maneuver identification number. */
-    MAN_ID((token, context, container) -> token.processAsNormalizedString(container::setManID)),
+    MAN_ID((token, context, container) -> token.processAsFreeTextString(container::setManID)),
 
     /** Identification number of previous maneuver. */
-    MAN_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setManPrevID)),
+    MAN_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setManPrevID)),
 
     /** Identification number of next maneuver. */
-    MAN_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setManNextID)),
+    MAN_NEXT_ID((token, context, container) -> token.processAsFreeTextString(container::setManNextID)),
 
     /** Basis of this maneuver history data. */
     MAN_BASIS((token, context, container) -> token.processAsEnum(ManBasis.class, container::setManBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based.*/
-    MAN_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setManBasisID)),
+    MAN_BASIS_ID((token, context, container) -> token.processAsFreeTextString(container::setManBasisID)),
 
     /** Identifier of the device used for this maneuver.*/
-    MAN_DEVICE_ID((token, context, container) -> token.processAsNormalizedString(container::setManDeviceID)),
+    MAN_DEVICE_ID((token, context, container) -> token.processAsFreeTextString(container::setManDeviceID)),
 
     /** Completion time of previous maneuver. */
     MAN_PREV_EPOCH((token, context, container) -> token.processAsDate(container::setManPrevEpoch, context)),
@@ -58,10 +58,10 @@ public enum ManeuverHistoryMetadataKey {
     MAN_NEXT_EPOCH((token, context, container) -> token.processAsDate(container::setManNextEpoch, context)),
 
     /** Purposes of the maneuver. */
-    MAN_PURPOSE((token, context, container) -> token.processAsNormalizedList(container::setManPurpose)),
+    MAN_PURPOSE((token, context, container) -> token.processAsFreeTextList(container::setManPurpose)),
 
     /** Prediction source on which this maneuver is based. */
-    MAN_PRED_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setManPredSource)),
+    MAN_PRED_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setManPredSource)),
 
     /** Reference frame of the maneuver. */
     MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setManReferenceFrame, context, true, true, false)),
