@@ -26,6 +26,11 @@ public class OmmMetadata extends CommonMetadata {
     /** Constant for SGP/SGP4 mean elements theory. */
     public static final String SGP_SGP4_THEORY = "SGP/SGP4";
 
+    /** Constant for SGP4-XP mean elements theory.
+     * @since 12.0
+     */
+    public static final String SGP4_XP_THEORY = "SGP4-XP";
+
     /** Constant for DSST mean elements theory. */
     public static final String DSST_THEORY = "DSST";
 

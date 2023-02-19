@@ -878,7 +878,7 @@ public class OcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 31.576, TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("JPL",                                 file.getHeader().getOriginator());
-        Assertions.assertEquals("ABC-12 34",                           file.getHeader().getMessageId());
+        Assertions.assertEquals("ABC-12_34",                           file.getHeader().getMessageId());
 
         // Check metadata
         Assertions.assertEquals(1,                                                    file.getMetadata().getComments().size());
@@ -901,12 +901,12 @@ public class OcmParserTest {
         Assertions.assertEquals("+98765432109",                                        file.getMetadata().getTechPhone());
         Assertions.assertEquals("MAX@EXAMPLE.ORG",                                     file.getMetadata().getTechEmail());
         Assertions.assertEquals("34 Orekit avenue, Earth",                             file.getMetadata().getTechAddress());
-        Assertions.assertEquals("ABC-12 33",                                           file.getMetadata().getPreviousMessageID());
-        Assertions.assertEquals("ABC-12 35",                                           file.getMetadata().getNextMessageID());
-        Assertions.assertEquals("ADM-MSG-35132.TXT",                                   file.getMetadata().getAdmMessageLink());
-        Assertions.assertEquals("CDM-MSG-35132.TXT",                                   file.getMetadata().getCdmMessageLink());
-        Assertions.assertEquals("PRM-MSG-35132.TXT",                                   file.getMetadata().getPrmMessageLink());
-        Assertions.assertEquals("RDM-MSG-35132.TXT",                                   file.getMetadata().getRdmMessageLink());
+        Assertions.assertEquals("ABC-12_33",                                           file.getMetadata().getPreviousMessageID());
+        Assertions.assertEquals("ABC-12_35",                                           file.getMetadata().getNextMessageID());
+        Assertions.assertEquals("ADM_MSG_35132.TXT",                                   file.getMetadata().getAdmMessageLink());
+        Assertions.assertEquals("CDM_MSG_35132.TXT",                                   file.getMetadata().getCdmMessageLink());
+        Assertions.assertEquals("PRM_MSG_35132.TXT",                                   file.getMetadata().getPrmMessageLink());
+        Assertions.assertEquals("RDM_MSG_35132.TXT",                                   file.getMetadata().getRdmMessageLink());
         Assertions.assertEquals("COMSPOC",                                             file.getMetadata().getCatalogName());
         Assertions.assertEquals("INTELSAT",                                            file.getMetadata().getOperator());
         Assertions.assertEquals("SIRIUS",                                              file.getMetadata().getOwner());

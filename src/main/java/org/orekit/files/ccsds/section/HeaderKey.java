@@ -33,16 +33,16 @@ public enum HeaderKey {
     /** Classification.
      * @since 12.0
      */
-    CLASSIFICATION((token, context, header) -> token.processAsNormalizedString(header::setClassification)),
+    CLASSIFICATION((token, context, header) -> token.processAsFreeTextString(header::setClassification)),
 
     /** Creation date. */
     CREATION_DATE((token, context, header) -> token.processAsDate(header::setCreationDate, context)),
 
     /** Creating agency or operator. */
-    ORIGINATOR((token, context, header) -> token.processAsUppercaseString(header::setOriginator)),
+    ORIGINATOR((token, context, header) -> token.processAsFreeTextString(header::setOriginator)),
 
     /** ID that uniquely identifies a message from a given originator. */
-    MESSAGE_ID((token, context, header) -> token.processAsUppercaseString(header::setMessageId));
+    MESSAGE_ID((token, context, header) -> token.processAsFreeTextString(header::setMessageId));
 
     /** Processing method. */
     private final TokenProcessor processor;

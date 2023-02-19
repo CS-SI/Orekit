@@ -455,7 +455,7 @@ public class OmmParserTest {
                         parseMessage(source);
         Assertions.assertEquals(3.0, omm.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals("NOAA/USA", omm.getHeader().getOriginator());
-        Assertions.assertEquals(myMessageId.toUpperCase(), omm.getHeader().getMessageId());
+        Assertions.assertEquals(myMessageId, omm.getHeader().getMessageId());
     }
 
     @Test
