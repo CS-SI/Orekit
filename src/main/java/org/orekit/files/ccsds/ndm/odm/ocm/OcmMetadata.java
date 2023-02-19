@@ -194,6 +194,9 @@ public class OcmMetadata extends OdmMetadata {
         super(TimeSystem.UTC);
         sclkOffsetAtEpoch = DEFAULT_SCLK_OFFSET_AT_EPOCH;
         sclkSecPerSISec   = DEFAULT_SCLK_SEC_PER_SI_SEC;
+        timeSpan          = Double.NaN;
+        taimutcT0         = Double.NaN;
+        ut1mutcT0         = Double.NaN;
         nextLeapTaimutc   = Double.NaN;
 
     }

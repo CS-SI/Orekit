@@ -84,11 +84,17 @@ class ManeuverHistoryWriter extends AbstractWriter {
         // duty cycle
         final boolean notContinuous = metadata.getDcType() != DutyCycleType.CONTINUOUS;
         final boolean timeAndAngle  = metadata.getDcType() == DutyCycleType.TIME_AND_ANGLE;
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(),                metadata.getDcType(),                           false);
+        if (metadata.getDcType() != ManeuverHistoryMetadata.DEFAULT_DC_TYPE) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
+        }
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),      notContinuous);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),     notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(),          metadata.getDcMinCycles(),                      false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(),          metadata.getDcMaxCycles(),                      false);
+        if (metadata.getDcMinCycles() >= 0) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(), metadata.getDcMinCycles(), false);
+        }
+        if (metadata.getDcMaxCycles() >= 0) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(), metadata.getDcMaxCycles(), false);
+        }
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),       notContinuous);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),        notContinuous);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),         notContinuous);

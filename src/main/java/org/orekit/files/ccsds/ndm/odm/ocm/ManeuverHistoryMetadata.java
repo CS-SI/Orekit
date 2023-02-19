@@ -38,6 +38,11 @@ import org.orekit.utils.units.Unit;
  */
 public class ManeuverHistoryMetadata extends CommentsContainer {
 
+    /** Default duty cycle type.
+     * @since 12.0
+     */
+    public static final DutyCycleType DEFAULT_DC_TYPE = DutyCycleType.CONTINUOUS;
+
     /** Maneuver identification number. */
     private String manID;
 
@@ -140,9 +145,9 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
                                               OrbitRelativeFrame.TNW_INERTIAL.name());
         manFrameEpoch       = epochT0;
         manPurpose          = Collections.emptyList();
-        dcType              = DutyCycleType.CONTINUOUS;
-        dcMinCycles         = 0;
-        dcMaxCycles         = 0;
+        dcType              = DEFAULT_DC_TYPE;
+        dcMinCycles         = -1;
+        dcMaxCycles         = -1;
         dcTimePulseDuration = Double.NaN;
         dcTimePulsePeriod   = Double.NaN;
     }
