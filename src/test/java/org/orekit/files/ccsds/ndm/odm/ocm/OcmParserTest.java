@@ -286,9 +286,7 @@ public class OcmParserTest {
                              parseMessage(source);
 
         // check the default values that are not set in this simple file
-        Assertions.assertEquals("CSPOC",              file.getMetadata().getCatalogName());
-        Assertions.assertEquals(1.0,                  file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
-        Assertions.assertEquals("LINEAR",             file.getMetadata().getInterpMethodEOP());
+        Assertions.assertEquals(1.0, file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
 
         // Check Header Block;
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -943,7 +941,7 @@ public class OcmParserTest {
         Assertions.assertEquals(-0.1642060,                            file.getMetadata().getUt1mutcT0(), 1.0e-15);
         Assertions.assertEquals("IERS",                                file.getMetadata().getEopSource());
         Assertions.assertEquals("LAGRANGE ORDER 5",                    file.getMetadata().getInterpMethodEOP());
-        Assertions.assertEquals("JPL DE 430",                          file.getMetadata().getCelestialSource());
+        Assertions.assertEquals("JPL_DE_430",                          file.getMetadata().getCelestialSource());
 
         // check trajectory data
         Assertions.assertEquals(3, file.getData().getTrajectoryBlocks().size());

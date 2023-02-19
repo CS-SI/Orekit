@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.io.IOException;
 
+import org.hipparchus.util.Precision;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.section.AbstractWriter;
@@ -138,8 +139,11 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getOcmDataElements(), false);
 
         // other times
-        generator.writeEntry(OcmMetadataKey.SCLK_OFFSET_AT_EPOCH.name(), metadata.getSclkOffsetAtEpoch(), Unit.SECOND, false);
-        generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),  metadata.getSclkSecPerSISec(),   Unit.SECOND, false);
+        if (!(Precision.equals(metadata.getSclkOffsetAtEpoch(), OcmMetadata.DEFAULT_SCLK_OFFSET_AT_EPOCH) &&
+              Precision.equals(metadata.getSclkSecPerSISec(),   OcmMetadata.DEFAULT_SCLK_SEC_PER_SI_SEC))) {
+            generator.writeEntry(OcmMetadataKey.SCLK_OFFSET_AT_EPOCH.name(), metadata.getSclkOffsetAtEpoch(), Unit.SECOND, false);
+            generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),  metadata.getSclkSecPerSISec(),   Unit.SECOND, false);
+        }
         generator.writeEntry(OcmMetadataKey.PREVIOUS_MESSAGE_EPOCH.name(), timeConverter,
                              metadata.getPreviousMessageEpoch(), false);
         generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_EPOCH.name(), timeConverter,
