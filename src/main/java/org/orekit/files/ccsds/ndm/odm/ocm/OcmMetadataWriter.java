@@ -57,9 +57,6 @@ class OcmMetadataWriter extends AbstractWriter {
 
         generator.writeComments(metadata.getComments());
 
-        generator.writeEntry(OcmMetadataKey.CLASSIFICATION.name(),
-                             metadata.getClassification(), null, false);
-
         // object
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),
                              metadata.getObjectName(), null, false);

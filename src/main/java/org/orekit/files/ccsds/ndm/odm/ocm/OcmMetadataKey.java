@@ -27,9 +27,6 @@ import org.orekit.utils.units.Unit;
  */
 public enum OcmMetadataKey {
 
-    /** Classification of this message. */
-    CLASSIFICATION((token, context, container) -> token.processAsNormalizedString(container::setClassification)),
-
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
     INTERNATIONAL_DESIGNATOR((token, context, container) -> token.processAsNormalizedString(container::setInternationalDesignator)),

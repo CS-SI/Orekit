@@ -883,7 +883,6 @@ public class OcmParserTest {
         // Check metadata
         Assertions.assertEquals(1,                                                    file.getMetadata().getComments().size());
         Assertions.assertEquals("Metadata comment",                                   file.getMetadata().getComments().get(0));
-        Assertions.assertEquals("FOUO",                                               file.getMetadata().getClassification());
         Assertions.assertEquals("POLYSAT",                                            file.getMetadata().getObjectName());
         Assertions.assertEquals(3,                                                    file.getMetadata().getAlternateNames().size());
         Assertions.assertEquals("ALTERNATE",                                          file.getMetadata().getAlternateNames().get(0));

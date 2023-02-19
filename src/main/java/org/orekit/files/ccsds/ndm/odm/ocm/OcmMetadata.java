@@ -33,9 +33,6 @@ public class OcmMetadata extends OdmMetadata {
     /** Default interpolation method for EOP and Space Weather data. */
     private static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
 
-    /** Classification for this message. */
-    private String classification;
-
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
     private String internationalDesignator;
@@ -208,21 +205,6 @@ public class OcmMetadata extends OdmMetadata {
         if (nextLeapEpoch != null) {
             checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC);
         }
-    }
-
-    /** Get the message classification.
-     * @return message classification.
-     */
-    public String getClassification() {
-        return classification;
-    }
-
-    /** Set the message classification.
-     * @param classification message classification
-     */
-    public void setClassification(final String classification) {
-        refuseFurtherComments();
-        this.classification = classification;
     }
 
     /** Get the international designator for the object.
