@@ -186,7 +186,7 @@ public class OmmParserTest {
 
     private void validateOMM2(final Omm file) throws URISyntaxException {
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
+        Assertions.assertEquals(OmmMetadata.SGP_SGP4_THEORY, file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
         Assertions.assertTrue(Double.isNaN(file.getData().getMass()));
@@ -197,6 +197,8 @@ public class OmmParserTest {
         Assertions.assertEquals(1995, file.getMetadata().getLaunchYear());
         Assertions.assertEquals(25, file.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A", file.getMetadata().getLaunchPiece());
+        Assertions.assertEquals(0.0001, file.getData().getTLEBlock().getBStar(), 1.0e-15);
+        Assertions.assertTrue(Double.isNaN(file.getData().getTLEBlock().getBTerm()));
         file.generateKeplerianOrbit();
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
@@ -295,6 +297,27 @@ public class OmmParserTest {
         file.generateSpacecraftState();
         file.generateKeplerianOrbit();
 
+    }
+
+    @Test
+    public void testParseOMM5() throws URISyntaxException {
+        // simple test for OMM file, contains SGP4-XP elements with BTERM
+        final String name = "/ccsds/odm/omm/OMMExample5.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
+        final OmmParser parser = new ParserBuilder().
+                                 withMu(Constants.EIGEN5C_EARTH_MU).
+                                 withMissionReferenceDate(missionReferenceDate).
+                                 buildOmmParser();
+
+        final Omm file = parser.parseMessage(source);
+        Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assertions.assertEquals(OmmMetadata.SGP4_XP_THEORY, file.getMetadata().getMeanElementTheory());
+        final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
+        Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
+        Assertions.assertTrue(Double.isNaN(file.getData().getMass()));
+        Assertions.assertTrue(Double.isNaN(file.getData().getTLEBlock().getBStar()));
+        Assertions.assertEquals(0.0015, file.getData().getTLEBlock().getBTerm(), 1.0e-15);
     }
 
     @Test

@@ -49,6 +49,11 @@ public class OmmTle extends CommentsContainer {
     /** SGP/SGP4 drag-like coefficient (in units 1/[Earth radii]), only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
     private double bStar;
 
+    /** SGP4-XP drag-like coefficient (in m²/kg), only required if MEAN_ELEMENT_THEORY = SGP4-XP.
+     * @since 12.0
+     */
+    private double bTerm;
+
     /** First Time Derivative of the Mean Motion, only required if MEAN_ELEMENT_THEORY = SGP. */
     private double meanMotionDot;
 
@@ -64,6 +69,7 @@ public class OmmTle extends CommentsContainer {
         elementSetNo       = -1;
         revAtEpoch         = -1;
         bStar              =  Double.NaN;
+        bTerm              =  Double.NaN;
         meanMotionDot      =  Double.NaN;
         meanMotionDotDot   =  Double.NaN;
     }
@@ -167,6 +173,21 @@ public class OmmTle extends CommentsContainer {
     public void setBStar(final double bstar) {
         refuseFurtherComments();
         this.bStar = bstar;
+    }
+
+    /** Get the SGP4-XP drag-like coefficient.
+     * @return the SGP4-XP drag-like coefficient
+     */
+    public double getBTerm() {
+        return bTerm;
+    }
+
+    /** Set the SGP4-XP drag-like coefficient.
+     * @param bterm the SGP4-XP drag-like coefficient to be set
+     */
+    public void setBTerm(final double bterm) {
+        refuseFurtherComments();
+        this.bTerm = bterm;
     }
 
     /** Get the first time derivative of the mean motion.
