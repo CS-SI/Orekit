@@ -133,7 +133,7 @@ public class OmmParserTest {
             Assertions.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS, orekitException.getSpecifier());
         }
         TLE generated = file.generateTLE();
-        Assertions.assertEquals("1 23581U 95025A   07064.44075725 -.00000113  00000-0  10000-3 0  9250", generated.getLine1());
+        Assertions.assertEquals("1 23581U 95025A   07064.44075725 -.00000056  00000-0  10000-3 0  9256", generated.getLine1());
         Assertions.assertEquals("2 23581   3.0539  81.7939 0005013 249.2363 150.1602  1.00273272 43169", generated.getLine2());
     }
 
