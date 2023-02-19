@@ -55,7 +55,7 @@ class ApmQuaternionWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        generator.writeEntry(ApmQuaternionKey.EPOCH.name(), timeConverter, quaternion.getEpoch(), true);
+        generator.writeEntry(ApmQuaternionKey.EPOCH.name(), timeConverter, quaternion.getEpoch(), false, true);
 
         // endpoints
         generator.writeEntry(ApmQuaternionKey.Q_FRAME_A.name(), quaternion.getEndpoints().getFrameA().getName(), null, true);

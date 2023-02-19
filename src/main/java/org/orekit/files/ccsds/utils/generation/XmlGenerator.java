@@ -96,6 +96,8 @@ public class XmlGenerator extends AbstractGenerator {
      * @param output destination of generated output
      * @param indentation number of space for each indentation level
      * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param writeUnits if true, units must be written
      * @param schemaLocation schema location to use, may be null
      * @see #DEFAULT_INDENT
@@ -103,9 +105,9 @@ public class XmlGenerator extends AbstractGenerator {
      * @throws IOException if an I/O error occurs.
      */
     public XmlGenerator(final Appendable output, final int indentation,
-                        final String outputName, final boolean writeUnits,
-                        final String schemaLocation) throws IOException {
-        super(output, outputName, writeUnits);
+                        final String outputName, final double maxRelativeOffset,
+                        final boolean writeUnits, final String schemaLocation) throws IOException {
+        super(output, outputName, maxRelativeOffset, writeUnits);
         this.schemaLocation = schemaLocation;
         this.indentation    = indentation;
         this.level          = 0;

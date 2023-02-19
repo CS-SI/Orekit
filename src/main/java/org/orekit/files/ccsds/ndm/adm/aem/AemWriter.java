@@ -341,14 +341,14 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
-        generator.writeEntry(AemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), true);
+        generator.writeEntry(AemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), false, true);
         if (metadata.getUseableStartTime() != null) {
-            generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false);
+            generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false, false);
         }
         if (metadata.getUseableStopTime() != null) {
-            generator.writeEntry(AemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false);
+            generator.writeEntry(AemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false, false);
         }
-        generator.writeEntry(AemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), true);
+        generator.writeEntry(AemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), false, true);
 
         // types
         final AttitudeType attitudeType = metadata.getAttitudeType();
@@ -473,7 +473,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         xmlGenerator.enterSection(AttitudeEntryKey.quaternion.name());
 
         // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
 
         // quaternion part
         int i = 0;
@@ -505,7 +505,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         xmlGenerator.enterSection(AttitudeEntryKey.quaternionDerivative.name());
 
         // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
         int i = 0;
 
         // quaternion part
@@ -554,7 +554,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         xmlGenerator.enterSection(AttitudeEntryKey.quaternionEulerRate.name());
 
         // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
         int i = 0;
 
         // quaternion part
@@ -596,7 +596,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         xmlGenerator.enterSection(AttitudeEntryKey.eulerAngle.name());
 
         // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
         int i = 0;
 
         // angle part
@@ -625,7 +625,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         xmlGenerator.enterSection(AttitudeEntryKey.eulerAngle.name());
 
         // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
         int i = 0;
 
         // angle part
@@ -659,7 +659,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
 
         // data part
-        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
         int i = 0;
         xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
         xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);

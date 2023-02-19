@@ -65,7 +65,7 @@ class MeanKeplerianElementsWriter extends AbstractWriter {
 
         // Keplerian elements block
         generator.writeComments(keplerianElements.getComments());
-        generator.writeEntry(KeplerianElementsKey.EPOCH.name(), timeConverter, keplerianElements.getEpoch(), true);
+        generator.writeEntry(KeplerianElementsKey.EPOCH.name(), timeConverter, keplerianElements.getEpoch(), true, true);
         if (theoryIsSgpSdp) {
             generator.writeEntry(KeplerianElementsKey.MEAN_MOTION.name(), keplerianElements.getMeanMotion(), Units.REV_PER_DAY, true);
         } else {

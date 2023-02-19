@@ -51,6 +51,11 @@ public abstract class AbstractGenerator implements Generator {
     /** Output name for error messages. */
     private final String outputName;
 
+    /** Maximum offset for relative dates.
+     * @since 12.0
+     */
+    private final double maxRelativeOffset;
+
     /** Flag for writing units. */
     private final boolean writeUnits;
 
@@ -63,14 +68,18 @@ public abstract class AbstractGenerator implements Generator {
     /** Simple constructor.
      * @param output destination of generated output
      * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param writeUnits if true, units must be written
      */
-    public AbstractGenerator(final Appendable output, final String outputName, final boolean writeUnits) {
-        this.output     = output;
-        this.outputName = outputName;
-        this.writeUnits = writeUnits;
-        this.sections   = new ArrayDeque<>();
-        this.siToCcsds  = new HashMap<>();
+    public AbstractGenerator(final Appendable output, final String outputName,
+                             final double maxRelativeOffset, final boolean writeUnits) {
+        this.output            = output;
+        this.outputName        = outputName;
+        this.maxRelativeOffset = maxRelativeOffset;
+        this.writeUnits        = writeUnits;
+        this.sections          = new ArrayDeque<>();
+        this.siToCcsds         = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -134,9 +143,17 @@ public abstract class AbstractGenerator implements Generator {
 
     /** {@inheritDoc} */
     @Override
-    public void writeEntry(final String key, final TimeConverter converter, final AbsoluteDate date, final boolean mandatory)
+    public void writeEntry(final String key, final TimeConverter converter, final AbsoluteDate date,
+                           final boolean forceCalendar, final boolean mandatory)
         throws IOException {
-        writeEntry(key, date == null ? (String) null : dateToString(converter, date), null, mandatory);
+        if (date == null) {
+            writeEntry(key, (String) null, null, mandatory);
+        } else {
+            writeEntry(key,
+                       forceCalendar ? dateToCalendarString(converter, date) : dateToString(converter, date),
+                       null,
+                       mandatory);
+        }
     }
 
     /** {@inheritDoc} */
@@ -206,6 +223,23 @@ public abstract class AbstractGenerator implements Generator {
     /** {@inheritDoc} */
     @Override
     public String dateToString(final TimeConverter converter, final AbsoluteDate date) {
+
+        if (converter.getReferenceDate() != null) {
+            final double relative = date.durationFrom(converter.getReferenceDate());
+            if (FastMath.abs(relative) <= maxRelativeOffset) {
+                // we can use a relative date
+                return AccurateFormatter.format(relative);
+            }
+        }
+
+        // display the date as calendar elements
+        return dateToCalendarString(converter, date);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String dateToCalendarString(final TimeConverter converter, final AbsoluteDate date) {
         final DateTimeComponents dt = converter.components(date);
         return dateToString(dt.getDate().getYear(), dt.getDate().getMonth(), dt.getDate().getDay(),
                             dt.getTime().getHour(), dt.getTime().getMinute(), dt.getTime().getSecond());

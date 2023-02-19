@@ -128,7 +128,7 @@ class OcmMetadataWriter extends AbstractWriter {
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),
                              metadata.getTimeSystem(), false);
         generator.writeEntry(OcmMetadataKey.EPOCH_TZERO.name(), timeConverter,
-                             metadata.getEpochT0(), true);
+                             metadata.getEpochT0(), true, true);
 
         // definitions
         generator.writeEntry(OcmMetadataKey.OPS_STATUS.name(),
@@ -145,18 +145,18 @@ class OcmMetadataWriter extends AbstractWriter {
             generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),  metadata.getSclkSecPerSISec(),   Unit.SECOND, false);
         }
         generator.writeEntry(OcmMetadataKey.PREVIOUS_MESSAGE_EPOCH.name(), timeConverter,
-                             metadata.getPreviousMessageEpoch(), false);
+                             metadata.getPreviousMessageEpoch(), true, false);
         generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_EPOCH.name(), timeConverter,
-                             metadata.getNextMessageEpoch(), false);
+                             metadata.getNextMessageEpoch(), true, false);
         generator.writeEntry(OcmMetadataKey.START_TIME.name(), timeConverter,
-                             metadata.getStartTime(), false);
+                             metadata.getStartTime(), false, false);
         generator.writeEntry(OcmMetadataKey.STOP_TIME.name(), timeConverter,
-                             metadata.getStopTime(), false);
+                             metadata.getStopTime(), false, false);
         generator.writeEntry(OcmMetadataKey.TIME_SPAN.name(),        metadata.getTimeSpan(),  Unit.DAY,    false);
         generator.writeEntry(OcmMetadataKey.TAIMUTC_AT_TZERO.name(), metadata.getTaimutcT0(), Unit.SECOND, false);
         if (metadata.getNextLeapEpoch() != null) {
             generator.writeEntry(OcmMetadataKey.NEXT_LEAP_EPOCH.name(), timeConverter,
-                                 metadata.getNextLeapEpoch(), true);
+                                 metadata.getNextLeapEpoch(), true, true);
             generator.writeEntry(OcmMetadataKey.NEXT_LEAP_TAIMUTC.name(), metadata.getNextLeapTaimutc(), Unit.SECOND, true);
         }
         generator.writeEntry(OcmMetadataKey.UT1MUTC_AT_TZERO.name(), metadata.getUt1mutcT0(), Unit.SECOND, false);

@@ -57,7 +57,8 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true,
+        try (Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                    Constants.JULIAN_DAY, true,
                                                     XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
             writer.writeMessage(generator, ndm);
         }
@@ -74,7 +75,8 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
-        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true, null)) {
+        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                          Constants.JULIAN_DAY, true, null)) {
             writer.writeMessage(generator, ndm);
         }
         final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -90,7 +92,8 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
-        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true,
+        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                          Constants.JULIAN_DAY, true,
                                                           XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
             for (final String comment : ndm.getComments()) {
                 writer.writeComment(generator, comment);
@@ -140,7 +143,8 @@ public class NdmWriterTest {
 
             // write it
             final CharArrayWriter caw  = new CharArrayWriter();
-            try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true,
+            try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                              Constants.JULIAN_DAY, true,
                                                               XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
                 wb.buildNdmWriter().writeMessage(generator, original);
             }

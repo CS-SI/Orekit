@@ -36,6 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -106,7 +107,8 @@ public class StreamingAemWriterTest {
 
             StringBuilder buffer = new StringBuilder();
             StreamingAemWriter writer =
-                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new", 60),
+                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new",
+                                                                    Constants.JULIAN_DAY, 60),
                                                    new WriterBuilder(). buildAemWriter(),
                                                    header, metadata);
 

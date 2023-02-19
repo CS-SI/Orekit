@@ -28,6 +28,7 @@ import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.ccsds.utils.generation.MessageWriter;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
+import org.orekit.utils.Constants;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -64,8 +65,9 @@ public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, 
             final MessageWriter<H, S, F> writer = getWriter();
             final CharArrayWriter caw = new CharArrayWriter();
             try (Generator generator = format == FileFormat.KVN ?
-                                       new KvnGenerator(caw, 25, "dummy.kvn", unitsColumn) :
-                                       new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", unitsColumn > 0,
+                                       new KvnGenerator(caw, 25, "dummy.kvn", Constants.JULIAN_DAY, unitsColumn) :
+                                       new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                        Constants.JULIAN_DAY, unitsColumn > 0,
                                                         XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
                 writer.writeMessage(generator, original);
             }

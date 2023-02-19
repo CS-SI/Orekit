@@ -154,7 +154,8 @@ public class StreamingOemWriterTest {
 
             // check using the Propagator / StepHandler interface
             final StringBuilder buffer1 = new StringBuilder();
-            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KVN_PADDING_WIDTH, "some-name", 60),
+            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KVN_PADDING_WIDTH, "some-name",
+                                                                                Constants.JULIAN_DAY, 60),
                                                                new WriterBuilder().buildOemWriter(),
                                                                header, metadata);
             BoundedPropagator propagator = satellite.getPropagator();
@@ -178,7 +179,8 @@ public class StreamingOemWriterTest {
             // check calling the methods directly
             final StringBuilder buffer2 = new StringBuilder();
             OemWriter oemWriter = new WriterBuilder().buildOemWriter();
-            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KVN_PADDING_WIDTH, "another-name", 60)) {
+            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KVN_PADDING_WIDTH, "another-name",
+                                                        Constants.JULIAN_DAY, 60)) {
                 oemWriter.writeHeader(generator, header);
                 metadata.setObjectName(objectName);
                 metadata.setStartTime(block.getStart());
@@ -229,7 +231,8 @@ public class StreamingOemWriterTest {
 
         // action
         StreamingOemWriter writer = new StreamingOemWriter(
-                new KvnGenerator(buffer, OemWriter.KVN_PADDING_WIDTH, "out", 0),
+                new KvnGenerator(buffer, OemWriter.KVN_PADDING_WIDTH, "out",
+                                 Constants.JULIAN_DAY, 0),
                 new WriterBuilder().buildOemWriter(),
                 header,
                 metadata,
