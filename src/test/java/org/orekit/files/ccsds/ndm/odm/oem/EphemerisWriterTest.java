@@ -84,7 +84,7 @@ public class EphemerisWriterTest {
     @Test
     public void testWriteOEM1Xml() throws IOException {
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new XmlGenerator(caw, 2, "", true);
+        final Generator generator = new XmlGenerator(caw, 2, "", true, XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION);
         doTestWriteOEM1(caw, generator);
     }
 

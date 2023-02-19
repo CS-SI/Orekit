@@ -29,7 +29,7 @@ public class XmlGeneratorTest {
     @Test
     public void testSections() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", true)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", true, null)) {
             generator.startMessage("abc", "CCSDS_ABC_VERSION", 99.0);
             generator.enterSection("BLOCK");
             generator.writeEntry("KEY", 1234567.8, Unit.parse("Hz"), false);
@@ -49,7 +49,7 @@ public class XmlGeneratorTest {
     @Test
     public void testCcsdsUnits() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", true)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", true, "nowhere")) {
             generator.writeEntry("KEY_1",    1234567.8,   Unit.parse("km.kg³/√s"), false);
             generator.writeEntry("KEY_2",    1234567.8,   Unit.parse("n/a"),       false);
             generator.writeEntry("KEY_3",    1234567.8,   Unit.parse("1"),         false);
@@ -66,7 +66,7 @@ public class XmlGeneratorTest {
     @Test
     public void testUnitsPadding() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", true)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", true, "nowhere")) {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), false);
             generator.writeEntry("PERCENT", 0.25, Unit.parse("%"), false);
@@ -81,7 +81,7 @@ public class XmlGeneratorTest {
     @Test
     public void testNoUnits() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", false)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", false, "nowhere")) {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), true);
             Assertions.assertEquals(String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n" +

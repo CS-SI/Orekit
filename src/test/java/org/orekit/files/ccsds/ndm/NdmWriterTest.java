@@ -57,12 +57,14 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+        try (Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true,
+                                                    XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
             writer.writeMessage(generator, ndm);
         }
         final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         NdmTestUtils.checkContainer(ndm, new ParserBuilder().buildNdmParser().parseMessage(source2));
+        Assertions.assertTrue(caw.toString().contains("<ndm xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-3.0.0-master-3.0.xsd\">"));
     }
 
     @Test
@@ -72,12 +74,13 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
-        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true, null)) {
             writer.writeMessage(generator, ndm);
         }
         final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         NdmTestUtils.checkContainer(ndm, new ParserBuilder().buildNdmParser().parseMessage(source2));
+        Assertions.assertTrue(caw.toString().contains("<ndm>"));
     }
 
     @Test
@@ -87,7 +90,8 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
-        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true,
+                                                          XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
             for (final String comment : ndm.getComments()) {
                 writer.writeComment(generator, comment);
             }
@@ -136,7 +140,8 @@ public class NdmWriterTest {
 
             // write it
             final CharArrayWriter caw  = new CharArrayWriter();
-            try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+            try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true,
+                                                              XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
                 wb.buildNdmWriter().writeMessage(generator, original);
             }
 

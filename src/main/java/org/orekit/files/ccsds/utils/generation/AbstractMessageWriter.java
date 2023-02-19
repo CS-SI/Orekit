@@ -230,4 +230,22 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
         generator.endMessage(root);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getRoot() {
+        return root;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getFormatVersionKey() {
+        return formatVersionKey;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getVersion() {
+        return version;
+    }
+
 }

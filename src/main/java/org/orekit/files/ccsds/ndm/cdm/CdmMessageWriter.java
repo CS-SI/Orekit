@@ -244,4 +244,22 @@ public abstract class CdmMessageWriter implements MessageWriter<CdmHeader, CdmSe
         generator.endMessage(root);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getRoot() {
+        return root;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getFormatVersionKey() {
+        return formatVersionKey;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getVersion() {
+        return version;
+    }
+
 }

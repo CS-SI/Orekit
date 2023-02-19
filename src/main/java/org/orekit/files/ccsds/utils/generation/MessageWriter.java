@@ -66,4 +66,22 @@ public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F exte
      */
     void writeFooter(Generator generator) throws IOException;
 
+    /** Get root element for XML files.
+     * @return root element for XML files
+     * @since 12.0
+     */
+    String getRoot();
+
+    /** Get key for format version.
+     * @return key for format version
+     * @since 12.0
+     */
+    String getFormatVersionKey();
+
+    /** Get current format version.
+     * @return current format version
+     * @since 12.0
+     */
+    double getVersion();
+
 }

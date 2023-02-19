@@ -136,7 +136,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
                                    new KvnGenerator(appendable, OemWriter.KVN_PADDING_WIDTH, outputName, unitsColumn) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0)) {
+                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0, null)) {
 
             writer.writeHeader(generator, header);
 
