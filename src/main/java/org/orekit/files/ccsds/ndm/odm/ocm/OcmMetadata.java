@@ -30,9 +30,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OcmMetadata extends OdmMetadata {
 
-    /** Default interpolation method for EOP and Space Weather data. */
-    private static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
-
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
     private String internationalDesignator;
@@ -185,11 +182,9 @@ public class OcmMetadata extends OdmMetadata {
 
         // set up the few fields that have default values as per CCSDS standard
         super(TimeSystem.UTC);
-        catalogName       = "CSPOC";
         sclkOffsetAtEpoch = 0.0;
         sclkSecPerSISec   = 1.0;
         nextLeapTaimutc   = Double.NaN;
-        interpMethodEOP   = DEFAULT_INTERPOLATION_METHOD;
 
     }
 
