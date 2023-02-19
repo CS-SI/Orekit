@@ -1053,8 +1053,8 @@ public class APMParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_FRAMES, oe.getSpecifier());
-            Assertions.assertEquals("SC_BODY_1 → ITRF-97", oe.getParts()[0]);
-            Assertions.assertEquals("SC_BODY_1 ← GCRF",    oe.getParts()[1]);
+            Assertions.assertEquals("SC_BODY_1 → ITRF1997", oe.getParts()[0]);
+            Assertions.assertEquals("SC_BODY_1 ← GCRF",     oe.getParts()[1]);
         }
     }
 

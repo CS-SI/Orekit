@@ -845,8 +845,17 @@ public class OemParserTest {
 
             // verify
             OemSegment segment = actual.getSegments().get(0);
-            Assertions.assertEquals(frameName,
-                                segment.getMetadata().getReferenceFrame().getName());
+            switch (frameName) {
+                case "ITRF-93" :
+                    Assertions.assertEquals("ITRF1993", segment.getMetadata().getReferenceFrame().getName());
+                    break;
+                case "ITRF-97" :
+                    Assertions.assertEquals("ITRF1997", segment.getMetadata().getReferenceFrame().getName());
+                    break;
+                default :
+                    Assertions.assertEquals(frameName, segment.getMetadata().getReferenceFrame().getName());
+                    break;
+            }
             // check expected frame
             Frame actualFrame = segment.getFrame();
             Frame expectedFrame = frame.getSecond();
