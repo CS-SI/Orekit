@@ -37,6 +37,16 @@ import org.orekit.utils.units.Unit;
  */
 public class TrajectoryStateHistoryMetadata extends CommentsContainer {
 
+    /** Default interpolation method.
+     * @since 12.0
+     */
+    public static final InterpolationMethod DEFAULT_INTERPOLATION_METHOD = InterpolationMethod.HERMITE;
+
+    /** Default interpolation degree.
+     * @since 12.0
+     */
+    public static final int DEFAULT_INTERPOLATION_DEGREE = 3;
+
     /** Trajectory identification number. */
     private String trajID;
 
@@ -103,8 +113,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         trajBasis           = "PREDICTED";
-        interpolationMethod = InterpolationMethod.HERMITE;
-        interpolationDegree = 3;
+        interpolationMethod = DEFAULT_INTERPOLATION_METHOD;
+        interpolationDegree = DEFAULT_INTERPOLATION_DEGREE;
         orbAveraging        = "OSCULATING";
         center              = new BodyFacade("EARTH",
                                              dataContext.getCelestialBodies().getEarth());
