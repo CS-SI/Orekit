@@ -34,13 +34,13 @@ public enum PhysicalPropertiesKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Satellite manufacturer name. */
-    MANUFACTURER((token, context, container) -> token.processAsNormalizedString(container::setManufacturer)),
+    MANUFACTURER((token, context, container) -> token.processAsFreeTextString(container::setManufacturer)),
 
     /** Bus model name. */
-    BUS_MODEL((token, context, container) -> token.processAsNormalizedString(container::setBusModel)),
+    BUS_MODEL((token, context, container) -> token.processAsFreeTextString(container::setBusModel)),
 
     /** Other space objects this object is docked to. */
-    DOCKED_WITH((token, context, container) -> token.processAsNormalizedList(container::setDockedWith)),
+    DOCKED_WITH((token, context, container) -> token.processAsFreeTextList(container::setDockedWith)),
 
     /** Attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB. */
     DRAG_CONST_AREA((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
@@ -169,10 +169,10 @@ public enum PhysicalPropertiesKey {
                                                                      container::setReflectance)),
 
     /** Attitude control mode. */
-    ATT_CONTROL_MODE((token, context, container) -> token.processAsNormalizedString(container::setAttitudeControlMode)),
+    ATT_CONTROL_MODE((token, context, container) -> token.processAsFreeTextString(container::setAttitudeControlMode)),
 
     /** Type of actuator for attitude control. */
-    ATT_ACTUATOR_TYPE((token, context, container) -> token.processAsNormalizedString(container::setAttitudeActuatorType)),
+    ATT_ACTUATOR_TYPE((token, context, container) -> token.processAsFreeTextString(container::setAttitudeActuatorType)),
 
     /** Accuracy of attitude knowledge. */
     ATT_KNOWLEDGE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(), container::setAttitudeKnowledgeAccuracy)),

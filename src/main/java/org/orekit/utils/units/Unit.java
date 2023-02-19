@@ -128,7 +128,7 @@ public class Unit implements Serializable {
     public static final Unit TESLA = VOLT.multiply(null, SECOND).divide("T", METRE.power(null, Fraction.TWO));
 
     /** Solar Flux Unit. */
-    public static final Unit SOLAR_FLUX_UNIT = WATT.divide(null, METRE.power(null, Fraction.TWO).multiply(null, HERTZ)).scale("sfu", 1.0e-22);
+    public static final Unit SOLAR_FLUX_UNIT = WATT.divide(null, METRE.power(null, Fraction.TWO).multiply(null, HERTZ)).scale("SFU", 1.0e-22);
 
     /** Total Electron Content Unit. */
     public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);

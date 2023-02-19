@@ -30,11 +30,15 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OcmMetadata extends OdmMetadata {
 
-    /** Default interpolation method for EOP and Space Weather data. */
-    private static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
+    /** Default value for SCLK_OFFSET_AT_EPOCH.
+     * @since 12.0
+     */
+    public static final double DEFAULT_SCLK_OFFSET_AT_EPOCH = 0.0;
 
-    /** Classification for this message. */
-    private String classification;
+    /** Default value for SCLK_SEC_PER_SI_SEC.
+     * @since 12.0
+     */
+    public static final double DEFAULT_SCLK_SEC_PER_SI_SEC = 1.0;
 
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
@@ -188,11 +192,12 @@ public class OcmMetadata extends OdmMetadata {
 
         // set up the few fields that have default values as per CCSDS standard
         super(TimeSystem.UTC);
-        catalogName       = "CSPOC";
-        sclkOffsetAtEpoch = 0.0;
-        sclkSecPerSISec   = 1.0;
+        sclkOffsetAtEpoch = DEFAULT_SCLK_OFFSET_AT_EPOCH;
+        sclkSecPerSISec   = DEFAULT_SCLK_SEC_PER_SI_SEC;
+        timeSpan          = Double.NaN;
+        taimutcT0         = Double.NaN;
+        ut1mutcT0         = Double.NaN;
         nextLeapTaimutc   = Double.NaN;
-        interpMethodEOP   = DEFAULT_INTERPOLATION_METHOD;
 
     }
 
@@ -208,21 +213,6 @@ public class OcmMetadata extends OdmMetadata {
         if (nextLeapEpoch != null) {
             checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC);
         }
-    }
-
-    /** Get the message classification.
-     * @return message classification.
-     */
-    public String getClassification() {
-        return classification;
-    }
-
-    /** Set the message classification.
-     * @param classification message classification
-     */
-    public void setClassification(final String classification) {
-        refuseFurtherComments();
-        this.classification = classification;
     }
 
     /** Get the international designator for the object.

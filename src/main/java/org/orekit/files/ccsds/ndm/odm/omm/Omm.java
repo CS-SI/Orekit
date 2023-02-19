@@ -103,7 +103,7 @@ public class Omm extends NdmConstituent<Header, Segment<OmmMetadata, OmmData>> i
         return new TLE(tle.getNoradID(), tle.getClassificationType(),
                        metadata.getLaunchYear(), metadata.getLaunchNumber(), metadata.getLaunchPiece(),
                        tle.getEphemerisType(), tle.getElementSetNumber(), kep.getEpoch(),
-                       kep.getMeanMotion(), tle.getMeanMotionDot(), tle.getMeanMotionDotDot(),
+                       kep.getMeanMotion(), tle.getMeanMotionDot() / 2, tle.getMeanMotionDotDot() / 6,
                        kep.getE(), kep.getI(), kep.getPa(), kep.getRaan(),
                        kep.getAnomaly(), tle.getRevAtEpoch(),
                        tle.getBStar(), getDataContext().getTimeScales().getUTC());

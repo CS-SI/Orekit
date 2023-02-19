@@ -103,7 +103,7 @@ class PerturbationsWriter extends AbstractWriter {
 
         // data source
         generator.writeEntry(PerturbationsKey.SW_DATA_SOURCE.name(),    perturbations.getSpaceWeatherSource(),                    null, false);
-        generator.writeEntry(PerturbationsKey.SW_DATA_EPOCH.name(),     timeConverter, perturbations.getSpaceWeatherEpoch(),            false);
+        generator.writeEntry(PerturbationsKey.SW_DATA_EPOCH.name(),     timeConverter, perturbations.getSpaceWeatherEpoch(),      true, false);
         generator.writeEntry(PerturbationsKey.SW_INTERP_METHOD.name(),  perturbations.getInterpMethodSW(),                        null, false);
         generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_KP.name(),   perturbations.getFixedGeomagneticKp(), Units.NANO_TESLA,        false);
         generator.writeEntry(PerturbationsKey.FIXED_GEOMAG_AP.name(),   perturbations.getFixedGeomagneticAp(), Units.NANO_TESLA,        false);

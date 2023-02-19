@@ -69,14 +69,14 @@ class ManeuverHistoryWriter extends AbstractWriter {
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_DEVICE_ID.name(), metadata.getManDeviceID(), null, false);
 
         // time
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PREV_EPOCH.name(), timeConverter, metadata.getManPrevEpoch(), false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_NEXT_EPOCH.name(), timeConverter, metadata.getManNextEpoch(), false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PREV_EPOCH.name(), timeConverter, metadata.getManPrevEpoch(), true, false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_NEXT_EPOCH.name(), timeConverter, metadata.getManNextEpoch(), true, false);
 
         // references
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PURPOSE.name(),      metadata.getManPurpose(),                          false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 null, false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_REF_FRAME.name(),    metadata.getManReferenceFrame().getName(),   null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),        false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  true, false);
         if (metadata.getGravitationalAssist() != null) {
             generator.writeEntry(ManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), null, false);
         }
@@ -84,16 +84,22 @@ class ManeuverHistoryWriter extends AbstractWriter {
         // duty cycle
         final boolean notContinuous = metadata.getDcType() != DutyCycleType.CONTINUOUS;
         final boolean timeAndAngle  = metadata.getDcType() == DutyCycleType.TIME_AND_ANGLE;
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(),                metadata.getDcType(),                           false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),      notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),     notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(),          metadata.getDcMinCycles(),                      false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(),          metadata.getDcMaxCycles(),                      false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),       notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),        notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),         notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND, notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND, notContinuous);
+        if (metadata.getDcType() != ManeuverHistoryMetadata.DEFAULT_DC_TYPE) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
+        }
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),  timeConverter, metadata.getDcWindowOpen(),  false, notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(), timeConverter, metadata.getDcWindowClose(), false, notContinuous);
+        if (metadata.getDcMinCycles() >= 0) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(), metadata.getDcMinCycles(), false);
+        }
+        if (metadata.getDcMaxCycles() >= 0) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(), metadata.getDcMaxCycles(), false);
+        }
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(), false, notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),  false, notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),   false, notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND,  notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND,  notContinuous);
         if (timeAndAngle) {
             generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_DIR.name(), toString(metadata.getDcRefDir()), null, timeAndAngle);
             generator.writeEntry(ManeuverHistoryMetadataKey.DC_BODY_FRAME.name(),

@@ -74,7 +74,7 @@ public enum Ordering {
 
     },
 
-    /** Full symmetrix Matrix. */
+    /** Full symmetric Matrix. */
     FULL {
 
         /** {@inheritDoc} */

@@ -59,4 +59,10 @@ public interface MessageParser<T> {
      */
     T build();
 
+    /** Get the file format of the last message parsed.
+     * @return file format of the last message parsed
+     * @since 12.0
+     */
+    FileFormat getFileFormat();
+
 }

@@ -143,10 +143,9 @@ public abstract class AbstractMessageParser<T> implements MessageParser<T> {
         return current;
     }
 
-    /** Get the file format.
-     * @return file format
-     */
-    protected FileFormat getFileFormat() {
+    /** {@inheritDoc} */
+    @Override
+    public FileFormat getFileFormat() {
         return format;
     }
 

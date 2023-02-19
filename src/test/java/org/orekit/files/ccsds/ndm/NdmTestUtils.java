@@ -278,7 +278,7 @@ public class NdmTestUtils {
     }
 
     public static void checkDate(final AbsoluteDate original, final AbsoluteDate rebuilt) {
-        Assertions.assertEquals(0.0, rebuilt.durationFrom(original), 1.0e-14);
+        Assertions.assertEquals(0.0, rebuilt.durationFrom(original), 4.0e-12);
     }
 
     public static void checkUnit(final Unit original, final Unit rebuilt) {

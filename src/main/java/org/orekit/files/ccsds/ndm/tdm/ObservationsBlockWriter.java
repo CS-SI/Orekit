@@ -84,7 +84,7 @@ class ObservationsBlockWriter extends AbstractWriter {
                 generator.writeEntry(observation.getType().name(), builder.toString(), null, false);
             } else {
                 generator.enterSection(TdmDataKey.observation.name());
-                generator.writeEntry(TdmDataKey.EPOCH.name(), timeConverter, date, true);
+                generator.writeEntry(TdmDataKey.EPOCH.name(), timeConverter, date, true, true);
                 generator.writeEntry(type.name(), rawValue, Unit.ONE, true);
                 generator.exitSection();
             }

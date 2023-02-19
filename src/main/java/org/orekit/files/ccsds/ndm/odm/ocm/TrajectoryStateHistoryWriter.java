@@ -67,8 +67,11 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_BASIS_ID.name(), metadata.getTrajBasisID(), null, false);
 
         // interpolation
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION.name(),        metadata.getInterpolationMethod(), false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION_DEGREE.name(), metadata.getInterpolationDegree(), false);
+        if (metadata.getInterpolationMethod() != TrajectoryStateHistoryMetadata.DEFAULT_INTERPOLATION_METHOD ||
+            metadata.getInterpolationDegree() != TrajectoryStateHistoryMetadata.DEFAULT_INTERPOLATION_DEGREE) {
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION.name(),        metadata.getInterpolationMethod(), false);
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION_DEGREE.name(), metadata.getInterpolationDegree(), false);
+        }
 
         // propagation
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.PROPAGATOR.name(),       metadata.getPropagator(), null, false);
@@ -76,15 +79,17 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         // references
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.CENTER_NAME.name(),      metadata.getCenter().getName(),              null, false);
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_REF_FRAME.name(),   metadata.getTrajReferenceFrame().getName(),  null, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_FRAME_EPOCH.name(), timeConverter, metadata.getTrajFrameEpoch(),       false);
+        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_FRAME_EPOCH.name(), timeConverter, metadata.getTrajFrameEpoch(), true, false);
 
         // time
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_STOP_TIME.name(),  timeConverter, metadata.getUseableStopTime(),  false);
+        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false, false);
+        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_STOP_TIME.name(),  timeConverter, metadata.getUseableStopTime(),  false, false);
 
         // revolution  numbers
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM.name(),       metadata.getOrbRevNum(),      false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), metadata.getOrbRevNumBasis(), false);
+        if (metadata.getOrbRevNum() > 0) {
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM.name(),       metadata.getOrbRevNum(),      false);
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), metadata.getOrbRevNumBasis(), false);
+        }
 
         // elements
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_TYPE.name(),        metadata.getTrajType(),     true);

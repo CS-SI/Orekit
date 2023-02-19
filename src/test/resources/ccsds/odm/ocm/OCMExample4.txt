@@ -10,7 +10,6 @@ MESSAGE_ID                = ABC-12_34
 
 META_START
 COMMENT Metadata comment
-CLASSIFICATION            = FOUO
 OBJECT_NAME               = POLYSAT
 INTERNATIONAL_DESIGNATOR  = 2000-053A
 CATALOG_NAME              = COMSPOC
@@ -29,11 +28,11 @@ TECH_EMAIL                = MAX@EXAMPLE.ORG
 TECH_ADDRESS              = 34 Orekit avenue, Earth
 PREVIOUS_MESSAGE_ID       = ABC-12_33
 NEXT_MESSAGE_ID           = ABC-12_35
-ADM_MSG_LINK              = ADM-MSG-35132.TXT
-CDM_MSG_LINK              = CDM-MSG-35132.TXT
-PRM_MSG_LINK              = PRM-MSG-35132.TXT
-RDM_MSG_LINK              = RDM-MSG-35132.TXT
-TDM_MSG_LINK              = TDM-MSG-35132.TXT
+ADM_MSG_LINK              = ADM_MSG_35132.TXT
+CDM_MSG_LINK              = CDM_MSG_35132.TXT
+PRM_MSG_LINK              = PRM_MSG_35132.TXT
+RDM_MSG_LINK              = RDM_MSG_35132.TXT
+TDM_MSG_LINK              = TDM_MSG_35132.TXT
 OPERATOR                  = INTELSAT
 OWNER                     = SIRIUS
 COUNTRY                   = FRANCE

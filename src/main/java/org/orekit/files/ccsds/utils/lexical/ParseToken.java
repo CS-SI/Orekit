@@ -146,8 +146,16 @@ public class ParseToken {
     }
 
     /** Get the content of the entry as a list of free-text strings.
+     * @return content of the entry as a list of free-test strings
+     * @since 12.0
+     */
+    public List<String> getContentAsFreeTextList() {
+        return Arrays.asList(SPLIT_AT_COMMAS.split(getRawContent()));
+    }
+
+    /** Get the content of the entry as a list of normalized strings.
      * <p>
-     * Free-text strings are normalized by replacing all occurrences
+     * Normalization is performed by replacing all occurrences
      * of '_' with space, and collapsing several spaces as one space only.
      * </p>
      * @return content of the entry as a list of free-test strings
@@ -321,6 +329,18 @@ public class ParseToken {
     public boolean processAsIndexedUppercaseString(final int index, final IndexedStringConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(index, getContentAsUppercaseString());
+        }
+        return true;
+    }
+
+    /** Process the content as a list of free-text strings.
+     * @param consumer consumer of the free-text strings list
+     * @return always returns {@code true}
+     * @since 12.0
+     */
+    public boolean processAsFreeTextList(final StringListConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsFreeTextList());
         }
         return true;
     }

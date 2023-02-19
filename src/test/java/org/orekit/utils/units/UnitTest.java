@@ -98,7 +98,7 @@ public class UnitTest {
         checkReference(Unit.VOLT,                          "V",                     1.0,  1,  2, -3, -1, 0);
         checkReference(Unit.OHM,                           "Ω",                     1.0,  1,  2, -3, -2, 0);
         checkReference(Unit.TESLA,                         "T",                     1.0,  1,  0, -2, -1, 0);
-        checkReference(Unit.SOLAR_FLUX_UNIT,              "sfu",                1.0e-22,  1,  0, -2,  0, 0);
+        checkReference(Unit.SOLAR_FLUX_UNIT,              "SFU",                 1.0e-22,  1,  0, -2,  0, 0);
         checkReference(Unit.TOTAL_ELECTRON_CONTENT_UNIT, "TECU",                 1.0e16,  0, -2,  0,  0, 0);
 
     }

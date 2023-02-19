@@ -58,7 +58,7 @@ class ManeuverWriter extends AbstractWriter {
         generator.writeComments(maneuver.getComments());
 
         // time
-        generator.writeEntry(ManeuverKey.MAN_EPOCH_START.name(), timeConverter, maneuver.getEpochStart(), true);
+        generator.writeEntry(ManeuverKey.MAN_EPOCH_START.name(), timeConverter, maneuver.getEpochStart(), true, true);
         generator.writeEntry(ManeuverKey.MAN_DURATION.name(),    maneuver.getDuration(), Unit.SECOND,     true);
 
         // frame

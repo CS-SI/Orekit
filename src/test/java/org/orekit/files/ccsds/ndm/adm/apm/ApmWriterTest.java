@@ -31,6 +31,7 @@ import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
+import org.orekit.utils.Constants;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -90,7 +91,8 @@ public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadat
                              parseMessage(new DataSource(name, () -> getClass().getResourceAsStream(name)));
         file.getHeader().setFormatVersion(1.0);
         file.getHeader().setMessageId("this message is only allowed in format version 2.0 and later");
-        try (Generator generator = new XmlGenerator(new CharArrayWriter(), XmlGenerator.DEFAULT_INDENT, "", false)) {
+        try (Generator generator = new XmlGenerator(new CharArrayWriter(), XmlGenerator.DEFAULT_INDENT, "",
+                                                    Constants.JULIAN_DAY, false, null)) {
             new WriterBuilder().buildApmWriter().writeMessage(generator, file);
             Assertions.fail("an exception should heave been thrown");
         } catch (OrekitException oe) {

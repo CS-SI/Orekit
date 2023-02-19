@@ -82,8 +82,9 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
                                             OrbitRelativeFrame.TNW_INERTIAL, null,
                                             OrbitRelativeFrame.TNW_INERTIAL.name());
         covFrameEpoch     = epochT0;
-        covScaleMin       = 1.0;
-        covScaleMax       = 1.0;
+        covScaleMin       = Double.NaN;
+        covScaleMax       = Double.NaN;
+        covConfidence     = Double.NaN;
         covType           = ElementsType.CARTPV;
         covOrdering       = Ordering.LTM;
     }
