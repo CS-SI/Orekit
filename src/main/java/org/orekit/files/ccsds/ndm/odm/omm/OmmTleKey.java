@@ -63,7 +63,13 @@ public enum OmmTleKey {
 
     /** Second time derivative of mean motion. */
     MEAN_MOTION_DDOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY3_SCALED, context.getParsedUnitsBehavior(),
-                                                                          container::setMeanMotionDotDot));
+                                                                          container::setMeanMotionDotDot)),
+
+    /** SGP4-XP solar radiation pressure-like coefficient.
+     * @since 12.0
+     */
+    AGOM((token, context, container) -> token.processAsDouble(Units.M2_PER_KG, context.getParsedUnitsBehavior(),
+                                                              container::setAGoM));
 
     /** Processing method. */
     private final TokenProcessor processor;
