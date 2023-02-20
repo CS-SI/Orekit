@@ -67,7 +67,7 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         // Rinex file header
         final RinexObservationHeader header = observations.getHeader();
         // Rinex version to integer
-        final int version = (int) header.getRinexVersion();
+        final int version = (int) header.getFormatVersion();
 
         // Initialize list of measurements
         final List<ObservationData> pseudoRanges = new ArrayList<>();

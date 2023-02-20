@@ -375,7 +375,7 @@ public class MeasurementCombinationFactoryTest {
         Assertions.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
         // Verify RINEX Header
         final RinexObservationHeader header = combinedDataSet.getHeader();
-        Assertions.assertEquals(2.11, header.getRinexVersion(), eps);
+        Assertions.assertEquals(2.11, header.getFormatVersion(), eps);
         // Verify satellite data
         Assertions.assertEquals(30, combinedDataSet.getPrnNumber());
         Assertions.assertEquals(SatelliteSystem.GPS, combinedDataSet.getSatelliteSystem());

@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
+import org.orekit.gnss.RinexFileType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
@@ -67,31 +68,30 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.01,                file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                 file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.GPS, file.getSatelliteSystem());
-        Assertions.assertEquals("XXRINEXN V3",       file.getProgramName());
-        Assertions.assertEquals("AIUB",              file.getAgencyName());
-        Assertions.assertEquals("19990903",          file.getCreationDateString());
-        Assertions.assertEquals("152236",            file.getCreationTimeString());
-        Assertions.assertEquals("UTC",               file.getCreationTimeZoneString());
-        Assertions.assertEquals(0.0, file.getCreationDate().durationFrom(new AbsoluteDate(1999, 9, 3, 15, 22, 36.0, TimeScalesFactory.getUTC())), 0.0);
-        Assertions.assertEquals("GPS",               file.getIonosphericCorrectionType());
-        Assertions.assertEquals(0.1676e-07,          file.getKlobucharAlpha()[0], Double.MIN_VALUE);
-        Assertions.assertEquals(0.2235e-07,          file.getKlobucharAlpha()[1], Double.MIN_VALUE);
-        Assertions.assertEquals(0.1192e-06,          file.getKlobucharAlpha()[2], Double.MIN_VALUE);
-        Assertions.assertEquals(0.1192e-06,          file.getKlobucharAlpha()[3], Double.MIN_VALUE);
-        Assertions.assertEquals(0.1208e+06,          file.getKlobucharBeta()[0],  Double.MIN_VALUE);
-        Assertions.assertEquals(0.1310e+06,          file.getKlobucharBeta()[1],  Double.MIN_VALUE);
-        Assertions.assertEquals(-0.1310e+06,         file.getKlobucharBeta()[2],  Double.MIN_VALUE);
-        Assertions.assertEquals(-0.1966e+06,         file.getKlobucharBeta()[3],  Double.MIN_VALUE);
-        Assertions.assertEquals("GPUT", file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
-        Assertions.assertEquals(0.1331791282e-06,    file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
-        Assertions.assertEquals(0.107469589e-12,     file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
-        Assertions.assertEquals(552960,              file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
-        Assertions.assertEquals(1025,                file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
-        Assertions.assertEquals("EXAMPLE OF VERSION 3.00 FORMAT", file.getComments());
-        Assertions.assertEquals(13, file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.01,                     file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION, file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.GPS,      file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("XXRINEXN V3",            file.getHeader().getProgramName());
+        Assertions.assertEquals("AIUB",                   file.getHeader().getRunByName());
+        Assertions.assertEquals("1999-09-03T15:22:36.0",  file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                    file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(0.0,                      file.getHeader().getCreationDate().durationFrom(new AbsoluteDate(1999, 9, 3, 15, 22, 36.0, TimeScalesFactory.getUTC())), 0.0);
+        Assertions.assertEquals("GPS",                    file.getHeader().getIonosphericCorrectionType());
+        Assertions.assertEquals(0.1676e-07,               file.getKlobucharAlpha()[0], Double.MIN_VALUE);
+        Assertions.assertEquals(0.2235e-07,               file.getKlobucharAlpha()[1], Double.MIN_VALUE);
+        Assertions.assertEquals(0.1192e-06,               file.getKlobucharAlpha()[2], Double.MIN_VALUE);
+        Assertions.assertEquals(0.1192e-06,               file.getKlobucharAlpha()[3], Double.MIN_VALUE);
+        Assertions.assertEquals(0.1208e+06,               file.getKlobucharBeta()[0],  Double.MIN_VALUE);
+        Assertions.assertEquals(0.1310e+06,               file.getKlobucharBeta()[1],  Double.MIN_VALUE);
+        Assertions.assertEquals(-0.1310e+06,              file.getKlobucharBeta()[2],  Double.MIN_VALUE);
+        Assertions.assertEquals(-0.1966e+06,              file.getKlobucharBeta()[3],  Double.MIN_VALUE);
+        Assertions.assertEquals("GPUT",                   file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
+        Assertions.assertEquals(0.1331791282e-06,         file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
+        Assertions.assertEquals(0.107469589e-12,          file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
+        Assertions.assertEquals(552960,                   file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
+        Assertions.assertEquals(1025,                     file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
+        Assertions.assertEquals("EXAMPLE OF VERSION 3.00 FORMAT", file.getHeader().getComments().get(0));
+        Assertions.assertEquals(13, file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -155,14 +155,13 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.01,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.SBAS,    file.getSatelliteSystem());
-        Assertions.assertEquals("sbf2rin-9.3.3",         file.getProgramName());
-        Assertions.assertEquals("",                      file.getAgencyName());
-        Assertions.assertEquals("20150106",              file.getCreationDateString());
-        Assertions.assertEquals("000809",                file.getCreationTimeString());
-        Assertions.assertEquals("LCL",                   file.getCreationTimeZoneString());
+        Assertions.assertEquals(3.01,                     file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION, file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.SBAS,     file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("sbf2rin-9.3.3",          file.getHeader().getProgramName());
+        Assertions.assertEquals("",                       file.getHeader().getRunByName());
+        Assertions.assertEquals("2015-01-06T00:08:09.0",  file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("LCL",                    file.getHeader().getCreationTimeZone());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -174,7 +173,8 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
 
         final SBASNavigationMessage sbas = file.getSBASNavigationMessages("S27").get(0);
-        Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2015, 1, 4, 23, 58, 56.0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        // BEWARE! in Rinex 3.01, the time scale for SBAS navigation is UTC
+        Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2015, 1, 4, 23, 58, 56.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(2.980232238770E-08,  sbas.getAGf0(), 1.0e-10);
         Assertions.assertEquals(1.182343112305E-11,  sbas.getAGf1(), 1.0e-10);
         Assertions.assertEquals(8.631300000000E+04,  sbas.getTime(), 1.0e-10);
@@ -218,15 +218,14 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.02,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.BEIDOU,  file.getSatelliteSystem());
-        Assertions.assertEquals("Converto v3.5.5",       file.getProgramName());
-        Assertions.assertEquals("IGN",                   file.getAgencyName());
-        Assertions.assertEquals("20210224",              file.getCreationDateString());
-        Assertions.assertEquals("012052",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals(4,                       file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.02,                     file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION, file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.BEIDOU,   file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("Converto v3.5.5",        file.getHeader().getProgramName());
+        Assertions.assertEquals("IGN",                    file.getHeader().getRunByName());
+        Assertions.assertEquals("2021-02-24T01:20:52.0",  file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                    file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(4,                        file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -290,27 +289,26 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.02,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.GALILEO, file.getSatelliteSystem());
-        Assertions.assertEquals("sbf2rin-10.2.0",        file.getProgramName());
-        Assertions.assertEquals("",                      file.getAgencyName());
-        Assertions.assertEquals("20160428",              file.getCreationDateString());
-        Assertions.assertEquals("003637",                file.getCreationTimeString());
-        Assertions.assertEquals("LCL",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals("GAL",                   file.getIonosphericCorrectionType());
+        Assertions.assertEquals(3.02,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.GALILEO, file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("sbf2rin-10.2.0",        file.getHeader().getProgramName());
+        Assertions.assertEquals("",                      file.getHeader().getRunByName());
+        Assertions.assertEquals("2016-04-28T00:36:37.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("LCL",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals("GAL",                   file.getHeader().getIonosphericCorrectionType());
         Assertions.assertEquals(3.5500E+01,              file.getNeQuickAlpha()[0], Double.MIN_VALUE);
         Assertions.assertEquals(-2.3438E-02,             file.getNeQuickAlpha()[1], Double.MIN_VALUE);
         Assertions.assertEquals(1.6632E-02,              file.getNeQuickAlpha()[2], Double.MIN_VALUE);
         Assertions.assertEquals(0.0000E+00,              file.getNeQuickAlpha()[3], Double.MIN_VALUE);
-        Assertions.assertEquals("GPGA", file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
-        Assertions.assertEquals("GAUT", file.getTimeSystemCorrections().get(1).getTimeSystemCorrectionType());
-        Assertions.assertEquals(-2.9103830457E-11,       file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
-        Assertions.assertEquals(-4.440892099E-16,        file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
-        Assertions.assertEquals(918000,                  file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
-        Assertions.assertEquals(1919,                    file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
-        Assertions.assertEquals("", file.getComments());
-        Assertions.assertEquals(17, file.getNumberOfLeapSeconds());
+        Assertions.assertEquals("GPGA", file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
+        Assertions.assertEquals("GAUT", file.getHeader().getTimeSystemCorrections().get(1).getTimeSystemCorrectionType());
+        Assertions.assertEquals(-2.9103830457E-11,       file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
+        Assertions.assertEquals(-4.440892099E-16,        file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
+        Assertions.assertEquals(918000,                  file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
+        Assertions.assertEquals(1919,                    file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
+        Assertions.assertTrue(file.getHeader().getComments().isEmpty());
+        Assertions.assertEquals(17, file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(2, file.getGalileoNavigationMessages().size());
@@ -374,15 +372,14 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.02,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.QZSS,    file.getSatelliteSystem());
-        Assertions.assertEquals("NetR9 5.45",            file.getProgramName());
-        Assertions.assertEquals("Receiver Operator",     file.getAgencyName());
-        Assertions.assertEquals("20200609",              file.getCreationDateString());
-        Assertions.assertEquals("000000",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals("QZS",                   file.getIonosphericCorrectionType());
+        Assertions.assertEquals(3.02,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.QZSS,    file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("NetR9 5.45",            file.getHeader().getProgramName());
+        Assertions.assertEquals("Receiver Operator",     file.getHeader().getRunByName());
+        Assertions.assertEquals("2020-06-09T00:00:00.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals("QZS",                   file.getHeader().getIonosphericCorrectionType());
         Assertions.assertEquals(0.5588e-08,              file.getKlobucharAlpha()[0], Double.MIN_VALUE);
         Assertions.assertEquals(0.7451e-08,              file.getKlobucharAlpha()[1], Double.MIN_VALUE);
         Assertions.assertEquals(-0.4768e-06,             file.getKlobucharAlpha()[2], Double.MIN_VALUE);
@@ -391,13 +388,13 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-0.4096e+06,             file.getKlobucharBeta()[1],  Double.MIN_VALUE);
         Assertions.assertEquals(-0.8389e+07,             file.getKlobucharBeta()[2],  Double.MIN_VALUE);
         Assertions.assertEquals(-0.8389e+07,             file.getKlobucharBeta()[3],  Double.MIN_VALUE);
-        Assertions.assertEquals("QZUT", file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
-        Assertions.assertEquals(0.0,                     file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
-        Assertions.assertEquals(0.0,                     file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
-        Assertions.assertEquals(356352,                  file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
-        Assertions.assertEquals(2109,                    file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
-        Assertions.assertEquals("",                      file.getComments());
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals("QZUT", file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
+        Assertions.assertEquals(0.0,                     file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0,                     file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
+        Assertions.assertEquals(356352,                  file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
+        Assertions.assertEquals(2109,                    file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
+        Assertions.assertEquals(0,                       file.getHeader().getComments().size());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -464,21 +461,20 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.03,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.GLONASS, file.getSatelliteSystem());
-        Assertions.assertEquals("GR25 V4.30",            file.getProgramName());
-        Assertions.assertEquals("Institute of Astrono",  file.getAgencyName());
-        Assertions.assertEquals("20210217",              file.getCreationDateString());
-        Assertions.assertEquals("235947",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals("GLUT", file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
-        Assertions.assertEquals(6.0535967350e-09,        file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
-        Assertions.assertEquals(0.000000000e+00,         file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
-        Assertions.assertEquals(0,                       file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
-        Assertions.assertEquals(0,                       file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
-        Assertions.assertEquals("",                      file.getComments());
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.03,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("GR25 V4.30",            file.getHeader().getProgramName());
+        Assertions.assertEquals("Institute of Astrono",  file.getHeader().getRunByName());
+        Assertions.assertEquals("2021-02-17T23:59:47.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals("GLUT", file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
+        Assertions.assertEquals(6.0535967350e-09,        file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
+        Assertions.assertEquals(0.000000000e+00,         file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
+        Assertions.assertEquals(0,                       file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
+        Assertions.assertEquals(0,                       file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
+        Assertions.assertEquals(0,                       file.getHeader().getComments().size());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -526,15 +522,14 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.03,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.IRNSS,   file.getSatelliteSystem());
-        Assertions.assertEquals("JPS2RIN v.2.0.168",     file.getProgramName());
-        Assertions.assertEquals("JAVAD GNSS",            file.getAgencyName());
-        Assertions.assertEquals("20191028",              file.getCreationDateString());
-        Assertions.assertEquals("005648",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.03,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.IRNSS,   file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("JPS2RIN v.2.0.168",     file.getHeader().getProgramName());
+        Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
+        Assertions.assertEquals("2019-10-28T00:56:48.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -598,14 +593,13 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.MIXED,   file.getSatelliteSystem());
-        Assertions.assertEquals("Alloy 5.37",            file.getProgramName());
-        Assertions.assertEquals("Receiver Operator",     file.getAgencyName());
-        Assertions.assertEquals("20200211",              file.getCreationDateString());
-        Assertions.assertEquals("000000",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
+        Assertions.assertEquals(3.04,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,   file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("Alloy 5.37",            file.getHeader().getProgramName());
+        Assertions.assertEquals("Receiver Operator",     file.getHeader().getRunByName());
+        Assertions.assertEquals("2020-02-11T00:00:00.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
         Assertions.assertEquals(0.8382E-08,              file.getKlobucharAlpha()[0], Double.MIN_VALUE);
         Assertions.assertEquals(-0.7451E-08,             file.getKlobucharAlpha()[1], Double.MIN_VALUE);
         Assertions.assertEquals(-0.5960E-07,             file.getKlobucharAlpha()[2], Double.MIN_VALUE);
@@ -618,10 +612,10 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.1563E-01,              file.getNeQuickAlpha()[1], Double.MIN_VALUE);
         Assertions.assertEquals(0.2045E-02,              file.getNeQuickAlpha()[2], Double.MIN_VALUE);
         Assertions.assertEquals(0.0000E+00,              file.getNeQuickAlpha()[3], Double.MIN_VALUE);
-        Assertions.assertEquals("GPUT", file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
-        Assertions.assertEquals("GAUT", file.getTimeSystemCorrections().get(1).getTimeSystemCorrectionType());
-        Assertions.assertEquals("GPGA", file.getTimeSystemCorrections().get(2).getTimeSystemCorrectionType());
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals("GPUT", file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
+        Assertions.assertEquals("GAUT", file.getHeader().getTimeSystemCorrections().get(1).getTimeSystemCorrectionType());
+        Assertions.assertEquals("GPGA", file.getHeader().getTimeSystemCorrections().get(2).getTimeSystemCorrectionType());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -659,15 +653,14 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.QZSS,    file.getSatelliteSystem());
-        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getProgramName());
-        Assertions.assertEquals("JAVAD GNSS",            file.getAgencyName());
-        Assertions.assertEquals("20200610",              file.getCreationDateString());
-        Assertions.assertEquals("003246",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.04,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.QZSS,    file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getHeader().getProgramName());
+        Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
+        Assertions.assertEquals("2020-06-10T00:32:46.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -732,30 +725,29 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.04,                file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                 file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.GPS, file.getSatelliteSystem());
-        Assertions.assertEquals("sbf2rin-13.8.0",    file.getProgramName());
-        Assertions.assertEquals("",                  file.getAgencyName());
-        Assertions.assertEquals("20210307",          file.getCreationDateString());
-        Assertions.assertEquals("000819",            file.getCreationTimeString());
-        Assertions.assertEquals("UTC",               file.getCreationTimeZoneString());
-        Assertions.assertEquals(0.0, file.getCreationDate().durationFrom(new AbsoluteDate(2021, 3, 7, 0, 8, 19.0, TimeScalesFactory.getUTC())), 0.0);
-        Assertions.assertEquals("GPS",               file.getIonosphericCorrectionType());
-        Assertions.assertEquals(1.0245E-08,          file.getKlobucharAlpha()[0], Double.MIN_VALUE);
-        Assertions.assertEquals(0.0000E+00,          file.getKlobucharAlpha()[1], Double.MIN_VALUE);
-        Assertions.assertEquals(-5.9605E-08,         file.getKlobucharAlpha()[2], Double.MIN_VALUE);
-        Assertions.assertEquals(0.0000E+00,          file.getKlobucharAlpha()[3], Double.MIN_VALUE);
-        Assertions.assertEquals(9.0112E+04,          file.getKlobucharBeta()[0],  Double.MIN_VALUE);
-        Assertions.assertEquals(0.0000E+00,          file.getKlobucharBeta()[1],  Double.MIN_VALUE);
-        Assertions.assertEquals(-1.9661E+05,         file.getKlobucharBeta()[2],  Double.MIN_VALUE);
-        Assertions.assertEquals(0.0000E+00,         file.getKlobucharBeta()[3],  Double.MIN_VALUE);
-        Assertions.assertEquals("GPUT", file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
-        Assertions.assertEquals(0.0000000000E+00,    file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
-        Assertions.assertEquals(9.769962617E-15,     file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
-        Assertions.assertEquals(233472,              file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
-        Assertions.assertEquals(2148,                file.getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
-        Assertions.assertEquals(18,                  file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.04,                     file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION, file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.GPS,      file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("sbf2rin-13.8.0",         file.getHeader().getProgramName());
+        Assertions.assertEquals("",                       file.getHeader().getRunByName());
+        Assertions.assertEquals("2021-03-07T00:08:19.0",  file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                    file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(0.0,                      file.getHeader().getCreationDate().durationFrom(new AbsoluteDate(2021, 3, 7, 0, 8, 19.0, TimeScalesFactory.getUTC())), 0.0);
+        Assertions.assertEquals("GPS",                    file.getHeader().getIonosphericCorrectionType());
+        Assertions.assertEquals(1.0245E-08,               file.getKlobucharAlpha()[0], Double.MIN_VALUE);
+        Assertions.assertEquals(0.0000E+00,               file.getKlobucharAlpha()[1], Double.MIN_VALUE);
+        Assertions.assertEquals(-5.9605E-08,              file.getKlobucharAlpha()[2], Double.MIN_VALUE);
+        Assertions.assertEquals(0.0000E+00,               file.getKlobucharAlpha()[3], Double.MIN_VALUE);
+        Assertions.assertEquals(9.0112E+04,               file.getKlobucharBeta()[0],  Double.MIN_VALUE);
+        Assertions.assertEquals(0.0000E+00,               file.getKlobucharBeta()[1],  Double.MIN_VALUE);
+        Assertions.assertEquals(-1.9661E+05,              file.getKlobucharBeta()[2],  Double.MIN_VALUE);
+        Assertions.assertEquals(0.0000E+00,               file.getKlobucharBeta()[3],  Double.MIN_VALUE);
+        Assertions.assertEquals("GPUT",                   file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
+        Assertions.assertEquals(0.0000000000E+00,         file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
+        Assertions.assertEquals(9.769962617E-15,          file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
+        Assertions.assertEquals(233472,                   file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionSecOfWeek());
+        Assertions.assertEquals(2148,                     file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionWeekNumber());
+        Assertions.assertEquals(18,                       file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -822,20 +814,19 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.GALILEO, file.getSatelliteSystem());
-        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getProgramName());
-        Assertions.assertEquals("JAVAD GNSS",            file.getAgencyName());
-        Assertions.assertEquals("20210307",              file.getCreationDateString());
-        Assertions.assertEquals("000245",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals("GAL",                   file.getIonosphericCorrectionType());
+        Assertions.assertEquals(3.04,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.GALILEO, file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getHeader().getProgramName());
+        Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
+        Assertions.assertEquals("2021-03-07T00:02:45.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals("GAL",                   file.getHeader().getIonosphericCorrectionType());
         Assertions.assertEquals(5.0500E+01,              file.getNeQuickAlpha()[0], Double.MIN_VALUE);
         Assertions.assertEquals(2.7344E-02,              file.getNeQuickAlpha()[1], Double.MIN_VALUE);
         Assertions.assertEquals(-1.5869E-03,             file.getNeQuickAlpha()[2], Double.MIN_VALUE);
         Assertions.assertEquals(0.0000E+00,              file.getNeQuickAlpha()[3], Double.MIN_VALUE);
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(1, file.getGalileoNavigationMessages().size());
@@ -902,15 +893,14 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.SBAS,    file.getSatelliteSystem());
-        Assertions.assertEquals("sbf2rin-13.4.5",        file.getProgramName());
-        Assertions.assertEquals("RIGTC, GO PECNY",       file.getAgencyName());
-        Assertions.assertEquals("20210219",              file.getCreationDateString());
-        Assertions.assertEquals("002627",                file.getCreationTimeString());
-        Assertions.assertEquals("SBAS NAVIGATION DATA FROM STATION GOP6 (RIGTC, GO PECNY)", file.getComments());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
+        Assertions.assertEquals(3.04,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.SBAS,    file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("sbf2rin-13.4.5",        file.getHeader().getProgramName());
+        Assertions.assertEquals("RIGTC, GO PECNY",       file.getHeader().getRunByName());
+        Assertions.assertEquals("2021-02-19T00:26:27.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("SBAS NAVIGATION DATA FROM STATION GOP6 (RIGTC, GO PECNY)", file.getHeader().getComments().get(0));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -970,15 +960,14 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.IRNSS,   file.getSatelliteSystem());
-        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getProgramName());
-        Assertions.assertEquals("JAVAD GNSS",            file.getAgencyName());
-        Assertions.assertEquals("20210308",              file.getCreationDateString());
-        Assertions.assertEquals("000304",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.04,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.IRNSS,   file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getHeader().getProgramName());
+        Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
+        Assertions.assertEquals("2021-03-08T00:03:04.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -1041,15 +1030,14 @@ public class NavigationFileParserTest {
                         parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
 
         // Verify Header
-        Assertions.assertEquals(3.04,                    file.getFormatVersion(), Double.MIN_VALUE);
-        Assertions.assertEquals("N",                     file.getFileType());
-        Assertions.assertEquals(SatelliteSystem.BEIDOU,  file.getSatelliteSystem());
-        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getProgramName());
-        Assertions.assertEquals("JAVAD GNSS",            file.getAgencyName());
-        Assertions.assertEquals("20210224",              file.getCreationDateString());
-        Assertions.assertEquals("000715",                file.getCreationTimeString());
-        Assertions.assertEquals("UTC",                   file.getCreationTimeZoneString());
-        Assertions.assertEquals(18,                      file.getNumberOfLeapSeconds());
+        Assertions.assertEquals(3.04,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.BEIDOU,  file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("JPS2RIN v.2.0.191",     file.getHeader().getProgramName());
+        Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
+        Assertions.assertEquals("2021-02-24T00:07:15.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
@@ -1120,15 +1108,15 @@ public class NavigationFileParserTest {
 
     @Test
     public void testUnknownRinexVersion() throws IOException {
+        final String ex = "/gnss/navigation/unknown-rinex-version.n";
         try {
-            final String ex = "/gnss/navigation/unknown-rinex-version.n";
             new RinexNavigationParser().
                             parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NAVIGATION_FILE_UNSUPPORTED_VERSION,
-                                oe.getSpecifier());
-            Assertions.assertEquals(9.99,  oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(9.99,  ((Double) oe.getParts()[0]).doubleValue(), 1.0e-10);
+            Assertions.assertEquals(ex, oe.getParts()[1]);
         }
     }
 

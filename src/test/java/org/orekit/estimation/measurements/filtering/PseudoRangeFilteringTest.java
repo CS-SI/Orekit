@@ -31,7 +31,7 @@ public class PseudoRangeFilteringTest {
     @BeforeEach
     public void setUp() {
         baseName = "src/test/resources/gnss/filtering/";
-        Utils.setDataRoot("gnss/filtering");
+        Utils.setDataRoot("regular-data:gnss/filtering");
     }
 
     @Test

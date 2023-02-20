@@ -206,7 +206,7 @@ public enum OrekitMessages implements Localizable {
     STK_UNMAPPED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" has not been mapped to an Orekit frame"),
     STK_UNEXPECTED_END_OF_FILE("unexpected end of STK file (after line {0})"),
     CLOCK_FILE_UNSUPPORTED_VERSION("unsupported clock file version {0}"),
-    NAVIGATION_FILE_UNSUPPORTED_VERSION("unsupported navigation messages file version {0}"),
+    UNSUPPORTED_FILE_FORMAT_VERSION("version {0} from file {1} is not supported, supported version: {2}"),
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM(
             "geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),

@@ -32,7 +32,6 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
-import org.orekit.time.AbsoluteDate;
 
 /**
  * Represents a parsed RINEX navigation messages files.
@@ -41,38 +40,8 @@ import org.orekit.time.AbsoluteDate;
  */
 public class RinexNavigation {
 
-    /** Format version. */
-    private double formatVersion;
-
-    /** File type ('N' for navigation data). */
-    private String fileType;
-
-    /** Satellite system. */
-    private SatelliteSystem satelliteSystem;
-
-    /** Name of the program creating current file. */
-    private String programName;
-
-    /** Name of the agency creating the current file. */
-    private String agencyName;
-
-    /** Date of the file creation as a string. */
-    private String creationDateString;
-
-    /** Time of the file creation as a string. */
-    private String creationTimeString;
-
-    /** Time zone of the file creation as a string. */
-    private String creationTimeZoneString;
-
-    /** Creation date as absolute date. */
-    private AbsoluteDate creationDate;
-
-    /** Comments. */
-    private String comments;
-
-    /** Ionospheric correction type. */
-    private String ionosphericCorrectionType;
+    /** Header. */
+    private RinexNavigationHeader header;
 
     /** The 4 Klobuchar coefficients of a cubic equation representing the amplitude of the vertical delay. */
     private double[] klobucharAlpha;
@@ -82,12 +51,6 @@ public class RinexNavigation {
 
     /** The three ionospheric coefficients broadcast in the Galileo navigation message. */
     private double[] neQuickAlpha;
-
-    /** List of time system corrections. */
-    private List<TimeSystemCorrection> timeSystemCorrections;
-
-    /** Current number of leap seconds. */
-    private int numberOfLeapSeconds;
 
     /** A map containing the GPS navigation messages. */
     private Map<String, List<GPSNavigationMessage>> gpsData;
@@ -112,197 +75,22 @@ public class RinexNavigation {
 
     /** Constructor. */
     public RinexNavigation() {
-        this.comments              = "";
-        this.timeSystemCorrections = new ArrayList<>();
-        this.gpsData               = new HashMap<>();
-        this.galileoData           = new HashMap<>();
-        this.beidouData            = new HashMap<>();
-        this.qzssData              = new HashMap<>();
-        this.irnssData             = new HashMap<>();
-        this.glonassData           = new HashMap<>();
-        this.sbasData              = new HashMap<>();
+        this.header      = new RinexNavigationHeader();
+        this.gpsData     = new HashMap<>();
+        this.galileoData = new HashMap<>();
+        this.beidouData  = new HashMap<>();
+        this.qzssData    = new HashMap<>();
+        this.irnssData   = new HashMap<>();
+        this.glonassData = new HashMap<>();
+        this.sbasData    = new HashMap<>();
     }
 
     /**
-     * Getter for the format version.
-     * @return the format version
+     * Getter for the header.
+     * @return header
      */
-    public double getFormatVersion() {
-        return formatVersion;
-    }
-
-    /**
-     * Setter for the format version.
-     * @param formatVersion the format version to set
-     */
-    public void setFormatVersion(final double formatVersion) {
-        this.formatVersion = formatVersion;
-    }
-
-    /**
-     * Get the file type.
-     * @return 'N' for navigation data.
-     */
-    public String getFileType() {
-        return fileType;
-    }
-
-    /**
-     * Setter for the file type.
-     * @param fileType must be 'N' for navigation data
-     */
-    public void setFileType(final String fileType) {
-        this.fileType = fileType;
-    }
-
-    /**
-     * Getter for the satellite system.
-     * <p>
-     * Not specified for RINEX 2.X versions (value is null).
-     * </p>
-     * @return the satellite system
-     */
-    public SatelliteSystem getSatelliteSystem() {
-        return satelliteSystem;
-    }
-
-    /**
-     * Setter for the satellite system.
-     * @param satelliteSystem the satellite system to set
-     */
-    public void setSatelliteSystem(final SatelliteSystem satelliteSystem) {
-        this.satelliteSystem = satelliteSystem;
-    }
-
-    /**
-     * Getter for the program name.
-     * @return the program name
-     */
-    public String getProgramName() {
-        return programName;
-    }
-
-    /**
-     * Setter for the program name.
-     * @param programName the program name to set
-     */
-    public void setProgramName(final String programName) {
-        this.programName = programName;
-    }
-
-    /**
-     * Getter for the agency name.
-     * @return the agencyName
-     */
-    public String getAgencyName() {
-        return agencyName;
-    }
-
-    /**
-     * Setter for the agency name.
-     * @param agencyName the agency name to set
-     */
-    public void setAgencyName(final String agencyName) {
-        this.agencyName = agencyName;
-    }
-
-    /**
-     * Getter for the creation date of the file as a string.
-     * @return the creation date as a string
-     */
-    public String getCreationDateString() {
-        return creationDateString;
-    }
-
-    /**
-     * Setter for the creation date as a string.
-     * @param creationDateString the creation date as a string to set
-     */
-    public void setCreationDateString(final String creationDateString) {
-        this.creationDateString = creationDateString;
-    }
-
-    /**
-     * Getter for the creation time of the file as a string.
-     * @return the creation time as a string
-     */
-    public String getCreationTimeString() {
-        return creationTimeString;
-    }
-
-    /**
-     * Setter for the creation time as a string.
-     * @param creationTimeString the creation time as a string to set
-     */
-    public void setCreationTimeString(final String creationTimeString) {
-        this.creationTimeString = creationTimeString;
-    }
-
-    /**
-     * Getter for the creation time zone of the file as a string.
-     * @return the creation time zone as a string
-     */
-    public String getCreationTimeZoneString() {
-        return creationTimeZoneString;
-    }
-
-    /**
-     * Setter for the creation time zone.
-     * @param creationTimeZoneString the creation time zone as a string to set
-     */
-    public void setCreationTimeZoneString(final String creationTimeZoneString) {
-        this.creationTimeZoneString = creationTimeZoneString;
-    }
-
-    /**
-     * Getter for the creation date.
-     * @return the creation date
-     */
-    public AbsoluteDate getCreationDate() {
-        return creationDate;
-    }
-
-    /**
-     * Setter for the creation date.
-     * @param creationDate the creation date to set
-     */
-    public void setCreationDate(final AbsoluteDate creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    /**
-     * Getter for the comments.
-     * @return the comments
-     */
-    public String getComments() {
-        return comments;
-    }
-
-    /**
-     * Add a comment line.
-     * @param comment the comment line to add
-     */
-    public void addComment(final String comment) {
-        this.comments = comments.concat(comment);
-    }
-
-    /**
-     * Getter for the ionospheric correction type.
-     * <p>
-     * Only the three first characters are given (e.g. GAL, GPS, QZS, BDS, or IRN)
-     * </p>
-     * @return the ionospheric correction type
-     */
-    public String getIonosphericCorrectionType() {
-        return ionosphericCorrectionType;
-    }
-
-    /**
-     * Setter for the ionospheric correction type.
-     * @param ionosphericCorrectionType the ionospheric correction type to set
-     */
-    public void setIonosphericCorrectionType(final String ionosphericCorrectionType) {
-        this.ionosphericCorrectionType = ionosphericCorrectionType;
+    public RinexNavigationHeader getHeader() {
+        return header;
     }
 
     /**
@@ -360,41 +148,6 @@ public class RinexNavigation {
      */
     public void setNeQuickAlpha(final double[] neQuickAlpha) {
         this.neQuickAlpha = neQuickAlpha.clone();
-    }
-
-    /**
-     * Getter for the time system corrections contained in the file header.
-     * <p>
-     * Corrections to transform the system time to UTC or oter time system.
-     * </p>
-     * @return the list of time system corrections
-     */
-    public List<TimeSystemCorrection> getTimeSystemCorrections() {
-        return timeSystemCorrections;
-    }
-
-    /**
-     * Add a time system correction to the list.
-     * @param timeSystemCorrection the element to add
-     */
-    public void addTimeSystemCorrections(final TimeSystemCorrection timeSystemCorrection) {
-        this.timeSystemCorrections.add(timeSystemCorrection);
-    }
-
-    /**
-     * Getter for the current number of leap seconds.
-     * @return the current number of leap seconds
-     */
-    public int getNumberOfLeapSeconds() {
-        return numberOfLeapSeconds;
-    }
-
-    /**
-     * Setter for the current number of leap seconds.
-     * @param numberOfLeapSeconds the number of leap seconds to set
-     */
-    public void setNumberOfLeapSeconds(final int numberOfLeapSeconds) {
-        this.numberOfLeapSeconds = numberOfLeapSeconds;
     }
 
     /**

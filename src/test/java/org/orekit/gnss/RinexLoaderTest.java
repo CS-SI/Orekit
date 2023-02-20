@@ -45,13 +45,13 @@ public class RinexLoaderTest {
 
     @Test
     public void testDefaultLoadRinex2() {
-        Utils.setDataRoot("rinex");
+        Utils.setDataRoot("regular-data:rinex");
         Assertions.assertEquals(51, new RinexObservationLoader("^aaaa0000\\.00o$").getObservationDataSets().size());
     }
 
     @Test
     public void testDefaultLoadRinex3() {
-        Utils.setDataRoot("rinex");
+        Utils.setDataRoot("regular-data:rinex");
         Assertions.assertEquals(5, new RinexObservationLoader("^brca083\\.06o$").getObservationDataSets().size());
     }
 
@@ -75,7 +75,8 @@ public class RinexLoaderTest {
             load("rinex/unknown-version.06o");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(9.99, ((Double) oe.getParts()[0]).doubleValue(), 0.001);
         }
     }
 
@@ -181,7 +182,7 @@ public class RinexLoaderTest {
         for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
             RinexObservationHeader header = dataSet.getHeader();
 
-            Assertions.assertEquals(2.11, header.getRinexVersion(), 1.0e-15);
+            Assertions.assertEquals(2.11, header.getFormatVersion(), 1.0e-15);
             Assertions.assertEquals(SatelliteSystem.GPS,    header.getSatelliteSystem());
             Assertions.assertEquals("JNU1",                 header.getMarkerName());
             Assertions.assertNull(header.getMarkerNumber());
@@ -215,7 +216,7 @@ public class RinexLoaderTest {
         for (ObservationDataSet dataSet : loader.getObservationDataSets()) {
             RinexObservationHeader header = dataSet.getHeader();
 
-            Assertions.assertEquals(3.02, header.getRinexVersion(), 1.0e-15);
+            Assertions.assertEquals(3.02, header.getFormatVersion(), 1.0e-15);
             Assertions.assertEquals(SatelliteSystem.MIXED,  header.getSatelliteSystem());
             Assertions.assertEquals("RDLT",                 header.getMarkerName());
             Assertions.assertEquals("RDLT",                 header.getMarkerNumber());
