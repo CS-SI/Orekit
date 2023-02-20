@@ -109,7 +109,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame, attitude type...) will be inherited from the template  metadata set at writer
-     * {@link #AttitudeWriter(AemWriter, Header, AemMetadata, FileFormat, String, int) construction}.
+     * {@link #AttitudeWriter(AemWriter, Header, AemMetadata, FileFormat, String, double, int) construction}.
      * </p>
      */
     @Override
