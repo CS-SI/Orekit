@@ -84,9 +84,7 @@ class ManeuverHistoryWriter extends AbstractWriter {
         // duty cycle
         final boolean notContinuous = metadata.getDcType() != DutyCycleType.CONTINUOUS;
         final boolean timeAndAngle  = metadata.getDcType() == DutyCycleType.TIME_AND_ANGLE;
-        if (metadata.getDcType() != ManeuverHistoryMetadata.DEFAULT_DC_TYPE) {
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
-        }
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),  timeConverter, metadata.getDcWindowOpen(),  false, notContinuous);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(), timeConverter, metadata.getDcWindowClose(), false, notContinuous);
         if (metadata.getDcMinCycles() >= 0) {
