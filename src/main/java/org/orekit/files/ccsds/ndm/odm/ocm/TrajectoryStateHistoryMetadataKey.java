@@ -82,7 +82,7 @@ public enum TrajectoryStateHistoryMetadataKey {
     ORB_REVNUM_BASIS((token, context, container) -> token.processAsInteger(container::setOrbRevNumBasis)),
 
     /** Type of averaging (Osculating, mean Brouwer, other...). */
-    ORB_AVERAGING((token, context, container) -> token.processAsUppercaseString(container::setOrbAveraging)),
+    ORB_AVERAGING((token, context, container) -> token.processAsFreeTextString(container::setOrbAveraging)),
 
     /** Trajectory element set type.
      * @see ElementsType
