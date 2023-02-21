@@ -69,7 +69,9 @@ class CovarianceHistoryWriter extends AbstractWriter {
 
         // references
         generator.writeEntry(CovarianceHistoryMetadataKey.COV_REF_FRAME.name(),   metadata.getCovReferenceFrame().getName(),  null, false);
-        if (!metadata.getCovFrameEpoch().equals(timeConverter.getReferenceDate())) {
+        if (!metadata.getCovFrameEpoch().equals(timeConverter.getReferenceDate()) &&
+            metadata.getCovReferenceFrame().asOrbitRelativeFrame() == null &&
+            metadata.getCovReferenceFrame().asSpacecraftBodyFrame() == null) {
             generator.writeEntry(CovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(), true, false);
         }
 

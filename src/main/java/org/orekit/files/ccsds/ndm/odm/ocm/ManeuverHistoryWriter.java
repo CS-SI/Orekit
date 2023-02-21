@@ -76,7 +76,9 @@ class ManeuverHistoryWriter extends AbstractWriter {
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PURPOSE.name(),      metadata.getManPurpose(),                          false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 null, false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_REF_FRAME.name(),    metadata.getManReferenceFrame().getName(),   null, false);
-        if (!metadata.getManFrameEpoch().equals(timeConverter.getReferenceDate())) {
+        if (!metadata.getManFrameEpoch().equals(timeConverter.getReferenceDate()) &&
+            metadata.getManReferenceFrame().asOrbitRelativeFrame() == null &&
+            metadata.getManReferenceFrame().asSpacecraftBodyFrame() == null) {
             generator.writeEntry(ManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  true, false);
         }
         if (metadata.getGravitationalAssist() != null) {

@@ -278,6 +278,9 @@ public class NdmTestUtils {
     }
 
     public static void checkDate(final AbsoluteDate original, final AbsoluteDate rebuilt) {
+        if (FastMath.abs(rebuilt.durationFrom(original)) > 1) {
+            System.out.println("gotcha!");
+        }
         Assertions.assertEquals(0.0, rebuilt.durationFrom(original), 4.0e-12);
     }
 
