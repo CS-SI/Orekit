@@ -17,6 +17,7 @@
 package org.orekit.gnss;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
@@ -41,6 +42,11 @@ import java.util.List;
 
 public class HatanakaCompressFilterTest {
 
+    @BeforeEach
+    public void setUp() {
+        // Sets the root of data to read
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     public void testNotFiltered() throws IOException {

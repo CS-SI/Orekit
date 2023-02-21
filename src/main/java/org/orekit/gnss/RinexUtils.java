@@ -202,7 +202,12 @@ public class RinexUtils {
      * @return the parsed value
      */
     public static double parseDouble(final String line, final int startIndex, final int size) {
-        return Double.parseDouble(line.substring(startIndex, startIndex + size).replace('D', 'E').trim());
+        final String subString = parseString(line, startIndex, size);
+        if (subString == null || subString.isEmpty()) {
+            return Double.NaN;
+        } else {
+            return Double.parseDouble(subString.replace('D', 'E').trim());
+        }
     }
 
     /**
@@ -213,7 +218,12 @@ public class RinexUtils {
      * @return the parsed value
      */
     public static int parseInt(final String line, final int startIndex, final int size) {
-        return Integer.parseInt(line.substring(startIndex, startIndex + size).trim());
+        final String subString = parseString(line, startIndex, size);
+        if (subString == null || subString.isEmpty()) {
+            return 0;
+        } else {
+            return Integer.parseInt(subString.trim());
+        }
     }
 
     /**
@@ -224,7 +234,11 @@ public class RinexUtils {
      * @return the parsed value
      */
     public static String parseString(final String line, final int startIndex, final int size) {
-        return line.substring(startIndex, startIndex + size).trim();
+        if (line.length() > startIndex) {
+            return line.substring(startIndex, FastMath.min(line.length(), startIndex + size)).trim();
+        } else {
+            return null;
+        }
     }
 
 }

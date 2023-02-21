@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
-import org.orekit.gnss.RinexObservationLoader.Parser.PhaseShiftCorrection;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for Rinex observation file header.

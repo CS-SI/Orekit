@@ -285,69 +285,69 @@ public class RinexObservationLoader {
                                         RinexUtils.parseProgramRunByDate(line, lineNumber, fileName, timeScales, rinexHeader);
                                         break;
                                     case MARKER_NAME :
-                                        rinexHeader.setMarkerName(parseString(0, 60));
+                                        rinexHeader.setMarkerName(RinexUtils.parseString(line, 0, 60));
                                         inMarkerName = true;
                                         break;
                                     case MARKER_NUMBER :
-                                        rinexHeader.setMarkerNumber(parseString(0, 20));
+                                        rinexHeader.setMarkerNumber(RinexUtils.parseString(line, 0, 20));
                                         break;
                                     case MARKER_TYPE :
-                                        rinexHeader.setMarkerType(parseString(0, 20));
+                                        rinexHeader.setMarkerType(RinexUtils.parseString(line, 0, 20));
                                         break;
                                     case OBSERVER_AGENCY :
-                                        rinexHeader.setObserverName(parseString(0, 20));
-                                        rinexHeader.setAgencyName(parseString(20, 40));
+                                        rinexHeader.setObserverName(RinexUtils.parseString(line, 0, 20));
+                                        rinexHeader.setAgencyName(RinexUtils.parseString(line, 20, 40));
                                         inObserver = true;
                                         break;
                                     case REC_NB_TYPE_VERS :
-                                        rinexHeader.setReceiverNumber(parseString(0, 20));
-                                        rinexHeader.setReceiverType(parseString(20, 20));
-                                        rinexHeader.setReceiverVersion(parseString(40, 20));
+                                        rinexHeader.setReceiverNumber(RinexUtils.parseString(line, 0, 20));
+                                        rinexHeader.setReceiverType(RinexUtils.parseString(line, 20, 20));
+                                        rinexHeader.setReceiverVersion(RinexUtils.parseString(line, 40, 20));
                                         inRecType = true;
                                         break;
                                     case ANT_NB_TYPE :
-                                        rinexHeader.setAntennaNumber(parseString(0, 20));
-                                        rinexHeader.setAntennaType(parseString(20, 20));
+                                        rinexHeader.setAntennaNumber(RinexUtils.parseString(line, 0, 20));
+                                        rinexHeader.setAntennaType(RinexUtils.parseString(line, 20, 20));
                                         inAntType = true;
                                         break;
                                     case APPROX_POSITION_XYZ :
-                                        rinexHeader.setApproxPos(new Vector3D(parseDouble(0, 14),
-                                                                              parseDouble(14, 14),
-                                                                              parseDouble(28, 14)));
+                                        rinexHeader.setApproxPos(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                              RinexUtils.parseDouble(line, 14, 14),
+                                                                              RinexUtils.parseDouble(line, 28, 14)));
                                         inAproxPos = true;
                                         break;
                                     case ANTENNA_DELTA_H_E_N :
-                                        rinexHeader.setAntennaHeight(parseDouble(0, 14));
-                                        rinexHeader.setEccentricities(new Vector2D(parseDouble(14, 14), parseDouble(28, 14)));
+                                        rinexHeader.setAntennaHeight(RinexUtils.parseDouble(line, 0, 14));
+                                        rinexHeader.setEccentricities(new Vector2D(RinexUtils.parseDouble(line, 14, 14), RinexUtils.parseDouble(line, 28, 14)));
                                         inAntDelta = true;
                                         break;
                                     case ANTENNA_DELTA_X_Y_Z :
-                                        rinexHeader.setAntennaReferencePoint(new Vector3D(parseDouble(0, 14),
-                                                                                          parseDouble(14, 14),
-                                                                                          parseDouble(28, 14)));
+                                        rinexHeader.setAntennaReferencePoint(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                          RinexUtils.parseDouble(line, 14, 14),
+                                                                                          RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case ANTENNA_B_SIGHT_XYZ :
-                                        rinexHeader.setAntennaBSight(new Vector3D(parseDouble(0, 14),
-                                                                                  parseDouble(14, 14),
-                                                                                  parseDouble(28, 14)));
+                                        rinexHeader.setAntennaBSight(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                  RinexUtils.parseDouble(line, 14, 14),
+                                                                                  RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case CENTER_OF_MASS_XYZ :
-                                        rinexHeader.setCenterMass(new Vector3D(parseDouble(0, 14),
-                                                                               parseDouble(14, 14),
-                                                                               parseDouble(28, 14)));
+                                        rinexHeader.setCenterMass(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                               RinexUtils.parseDouble(line, 14, 14),
+                                                                               RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case NB_OF_SATELLITES :
-                                        nbSat = parseInt(0, 6);
+                                        nbSat = RinexUtils.parseInt(line, 0, 6);
                                         break;
                                     case WAVELENGTH_FACT_L1_2 :
                                         //Optional line in header
                                         //Not stored for now
                                         break;
                                     case RCV_CLOCK_OFFS_APPL :
-                                        rinexHeader.setClkOffset(parseInt(0, 6));
+                                        rinexHeader.setClkOffset(RinexUtils.parseInt(line, 0, 6));
                                         break;
                                     case INTERVAL :
-                                        rinexHeader.setInterval(parseDouble(0, 10));
+                                        rinexHeader.setInterval(RinexUtils.parseDouble(line, 0, 10));
                                         break;
                                     case TIME_OF_FIRST_OBS :
                                         switch (rinexHeader.getSatelliteSystem()) {
@@ -362,7 +362,7 @@ public class RinexObservationLoader {
                                                 break;
                                             case MIXED:
                                                 //in Case of Mixed data, Timescale must be specified in the Time of First line
-                                                timeScaleStr = parseString(48, 3);
+                                                timeScaleStr = RinexUtils.parseString(line, 48, 3);
 
                                                 if (timeScaleStr.equals(GPS)) {
                                                     timeScale = timeScales.getGPS();
@@ -379,31 +379,31 @@ public class RinexObservationLoader {
                                                                           lineNumber, name, line);
                                         }
 
-                                        rinexHeader.setTFirstObs(new AbsoluteDate(parseInt(0, 6),
-                                                                                  parseInt(6, 6),
-                                                                                  parseInt(12, 6),
-                                                                                  parseInt(18, 6),
-                                                                                  parseInt(24, 6),
-                                                                                  parseDouble(30, 13), timeScale));
+                                        rinexHeader.setTFirstObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
+                                                                                  RinexUtils.parseInt(line, 6, 6),
+                                                                                  RinexUtils.parseInt(line, 12, 6),
+                                                                                  RinexUtils.parseInt(line, 18, 6),
+                                                                                  RinexUtils.parseInt(line, 24, 6),
+                                                                                  RinexUtils.parseDouble(line, 30, 13), timeScale));
                                         inFirstObs = true;
                                         break;
                                     case TIME_OF_LAST_OBS :
-                                        rinexHeader.setTLastObs(new AbsoluteDate(parseInt(0, 6),
-                                                                                 parseInt(6, 6),
-                                                                                 parseInt(12, 6),
-                                                                                 parseInt(18, 6),
-                                                                                 parseInt(24, 6),
-                                                                                 parseDouble(30, 13), timeScale));
+                                        rinexHeader.setTLastObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
+                                                                                 RinexUtils.parseInt(line, 6, 6),
+                                                                                 RinexUtils.parseInt(line, 12, 6),
+                                                                                 RinexUtils.parseInt(line, 18, 6),
+                                                                                 RinexUtils.parseInt(line, 24, 6),
+                                                                                 RinexUtils.parseDouble(line, 30, 13), timeScale));
                                         break;
                                     case LEAP_SECONDS :
-                                        rinexHeader.setLeapSeconds(parseInt(0, 6));
+                                        rinexHeader.setLeapSeconds(RinexUtils.parseInt(line, 0, 6));
                                         break;
                                     case PRN_NB_OF_OBS :
                                         //Optional line in header, indicates number of Observations par Satellite
                                         //Not stored for now
                                         break;
                                     case NB_TYPES_OF_OBSERV :
-                                        nbTypes = parseInt(0, 6);
+                                        nbTypes = RinexUtils.parseInt(line, 0, 6);
                                         final int nbLinesTypesObs = (nbTypes + MAX_OBS_TYPES_PER_LINE_RNX2 - 1 ) / MAX_OBS_TYPES_PER_LINE_RNX2;
 
                                         for (int j = 0; j < nbLinesTypesObs; j++) {
@@ -413,25 +413,25 @@ public class RinexObservationLoader {
                                             final int iMax = FastMath.min(MAX_OBS_TYPES_PER_LINE_RNX2, nbTypes - typesObs.size());
                                             for (int i = 0; i < iMax; i++) {
                                                 try {
-                                                    typesObs.add(ObservationType.valueOf(parseString(10 + (6 * i), 2)));
+                                                    typesObs.add(ObservationType.valueOf(RinexUtils.parseString(line, 10 + (6 * i), 2)));
                                                 } catch (IllegalArgumentException iae) {
                                                     throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
-                                                                              parseString(10 + (6 * i), 2), name, lineNumber);
+                                                                              RinexUtils.parseString(line, 10 + (6 * i), 2), name, lineNumber);
                                                 }
                                             }
                                         }
                                         inTypesObs = true;
                                         break;
                                     case OBS_SCALE_FACTOR :
-                                        scaleFactor      = FastMath.max(1, parseInt(0,  6));
-                                        nbObsScaleFactor = parseInt(6, 6);
+                                        scaleFactor      = FastMath.max(1, RinexUtils.parseInt(line, 0,  6));
+                                        nbObsScaleFactor = RinexUtils.parseInt(line, 6, 6);
                                         if (nbObsScaleFactor > MAX_OBS_TYPES_SCALE_FACTOR) {
                                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                       lineNumber, name, line);
                                         }
                                         final List<ObservationType> typesObsScaleFactor = new ArrayList<>(nbObsScaleFactor);
                                         for (int i = 0; i < nbObsScaleFactor; i++) {
-                                            typesObsScaleFactor.add(ObservationType.valueOf(parseString(16 + (6 * i), 2)));
+                                            typesObsScaleFactor.add(ObservationType.valueOf(RinexUtils.parseString(line, 16 + (6 * i), 2)));
                                         }
                                         scaleFactorCorrections.add(new ScaleFactorCorrection(rinexHeader.getSatelliteSystem(),
                                                                                              scaleFactor, typesObsScaleFactor));
@@ -466,11 +466,11 @@ public class RinexObservationLoader {
                                 satsObsList       = null;
                                 tObs              = null;
 
-                                eventFlag = parseInt(28, 1);
+                                eventFlag = RinexUtils.parseInt(line, 28, 1);
                                 //If eventFlag>1, we skip the corresponding lines to the next observation
                                 if (eventFlag > 1) {
                                     if (eventFlag == 6) {
-                                        nbSatObs  = parseInt(29, 3);
+                                        nbSatObs  = RinexUtils.parseInt(line, 29, 3);
                                         nbLinesSat = (nbSatObs + 12 - 1) / 12;
                                         final int nbLinesObs = (nbTypes + 5 - 1) / 5;
                                         final int nbLinesSkip = (nbLinesSat - 1) + nbSatObs * nbLinesObs;
@@ -478,27 +478,27 @@ public class RinexObservationLoader {
                                             readLine(reader, true);
                                         }
                                     } else {
-                                        final int nbLinesSkip = parseInt(29, 3);
+                                        final int nbLinesSkip = RinexUtils.parseInt(line, 29, 3);
                                         for (int i = 0; i < nbLinesSkip; i++) {
                                             readLine(reader, true);
                                         }
                                     }
                                 } else {
 
-                                    int y = parseInt(0, 3);
+                                    int y = RinexUtils.parseInt(line, 0, 3);
                                     if (79 < y && y <= 99) {
                                         y += 1900;
                                     } else if (0 <= y && y <= 79) {
                                         y += 2000;
                                     }
                                     tObs = new AbsoluteDate(y,
-                                                            parseInt(3, 3),
-                                                            parseInt(6, 3),
-                                                            parseInt(9, 3),
-                                                            parseInt(12, 3),
-                                                            parseDouble(15, 11), timeScale);
+                                                            RinexUtils.parseInt(line, 3, 3),
+                                                            RinexUtils.parseInt(line, 6, 3),
+                                                            RinexUtils.parseInt(line, 9, 3),
+                                                            RinexUtils.parseInt(line, 12, 3),
+                                                            RinexUtils.parseDouble(line, 15, 11), timeScale);
 
-                                    nbSatObs  = parseInt(29, 3);
+                                    nbSatObs  = RinexUtils.parseInt(line, 29, 3);
                                     satsObsList   = new String[nbSatObs];
                                     //If the total number of satellites was indicated in the Header
                                     if (nbSat != -1 && nbSatObs > nbSat) {
@@ -514,11 +514,11 @@ public class RinexObservationLoader {
                                         }
                                         final int iMax = FastMath.min(MAX_N_SAT_OBSERVATION, nbSatObs  - j * MAX_N_SAT_OBSERVATION);
                                         for (int i = 0; i < iMax; i++) {
-                                            satsObsList[i + MAX_N_SAT_OBSERVATION * j] = parseString(32 + 3 * i, 3);
+                                            satsObsList[i + MAX_N_SAT_OBSERVATION * j] = RinexUtils.parseString(line, 32 + 3 * i, 3);
                                         }
 
                                         //Read the Receiver Clock offset, if present
-                                        rcvrClkOffset = parseDouble(68, 12);
+                                        rcvrClkOffset = RinexUtils.parseDouble(line, 68, 12);
                                         if (Double.isNaN(rcvrClkOffset)) {
                                             rcvrClkOffset = 0.0;
                                         }
@@ -539,7 +539,7 @@ public class RinexObservationLoader {
                                             final int iMax = FastMath.min(MAX_N_TYPES_OBSERVATION, nbTypes - observationData.size());
                                             for (int i = 0; i < iMax; i++) {
                                                 final ObservationType type = typesObs.get(observationData.size());
-                                                double value = parseDouble(16 * i, 14);
+                                                double value = RinexUtils.parseDouble(line, 16 * i, 14);
                                                 boolean scaleFactorFound = false;
                                                 //We look for the lines of ScaledFactorCorrections
                                                 for (int l = 0; l < scaleFactorCorrections.size() && !scaleFactorFound; ++l) {
@@ -551,8 +551,8 @@ public class RinexObservationLoader {
                                                 }
                                                 observationData.add(new ObservationData(type,
                                                                                         value,
-                                                                                        parseInt(14 + 16 * i, 1),
-                                                                                        parseInt(15 + 16 * i, 1)));
+                                                                                        RinexUtils.parseInt(line, 14 + 16 * i, 1),
+                                                                                        RinexUtils.parseInt(line, 15 + 16 * i, 1)));
                                             }
                                         }
 
@@ -626,81 +626,81 @@ public class RinexObservationLoader {
                                         RinexUtils.parseProgramRunByDate(line, lineNumber, fileName, timeScales, rinexHeader);
                                         break;
                                     case MARKER_NAME :
-                                        rinexHeader.setMarkerName(parseString(0, 60));
+                                        rinexHeader.setMarkerName(RinexUtils.parseString(line, 0, 60));
                                         inMarkerName = true;
                                         break;
                                     case MARKER_NUMBER :
-                                        rinexHeader.setMarkerNumber(parseString(0, 20));
+                                        rinexHeader.setMarkerNumber(RinexUtils.parseString(line, 0, 20));
                                         break;
                                     case MARKER_TYPE :
-                                        rinexHeader.setMarkerType(parseString(0, 20));
+                                        rinexHeader.setMarkerType(RinexUtils.parseString(line, 0, 20));
                                         //Could be done with an Enumeration
                                         break;
                                     case OBSERVER_AGENCY :
-                                        rinexHeader.setObserverName(parseString(0, 20));
-                                        rinexHeader.setAgencyName(parseString(20, 40));
+                                        rinexHeader.setObserverName(RinexUtils.parseString(line, 0, 20));
+                                        rinexHeader.setAgencyName(RinexUtils.parseString(line, 20, 40));
                                         inObserver = true;
                                         break;
                                     case REC_NB_TYPE_VERS :
-                                        rinexHeader.setReceiverNumber(parseString(0, 20));
-                                        rinexHeader.setReceiverType(parseString(20, 20));
-                                        rinexHeader.setReceiverVersion(parseString(40, 20));
+                                        rinexHeader.setReceiverNumber(RinexUtils.parseString(line, 0, 20));
+                                        rinexHeader.setReceiverType(RinexUtils.parseString(line, 20, 20));
+                                        rinexHeader.setReceiverVersion(RinexUtils.parseString(line, 40, 20));
                                         inRecType = true;
                                         break;
                                     case ANT_NB_TYPE :
-                                        rinexHeader.setAntennaNumber(parseString(0, 20));
-                                        rinexHeader.setAntennaType(parseString(20, 20));
+                                        rinexHeader.setAntennaNumber(RinexUtils.parseString(line, 0, 20));
+                                        rinexHeader.setAntennaType(RinexUtils.parseString(line, 20, 20));
                                         inAntType = true;
                                         break;
                                     case APPROX_POSITION_XYZ :
-                                        rinexHeader.setApproxPos(new Vector3D(parseDouble(0, 14),
-                                                                              parseDouble(14, 14),
-                                                                              parseDouble(28, 14)));
+                                        rinexHeader.setApproxPos(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                              RinexUtils.parseDouble(line, 14, 14),
+                                                                              RinexUtils.parseDouble(line, 28, 14)));
                                         inAproxPos = true;
                                         break;
                                     case ANTENNA_DELTA_H_E_N :
-                                        rinexHeader.setAntennaHeight(parseDouble(0, 14));
-                                        rinexHeader.setEccentricities(new Vector2D(parseDouble(14, 14),
-                                                                                   parseDouble(28, 14)));
+                                        rinexHeader.setAntennaHeight(RinexUtils.parseDouble(line, 0, 14));
+                                        rinexHeader.setEccentricities(new Vector2D(RinexUtils.parseDouble(line, 14, 14),
+                                                                                   RinexUtils.parseDouble(line, 28, 14)));
                                         inAntDelta = true;
                                         break;
                                     case ANTENNA_DELTA_X_Y_Z :
-                                        rinexHeader.setAntennaReferencePoint(new Vector3D(parseDouble(0, 14),
-                                                                                          parseDouble(14, 14),
-                                                                                          parseDouble(28, 14)));
+                                        rinexHeader.setAntennaReferencePoint(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                          RinexUtils.parseDouble(line, 14, 14),
+                                                                                          RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case ANTENNA_PHASECENTER :
-                                        rinexHeader.setObservationCode(parseString(2, 3));
-                                        rinexHeader.setAntennaPhaseCenter(new Vector3D(parseDouble(5, 9),
-                                                                                       parseDouble(14, 14),
-                                                                                       parseDouble(28, 14)));
+                                        rinexHeader.setObservationCode(RinexUtils.parseString(line, 2, 3));
+                                        rinexHeader.setAntennaPhaseCenter(new Vector3D(RinexUtils.parseDouble(line, 5, 9),
+                                                                                       RinexUtils.parseDouble(line, 14, 14),
+                                                                                       RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case ANTENNA_B_SIGHT_XYZ :
-                                        rinexHeader.setAntennaBSight(new Vector3D(parseDouble(0, 14),
-                                                                                  parseDouble(14, 14),
-                                                                                  parseDouble(28, 14)));
+                                        rinexHeader.setAntennaBSight(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                  RinexUtils.parseDouble(line, 14, 14),
+                                                                                  RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case ANTENNA_ZERODIR_AZI :
-                                        rinexHeader.setAntennaAzimuth(parseDouble(0, 14));
+                                        rinexHeader.setAntennaAzimuth(RinexUtils.parseDouble(line, 0, 14));
                                         break;
                                     case ANTENNA_ZERODIR_XYZ :
-                                        rinexHeader.setAntennaZeroDirection(new Vector3D(parseDouble(0, 14),
-                                                                                         parseDouble(14, 14),
-                                                                                         parseDouble(28, 14)));
+                                        rinexHeader.setAntennaZeroDirection(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                                         RinexUtils.parseDouble(line, 14, 14),
+                                                                                         RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case CENTER_OF_MASS_XYZ :
-                                        rinexHeader.setCenterMass(new Vector3D(parseDouble(0, 14),
-                                                                               parseDouble(14, 14),
-                                                                               parseDouble(28, 14)));
+                                        rinexHeader.setCenterMass(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                                                               RinexUtils.parseDouble(line, 14, 14),
+                                                                               RinexUtils.parseDouble(line, 28, 14)));
                                         break;
                                     case NB_OF_SATELLITES :
-                                        nbSat = parseInt(0, 6);
+                                        nbSat = RinexUtils.parseInt(line, 0, 6);
                                         break;
                                     case RCV_CLOCK_OFFS_APPL :
-                                        rinexHeader.setClkOffset(parseInt(0, 6));
+                                        rinexHeader.setClkOffset(RinexUtils.parseInt(line, 0, 6));
                                         break;
                                     case INTERVAL :
-                                        rinexHeader.setInterval(parseDouble(0, 10));
+                                        rinexHeader.setInterval(RinexUtils.parseDouble(line, 0, 10));
                                         break;
                                     case TIME_OF_FIRST_OBS :
                                         switch (rinexHeader.getSatelliteSystem()) {
@@ -724,7 +724,7 @@ public class RinexObservationLoader {
                                                 break;
                                             case MIXED:
                                                 //in Case of Mixed data, Timescale must be specified in the Time of First line
-                                                timeScaleStr = parseString(48, 3);
+                                                timeScaleStr = RinexUtils.parseString(line, 48, 3);
 
                                                 if (timeScaleStr.equals(GPS)) {
                                                     timeScale = timeScales.getGPS();
@@ -747,27 +747,27 @@ public class RinexObservationLoader {
                                                                           lineNumber, name, line);
                                         }
 
-                                        rinexHeader.setTFirstObs(new AbsoluteDate(parseInt(0, 6),
-                                                                                  parseInt(6, 6),
-                                                                                  parseInt(12, 6),
-                                                                                  parseInt(18, 6),
-                                                                                  parseInt(24, 6),
-                                                                                  parseDouble(30, 13), timeScale));
+                                        rinexHeader.setTFirstObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
+                                                                                  RinexUtils.parseInt(line, 6, 6),
+                                                                                  RinexUtils.parseInt(line, 12, 6),
+                                                                                  RinexUtils.parseInt(line, 18, 6),
+                                                                                  RinexUtils.parseInt(line, 24, 6),
+                                                                                  RinexUtils.parseDouble(line, 30, 13), timeScale));
                                         inFirstObs = true;
                                         break;
                                     case TIME_OF_LAST_OBS :
-                                        rinexHeader.setTLastObs(new AbsoluteDate(parseInt(0, 6),
-                                                                                 parseInt(6, 6),
-                                                                                 parseInt(12, 6),
-                                                                                 parseInt(18, 6),
-                                                                                 parseInt(24, 6),
-                                                                                 parseDouble(30, 13), timeScale));
+                                        rinexHeader.setTLastObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
+                                                                                 RinexUtils.parseInt(line, 6, 6),
+                                                                                 RinexUtils.parseInt(line, 12, 6),
+                                                                                 RinexUtils.parseInt(line, 18, 6),
+                                                                                 RinexUtils.parseInt(line, 24, 6),
+                                                                                 RinexUtils.parseDouble(line, 30, 13), timeScale));
                                         break;
                                     case LEAP_SECONDS :
-                                        rinexHeader.setLeapSeconds(parseInt(0, 6));
-                                        rinexHeader.setLeapSecondsFuture(parseInt(6, 6));
-                                        rinexHeader.setLeapSecondsWeekNum(parseInt(12, 6));
-                                        rinexHeader.setLeapSecondsDayNum(parseInt(18, 6));
+                                        rinexHeader.setLeapSeconds(RinexUtils.parseInt(line, 0, 6));
+                                        rinexHeader.setLeapSecondsFuture(RinexUtils.parseInt(line, 6, 6));
+                                        rinexHeader.setLeapSecondsWeekNum(RinexUtils.parseInt(line, 12, 6));
+                                        rinexHeader.setLeapSecondsDayNum(RinexUtils.parseInt(line, 18, 6));
                                         //Time System Identifier must be added, last A3 String
                                         break;
                                     case PRN_NB_OF_OBS :
@@ -777,8 +777,8 @@ public class RinexObservationLoader {
                                     case SYS_NB_OBS_TYPES : {
                                         typeObs.clear();
 
-                                        final SatelliteSystem obsTypesSystem = SatelliteSystem.parseSatelliteSystem(parseString(0, 1));
-                                        nbTypes = parseInt(3, 3);
+                                        final SatelliteSystem obsTypesSystem = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
+                                        nbTypes = RinexUtils.parseInt(line, 3, 3);
 
                                         final int nbLinesTypesObs = (nbTypes + MAX_OBS_TYPES_PER_LINE_RNX3 - 1) / MAX_OBS_TYPES_PER_LINE_RNX3;
                                         for (int j = 0; j < nbLinesTypesObs; j++) {
@@ -788,10 +788,10 @@ public class RinexObservationLoader {
                                             final int iMax = FastMath.min(MAX_OBS_TYPES_PER_LINE_RNX3, nbTypes - typeObs.size());
                                             for (int i = 0; i < iMax; i++) {
                                                 try {
-                                                    typeObs.add(ObservationType.valueOf(parseString(7 + (4 * i), 3)));
+                                                    typeObs.add(ObservationType.valueOf(RinexUtils.parseString(line, 7 + (4 * i), 3)));
                                                 } catch (IllegalArgumentException iae) {
                                                     throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
-                                                                              parseString(7 + (4 * i), 3), name, lineNumber);
+                                                                              RinexUtils.parseString(line, 7 + (4 * i), 3), name, lineNumber);
                                                 }
                                             }
                                         }
@@ -800,24 +800,24 @@ public class RinexObservationLoader {
                                     }
                                         break;
                                     case SIGNAL_STRENGTH_UNIT :
-                                        rinexHeader.setSignalStrengthUnit(parseString(0, 20));
+                                        rinexHeader.setSignalStrengthUnit(RinexUtils.parseString(line, 0, 20));
                                         break;
                                     case SYS_DCBS_APPLIED :
-                                        rinexHeader.addAppliedDCBS(new AppliedDCBS(SatelliteSystem.parseSatelliteSystem(parseString(0, 1)),
-                                                                                   parseString(2, 17), parseString(20, 40)));
+                                        rinexHeader.addAppliedDCBS(new AppliedDCBS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
+                                                                                   RinexUtils.parseString(line, 2, 17), RinexUtils.parseString(line, 20, 40)));
                                         break;
                                     case SYS_PCVS_APPLIED :
-                                        rinexHeader.addAppliedPCVS(new AppliedPCVS(SatelliteSystem.parseSatelliteSystem(parseString(0, 1)),
-                                                                                   parseString(2, 17), parseString(20, 40)));
+                                        rinexHeader.addAppliedPCVS(new AppliedPCVS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
+                                                                                   RinexUtils.parseString(line, 2, 17), RinexUtils.parseString(line, 20, 40)));
                                         break;
                                     case SYS_SCALE_FACTOR :
                                         satSystemScaleFactor  = null;
                                         scaleFactor           = 1;
                                         nbObsScaleFactor      = 0;
 
-                                        satSystemScaleFactor = SatelliteSystem.parseSatelliteSystem(parseString(0, 1));
-                                        scaleFactor          = parseInt(2, 4);
-                                        nbObsScaleFactor     = parseInt(8, 2);
+                                        satSystemScaleFactor = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
+                                        scaleFactor          = RinexUtils.parseInt(line, 2, 4);
+                                        nbObsScaleFactor     = RinexUtils.parseInt(line, 8, 2);
                                         final List<ObservationType> typesObsScaleFactor = new ArrayList<>(nbObsScaleFactor);
 
                                         if (nbObsScaleFactor == 0) {
@@ -831,7 +831,7 @@ public class RinexObservationLoader {
                                                 }
                                                 final int iMax = FastMath.min(MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE, nbObsScaleFactor - typesObsScaleFactor.size());
                                                 for (int i = 0; i < iMax; i++) {
-                                                    typesObsScaleFactor.add(ObservationType.valueOf(parseString(11 + (4 * i), 3)));
+                                                    typesObsScaleFactor.add(ObservationType.valueOf(RinexUtils.parseString(line, 11 + (4 * i), 3)));
                                                 }
                                             }
                                         }
@@ -848,13 +848,13 @@ public class RinexObservationLoader {
                                         phaseShiftTypeObs   = null;
                                         satSystemPhaseShift = null;
 
-                                        satSystemPhaseShift = SatelliteSystem.parseSatelliteSystem(parseString(0, 1));
-                                        final String to = parseString(2, 3);
+                                        satSystemPhaseShift = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
+                                        final String to = RinexUtils.parseString(line, 2, 3);
                                         phaseShiftTypeObs = to.isEmpty() ?
                                                             null :
                                                             ObservationType.valueOf(to.length() < 3 ? "L" + to : to);
-                                        nbSatPhaseShift = parseInt(16, 2);
-                                        corrPhaseShift = parseDouble(6, 8);
+                                        nbSatPhaseShift = RinexUtils.parseInt(line, 16, 2);
+                                        corrPhaseShift = RinexUtils.parseDouble(line, 6, 8);
 
                                         if (nbSatPhaseShift == 0) {
                                             //If nbSat with Phase Shift is not indicated: all the satellites are affected for this Obs Type
@@ -867,7 +867,7 @@ public class RinexObservationLoader {
                                                 }
                                                 final int iMax = FastMath.min(MAX_N_SAT_PHSHIFT_PER_LINE, nbSatPhaseShift - j * MAX_N_SAT_PHSHIFT_PER_LINE);
                                                 for (int i = 0; i < iMax; i++) {
-                                                    satsPhaseShift[i + 10 * j] = parseString(19 + 4 * i, 3);
+                                                    satsPhaseShift[i + 10 * j] = RinexUtils.parseString(line, 19 + 4 * i, 3);
                                                 }
                                             }
                                         }
@@ -913,25 +913,25 @@ public class RinexObservationLoader {
                                 tObs              = null;
 
                                 //A line that starts with ">" correspond to a new observation epoch
-                                if (parseString(0, 1).equals(">")) {
+                                if (RinexUtils.parseString(line, 0, 1).equals(">")) {
 
-                                    eventFlag = parseInt(31, 1);
+                                    eventFlag = RinexUtils.parseInt(line, 31, 1);
                                     //If eventFlag>1, we skip the corresponding lines to the next observation
                                     if (eventFlag != 0) {
-                                        final int nbLinesSkip = parseInt(32, 3);
+                                        final int nbLinesSkip = RinexUtils.parseInt(line, 32, 3);
                                         for (int i = 0; i < nbLinesSkip; i++) {
                                             readLine(reader, true);
                                         }
                                     } else {
 
-                                        tObs = new AbsoluteDate(parseInt(2, 4),
-                                                                parseInt(6, 3),
-                                                                parseInt(9, 3),
-                                                                parseInt(12, 3),
-                                                                parseInt(15, 3),
-                                                                parseDouble(18, 11), timeScale);
+                                        tObs = new AbsoluteDate(RinexUtils.parseInt(line, 2, 4),
+                                                                RinexUtils.parseInt(line, 6, 3),
+                                                                RinexUtils.parseInt(line, 9, 3),
+                                                                RinexUtils.parseInt(line, 12, 3),
+                                                                RinexUtils.parseInt(line, 15, 3),
+                                                                RinexUtils.parseDouble(line, 18, 11), timeScale);
 
-                                        nbSatObs  = parseInt(32, 3);
+                                        nbSatObs  = RinexUtils.parseInt(line, 32, 3);
                                         //If the total number of satellites was indicated in the Header
                                         if (nbSat != -1 && nbSatObs > nbSat) {
                                             //we check that the number of Sat in the observation is consistent
@@ -939,7 +939,7 @@ public class RinexObservationLoader {
                                                                       lineNumber, name, nbSatObs, nbSat);
                                         }
                                         //Read the Receiver Clock offset, if present
-                                        rcvrClkOffset = parseDouble(41, 15);
+                                        rcvrClkOffset = RinexUtils.parseDouble(line, 41, 15);
                                         if (Double.isNaN(rcvrClkOffset)) {
                                             rcvrClkOffset = 0.0;
                                         }
@@ -950,7 +950,7 @@ public class RinexObservationLoader {
                                             readLine(reader, true);
 
                                             //We check that the Satellite type is consistent with Satellite System in the top of the file
-                                            final SatelliteSystem satelliteSystemSat = SatelliteSystem.parseSatelliteSystem(parseString(0, 1));
+                                            final SatelliteSystem satelliteSystemSat = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
                                             if (rinexHeader.getSatelliteSystem() != SatelliteSystem.MIXED) {
                                                 if (satelliteSystemSat != rinexHeader.getSatelliteSystem()) {
                                                     throw new OrekitException(OrekitMessages.INCONSISTENT_SATELLITE_SYSTEM,
@@ -960,7 +960,7 @@ public class RinexObservationLoader {
                                                 }
                                             }
 
-                                            final int prn = parseInt(1, 2);
+                                            final int prn = RinexUtils.parseInt(line, 1, 2);
                                             final int prnNumber;
                                             switch (satelliteSystemSat) {
                                                 case GPS:
@@ -987,7 +987,7 @@ public class RinexObservationLoader {
                                                 boolean scaleFactorFound = false;
                                                 //We look for the lines of ScaledFactorCorrections that correspond to this SatSystem
                                                 int k = 0;
-                                                double value = parseDouble(3 + j * 16, 14);
+                                                double value = RinexUtils.parseDouble(line, 3 + j * 16, 14);
                                                 while (k < scaleFactorCorrections.size() && !scaleFactorFound) {
                                                     if (scaleFactorCorrections.get(k).getSatelliteSystem().equals(satelliteSystemSat)) {
                                                         //We check if the next Observation Type to read needs to be scaled
@@ -1000,8 +1000,8 @@ public class RinexObservationLoader {
                                                 }
                                                 observationData.add(new ObservationData(rf,
                                                                                         value,
-                                                                                        parseInt(17 + j * 16, 1),
-                                                                                        parseInt(18 + j * 16, 1)));
+                                                                                        RinexUtils.parseInt(line, 17 + j * 16, 1),
+                                                                                        RinexUtils.parseInt(line, 18 + j * 16, 1)));
                                             }
                                             observationDataSets.add(new ObservationDataSet(rinexHeader, satelliteSystemSat, prnNumber,
                                                                                            tObs, rcvrClkOffset, observationData));
@@ -1034,151 +1034,6 @@ public class RinexObservationLoader {
             }
             lineNumber++;
             return line != null;
-        }
-
-        /** Extract a string from a line.
-         * @param start start index of the string
-         * @param length length of the string
-         * @return parsed string
-         */
-        private String parseString(final int start, final int length) {
-            if (line.length() > start) {
-                return line.substring(start, FastMath.min(line.length(), start + length)).trim();
-            } else {
-                return null;
-            }
-        }
-
-        /** Extract an integer from a line.
-         * @param start start index of the integer
-         * @param length length of the integer
-         * @return parsed integer
-         */
-        private int parseInt(final int start, final int length) {
-            if (line.length() > start && !parseString(start, length).isEmpty()) {
-                return Integer.parseInt(parseString(start, length));
-            } else {
-                return 0;
-            }
-        }
-
-        /** Extract a double from a line.
-         * @param start start index of the real
-         * @param length length of the real
-         * @return parsed real, or {@code Double.NaN} if field was empty
-         */
-        private double parseDouble(final int start, final int length) {
-            if (line.length() > start && !parseString(start, length).isEmpty()) {
-                return Double.parseDouble(parseString(start, length));
-            } else {
-                return Double.NaN;
-            }
-        }
-
-        /** Phase Shift corrections.
-         * Contains the phase shift corrections used to
-         * generate phases consistent with respect to cycle shifts.
-         */
-        public class PhaseShiftCorrection {
-
-            /** Satellite System. */
-            private final SatelliteSystem satSystemPhaseShift;
-            /** Carrier Phase Observation Code (may be null). */
-            private final ObservationType typeObsPhaseShift;
-            /** Phase Shift Corrections (cycles). */
-            private final double phaseShiftCorrection;
-            /** List of satellites involved. */
-            private final String[] satsPhaseShift;
-
-            /** Simple constructor.
-             * @param satSystemPhaseShift Satellite System
-             * @param typeObsPhaseShift Carrier Phase Observation Code (may be null)
-             * @param phaseShiftCorrection Phase Shift Corrections (cycles)
-             * @param satsPhaseShift List of satellites involved
-             */
-            private PhaseShiftCorrection(final SatelliteSystem satSystemPhaseShift,
-                                         final ObservationType typeObsPhaseShift,
-                                         final double phaseShiftCorrection, final String[] satsPhaseShift) {
-                this.satSystemPhaseShift = satSystemPhaseShift;
-                this.typeObsPhaseShift = typeObsPhaseShift;
-                this.phaseShiftCorrection = phaseShiftCorrection;
-                this.satsPhaseShift = satsPhaseShift;
-            }
-
-            /** Get the Satellite System.
-             * @return Satellite System.
-             */
-            public SatelliteSystem getSatelliteSystem() {
-                return satSystemPhaseShift;
-            }
-            /** Get the Carrier Phase Observation Code.
-             * <p>
-             * The observation code may be null for the uncorrected reference
-             * signal group
-             * </p>
-             * @return Carrier Phase Observation Code.
-             */
-            public ObservationType getTypeObs() {
-                return typeObsPhaseShift;
-            }
-            /** Get the Phase Shift Corrections.
-             * @return Phase Shift Corrections (cycles)
-             */
-            public double getCorrection() {
-                return phaseShiftCorrection;
-            }
-            /** Get the list of satellites involved.
-             * @return List of satellites involved (if null, all the sats are involved)
-             */
-            public String[] getSatsCorrected() {
-                //If empty, all the satellites of this constellation are affected for this Observation type
-                return satsPhaseShift == null ? null : satsPhaseShift.clone();
-            }
-        }
-
-        /** Scale Factor to be applied.
-         * Contains the scale factors of 10 applied to the data before
-         * being stored into the RINEX file.
-         */
-        public class ScaleFactorCorrection {
-
-            /** Satellite System. */
-            private final SatelliteSystem satSystemScaleFactor;
-            /** List of Observations types that have been scaled. */
-            private final List<ObservationType> typesObsScaleFactor;
-            /** Factor to divide stored observations with before use. */
-            private final double scaleFactor;
-
-            /** Simple constructor.
-             * @param satSystemScaleFactor Satellite System
-             * @param scaleFactor Factor to divide stored observations (1,10,100,1000)
-             * @param typesObsScaleFactor List of Observations types that have been scaled
-             */
-            private ScaleFactorCorrection(final SatelliteSystem satSystemScaleFactor,
-                                          final double scaleFactor,
-                                          final List<ObservationType> typesObsScaleFactor) {
-                this.satSystemScaleFactor = satSystemScaleFactor;
-                this.scaleFactor = scaleFactor;
-                this.typesObsScaleFactor = typesObsScaleFactor;
-            }
-            /** Get the Satellite System.
-             * @return Satellite System
-             */
-            public SatelliteSystem getSatelliteSystem() {
-                return satSystemScaleFactor;
-            }
-            /** Get the Scale Factor.
-             * @return Scale Factor
-             */
-            public double getCorrection() {
-                return scaleFactor;
-            }
-            /** Get the list of Observation Types scaled.
-             * @return List of Observation types scaled
-             */
-            public List<ObservationType> getTypesObsScaled() {
-                return typesObsScaleFactor;
-            }
         }
 
     }
