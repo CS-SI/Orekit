@@ -79,7 +79,9 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         // references
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.CENTER_NAME.name(),      metadata.getCenter().getName(),              null, false);
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_REF_FRAME.name(),   metadata.getTrajReferenceFrame().getName(),  null, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_FRAME_EPOCH.name(), timeConverter, metadata.getTrajFrameEpoch(), true, false);
+        if (!metadata.getTrajFrameEpoch().equals(timeConverter.getReferenceDate())) {
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_FRAME_EPOCH.name(), timeConverter, metadata.getTrajFrameEpoch(), true, false);
+        }
 
         // time
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false, false);
