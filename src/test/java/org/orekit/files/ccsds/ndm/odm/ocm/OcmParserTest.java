@@ -1024,7 +1024,8 @@ public class OcmParserTest {
         Assertions.assertEquals(700.0,      phys.getInitialWetMass(),                 1.0e-10);
         Assertions.assertEquals(600.0,      phys.getWetMass(),                        1.0e-10);
         Assertions.assertEquals(500.0,      phys.getDryMass(),                        1.0e-10);
-        Assertions.assertEquals(OrbitRelativeFrame.RSW_ROTATING, phys.getOebParentFrame().asOrbitRelativeFrame());
+        Assertions.assertNull(phys.getOebParentFrame().asOrbitRelativeFrame());
+        Assertions.assertEquals("TOD",      phys.getOebParentFrame().getName());
         Assertions.assertEquals(32400.0,    phys.getOebParentFrameEpoch().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals(0.64,       phys.getOebQ().getQ1(),                   1.0e-10);
         Assertions.assertEquals(0.48,       phys.getOebQ().getQ2(),                   1.0e-10);
@@ -1078,7 +1079,8 @@ public class OcmParserTest {
         Assertions.assertEquals("covariance 2", ch0.getMetadata().getCovNextID());
         Assertions.assertEquals("EMPIRICAL",    ch0.getMetadata().getCovBasis());
         Assertions.assertEquals("basis 1",      ch0.getMetadata().getCovBasisID());
-        Assertions.assertEquals(OrbitRelativeFrame.TNW_INERTIAL, ch0.getMetadata().getCovReferenceFrame().asOrbitRelativeFrame());
+        Assertions.assertNull(ch0.getMetadata().getCovReferenceFrame().asOrbitRelativeFrame());
+        Assertions.assertEquals("MOD",          ch0.getMetadata().getCovReferenceFrame().getName());
         Assertions.assertEquals(33000.0,        ch0.getMetadata().getCovFrameEpoch().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals(0.5,            ch0.getMetadata().getCovScaleMin(),   1.0e-10);
         Assertions.assertEquals(5.0,            ch0.getMetadata().getCovScaleMax(),   1.0e-10);
@@ -1126,7 +1128,8 @@ public class OcmParserTest {
         Assertions.assertEquals(+100.0,                          m0.getMetadata().getManNextEpoch().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals("ORBIT",                         m0.getMetadata().getManPurpose().get(0));
         Assertions.assertEquals("OD_5",                          m0.getMetadata().getManPredSource());
-        Assertions.assertEquals(OrbitRelativeFrame.TNW_INERTIAL, m0.getMetadata().getManReferenceFrame().asOrbitRelativeFrame());
+        Assertions.assertNull(m0.getMetadata().getManReferenceFrame().asOrbitRelativeFrame());
+        Assertions.assertEquals("TOD",                           m0.getMetadata().getManReferenceFrame().getName());
         Assertions.assertEquals(2.3,                             m0.getMetadata().getManFrameEpoch().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals("MOON",                          m0.getMetadata().getGravitationalAssist().getName());
         Assertions.assertEquals(DutyCycleType.TIME,              m0.getMetadata().getDcType());
@@ -1189,7 +1192,7 @@ public class OcmParserTest {
         Assertions.assertEquals("PERIOD",                        m1.getMetadata().getManPurpose().get(0));
         Assertions.assertEquals("OD_5",                          m1.getMetadata().getManPredSource());
         Assertions.assertEquals(OrbitRelativeFrame.TNW_INERTIAL, m1.getMetadata().getManReferenceFrame().asOrbitRelativeFrame());
-        Assertions.assertEquals(2.3,                             m1.getMetadata().getManFrameEpoch().durationFrom(epoch), 1.0e-10);
+        Assertions.assertEquals(0.0,                             m1.getMetadata().getManFrameEpoch().durationFrom(epoch), 1.0e-10);
         Assertions.assertEquals("EARTH",                         m1.getMetadata().getGravitationalAssist().getName());
         Assertions.assertEquals(DutyCycleType.TIME_AND_ANGLE,    m1.getMetadata().getDcType());
         Assertions.assertEquals(1002.0,                          m1.getMetadata().getDcWindowOpen().durationFrom(epoch),  1.0e-10);

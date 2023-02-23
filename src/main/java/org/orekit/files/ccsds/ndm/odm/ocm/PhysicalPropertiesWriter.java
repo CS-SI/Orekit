@@ -71,7 +71,11 @@ class PhysicalPropertiesWriter extends AbstractWriter {
 
         // Optimally Enclosing Box
         generator.writeEntry(PhysicalPropertiesKey.OEB_PARENT_FRAME.name(),       phys.getOebParentFrame().getName(),           null, false);
-        generator.writeEntry(PhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, phys.getOebParentFrameEpoch(), true, false);
+        if (!phys.getOebParentFrameEpoch().equals(timeConverter.getReferenceDate()) &&
+            phys.getOebParentFrame().asOrbitRelativeFrame() == null &&
+            phys.getOebParentFrame().asSpacecraftBodyFrame() == null) {
+            generator.writeEntry(PhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, phys.getOebParentFrameEpoch(), true, false);
+        }
         generator.writeEntry(PhysicalPropertiesKey.OEB_Q1.name(),                 phys.getOebQ().getQ1(), Unit.ONE,                   false);
         generator.writeEntry(PhysicalPropertiesKey.OEB_Q2.name(),                 phys.getOebQ().getQ2(), Unit.ONE,                   false);
         generator.writeEntry(PhysicalPropertiesKey.OEB_Q3.name(),                 phys.getOebQ().getQ3(), Unit.ONE,                   false);

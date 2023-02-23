@@ -76,7 +76,11 @@ class ManeuverHistoryWriter extends AbstractWriter {
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PURPOSE.name(),      metadata.getManPurpose(),                          false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 null, false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_REF_FRAME.name(),    metadata.getManReferenceFrame().getName(),   null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  true, false);
+        if (!metadata.getManFrameEpoch().equals(timeConverter.getReferenceDate()) &&
+            metadata.getManReferenceFrame().asOrbitRelativeFrame() == null &&
+            metadata.getManReferenceFrame().asSpacecraftBodyFrame() == null) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  true, false);
+        }
         if (metadata.getGravitationalAssist() != null) {
             generator.writeEntry(ManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), null, false);
         }
@@ -84,9 +88,7 @@ class ManeuverHistoryWriter extends AbstractWriter {
         // duty cycle
         final boolean notContinuous = metadata.getDcType() != DutyCycleType.CONTINUOUS;
         final boolean timeAndAngle  = metadata.getDcType() == DutyCycleType.TIME_AND_ANGLE;
-        if (metadata.getDcType() != ManeuverHistoryMetadata.DEFAULT_DC_TYPE) {
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
-        }
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),  timeConverter, metadata.getDcWindowOpen(),  false, notContinuous);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(), timeConverter, metadata.getDcWindowClose(), false, notContinuous);
         if (metadata.getDcMinCycles() >= 0) {
