@@ -23,7 +23,8 @@ import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.hipparchus.util.FastMath;
@@ -108,16 +109,16 @@ public class RinexNavigationParser {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 final String l = line;
-                final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
+                final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle.test(l)).findFirst();
                 if (selected.isPresent()) {
                     try {
-                        selected.get().parse(line, lineNumber, pi);
+                        selected.get().parsingMethod.parse(line, pi);
                     } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
                         throw new OrekitException(e,
                                                   OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   lineNumber, source.getName(), line);
                     }
-                    candidateParsers = selected.get().allowedNext();
+                    candidateParsers = selected.get().allowedNextProvider.apply(pi);
                 } else {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               lineNumber, source.getName(), line);
@@ -197,276 +198,185 @@ public class RinexNavigationParser {
     private enum LineParser {
 
         /** Parser for version, file type and satellite system. */
-        HEADER_VERSION("^.+RINEX VERSION / TYPE( )*$") {
+        HEADER_VERSION(line -> RinexUtils.matchesLabel(line, "RINEX VERSION / TYPE"),
+                       (line, pi) -> RinexUtils.parseVersionFileTypeSatelliteSystem(line, pi.name, pi.file.getHeader(),
+                                                                                    3.01, 3.02, 3.03, 3.04, 3.05),
+                       LineParser::headerNext),
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
-                RinexUtils.parseVersionFileTypeSatelliteSystem(line, pi.name, pi.file.getHeader(),
-                                                               3.01, 3.02, 3.03, 3.04, 3.05);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PROGRAM);
-            }
-
-        },
-
-        /** Parser for generating program and emiting agency. */
-        HEADER_PROGRAM("^.+PGM / RUN BY / DATE( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
-                RinexUtils.parseProgramRunByDate(line, lineNumber, pi.name, pi.timeScales, pi.file.getHeader());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_IONOSPHERIC, HEADER_TIME, HEADER_LEAP_SECONDS, HEADER_END);
-            }
-
-        },
+        /** Parser for generating program and emitting agency. */
+        HEADER_PROGRAM(line -> RinexUtils.matchesLabel(line, "PGM / RUN BY / DATE"),
+                       (line, pi) -> RinexUtils.parseProgramRunByDate(line, pi.lineNumber, pi.name, pi.timeScales, pi.file.getHeader()),
+                       LineParser::headerNext),
 
         /** Parser for comments. */
-        HEADER_COMMENT("^.+COMMENT( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
-                RinexUtils.parseComment(line, pi.file.getHeader());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_IONOSPHERIC, HEADER_TIME, HEADER_LEAP_SECONDS, HEADER_END);
-            }
-
-        },
+        HEADER_COMMENT(line -> RinexUtils.matchesLabel(line, "COMMENT"),
+                       (line, pi) -> RinexUtils.parseComment(line, pi.file.getHeader()),
+                       LineParser::headerNext),
 
         /** Parser for ionospheric correction parameters. */
-        HEADER_IONOSPHERIC("^.+IONOSPHERIC CORR( )*$") {
+        HEADER_IONOSPHERIC(line -> RinexUtils.matchesLabel(line, "IONOSPHERIC CORR"),
+                           (line, pi) -> {
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
+                               // Satellite system
+                               final String ionoType = RinexUtils.parseString(line, 0, 3);
+                               pi.file.getHeader().setIonosphericCorrectionType(ionoType);
 
-                // Satellite system
-                final String ionoType = RinexUtils.parseString(line, 0, 3);
-                pi.file.getHeader().setIonosphericCorrectionType(ionoType);
+                               // Read coefficients
+                               final double[] parameters = new double[4];
+                               parameters[0] = RinexUtils.parseDouble(line, 5,  12);
+                               parameters[1] = RinexUtils.parseDouble(line, 17, 12);
+                               parameters[2] = RinexUtils.parseDouble(line, 29, 12);
+                               parameters[3] = RinexUtils.parseDouble(line, 41, 12);
 
-                // Read coefficients
-                final double[] parameters = new double[4];
-                parameters[0] = RinexUtils.parseDouble(line, 5,  12);
-                parameters[1] = RinexUtils.parseDouble(line, 17, 12);
-                parameters[2] = RinexUtils.parseDouble(line, 29, 12);
-                parameters[3] = RinexUtils.parseDouble(line, 41, 12);
+                               // Verify if we are parsing Galileo ionospheric parameters
+                               if ("GAL".equals(ionoType)) {
 
-                // Verify if we are parsing Galileo ionospheric parameters
-                if ("GAL".equals(ionoType)) {
+                                   // We are parsing Galileo ionospheric parameters
+                                   pi.file.setNeQuickAlpha(parameters);
 
-                    // We are parsing Galileo ionospheric parameters
-                    pi.file.setNeQuickAlpha(parameters);
+                               } else {
+                                   // We are parsing Klobuchar ionospheric parameters
 
-                } else {
-                    // We are parsing Klobuchar ionospheric parameters
+                                   // Verify if we are parsing "alpha" or "beta" ionospheric parameters
+                                   if (pi.isIonosphereAlphaInitialized) {
 
-                    // Verify if we are parsing "alpha" or "beta" ionospheric parameters
-                    if (pi.isIonosphereAlphaInitialized) {
+                                       // Ionospheric "beta" parameters
+                                       pi.file.setKlobucharBeta(parameters);
 
-                        // Ionospheric "beta" parameters
-                        pi.file.setKlobucharBeta(parameters);
+                                   } else {
 
-                    } else {
+                                       // Ionospheric "alpha" parameters
+                                       pi.file.setKlobucharAlpha(parameters);
 
-                        // Ionospheric "alpha" parameters
-                        pi.file.setKlobucharAlpha(parameters);
+                                       // Set the flag to true
+                                       pi.isIonosphereAlphaInitialized = true;
 
-                        // Set the flag to true
-                        pi.isIonosphereAlphaInitialized = true;
+                                   }
 
-                    }
+                               }
 
-                }
-
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_IONOSPHERIC, HEADER_TIME, HEADER_LEAP_SECONDS, HEADER_END);
-            }
-
-        },
+                           },
+                           LineParser::headerNext),
 
         /** Parser for corrections to transform the system time to UTC or to other time systems. */
-        HEADER_TIME("^.+TIME SYSTEM CORR( )*$") {
+        HEADER_TIME(line -> RinexUtils.matchesLabel(line, "TIME SYSTEM CORR"),
+                    (line, pi) -> {
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
+                        // Read fields
+                        final String type    = RinexUtils.parseString(line, 0,  4);
+                        final double a0      = RinexUtils.parseDouble(line, 5,  17);
+                        final double a1      = RinexUtils.parseDouble(line, 22, 16);
+                        final int    refTime = RinexUtils.parseInt(line, 38, 7);
+                        final int    refWeek = RinexUtils.parseInt(line, 46, 5);
 
-                // Read fields
-                final String type    = RinexUtils.parseString(line, 0,  4);
-                final double a0      = RinexUtils.parseDouble(line, 5,  17);
-                final double a1      = RinexUtils.parseDouble(line, 22, 16);
-                final int    refTime = RinexUtils.parseInt(line, 38, 7);
-                final int    refWeek = RinexUtils.parseInt(line, 46, 5);
+                        // Add to the list
+                        final TimeSystemCorrection tsc = new TimeSystemCorrection(type, a0, a1, refTime, refWeek);
+                        pi.file.getHeader().addTimeSystemCorrections(tsc);
 
-                // Add to the list
-                final TimeSystemCorrection tsc = new TimeSystemCorrection(type, a0, a1, refTime, refWeek);
-                pi.file.getHeader().addTimeSystemCorrections(tsc);
-
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_TIME, HEADER_LEAP_SECONDS, HEADER_END);
-            }
-
-        },
+                    },
+                    LineParser::headerNext),
 
         /** Parser for leap seconds. */
-        HEADER_LEAP_SECONDS("^.+LEAP SECONDS( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
-                // Current number of leap seconds
-                pi.file.getHeader().setNumberOfLeapSeconds(RinexUtils.parseInt(line, 0, 6));
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_IONOSPHERIC, HEADER_TIME, HEADER_END);
-            }
-
-        },
+        HEADER_LEAP_SECONDS(line -> RinexUtils.matchesLabel(line, "LEAP SECONDS"),
+                            (line, pi) -> pi.file.getHeader().setNumberOfLeapSeconds(RinexUtils.parseInt(line, 0, 6)),
+                            LineParser::headerNext),
 
         /** Parser for the end of header. */
-        HEADER_END("^.+END OF HEADER( )*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
-                // do nothing...
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(NAVIGATION_MESSAGE_FIRST);
-            }
-
-        },
+        HEADER_END(line -> RinexUtils.matchesLabel(line, "END OF HEADER"),
+                   (line, pi) -> {
+                       // nothing to do
+                   },
+                   LineParser::navigationNext),
 
         /** Parser for navigation message first data line. */
-        NAVIGATION_MESSAGE_FIRST("(^G|^R|^E|^C|^I|^J|^S).+$") {
+        NAVIGATION_MESSAGE_FIRST(line -> "GRECIJS".indexOf(line.charAt(0)) >= 0,
+                                 (line, pi) -> {
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
+                                     // Set the line number to 0
+                                     pi.lineNumber = 0;
 
-                // Set the line number to 0
-                pi.lineNumber = 0;
+                                     // Current satellite system
+                                     final String key = RinexUtils.parseString(line, 0, 1);
 
-                // Current satellite system
-                final String key = RinexUtils.parseString(line, 0, 1);
+                                     // Initialize parser
+                                     pi.systemLineParser = SatelliteSystemLineParser.getSatelliteSystemLineParser(key);
 
-                // Initialize parser
-                pi.systemLineParser = SatelliteSystemLineParser.getSatelliteSystemLineParser(key);
+                                     // Read first line
+                                     pi.systemLineParser.parseFirstLine(line, pi);
 
-                // Read first line
-                pi.systemLineParser.parseFirstLine(line, pi);
-
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(NAVIGATION_BROADCAST_ORBIT);
-            }
-
-        },
+                                 },
+                                 LineParser::navigationNext),
 
         /** Parser for broadcast orbit. */
-        NAVIGATION_BROADCAST_ORBIT("^    .+") {
+        NAVIGATION_BROADCAST_ORBIT(line -> line.startsWith("    "),
+                                   (line, pi) -> {
 
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final int lineNumber, final ParseInfo pi) {
+                                       // Increment the line number
+                                       pi.lineNumber++;
 
-                // Increment the line number
-                pi.lineNumber++;
+                                       // Read the corresponding line
+                                       if (pi.lineNumber == 1) {
+                                           // BROADCAST ORBIT – 1
+                                           pi.systemLineParser.parseFirstBroadcastOrbit(line, pi);
+                                       } else if (pi.lineNumber == 2) {
+                                           // BROADCAST ORBIT – 2
+                                           pi.systemLineParser.parseSecondBroadcastOrbit(line, pi);
+                                       } else if (pi.lineNumber == 3) {
+                                           // BROADCAST ORBIT – 3
+                                           pi.systemLineParser.parseThirdBroadcastOrbit(line, pi);
+                                       } else if (pi.lineNumber == 4) {
+                                           // BROADCAST ORBIT – 4
+                                           pi.systemLineParser.parseFourthBroadcastOrbit(line, pi);
+                                       } else if (pi.lineNumber == 5) {
+                                           // BROADCAST ORBIT – 5
+                                           pi.systemLineParser.parseFifthBroadcastOrbit(line, pi);
+                                       } else if (pi.lineNumber == 6) {
+                                           // BROADCAST ORBIT – 6
+                                           pi.systemLineParser.parseSixthBroadcastOrbit(line, pi);
+                                       } else {
+                                           // BROADCAST ORBIT – 7
+                                           pi.systemLineParser.parseSeventhBroadcastOrbit(line, pi);
+                                       }
 
-                // Read the corresponding line
-                if (pi.lineNumber == 1) {
-                    // BROADCAST ORBIT – 1
-                    pi.systemLineParser.parseFirstBroadcastOrbit(line, pi);
-                } else if (pi.lineNumber == 2) {
-                    // BROADCAST ORBIT – 2
-                    pi.systemLineParser.parseSecondBroadcastOrbit(line, pi);
-                } else if (pi.lineNumber == 3) {
-                    // BROADCAST ORBIT – 3
-                    pi.systemLineParser.parseThirdBroadcastOrbit(line, pi);
-                } else if (pi.lineNumber == 4) {
-                    // BROADCAST ORBIT – 4
-                    pi.systemLineParser.parseFourthBroadcastOrbit(line, pi);
-                } else if (pi.lineNumber == 5) {
-                    // BROADCAST ORBIT – 5
-                    pi.systemLineParser.parseFifthBroadcastOrbit(line, pi);
-                } else if (pi.lineNumber == 6) {
-                    // BROADCAST ORBIT – 6
-                    pi.systemLineParser.parseSixthBroadcastOrbit(line, pi);
-                } else {
-                    // BROADCAST ORBIT – 7
-                    pi.systemLineParser.parseSeventhBroadcastOrbit(line, pi);
-                }
+                                   },
+                                   LineParser::navigationNext);
 
-            }
+        /** Predicate for identifying lines that can be parsed. */
+        private final Predicate<String> canHandle;
 
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(NAVIGATION_MESSAGE_FIRST, NAVIGATION_BROADCAST_ORBIT);
-            }
+        /** Parsing method. */
+        private final ParsingMethod parsingMethod;
 
-        };
-
-        /** Pattern for identifying line. */
-        private final Pattern pattern;
+        /** Provider for next line parsers. */
+        private final Function<ParseInfo, Stream<LineParser>> allowedNextProvider;
 
         /** Simple constructor.
-         * @param lineRegexp regular expression for identifying line
+         * @param canHandle predicate for identifying lines that can be parsed
+         * @param parsingMethod parsing method
+         * @param allowedNextProvider supplier for allowed parsers for next line
          */
-        LineParser(final String lineRegexp) {
-            pattern = Pattern.compile(lineRegexp);
+        LineParser(final Predicate<String> canHandle, final ParsingMethod parsingMethod,
+                   final Function<ParseInfo, Stream<LineParser>> allowedNextProvider) {
+            this.canHandle           = canHandle;
+            this.parsingMethod       = parsingMethod;
+            this.allowedNextProvider = allowedNextProvider;
         }
 
-        /** Parse a line.
-         * @param line line to parse
-         * @param lineNumber line number
-         * @param pi holder for transient data
-         */
-        public abstract void parse(String line, int lineNumber, ParseInfo pi);
-
-        /** Get the allowed parsers for next line.
+        /** Get the allowed parsers for next lines while parsing Rinex header.
+         * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        public abstract Stream<LineParser> allowedNext();
+        private static Stream<LineParser> headerNext(final ParseInfo parseInfo) {
+            return Stream.of(HEADER_COMMENT, HEADER_PROGRAM, HEADER_IONOSPHERIC, HEADER_LEAP_SECONDS,
+                             HEADER_TIME, HEADER_END);
+        }
 
-        /** Check if parser can handle line.
-         * @param line line to parse
-         * @return true if parser can handle the specified line
+        /** Get the allowed parsers for next lines while parsing navigation date.
+         * @param parseInfo holder for transient data
+         * @return allowed parsers for next line
          */
-        public boolean canHandle(final String line) {
-            return pattern.matcher(line).matches();
+        private static Stream<LineParser> navigationNext(final ParseInfo parseInfo) {
+            return Stream.of(NAVIGATION_MESSAGE_FIRST, NAVIGATION_BROADCAST_ORBIT);
         }
 
     }
@@ -1367,6 +1277,16 @@ public class RinexNavigationParser {
             return a - x * b;
         }
 
+    }
+
+    /** Parsing method. */
+    @FunctionalInterface
+    private interface ParsingMethod {
+        /** Parse a line.
+         * @param line line to parse
+         * @param parseInfo holder for transient data
+         */
+        void parse(String line, ParseInfo parseInfo);
     }
 
 }
