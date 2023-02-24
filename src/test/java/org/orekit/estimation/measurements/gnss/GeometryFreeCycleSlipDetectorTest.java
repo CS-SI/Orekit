@@ -58,9 +58,9 @@ public class GeometryFreeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
+        final RinexObservationLoader parser = new RinexObservationLoader();
         //RinexLoader  loader = loadCompressed("cycleSlip/shld0440.16d.Z");
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
         GeometryFreeCycleSlipDetector slipDetectors =
             new GeometryFreeCycleSlipDetector(31, 31.0, 10);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -113,8 +113,8 @@ public class GeometryFreeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet>  obserDataSets = loader.getObservationDataSets();
+        final RinexObservationLoader parser = new RinexObservationLoader();
+        final List<ObservationDataSet>  obserDataSets = parser.parse(nd);
         //With dt = 31 s, cycle slip should not exist, a very huge threshold is used to not detect cycle-slip
         GeometryFreeCycleSlipDetector slipDetectors =
             new GeometryFreeCycleSlipDetector(31, 31.0, 10);
@@ -143,8 +143,8 @@ public class GeometryFreeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final RinexObservationLoader parser = new RinexObservationLoader();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
         //With dt = 31 s, cycle slip for time gap cannot be detected (see previous test).
         //We use T0 = 60s for threshold time constant as advice from Navipedia page.
         GeometryFreeCycleSlipDetector slipDetectors =

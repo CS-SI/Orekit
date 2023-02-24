@@ -59,8 +59,8 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final RinexObservationLoader parser = new RinexObservationLoader();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 10, 20, 3);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -133,8 +133,8 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final RinexObservationLoader parser = new RinexObservationLoader();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 1e15, 20, 3);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -182,8 +182,8 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final RinexObservationLoader parser = new RinexObservationLoader();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
         final double dt = 31; //great time gap threshold to don't detect cycle-slip because of time gap
         final int N = 25;
         final int m = 2;

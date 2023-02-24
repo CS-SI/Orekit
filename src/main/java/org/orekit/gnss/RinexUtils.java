@@ -49,12 +49,32 @@ public class RinexUtils {
     /** Pattern for time. */
     private static final Pattern TIME_PATTERN = Pattern.compile("([0-9]{2}):?([0-9]{2})(?::?([0-9]{2}))?");
 
+    /** Index of label in header lines. */
+    private static final int LABEL_INDEX = 60;
+
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
      * the compiler from generating one automatically.</p>
      */
     private RinexUtils() {
+    }
+
+    /** Get the trimmed label from a header line.
+     * @param line header line to parse
+     * @return trimmed label
+     */
+    public static String getLabel(final String line) {
+        return line.substring(LABEL_INDEX).trim();
+    }
+
+    /** Check if a header line matches an expected label.
+     * @param line header line to check
+     * @param label expected label
+     * @return true if line matches expected label
+     */
+    public static boolean matchesLabel(final String line, final String label) {
+        return getLabel(line).equals(label);
     }
 
     /** Parse version, file type and satellite system.

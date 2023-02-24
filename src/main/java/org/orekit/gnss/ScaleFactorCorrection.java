@@ -22,7 +22,7 @@ import java.util.List;
  * being stored into the RINEX file.
  * @since 12.0
  */
-class ScaleFactorCorrection {
+public class ScaleFactorCorrection {
 
     /** Satellite System. */
     private final SatelliteSystem satSystemScaleFactor;
@@ -36,9 +36,9 @@ class ScaleFactorCorrection {
      * @param scaleFactor Factor to divide stored observations (1,10,100,1000)
      * @param typesObsScaleFactor List of Observations types that have been scaled
      */
-    ScaleFactorCorrection(final SatelliteSystem satSystemScaleFactor,
-                          final double scaleFactor,
-                          final List<ObservationType> typesObsScaleFactor) {
+    public ScaleFactorCorrection(final SatelliteSystem satSystemScaleFactor,
+                                 final double scaleFactor,
+                                 final List<ObservationType> typesObsScaleFactor) {
         this.satSystemScaleFactor = satSystemScaleFactor;
         this.scaleFactor = scaleFactor;
         this.typesObsScaleFactor = typesObsScaleFactor;

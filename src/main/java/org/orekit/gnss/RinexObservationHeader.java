@@ -115,16 +115,21 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** List of phase shift correction used to generate phases consistent w/r to cycle shifts. */
     private List<PhaseShiftCorrection> phaseShiftCorrections;
 
+    /** List of scale factor corrections. */
+    private List<ScaleFactorCorrection> scaleFactorCorrections;
+
     /** Number of leap seconds since 6-Jan-1980. */
     private int leapSeconds;
 
     /** Future or past leap seconds ΔtLSF (BNK).
-     * i.e. future leap second if the week and day number are in the future. */
+     * i.e. future leap second if the week and day number are in the future.
+     */
     private int leapSecondsFuture;
 
     /** Respective leap second week number.
      * For GPS, GAL, QZS and IRN, weeks since 6-Jan-1980.
-     * When BDS only file leap seconds specified, weeks since 1-Jan-2006 */
+     * When BDS only file leap seconds specified, weeks since 1-Jan-2006
+     */
     private int leapSecondsWeekNum;
 
     /** Respective leap second day number. */
@@ -145,6 +150,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
         listAppliedDCBS       = new ArrayList<>();
         listAppliedPCVS       = new ArrayList<>();
         phaseShiftCorrections = new ArrayList<>();
+        scaleFactorCorrections = new ArrayList<>();
     }
 
     /** Set name of the antenna marker.
@@ -594,6 +600,20 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     public List<PhaseShiftCorrection> getPhaseShiftCorrections() {
         return Collections.unmodifiableList(phaseShiftCorrections);
+    }
+
+    /** Add scale factor correction.
+     * @param scaleFactorCorrection scale factor correction
+     */
+    public void addScaleFactorCorrection(final ScaleFactorCorrection scaleFactorCorrection) {
+        scaleFactorCorrections.add(scaleFactorCorrection);
+    }
+
+    /** Get the list of scale factor correction.
+     * @return List of scale factor correction
+     */
+    public List<ScaleFactorCorrection> getScaleFactorCorrection() {
+        return Collections.unmodifiableList(scaleFactorCorrections);
     }
 
 }

@@ -51,9 +51,8 @@ public class PseudoRangeFilteringTest {
         DataFilter filter = new HatanakaCompressFilter();
         DataSource nd = new DataSource(file);
         nd = filter.filter(nd);
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-
-        List<ObservationDataSet> listObsDataSet = loader.getObservationDataSets();
+        final RinexObservationLoader parser = new RinexObservationLoader();
+        List<ObservationDataSet> listObsDataSet = parser.parse(nd);
         ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
 
         // Test reset and null condition on doppler
@@ -86,7 +85,7 @@ public class PseudoRangeFilteringTest {
         Assertions.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
 
         // Tests for ObservationDataSetUpdate
-        List<ObservationDataSet> listRinexObsDataSet = loader.getObservationDataSets();
+        List<ObservationDataSet> listRinexObsDataSet = parser.parse(nd);
         ObservationDataSet newObsDataSet = listObsDataSetUpdate.get(0).getDataSet();
         ObservationDataSet rinexObsDataSet = listRinexObsDataSet.get(0);
 
@@ -128,10 +127,10 @@ public class PseudoRangeFilteringTest {
         File file  = new File(baseName+fileName);
 
         DataSource nd = new DataSource(file);
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
+        final RinexObservationLoader parser = new RinexObservationLoader();
 
         // Test SatelliteSystem / SNR
-        List<ObservationDataSet> listObsDataSet = loader.getObservationDataSets();
+        List<ObservationDataSet> listObsDataSet = parser.parse(nd);
         ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
 
         ObservationData obsDataRange = new ObservationData(rangeType, 0, 0, 0);
@@ -211,10 +210,10 @@ public class PseudoRangeFilteringTest {
         File file  = new File(baseName+fileName);
 
         DataSource nd = new DataSource(file);
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
+        final RinexObservationLoader parser = new RinexObservationLoader();
 
         DualFrequencySmoother prs = new DualFrequencySmoother(100.0, 60);
-        prs.filterDataSet(loader.getObservationDataSets(), system, prnNumber, phaseTypeF1, phaseTypeF2);
+        prs.filterDataSet(parser.parse(nd), system, prnNumber, phaseTypeF1, phaseTypeF2);
 
         DualFrequencyHatchFilter filterDF = prs.getMapFilters().get(rangeType);
         ArrayList<Double> codeDFArray = filterDF.getCodeHistory();
@@ -230,7 +229,7 @@ public class PseudoRangeFilteringTest {
         ///// Test CarrierHatchFilterSingleFrequency
 
         SingleFrequencySmoother prsSF = new SingleFrequencySmoother(MeasurementType.CARRIER_PHASE, 100.0, 60, 50.0);
-        prsSF.filterDataSet(loader.getObservationDataSets(), system, prnNumber, phaseTypeF1);
+        prsSF.filterDataSet(parser.parse(nd), system, prnNumber, phaseTypeF1);
 
         SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType);
 

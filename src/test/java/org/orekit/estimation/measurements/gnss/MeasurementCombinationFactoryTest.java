@@ -60,17 +60,22 @@ public class MeasurementCombinationFactoryTest {
     @BeforeEach
     public void setUp() throws NoSuchAlgorithmException, IOException {
         Utils.setDataRoot("gnss");
+        RinexObservationLoader parser = new RinexObservationLoader();
 
         // Observation data
         obs1 = new ObservationData(ObservationType.L1, 2.25E7, 0, 0);
 
         // RINEX 2 Observation data set
-        RinexObservationLoader loader2 = load("rinex/truncate-sbch0440.16o");
-        dataSetRinex2 = loader2.getObservationDataSets().get(0);
+        final String name2 = "rinex/truncate-sbch0440.16o";
+        List<ObservationDataSet> parsed2 = parser.parse(new DataSource(name2,
+                                                                       () -> Utils.class.getClassLoader().getResourceAsStream(name2)));
+        dataSetRinex2 = parsed2.get(0);
 
         // RINEX 3 Observation data set
-        RinexObservationLoader loader3 = load("rinex/aaaa0000.00o");
-        dataSetRinex3 = loader3.getObservationDataSets().get(1);
+        final String name3 = "rinex/aaaa0000.00o";
+        List<ObservationDataSet> parsed3 = parser.parse(new DataSource(name3,
+                                                                       () -> Utils.class.getClassLoader().getResourceAsStream(name3)));
+        dataSetRinex3 = parsed3.get(1);
 
         // Satellite system
         system = dataSetRinex2.getSatelliteSystem();
@@ -383,10 +388,6 @@ public class MeasurementCombinationFactoryTest {
         Assertions.assertEquals(0.0, combinedDataSet.getRcvrClkOffset(), eps);
         // Verify date
         Assertions.assertEquals("2016-02-13T00:49:43.000Z", combinedDataSet.getDate().toString());
-    }
-
-    private RinexObservationLoader load(final String name) {
-        return new RinexObservationLoader(new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name)));
     }
 
     @Test

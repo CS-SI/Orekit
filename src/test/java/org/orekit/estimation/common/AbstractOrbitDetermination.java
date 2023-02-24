@@ -395,8 +395,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -679,8 +679,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -2115,8 +2115,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             default:
                 prnNumber = -1;
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(source);
-        for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
+        final RinexObservationLoader parser = new RinexObservationLoader();
+        for (final ObservationDataSet observationDataSet : parser.parse(source)) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
                 for (final ObservationData od : observationDataSet.getObservationData()) {
