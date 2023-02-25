@@ -18,7 +18,9 @@ package org.orekit.gnss;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -100,7 +102,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** Time of First observation record. */
     private AbsoluteDate tFirstObs;
 
-    /** Time of las observation record. */
+    /** Time of last observation record. */
     private AbsoluteDate tLastObs;
 
     /** Realtime-derived receiver clock offset. */
@@ -116,7 +118,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
     private List<PhaseShiftCorrection> phaseShiftCorrections;
 
     /** List of scale factor corrections. */
-    private List<ScaleFactorCorrection> scaleFactorCorrections;
+    private Map<SatelliteSystem, List<ScaleFactorCorrection>> scaleFactorCorrections;
 
     /** List of GLONASS satellite-channel associations.
      * @since 12.0
@@ -173,8 +175,9 @@ public class RinexObservationHeader extends RinexBaseHeader {
         listAppliedDCBS        = new ArrayList<>();
         listAppliedPCVS        = new ArrayList<>();
         phaseShiftCorrections  = new ArrayList<>();
-        scaleFactorCorrections = new ArrayList<>();
-        glonassChannels            = new ArrayList<>();
+        scaleFactorCorrections = new HashMap<>();
+        glonassChannels        = new ArrayList<>();
+        tLastObs               = AbsoluteDate.FUTURE_INFINITY;
     }
 
     /** Set name of the antenna marker.
@@ -627,17 +630,25 @@ public class RinexObservationHeader extends RinexBaseHeader {
     }
 
     /** Add scale factor correction.
+     * @param satelliteSystem system to which this scaling factor applies
      * @param scaleFactorCorrection scale factor correction
      */
-    public void addScaleFactorCorrection(final ScaleFactorCorrection scaleFactorCorrection) {
-        scaleFactorCorrections.add(scaleFactorCorrection);
+    public void addScaleFactorCorrection(final SatelliteSystem satelliteSystem, final ScaleFactorCorrection scaleFactorCorrection) {
+        List<ScaleFactorCorrection> sfc = scaleFactorCorrections.get(satelliteSystem);
+        if (sfc == null) {
+            sfc = new ArrayList<>();
+            scaleFactorCorrections.put(satelliteSystem, sfc);
+        }
+        sfc.add(scaleFactorCorrection);
     }
 
     /** Get the list of scale factor correction.
+     * @param satelliteSystem system to which this scaling factor applies
      * @return List of scale factor correction
      */
-    public List<ScaleFactorCorrection> getScaleFactorCorrection() {
-        return Collections.unmodifiableList(scaleFactorCorrections);
+    public List<ScaleFactorCorrection> getScaleFactorCorrections(final SatelliteSystem satelliteSystem) {
+        final List<ScaleFactorCorrection> sfc = scaleFactorCorrections.get(satelliteSystem);
+        return sfc == null ? Collections.emptyList() : Collections.unmodifiableList(sfc);
     }
 
     /** Add GLONASS satellite/channel association.

@@ -24,37 +24,29 @@ import java.util.List;
  */
 public class ScaleFactorCorrection {
 
-    /** Satellite System. */
-    private final SatelliteSystem satSystemScaleFactor;
     /** List of Observations types that have been scaled. */
     private final List<ObservationType> typesObsScaleFactor;
+
     /** Factor to divide stored observations with before use. */
     private final double scaleFactor;
 
     /** Simple constructor.
-     * @param satSystemScaleFactor Satellite System
      * @param scaleFactor Factor to divide stored observations (1,10,100,1000)
      * @param typesObsScaleFactor List of Observations types that have been scaled
      */
-    public ScaleFactorCorrection(final SatelliteSystem satSystemScaleFactor,
-                                 final double scaleFactor,
+    public ScaleFactorCorrection(final double scaleFactor,
                                  final List<ObservationType> typesObsScaleFactor) {
-        this.satSystemScaleFactor = satSystemScaleFactor;
         this.scaleFactor = scaleFactor;
         this.typesObsScaleFactor = typesObsScaleFactor;
     }
-    /** Get the Satellite System.
-     * @return Satellite System
-     */
-    public SatelliteSystem getSatelliteSystem() {
-        return satSystemScaleFactor;
-    }
+
     /** Get the Scale Factor.
      * @return Scale Factor
      */
     public double getCorrection() {
         return scaleFactor;
     }
+
     /** Get the list of Observation Types scaled.
      * @return List of Observation types scaled
      */
