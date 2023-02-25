@@ -114,7 +114,7 @@ import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationLoader;
+import org.orekit.gnss.RinexObservationParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
@@ -395,8 +395,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationParser.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationParser.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -679,8 +679,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationParser.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationParser.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -2115,7 +2115,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             default:
                 prnNumber = -1;
         }
-        final RinexObservationLoader parser = new RinexObservationLoader();
+        final RinexObservationParser parser = new RinexObservationParser();
         for (final ObservationDataSet observationDataSet : parser.parse(source)) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {

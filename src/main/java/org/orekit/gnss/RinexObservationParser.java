@@ -40,7 +40,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 
-/** Loader for Rinex measurements files.
+/** Parser for Rinex measurements files.
  * <p>
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
  * 3.00, 3.01, 3.02, 3.03, 3.04, and 3.05.
@@ -56,9 +56,9 @@ import org.orekit.time.TimeScales;
  * @see <a href="https://files.igs.org/pub/data/format/rinex303.pdf">rinex 3.03</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex304.pdf">rinex 3.04</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex305.pdf">rinex 3.05</a>
- * @since 9.2
+ * @since 12.0
  */
-public class RinexObservationLoader {
+public class RinexObservationParser {
 
     /** Default name pattern for rinex 2 observation files. */
     public static final String DEFAULT_RINEX_2_NAMES = "^\\w{4}\\d{3}[0a-x](?:\\d{2})?\\.\\d{2}[oO]$";
@@ -99,7 +99,7 @@ public class RinexObservationLoader {
      * </p>
      */
     @DefaultDataContext
-    public RinexObservationLoader() {
+    public RinexObservationParser() {
         this(DataContext.getDefault().getTimeScales());
     }
 
@@ -108,7 +108,7 @@ public class RinexObservationLoader {
      * @param timeScales the set of time scales to use when parsing dates.
      * @since 12.0
      */
-    public RinexObservationLoader(final TimeScales timeScales) {
+    public RinexObservationParser(final TimeScales timeScales) {
         this.timeScales = timeScales;
     }
 
@@ -248,7 +248,7 @@ public class RinexObservationLoader {
         ParseInfo(final String name) {
             // Initialize default values for fields
             this.name                   = name;
-            this.timeScales             = RinexObservationLoader.this.timeScales;
+            this.timeScales             = RinexObservationParser.this.timeScales;
             this.header                 = new RinexObservationHeader();
             this.observationDataSets    = new ArrayList<>();
             this.lineNumber             = 0;

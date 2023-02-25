@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class RinexLoaderTest {
+public class RinexObservationParserTest {
 
     @BeforeEach
     public void setUp() {
@@ -58,7 +58,7 @@ public class RinexLoaderTest {
     @Test
     public void testReadError() {
         try {
-            new RinexObservationLoader().parse(new DataSource("read-error", () -> new InputStream() {
+            new RinexObservationParser().parse(new DataSource("read-error", () -> new InputStream() {
                 public int read() throws IOException {
                     throw new IOException("boo!");
                 }
@@ -975,14 +975,14 @@ public class RinexLoaderTest {
 
     private List<ObservationDataSet> load(final String name) {
         final DataSource dataSource = new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        return new RinexObservationLoader().parse(dataSource);
+        return new RinexObservationParser().parse(dataSource);
      }
 
     private List<ObservationDataSet> loadCompressed(final String name) {
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                               () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        return new RinexObservationLoader().parse(filtered);
+        return new RinexObservationParser().parse(filtered);
      }
 
 }

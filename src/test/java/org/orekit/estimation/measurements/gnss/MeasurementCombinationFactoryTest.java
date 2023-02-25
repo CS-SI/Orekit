@@ -31,7 +31,7 @@ import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.RinexObservationHeader;
-import org.orekit.gnss.RinexObservationLoader;
+import org.orekit.gnss.RinexObservationParser;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.utils.Constants;
@@ -61,7 +61,7 @@ public class MeasurementCombinationFactoryTest {
     @BeforeEach
     public void setUp() throws NoSuchAlgorithmException, IOException {
         Utils.setDataRoot("gnss");
-        RinexObservationLoader parser = new RinexObservationLoader();
+        RinexObservationParser parser = new RinexObservationParser();
 
         // Observation data
         obs1 = new ObservationData(ObservationType.L1, 2.25E7, 0, 0);

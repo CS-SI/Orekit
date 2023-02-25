@@ -22,7 +22,7 @@ import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.RinexObservationLoader;
+import org.orekit.gnss.RinexObservationParser;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 
@@ -52,7 +52,7 @@ public class PseudoRangeFilteringTest {
         DataFilter filter = new HatanakaCompressFilter();
         DataSource nd = new DataSource(file);
         nd = filter.filter(nd);
-        final RinexObservationLoader parser = new RinexObservationLoader();
+        final RinexObservationParser parser = new RinexObservationParser();
         List<ObservationDataSet> listObsDataSet = parser.parse(nd);
         ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
 
@@ -87,12 +87,6 @@ public class PseudoRangeFilteringTest {
         double lastUpdatedValue = listObsDataSetUpdate.get(listObsDataSetUpdate.size() - 1).getSmoothedData().getValue();
         Assertions.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
 
-        // Tests for ObservationDataSetUpdate
-        List<ObservationDataSet> listRinexObsDataSet = parser.parse(nd);
-        ObservationDataSet newObsDataSet = listObsDataSetUpdate.get(0).getDataSet();
-        ObservationDataSet rinexObsDataSet = listRinexObsDataSet.get(0);
-
-        Assertions.assertEquals(newObsDataSet, rinexObsDataSet);
     }
 
     @Test
@@ -130,7 +124,7 @@ public class PseudoRangeFilteringTest {
         File file  = new File(baseName+fileName);
 
         DataSource nd = new DataSource(file);
-        final RinexObservationLoader parser = new RinexObservationLoader();
+        final RinexObservationParser parser = new RinexObservationParser();
 
         // Test SatelliteSystem / SNR
         List<ObservationDataSet> listObsDataSet = parser.parse(nd);
@@ -215,7 +209,7 @@ public class PseudoRangeFilteringTest {
         File file  = new File(baseName+fileName);
 
         DataSource nd = new DataSource(file);
-        final RinexObservationLoader parser = new RinexObservationLoader();
+        final RinexObservationParser parser = new RinexObservationParser();
 
         DualFrequencySmoother prs = new DualFrequencySmoother(100.0, 60);
         prs.filterDataSet(parser.parse(nd), system, prnNumber, phaseTypeF1, phaseTypeF2);

@@ -27,7 +27,7 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationLoader;
+import org.orekit.gnss.RinexObservationParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -58,7 +58,7 @@ public class GeometryFreeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader parser = new RinexObservationLoader();
+        final RinexObservationParser parser = new RinexObservationParser();
         //RinexLoader  loader = loadCompressed("cycleSlip/shld0440.16d.Z");
         final List<ObservationDataSet> obserDataSets = parser.parse(nd);
         GeometryFreeCycleSlipDetector slipDetectors =
@@ -113,7 +113,7 @@ public class GeometryFreeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader parser = new RinexObservationLoader();
+        final RinexObservationParser parser = new RinexObservationParser();
         final List<ObservationDataSet>  obserDataSets = parser.parse(nd);
         //With dt = 31 s, cycle slip should not exist, a very huge threshold is used to not detect cycle-slip
         GeometryFreeCycleSlipDetector slipDetectors =
@@ -143,7 +143,7 @@ public class GeometryFreeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader parser = new RinexObservationLoader();
+        final RinexObservationParser parser = new RinexObservationParser();
         final List<ObservationDataSet> obserDataSets = parser.parse(nd);
         //With dt = 31 s, cycle slip for time gap cannot be detected (see previous test).
         //We use T0 = 60s for threshold time constant as advice from Navipedia page.
