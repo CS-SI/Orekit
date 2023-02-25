@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -45,13 +46,13 @@ public class RinexLoaderTest {
 
     @Test
     public void testDefaultLoadRinex2() {
-        Assertions.assertEquals(51, load("aaaa0000.00o").size());
+        Assertions.assertEquals(24, load("rinex/aiub0000.00o").size());
     }
 
     @Test
     public void testDefaultLoadRinex3() {
         Utils.setDataRoot("regular-data:rinex");
-        Assertions.assertEquals(5, load("brca083.06o").size());
+        Assertions.assertEquals(5, load("rinex/brca083.06o").size());
     }
 
     @Test
@@ -64,7 +65,9 @@ public class RinexLoaderTest {
             }));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals("boo!", oe.getSpecifier().getSourceString());
+            Assertions.assertEquals(LocalizedCoreFormats.SIMPLE_MESSAGE, oe.getSpecifier());
+            Assertions.assertEquals("boo!", oe.getParts()[0]);
+            Assertions.assertInstanceOf(IOException.class, oe.getCause());
         }
     }
 
@@ -95,7 +98,8 @@ public class RinexLoaderTest {
             load("rinex/short-first-line.06o");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
@@ -105,7 +109,8 @@ public class RinexLoaderTest {
             load("rinex/unknown-first-label.06o");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
@@ -247,7 +252,7 @@ public class RinexLoaderTest {
             Assertions.assertEquals(3,                       header.getPhaseShiftCorrections().size());
             Assertions.assertEquals(SatelliteSystem.GPS,     header.getPhaseShiftCorrections().get(0).getSatelliteSystem());
             Assertions.assertEquals(ObservationType.L2X,      header.getPhaseShiftCorrections().get(0).getTypeObs());
-            Assertions.assertNull(header.getPhaseShiftCorrections().get(0).getSatsCorrected());
+            Assertions.assertTrue(header.getPhaseShiftCorrections().get(0).getSatsCorrected().isEmpty());
             Assertions.assertEquals(-0.25000,                header.getPhaseShiftCorrections().get(0).getCorrection(), 1.0e-5);
             Assertions.assertEquals(SatelliteSystem.GLONASS, header.getPhaseShiftCorrections().get(1).getSatelliteSystem());
             Assertions.assertEquals(ObservationType.L1P,      header.getPhaseShiftCorrections().get(1).getTypeObs());

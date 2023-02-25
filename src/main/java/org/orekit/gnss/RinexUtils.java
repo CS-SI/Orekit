@@ -65,7 +65,7 @@ public class RinexUtils {
      * @return trimmed label
      */
     public static String getLabel(final String line) {
-        return line.substring(LABEL_INDEX).trim();
+        return line.length() < LABEL_INDEX ? "" : line.substring(LABEL_INDEX).trim();
     }
 
     /** Check if a header line matches an expected label.

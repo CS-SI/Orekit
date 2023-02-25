@@ -32,6 +32,7 @@ import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.RinexObservationHeader;
 import org.orekit.gnss.RinexObservationLoader;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.utils.Constants;
 
@@ -121,8 +122,10 @@ public class MeasurementCombinationFactoryTest {
      */
     private void doTestEmptyDataSet(final MeasurementCombination combination) {
         // Build empty observation data set
-        final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(), dataSetRinex2.getSatelliteSystem(),
-                                                                       dataSetRinex2.getPrnNumber(), dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
+        final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(),
+                                                                       new SatInSystem(dataSetRinex2.getSatelliteSystem(),
+                                                                                       dataSetRinex2.getPrnNumber()),
+                                                                       dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
                                                                        new ArrayList<ObservationData>());
         // Test first method signature
         final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);

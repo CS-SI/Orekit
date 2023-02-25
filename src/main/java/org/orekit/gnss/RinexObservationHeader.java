@@ -144,8 +144,6 @@ public class RinexObservationHeader extends RinexBaseHeader {
         eccentricities        = Vector2D.ZERO;
         clkOffset             = -1;
         interval              = Double.NaN;
-        tFirstObs             = AbsoluteDate.PAST_INFINITY;
-        tLastObs              = AbsoluteDate.FUTURE_INFINITY;
         leapSeconds           = 0;
         listAppliedDCBS       = new ArrayList<>();
         listAppliedPCVS       = new ArrayList<>();

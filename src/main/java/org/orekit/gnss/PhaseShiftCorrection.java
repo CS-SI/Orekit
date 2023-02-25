@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss;
 
+import java.util.List;
+
 /** Phase Shift corrections.
  * Contains the phase shift corrections used to
  * generate phases consistent with respect to cycle shifts.
@@ -30,7 +32,7 @@ public class PhaseShiftCorrection {
     /** Phase Shift Corrections (cycles). */
     private final double phaseShiftCorrection;
     /** List of satellites involved. */
-    private final String[] satsPhaseShift;
+    private final List<SatInSystem> satsPhaseShift;
 
     /** Simple constructor.
      * @param satSystemPhaseShift Satellite System
@@ -41,7 +43,7 @@ public class PhaseShiftCorrection {
     public PhaseShiftCorrection(final SatelliteSystem satSystemPhaseShift,
                                 final ObservationType typeObsPhaseShift,
                                 final double phaseShiftCorrection,
-                                final String[] satsPhaseShift) {
+                                final List<SatInSystem> satsPhaseShift) {
         this.satSystemPhaseShift = satSystemPhaseShift;
         this.typeObsPhaseShift = typeObsPhaseShift;
         this.phaseShiftCorrection = phaseShiftCorrection;
@@ -71,11 +73,11 @@ public class PhaseShiftCorrection {
         return phaseShiftCorrection;
     }
     /** Get the list of satellites involved.
-     * @return List of satellites involved (if null, all the sats are involved)
+     * @return List of satellites involved (if empty, all the sats are involved)
      */
-    public String[] getSatsCorrected() {
+    public List<SatInSystem> getSatsCorrected() {
         //If empty, all the satellites of this constellation are affected for this Observation type
-        return satsPhaseShift == null ? null : satsPhaseShift.clone();
+        return satsPhaseShift;
     }
 
 }
