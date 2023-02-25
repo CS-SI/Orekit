@@ -118,6 +118,11 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** List of scale factor corrections. */
     private List<ScaleFactorCorrection> scaleFactorCorrections;
 
+    /** List of GLONASS satellite-channel associations.
+     * @since 12.0
+     */
+    private final List<GlonassSatelliteChannel> glonassChannels;
+
     /** Number of leap seconds since 6-Jan-1980. */
     private int leapSeconds;
 
@@ -135,20 +140,41 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** Respective leap second day number. */
     private int leapSecondsDayNum;
 
+    /** Code phase bias correction for GLONASS C1C signal.
+     * @since 12.0
+     */
+    private double c1cCodePhaseBias;
+
+    /** Code phase bias correction for GLONASS C1P signal.
+     * @since 12.0
+     */
+    private double c1pCodePhaseBias;
+
+    /** Code phase bias correction for GLONASS C2C signal.
+     * @since 12.0
+     */
+    private double c2cCodePhaseBias;
+
+    /** Code phase bias correction for GLONASS C2P signal.
+     * @since 12.0
+     */
+    private double c2pCodePhaseBias;
+
     /** Simple constructor.
      */
     public RinexObservationHeader() {
         super(RinexFileType.OBSERVATION);
-        antennaAzimuth        = Double.NaN;
-        antennaHeight         = Double.NaN;
-        eccentricities        = Vector2D.ZERO;
-        clkOffset             = -1;
-        interval              = Double.NaN;
-        leapSeconds           = 0;
-        listAppliedDCBS       = new ArrayList<>();
-        listAppliedPCVS       = new ArrayList<>();
-        phaseShiftCorrections = new ArrayList<>();
+        antennaAzimuth         = Double.NaN;
+        antennaHeight          = Double.NaN;
+        eccentricities         = Vector2D.ZERO;
+        clkOffset              = -1;
+        interval               = Double.NaN;
+        leapSeconds            = 0;
+        listAppliedDCBS        = new ArrayList<>();
+        listAppliedPCVS        = new ArrayList<>();
+        phaseShiftCorrections  = new ArrayList<>();
         scaleFactorCorrections = new ArrayList<>();
+        glonassChannels            = new ArrayList<>();
     }
 
     /** Set name of the antenna marker.
@@ -612,6 +638,86 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     public List<ScaleFactorCorrection> getScaleFactorCorrection() {
         return Collections.unmodifiableList(scaleFactorCorrections);
+    }
+
+    /** Add GLONASS satellite/channel association.
+     * @param glonassChannel GLONASS satellite/channel association
+     * @since 12.0
+     */
+    public void addGlonassChannel(final GlonassSatelliteChannel glonassChannel) {
+        glonassChannels.add(glonassChannel);
+    }
+
+    /** Get the list of GLONASS satellite/channel associations.
+     * @return List of GLONASS satellite/channel associations
+     * @since 12.0
+     */
+    public List<GlonassSatelliteChannel> getGlonassChannels() {
+        return Collections.unmodifiableList(glonassChannels);
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.
+     * @param c1cCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C1C} signal
+     * @since 12.0
+     */
+    public void setC1cCodePhaseBias(final double c1cCodePhaseBias) {
+        this.c1cCodePhaseBias = c1cCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C1C} signal
+     * @since 12.0
+     */
+    public double getC1cCodePhaseBias() {
+        return c1cCodePhaseBias;
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C1P} signal.
+     * @param c1pCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C1P} signal
+     * @since 12.0
+     */
+    public void setC1pCodePhaseBias(final double c1pCodePhaseBias) {
+        this.c1pCodePhaseBias = c1pCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C1P} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C1P} signal
+     * @since 12.0
+     */
+    public double getC1pCodePhaseBias() {
+        return c1pCodePhaseBias;
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C2C} signal.
+     * @param c2cCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C2C} signal
+     * @since 12.0
+     */
+    public void setC2cCodePhaseBias(final double c2cCodePhaseBias) {
+        this.c2cCodePhaseBias = c2cCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C2C} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C2C} signal
+     * @since 12.0
+     */
+    public double getC2cCodePhaseBias() {
+        return c2cCodePhaseBias;
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C2P} signal.
+     * @param c2pCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C2P} signal
+     * @since 12.0
+     */
+    public void setC2pCodePhaseBias(final double c2pCodePhaseBias) {
+        this.c2pCodePhaseBias = c2pCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C2P} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C2P} signal
+     * @since 12.0
+     */
+    public double getC2pCodePhaseBias() {
+        return c2pCodePhaseBias;
     }
 
 }

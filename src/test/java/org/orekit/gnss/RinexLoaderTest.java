@@ -880,6 +880,67 @@ public class RinexLoaderTest {
 
     }
 
+    @Test
+    public void testGlonass() {
+        RinexObservationHeader header = load("rinex/abcd083.06o").get(0).getHeader();
+        List<GlonassSatelliteChannel> channels = header.getGlonassChannels();
+        Assertions.assertEquals(18, channels.size());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 0).getSatellite().getSystem());
+        Assertions.assertEquals( 1,                      channels.get( 0).getSatellite().getPRN());
+        Assertions.assertEquals( 1,                      channels.get( 0).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 1).getSatellite().getSystem());
+        Assertions.assertEquals( 2,                      channels.get( 1).getSatellite().getPRN());
+        Assertions.assertEquals( 2,                      channels.get( 1).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 2).getSatellite().getSystem());
+        Assertions.assertEquals( 3,                      channels.get( 2).getSatellite().getPRN());
+        Assertions.assertEquals( 3,                      channels.get( 2).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 3).getSatellite().getSystem());
+        Assertions.assertEquals( 4,                      channels.get( 3).getSatellite().getPRN());
+        Assertions.assertEquals( 4,                      channels.get( 3).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 4).getSatellite().getSystem());
+        Assertions.assertEquals( 5,                      channels.get( 4).getSatellite().getPRN());
+        Assertions.assertEquals( 5,                      channels.get( 4).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 5).getSatellite().getSystem());
+        Assertions.assertEquals( 6,                      channels.get( 5).getSatellite().getPRN());
+        Assertions.assertEquals(-6,                      channels.get( 5).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 6).getSatellite().getSystem());
+        Assertions.assertEquals( 7,                      channels.get( 6).getSatellite().getPRN());
+        Assertions.assertEquals(-5,                      channels.get( 6).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 7).getSatellite().getSystem());
+        Assertions.assertEquals( 8,                      channels.get( 7).getSatellite().getPRN());
+        Assertions.assertEquals(-4,                      channels.get( 7).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 8).getSatellite().getSystem());
+        Assertions.assertEquals( 9,                      channels.get( 8).getSatellite().getPRN());
+        Assertions.assertEquals(-3,                      channels.get( 8).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 9).getSatellite().getSystem());
+        Assertions.assertEquals(10,                      channels.get( 9).getSatellite().getPRN());
+        Assertions.assertEquals(-2,                      channels.get( 9).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(10).getSatellite().getSystem());
+        Assertions.assertEquals(11,                      channels.get(10).getSatellite().getPRN());
+        Assertions.assertEquals(-1,                      channels.get(10).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(11).getSatellite().getSystem());
+        Assertions.assertEquals(12,                      channels.get(11).getSatellite().getPRN());
+        Assertions.assertEquals( 0,                      channels.get(11).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(12).getSatellite().getSystem());
+        Assertions.assertEquals(13,                      channels.get(12).getSatellite().getPRN());
+        Assertions.assertEquals( 1,                      channels.get(12).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(13).getSatellite().getSystem());
+        Assertions.assertEquals(14,                      channels.get(13).getSatellite().getPRN());
+        Assertions.assertEquals( 2,                      channels.get(13).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(14).getSatellite().getSystem());
+        Assertions.assertEquals(15,                      channels.get(14).getSatellite().getPRN());
+        Assertions.assertEquals( 0,                      channels.get(14).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(15).getSatellite().getSystem());
+        Assertions.assertEquals(16,                      channels.get(15).getSatellite().getPRN());
+        Assertions.assertEquals( 4,                      channels.get(15).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(16).getSatellite().getSystem());
+        Assertions.assertEquals(17,                      channels.get(16).getSatellite().getPRN());
+        Assertions.assertEquals( 5,                      channels.get(16).getK());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get(17).getSatellite().getSystem());
+        Assertions.assertEquals(18,                      channels.get(17).getSatellite().getPRN());
+        Assertions.assertEquals(-5,                      channels.get(17).getK());
+    }
+
     private void checkObservation(final ObservationDataSet obser,
                                   final int year, final int month, final int day,
                                   final int hour, final int minute, final double second,

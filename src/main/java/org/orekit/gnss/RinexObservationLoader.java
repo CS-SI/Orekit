@@ -136,7 +136,6 @@ public class RinexObservationLoader {
                     try {
                         selected.get().parsingMethod.parse(line, parseInfo);
                     } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                        e.printStackTrace();
                         throw new OrekitException(e,
                                                   OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   parseInfo.lineNumber, source.getName(), line);
@@ -330,6 +329,9 @@ public class RinexObservationLoader {
         /** Number of satellites affected by phase shifts. */
         private int phaseShiftNbSat;
 
+        /** Number of GLONASS satellites. */
+        private int nbGlonass;
+
         /** Satellites affected by phase shift. */
         private final List<SatInSystem> satPhaseShift;
 
@@ -381,6 +383,7 @@ public class RinexObservationLoader {
             this.nbTypes                = -1;
             this.nbSat                  = -1;
             this.nbSatObs               = -1;
+            this.nbGlonass              = -1;
             this.nbObsScaleFactor       = -1;
             this.nextObsStartLineNumber = -1;
             this.scaleFactorCorrections = new ArrayList<>();
@@ -417,7 +420,7 @@ public class RinexObservationLoader {
 
         /** Parser for marker name. */
         MARKER_NAME(line -> RinexUtils.matchesLabel(line, "MARKER NAME"),
-                    (line, parseInfo) ->  parseInfo.header.setMarkerName(RinexUtils.parseString(line, 0, 60)),
+                    (line, parseInfo) ->  parseInfo.header.setMarkerName(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
                     LineParser::headerNext),
 
         /** Parser for marker number. */
@@ -634,7 +637,9 @@ public class RinexObservationLoader {
                                final int firstIndex = version < 3 ? 10 : 7;
                                final int increment  = version < 3 ?  6 : 4;
                                final int size       = version < 3 ?  2 : 3;
-                               for (int i = firstIndex; i < 60 && parseInfo.typesObs.size() < parseInfo.nbTypes; i += increment) {
+                               for (int i = firstIndex;
+                                    (i + size) <= RinexUtils.LABEL_INDEX && parseInfo.typesObs.size() < parseInfo.nbTypes;
+                                    i += increment) {
                                    final String type = RinexUtils.parseString(line, i, size);
                                    try {
                                        parseInfo.typesObs.add(ObservationType.valueOf(type));
@@ -697,7 +702,7 @@ public class RinexObservationLoader {
                              if (parseInfo.nbObsScaleFactor == 0) {
                                  parseInfo.typesObsScaleFactor.addAll(parseInfo.mapTypeObs.get(parseInfo.currentSystem));
                              } else {
-                                 for (int i = 11; i < 60 && parseInfo.typesObsScaleFactor.size() < parseInfo.nbObsScaleFactor; i += 4) {
+                                 for (int i = 11; i < RinexUtils.LABEL_INDEX && parseInfo.typesObsScaleFactor.size() < parseInfo.nbObsScaleFactor; i += 4) {
                                      parseInfo.typesObsScaleFactor.add(ObservationType.valueOf(RinexUtils.parseString(line, i, 3)));
                                  }
                              }
@@ -728,7 +733,7 @@ public class RinexObservationLoader {
                                 parseInfo.phaseShiftNbSat   = RinexUtils.parseInt(line, 16, 2);
                             }
 
-                            for (int i = 19; i < 60 && parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat; i += 4) {
+                            for (int i = 19; i < RinexUtils.LABEL_INDEX && parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat; i += 4) {
                                 final SatelliteSystem system = line.charAt(i) == ' ' ?
                                                                parseInfo.currentSystem :
                                                                SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, i, 1));
@@ -752,16 +757,52 @@ public class RinexObservationLoader {
         /** Parser for GLONASS slot and frequency number. */
         GLONASS_SLOT_FRQ_NB(line -> RinexUtils.matchesLabel(line, "GLONASS SLOT / FRQ #"),
                             (line, parseInfo) -> {
-                                // TODO
-                                throw new OrekitInternalError(null);
+
+                                if (parseInfo.nbGlonass < 0) {
+                                    // first line of GLONASS satellite/frequency association
+                                    parseInfo.nbGlonass = RinexUtils.parseInt(line, 0, 3);
+                                }
+
+                                for (int i = 4;
+                                     i < RinexUtils.LABEL_INDEX && parseInfo.header.getGlonassChannels().size() < parseInfo.nbGlonass;
+                                     i += 7) {
+                                    final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, i, 1));
+                                    final int             prn    = RinexUtils.parseInt(line, i + 1, 2);
+                                    final int             k      = RinexUtils.parseInt(line, i + 4, 2);
+                                    parseInfo.header.addGlonassChannel(new GlonassSatelliteChannel(new SatInSystem(system, prn), k));
+                                }
+
                             },
                             LineParser::headerNext),
 
         /** Parser for GLONASS phase bias corrections. */
         GLONASS_COD_PHS_BIS(line -> RinexUtils.matchesLabel(line, "GLONASS COD/PHS/BIS"),
                             (line, parseInfo) -> {
-                                // TODO
-                                throw new OrekitInternalError(null);
+
+                                // C1C signal
+                                final String c1c = RinexUtils.parseString(line, 1, 3);
+                                if (c1c.length() > 0) {
+                                    parseInfo.header.setC1cCodePhaseBias(RinexUtils.parseDouble(line, 5, 8));
+                                }
+
+                                // C1P signal
+                                final String c1p = RinexUtils.parseString(line, 14, 3);
+                                if (c1p.length() > 0) {
+                                    parseInfo.header.setC1pCodePhaseBias(RinexUtils.parseDouble(line, 18, 8));
+                                }
+
+                                // C2C signal
+                                final String c2c = RinexUtils.parseString(line, 27, 3);
+                                if (c2c.length() > 0) {
+                                    parseInfo.header.setC2cCodePhaseBias(RinexUtils.parseDouble(line, 31, 8));
+                                }
+
+                                // C2P signal
+                                final String c2p = RinexUtils.parseString(line, 40, 3);
+                                if (c2p.length() > 0) {
+                                    parseInfo.header.setC2pCodePhaseBias(RinexUtils.parseDouble(line, 44, 8));
+                                }
+
                             },
                             LineParser::headerNext),
 

@@ -37,6 +37,9 @@ import org.orekit.time.TimeScales;
  */
 public class RinexUtils {
 
+    /** Index of label in header lines. */
+    public static final int LABEL_INDEX = 60;
+
     /** Pattern for splitting date, time and time zone. */
     private static final Pattern SPLITTING_PATTERN = Pattern.compile("([0-9A-Za-z-]+) *([0-9:]+) *([A-Z][A-Z0-9_-]*)?");
 
@@ -48,9 +51,6 @@ public class RinexUtils {
 
     /** Pattern for time. */
     private static final Pattern TIME_PATTERN = Pattern.compile("([0-9]{2}):?([0-9]{2})(?::?([0-9]{2}))?");
-
-    /** Index of label in header lines. */
-    private static final int LABEL_INDEX = 60;
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
