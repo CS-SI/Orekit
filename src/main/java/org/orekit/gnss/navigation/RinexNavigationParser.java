@@ -94,6 +94,15 @@ public class RinexNavigationParser {
     /** Converter for angular accelerations. */
     private static final Unit RAD_PER_S2 = Unit.parse("rad/s²");;
 
+    /** Indicator for CNV1 messages. */
+    private static final String CNV1 = "CNV1";
+
+    /** Indicator for CNV2 messages. */
+    private static final String CNV2 = "CNV2";
+
+    /** Indicator for CNV3 messages. */
+    private static final String CNV3 = "CNV3";
+
     /** Set of time scales. */
     private final TimeScales timeScales;
 
@@ -1285,7 +1294,7 @@ public class RinexNavigationParser {
                     } else if (type.equals(CivilianNavigationMessage.CNAV)) {
                         parseInfo.nav = parseInfo.gpsCNav;
                         return CNAV;
-                    } else if (type.equals("CNV2")) {
+                    } else if (type.equals(CNV2)) {
                         // TODO
                         throw new OrekitInternalError(null);
                     }
@@ -1310,7 +1319,7 @@ public class RinexNavigationParser {
                         // TODO
                         parseInfo.nav = parseInfo.qzssCNav;
                         throw new OrekitInternalError(null);
-                    } else if (type.equals("CNV2")) {
+                    } else if (type.equals(CNV2)) {
                         // TODO
                         throw new OrekitInternalError(null);
                     }
@@ -1319,13 +1328,13 @@ public class RinexNavigationParser {
                     if (type == null || type.equals("D1") || type.equals("D2")) {
                         parseInfo.nav = parseInfo.beidouNav;
                         return BEIDOU;
-                    } else if (type.equals("CNV1")) {
+                    } else if (type.equals(CNV1)) {
                         // TODO
                         throw new OrekitInternalError(null);
-                    } else if (type.equals("CNV2")) {
+                    } else if (type.equals(CNV2)) {
                         // TODO
                         throw new OrekitInternalError(null);
-                    } else if (type.equals("CNV3")) {
+                    } else if (type.equals(CNV3)) {
                         // TODO
                         throw new OrekitInternalError(null);
                     }
@@ -1426,7 +1435,7 @@ public class RinexNavigationParser {
          * @param line line to read
          * @param pi holder for transient data
          */
-        public void parseFourthBroadcastOrbit(String line, ParseInfo pi) {
+        public void parseFourthBroadcastOrbit(final String line, final ParseInfo pi) {
             // do nothing by default
         }
 
@@ -1435,7 +1444,7 @@ public class RinexNavigationParser {
          * @param line line to read
          * @param pi holder for transient data
          */
-        public void parseFifthBroadcastOrbit(String line, ParseInfo pi) {
+        public void parseFifthBroadcastOrbit(final String line, final ParseInfo pi) {
             // do nothing by default
         }
 
@@ -1444,7 +1453,7 @@ public class RinexNavigationParser {
          * @param line line to read
          * @param pi holder for transient data
          */
-        public void parseSixthBroadcastOrbit(String line, ParseInfo pi) {
+        public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
             // do nothing by default
         }
 
@@ -1453,7 +1462,7 @@ public class RinexNavigationParser {
          * @param line line to read
          * @param pi holder for transient data
          */
-        public void parseSeventhBroadcastOrbit(String line, ParseInfo pi) {
+        public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
             // do nothing by default
         }
 
@@ -1462,7 +1471,7 @@ public class RinexNavigationParser {
          * @param line line to read
          * @param pi holder for transient data
          */
-        public void parseEighthBroadcastOrbit(String line, ParseInfo pi) {
+        public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
             // do nothing by default
         }
 
@@ -1471,7 +1480,7 @@ public class RinexNavigationParser {
          * @param line line to read
          * @param pi holder for transient data
          */
-        public void parseNinththBroadcastOrbit(String line, ParseInfo pi) {
+        public void parseNinththBroadcastOrbit(final String line, final ParseInfo pi) {
             // do nothing by default
         }
 
