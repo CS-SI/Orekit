@@ -48,17 +48,19 @@ import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
+import org.orekit.utils.units.Unit;
 
 /**
  * Parser for RINEX navigation messages files.
  * <p>
- * This parser handles RINEX version from 3.01 to 3.05. It is not adapted for RINEX 2.10 and 2.11 versions.
+ * This parser handles RINEX version from 3.01 to 4.00. It is not adapted for RINEX 2.10 and 2.11 versions.
  * </p>
  * @see <a href="https://files.igs.org/pub/data/format/rinex301.pdf"> 3.01 navigation messages file format</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex302.pdf"> 3.02 navigation messages file format</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex303.pdf"> 3.03 navigation messages file format</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex304.pdf"> 3.04 navigation messages file format</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex305.pdf"> 3.05 navigation messages file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_4.00.pdf"> 4.00 navigation messages file format</a>
  *
  * @author Bryan Cazabonne
  * @since 11.0
@@ -66,8 +68,14 @@ import org.orekit.utils.Constants;
  */
 public class RinexNavigationParser {
 
-    /** Kilometer to meters converter. */
-    private static final Double KM_TO_M = 1000.0;
+    /** Converter for positions. */
+    private static final Unit KM = Unit.KILOMETRE;
+
+    /** Converter for velocities. */
+    private static final Unit KM_PER_S = Unit.parse("km/s");
+
+    /** Converter for accelerations. */
+    private static final Unit KM_PER_S2 = Unit.parse("km/s²");;
 
     /** Set of time scales. */
     private final TimeScales timeScales;
@@ -1000,11 +1008,11 @@ public class RinexNavigationParser {
             @Override
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 // X
-                pi.glonassNav.setX(RinexUtils.parseDouble(line, 4, 19) * KM_TO_M);
+                pi.glonassNav.setX(KM.toSI(RinexUtils.parseDouble(line, 4, 19) ));
                 // Vx
-                pi.glonassNav.setXDot(RinexUtils.parseDouble(line, 23, 19) * KM_TO_M);
+                pi.glonassNav.setXDot(KM_PER_S.toSI(RinexUtils.parseDouble(line, 23, 19) ));
                 // Ax
-                pi.glonassNav.setXDotDot(RinexUtils.parseDouble(line, 42, 19) * KM_TO_M);
+                pi.glonassNav.setXDotDot(KM_PER_S2.toSI(RinexUtils.parseDouble(line, 42, 19) ));
                 // Health
                 pi.glonassNav.setHealth(RinexUtils.parseDouble(line, 61, 19));
             }
@@ -1013,11 +1021,11 @@ public class RinexNavigationParser {
             @Override
             public void parseSecondBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Y
-                pi.glonassNav.setY(RinexUtils.parseDouble(line, 4, 19) * KM_TO_M);
+                pi.glonassNav.setY(KM.toSI(RinexUtils.parseDouble(line, 4, 19) ));
                 // Vy
-                pi.glonassNav.setYDot(RinexUtils.parseDouble(line, 23, 19) * KM_TO_M);
+                pi.glonassNav.setYDot(KM_PER_S.toSI(RinexUtils.parseDouble(line, 23, 19) ));
                 // Ay
-                pi.glonassNav.setYDotDot(RinexUtils.parseDouble(line, 42, 19) * KM_TO_M);
+                pi.glonassNav.setYDotDot(KM_PER_S2.toSI(RinexUtils.parseDouble(line, 42, 19) ));
                 // Frequency number
                 pi.glonassNav.setFrequencyNumber(RinexUtils.parseDouble(line, 61, 19));
             }
@@ -1026,11 +1034,11 @@ public class RinexNavigationParser {
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Z
-                pi.glonassNav.setZ(RinexUtils.parseDouble(line, 4, 19) * KM_TO_M);
+                pi.glonassNav.setZ(KM.toSI(RinexUtils.parseDouble(line, 4, 19) ));
                 // Vz
-                pi.glonassNav.setZDot(RinexUtils.parseDouble(line, 23, 19) * KM_TO_M);
+                pi.glonassNav.setZDot(KM_PER_S.toSI(RinexUtils.parseDouble(line, 23, 19) ));
                 // Az
-                pi.glonassNav.setZDotDot(RinexUtils.parseDouble(line, 42, 19) * KM_TO_M);
+                pi.glonassNav.setZDotDot(KM_PER_S2.toSI(RinexUtils.parseDouble(line, 42, 19) ));
 
                 if (pi.file.getHeader().getFormatVersion() < 3.045) {
                     // Add the navigation message to the file
@@ -1120,11 +1128,11 @@ public class RinexNavigationParser {
             @Override
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 // X
-                pi.sbasNav.setX(RinexUtils.parseDouble(line, 4, 19) * KM_TO_M);
+                pi.sbasNav.setX(KM.toSI(RinexUtils.parseDouble(line, 4, 19) ));
                 // Vx
-                pi.sbasNav.setXDot(RinexUtils.parseDouble(line, 23, 19) * KM_TO_M);
+                pi.sbasNav.setXDot(KM_PER_S.toSI(RinexUtils.parseDouble(line, 23, 19) ));
                 // Ax
-                pi.sbasNav.setXDotDot(RinexUtils.parseDouble(line, 42, 19) * KM_TO_M);
+                pi.sbasNav.setXDotDot(KM_PER_S2.toSI(RinexUtils.parseDouble(line, 42, 19) ));
                 // Health
                 pi.sbasNav.setHealth(RinexUtils.parseDouble(line, 61, 19));
             }
@@ -1133,11 +1141,11 @@ public class RinexNavigationParser {
             @Override
             public void parseSecondBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Y
-                pi.sbasNav.setY(RinexUtils.parseDouble(line, 4, 19) * KM_TO_M);
+                pi.sbasNav.setY(KM.toSI(RinexUtils.parseDouble(line, 4, 19) ));
                 // Vy
-                pi.sbasNav.setYDot(RinexUtils.parseDouble(line, 23, 19) * KM_TO_M);
+                pi.sbasNav.setYDot(KM_PER_S.toSI(RinexUtils.parseDouble(line, 23, 19) ));
                 // Ay
-                pi.sbasNav.setYDotDot(RinexUtils.parseDouble(line, 42, 19) * KM_TO_M);
+                pi.sbasNav.setYDotDot(KM_PER_S2.toSI(RinexUtils.parseDouble(line, 42, 19) ));
                 // URA
                 pi.sbasNav.setURA(RinexUtils.parseDouble(line, 61, 19));
             }
@@ -1146,11 +1154,11 @@ public class RinexNavigationParser {
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
                 // Z
-                pi.sbasNav.setZ(RinexUtils.parseDouble(line, 4, 19) * KM_TO_M);
+                pi.sbasNav.setZ(KM.toSI(RinexUtils.parseDouble(line, 4, 19) ));
                 // Vz
-                pi.sbasNav.setZDot(RinexUtils.parseDouble(line, 23, 19) * KM_TO_M);
+                pi.sbasNav.setZDot(KM_PER_S.toSI(RinexUtils.parseDouble(line, 23, 19) ));
                 // Az
-                pi.sbasNav.setZDotDot(RinexUtils.parseDouble(line, 42, 19) * KM_TO_M);
+                pi.sbasNav.setZDotDot(KM_PER_S2.toSI(RinexUtils.parseDouble(line, 42, 19) ));
                 // IODN
                 pi.sbasNav.setIODN(RinexUtils.parseDouble(line, 61, 19));
 
