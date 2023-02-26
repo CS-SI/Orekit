@@ -646,6 +646,66 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testMixedRinex305() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_Mixed_Rinex305.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(3.05,                    file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,   file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("XXRINEXN V3",           file.getHeader().getProgramName());
+        Assertions.assertEquals("AIUB",                  file.getHeader().getRunByName());
+        Assertions.assertEquals("2006-10-02T00:01:23.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
+        Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
+        Assertions.assertEquals(0.1025E-07,              file.getKlobucharAlpha()[0], Double.MIN_VALUE);
+        Assertions.assertEquals(0.7451E-08,              file.getKlobucharAlpha()[1], Double.MIN_VALUE);
+        Assertions.assertEquals(-0.5960E-07,             file.getKlobucharAlpha()[2], Double.MIN_VALUE);
+        Assertions.assertEquals(-0.5960E-07,             file.getKlobucharAlpha()[3], Double.MIN_VALUE);
+        Assertions.assertEquals(0.8806E+05,              file.getKlobucharBeta()[0],  Double.MIN_VALUE);
+        Assertions.assertEquals(0.0000E+00,              file.getKlobucharBeta()[1],  Double.MIN_VALUE);
+        Assertions.assertEquals(-0.1966E+06,             file.getKlobucharBeta()[2],  Double.MIN_VALUE);
+        Assertions.assertEquals(-0.6554E+05,             file.getKlobucharBeta()[3],  Double.MIN_VALUE);
+        Assertions.assertEquals("GPUT", file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
+        Assertions.assertEquals("GLUT", file.getHeader().getTimeSystemCorrections().get(1).getTimeSystemCorrectionType());
+        Assertions.assertEquals(14,                      file.getHeader().getNumberOfLeapSeconds());
+
+        // Verify data
+        Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(2, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(2, file.getGPSNavigationMessages().size());
+
+        final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R01").get(0);
+        Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2006, 10, 1, 0, 15, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
+        Assertions.assertEquals( 0.137668102980E-04,  glo.getTN(),      1.0e-10);
+        Assertions.assertEquals(-0.454747350886E-11,  glo.getGammaN(),  1.0e-10);
+        Assertions.assertEquals(90.0,                 glo.getTime(),    1.0e-10);
+        Assertions.assertEquals(0.157594921875E+08,   glo.getX(),       1.0e-6);
+        Assertions.assertEquals(-0.145566368103E+04,  glo.getXDot(),    1.0e-9);
+        Assertions.assertEquals(0.000000000000E+00,   glo.getXDotDot(), 1.0e-12);
+        Assertions.assertEquals(0.000000000000e+00,   glo.getHealth(),  1.0e-10);
+        Assertions.assertEquals(-0.813711474609E+07,  glo.getY(),       1.0e-6);
+        Assertions.assertEquals(0.205006790161E+04,   glo.getYDot(),    1.0e-9);
+        Assertions.assertEquals(0.931322574615E-06,   glo.getYDotDot(), 1.0e-12);
+        Assertions.assertEquals(7,                    glo.getFrequencyNumber());
+        Assertions.assertEquals(0.183413398438E+08,   glo.getZ(),       1.0e-6);
+        Assertions.assertEquals(0.215388488770E+04,   glo.getZDot(),    1.0e-9);
+        Assertions.assertEquals(-0.186264514923E-05,  glo.getZDotDot(), 1.0e-12);
+        Assertions.assertEquals(179,  glo.getStatusFlags());
+        Assertions.assertEquals(8.381903171539E-09,  glo.getGroupDelayDifference(), 1.0e-15);
+        Assertions.assertEquals(2.0,  glo.getURA(), 1.0e-10);
+        Assertions.assertEquals(3,  glo.getHealthFlags());
+
+    }
+
+    @Test
     public void testQZSSRinex304() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_QZSS_Rinex304.n";

@@ -1032,16 +1032,36 @@ public class RinexNavigationParser {
                 // Az
                 pi.glonassNav.setZDotDot(RinexUtils.parseDouble(line, 42, 19) * KM_TO_M);
 
-                // Add the navigation message to the file
-                pi.file.addGlonassNavigationMessage(pi.glonassNav);
-                // Reinitialized the container for navigation data
-                pi.glonassNav = new GLONASSNavigationMessage();
+                if (pi.file.getHeader().getFormatVersion() < 3.045) {
+                    // Add the navigation message to the file
+                    pi.file.addGlonassNavigationMessage(pi.glonassNav);
+                    // Reinitialized the container for navigation data
+                    pi.glonassNav = new GLONASSNavigationMessage();
+                }
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseFourthBroadcastOrbit(final String line, final ParseInfo pi) {
-                // Nothing to do for GLONASS
+                if (pi.file.getHeader().getFormatVersion() > 3.045) {
+                    // this line has been introduced in 3.05
+                    pi.glonassNav.setStatusFlags((int) FastMath.rint(RinexUtils.parseDouble(line, 4, 19)));
+                    double diff = RinexUtils.parseDouble(line, 23, 19);
+                    if (Double.isNaN(diff)) {
+                        diff = 0.999999999999e+09;
+                    }
+                    pi.glonassNav.setGroupDelayDifference(diff);
+                    pi.glonassNav.setURA(RinexUtils.parseDouble(line, 42, 19));
+                    double healthStatus = RinexUtils.parseDouble(line, 61, 19);
+                    if (Double.isNaN(healthStatus)) {
+                        healthStatus = 15.0;
+                    }
+                    pi.glonassNav.setHealthFlags((int) FastMath.rint(healthStatus));
+                    // Add the navigation message to the file
+                    pi.file.addGlonassNavigationMessage(pi.glonassNav);
+                    // Reinitialized the container for navigation data
+                    pi.glonassNav = new GLONASSNavigationMessage();
+                }
             }
 
             /** {@inheritDoc} */
