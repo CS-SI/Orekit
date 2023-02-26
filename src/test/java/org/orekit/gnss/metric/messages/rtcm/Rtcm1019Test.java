@@ -32,7 +32,7 @@ import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
-import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public class Rtcm1019Test {
 
         final Rtcm1019             rtcm1019      = (Rtcm1019) new RtcmMessagesParser(messages).parse(message, false);
         final Rtcm1019Data         ephemerisData = rtcm1019.getEphemerisData();
-        final GPSNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
+        final GPSLegacyNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(gpsMessage).build();

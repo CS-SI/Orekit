@@ -69,7 +69,7 @@ public class BeidouNavigationMessage extends AbstractNavigationMessage {
     }
 
     /**
-     * Setter for the age of data ephemeric.
+     * Setter for the age of data ephemeris.
      * @param aod the age of data to set
      */
     public void setAODE(final double aod) {

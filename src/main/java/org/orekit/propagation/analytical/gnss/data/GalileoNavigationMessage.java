@@ -124,5 +124,4 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage {
         this.svHealth = svHealth;
     }
 
-
 }

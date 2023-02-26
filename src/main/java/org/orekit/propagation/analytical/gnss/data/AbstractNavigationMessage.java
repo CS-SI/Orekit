@@ -24,10 +24,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 11.0
  *
- * @see GPSNavigationMessage
+ * @see GPSLegacyNavigationMessage
  * @see GalileoNavigationMessage
  * @see BeidouNavigationMessage
- * @see QZSSNavigationMessage
+ * @see QZSSLegacyNavigationMessage
  * @see IRNSSNavigationMessage
  */
 public abstract class AbstractNavigationMessage extends CommonGnssData implements GNSSOrbitalElements {

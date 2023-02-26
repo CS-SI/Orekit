@@ -35,6 +35,9 @@ public class RinexNavigationHeader extends RinexBaseHeader {
     /** List of time system corrections. */
     private List<TimeSystemCorrection> timeSystemCorrections;
 
+    /** Number of merged files. */
+    private int mergedFiles;
+
     /** Current number of leap seconds. */
     private int numberOfLeapSeconds;
 
@@ -43,6 +46,8 @@ public class RinexNavigationHeader extends RinexBaseHeader {
     public RinexNavigationHeader() {
         super(RinexFileType.NAVIGATION);
         this.timeSystemCorrections = new ArrayList<>();
+        this.mergedFiles           = -1;
+        this.numberOfLeapSeconds   = -1;
     }
 
     /**
@@ -81,6 +86,22 @@ public class RinexNavigationHeader extends RinexBaseHeader {
      */
     public void addTimeSystemCorrections(final TimeSystemCorrection timeSystemCorrection) {
         this.timeSystemCorrections.add(timeSystemCorrection);
+    }
+
+    /**
+     * Getter for the number of merged files.
+     * @return the number of merged files
+     */
+    public int getMergedFiles() {
+        return mergedFiles;
+    }
+
+    /**
+     * Setter for the number of merged files.
+     * @param mergedFiles the number of merged files
+     */
+    public void setMergedFiles(final int mergedFiles) {
+        this.mergedFiles = mergedFiles;
     }
 
     /**

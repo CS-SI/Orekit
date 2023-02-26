@@ -29,7 +29,7 @@ import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
-import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 import java.util.ArrayList;
@@ -87,7 +87,7 @@ public class Rtcm1044Test {
 
         final Rtcm1044              rtcm1044      = (Rtcm1044) new RtcmMessagesParser(messages).parse(message, false);
         final Rtcm1044Data          ephemerisData = rtcm1044.getEphemerisData();
-        final QZSSNavigationMessage qzssMessage   = ephemerisData.getQzssNavigationMessage();
+        final QZSSLegacyNavigationMessage qzssMessage   = ephemerisData.getQzssNavigationMessage();
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(qzssMessage).build();
