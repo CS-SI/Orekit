@@ -95,7 +95,7 @@ public class RinexObservationParser {
 
     /** Simple constructor.
      * <p>
-     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.</p>
+     * This constructor uses the {@link DataContext#getDefault() default data context}.
      * </p>
      */
     @DefaultDataContext
