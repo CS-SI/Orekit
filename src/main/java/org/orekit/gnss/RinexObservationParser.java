@@ -43,7 +43,7 @@ import org.orekit.time.TimeScales;
 /** Parser for Rinex measurements files.
  * <p>
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
- * 3.00, 3.01, 3.02, 3.03, 3.04, and 3.05.
+ * 3.00, 3.01, 3.02, 3.03, 3.04, 3.05, and 4.00.
  * </p>
  * @see <a href="https://files.igs.org/pub/data/format/rinex2.pdf">rinex 2.0</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex210.pdf">rinex 2.10</a>
@@ -56,6 +56,7 @@ import org.orekit.time.TimeScales;
  * @see <a href="https://files.igs.org/pub/data/format/rinex303.pdf">rinex 3.03</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex304.pdf">rinex 3.04</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex305.pdf">rinex 3.05</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_4.00.pdf">rinex 4.00</a>
  * @since 12.0
  */
 public class RinexObservationParser {
@@ -963,6 +964,27 @@ public class RinexObservationParser {
                            },
                            parseInfo -> Stream.of(RINEX_3_OBSERVATION)),
 
+        /** Parser for DOI.
+         * @since 12.0
+         */
+        HEADER_DOI(line -> RinexUtils.matchesLabel(line, "DOI"),
+                   (line, parseInfo) -> parseInfo.header.setDoi(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                   LineParser::headerNext),
+
+        /** Parser for license.
+         * @since 12.0
+         */
+        HEADER_LICENSE(line -> RinexUtils.matchesLabel(line, "LICENSE OF USE"),
+                       (line, parseInfo) -> parseInfo.header.setLicense(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                       LineParser::headerNext),
+
+        /** Parser for stationInformation.
+         * @since 12.0
+         */
+        HEADER_STATION_INFORMATION(line -> RinexUtils.matchesLabel(line, "STATION INFORMATION"),
+                                   (line, parseInfo) -> parseInfo.header.setStationInformation(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                                   LineParser::headerNext),
+
         /** Parser for the end of header. */
         HEADER_END(line -> RinexUtils.matchesLabel(line, "END OF HEADER"),
                    (line, parseInfo) -> {
@@ -1036,12 +1058,14 @@ public class RinexObservationParser {
          */
         private static Stream<LineParser> headerNext(final ParseInfo parseInfo) {
             if (parseInfo.header.getFormatVersion() < 3) {
+                // Rinex 2.x header entries
                 return Stream.of(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
                                  REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
                                  ANTENNA_DELTA_X_Y_Z, ANTENNA_B_SIGHT_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES,
                                  WAVELENGTH_FACT_L1_2, RCV_CLOCK_OFFS_APPL, INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS,
                                  LEAP_SECONDS, PRN_NB_OF_OBS, TYPES_OF_OBSERV, OBS_SCALE_FACTOR, HEADER_END);
-            } else {
+            } else if (parseInfo.header.getFormatVersion() < 4) {
+                // Rinex 3.x header entries
                 return Stream.of(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
                                  REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
                                  ANTENNA_DELTA_X_Y_Z, ANTENNA_PHASECENTER, ANTENNA_B_SIGHT_XYZ, ANTENNA_ZERODIR_AZI,
@@ -1050,6 +1074,17 @@ public class RinexObservationParser {
                                  TYPES_OF_OBSERV, SIGNAL_STRENGTH_UNIT, SYS_DCBS_APPLIED,
                                  SYS_PCVS_APPLIED, SYS_SCALE_FACTOR, SYS_PHASE_SHIFT,
                                  GLONASS_SLOT_FRQ_NB, GLONASS_COD_PHS_BIS, HEADER_END);
+            } else {
+                // Rinex 4.x header entries
+                return Stream.of(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
+                                 REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
+                                 ANTENNA_DELTA_X_Y_Z, ANTENNA_PHASECENTER, ANTENNA_B_SIGHT_XYZ, ANTENNA_ZERODIR_AZI,
+                                 ANTENNA_ZERODIR_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES, RCV_CLOCK_OFFS_APPL,
+                                 INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS, LEAP_SECONDS, PRN_NB_OF_OBS,
+                                 TYPES_OF_OBSERV, SIGNAL_STRENGTH_UNIT, SYS_DCBS_APPLIED,
+                                 SYS_PCVS_APPLIED, SYS_SCALE_FACTOR, SYS_PHASE_SHIFT,
+                                 GLONASS_SLOT_FRQ_NB, GLONASS_COD_PHS_BIS,
+                                 HEADER_DOI, HEADER_LICENSE, HEADER_STATION_INFORMATION, HEADER_END);
             }
         }
 

@@ -54,6 +54,21 @@ public class RinexBaseHeader {
     /** Creation date as absolute date. */
     private AbsoluteDate creationDate;
 
+    /** Digital Object Identifier.
+     * @since 12.0
+     */
+    private String doi;
+
+    /** License of use.
+     * @since 12.0
+     */
+    private String license;
+
+    /** Station information.
+     * @since 12.0
+     */
+    private String stationInformation;
+
     /** Simple constructor.
      * @param fileType file type
      */
@@ -200,6 +215,60 @@ public class RinexBaseHeader {
      */
     public void setCreationDate(final AbsoluteDate creationDate) {
         this.creationDate = creationDate;
+    }
+
+    /**
+     *  Getter for the Digital Object Information.
+     * @return the Digital Object Information
+     * @since 12.0
+     */
+    public String getDoi() {
+        return doi;
+    }
+
+    /**
+     * Setter for the Digital Object Information.
+     * @param doi the Digital Object Information to set
+     * @since 12.0
+     */
+    public void setDoi(final String doi) {
+        this.doi = doi;
+    }
+
+    /**
+     *  Getter for the license of use.
+     * @return the license of use
+     * @since 12.0
+     */
+    public String getLicense() {
+        return license;
+    }
+
+    /**
+     * Setter for the license of use.
+     * @param license the license of use
+     * @since 12.0
+     */
+    public void setLicense(final String license) {
+        this.license = license;
+    }
+
+    /**
+     *  Getter for the station information.
+     * @return the station information
+     * @since 12.0
+     */
+    public String getStationInformation() {
+        return stationInformation;
+    }
+
+    /**
+     * Setter for the station information.
+     * @param stationInformation the station information to set
+     * @since 12.0
+     */
+    public void setStationInformation(final String stationInformation) {
+        this.stationInformation = stationInformation;
     }
 
 }

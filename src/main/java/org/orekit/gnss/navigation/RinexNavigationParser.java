@@ -289,6 +289,27 @@ public class RinexNavigationParser {
                             (line, pi) -> pi.file.getHeader().setNumberOfLeapSeconds(RinexUtils.parseInt(line, 0, 6)),
                             LineParser::headerNext),
 
+        /** Parser for DOI.
+         * @since 12.0
+         */
+        HEADER_DOI(line -> RinexUtils.matchesLabel(line, "DOI"),
+                            (line, pi) -> pi.file.getHeader().setDoi(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                            LineParser::headerNext),
+
+        /** Parser for license.
+         * @since 12.0
+         */
+        HEADER_LICENSE(line -> RinexUtils.matchesLabel(line, "LICENSE OF USE"),
+                            (line, pi) -> pi.file.getHeader().setLicense(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                            LineParser::headerNext),
+
+        /** Parser for stationInformation.
+         * @since 12.0
+         */
+        HEADER_STATION_INFORMATION(line -> RinexUtils.matchesLabel(line, "STATION INFORMATION"),
+                            (line, pi) -> pi.file.getHeader().setStationInformation(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                            LineParser::headerNext),
+
         /** Parser for the end of header. */
         HEADER_END(line -> RinexUtils.matchesLabel(line, "END OF HEADER"),
                    (line, pi) -> {
@@ -375,8 +396,18 @@ public class RinexNavigationParser {
          * @return allowed parsers for next line
          */
         private static Stream<LineParser> headerNext(final ParseInfo parseInfo) {
-            return Stream.of(HEADER_COMMENT, HEADER_PROGRAM, HEADER_IONOSPHERIC, HEADER_LEAP_SECONDS,
-                             HEADER_TIME, HEADER_END);
+            if (parseInfo.file.getHeader().getFormatVersion() < 4) {
+                // Rinex 3.x header entries
+                return Stream.of(HEADER_COMMENT, HEADER_PROGRAM, HEADER_IONOSPHERIC,
+                                 HEADER_LEAP_SECONDS, HEADER_TIME,
+                                 HEADER_END);
+            } else {
+                // Rinex 4.x header entries
+                return Stream.of(HEADER_COMMENT, HEADER_PROGRAM, HEADER_IONOSPHERIC,
+                                 HEADER_LEAP_SECONDS, HEADER_TIME,
+                                 HEADER_DOI, HEADER_LICENSE, HEADER_STATION_INFORMATION,
+                                 HEADER_END);
+            }
         }
 
         /** Get the allowed parsers for next lines while parsing navigation date.
