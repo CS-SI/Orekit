@@ -31,11 +31,8 @@ public class ObservationDataSet implements TimeStamped {
     /** Rinex header associated with this data set. */
     private final RinexObservationHeader header;
 
-    /** Satellite System. */
-    private final SatelliteSystem satelliteSystem;
-
-    /** PRN Number of the satellite observed. */
-    private final int prnNumber;
+    /** Observed satellite. */
+    private final SatInSystem satellite;
 
     /** Date of the observation. */
     private final AbsoluteDate tObs;
@@ -49,18 +46,16 @@ public class ObservationDataSet implements TimeStamped {
     /**
      * Simple constructor.
      * @param header Rinex header associated with this data set
-     * @param satelliteSystem Satellite system
-     * @param prnNumber PRN number
+     * @param satellite observed satellite
      * @param tObs Observation date
      * @param rcvrClkOffset Receiver clock offset (optional, 0 by default)
      * @param observationData List of observation data
+     * @since 12.0
      */
-    public ObservationDataSet(final RinexObservationHeader header, final SatelliteSystem satelliteSystem,
-                              final int prnNumber, final AbsoluteDate tObs,
-                              final double rcvrClkOffset, final List<ObservationData> observationData) {
+    public ObservationDataSet(final RinexObservationHeader header, final SatInSystem satellite,
+                              final AbsoluteDate tObs, final double rcvrClkOffset, final List<ObservationData> observationData) {
         this.header          = header;
-        this.satelliteSystem = satelliteSystem;
-        this.prnNumber       = prnNumber;
+        this.satellite       = satellite;
         this.tObs            = tObs;
         this.observationData = observationData;
         this.rcvrClkOffset   = rcvrClkOffset;
@@ -78,14 +73,22 @@ public class ObservationDataSet implements TimeStamped {
      * @return satellite system of observed satellite
      */
     public SatelliteSystem getSatelliteSystem() {
-        return satelliteSystem;
+        return satellite.getSystem();
     }
 
     /** Get PRN number.
      * @return PRN number of the observed satellite
      */
     public int getPrnNumber() {
-        return prnNumber;
+        return satellite.getPRN();
+    }
+
+    /** Get observed satellite.
+     * @return observed satellite
+     * @since 12.0
+     */
+    public SatInSystem getSatellite() {
+        return satellite;
     }
 
     /** {@inheritDoc} */

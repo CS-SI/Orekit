@@ -43,6 +43,26 @@ public class GLONASSNavigationMessage extends AbstractEphemerisMessage implement
     /** Frequency number. */
     private int frequencyNumber;
 
+    /** Status flags.
+     * @since 12.0
+     */
+    private int statusFlags;
+
+    /** Health flags.
+     * @since 12.0
+     */
+    private int healthFlags;
+
+    /** Group Delay Difference (s).
+     * @since 12.0
+     */
+    private double groupDelayDifference;
+
+    /** User range accuracy (m).
+     * @since 12.0
+     */
+    private double ura;
+
     /** Constructor. */
     public GLONASSNavigationMessage() {
         // Nothing to do ...
@@ -174,6 +194,72 @@ public class GLONASSNavigationMessage extends AbstractEphemerisMessage implement
      */
     public void setTime(final double time) {
         this.time = time;
+    }
+
+    /** Get status flags.
+     * @return status flags
+     * @since 12.0
+     */
+    public int getStatusFlags() {
+        return statusFlags;
+    }
+
+    /** Set status flag.
+     * @param statusFlags status flag
+     * @since 12.0
+     */
+    public void setStatusFlags(final int statusFlags) {
+        this.statusFlags = statusFlags;
+    }
+
+    /** Set health flag.
+     * @param healthFlags health flag
+     * @since 12.0
+     */
+    public void setHealthFlags(final int healthFlags) {
+        this.healthFlags = healthFlags;
+    }
+
+    /** Get health flags.
+     * @return health flags
+     * @since 12.0
+     */
+    public int getHealthFlags() {
+        return healthFlags;
+    }
+
+    /** Get group delay difference.
+     * @return group delay difference
+     * @since 12.0
+     */
+    public double getGroupDelayDifference() {
+        return groupDelayDifference;
+    }
+
+    /** Set group delay difference.
+     * @param groupDelayDifference group delay difference
+     * @since 12.0
+     */
+    public void setGroupDelayDifference(final double groupDelayDifference) {
+        this.groupDelayDifference = groupDelayDifference;
+    }
+
+    /**
+     * Getter for the user range accuray (meters).
+     * @return the user range accuracy
+     * @since 12.0
+     */
+    public double getURA() {
+        return ura;
+    }
+
+    /**
+     * Setter for the user range accuracy.
+     * @param accuracy the value to set
+     * @since 12.0
+     */
+    public void setURA(final double accuracy) {
+        this.ura = accuracy;
     }
 
     /**
