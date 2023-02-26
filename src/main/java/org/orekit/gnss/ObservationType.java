@@ -131,6 +131,9 @@ public enum ObservationType {
     /** Pseudorange Beidou B1 Data for Rinex3. */
     C1D(MeasurementType.PSEUDO_RANGE, SignalCode.D, Frequency.B1A),
 
+    /** Pseudorange QZSS L1 C/B for Rinex4. */
+    C1E(MeasurementType.PSEUDO_RANGE, SignalCode.C, Frequency.J01),
+
     /** Pseudorange Beidou B1 I for Rinex3.02. */
     C1I(MeasurementType.PSEUDO_RANGE, SignalCode.I, Frequency.B01),
 
@@ -346,6 +349,9 @@ public enum ObservationType {
 
     /** Doppler Beidou B1 Data for Rinex3. */
     D1D(MeasurementType.DOPPLER, SignalCode.D, Frequency.B1A),
+
+    /** Doppler QZSS L1 C/B for Rinex4. */
+    D1E(MeasurementType.DOPPLER, SignalCode.C, Frequency.J01),
 
     /** Doppler Beidou B1 I for Rinex3. */
     D1I(MeasurementType.DOPPLER, SignalCode.I, Frequency.B01),
@@ -566,6 +572,9 @@ public enum ObservationType {
     /** Carrier-phase Beidou B1 Data for Rinex3. */
     L1D(MeasurementType.CARRIER_PHASE, SignalCode.D, Frequency.B1A),
 
+    /** Carrier-phase QZSS L1 C/B for Rinex4. */
+    L1E(MeasurementType.CARRIER_PHASE, SignalCode.C, Frequency.J01),
+
     /** Carrier-phase Beidou B1 I for Rinex3. */
     L1I(MeasurementType.CARRIER_PHASE, SignalCode.I, Frequency.B01),
 
@@ -772,6 +781,9 @@ public enum ObservationType {
 
     /** Signal-strength Beidou B1 Data for Rinex3. */
     S1D(MeasurementType.SIGNAL_STRENGTH, SignalCode.D, Frequency.B1A),
+
+    /** Signal-strength QZSS L1 C/B for Rinex3. */
+    S1E(MeasurementType.SIGNAL_STRENGTH, SignalCode.C, Frequency.J01),
 
     /** Signal-strength Beidou B1 I for Rinex3. */
     S1I(MeasurementType.SIGNAL_STRENGTH, SignalCode.I, Frequency.B01),

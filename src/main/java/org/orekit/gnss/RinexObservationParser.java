@@ -1015,7 +1015,7 @@ public class RinexObservationParser {
                                            Double.isNaN(parseInfo.header.getAntennaHeight())  ||
                                            parseInfo.header.getTFirstObs()            == null ||
                                            parseInfo.mapTypeObs.isEmpty()                     ||
-                                           version >= 3.01 && parseInfo.header.getPhaseShiftCorrections().isEmpty()) {
+                                           version >= 3.01 && version < 4.0 && parseInfo.header.getPhaseShiftCorrections().isEmpty()) {
                                throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);
                            }
                        }
