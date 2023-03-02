@@ -132,7 +132,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * @param s Spacecraft state.
      * @return Relative position between primary (=s) and secondaryPVProvider.
      */
-    protected PVCoordinates computeDeltaPV(final SpacecraftState s) {
+    public PVCoordinates computeDeltaPV(final SpacecraftState s) {
         return new PVCoordinates(s.getPVCoordinates(),
                                  secondaryPVProvider.getPVCoordinates(s.getDate(), s.getFrame()));
     }
@@ -142,5 +142,14 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
     protected ExtremumApproachDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
                                               final EventHandler newHandler) {
         return new ExtremumApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider);
+    }
+
+    /**
+     * Get the secondary position-velocity provider stored in this instance.
+     *
+     * @return the secondary position-velocity provider stored in this instance
+     */
+    public PVCoordinatesProvider getSecondaryPVProvider() {
+        return secondaryPVProvider;
     }
 }
