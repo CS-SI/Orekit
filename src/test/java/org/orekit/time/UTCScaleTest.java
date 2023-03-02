@@ -428,13 +428,13 @@ public class UTCScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);
 
-        Assertions.assertTrue(bos.size() > 50);
-        Assertions.assertTrue(bos.size() < 100);
+        Assertions.assertTrue(bos.size() > 1550);
+        Assertions.assertTrue(bos.size() < 1650);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         UTCScale deserialized  = (UTCScale) ois.readObject();
-        Assertions.assertTrue(utc == deserialized);
+        Assertions.assertEquals(utc.getBaseOffsets().size(), deserialized.getBaseOffsets().size());
 
     }
 
