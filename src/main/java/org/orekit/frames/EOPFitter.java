@@ -119,7 +119,7 @@ public class EOPFitter implements Serializable {
 
     /** Create fitter with default parameters adapted for fitting orientation parameters dUT1 and LOD.
      * <ul>
-     *   <li>fitting duration set to two {@link Constants.JULIAN_YEAR years}</li>
+     *   <li>fitting duration set to two {@link Constants#JULIAN_YEAR years}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -141,7 +141,7 @@ public class EOPFitter implements Serializable {
 
     /** Create fitter with default parameters adapted for fitting pole parameters Xp and Yp.
      * <ul>
-     *   <li>fitting duration set to one {@link Constants.JULIAN_YEAR year}</li>
+     *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -161,7 +161,7 @@ public class EOPFitter implements Serializable {
 
     /** Create fitter with default parameters adapted for fitting nutation parameters dx and dy.
      * <ul>
-     *   <li>fitting duration set to one {@link Constants.JULIAN_YEAR year}</li>
+     *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
