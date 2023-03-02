@@ -16,6 +16,17 @@
  */
 package org.orekit.frames;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -55,16 +66,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 import org.orekit.utils.PVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class FramesFactoryTest {
 
@@ -593,6 +594,33 @@ public class FramesFactoryTest {
                                                                         new GeodeticPoint(FastMath.toRadians(-22.27113),
                                                                                           FastMath.toRadians(166.44332),
                                                                                           0.0), "Nouméa")));
+    }
+
+    @Test
+    public void testCustomEOP() {
+        final double deltaUT1 = 0.1;
+        final Frame      baseITRF    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        final EOPHistory baseEOP     = FramesFactory.findEOP(baseITRF);
+        final EOPHistory modifiedEOP = new EOPHistory(baseEOP.getConventions(),
+                                                      baseEOP.
+                                                      getEntries().
+                                                      stream().
+                                                      map(e -> new EOPEntry(e.getMjd(),
+                                                                            e.getUT1MinusUTC() + deltaUT1, e.getLOD(),
+                                                                            e.getX(), e.getY(),
+                                                                            e.getDdPsi(), e.getDdEps(),
+                                                                            e.getDx(), e.getDy(),
+                                                                            e.getITRFType(), e.getDate())).
+                                                      collect(Collectors.toList()),
+                                                      baseEOP.isSimpleEop());
+        final Frame modifiedITRF = FramesFactory.buildUncachedITRF(modifiedEOP, TimeScalesFactory.getUTC());
+        final AbsoluteDate t0 = new AbsoluteDate(2002, 2, 14, 13, 59, 43.0, TimeScalesFactory.getUTC());
+        for (double dt = 0; dt < 7 * Constants.JULIAN_DAY; dt += 3600) {
+            final Transform t = baseITRF.getTransformTo(modifiedITRF, t0.shiftedBy(dt));
+            Assertions.assertEquals(Constants.WGS84_EARTH_ANGULAR_VELOCITY * deltaUT1,
+                                    t.getRotation().getAngle(),
+                                    1.6e-13);
+        }
     }
 
     private void doTestDerivatives(AbsoluteDate ref,

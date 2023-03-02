@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1050">
+	      Added prediction of Earth Orientation Parameters.
+      </action>
+      <action dev="luc" type="add" issue="1051">
+	      Added creation of ITRF from custom Earth Orientation Parameters history.
+      </action>
       <action dev="luc" type="update" issue="860">
 	      Added support for Rinex 3.05 (observation and navigation).
       </action>
@@ -33,6 +39,9 @@
       <action dev="luc" type="update">
 	      Properly manage known inconsistency between CCSDS and TLE
 	      concerning units of MEAN_MOTION_DOT and MEAN_MOTION_DDOT.
+      </action>
+      <action dev="vincent" type="add" issue="1044">
+        Added getter for secondaryPVCoordinatesProvider in ExtremumApproachDetector and made computeDeltaPV method public.
       </action>
       <action dev="andrewsgoetz" type="add" issue="1038">
         Added support for STK ephemeris files.

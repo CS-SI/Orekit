@@ -546,7 +546,7 @@ public class EOPHistory implements Serializable {
     /** Get the correction to the nutation parameters for Non-Rotating Origin paradigm.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
-     * @return nutation correction in Celestial Intermediat Pole coordinates
+     * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
     public double[] getNonRotatinOriginNutationCorrection(final AbsoluteDate date) {
@@ -566,7 +566,7 @@ public class EOPHistory implements Serializable {
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
      * @param <T> type of the filed elements
-     * @return nutation correction in Celestial Intermediat Pole coordinates
+     * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
     public <T extends CalculusFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
@@ -769,9 +769,6 @@ public class EOPHistory implements Serializable {
     }
 
     /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
      * @return data transfer object that will be serialized
      */
     @DefaultDataContext
@@ -813,7 +810,6 @@ public class EOPHistory implements Serializable {
          */
         private Object readResolve() {
             try {
-                // retrieve a managed frame
                 return new EOPHistory(conventions, entries, simpleEOP);
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);

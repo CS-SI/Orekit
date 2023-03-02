@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
@@ -125,5 +126,18 @@ public class ExtremumApproachDetectorTest {
         // Then
         Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod() / 2,1e-7);
 
+    }
+
+    @Test
+    void testSecondaryPVCoordinatesProviderGetter() {
+        // Given
+        final PVCoordinatesProvider    secondaryPVProvider      = Mockito.mock(PVCoordinatesProvider.class);
+        final ExtremumApproachDetector extremumApproachDetector = new ExtremumApproachDetector(secondaryPVProvider);
+
+        // When
+        final PVCoordinatesProvider returnedSecondaryPVProvider = extremumApproachDetector.getSecondaryPVProvider();
+
+        // Then
+        Assertions.assertEquals(secondaryPVProvider, returnedSecondaryPVProvider);
     }
 }

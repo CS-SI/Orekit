@@ -25,6 +25,7 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -289,11 +290,6 @@ public abstract class AbstractFrames implements Frames {
     }
 
     @Override
-    public FactoryManagedFrame getTIRF(final IERSConventions conventions) {
-        return getTIRF(conventions, true);
-    }
-
-    @Override
     public VersionedITRF getITRF(final ITRFVersion version,
                                  final IERSConventions conventions,
                                  final boolean simpleEOP) {
@@ -317,6 +313,37 @@ public abstract class AbstractFrames implements Frames {
             return frame;
 
         }
+    }
+
+    @Override
+    public Frame buildUncachedITRF(final UT1Scale ut1) {
+
+        // extract EOP history
+        final EOPHistory eopHistory = ut1.getEOPHistory();
+
+        // build CIRF
+        final TransformProvider shifting =
+                        new ShiftingTransformProvider(new CIRFProvider(eopHistory),
+                                CartesianDerivativesFilter.USE_PVA,
+                                AngularDerivativesFilter.USE_R,
+                                6, Constants.JULIAN_DAY / 24,
+                                OrekitConfiguration.getCacheSlotsNumber(),
+                                Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+        final Frame cirf = new Frame(getGCRF(), shifting, "CIRF (uncached)", true);
+
+        // build TIRF
+        final Frame tirf = new Frame(cirf, new TIRFProvider(eopHistory, ut1),
+                                          "TIRF (uncached)", false);
+
+        // build ITRF
+        return new Frame(tirf, new ITRFProvider(eopHistory),
+                         "ITRF (uncached)", false);
+
+    }
+
+    @Override
+    public FactoryManagedFrame getTIRF(final IERSConventions conventions) {
+        return getTIRF(conventions, true);
     }
 
     @Override
