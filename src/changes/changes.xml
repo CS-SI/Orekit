@@ -132,6 +132,9 @@
       <action dev="vincent" type="fix" issue="957">
         Removed duplicate exception message for negative mass.
       </action>
+      <action dev="julien" type="fix" issue="988">
+        Fixed CDM's fields about force model that are set to NO if absent (solar radiation pressure, earth tides, intrack thrust).
+      </action>
       <action dev="bryan" type="fix" issue="840">
         Fixed typo in class name of AttitudeEndpoints.
       </action>
