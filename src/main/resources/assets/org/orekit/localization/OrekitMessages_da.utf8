@@ -115,9 +115,6 @@ UNABLE_TO_PARSE_ELEMENT_IN_FILE = kunne ikke analysere elementet {0} på linje {
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = kunne ikke finde filen {0}
 
-# spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = rumfartøjets masse bliver negativ (m: {0})
-
 # positive flow rate (q: {0})
 POSITIVE_FLOW_RATE = positiv strøm (q: {0})
 

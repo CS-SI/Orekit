@@ -444,7 +444,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             if (getInitialState().getMass() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                           getInitialState().getMass());
             }
 

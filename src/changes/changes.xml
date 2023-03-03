@@ -123,6 +123,9 @@
         Added filtering capability to CCSDS parsers at token level,
         allowing to fix on fly CCSDS messages.
       </action>
+      <action dev="vincent" type="fix" issue="957">
+        Removed duplicate exception message for negative mass.
+      </action>
       <action dev="bryan" type="fix" issue="840">
         Fixed typo in class name of AttitudeEndpoints.
       </action>
@@ -130,7 +133,7 @@
         Fixed unsafe cast in CSSISpaceWeatherDataLoader.
       </action>
       <action dev="bryan" type="add" issue="941">
-        Added RTCM orbit and clock messages for GPS, GLONASS, and Galileo. 
+        Added RTCM orbit and clock messages for GPS, GLONASS, and Galileo.
       </action>
       <action dev="luc" type="fix" issue="1002">
         Added adapters in both directions between ExtendedPVCoordinatesProvider and Frame.
