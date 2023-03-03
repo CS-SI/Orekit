@@ -43,6 +43,9 @@
       <action dev="vincent" type="add" issue="1044">
         Added getter for secondaryPVCoordinatesProvider in ExtremumApproachDetector and made computeDeltaPV method public.
       </action>
+      <action dev="qmor" type="fix" issue="1045">
+        Fix error TLE serialization when time is close to next day e.g. 23:59:59.999999999 (also for Field version).
+      </action>
       <action dev="andrewsgoetz" type="add" issue="1038">
         Added support for STK ephemeris files.
       </action>

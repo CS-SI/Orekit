@@ -37,6 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -807,6 +808,27 @@ public class FieldTLETest {
         final FieldTLE<DerivativeStructure> fieldTLE1 = FieldTLE.stateToTLE(tlePropagator.getInitialState(), fieldTLE);
         Assertions.assertEquals(line2, fieldTLE1.getLine2());
 
+    }
+
+    @Test
+    void roundToNextDayError() {
+        //Given
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final Binary64        zero  = field.getZero();
+
+        final FieldAbsoluteDate<Binary64> tleDate =
+                new FieldAbsoluteDate<>(field, new AbsoluteDate("2022-01-01T23:59:59.99999999", TimeScalesFactory.getUTC()));
+
+        final FieldTLE<Binary64> tle =
+                new FieldTLE<>(99999, 'U', 2022, 999, "A", 0, 1, tleDate, zero, zero, zero, zero, zero, zero, zero, zero, 99,
+                               11606 * 1e-4, TimeScalesFactory.getUTC());
+
+        //When
+        final FieldAbsoluteDate<Binary64> returnedDate = tle.getDate();
+
+        //Then
+        // Assert that TLE class did not round the date to the next day
+        Assertions.assertEquals(tleDate, returnedDate);
     }
 
     @BeforeEach
