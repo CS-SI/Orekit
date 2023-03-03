@@ -681,10 +681,8 @@ public class UnivariateprocessNoiseTest {
      * @param orbitType orbit type
      * @param positionAngle position angle
      * @param lofType LOF type
-     * @param hasMeasurementParameter add also a measurement parameter (this tests the 2nd constructor)
      * @param print print results on console ?
-     * @param sampleNumber
-     * @param relativeTolerance
+     * @param relativeTolerance relative tolerance
      */
     private void doTestLofCartesianOrbitalCovarianceFormal(final Context context,
                                                         final OrbitType orbitType,
