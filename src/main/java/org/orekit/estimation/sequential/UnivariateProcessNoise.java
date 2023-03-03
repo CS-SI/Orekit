@@ -204,12 +204,12 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         final double deltaT = current.getDate().durationFrom(previous.getDate());
 
         // Evaluate the functions, using ΔT as argument
-        final int      lofOrbitalprocessNoiseLength = lofCartesianOrbitalParametersEvolution.length;
-        final double[] lofOrbitalProcessNoiseValues = new double[lofOrbitalprocessNoiseLength];
+        final int      lofOrbitalProcessNoiseLength = lofCartesianOrbitalParametersEvolution.length;
+        final double[] lofOrbitalProcessNoiseValues = new double[lofOrbitalProcessNoiseLength];
 
         // The function return a value which dimension is that of a standard deviation
         // It needs to be squared before being put in the process noise covariance matrix
-        for (int i = 0; i < lofOrbitalprocessNoiseLength; i++) {
+        for (int i = 0; i < lofOrbitalProcessNoiseLength; i++) {
             final double functionValue =  lofCartesianOrbitalParametersEvolution[i].value(deltaT);
             lofOrbitalProcessNoiseValues[i] = functionValue * functionValue;
         }
