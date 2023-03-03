@@ -107,6 +107,9 @@
       <action dev="luc" type="add">
         Added FieldStaticTransform.
       </action>
+      <action dev="vincent" type="add" issue="1006">
+        Added FieldODEIntegratorBuilder interface and its implementing classes.
+      </action>
       <action dev="luc" type="add" issue="1004">
         Removed deprecated methods and classes.
       </action>
@@ -208,7 +211,7 @@
       <action dev="vincent" type="update" issue="978">
         Improved documentation of StateCovariance class.
       </action>
-    </release>
+	</release>
     <release version="11.3" date="2022-10-25"
              description="Version 11.3 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced in 11.3 are:
