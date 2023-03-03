@@ -422,7 +422,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             final T mass = y[6];
             if (mass.getReal() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             if (superGetOrbitType() == null) {
