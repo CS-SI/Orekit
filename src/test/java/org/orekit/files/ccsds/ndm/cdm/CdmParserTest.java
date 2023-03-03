@@ -376,9 +376,9 @@ public class CdmParserTest {
         Assertions.assertEquals(36, file.getMetadataObject1().getGravityOrder(), 0);
         Assertions.assertEquals("MOON", file.getMetadataObject1().getNBodyPerturbations().get(0).getName());
         Assertions.assertEquals("SUN", file.getMetadataObject1().getNBodyPerturbations().get(1).getName());
-        Assertions.assertEquals(false, file.getMetadataObject1().getSolarRadiationPressure());
-        Assertions.assertEquals(false, file.getMetadataObject1().getEarthTides());
-        Assertions.assertEquals(false, file.getMetadataObject1().getIntrackThrust());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getSolarRadiationPressure().name());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getEarthTides().name());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getIntrackThrust().name());
         Assertions.assertEquals("UTC", file.getMetadataObject1().getTimeSystem().name());
 
         // Check data block
