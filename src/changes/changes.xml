@@ -46,6 +46,9 @@
       <action dev="qmor" type="fix" issue="1045">
         Fix error TLE serialization when time is close to next day e.g. 23:59:59.999999999 (also for Field version).
       </action>
+      <action dev="vincent" type="update" issue="1046">
+        Updated getDirection method in ThrustPropulsionModel interface to handle case where thrust vector norm is zero.
+      </action>
       <action dev="andrewsgoetz" type="add" issue="1038">
         Added support for STK ephemeris files.
       </action>
