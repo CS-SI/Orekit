@@ -137,7 +137,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
-     *   <li>\(\Delta\tau\) set to 6 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>\(\Delta\tau\) set to 6 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -168,7 +168,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
-     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -199,7 +199,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
-     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -229,7 +229,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
-     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -259,7 +259,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
-     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -289,7 +289,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
-     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
