@@ -20,6 +20,7 @@ package org.orekit.forces.maneuvers.propulsion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -43,11 +44,18 @@ public interface ThrustPropulsionModel extends PropulsionModel {
     }
 
     /** Get the thrust direction in spacecraft frame.
+     * <p>
+     * Return a zero vector if there is no thrust for given spacecraft state.
      * @param s current spacecraft state
      * @return thrust direction in spacecraft frame
      */
     default Vector3D getDirection(SpacecraftState s) {
-        return getThrustVector(s).normalize();
+        final Vector3D thrustVector = getThrustVector(s);
+        final double   norm         = thrustVector.getNorm();
+        if (norm <= Precision.EPSILON) {
+            return Vector3D.ZERO;
+        }
+        return thrustVector.scalarMultiply(1. / norm);
     }
 
     /** Get the thrust norm (N).

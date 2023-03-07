@@ -43,6 +43,12 @@
       <action dev="vincent" type="add" issue="1044">
         Added getter for secondaryPVCoordinatesProvider in ExtremumApproachDetector and made computeDeltaPV method public.
       </action>
+      <action dev="qmor" type="fix" issue="1045">
+        Fix error TLE serialization when time is close to next day e.g. 23:59:59.999999999 (also for Field version).
+      </action>
+      <action dev="vincent" type="update" issue="1046">
+        Updated getDirection method in ThrustPropulsionModel interface to handle case where thrust vector norm is zero.
+      </action>
       <action dev="andrewsgoetz" type="add" issue="1038">
         Added support for STK ephemeris files.
       </action>
@@ -104,6 +110,9 @@
       <action dev="luc" type="add">
         Added FieldStaticTransform.
       </action>
+      <action dev="vincent" type="add" issue="1006">
+        Added FieldODEIntegratorBuilder interface and its implementing classes.
+      </action>
       <action dev="luc" type="add" issue="1004">
         Removed deprecated methods and classes.
       </action>
@@ -120,6 +129,12 @@
         Added filtering capability to CCSDS parsers at token level,
         allowing to fix on fly CCSDS messages.
       </action>
+      <action dev="vincent" type="fix" issue="957">
+        Removed duplicate exception message for negative mass.
+      </action>
+      <action dev="julien" type="fix" issue="988">
+        Fixed CDM's fields about force model that are set to NO if absent (solar radiation pressure, earth tides, intrack thrust).
+      </action>
       <action dev="bryan" type="fix" issue="840">
         Fixed typo in class name of AttitudeEndpoints.
       </action>
@@ -127,7 +142,7 @@
         Fixed unsafe cast in CSSISpaceWeatherDataLoader.
       </action>
       <action dev="bryan" type="add" issue="941">
-        Added RTCM orbit and clock messages for GPS, GLONASS, and Galileo. 
+        Added RTCM orbit and clock messages for GPS, GLONASS, and Galileo.
       </action>
       <action dev="luc" type="fix" issue="1002">
         Added adapters in both directions between ExtendedPVCoordinatesProvider and Frame.
@@ -202,7 +217,7 @@
       <action dev="vincent" type="update" issue="978">
         Improved documentation of StateCovariance class.
       </action>
-    </release>
+	</release>
     <release version="11.3" date="2022-10-25"
              description="Version 11.3 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced in 11.3 are:
