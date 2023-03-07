@@ -65,9 +65,12 @@ public class EOPFitter implements Serializable {
      * @param convergence convergence on fitted parameter
      * @param degree degree of the polynomial model
      * @param pulsations pulsations of harmonic part (rad/s)
-     * @see #createDefaultDut1Fitter()
-     * @see #createDefaultPoleFitter()
-     * @see #createDefaultNutationFitter()
+     * @see #createDefaultDut1FitterShortTermPrediction()
+     * @see #createDefaultDut1FitterLongTermPrediction()
+     * @see #createDefaultPoleFitterShortTermPrediction()
+     * @see #createDefaultPoleFitterLongTermPrediction()
+     * @see #createDefaultNutationFitterShortTermPrediction()
+     * @see #createDefaultNutationFitterLongTermPrediction()
      * @see SecularAndHarmonic
      */
     public EOPFitter(final double fittingDuration, final double deltaTau, final double convergence,
