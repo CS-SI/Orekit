@@ -109,11 +109,25 @@ public class SecularAndHarmonic {
     }
 
     /** Add a fitting point.
+     * <p>
+     * The point weight is set to 1.0
+     * <p>
      * @param date date of the point
      * @param osculatingValue osculating value
+     * @see #addWeightedPoint(AbsoluteDate, double, double)
      */
     public void addPoint(final AbsoluteDate date, final double osculatingValue) {
-        observedPoints.add(new WeightedObservedPoint(1.0, date.durationFrom(reference), osculatingValue));
+        addWeightedPoint(date, osculatingValue, 1.0);
+    }
+
+    /** Add a weighted fitting point.
+     * @param date date of the point
+     * @param osculatingValue osculating value
+     * @param weight weight of the points
+     * @since 12.0
+     */
+    public void addWeightedPoint(final AbsoluteDate date, final double osculatingValue, final double weight) {
+        observedPoints.add(new WeightedObservedPoint(weight, date.durationFrom(reference), osculatingValue));
     }
 
     /** Get the reference date.

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.ToDoubleFunction;
 
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -36,17 +37,17 @@ public class EOPFitter implements Serializable {
     /** Sun pulsation, one year period. */
     public static final double SUN_PULSATION = MathUtils.TWO_PI / Constants.JULIAN_YEAR;
 
-    /** Moon pulsation (one Moon synodic period). */
-    public static final double MOON_PULSATION = MathUtils.TWO_PI / (29.530589 * Constants.JULIAN_DAY);
-
-    /** Unidentified 13.533 days pulsation. */
-    public static final double SHORT_PULSATION = MathUtils.TWO_PI / (13.533 * Constants.JULIAN_DAY);
+    /** Moon pulsation (one Moon draconic period). */
+    public static final double MOON_DRACONIC_PULSATION = MathUtils.TWO_PI / (27.212221 * Constants.JULIAN_DAY);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20230228L;
 
     /** Duration of the fitting window at the end of the raw history (s). */
     private final double fittingDuration;
+
+    /** Time constant of the weight. */
+    private final double deltaTau;
 
     /** Convergence on fitted parameter. */
     private final double convergence;
@@ -59,6 +60,8 @@ public class EOPFitter implements Serializable {
 
     /** Simple constructor.
      * @param fittingDuration duration of the fitting window at the end of the raw history (s)
+     * @param deltaTau time constant of the weight (s), point weight is \(e^{\frac{t-t_0}{\Delta\tau}}\),
+     * i.e. points far in the past before \(t_0\) have smaller weights
      * @param convergence convergence on fitted parameter
      * @param degree degree of the polynomial model
      * @param pulsations pulsations of harmonic part (rad/s)
@@ -67,9 +70,10 @@ public class EOPFitter implements Serializable {
      * @see #createDefaultNutationFitter()
      * @see SecularAndHarmonic
      */
-    public EOPFitter(final double fittingDuration, final double convergence,
+    public EOPFitter(final double fittingDuration, final double deltaTau, final double convergence,
                      final int degree, final double... pulsations) {
         this.fittingDuration = fittingDuration;
+        this.deltaTau        = deltaTau;
         this.convergence     = convergence;
         this.degree          = degree;
         this.pulsations      = pulsations.clone();
@@ -103,7 +107,8 @@ public class EOPFitter implements Serializable {
             final EOPEntry entry = backwardIterator.previous();
             if (entry.getDate().isAfterOrEqualTo(fitStart)) {
                 // the entry belongs to the fitting interval
-                sh.addPoint(entry.getDate(), extractor.applyAsDouble(entry));
+                sh.addWeightedPoint(entry.getDate(), extractor.applyAsDouble(entry),
+                                    FastMath.exp(entry.getDate().durationFrom(fitStart) / deltaTau));
             } else {
                 // we have processed all entries from the fitting interval
                 break;
@@ -117,66 +122,186 @@ public class EOPFitter implements Serializable {
 
     }
 
-    /** Create fitter with default parameters adapted for fitting orientation parameters dUT1 and LOD.
+    /** Create fitter with default parameters adapted for fitting orientation parameters dUT1 and LOD
+     * for short term prediction.
+     * <p>
+     * The main difference between these settings and {@link #createDefaultDut1FitterLongTermPrediction()
+     * the settings for long prediction} is the much smaller \(\Delta\tau\). This means more
+     * weight is set to the points at the end of the history, hence forcing the fitted prediction
+     * model to be closer to these points, hence the prediction error to be smaller just after
+     * raw history end. On the other hand, this implies that the model will diverge on long term.
+     * These settings are intended when prediction is used for at most 5 days after raw EOP end.
+     * </p>
      * <ul>
-     *   <li>fitting duration set to two {@link Constants#JULIAN_YEAR years}</li>
+     *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
+     *   <li>\(\Delta\tau\) set to 6 {@link Constants#JULIAN_DAY days)</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
      *   <li>one harmonic term at 2 times {@link #SUN_PULSATION}}</li>
      *   <li>one harmonic term at 3 times {@link #SUN_PULSATION}}</li>
-     *   <li>one harmonic term at {@link #MOON_PULSATION}}</li>
-     *   <li>one harmonic term at 2 times {@link #MOON_PULSATION}}</li>
-     *   <li>one harmonic term at 3 times {@link #MOON_PULSATION}}</li>
-     *   <li>one harmonic term at {@link #SHORT_PULSATION 13.533 days}}</li>
+     *   <li>one harmonic term at {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #MOON_DRACONIC_PULSATION}}</li>
      * </ul>
      * @return fitter with default configuration for orientation parameters dUT1 and LOD
+     * @see #createDefaultDut1FitterShortTermPrediction()
      */
-    public static EOPFitter createDefaultDut1Fitter() {
-        return new EOPFitter(2 * Constants.JULIAN_YEAR, 1.0e-12, 3,
+    public static EOPFitter createDefaultDut1FitterShortTermPrediction() {
+        return new EOPFitter(Constants.JULIAN_YEAR, 6 * Constants.JULIAN_DAY, 1.0e-12, 3,
                              SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_PULSATION, 2 * MOON_PULSATION, 3 * MOON_PULSATION,
-                             SHORT_PULSATION);
+                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
-    /** Create fitter with default parameters adapted for fitting pole parameters Xp and Yp.
+    /** Create fitter with default parameters adapted for fitting orientation parameters dUT1 and LOD
+     * for long term prediction.
+     * <p>
+     * The main difference between these settings and {@link #createDefaultDut1FitterShortTermPrediction()
+     * the settings for short prediction} is the much larger \(\Delta\tau\). This means weight
+     * is spread throughout history, hence forcing the fitted prediction model to be remain very stable
+     * on the long term. On the other hand, this implies that the model will start with already a much
+     * larger error just after raw history end.
+     * These settings are intended when prediction is used for 5 days after raw EOP end or more.
+     * </p>
+     * <ul>
+     *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
+     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>convergence set to 10⁻¹² s</li>
+     *   <li>polynomial part set to degree 3</li>
+     *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     * </ul>
+     * @return fitter with default configuration for orientation parameters dUT1 and LOD
+     * @see #createDefaultDut1FitterShortTermPrediction()
+     */
+    public static EOPFitter createDefaultDut1FitterLongTermPrediction() {
+        return new EOPFitter(3 * Constants.JULIAN_YEAR, 60 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+    }
+
+    /** Create fitter with default parameters adapted for fitting pole parameters Xp and Yp
+     * for long term prediction.
+     * <p>
+     * The main difference between these settings and {@link #createDefaultPoleFitterLongTermPrediction()
+     * the settings for long prediction} is the much smaller \(\Delta\tau\). This means more
+     * weight is set to the points at the end of the history, hence forcing the fitted prediction
+     * model to be closer to these points, hence the prediction error to be smaller just after
+     * raw history end. On the other hand, this implies that the model will diverge on long term.
+     * These settings are intended when prediction is used for at most 5 days after raw EOP end.
+     * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
+     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days)</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
      *   <li>one harmonic term at 2 times {@link #SUN_PULSATION}}</li>
      *   <li>one harmonic term at 3 times {@link #SUN_PULSATION}}</li>
-     *   <li>one harmonic term at {@link #MOON_PULSATION}}</li>
-     *   <li>one harmonic term at 2 times {@link #MOON_PULSATION}}</li>
-     *   <li>one harmonic term at 3 times {@link #MOON_PULSATION}}</li>
+     *   <li>one harmonic term at {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #MOON_DRACONIC_PULSATION}}</li>
      * </ul>
      * @return fitter with default configuration for pole parameters Xp and Yp
      */
-    public static EOPFitter createDefaultPoleFitter() {
-        return new EOPFitter(Constants.JULIAN_YEAR, 1.0e-12, 3,
+    public static EOPFitter createDefaultPoleFitterShortTermPrediction() {
+        return new EOPFitter(Constants.JULIAN_YEAR, 12 * Constants.JULIAN_DAY, 1.0e-12, 3,
                              SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_PULSATION, 2 * MOON_PULSATION, 3 * MOON_PULSATION);
+                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
-    /** Create fitter with default parameters adapted for fitting nutation parameters dx and dy.
+    /** Create fitter with default parameters adapted for fitting pole parameters Xp and Yp
+     * for long term prediction.
+     * <p>
+     * The main difference between these settings and {@link #createDefaultPoleFitterShortTermPrediction()
+     * the settings for short prediction} is the much larger \(\Delta\tau\). This means weight
+     * is spread throughout history, hence forcing the fitted prediction model to be remain very stable
+     * on the long term. On the other hand, this implies that the model will start with already a much
+     * larger error just after raw history end.
+     * These settings are intended when prediction is used for 5 days after raw EOP end or more.
+     * </p>
+     * <ul>
+     *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
+     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>convergence set to 10⁻¹² rad</li>
+     *   <li>polynomial part set to degree 3</li>
+     *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     * </ul>
+     * @return fitter with default configuration for pole parameters Xp and Yp
+     */
+    public static EOPFitter createDefaultPoleFitterLongTermPrediction() {
+        return new EOPFitter(3 * Constants.JULIAN_YEAR, 60 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+    }
+
+    /** Create fitter with default parameters adapted for fitting nutation parameters dx and dy
+     * for long term prediction.
+     * <p>
+     * The main difference between these settings and {@link #createDefaultNutationFitterLongTermPrediction()
+     * the settings for long prediction} is the much smaller \(\Delta\tau\). This means more
+     * weight is set to the points at the end of the history, hence forcing the fitted prediction
+     * model to be closer to these points, hence the prediction error to be smaller just after
+     * raw history end. On the other hand, this implies that the model will diverge on long term.
+     * These settings are intended when prediction is used for at most 5 days after raw EOP end.
+     * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
+     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days)</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
      *   <li>one harmonic term at 2 times {@link #SUN_PULSATION}}</li>
      *   <li>one harmonic term at 3 times {@link #SUN_PULSATION}}</li>
-     *   <li>one harmonic term at {@link #MOON_PULSATION}}</li>
-     *   <li>one harmonic term at 2 times {@link #MOON_PULSATION}}</li>
-     *   <li>one harmonic term at 3 times {@link #MOON_PULSATION}}</li>
+     *   <li>one harmonic term at {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #MOON_DRACONIC_PULSATION}}</li>
      * </ul>
      * @return fitter with default configuration for pole nutation parameters dx and dy
      */
-    public static EOPFitter createDefaultNutationFitter() {
-        return new EOPFitter(Constants.JULIAN_YEAR, 1.0e-12, 3,
+    public static EOPFitter createDefaultNutationFitterShortTermPrediction() {
+        return new EOPFitter(Constants.JULIAN_YEAR, 12 * Constants.JULIAN_DAY, 1.0e-12, 3,
                              SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_PULSATION, 2 * MOON_PULSATION, 3 * MOON_PULSATION);
+                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+    }
+
+    /** Create fitter with default parameters adapted for fitting nutation parameters dx and dy
+     * for long term prediction.
+     * <p>
+     * The main difference between these settings and {@link #createDefaultNutationFitterShortTermPrediction()
+     * the settings for short prediction} is the much larger \(\Delta\tau\). This means weight
+     * is spread throughout history, hence forcing the fitted prediction model to be remain very stable
+     * on the long term. On the other hand, this implies that the model will start with already a much
+     * larger error just after raw history end.
+     * These settings are intended when prediction is used for 5 days after raw EOP end or more.
+     * </p>
+     * <ul>
+     *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
+     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days)</li>
+     *   <li>convergence set to 10⁻¹² s</li>
+     *   <li>polynomial part set to degree 3</li>
+     *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #SUN_PULSATION}}</li>
+     *   <li>one harmonic term at {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 2 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     *   <li>one harmonic term at 3 times {@link #MOON_DRACONIC_PULSATION}}</li>
+     * </ul>
+     * @return fitter with default configuration for pole nutation parameters dx and dy
+     */
+    public static EOPFitter createDefaultNutationFitterLongTermPrediction() {
+        return new EOPFitter(3 * Constants.JULIAN_YEAR, 60 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
 }
