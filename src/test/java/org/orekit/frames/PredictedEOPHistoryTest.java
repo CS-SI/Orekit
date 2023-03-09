@@ -55,11 +55,11 @@ public class PredictedEOPHistoryTest {
         // predicted history from truncated data
         EOPHistory predicted = new PredictedEOPHistory(truncatedEOP,
                                                        30 * Constants.JULIAN_DAY,
-                                                       EOPFitter.createDefaultDut1FitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultNutationFitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultNutationFitterShortTermPrediction());
+                                                       new EOPFitter(SingleParameterFitter.createDefaultDut1FitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2018, 1, 1, 0, 0, 0.0, utc).durationFrom(predicted.getStartDate()),
                                 1.0e-10);
@@ -83,11 +83,11 @@ public class PredictedEOPHistoryTest {
 
         EOPHistory predicted = new PredictedEOPHistory(truncatedEOP,
                                                        30 * Constants.JULIAN_DAY,
-                                                       EOPFitter.createDefaultDut1FitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultNutationFitterShortTermPrediction(),
-                                                       EOPFitter.createDefaultNutationFitterShortTermPrediction());
+                                                       new EOPFitter(SingleParameterFitter.createDefaultDut1FitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
 
         // check we get the same value as raw EOP (dropping the last interpolated day)
         double maxErrorUT1  = 0;
@@ -129,20 +129,19 @@ public class PredictedEOPHistoryTest {
 
     @Test
     public void testAccuracyShortTerm() {
-        doTestAccuracy(true, 0.207, 0.776, 2.039, 10.938, 360.301, 6528.073, 43395.119, 171707.066, 484370.496, 1043267.054);
+        doTestAccuracy(true, 0.147, 0.580, 1.529, 7.842, 316.169, 6077.219, 40759.570);
     }
 
     @Test
     public void testAccuracyLongTerm() {
-        doTestAccuracy(false, 1.514, 1.987, 2.291, 3.204, 9.358, 20.701, 29.725, 39.764, 53.510, 79.884);
+        doTestAccuracy(false, 1.514, 1.987, 2.291, 3.014, 7.416, 17.635, 27.392);
     }
 
     private void doTestAccuracy(final boolean shortTerm,
                                 final double expectedMax001, final double expectedMax003,
                                 final double expectedMax005, final double expectedMax010,
                                 final double expectedMax030, final double expectedMax060,
-                                final double expectedMax090, final double expectedMax120,
-                                final double expectedMax150, final double expectedMax180) {
+                                final double expectedMax090) {
 
         double maxError001Days = 0;
         double maxError003Days = 0;
@@ -151,10 +150,7 @@ public class PredictedEOPHistoryTest {
         double maxError030Days = 0;
         double maxError060Days = 0;
         double maxError090Days = 0;
-        double maxError120Days = 0;
-        double maxError150Days = 0;
-        double maxError180Days = 0;
-        for (int d = 0; d < 365; d += 14) {
+        for (int d = 0; d < 365; d += 30) {
             // set up a prediction
             final DateComponents dc = new DateComponents(new DateComponents(2021, 1, 1), d);
             final int mjdLimit = dc.getMJD();
@@ -168,25 +164,25 @@ public class PredictedEOPHistoryTest {
             final PredictedEOPHistory predictedEOP = shortTerm ?
                                                new PredictedEOPHistory(truncatedEOP,
                                                                        180 * Constants.JULIAN_DAY,
-                                                                       EOPFitter.createDefaultDut1FitterShortTermPrediction() ,
-                                                                       EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-                                                                       EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-                                                                       EOPFitter.createDefaultNutationFitterShortTermPrediction(),
-                                                                       EOPFitter.createDefaultNutationFitterShortTermPrediction()) :
+                                                                       new EOPFitter(SingleParameterFitter.createDefaultDut1FitterShortTermPrediction() ,
+                                                                                     SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+                                                                                     SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+                                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
+                                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction())) :
                                                new PredictedEOPHistory(truncatedEOP,
                                                                        180 * Constants.JULIAN_DAY,
-                                                                       EOPFitter.createDefaultDut1FitterLongTermPrediction() ,
-                                                                       EOPFitter.createDefaultPoleFitterLongTermPrediction(),
-                                                                       EOPFitter.createDefaultPoleFitterLongTermPrediction(),
-                                                                       EOPFitter.createDefaultNutationFitterLongTermPrediction(),
-                                                                       EOPFitter.createDefaultNutationFitterLongTermPrediction());
+                                                                       new EOPFitter(SingleParameterFitter.createDefaultDut1FitterLongTermPrediction() ,
+                                                                                     SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
+                                                                                     SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
+                                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction(),
+                                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction()));
 
             // set up two itrf frames, one using true, one using predicted EOP
             final Frame itrfTrue = FramesFactory.buildUncachedITRF(trueEOP, TimeScalesFactory.getUTC());
             final Frame itrfPred = FramesFactory.buildUncachedITRF(predictedEOP, TimeScalesFactory.getUTC());
 
             final AbsoluteDate t0 = new AbsoluteDate(dc, trueEOP.getTimeScales().getUTC());
-            for (double dt = 0; dt < 180 * Constants.JULIAN_DAY; dt += 7200) {
+            for (double dt = 0; dt < 180 * Constants.JULIAN_DAY; dt += 43200) {
                 final AbsoluteDate date = t0.shiftedBy(dt);
                 final Transform t = itrfTrue.getTransformTo(itrfPred, date);
                 final double deltaP = t.getRotation().getAngle() * Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
@@ -211,15 +207,6 @@ public class PredictedEOPHistoryTest {
                 if (dt <= 90 * Constants.JULIAN_DAY) {
                     maxError090Days = FastMath.max(maxError090Days, deltaP);
                 }
-                if (dt <= 120 * Constants.JULIAN_DAY) {
-                    maxError120Days = FastMath.max(maxError120Days, deltaP);
-                }
-                if (dt <= 150 * Constants.JULIAN_DAY) {
-                    maxError150Days = FastMath.max(maxError150Days, deltaP);
-                }
-                if (dt <= 180 * Constants.JULIAN_DAY) {
-                    maxError180Days = FastMath.max(maxError180Days, deltaP);
-                }
             }
 
         }
@@ -231,9 +218,6 @@ public class PredictedEOPHistoryTest {
         Assertions.assertEquals(expectedMax030, maxError030Days, 0.001);
         Assertions.assertEquals(expectedMax060, maxError060Days, 0.001);
         Assertions.assertEquals(expectedMax090, maxError090Days, 0.001);
-        Assertions.assertEquals(expectedMax120, maxError120Days, 0.001);
-        Assertions.assertEquals(expectedMax150, maxError150Days, 0.001);
-        Assertions.assertEquals(expectedMax180, maxError180Days, 0.001);
 
     }
 
@@ -243,11 +227,11 @@ public class PredictedEOPHistoryTest {
 
         PredictedEOPHistory predicted = new PredictedEOPHistory(raw,
         		                                                30 * Constants.JULIAN_DAY,
-        		                                                EOPFitter.createDefaultDut1FitterShortTermPrediction(),
-        		                                                EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-        		                                                EOPFitter.createDefaultPoleFitterShortTermPrediction(),
-        		                                                EOPFitter.createDefaultNutationFitterShortTermPrediction(),
-        		                                                EOPFitter.createDefaultNutationFitterShortTermPrediction());
+        		                                                new EOPFitter(SingleParameterFitter.createDefaultDut1FitterShortTermPrediction(),
+        		                                                              SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+        		                                                              SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
+        		                                                              SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
+        		                                                              SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);

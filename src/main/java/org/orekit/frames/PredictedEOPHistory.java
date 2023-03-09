@@ -55,7 +55,7 @@ import org.orekit.utils.SecularAndHarmonic;
 public class PredictedEOPHistory extends EOPHistory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20230228L;
+    private static final long serialVersionUID = 20230309L;
 
     /** Raw EOP history to extend. */
     private final EOPHistory rawHistory;
@@ -63,72 +63,37 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
     /** Duration of the extension period (s). */
     private final double extensionDuration;
 
-    /** Fitter for dut1 and LOD. */
-    private final EOPFitter dut1Fitter;
-
-    /** Fitter for pole x component. */
-    private final EOPFitter xPFitter;
-
-    /** Fitter for pole y component. */
-    private final EOPFitter yPFitter;
-
-    /** Fitter for nutation x component. */
-    private final EOPFitter dxFitter;
-
-    /** Fitter for nutation y component. */
-    private final EOPFitter dyFitter;
+    /** Fitter for all Earth Orientation Parameters. */
+    private final EOPFitter fitter;
 
     /** Simple constructor.
      * @param rawHistory raw EOP history to extend.
      * @param extensionDuration duration of the extension period (s)
-     * @param dut1Fitter fitter for dut1 and LOD
-     * @param xPFitter fitter for pole x component
-     * @param yPFitter fitter for pole y component
-     * @param dxFitter fitter for nutation x component
-     * @param dyFitter fitter for nutation y component
+     * @param fitter fitter for all Earth Orientation Parameters
      */
     public PredictedEOPHistory(final EOPHistory rawHistory, final double extensionDuration,
-                               final EOPFitter dut1Fitter,
-                               final EOPFitter xPFitter, final EOPFitter yPFitter,
-                               final EOPFitter dxFitter, final EOPFitter dyFitter) {
+                               final EOPFitter fitter) {
         super(rawHistory.getConventions(),
-              extendHistory(rawHistory, extensionDuration,
-                            dut1Fitter, xPFitter, yPFitter, dxFitter, dyFitter),
+              extendHistory(rawHistory, extensionDuration, fitter),
               rawHistory.isSimpleEop(), rawHistory.getTimeScales());
         this.rawHistory        = rawHistory;
         this.extensionDuration = extensionDuration;
-        this.dut1Fitter        = dut1Fitter;
-        this.xPFitter          = xPFitter;
-        this.yPFitter          = yPFitter;
-        this.dxFitter          = dxFitter;
-        this.dyFitter          = dyFitter;
+        this.fitter            = fitter;
     }
 
     /** Extends raw history.
      * @param rawHistory raw EOP history to extend.
      * @param extensionDuration duration of the extension period (s)
-     * @param dut1Fitter fitter for dut1 and LOD
-     * @param xPFitter fitter for pole x component
-     * @param yPFitter fitter for pole y component
-     * @param dxFitter fitter for nutation x component
-     * @param dyFitter fitter for nutation y component
+     * @param fitter fitter for all Earth Orientation Parameters
      * @return extended history
      */
     private static Collection<? extends EOPEntry> extendHistory(final EOPHistory rawHistory,
                                                                 final double extensionDuration,
-                                                                final EOPFitter dut1Fitter,
-                                                                final EOPFitter xPFitter,
-                                                                final EOPFitter yPFitter,
-                                                                final EOPFitter dxFitter,
-                                                                final EOPFitter dyFitter) {
+                                                                final EOPFitter fitter) {
 
 
-        // set up fitters for individual parameters
-        final SecularAndHarmonic shDut1 = dut1Fitter.fit(rawHistory, entry -> entry.getUT1MinusUTC());
-        final SecularAndHarmonic shXp   = xPFitter.fit(rawHistory, entry -> entry.getX());
-        final SecularAndHarmonic shYp   = yPFitter.fit(rawHistory, entry -> entry.getY());
-        final SecularAndHarmonic shDx   = dxFitter.fit(rawHistory, entry -> entry.getDx());
-        final SecularAndHarmonic shDy   = dyFitter.fit(rawHistory, entry -> entry.getDy());
+        // fit model
+        final EOPFittedModel model = fitter.fit(rawHistory);
 
         // create a converter for nutation corrections
         final NutationCorrectionConverter converter =
@@ -142,12 +107,12 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
         entries.addAll(rawEntries);
         for (int i = 0; i < n; ++i) {
             final AbsoluteDate date = last.getDate().shiftedBy((i + 1) * Constants.JULIAN_DAY);
-            final double dut1 = shDut1.osculatingValue(date);
-            final double lod  = -Constants.JULIAN_DAY * shDut1.osculatingDerivative(date);
-            final double xp   = shXp.osculatingValue(date);
-            final double yp   = shYp.osculatingValue(date);
-            final double dx   = shDx.osculatingValue(date);
-            final double dy   = shDy.osculatingValue(date);
+            final double dut1 = model.getDUT1().osculatingValue(date);
+            final double lod  = -Constants.JULIAN_DAY * model.getDUT1().osculatingDerivative(date);
+            final double xp   = model.getXp().osculatingValue(date);
+            final double yp   = model.getYp().osculatingValue(date);
+            final double dx   = model.getDx().osculatingValue(date);
+            final double dy   = model.getDy().osculatingValue(date);
             final double[] equinox = converter.toEquinox(date, dx, dy);
             entries.add(new EOPEntry(last.getMjd() + i + 1, dut1, lod, xp, yp, equinox[0], equinox[1], dx, dy,
                                      last.getITRFType(), date));
@@ -162,8 +127,7 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
      */
     @DefaultDataContext
     private Object writeReplace() {
-        return new DataTransferObject(rawHistory, extensionDuration,
-                                      dut1Fitter, xPFitter, yPFitter, dxFitter, dyFitter);
+        return new DataTransferObject(rawHistory, extensionDuration, fitter);
     }
 
     /** Internal class used only for serialization. */
@@ -171,7 +135,7 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20230228L;
+        private static final long serialVersionUID = 20230309L;
 
         /** Raw EOP history to extend. */
         private final EOPHistory rawHistory;
@@ -179,41 +143,18 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
         /** Duration of the extension period (s). */
         private final double extensionDuration;
 
-        /** Fitter for dut1 and LOD. */
-        private final EOPFitter dut1Fitter;
-
-        /** Fitter for pole x component. */
-        private final EOPFitter xPFitter;
-
-        /** Fitter for pole y component. */
-        private final EOPFitter yPFitter;
-
-        /** Fitter for nutation x component. */
-        private final EOPFitter dxFitter;
-
-        /** Fitter for nutation y component. */
-        private final EOPFitter dyFitter;
+        /** Fitter for all Earth Orientation Parameters. */
+        private final EOPFitter fitter;
 
         /** Simple constructor.
          * @param rawHistory raw EOP history to extend.
          * @param extensionDuration duration of the extension period (s)
-         * @param dut1Fitter fitter for dut1 and LOD
-         * @param xPFitter fitter for pole x component
-         * @param yPFitter fitter for pole y component
-         * @param dxFitter fitter for nutation x component
-         * @param dyFitter fitter for nutation y component
+         * @param fitter fitter for all Earth Orientation Parameters
          */
-        DataTransferObject(final EOPHistory rawHistory, final double extensionDuration,
-                           final EOPFitter dut1Fitter,
-                           final EOPFitter xPFitter, final EOPFitter yPFitter,
-                           final EOPFitter dxFitter, final EOPFitter dyFitter) {
+        DataTransferObject(final EOPHistory rawHistory, final double extensionDuration, final EOPFitter fitter) {
             this.rawHistory        = rawHistory;
             this.extensionDuration = extensionDuration;
-            this.dut1Fitter        = dut1Fitter;
-            this.xPFitter          = xPFitter;
-            this.yPFitter          = yPFitter;
-            this.dxFitter          = dxFitter;
-            this.dyFitter          = dyFitter;
+            this.fitter            = fitter;
         }
 
         /** Replace the deserialized data transfer object with a {@link PredictedEOPHistory}.
@@ -221,8 +162,7 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
          */
         private Object readResolve() {
             try {
-                return new PredictedEOPHistory(rawHistory, extensionDuration,
-                                               dut1Fitter, xPFitter, yPFitter, dxFitter, dyFitter);
+                return new PredictedEOPHistory(rawHistory, extensionDuration, fitter);
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }
