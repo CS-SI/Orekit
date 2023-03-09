@@ -107,13 +107,13 @@ public enum CdmMetadataKey {
                                                                                   context.getDataContext().getCelestialBodies())),
 
     /** Is solar radiation pressure used for the OD of the object ? */
-    SOLAR_RAD_PRESSURE((token, context, container) -> token.processAsBoolean(container::setSolarRadiationPressure)),
+    SOLAR_RAD_PRESSURE((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setSolarRadiationPressure)),
 
     /** Is solid Earth and ocean tides used for the OD of the object ? */
-    EARTH_TIDES((token, context, container) -> token.processAsBoolean(container::setEarthTides)),
+    EARTH_TIDES((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setEarthTides)),
 
     /** Indication of whether in-track thrust modeling used for the object. */
-    INTRACK_THRUST((token, context, container) -> token.processAsBoolean(container::setIntrackThrust));
+    INTRACK_THRUST((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setIntrackThrust));
 
     /** Processing method. */
     private final TokenProcessor processor;

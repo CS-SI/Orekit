@@ -115,9 +115,6 @@ UNABLE_TO_PARSE_ELEMENT_IN_FILE = imposibil de analizat elementul {0} de la lini
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposibil de găsit fișierul {0}
 
-# spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = masa navei spațiale devine negativă: {0} kg
-
 # positive flow rate (q: {0})
 POSITIVE_FLOW_RATE = rata fluxului pozitivă (q: {0})
 

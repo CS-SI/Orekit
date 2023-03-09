@@ -115,9 +115,6 @@ UNABLE_TO_PARSE_ELEMENT_IN_FILE = imposible de analizar el elemento {0} de la l√
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposible de encontrar el fichero {0}
 
-# spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = la masa del veh√≠culo adquiere un valor negativo : {0} kg
-
 # positive flow rate (q: {0})
 POSITIVE_FLOW_RATE = flujo de masa positiva (q : {0})
 

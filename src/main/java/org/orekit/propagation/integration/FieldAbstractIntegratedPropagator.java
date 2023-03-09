@@ -442,7 +442,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 setMu(getInitialState().getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                                getInitialState().getMass());
             }
 

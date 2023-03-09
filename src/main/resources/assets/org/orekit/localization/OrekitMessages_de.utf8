@@ -115,9 +115,6 @@ UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = Datei {0} kann nicht gefunden werden
 
-# spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = Satellitenmasse wird negativ (m: {0})
-
 # positive flow rate (q: {0})
 POSITIVE_FLOW_RATE = positive Durchflussrate (q: {0})
 

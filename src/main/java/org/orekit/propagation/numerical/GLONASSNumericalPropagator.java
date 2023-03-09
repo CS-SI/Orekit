@@ -605,7 +605,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             // The parameter meanOnly is ignored for the GLONASS Propagator
             final double mass = y[6];
             if (mass <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
