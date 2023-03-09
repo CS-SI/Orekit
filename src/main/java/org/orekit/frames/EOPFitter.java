@@ -46,8 +46,8 @@ public class EOPFitter implements Serializable {
     /** Duration of the fitting window at the end of the raw history (s). */
     private final double fittingDuration;
 
-    /** Time constant of the weight. */
-    private final double deltaTau;
+    /** Time constant of the exponential decay weight. */
+    private final double timeConstant;
 
     /** Convergence on fitted parameter. */
     private final double convergence;
@@ -60,7 +60,7 @@ public class EOPFitter implements Serializable {
 
     /** Simple constructor.
      * @param fittingDuration duration of the fitting window at the end of the raw history (s)
-     * @param deltaTau time constant of the weight (s), point weight is \(e^{\frac{t-t_0}{\Delta\tau}}\),
+     * @param timeConstant time constant \(\tau\) of the exponential decay weight, point weight is \(e^{\frac{t-t_0}{\tau}}\),
      * i.e. points far in the past before \(t_0\) have smaller weights
      * @param convergence convergence on fitted parameter
      * @param degree degree of the polynomial model
@@ -73,10 +73,10 @@ public class EOPFitter implements Serializable {
      * @see #createDefaultNutationFitterLongTermPrediction()
      * @see SecularAndHarmonic
      */
-    public EOPFitter(final double fittingDuration, final double deltaTau, final double convergence,
+    public EOPFitter(final double fittingDuration, final double timeConstant, final double convergence,
                      final int degree, final double... pulsations) {
         this.fittingDuration = fittingDuration;
-        this.deltaTau        = deltaTau;
+        this.timeConstant    = timeConstant;
         this.convergence     = convergence;
         this.degree          = degree;
         this.pulsations      = pulsations.clone();
@@ -111,7 +111,7 @@ public class EOPFitter implements Serializable {
             if (entry.getDate().isAfterOrEqualTo(fitStart)) {
                 // the entry belongs to the fitting interval
                 sh.addWeightedPoint(entry.getDate(), extractor.applyAsDouble(entry),
-                                    FastMath.exp(entry.getDate().durationFrom(fitStart) / deltaTau));
+                                    FastMath.exp(entry.getDate().durationFrom(fitStart) / timeConstant));
             } else {
                 // we have processed all entries from the fitting interval
                 break;
@@ -129,7 +129,7 @@ public class EOPFitter implements Serializable {
      * for short term prediction.
      * <p>
      * The main difference between these settings and {@link #createDefaultDut1FitterLongTermPrediction()
-     * the settings for long prediction} is the much smaller \(\Delta\tau\). This means more
+     * the settings for long prediction} is the much smaller \(\tau\). This means more
      * weight is set to the points at the end of the history, hence forcing the fitted prediction
      * model to be closer to these points, hence the prediction error to be smaller just after
      * raw history end. On the other hand, this implies that the model will diverge on long term.
@@ -137,7 +137,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
-     *   <li>\(\Delta\tau\) set to 6 {@link Constants#JULIAN_DAY days}</li>
+     *   <li>time constant \(\tau\) of the exponential decay set to 6 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -160,7 +160,7 @@ public class EOPFitter implements Serializable {
      * for long term prediction.
      * <p>
      * The main difference between these settings and {@link #createDefaultDut1FitterShortTermPrediction()
-     * the settings for short prediction} is the much larger \(\Delta\tau\). This means weight
+     * the settings for short prediction} is the much larger \(\tau\). This means weight
      * is spread throughout history, hence forcing the fitted prediction model to be remain very stable
      * on the long term. On the other hand, this implies that the model will start with already a much
      * larger error just after raw history end.
@@ -168,7 +168,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
-     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days}</li>
+     *   <li>time constant \(\tau\) of the exponential decay set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -191,7 +191,7 @@ public class EOPFitter implements Serializable {
      * for long term prediction.
      * <p>
      * The main difference between these settings and {@link #createDefaultPoleFitterLongTermPrediction()
-     * the settings for long prediction} is the much smaller \(\Delta\tau\). This means more
+     * the settings for long prediction} is the much smaller \(\tau\). This means more
      * weight is set to the points at the end of the history, hence forcing the fitted prediction
      * model to be closer to these points, hence the prediction error to be smaller just after
      * raw history end. On the other hand, this implies that the model will diverge on long term.
@@ -199,7 +199,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
-     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days}</li>
+     *   <li>time constant \(\tau\) of the exponential decay set to 12 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -221,7 +221,7 @@ public class EOPFitter implements Serializable {
      * for long term prediction.
      * <p>
      * The main difference between these settings and {@link #createDefaultPoleFitterShortTermPrediction()
-     * the settings for short prediction} is the much larger \(\Delta\tau\). This means weight
+     * the settings for short prediction} is the much larger \(\tau\). This means weight
      * is spread throughout history, hence forcing the fitted prediction model to be remain very stable
      * on the long term. On the other hand, this implies that the model will start with already a much
      * larger error just after raw history end.
@@ -229,7 +229,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
-     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days}</li>
+     *   <li>time constant \(\tau\) of the exponential decay set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -251,7 +251,7 @@ public class EOPFitter implements Serializable {
      * for long term prediction.
      * <p>
      * The main difference between these settings and {@link #createDefaultNutationFitterLongTermPrediction()
-     * the settings for long prediction} is the much smaller \(\Delta\tau\). This means more
+     * the settings for long prediction} is the much smaller \(\tau\). This means more
      * weight is set to the points at the end of the history, hence forcing the fitted prediction
      * model to be closer to these points, hence the prediction error to be smaller just after
      * raw history end. On the other hand, this implies that the model will diverge on long term.
@@ -259,7 +259,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
-     *   <li>\(\Delta\tau\) set to 12 {@link Constants#JULIAN_DAY days}</li>
+     *   <li>time constant \(\tau\) of the exponential decay set to 12 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
@@ -281,7 +281,7 @@ public class EOPFitter implements Serializable {
      * for long term prediction.
      * <p>
      * The main difference between these settings and {@link #createDefaultNutationFitterShortTermPrediction()
-     * the settings for short prediction} is the much larger \(\Delta\tau\). This means weight
+     * the settings for short prediction} is the much larger \(\tau\). This means weight
      * is spread throughout history, hence forcing the fitted prediction model to be remain very stable
      * on the long term. On the other hand, this implies that the model will start with already a much
      * larger error just after raw history end.
@@ -289,7 +289,7 @@ public class EOPFitter implements Serializable {
      * </p>
      * <ul>
      *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
-     *   <li>\(\Delta\tau\) set to 60 {@link Constants#JULIAN_DAY days}</li>
+     *   <li>time constant \(\tau\) of the exponential decay set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
      *   <li>one harmonic term at {@link #SUN_PULSATION}}</li>
