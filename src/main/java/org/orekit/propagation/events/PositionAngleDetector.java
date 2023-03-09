@@ -32,7 +32,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -81,6 +81,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     }
 
     /** Build a detector.
+     * <p> This instance uses by default the {@link StopOnEvent} handler </p>
      * @param maxCheck maximal checking interval (s)
      * @param threshold convergence threshold (s)
      * @param orbitType orbit type defining the angle type
@@ -92,7 +93,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
                                  final OrbitType orbitType, final PositionAngle positionAngle,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent(),
              orbitType, positionAngle, angle);
     }
 
