@@ -138,6 +138,22 @@ public class SecularAndHarmonic {
         return reference;
     }
 
+    /** Get degree of polynomial secular part.
+     * @return degree of polynomial secular part
+     * @since 12.0
+     */
+    public int getSecularDegree() {
+        return secularDegree;
+    }
+
+    /** Get the pulsations of harmonic part.
+     * @return pulsations of harmonic part
+     * @since 12.0
+     */
+    public double[] getPulsations() {
+        return pulsations;
+    }
+
     /** Get an upper bound of the fitted harmonic amplitude.
      * @return upper bound of the fitted harmonic amplitude
      */
