@@ -23,9 +23,11 @@ package org.orekit.propagation.analytical.gnss.data;
  */
 public class GPSCivilianNavigationMessage extends CivilianNavigationMessage {
 
-    /** Constructor. */
-    public GPSCivilianNavigationMessage() {
-        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB);
+    /** Constructor.
+     * @param cnv2 indicator for CNV2 messages
+     */
+    public GPSCivilianNavigationMessage(final boolean cnv2) {
+        super(cnv2, GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB);
     }
 
 }

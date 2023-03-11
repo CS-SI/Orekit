@@ -35,7 +35,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
     public static final String CNV3 = "CNV3";
 
     /** Signal on which navigation signal is sent. */
-    private Frequency signal;
+    private final Frequency signal;
 
     /** Change rate in semi-major axis (m/s). */
     private double aDot;
@@ -93,9 +93,11 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
 
     /**
      * Constructor.
+     * @param signal signal on which navigation signal is sent
      */
-    public BeidouCivilianNavigationMessage() {
+    public BeidouCivilianNavigationMessage(final Frequency signal) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
+        this.signal = signal;
     }
 
     /**
@@ -104,14 +106,6 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
      */
     public Frequency getSignal() {
         return signal;
-    }
-
-    /**
-     * Setter for signal.
-     * @param signal signal on which navigation signal is sent
-     */
-    public void setSignal(final Frequency signal) {
-        this.signal = signal;
     }
 
     /**

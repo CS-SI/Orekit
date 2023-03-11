@@ -105,6 +105,9 @@ public class RinexNavigationParser {
     /** Converter for angular accelerations. */
     private static final Unit RAD_PER_S2 = Unit.parse("rad/s²");;
 
+    /** System initials. */
+    private static final String INITIALS = "GRECIJS";
+
     /** Set of time scales. */
     private final TimeScales timeScales;
 
@@ -189,9 +192,6 @@ public class RinexNavigationParser {
         /** Current line number within the navigation message. */
         private int messageLineNumber;
 
-        /** Indicator for CNAV2 messages. */
-        private boolean isCnav2;
-
         /** Container for GPS navigation message. */
         private GPSLegacyNavigationMessage gpsLNav;
 
@@ -232,18 +232,6 @@ public class RinexNavigationParser {
             this.isIonosphereAlphaInitialized = false;
             this.file                         = new RinexNavigation();
             this.systemLineParser             = SatelliteSystemLineParser.GPS_LNAV;
-            this.lineNumber                   = 0;
-            this.messageLineNumber            = 0;
-            this.gpsLNav                      = new GPSLegacyNavigationMessage();
-            this.gpsCNav                      = new GPSCivilianNavigationMessage();
-            this.galileoNav                   = new GalileoNavigationMessage();
-            this.beidouLNav                   = new BeidouLegacyNavigationMessage();
-            this.beidouCNav                   = new BeidouCivilianNavigationMessage();
-            this.qzssLNav                     = new QZSSLegacyNavigationMessage();
-            this.qzssCNav                     = new QZSSCivilianNavigationMessage();
-            this.irnssNav                     = new IRNSSNavigationMessage();
-            this.glonassNav                   = new GLONASSNavigationMessage();
-            this.sbasNav                      = new SBASNavigationMessage();
         }
 
     }
@@ -385,7 +373,7 @@ public class RinexNavigationParser {
                    LineParser::navigationNext),
 
         /** Parser for navigation message space vehicle epoch and clock. */
-        NAVIGATION_SV_EPOCH_CLOCK(line -> "GRECIJS".indexOf(line.charAt(0)) >= 0,
+        NAVIGATION_SV_EPOCH_CLOCK(line -> INITIALS.indexOf(line.charAt(0)) >= 0,
                                  (line, pi) -> {
 
                                      // Set the line number to 0
@@ -706,7 +694,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
-                if (pi.isCnav2) {
+                if (pi.gpsCNav.isCnv2()) {
                     // in CNAV2 messages, there is an additional line for L1 CD and L1 CP inter signal delay
                     parseLine(line,
                               pi.gpsCNav::setIscL1CD, Unit.SECOND,
@@ -737,7 +725,7 @@ public class RinexNavigationParser {
                           null, Unit.NONE,
                           () -> {
                               pi.file.addGPSLegacyNavigationMessage(pi.gpsCNav);
-                              pi.gpsCNav = new GPSCivilianNavigationMessage();
+                              pi.gpsCNav = null;
                           });
             }
 
@@ -1095,7 +1083,7 @@ public class RinexNavigationParser {
             public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
                 parseLine(line,
                           d -> pi.qzssCNav.setUraiEd((int) FastMath.rint(d)),   Unit.NONE,
-                          d -> pi.gpsCNav.setSvHealth((int) FastMath.rint(d)),  Unit.NONE,
+                          d -> pi.qzssCNav.setSvHealth((int) FastMath.rint(d)), Unit.NONE,
                           pi.qzssCNav::setTGD,                                  Unit.SECOND,
                           d -> pi.qzssCNav.setUraiNed2((int) FastMath.rint(d)), Unit.NONE,
                           null);
@@ -1115,7 +1103,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
-                if (pi.isCnav2) {
+                if (pi.qzssCNav.isCnv2()) {
                     // in CNAV2 messages, there is an additional line for L1 CD and L1 CP inter signal delay
                     parseLine(line,
                               pi.qzssCNav::setIscL1CD, Unit.SECOND,
@@ -1146,7 +1134,7 @@ public class RinexNavigationParser {
                           null, Unit.NONE,
                           () -> {
                               pi.file.addQZSSCivilianNavigationMessage(pi.qzssCNav);
-                              pi.qzssCNav = new QZSSCivilianNavigationMessage();
+                              pi.qzssCNav = null;
                           });
             }
 
@@ -1244,7 +1232,7 @@ public class RinexNavigationParser {
                           null,                               Unit.NONE,
                           () -> {
                               pi.file.addBeidouLegacyNavigationMessage(pi.beidouLNav);
-                              pi.beidouLNav = new BeidouLegacyNavigationMessage();
+                              pi.beidouLNav = null;
                           });
             }
 
@@ -1381,7 +1369,7 @@ public class RinexNavigationParser {
                               null,                               Unit.NONE,
                               () -> {
                                   pi.file.addBeidouCivilianNavigationMessage(pi.beidouCNav);
-                                  pi.beidouCNav = new BeidouCivilianNavigationMessage();
+                                  pi.beidouCNav = null;
                               });
                 } else {
                     parseSismaiHealthIntegrity(line, pi);
@@ -1398,7 +1386,7 @@ public class RinexNavigationParser {
                           d -> pi.beidouCNav.setIODE((int) FastMath.rint(d)), Unit.NONE,
                           () -> {
                               pi.file.addBeidouCivilianNavigationMessage(pi.beidouCNav);
-                              pi.beidouCNav = new BeidouCivilianNavigationMessage();
+                              pi.beidouCNav = null;
                           });
             }
 
@@ -1473,7 +1461,7 @@ public class RinexNavigationParser {
                           pi.sbasNav::setIODN,    Unit.NONE,
                           () -> {
                               pi.file.addSBASNavigationMessage(pi.sbasNav);
-                              pi.sbasNav = new SBASNavigationMessage();
+                              pi.sbasNav = null;
                           });
             }
 
@@ -1571,7 +1559,7 @@ public class RinexNavigationParser {
                           null, Unit.NONE,
                           () -> {
                               pi.file.addIRNSSNavigationMessage(pi.irnssNav);
-                              pi.irnssNav = new IRNSSNavigationMessage();
+                              pi.irnssNav = null;
                           });
             }
 
@@ -1589,33 +1577,37 @@ public class RinexNavigationParser {
             switch (system) {
                 case GPS :
                     if (type == null || type.equals(LegacyNavigationMessage.LNAV)) {
+                        parseInfo.gpsLNav = new GPSLegacyNavigationMessage();
                         return GPS_LNAV;
                     } else if (type.equals(CivilianNavigationMessage.CNAV)) {
-                        parseInfo.isCnav2 = false;
+                        parseInfo.gpsCNav = new GPSCivilianNavigationMessage(false);
                         return GPS_CNAV;
                     } else if (type.equals(CivilianNavigationMessage.CNV2)) {
-                        parseInfo.isCnav2 = true;
+                        parseInfo.gpsCNav = new GPSCivilianNavigationMessage(true);
                         return GPS_CNAV;
                     }
                     break;
                 case GALILEO :
                     if (type == null || type.equals("INAV") || type.equals("FNAV")) {
+                        parseInfo.galileoNav = new GalileoNavigationMessage();
                         return GALILEO;
                     }
                     break;
                 case GLONASS :
                     if (type == null || type.equals("FDMA")) {
+                        parseInfo.glonassNav = new GLONASSNavigationMessage();
                         return GLONASS;
                     }
                     break;
                 case QZSS :
                     if (type == null || type.equals(LegacyNavigationMessage.LNAV)) {
+                        parseInfo.qzssLNav = new QZSSLegacyNavigationMessage();
                         return QZSS_LNAV;
                     } else if (type.equals(CivilianNavigationMessage.CNAV)) {
-                        parseInfo.isCnav2 = false;
+                        parseInfo.qzssCNav = new QZSSCivilianNavigationMessage(false);
                         return QZSS_CNAV;
                     } else if (type.equals(CivilianNavigationMessage.CNV2)) {
-                        parseInfo.isCnav2 = true;
+                        parseInfo.qzssCNav = new QZSSCivilianNavigationMessage(true);
                         return QZSS_CNAV;
                     }
                     break;
@@ -1623,25 +1615,28 @@ public class RinexNavigationParser {
                     if (type == null ||
                         type.equals(BeidouLegacyNavigationMessage.D1) ||
                         type.equals(BeidouLegacyNavigationMessage.D2)) {
+                        parseInfo.beidouLNav = new BeidouLegacyNavigationMessage();
                         return BEIDOU_D1_D2;
                     } else if (type.equals(BeidouCivilianNavigationMessage.CNV1)) {
-                        parseInfo.beidouCNav.setSignal(Frequency.B1C);
+                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(Frequency.B1C);
                         return BEIDOU_CNV_123;
                     } else if (type.equals(BeidouCivilianNavigationMessage.CNV2)) {
-                        parseInfo.beidouCNav.setSignal(Frequency.B2A);
+                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(Frequency.B2A);
                         return BEIDOU_CNV_123;
                     } else if (type.equals(BeidouCivilianNavigationMessage.CNV3)) {
-                        parseInfo.beidouCNav.setSignal(Frequency.B2B);
+                        parseInfo.beidouCNav = new BeidouCivilianNavigationMessage(Frequency.B2B);
                         return BEIDOU_CNV_123;
                     }
                     break;
                 case IRNSS :
                     if (type == null || type.equals("LNAV")) {
+                        parseInfo.irnssNav = new IRNSSNavigationMessage();
                         return IRNSS;
                     }
                     break;
                 case SBAS :
                     if (type == null || type.equals("SBAS")) {
+                        parseInfo.sbasNav = new SBASNavigationMessage();
                         return SBAS;
                     }
                     break;

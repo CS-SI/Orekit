@@ -29,6 +29,9 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
     /** Identifier for message type. */
     public static final String CNV2 = "CNV2";
 
+    /** Indicator for CNV 2 messages. */
+    private final boolean cnv2;
+
     /** Change rate in semi-major axis (m/s). */
     private double aDot;
 
@@ -76,14 +79,24 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
 
     /**
      * Constructor.
+     * @param cnv2 indicator for CNV2 messages
      * @param mu Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weekNumber number of weeks in the GNSS cycle
      */
-    protected CivilianNavigationMessage(final double mu,
+    protected CivilianNavigationMessage(final boolean cnv2,
+                                        final double mu,
                                         final double angularVelocity,
                                         final int weekNumber) {
         super(mu, angularVelocity, weekNumber);
+        this.cnv2 = cnv2;
+    }
+
+    /** Check it message is a CNV2 message.
+     * @return true if message is a CNV2 message
+     */
+    public boolean isCnv2() {
+        return cnv2;
     }
 
     /**
