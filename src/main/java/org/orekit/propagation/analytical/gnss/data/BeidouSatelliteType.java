@@ -16,16 +16,22 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-/**
- * Container for data contained in a GPS navigation message.
+/** Enumerate for Beidou satellite type.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class GPSCivilianNavigationMessage extends CivilianNavigationMessage {
+public enum BeidouSatelliteType {
 
-    /** Constructor. */
-    public GPSCivilianNavigationMessage() {
-        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB);
-    }
+    /** Reserved. */
+    RESERVED,
+
+    /** Geostationary satellite. */
+    GEO,
+
+    /** Inclined geosynchronous. */
+    IGSO,
+
+    /** Middle Earth Orbit. */
+    MEO;
 
 }

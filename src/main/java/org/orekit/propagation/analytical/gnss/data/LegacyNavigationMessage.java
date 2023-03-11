@@ -39,7 +39,7 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
     private double svAccuracy;
 
     /** Satellite health status. */
-    private double svHealth;
+    private int svHealth;
 
     /**
      * Constructor.
@@ -123,7 +123,7 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      * Getter for the satellite health status.
      * @return the satellite health status
      */
-    public double getSvHealth() {
+    public int getSvHealth() {
         return svHealth;
     }
 
@@ -131,7 +131,7 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      * Setter for the satellite health status.
      * @param svHealth the value to set
      */
-    public void setSvHealth(final double svHealth) {
+    public void setSvHealth(final int svHealth) {
         this.svHealth = svHealth;
     }
 

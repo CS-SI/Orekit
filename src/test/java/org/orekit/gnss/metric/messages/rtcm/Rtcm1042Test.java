@@ -29,7 +29,7 @@ import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class Rtcm1042Test {
 
         final Rtcm1042                rtcm1042      = (Rtcm1042) new RtcmMessagesParser(messages).parse(message, false);
         final Rtcm1042Data            ephemerisData = rtcm1042.getEphemerisData();
-        final BeidouNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();
+        final BeidouLegacyNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(beidouMessage).build();

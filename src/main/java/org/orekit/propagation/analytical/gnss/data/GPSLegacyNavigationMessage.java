@@ -21,7 +21,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class GPSLegacyNavigationMessage extends LegacyNavigationMessage implements GNSSClockElements {
+public class GPSLegacyNavigationMessage extends LegacyNavigationMessage {
 
     /** Constructor. */
     public GPSLegacyNavigationMessage() {

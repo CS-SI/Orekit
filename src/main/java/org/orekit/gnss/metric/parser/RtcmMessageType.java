@@ -57,7 +57,7 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
@@ -222,7 +222,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1042Data            rtcm1042Data  = new Rtcm1042Data();
-            final BeidouNavigationMessage beidouNavMessage = new BeidouNavigationMessage();
+            final BeidouLegacyNavigationMessage beidouNavMessage = new BeidouLegacyNavigationMessage();
 
             // Set the satellite ID
             final int beidouId = RtcmDataField.DF488.intValue(encodedMessage);

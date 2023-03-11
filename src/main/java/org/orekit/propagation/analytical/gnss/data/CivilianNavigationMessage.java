@@ -26,6 +26,9 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
     /** Identifier for message type. */
     public static final String CNAV = "CNAV";
 
+    /** Identifier for message type. */
+    public static final String CNV2 = "CNV2";
+
     /** Change rate in semi-major axis (m/s). */
     private double aDot;
 
@@ -39,10 +42,16 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
     private double svAccuracy;
 
     /** Satellite health status. */
-    private double svHealth;
+    private int svHealth;
 
     /** Inter Signal Delay for L1 C/A. */
     private double iscL1CA;
+
+    /** Inter Signal Delay for L1 CD. */
+    private double iscL1CD;
+
+    /** Inter Signal Delay for L1 CP. */
+    private double iscL1CP;
 
     /** Inter Signal Delay for L2 C. */
     private double iscL2C;
@@ -53,14 +62,17 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
     /** Inter Signal Delay for L5Q. */
     private double iscL5Q5;
 
+    /** Elevation-Dependent User Range Accuracy. */
+    private int uraiEd;
+
     /** Term 0 of Non-Elevation-Dependent User Range Accuracy. */
-    private double uraiNed0;
+    private int uraiNed0;
 
     /** Term 1 of Non-Elevation-Dependent User Range Accuracy. */
-    private double uraiNed1;
+    private int uraiNed1;
 
     /** Term 2 of Non-Elevation-Dependent User Range Accuracy. */
-    private double uraiNed2;
+    private int uraiNed2;
 
     /**
      * Constructor.
@@ -142,7 +154,7 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * Getter for the satellite health status.
      * @return the satellite health status
      */
-    public double getSvHealth() {
+    public int getSvHealth() {
         return svHealth;
     }
 
@@ -150,7 +162,7 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * Setter for the satellite health status.
      * @param svHealth the value to set
      */
-    public void setSvHealth(final double svHealth) {
+    public void setSvHealth(final int svHealth) {
         this.svHealth = svHealth;
     }
 
@@ -168,6 +180,38 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      */
     public void setIscL1CA(final double delay) {
         this.iscL1CA = delay;
+    }
+
+    /**
+     * Getter for inter Signal Delay for L1 CD.
+     * @return inter signal delay
+     */
+    public double getIscL1CD() {
+        return iscL1CD;
+    }
+
+    /**
+     * Setter for inter Signal Delay for L1 CD.
+     * @param delay delay to set
+     */
+    public void setIscL1CD(final double delay) {
+        this.iscL1CD = delay;
+    }
+
+    /**
+     * Getter for inter Signal Delay for L1 CP.
+     * @return inter signal delay
+     */
+    public double getIscL1CP() {
+        return iscL1CP;
+    }
+
+    /**
+     * Setter for inter Signal Delay for L1 CP.
+     * @param delay delay to set
+     */
+    public void setIscL1CP(final double delay) {
+        this.iscL1CP = delay;
     }
 
     /**
@@ -219,10 +263,26 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
     }
 
     /**
+     * Getter for Elevation-Dependent User Range Accuracy.
+     * @return Elevation-Dependent User Range Accuracy
+     */
+    public int getUraiEd() {
+        return uraiEd;
+    }
+
+    /**
+     * Setter for Elevation-Dependent User Range Accuracy.
+     * @param uraiEd Elevation-Dependent User Range Accuracy
+     */
+    public void setUraiEd(final int uraiEd) {
+        this.uraiEd = uraiEd;
+    }
+
+    /**
      * Getter for term 0 of Non-Elevation-Dependent User Range Accuracy.
      * @return term 0 of Non-Elevation-Dependent User Range Accuracy
      */
-    public double getUraiNed0() {
+    public int getUraiNed0() {
         return uraiNed0;
     }
 
@@ -230,7 +290,7 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * Setter for term 0 of Non-Elevation-Dependent User Range Accuracy.
      * @param uraiNed0 term 0 of Non-Elevation-Dependent User Range Accuracy
      */
-    public void setUraiNed0(final double uraiNed0) {
+    public void setUraiNed0(final int uraiNed0) {
         this.uraiNed0 = uraiNed0;
     }
 
@@ -238,7 +298,7 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * Getter for term 1 of Non-Elevation-Dependent User Range Accuracy.
      * @return term 1 of Non-Elevation-Dependent User Range Accuracy
      */
-    public double getUraiNed1() {
+    public int getUraiNed1() {
         return uraiNed1;
     }
 
@@ -246,7 +306,7 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * Setter for term 1 of Non-Elevation-Dependent User Range Accuracy.
      * @param uraiNed1 term 1 of Non-Elevation-Dependent User Range Accuracy
      */
-    public void setUraiNed1(final double uraiNed1) {
+    public void setUraiNed1(final int uraiNed1) {
         this.uraiNed1 = uraiNed1;
     }
 
@@ -254,7 +314,7 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * Getter for term 2 of Non-Elevation-Dependent User Range Accuracy.
      * @return term 2 of Non-Elevation-Dependent User Range Accuracy
      */
-    public double getUraiNed2() {
+    public int getUraiNed2() {
         return uraiNed2;
     }
 
@@ -262,7 +322,7 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * Setter for term 2 of Non-Elevation-Dependent User Range Accuracy.
      * @param uraiNed2 term 2 of Non-Elevation-Dependent User Range Accuracy
      */
-    public void setUraiNed2(final double uraiNed2) {
+    public void setUraiNed2(final int uraiNed2) {
         this.uraiNed2 = uraiNed2;
     }
 

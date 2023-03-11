@@ -21,7 +21,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage implements GNSSClockElements {
+public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage {
 
     /** Constructor. */
     public QZSSCivilianNavigationMessage() {

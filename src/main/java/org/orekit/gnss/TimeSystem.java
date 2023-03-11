@@ -57,7 +57,12 @@ public enum TimeSystem {
     /** IRNSS. */
     IRNSS("IRN"),
 
-    /** Unknown. */
+    /** GMT (should only by used in RUN BY / DATE entries).
+     * @since 12.0
+     */
+    GMT("GMT"),
+
+    /** Unknown (should only by used in RUN BY / DATE entries). */
     UNKNOWN("LCL");
 
     /** Parsing map. */
@@ -140,6 +145,10 @@ public enum TimeSystem {
 
             case IRNSS:
                 timeScale = timeScales.getIRNSS();
+                break;
+
+            case GMT:
+                timeScale = timeScales.getUTC();
                 break;
 
             // Default value is GPS time scale, even in unknown case.

@@ -21,7 +21,13 @@ package org.orekit.propagation.analytical.gnss.data;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class BeidouNavigationMessage extends AbstractNavigationMessage {
+public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage {
+
+    /** Identifier for message type. */
+    public static final String D1 = "D1";
+
+    /** Identifier for message type. */
+    public static final String D2 = "D2";
 
     /** Age of Data, Ephemeris. */
     private int aode;
@@ -39,7 +45,7 @@ public class BeidouNavigationMessage extends AbstractNavigationMessage {
     private double svAccuracy;
 
     /** Constructor. */
-    public BeidouNavigationMessage() {
+    public BeidouLegacyNavigationMessage() {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
     }
 
