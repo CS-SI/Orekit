@@ -37,6 +37,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.RinexUtils;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.SbasId;
+import org.orekit.gnss.TimeSystem;
+import org.orekit.gnss.UtcId;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
@@ -50,6 +53,7 @@ import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.SystemTimeOffsetMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScale;
@@ -221,6 +225,9 @@ public class RinexNavigationParser {
 
         /** Container for SBAS navigation message. */
         private SBASNavigationMessage sbasNav;
+
+        /** Container for System Time Offset message. */
+        private SystemTimeOffsetMessage sto;
 
         /** Constructor, build the ParseInfo object.
          * @param name name of the data source
@@ -440,7 +447,51 @@ public class RinexNavigationParser {
                                        }
 
                                    },
-                                   LineParser::navigationNext);
+                                   LineParser::navigationNext),
+
+        /** Parser for system time offset message model. */
+        STO_MODEL(line -> true,
+                  (line, pi) -> {
+                      pi.sto.setTransmissionTime(Unit.SECOND.toSI(RinexUtils.parseDouble(line,  4, 19)));
+                      pi.sto.setA0(Unit.SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
+                      pi.sto.setA1(S_PER_S.toSI(RinexUtils.parseDouble(line, 42, 19)));
+                      pi.sto.setA2(S_PER_S2.toSI(RinexUtils.parseDouble(line, 61, 19)));
+                      pi.file.addSystemTimeOffset(pi.sto);
+                      pi.sto = null;
+                  },
+                  LineParser::navigationNext),
+
+        /** Parser for system time offset message space vehicle epoch and clock. */
+        STO_SV_EPOCH_CLOCK(line -> true,
+                           (line, pi) -> {
+
+                               pi.sto.setDefinedTimeSystem(TimeSystem.parseTwoLettersCode(RinexUtils.parseString(line, 24, 2)));
+                               pi.sto.setReferenceTimeSystem(TimeSystem.parseTwoLettersCode(RinexUtils.parseString(line, 26, 2)));
+                               final String sbas = RinexUtils.parseString(line, 43, 18);
+                               pi.sto.setSbasId(sbas.length() > 0 ? SbasId.valueOf(sbas) : null);
+                               final String utc = RinexUtils.parseString(line, 62, 18);
+                               pi.sto.setUtcId(utc.length() > 0 ? UtcId.parseUtcId(utc) : null);
+
+                               // TODO is the reference date relative to one or the other time scale?
+                               final int year  = RinexUtils.parseInt(line, 4, 4);
+                               final int month = RinexUtils.parseInt(line, 9, 2);
+                               final int day   = RinexUtils.parseInt(line, 12, 2);
+                               final int hours = RinexUtils.parseInt(line, 15, 2);
+                               final int min   = RinexUtils.parseInt(line, 18, 2);
+                               final int sec   = RinexUtils.parseInt(line, 21, 2);
+                               pi.sto.setReferenceEpoch(new AbsoluteDate(year, month, day, hours, min, sec,
+                                                                         pi.sto.getDefinedTimeSystem().getTimeScale(pi.timeScales)));
+
+                           },
+                           pi -> Stream.of(STO_MODEL)),
+
+        /** Parser for system time offset message type. */
+        STO_TYPE(line -> line.startsWith("> STO"),
+                 (line, pi) ->
+                     pi.sto = new SystemTimeOffsetMessage(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1)),
+                                                          RinexUtils.parseInt(line, 7, 2),
+                                                          RinexUtils.parseString(line, 10, 4)),
+                 pi -> Stream.of(STO_SV_EPOCH_CLOCK));
 
         /** Predicate for identifying lines that can be parsed. */
         private final Predicate<String> canHandle;
@@ -489,7 +540,8 @@ public class RinexNavigationParser {
             if (parseInfo.file.getHeader().getFormatVersion() < 4) {
                 return Stream.of(NAVIGATION_SV_EPOCH_CLOCK, NAVIGATION_BROADCAST_ORBIT);
             } else {
-                return Stream.of(NAVIGATION_TYPE, NAVIGATION_SV_EPOCH_CLOCK, NAVIGATION_BROADCAST_ORBIT);
+                return Stream.of(NAVIGATION_TYPE, NAVIGATION_SV_EPOCH_CLOCK, NAVIGATION_BROADCAST_ORBIT,
+                                 STO_TYPE);
             }
         }
 

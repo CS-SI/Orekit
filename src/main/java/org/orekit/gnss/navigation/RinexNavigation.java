@@ -480,4 +480,22 @@ public class RinexNavigation {
         sbasData.get(satId).add(message);
     }
 
+    /**
+     * Get the system time offsets.
+     * @return an unmodifiable list of system time offsets
+     * @since 12.0
+     */
+    public List<SystemTimeOffsetMessage> getSystemTimeOffsets() {
+        return Collections.unmodifiableList(systemTimeOffsets);
+    }
+
+    /**
+     * Add ae system time offset.
+     * @param systemTimeOffset system time offset message
+     * @since 12.0
+     */
+    public void addSystemTimeOffset(final SystemTimeOffsetMessage systemTimeOffset) {
+        systemTimeOffsets.add(systemTimeOffset);
+    }
+
 }

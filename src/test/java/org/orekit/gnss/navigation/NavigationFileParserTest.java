@@ -36,6 +36,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.RinexFileType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.TimeSystem;
+import org.orekit.gnss.UtcId;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.SBASPropagator;
@@ -51,6 +53,7 @@ import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.SystemTimeOffsetMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -184,6 +187,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(1, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(1, file.getGPSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSystemTimeOffsets().size());
 
         final GPSLegacyNavigationMessage gpsL = file.getGPSLegacyNavigationMessages("G01").get(0);
         Assertions.assertEquals(0.0, gpsL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
@@ -1460,6 +1464,93 @@ public class NavigationFileParserTest {
         final AbsoluteDate date1 = date0.shiftedBy(gpsCycleDuration);
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
         Assertions.assertEquals(0., p0.distance(p1), 0.);
+
+    }
+
+    @Test
+    public void testStoRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_Sto_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSCivilianNavigationMessages().size());
+        Assertions.assertEquals(15, file.getSystemTimeOffsets().size());
+
+        List<SystemTimeOffsetMessage> list = file.getSystemTimeOffsets();
+        Assertions.assertEquals(SatelliteSystem.BEIDOU, list.get(0).getSystem());
+        Assertions.assertEquals(35, list.get(0).getPrn());
+        Assertions.assertEquals("CNVX", list.get(0).getNavigationMessageType());
+        Assertions.assertEquals(TimeSystem.BEIDOU, list.get(0).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GALILEO, list.get(0).getReferenceTimeSystem());
+        Assertions.assertNull(list.get(0).getSbasId());
+        Assertions.assertNull(list.get(0).getUtcId());
+        Assertions.assertEquals(0.0,
+                                list.get(0).getReferenceEpoch().durationFrom(new AbsoluteDate(2022, 10, 4, 23, 20, 0.0,
+                                                                                              TimeScalesFactory.getBDT())),
+                                1.0e-15);
+        Assertions.assertEquals(259230.0,            list.get( 0).getTransmissionTime(), 1.0e-15);
+        Assertions.assertEquals(-2.657179720700e-08, list.get( 0).getA0(), 1.0e-17);
+        Assertions.assertEquals( 4.884981308351e-14, list.get( 0).getA1(), 1.0e-23);
+        Assertions.assertEquals( 2.066760391300e-19, list.get( 0).getA2(), 1.0e-28);
+
+        Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 1).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 1).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 2).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 2).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 3).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get( 3).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.NTSC,          list.get( 3).getUtcId());
+        Assertions.assertEquals(TimeSystem.GALILEO,  list.get( 4).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 4).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 5).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 5).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 6).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 6).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 7).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get( 7).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.SU,            list.get( 7).getUtcId());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 8).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get( 8).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.USNO,          list.get( 8).getUtcId());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get( 9).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 9).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get(10).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get(10).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get(11).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(11).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.IRN,           list.get(11).getUtcId());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get(12).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(12).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.IRN,           list.get(12).getUtcId());
+        Assertions.assertEquals(TimeSystem.QZSS,     list.get(13).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get(13).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.QZSS,     list.get(14).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(14).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.NICT,          list.get(14).getUtcId());
 
     }
 

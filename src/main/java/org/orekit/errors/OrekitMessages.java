@@ -249,6 +249,7 @@ public enum OrekitMessages implements Localizable {
     STATION_NOT_FOUND("station {0} not found, known stations: {1}"),
     UNKNOWN_SATELLITE_SYSTEM("unknown satellite system {0}"),
     UNKNOWN_TIME_SYSTEM("unknown time system {0}"),
+    UNKNOWN_UTC_ID("unknown UTC Id {0}"),
     UNKNOWN_CLOCK_DATA_TYPE("unknown clock data type {0}"),
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
     UNSUPPORTED_FREQUENCY_FOR_ANTENNA("frequency {0} is not supported by antenna {1}"),

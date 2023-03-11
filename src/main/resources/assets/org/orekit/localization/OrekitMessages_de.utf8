@@ -535,14 +535,17 @@ STATION_NOT_FOUND = Station {0} nicht gefunden! Bekannte Stationen: {1}
 # unknown satellite system {0}
 UNKNOWN_SATELLITE_SYSTEM = Unbekanntes Satellitensystem {0}
 
-# unknown satellite antenna code {0}
-UNKNOWN_SATELLITE_ANTENNA_CODE = Unbekannter Satellitenantennencode {0}
-
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = Unbekannter Zeitsystem {0}
 
+# unknown UTC Id {0}
+UNKNOWN_UTC_ID = <MISSING TRANSLATION>
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = Unbekannter Uhrendatentyp {0}
+
+# unknown satellite antenna code {0}
+UNKNOWN_SATELLITE_ANTENNA_CODE = Unbekannter Satellitenantennencode {0}
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = Die Frequenz {0} ist von der Antenne {1} nicht unterstützt
