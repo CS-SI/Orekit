@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.orekit.gnss.RinexBaseHeader;
 import org.orekit.gnss.RinexFileType;
-import org.orekit.gnss.navigation.RinexNavigation.TimeSystemCorrection;
 
 /** Header for Rinex Navigation.
  * @author Luc Maisonobe

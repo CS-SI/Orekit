@@ -37,7 +37,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.RinexUtils;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.navigation.RinexNavigation.TimeSystemCorrection;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
