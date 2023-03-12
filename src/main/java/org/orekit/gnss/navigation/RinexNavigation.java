@@ -39,6 +39,7 @@ import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 /**
  * Represents a parsed RINEX navigation messages files.
  * @author Bryan Cazabonne
+ * @author Luc Maisonobe
  * @since 11.0
  */
 public class RinexNavigation {
@@ -85,10 +86,15 @@ public class RinexNavigation {
     /** A map containing the SBAS navigation messages. */
     private final Map<String, List<SBASNavigationMessage>> sbasData;
 
-    /** System Time offsets.
+    /** System time offsets.
      * @since 12.0
      */
     private final List<SystemTimeOffsetMessage> systemTimeOffsets;
+
+    /** Earth orientation parameters.
+     * @since 12.0
+     */
+    private final List<EarthOrientationParameterMessage> eops;
 
     /** Constructor. */
     public RinexNavigation() {
@@ -104,6 +110,7 @@ public class RinexNavigation {
         this.glonassData        = new HashMap<>();
         this.sbasData           = new HashMap<>();
         this.systemTimeOffsets  = new ArrayList<>();
+        this.eops               = new ArrayList<>();
     }
 
     /**
@@ -489,12 +496,30 @@ public class RinexNavigation {
     }
 
     /**
-     * Add ae system time offset.
+     * Add a system time offset.
      * @param systemTimeOffset system time offset message
      * @since 12.0
      */
     public void addSystemTimeOffset(final SystemTimeOffsetMessage systemTimeOffset) {
         systemTimeOffsets.add(systemTimeOffset);
+    }
+
+    /**
+     * Get the Earth orientation parameters.
+     * @return an unmodifiable list of Earth orientation parameters
+     * @since 12.0
+     */
+    public List<EarthOrientationParameterMessage> getEarthOrientationParameters() {
+        return Collections.unmodifiableList(eops);
+    }
+
+    /**
+     * Add an Earth orientation parameter.
+     * @param eop Earth orientation oarameter message
+     * @since 12.0
+     */
+    public void addEarthOrientationParameter(final EarthOrientationParameterMessage eop) {
+        eops.add(eop);
     }
 
 }

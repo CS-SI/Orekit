@@ -99,6 +99,12 @@ public class RinexNavigationParser {
     /** Converter for clock drift rate. */
     private static final Unit S_PER_S2 = Unit.parse("s/s²");
 
+    /** Converter for ΔUT₁ first derivative. */
+    private static final Unit S_PER_DAY = Unit.parse("s/d");
+
+    /** Converter for ΔUT₁ second derivative. */
+    private static final Unit S_PER_DAY2 = Unit.parse("s/d²");
+
     /** Converter for square root of semi-major axis. */
     private static final Unit SQRT_M = Unit.parse("√m");
 
@@ -107,6 +113,12 @@ public class RinexNavigationParser {
 
     /** Converter for angular accelerations. */
     private static final Unit RAD_PER_S2 = Unit.parse("rad/s²");;
+
+    /** Converter for rates of small angle. */
+    private static final Unit AS_PER_DAY = Unit.parse("as/d");;
+
+    /** Converter for accelerations of small angles. */
+    private static final Unit AS_PER_DAY2 = Unit.parse("as/d²");;
 
     /** System initials. */
     private static final String INITIALS = "GRECIJS";
@@ -227,6 +239,9 @@ public class RinexNavigationParser {
 
         /** Container for System Time Offset message. */
         private SystemTimeOffsetMessage sto;
+
+        /** Container for Earth Orientation Parameter message. */
+        private EarthOrientationParameterMessage eop;
 
         /** Constructor, build the ParseInfo object.
          * @param name name of the data source
@@ -449,7 +464,7 @@ public class RinexNavigationParser {
                                    LineParser::navigationNext),
 
         /** Parser for system time offset message model. */
-        STO_MODEL(line -> true,
+        STO_LINE_1(line -> true,
                   (line, pi) -> {
                       pi.sto.setTransmissionTime(Unit.SECOND.toSI(RinexUtils.parseDouble(line,  4, 19)));
                       pi.sto.setA0(Unit.SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
@@ -482,7 +497,7 @@ public class RinexNavigationParser {
                                                                          pi.sto.getDefinedTimeSystem().getTimeScale(pi.timeScales)));
 
                            },
-                           pi -> Stream.of(STO_MODEL)),
+                           pi -> Stream.of(STO_LINE_1)),
 
         /** Parser for system time offset message type. */
         STO_TYPE(line -> line.startsWith("> STO"),
@@ -490,7 +505,53 @@ public class RinexNavigationParser {
                      pi.sto = new SystemTimeOffsetMessage(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1)),
                                                           RinexUtils.parseInt(line, 7, 2),
                                                           RinexUtils.parseString(line, 10, 4)),
-                 pi -> Stream.of(STO_SV_EPOCH_CLOCK));
+                 pi -> Stream.of(STO_SV_EPOCH_CLOCK)),
+
+        /** Parser for Earth orientation parameter message model. */
+        EOP_LINE_2(line -> true,
+                  (line, pi) -> {
+                      pi.eop.setTransmissionTime(Unit.SECOND.toSI(RinexUtils.parseDouble(line,  4, 19)));
+                      pi.eop.setDut1(Unit.SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
+                      pi.eop.setDut1Dot(S_PER_DAY.toSI(RinexUtils.parseDouble(line, 42, 19)));
+                      pi.eop.setDut1DotDot(S_PER_DAY2.toSI(RinexUtils.parseDouble(line, 61, 19)));
+                      pi.file.addEarthOrientationParameter(pi.eop);
+                      pi.eop = null;
+                  },
+                  LineParser::navigationNext),
+
+        /** Parser for Earth orientation parameter message model. */
+        EOP_LINE_1(line -> true,
+                  (line, pi) -> {
+                      pi.eop.setYp(Unit.ARC_SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
+                      pi.eop.setYpDot(AS_PER_DAY.toSI(RinexUtils.parseDouble(line, 42, 19)));
+                      pi.eop.setYpDotDot(AS_PER_DAY2.toSI(RinexUtils.parseDouble(line, 61, 19)));
+                  },
+                  pi -> Stream.of(EOP_LINE_2)),
+
+        /** Parser for Earth orientation parameter message space vehicle epoch and clock. */
+        EOP_SV_EPOCH_CLOCK(line -> true,
+                           (line, pi) -> {
+                               final int year  = RinexUtils.parseInt(line, 4, 4);
+                               final int month = RinexUtils.parseInt(line, 9, 2);
+                               final int day   = RinexUtils.parseInt(line, 12, 2);
+                               final int hours = RinexUtils.parseInt(line, 15, 2);
+                               final int min   = RinexUtils.parseInt(line, 18, 2);
+                               final int sec   = RinexUtils.parseInt(line, 21, 2);
+                               pi.eop.setReferenceEpoch(new AbsoluteDate(year, month, day, hours, min, sec,
+                                                                         pi.eop.getSystem().getDefaultTimeSystem(pi.timeScales)));
+                               pi.eop.setXp(Unit.ARC_SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
+                               pi.eop.setXpDot(AS_PER_DAY.toSI(RinexUtils.parseDouble(line, 42, 19)));
+                               pi.eop.setXpDotDot(AS_PER_DAY2.toSI(RinexUtils.parseDouble(line, 61, 19)));
+                           },
+                           pi -> Stream.of(EOP_LINE_1)),
+
+        /** Parser for Earth orientation parameter message type. */
+        EOP_TYPE(line -> line.startsWith("> EOP"),
+                 (line, pi) ->
+                     pi.eop = new EarthOrientationParameterMessage(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1)),
+                                                                   RinexUtils.parseInt(line, 7, 2),
+                                                                   RinexUtils.parseString(line, 10, 4)),
+                 pi -> Stream.of(EOP_SV_EPOCH_CLOCK));
 
         /** Predicate for identifying lines that can be parsed. */
         private final Predicate<String> canHandle;
@@ -540,7 +601,7 @@ public class RinexNavigationParser {
                 return Stream.of(NAVIGATION_SV_EPOCH_CLOCK, NAVIGATION_BROADCAST_ORBIT);
             } else {
                 return Stream.of(NAVIGATION_TYPE, NAVIGATION_SV_EPOCH_CLOCK, NAVIGATION_BROADCAST_ORBIT,
-                                 STO_TYPE);
+                                 STO_TYPE, EOP_TYPE);
             }
         }
 
