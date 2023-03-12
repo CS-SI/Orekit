@@ -26,6 +26,11 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage {
     /** Issue of Data of the navigation batch. */
     private int iodNav;
 
+    /** Data source.
+     * @since 12.0
+     */
+    private int dataSource;
+
     /** E1/E5a broadcast group delay (s). */
     private double bgbE1E5a;
 
@@ -55,9 +60,26 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage {
      * Setter for the Issue of Data of the navigation batch.
      * @param iod the IOD to set
      */
-    public void setIODNav(final double iod) {
-        // The value is given as a floating number in the navigation message
-        this.iodNav = (int) iod;
+    public void setIODNav(final int iod) {
+        this.iodNav = iod;
+    }
+
+    /**
+     * Getter for the the data source.
+     * @return the data source
+     * @since 12.0
+     */
+    public int getDataSource() {
+        return dataSource;
+    }
+
+    /**
+     * Setter for the data source.
+     * @param dataSource data source
+     * @since 12.0
+     */
+    public void setDataSource(final int dataSource) {
+        this.dataSource = dataSource;
     }
 
     /**

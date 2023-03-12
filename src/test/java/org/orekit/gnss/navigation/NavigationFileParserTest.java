@@ -558,6 +558,8 @@ public class NavigationFileParserTest {
 
         final GalileoNavigationMessage galL = file.getGalileoNavigationMessages().get("E01").get(0);
         Assertions.assertEquals(0.0, galL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(516, galL.getDataSource());
+
     }
 
     @Test

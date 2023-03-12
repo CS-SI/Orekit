@@ -996,10 +996,10 @@ public class RinexNavigationParser {
             @Override
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 parseLine(line,
-                          pi.galileoNav::setIODNav, Unit.SECOND,
-                          pi.galileoNav::setCrs,    Unit.METRE,
-                          pi.galileoNav::setDeltaN, RAD_PER_S,
-                          pi.galileoNav::setM0,     Unit.RADIAN,
+                          d -> pi.galileoNav.setIODNav((int) FastMath.rint(d)), Unit.SECOND,
+                          pi.galileoNav::setCrs,                                Unit.METRE,
+                          pi.galileoNav::setDeltaN,                             RAD_PER_S,
+                          pi.galileoNav::setM0,                                 Unit.RADIAN,
                           null);
             }
 
@@ -1041,8 +1041,7 @@ public class RinexNavigationParser {
             public void parseFifthBroadcastOrbit(final String line, final ParseInfo pi) {
                 // iDot
                 pi.galileoNav.setIDot(RinexUtils.parseDouble(line, 4, 19));
-                // Data sources (ignored)
-                // RinexUtils.parseDouble(line, 23, 19)
+                pi.galileoNav.setDataSource((int) FastMath.rint(RinexUtils.parseDouble(line, 23, 19)));
                 // GAL week (to go with Toe)
                 pi.galileoNav.setWeek((int) RinexUtils.parseDouble(line, 42, 19));
                 pi.galileoNav.setDate(new GNSSDate(pi.galileoNav.getWeek(),
