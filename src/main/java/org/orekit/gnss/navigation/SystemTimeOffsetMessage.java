@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.analytical.gnss.data;
+package org.orekit.gnss.navigation;
 
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.SbasId;
@@ -76,7 +76,7 @@ public class SystemTimeOffsetMessage {
         this.navigationMessageType = navigationMessageType;
     }
 
-    /** Get ssatellite system.
+    /** Get satellite system.
      * @return the system
      */
     public SatelliteSystem getSystem() {

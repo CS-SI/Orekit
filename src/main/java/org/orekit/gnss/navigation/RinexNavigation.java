@@ -35,7 +35,6 @@ import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.SystemTimeOffsetMessage;
 
 /**
  * Represents a parsed RINEX navigation messages files.

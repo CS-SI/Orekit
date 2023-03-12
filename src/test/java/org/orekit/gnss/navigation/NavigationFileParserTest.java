@@ -54,7 +54,6 @@ import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.SystemTimeOffsetMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
