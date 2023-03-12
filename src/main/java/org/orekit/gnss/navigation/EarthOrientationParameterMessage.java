@@ -58,6 +58,9 @@ public class EarthOrientationParameterMessage extends TypeSvMessage {
     /** ΔUT₁ second derivative (s/s²). */
     private double dUt1DotDot;
 
+    /** Transmission time. */
+    private double transmissionTime;
+
     /** Simple constructor.
      * @param system satellite system
      * @param prn satellite number
@@ -205,6 +208,20 @@ public class EarthOrientationParameterMessage extends TypeSvMessage {
      */
     public void setDut1DotDot(final double dUT1DotDot) {
         this.dUt1DotDot = dUT1DotDot;
+    }
+
+    /** Get the message transmission time.
+     * @return message transmission time
+     */
+    public double getTransmissionTime() {
+        return transmissionTime;
+    }
+
+    /** Set the message transmission time.
+     * @param transmissionTime the message transmission time
+     */
+    public void setTransmissionTime(final double transmissionTime) {
+        this.transmissionTime = transmissionTime;
     }
 
 }

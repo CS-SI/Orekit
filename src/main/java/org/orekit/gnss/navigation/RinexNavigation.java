@@ -96,6 +96,21 @@ public class RinexNavigation {
      */
     private final List<EarthOrientationParameterMessage> eops;
 
+    /** Ionosphere Klobuchar messages.
+     * @since 12.0
+     */
+    private final List<IonosphereKlobucharMessage> klobucharMessages;
+
+    /** Ionosphere Nequick G messages.
+     * @since 12.0
+     */
+    private final List<IonosphereNequickGMessage> nequickGMessages;
+
+    /** Ionosphere BDGIM messages.
+     * @since 12.0
+     */
+    private final List<IonosphereBDGIMMessage> bdgimMessages;
+
     /** Constructor. */
     public RinexNavigation() {
         this.header             = new RinexNavigationHeader();
@@ -111,6 +126,9 @@ public class RinexNavigation {
         this.sbasData           = new HashMap<>();
         this.systemTimeOffsets  = new ArrayList<>();
         this.eops               = new ArrayList<>();
+        this.klobucharMessages  = new ArrayList<>();
+        this.nequickGMessages   = new ArrayList<>();
+        this.bdgimMessages      = new ArrayList<>();
     }
 
     /**
@@ -520,6 +538,60 @@ public class RinexNavigation {
      */
     public void addEarthOrientationParameter(final EarthOrientationParameterMessage eop) {
         eops.add(eop);
+    }
+
+    /**
+     * Get the ionosphere Klobuchar messages.
+     * @return an unmodifiable list of ionosphere Klobuchar messages
+     * @since 12.0
+     */
+    public List<IonosphereKlobucharMessage> getKlobucharMessages() {
+        return Collections.unmodifiableList(klobucharMessages);
+    }
+
+    /**
+     * Add an ionosphere Klobuchar message.
+     * @param klobuchar ionosphere Klobuchar message
+     * @since 12.0
+     */
+    public void addKlobucharMessage(final IonosphereKlobucharMessage klobuchar) {
+        klobucharMessages.add(klobuchar);
+    }
+
+    /**
+     * Get the ionosphere Nequick-G messages.
+     * @return an unmodifiable list of ionosphere Nequick-G messages
+     * @since 12.0
+     */
+    public List<IonosphereNequickGMessage> getNequickGMessages() {
+        return Collections.unmodifiableList(nequickGMessages);
+    }
+
+    /**
+     * Add an ionosphere Nequick-G message.
+     * @param nequickG ionosphere Nequick-G message
+     * @since 12.0
+     */
+    public void addNequickGMessage(final IonosphereNequickGMessage nequickG) {
+        nequickGMessages.add(nequickG);
+    }
+
+    /**
+     * Get the ionosphere BDGIM messages.
+     * @return an unmodifiable list of ionosphere BDGIM messages
+     * @since 12.0
+     */
+    public List<IonosphereBDGIMMessage> getBDGIMMessages() {
+        return Collections.unmodifiableList(bdgimMessages);
+    }
+
+    /**
+     * Add an ionosphere BDGIM message.
+     * @param bdgim ionosphere BDGIM message
+     * @since 12.0
+     */
+    public void addBDGIMMessage(final IonosphereBDGIMMessage bdgim) {
+        bdgimMessages.add(bdgim);
     }
 
 }

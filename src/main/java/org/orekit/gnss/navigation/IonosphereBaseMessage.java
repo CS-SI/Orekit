@@ -17,52 +17,38 @@
 package org.orekit.gnss.navigation;
 
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.AbsoluteDate;
 
-/** Container for data shared by several navigation messages.
+/** Base container for data contained in a ionosphere message.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class TypeSvMessage {
+public class IonosphereBaseMessage extends TypeSvMessage {
 
-    /** Satellite system. */
-    private final SatelliteSystem system;
-
-    /** Satellite number. */
-    private final int prn;
-
-    /** Navigation message type. */
-    private final String navigationMessageType;
+    /** Transmit time. */
+    private AbsoluteDate transmitTime;
 
     /** Simple constructor.
      * @param system satellite system
      * @param prn satellite number
      * @param navigationMessageType navigation message type
      */
-    protected TypeSvMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        this.system                = system;
-        this.prn                   = prn;
-        this.navigationMessageType = navigationMessageType;
+    public IonosphereBaseMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
+        super(system, prn, navigationMessageType);
     }
 
-    /** Get satellite system.
-     * @return the system
+    /** Get the transmit time.
+     * @return the transmit time
      */
-    public SatelliteSystem getSystem() {
-        return system;
+    public AbsoluteDate getTransmitTime() {
+        return transmitTime;
     }
 
-    /** Get satellite number.
-     * @return the prn
+    /** Set the transmit time.
+     * @param transmitTime the transmit time to set
      */
-    public int getPrn() {
-        return prn;
-    }
-
-    /** Get navigation message type.
-     * @return the navigation message type
-     */
-    public String getNavigationMessageType() {
-        return navigationMessageType;
+    public void setTransmitTime(final AbsoluteDate transmitTime) {
+        this.transmitTime = transmitTime;
     }
 
 }

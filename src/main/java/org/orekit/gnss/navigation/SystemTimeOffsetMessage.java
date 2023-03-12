@@ -53,6 +53,9 @@ public class SystemTimeOffsetMessage extends TypeSvMessage {
     /** Quadratic term of the offset. */
     private double a2;
 
+    /** Transmission time. */
+    private double transmissionTime;
+
     /** Simple constructor.
      * @param system satellite system
      * @param prn satellite number
@@ -172,6 +175,20 @@ public class SystemTimeOffsetMessage extends TypeSvMessage {
      */
     public void setA2(final double a2) {
         this.a2 = a2;
+    }
+
+    /** Get the message transmission time.
+     * @return message transmission time
+     */
+    public double getTransmissionTime() {
+        return transmissionTime;
+    }
+
+    /** Set the message transmission time.
+     * @param transmissionTime the message transmission time
+     */
+    public void setTransmissionTime(final double transmissionTime) {
+        this.transmissionTime = transmissionTime;
     }
 
 }
