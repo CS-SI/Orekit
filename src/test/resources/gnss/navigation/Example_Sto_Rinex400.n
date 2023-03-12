@@ -3,6 +3,8 @@ BCEmerge            congo               20221006 004604 GMT PGM / RUN BY / DATE
 Merged GPS/GLO/GAL/BDS/QZS/SBAS/IRNSS navigation file       COMMENT             
 based on CONGO and IGS tracking data                        COMMENT             
 DLR/GSOC: O. Montenbruck; P. Steigenberger                  COMMENT             
+extracted from BRD400DLR_S_20222780000_01D_MN.rnx           COMMENT
+https://cddis.nasa.gov/archive/gnss/data/daily/2022/brdc/   COMMENT
 https://doi.org/10.57677/BRD400DLR                          DOI                 
       102                                                   MERGED FILE         
     18    18  2185     7                                    LEAP SECONDS        
@@ -51,4 +53,7 @@ https://doi.org/10.57677/BRD400DLR                          DOI
      2.702880000000e+05 0.000000000000e+00 0.000000000000e+00 0.000000000000e+00
 > STO J02 LNAV
     2022 10 08 02 46 24 QZUT                                  UTC(NICT)         
+     2.701140000000e+05 2.793967723846e-09 0.000000000000e+00 0.000000000000e+00
+> STO E17 SBAS
+    2022 10 08 02 46 24 SBUT               EGNOS              UTC(OP)           
      2.701140000000e+05 2.793967723846e-09 0.000000000000e+00 0.000000000000e+00

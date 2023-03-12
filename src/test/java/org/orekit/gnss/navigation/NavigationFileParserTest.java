@@ -36,6 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.RinexFileType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.SbasId;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.gnss.UtcId;
 import org.orekit.propagation.Propagator;
@@ -1498,7 +1499,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGPSCivilianNavigationMessages().size());
-        Assertions.assertEquals(15, file.getSystemTimeOffsets().size());
+        Assertions.assertEquals(16, file.getSystemTimeOffsets().size());
 
         List<SystemTimeOffsetMessage> list = file.getSystemTimeOffsets();
         Assertions.assertEquals(SatelliteSystem.BEIDOU, list.get(0).getSystem());
@@ -1551,6 +1552,10 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(TimeSystem.QZSS,     list.get(14).getDefinedTimeSystem());
         Assertions.assertEquals(TimeSystem.UTC,      list.get(14).getReferenceTimeSystem());
         Assertions.assertEquals(UtcId.NICT,          list.get(14).getUtcId());
+        Assertions.assertEquals(TimeSystem.SBAS,     list.get(15).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(15).getReferenceTimeSystem());
+        Assertions.assertEquals(SbasId.EGNOS,        list.get(15).getSbasId());
+        Assertions.assertEquals(UtcId.OP,            list.get(15).getUtcId());
 
     }
 

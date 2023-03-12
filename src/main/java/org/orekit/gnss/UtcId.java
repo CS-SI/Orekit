@@ -45,7 +45,17 @@ public enum UtcId {
     NICT("UTC(NICT)"),
 
     /** UTCIRN / UTC(NPLI). */
-    IRN("UTCIRN", "UTC(NPLI)");
+    IRN("UTCIRN", "UTC(NPLI)"),
+
+    /** UTC(OP). */
+    OP("UTC(OP)"),
+
+    /** UTC(NIST).
+     * <p>
+     * In Rinex 4.00, this entry is not present in table 23, but appears in table A30.
+     * </p>
+     */
+    NIST("UTC(NIST)");
 
     /** Parsing map. */
     private static final Map<String, UtcId> MAP = new HashMap<>();
