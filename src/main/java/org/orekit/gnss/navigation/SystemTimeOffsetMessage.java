@@ -27,16 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class SystemTimeOffsetMessage {
-
-    /** Satellite system. */
-    private final SatelliteSystem system;
-
-    /** Satellite number. */
-    private final int prn;
-
-    /** Navigation message type. */
-    private final String navigationMessageType;
+public class SystemTimeOffsetMessage extends TypeSvMessage {
 
     /** Reference epoch. */
     private AbsoluteDate referenceEpoch;
@@ -53,9 +44,6 @@ public class SystemTimeOffsetMessage {
     /** UTC ID. */
     private UtcId utcId;
 
-    /** Transmission time. */
-    private double transmissionTime;
-
     /** Constant term of the offset. */
     private double a0;
 
@@ -71,30 +59,7 @@ public class SystemTimeOffsetMessage {
      * @param navigationMessageType navigation message type
      */
     public SystemTimeOffsetMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        this.system                = system;
-        this.prn                   = prn;
-        this.navigationMessageType = navigationMessageType;
-    }
-
-    /** Get satellite system.
-     * @return the system
-     */
-    public SatelliteSystem getSystem() {
-        return system;
-    }
-
-    /** Get satellite number.
-     * @return the prn
-     */
-    public int getPrn() {
-        return prn;
-    }
-
-    /** Get navigation message type.
-     * @return the navigation message type
-     */
-    public String getNavigationMessageType() {
-        return navigationMessageType;
+        super(system, prn, navigationMessageType);
     }
 
     /** Get the reference epoch.
@@ -125,7 +90,7 @@ public class SystemTimeOffsetMessage {
         this.definedTimeSystem = definedTimeSystem;
     }
 
-    /** Get the ime system used as a reference to define a time system.
+    /** Get the time system used as a reference to define a time system.
      * @return the time system used as a reference to define a time system
      */
     public TimeSystem getReferenceTimeSystem() {
@@ -165,20 +130,6 @@ public class SystemTimeOffsetMessage {
      */
     public void setUtcId(final UtcId utcId) {
         this.utcId = utcId;
-    }
-
-    /** Get the message transmission time.
-     * @return message transmission time
-     */
-    public double getTransmissionTime() {
-        return transmissionTime;
-    }
-
-    /** Set the message transmission time.
-     * @param transmissionTime the message transmission time
-     */
-    public void setTransmissionTime(final double transmissionTime) {
-        this.transmissionTime = transmissionTime;
     }
 
     /** Get the constant term of the offset.
