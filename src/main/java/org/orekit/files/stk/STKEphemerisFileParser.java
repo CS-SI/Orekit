@@ -26,11 +26,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -207,29 +205,33 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             final ParseInfo pi = new ParseInfo();
 
             int lineNumber = 0;
-            Stream<LineParser> parsers = Stream.of(LineParser.VERSION);
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
+            Iterable<LineParser> parsers = Collections.singleton(LineParser.VERSION);
+            nextLine:
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
-                final String l = line;
                 if (pi.file != null) {
                     break;
                 } else if (IGNORABLE_LINE.matcher(line).matches()) {
                     continue;
                 }
-                final Optional<LineParser> selected = parsers.filter(p -> p.canHandle(l)).findFirst();
-                if (selected.isPresent()) {
-                    try {
-                        selected.get().parse(line, pi);
-                    } catch (StringIndexOutOfBoundsException | IllegalArgumentException e) {
-                        throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber,
-                                source.getName(), line);
+                for (final LineParser candidate : parsers) {
+                    if (candidate.canHandle(line)) {
+                        try {
+                            candidate.parse(line, pi);
+                            parsers = candidate.allowedNext();
+                            continue nextLine;
+                        } catch (StringIndexOutOfBoundsException | IllegalArgumentException e) {
+                            throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber,
+                                                      source.getName(), line);
+                        }
                     }
-                    parsers = selected.get().allowedNext();
-                } else {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, source.getName(),
-                            line);
                 }
-            }
+
+                // no parsers found for this line
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, source.getName(),
+                                          line);
+
+                }
 
             if (pi.file != null) {
                 return pi.file;
@@ -384,8 +386,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(BEGIN_EPHEMERIS);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(BEGIN_EPHEMERIS);
             }
 
         },
@@ -399,8 +401,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -414,8 +416,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -437,8 +439,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -452,8 +454,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -467,8 +469,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -483,8 +485,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -498,8 +500,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -513,8 +515,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -528,8 +530,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(SEGMENT_BOUNDARY_TIME);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(SEGMENT_BOUNDARY_TIME);
             }
 
         },
@@ -543,8 +545,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(END_SEGMENT_BOUNDARY_TIMES, SEGMENT_BOUNDARY_TIME);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(END_SEGMENT_BOUNDARY_TIMES, SEGMENT_BOUNDARY_TIME);
             }
 
         },
@@ -558,8 +560,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return KEYWORDS.stream();
+            public Iterable<LineParser> allowedNext() {
+                return KEYWORDS;
             }
 
         },
@@ -573,8 +575,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(EPHEMERIS_TIME_POS_DATUM);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(EPHEMERIS_TIME_POS_DATUM);
             }
 
         },
@@ -597,8 +599,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(END_EPHEMERIS, EPHEMERIS_TIME_POS_DATUM);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(END_EPHEMERIS, EPHEMERIS_TIME_POS_DATUM);
             }
 
         },
@@ -612,8 +614,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(EPHEMERIS_TIME_POS_VEL_DATUM);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(EPHEMERIS_TIME_POS_VEL_DATUM);
             }
 
         },
@@ -639,8 +641,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(END_EPHEMERIS, EPHEMERIS_TIME_POS_VEL_DATUM);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(END_EPHEMERIS, EPHEMERIS_TIME_POS_VEL_DATUM);
             }
 
         },
@@ -654,8 +656,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(EPHEMERIS_TIME_POS_VEL_ACC_DATUM);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(EPHEMERIS_TIME_POS_VEL_ACC_DATUM);
             }
 
         },
@@ -685,8 +687,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(END_EPHEMERIS, EPHEMERIS_TIME_POS_VEL_ACC_DATUM);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(END_EPHEMERIS, EPHEMERIS_TIME_POS_VEL_ACC_DATUM);
             }
 
         },
@@ -700,8 +702,8 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             }
 
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of();
+            public Iterable<LineParser> allowedNext() {
+                return Collections.emptyList();
             }
 
         };
@@ -728,7 +730,7 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
          * Returns the allowed parsers for the next line.
          * @return returns the allowed parsers for the next line
          */
-        public abstract Stream<LineParser> allowedNext();
+        public abstract Iterable<LineParser> allowedNext();
 
         /**
          * Checks if a parser can handle line.

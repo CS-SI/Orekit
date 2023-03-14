@@ -33,7 +33,7 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
-import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -301,7 +301,7 @@ public class GPSPropagatorTest {
     @Test
     public void testPosition() {
         // Initial GPS orbital elements (Ref: IGS)
-        final GPSNavigationMessage goe = new GPSNavigationMessage();
+        final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage();
         goe.setPRN(7);
         goe.setWeek(0);
         goe.setTime(288000);

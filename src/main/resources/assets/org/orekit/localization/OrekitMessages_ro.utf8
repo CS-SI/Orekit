@@ -538,6 +538,9 @@ UNKNOWN_SATELLITE_SYSTEM = sistemul de sateliți {0} este necunoscut
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistem de timp necunoscut {0}
 
+# unknown UTC Id {0}
+UNKNOWN_UTC_ID = <MISSING TRANSLATION>
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tip de date de ceas necunoscut {0}
 

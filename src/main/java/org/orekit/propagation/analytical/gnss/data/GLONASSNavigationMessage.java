@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -205,19 +206,19 @@ public class GLONASSNavigationMessage extends AbstractEphemerisMessage implement
     }
 
     /** Set status flag.
-     * @param statusFlags status flag
+     * @param statusFlags status flag (parsed as a double)
      * @since 12.0
      */
-    public void setStatusFlags(final int statusFlags) {
-        this.statusFlags = statusFlags;
+    public void setStatusFlags(final double statusFlags) {
+        this.statusFlags = (int) FastMath.rint(statusFlags);
     }
 
     /** Set health flag.
-     * @param healthFlags health flag
+     * @param healthFlags health flag (parsed as a double)
      * @since 12.0
      */
-    public void setHealthFlags(final int healthFlags) {
-        this.healthFlags = healthFlags;
+    public void setHealthFlags(final double healthFlags) {
+        this.healthFlags = Double.isNaN(healthFlags) ? 15 : (int) FastMath.rint(healthFlags);
     }
 
     /** Get health flags.
@@ -241,7 +242,9 @@ public class GLONASSNavigationMessage extends AbstractEphemerisMessage implement
      * @since 12.0
      */
     public void setGroupDelayDifference(final double groupDelayDifference) {
-        this.groupDelayDifference = groupDelayDifference;
+        this.groupDelayDifference = Double.isNaN(groupDelayDifference) ?
+                                    0.999999999999e+09 :
+                                    groupDelayDifference;
     }
 
     /**

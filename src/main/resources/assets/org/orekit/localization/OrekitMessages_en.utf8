@@ -538,6 +538,9 @@ UNKNOWN_SATELLITE_SYSTEM = unknown satellite system {0}
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = unknown time system {0}
 
+# unknown UTC Id {0}
+UNKNOWN_UTC_ID = unknown UTC Id {0}
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = unknown clock data type {0}
 

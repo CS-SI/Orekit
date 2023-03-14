@@ -20,7 +20,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -32,7 +32,7 @@ import org.orekit.time.TimeScales;
 public class Rtcm1042Data extends RtcmEphemerisData {
 
     /** Beidou navigation message. */
-    private BeidouNavigationMessage beidouNavigationMessage;
+    private BeidouLegacyNavigationMessage beidouNavigationMessage;
 
     /** Beidou Time of clock. */
     private double beidouToc;
@@ -57,7 +57,7 @@ public class Rtcm1042Data extends RtcmEphemerisData {
      * @return the Beidou navigation message
      */
     @DefaultDataContext
-    public BeidouNavigationMessage getBeidouNavigationMessage() {
+    public BeidouLegacyNavigationMessage getBeidouNavigationMessage() {
         return getBeidouNavigationMessage(DataContext.getDefault().getTimeScales());
     }
 
@@ -72,7 +72,7 @@ public class Rtcm1042Data extends RtcmEphemerisData {
      * @param timeScales time scales to use for initializing epochs
      * @return the Beidou navigation message
      */
-    public BeidouNavigationMessage getBeidouNavigationMessage(final TimeScales timeScales) {
+    public BeidouLegacyNavigationMessage getBeidouNavigationMessage(final TimeScales timeScales) {
 
         // Satellite system
         final SatelliteSystem system = SatelliteSystem.BEIDOU;
@@ -94,7 +94,7 @@ public class Rtcm1042Data extends RtcmEphemerisData {
      * Set the Beidou navigation message.
      * @param beidouNavigationMessage the Beidou navigation message to set
      */
-    public void setBeidouNavigationMessage(final BeidouNavigationMessage beidouNavigationMessage) {
+    public void setBeidouNavigationMessage(final BeidouLegacyNavigationMessage beidouNavigationMessage) {
         this.beidouNavigationMessage = beidouNavigationMessage;
     }
 

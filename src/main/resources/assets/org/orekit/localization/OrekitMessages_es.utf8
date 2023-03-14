@@ -538,6 +538,9 @@ UNKNOWN_SATELLITE_SYSTEM = sistema de satélites desconocido {0}
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistema de tiempo desconocido {0}
 
+# unknown UTC Id {0}
+UNKNOWN_UTC_ID = <MISSING TRANSLATION>
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloj desconocido {0}
 

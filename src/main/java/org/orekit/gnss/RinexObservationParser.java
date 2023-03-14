@@ -19,13 +19,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -43,7 +43,7 @@ import org.orekit.time.TimeScales;
 /** Parser for Rinex measurements files.
  * <p>
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
- * 3.00, 3.01, 3.02, 3.03, 3.04, and 3.05.
+ * 3.00, 3.01, 3.02, 3.03, 3.04, 3.05, and 4.00.
  * </p>
  * @see <a href="https://files.igs.org/pub/data/format/rinex2.pdf">rinex 2.0</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex210.pdf">rinex 2.10</a>
@@ -56,6 +56,7 @@ import org.orekit.time.TimeScales;
  * @see <a href="https://files.igs.org/pub/data/format/rinex303.pdf">rinex 3.03</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex304.pdf">rinex 3.04</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex305.pdf">rinex 3.05</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_4.00.pdf">rinex 4.00</a>
  * @since 12.0
  */
 public class RinexObservationParser {
@@ -119,32 +120,36 @@ public class RinexObservationParser {
      */
     public List<ObservationDataSet> parse(final DataSource source) {
 
-        Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
+        Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
 
         // placeholders for parsed data
         final ParseInfo parseInfo = new ParseInfo(source.getName());
 
         try (Reader reader = source.getOpener().openReaderOnce();
-             BufferedReader br = new BufferedReader(reader)) {
+                        BufferedReader br = new BufferedReader(reader)) {
             ++parseInfo.lineNumber;
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
-                final String l = line;
-                final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle.test(l)).findFirst();
-                if (selected.isPresent()) {
-                    try {
-                        selected.get().parsingMethod.parse(line, parseInfo);
-                    } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                        throw new OrekitException(e,
-                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  parseInfo.lineNumber, source.getName(), line);
+            nextLine:
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    for (final LineParser candidate : candidateParsers) {
+                        if (candidate.canHandle.test(line)) {
+                            try {
+                                candidate.parsingMethod.parse(line, parseInfo);
+                                ++parseInfo.lineNumber;
+                                candidateParsers = candidate.allowedNextProvider.apply(parseInfo);
+                                continue nextLine;
+                            } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                                throw new OrekitException(e,
+                                                          OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          parseInfo.lineNumber, source.getName(), line);
+                            }
+                        }
                     }
-                    ++parseInfo.lineNumber;
-                    candidateParsers = selected.get().allowedNextProvider.apply(parseInfo);
-                } else {
+
+                    // no parsers found for this line
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               parseInfo.lineNumber, source.getName(), line);
+
                 }
-            }
         } catch (IOException ioe) {
             throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
@@ -961,7 +966,28 @@ public class RinexObservationParser {
                                parseInfo.observations.clear();
 
                            },
-                           parseInfo -> Stream.of(RINEX_3_OBSERVATION)),
+                           parseInfo -> Collections.singleton(RINEX_3_OBSERVATION)),
+
+        /** Parser for DOI.
+         * @since 12.0
+         */
+        HEADER_DOI(line -> RinexUtils.matchesLabel(line, "DOI"),
+                   (line, parseInfo) -> parseInfo.header.setDoi(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                   LineParser::headerNext),
+
+        /** Parser for license.
+         * @since 12.0
+         */
+        HEADER_LICENSE(line -> RinexUtils.matchesLabel(line, "LICENSE OF USE"),
+                       (line, parseInfo) -> parseInfo.header.setLicense(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                       LineParser::headerNext),
+
+        /** Parser for stationInformation.
+         * @since 12.0
+         */
+        HEADER_STATION_INFORMATION(line -> RinexUtils.matchesLabel(line, "STATION INFORMATION"),
+                                   (line, parseInfo) -> parseInfo.header.setStationInformation(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                                   LineParser::headerNext),
 
         /** Parser for the end of header. */
         HEADER_END(line -> RinexUtils.matchesLabel(line, "END OF HEADER"),
@@ -993,7 +1019,7 @@ public class RinexObservationParser {
                                            Double.isNaN(parseInfo.header.getAntennaHeight())  ||
                                            parseInfo.header.getTFirstObs()            == null ||
                                            parseInfo.mapTypeObs.isEmpty()                     ||
-                                           version >= 3.01 && parseInfo.header.getPhaseShiftCorrections().isEmpty()) {
+                                           version >= 3.01 && version < 4.0 && parseInfo.header.getPhaseShiftCorrections().isEmpty()) {
                                throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);
                            }
                        }
@@ -1008,7 +1034,7 @@ public class RinexObservationParser {
         private final ParsingMethod parsingMethod;
 
         /** Provider for next line parsers. */
-        private final Function<ParseInfo, Stream<LineParser>> allowedNextProvider;
+        private final Function<ParseInfo, Iterable<LineParser>> allowedNextProvider;
 
         /** Simple constructor.
          * @param canHandle predicate for identifying lines that can be parsed
@@ -1016,7 +1042,7 @@ public class RinexObservationParser {
          * @param allowedNextProvider supplier for allowed parsers for next line
          */
         LineParser(final Predicate<String> canHandle, final ParsingMethod parsingMethod,
-                   final Function<ParseInfo, Stream<LineParser>> allowedNextProvider) {
+                   final Function<ParseInfo, Iterable<LineParser>> allowedNextProvider) {
             this.canHandle           = canHandle;
             this.parsingMethod       = parsingMethod;
             this.allowedNextProvider = allowedNextProvider;
@@ -1026,7 +1052,7 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> commentNext(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> commentNext(final ParseInfo parseInfo) {
             return parseInfo.headerCompleted ? headerEndNext(parseInfo) : headerNext(parseInfo);
         }
 
@@ -1034,22 +1060,35 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> headerNext(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> headerNext(final ParseInfo parseInfo) {
             if (parseInfo.header.getFormatVersion() < 3) {
-                return Stream.of(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
-                                 REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
-                                 ANTENNA_DELTA_X_Y_Z, ANTENNA_B_SIGHT_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES,
-                                 WAVELENGTH_FACT_L1_2, RCV_CLOCK_OFFS_APPL, INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS,
-                                 LEAP_SECONDS, PRN_NB_OF_OBS, TYPES_OF_OBSERV, OBS_SCALE_FACTOR, HEADER_END);
+                // Rinex 2.x header entries
+                return Arrays.asList(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
+                                     REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
+                                     ANTENNA_DELTA_X_Y_Z, ANTENNA_B_SIGHT_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES,
+                                     WAVELENGTH_FACT_L1_2, RCV_CLOCK_OFFS_APPL, INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS,
+                                     LEAP_SECONDS, PRN_NB_OF_OBS, TYPES_OF_OBSERV, OBS_SCALE_FACTOR, HEADER_END);
+            } else if (parseInfo.header.getFormatVersion() < 4) {
+                // Rinex 3.x header entries
+                return Arrays.asList(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
+                                     REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
+                                     ANTENNA_DELTA_X_Y_Z, ANTENNA_PHASECENTER, ANTENNA_B_SIGHT_XYZ, ANTENNA_ZERODIR_AZI,
+                                     ANTENNA_ZERODIR_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES, RCV_CLOCK_OFFS_APPL,
+                                     INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS, LEAP_SECONDS, PRN_NB_OF_OBS,
+                                     TYPES_OF_OBSERV, SIGNAL_STRENGTH_UNIT, SYS_DCBS_APPLIED,
+                                     SYS_PCVS_APPLIED, SYS_SCALE_FACTOR, SYS_PHASE_SHIFT,
+                                     GLONASS_SLOT_FRQ_NB, GLONASS_COD_PHS_BIS, HEADER_END);
             } else {
-                return Stream.of(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
-                                 REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
-                                 ANTENNA_DELTA_X_Y_Z, ANTENNA_PHASECENTER, ANTENNA_B_SIGHT_XYZ, ANTENNA_ZERODIR_AZI,
-                                 ANTENNA_ZERODIR_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES, RCV_CLOCK_OFFS_APPL,
-                                 INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS, LEAP_SECONDS, PRN_NB_OF_OBS,
-                                 TYPES_OF_OBSERV, SIGNAL_STRENGTH_UNIT, SYS_DCBS_APPLIED,
-                                 SYS_PCVS_APPLIED, SYS_SCALE_FACTOR, SYS_PHASE_SHIFT,
-                                 GLONASS_SLOT_FRQ_NB, GLONASS_COD_PHS_BIS, HEADER_END);
+                // Rinex 4.x header entries
+                return Arrays.asList(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
+                                     REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
+                                     ANTENNA_DELTA_X_Y_Z, ANTENNA_PHASECENTER, ANTENNA_B_SIGHT_XYZ, ANTENNA_ZERODIR_AZI,
+                                     ANTENNA_ZERODIR_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES, RCV_CLOCK_OFFS_APPL,
+                                     INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS, LEAP_SECONDS, PRN_NB_OF_OBS,
+                                     TYPES_OF_OBSERV, SIGNAL_STRENGTH_UNIT, SYS_DCBS_APPLIED,
+                                     SYS_PCVS_APPLIED, SYS_SCALE_FACTOR, SYS_PHASE_SHIFT,
+                                     GLONASS_SLOT_FRQ_NB, GLONASS_COD_PHS_BIS,
+                                     HEADER_DOI, HEADER_LICENSE, HEADER_STATION_INFORMATION, HEADER_END);
             }
         }
 
@@ -1057,19 +1096,18 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> headerEndNext(final ParseInfo parseInfo) {
-            return Stream.of(parseInfo.header.getFormatVersion() < 3 ?
-                             RINEX_2_DATA_FIRST :
-                             RINEX_3_DATA_FIRST);
+        private static Iterable<LineParser> headerEndNext(final ParseInfo parseInfo) {
+            return Collections.singleton(parseInfo.header.getFormatVersion() < 3 ?
+                                         RINEX_2_DATA_FIRST : RINEX_3_DATA_FIRST);
         }
 
         /** Get the allowed parsers for next lines while parsing types of observations.
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> headerNbTypesObs(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> headerNbTypesObs(final ParseInfo parseInfo) {
             if (parseInfo.typesObs.size() < parseInfo.nbTypes) {
-                return Stream.of(COMMENT, TYPES_OF_OBSERV);
+                return Arrays.asList(COMMENT, TYPES_OF_OBSERV);
             } else {
                 return headerNext(parseInfo);
             }
@@ -1079,9 +1117,9 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> headerPhaseShift(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> headerPhaseShift(final ParseInfo parseInfo) {
             if (parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat) {
-                return Stream.of(COMMENT, SYS_PHASE_SHIFT);
+                return Arrays.asList(COMMENT, SYS_PHASE_SHIFT);
             } else {
                 return headerNext(parseInfo);
             }
@@ -1091,13 +1129,13 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> first2(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> first2(final ParseInfo parseInfo) {
             if (parseInfo.specialRecord) {
-                return Stream.of(RINEX_2_IGNORED_SPECIAL_RECORD);
+                return Collections.singleton(RINEX_2_IGNORED_SPECIAL_RECORD);
             } else if (parseInfo.satObs.size() < parseInfo.nbSatObs) {
-                return Stream.of(RINEX_2_DATA_SAT_LIST);
+                return Collections.singleton(RINEX_2_DATA_SAT_LIST);
             } else {
-                return Stream.of(RINEX_2_OBSERVATION);
+                return Collections.singleton(RINEX_2_OBSERVATION);
             }
         }
 
@@ -1105,11 +1143,11 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> ignore2(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> ignore2(final ParseInfo parseInfo) {
             if (parseInfo.lineNumber < parseInfo.nextObsStartLineNumber) {
-                return Stream.of(RINEX_2_IGNORED_SPECIAL_RECORD);
+                return Collections.singleton(RINEX_2_IGNORED_SPECIAL_RECORD);
             } else {
-                return Stream.of(COMMENT, RINEX_2_DATA_FIRST);
+                return Arrays.asList(COMMENT, RINEX_2_DATA_FIRST);
             }
         }
 
@@ -1117,11 +1155,11 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> observation2(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> observation2(final ParseInfo parseInfo) {
             if (parseInfo.lineNumber < parseInfo.nextObsStartLineNumber) {
-                return Stream.of(RINEX_2_OBSERVATION);
+                return Collections.singleton(RINEX_2_OBSERVATION);
             } else {
-                return Stream.of(COMMENT, RINEX_2_DATA_FIRST);
+                return Arrays.asList(COMMENT, RINEX_2_DATA_FIRST);
             }
         }
 
@@ -1129,11 +1167,11 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          * @return allowed parsers for next line
          */
-        private static Stream<LineParser> observation3(final ParseInfo parseInfo) {
+        private static Iterable<LineParser> observation3(final ParseInfo parseInfo) {
             if (parseInfo.lineNumber < parseInfo.nextObsStartLineNumber) {
-                return Stream.of(RINEX_3_OBSERVATION);
+                return Collections.singleton(RINEX_3_OBSERVATION);
             } else {
-                return Stream.of(COMMENT, RINEX_3_DATA_FIRST);
+                return Arrays.asList(COMMENT, RINEX_3_DATA_FIRST);
             }
         }
 

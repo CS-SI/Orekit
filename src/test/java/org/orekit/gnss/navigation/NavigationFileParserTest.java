@@ -18,6 +18,7 @@ package org.orekit.gnss.navigation;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -28,21 +29,30 @@ import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
+import org.orekit.gnss.Frequency;
 import org.orekit.gnss.RinexFileType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.SbasId;
+import org.orekit.gnss.TimeSystem;
+import org.orekit.gnss.UtcId;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.SBASPropagator;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
-import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -51,6 +61,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.units.Unit;
 
 public class NavigationFileParserTest {
 
@@ -95,14 +106,14 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(2, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
 
-        final GPSNavigationMessage gps = file.getGPSNavigationMessages("G13").get(0);
+        final GPSLegacyNavigationMessage gps = file.getGPSLegacyNavigationMessages("G13").get(0);
         Assertions.assertEquals(0.0, gps.getEpochToc().durationFrom(new AbsoluteDate(1999, 9, 2, 19, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(0.490025617182e-03,  gps.getAf0(), 1.0e-15);
         Assertions.assertEquals(0.204636307899e-11,  gps.getAf1(), 1.0e-15);
@@ -147,6 +158,64 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testGpsRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_GPS_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("Manual",                             file.getHeader().getProgramName());
+        Assertions.assertEquals("Orekit",                             file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.xxxx",            file.getHeader().getDoi());
+        Assertions.assertEquals("Apache V2",                          file.getHeader().getLicense());
+        Assertions.assertEquals("not really a station",               file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(1, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(1, file.getGPSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSystemTimeOffsets().size());
+        Assertions.assertEquals(0, file.getEarthOrientationParameters().size());
+        Assertions.assertEquals(0, file.getKlobucharMessages().size());
+        Assertions.assertEquals(0, file.getNequickGMessages().size());
+        Assertions.assertEquals(0, file.getBDGIMMessages().size());
+
+        final GPSLegacyNavigationMessage gpsL = file.getGPSLegacyNavigationMessages("G01").get(0);
+        Assertions.assertEquals(0.0, gpsL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0, gpsL.getSvHealth());
+        Assertions.assertEquals(4, gpsL.getFitInterval());
+
+        final List<GPSCivilianNavigationMessage> list = file.getGPSCivilianNavigationMessages("G01");
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertEquals(0.0, list.get(0).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(-6, list.get(0).getUraiNed0());
+        Assertions.assertEquals( 2, list.get(0).getUraiNed1());
+        Assertions.assertEquals( 7, list.get(0).getUraiNed2());
+        Assertions.assertEquals(-1, list.get(0).getUraiEd());
+        Assertions.assertEquals(-3.492459654808e-10, list.get(0).getIscL1CA(), 1.0e-20);
+        Assertions.assertEquals(-2.823071554303e-09, list.get(0).getIscL2C(),  1.0e-20);
+        Assertions.assertEquals(6.810296326876e-09,  list.get(0).getIscL5I5(), 1.0e-20);
+        Assertions.assertEquals(6.897607818246e-09,  list.get(0).getIscL5Q5(), 1.0e-20);
+        Assertions.assertEquals(259206.0, list.get(0).getTransmissionTime(), 1.0e-10);
+        Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 3, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+
+    }
+
+    @Test
     public void testSBASRinex301() throws URISyntaxException, IOException {
 
         // Parse file
@@ -165,12 +234,15 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(2, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
         final SBASNavigationMessage sbas = file.getSBASNavigationMessages("S27").get(0);
         // BEWARE! in Rinex 3.01, the time scale for SBAS navigation is UTC
@@ -229,14 +301,14 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(2, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(2, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
-        final BeidouNavigationMessage bdt = file.getBeidouNavigationMessages("C02").get(0);
+        final BeidouLegacyNavigationMessage bdt = file.getBeidouLegacyNavigationMessages("C02").get(0);
         Assertions.assertEquals(0.0, bdt.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 22, 22, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertEquals(4.916836041957e-04,  bdt.getAf0(), 1.0e-15);
         Assertions.assertEquals(-3.058442388237e-11, bdt.getAf1(), 1.0e-15);
@@ -281,6 +353,95 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testBeidouRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_Beidou_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(2, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(1, file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
+
+        final BeidouLegacyNavigationMessage bdtL = file.getBeidouLegacyNavigationMessages().get("C06").get(0);
+        Assertions.assertEquals(0.0, bdtL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+
+        final List<BeidouCivilianNavigationMessage> list = file.getBeidouCivilianNavigationMessages("C19");
+        Assertions.assertEquals(6, list.size());
+        Assertions.assertEquals(0.0, list.get(0).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(Frequency.B1C, list.get(0).getSignal());
+        Assertions.assertEquals(-1.139640808105e-02, list.get(0).getADot(),       1.0e-15);
+        Assertions.assertEquals(-1.300156250000e+02, list.get(0).getCrs(),        1.0e-15);
+        Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN(),     1.0e-15);
+        Assertions.assertEquals(-8.439895553698e-01, list.get(0).getM0(),         1.0e-15);
+        Assertions.assertEquals(-6.432645022869e-06, list.get(0).getCuc(),        1.0e-15);
+        Assertions.assertEquals(5.305649829097e-04,  list.get(0).getE(),          1.0e-15);
+        Assertions.assertEquals(8.089467883110e-06,  list.get(0).getCus(),        1.0e-15);
+        Assertions.assertEquals(5.282638737345e+03,  list.get(0).getSqrtA(),      1.0e-15);
+        Assertions.assertEquals(2.592000000000e+05,  list.get(0).getTime(),       1.0e-15);
+        Assertions.assertEquals(-4.377216100693e-08, list.get(0).getCic(),        1.0e-15);
+        Assertions.assertEquals(1.698788226948e+00,  list.get(0).getOmega0(),     1.0e-15);
+        Assertions.assertEquals(-1.303851604462e-08, list.get(0).getCis(),        1.0e-15);
+        Assertions.assertEquals(9.703601465722e-01,  list.get(0).getI0(),         1.0e-15);
+        Assertions.assertEquals(2.000742187500e+02,  list.get(0).getCrc(),        1.0e-15);
+        Assertions.assertEquals(-1.021547253715e+00, list.get(0).getPa(),         1.0e-15);
+        Assertions.assertEquals(-6.782425372384e-09, list.get(0).getOmegaDot(),   1.0e-15);
+        Assertions.assertEquals(-8.911085468192e-11, list.get(0).getIDot(),       1.0e-15);
+        Assertions.assertEquals(9.367106834964e-14,  list.get(0).getDeltaN0Dot(), 1.0e-15);
+        Assertions.assertEquals(BeidouSatelliteType.MEO, list.get(0).getSatelliteType());
+        Assertions.assertEquals(2.592000000000e+05,  list.get(0).getTime(),       1.0e-15);
+        Assertions.assertEquals( 0, list.get(0).getSisaiOe());
+        Assertions.assertEquals(-5, list.get(0).getSisaiOcb());
+        Assertions.assertEquals(-1, list.get(0).getSisaiOc1());
+        Assertions.assertEquals(-1, list.get(0).getSisaiOc2());
+        Assertions.assertEquals(-8.731149137020e-10, list.get(0).getIscB1CD(),    1.0e-15);
+        Assertions.assertEquals(0.0,                 list.get(0).getIscB2AD(),    1.0e-15);
+        Assertions.assertEquals(9.487848728895e-09,  list.get(0).getTgdB1Cp(),    1.0e-15);
+        Assertions.assertEquals(-5.820766091347e-09, list.get(0).getTgdB2ap(),    1.0e-15);
+        Assertions.assertEquals(-1, list.get(0).getSismai());
+        Assertions.assertEquals(0, list.get(0).getHealth());
+        Assertions.assertEquals(0, list.get(0).getIntegrityFlags());
+        Assertions.assertEquals(16, list.get(0).getIODC());
+        Assertions.assertEquals(259200.0, list.get(0).getTransmissionTime(), 1.0e-10);
+        Assertions.assertEquals(16, list.get(0).getIODE());
+
+        Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(Frequency.B1C, list.get(1).getSignal());
+        Assertions.assertEquals(0.0, list.get(2).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(Frequency.B2A, list.get(2).getSignal());
+        Assertions.assertEquals(0.0,                 list.get(2).getIscB1CD(),    1.0e-15);
+        Assertions.assertEquals(-2.735760062933e-09, list.get(2).getIscB2AD(),    1.0e-15);
+        Assertions.assertEquals(0.0, list.get(3).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(Frequency.B2A, list.get(3).getSignal());
+        Assertions.assertEquals(0.0, list.get(4).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(Frequency.B2B, list.get(4).getSignal());
+        Assertions.assertEquals(0.0, list.get(5).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
+        Assertions.assertEquals(Frequency.B2B, list.get(5).getSignal());
+
+    }
+
+    @Test
     public void testGalileoRinex302() throws URISyntaxException, IOException {
 
         // Parse file
@@ -312,12 +473,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(2, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
         final GalileoNavigationMessage gal = file.getGalileoNavigationMessages("E08").get(3);
         Assertions.assertEquals(0.0, gal.getEpochToc().durationFrom(new AbsoluteDate(2016, 4, 26, 5, 50, 0, TimeScalesFactory.getGST())), Double.MIN_VALUE);
@@ -365,6 +526,44 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testGalileoRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_Galileo_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(1, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
+
+        final GalileoNavigationMessage galL = file.getGalileoNavigationMessages().get("E01").get(0);
+        Assertions.assertEquals(0.0, galL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(516, galL.getDataSource());
+
+    }
+
+    @Test
     public void testQZSSRinex302() throws URISyntaxException, IOException {
 
         final String ex = "/gnss/navigation/Example_QZSS_Rinex302.n";
@@ -398,14 +597,14 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(3, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(3, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
-        final QZSSNavigationMessage qzs = file.getQZSSNavigationMessages("J07").get(0);
+        final QZSSLegacyNavigationMessage qzs = file.getQZSSLegacyNavigationMessages("J07").get(0);
         Assertions.assertEquals(0.0, qzs.getEpochToc().durationFrom(new AbsoluteDate(2020, 6, 9, 0, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
         Assertions.assertEquals(-0.214204192162e-07, qzs.getAf0(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  qzs.getAf1(), 1.0e-15);
@@ -453,6 +652,59 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testQZSSRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_QZSS_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(1, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(1, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
+
+        final QZSSLegacyNavigationMessage qzssl = file.getQZSSLegacyNavigationMessages("J02").get(0);
+        Assertions.assertEquals(0.0, qzssl.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
+        Assertions.assertEquals(0, qzssl.getSvHealth());
+        Assertions.assertEquals(0, qzssl.getFitInterval());
+
+        final List<QZSSCivilianNavigationMessage> list = file.getQZSSCivilianNavigationMessages("J02");
+        Assertions.assertEquals(4, list.size());
+        Assertions.assertEquals(0.0, list.get(0).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+        Assertions.assertEquals(-3, list.get(0).getUraiNed0());
+        Assertions.assertEquals( 0, list.get(0).getUraiNed1());
+        Assertions.assertEquals( 0, list.get(0).getUraiNed2());
+        Assertions.assertEquals(-8, list.get(0).getUraiEd());
+        Assertions.assertEquals( 0.000000000000e+00, list.get(0).getIscL1CA(), 1.0e-20);
+        Assertions.assertEquals(-3.783497959375e-10, list.get(0).getIscL2C(),  1.0e-20);
+        Assertions.assertEquals(1.600710675120e-09,  list.get(0).getIscL5I5(), 1.0e-20);
+        Assertions.assertEquals(1.688022166491e-09,  list.get(0).getIscL5Q5(), 1.0e-20);
+        Assertions.assertEquals(255606.0, list.get(0).getTransmissionTime(), 1.0e-10);
+        Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+
+    }
+
+    @Test
     public void testGLONASSRinex303() throws URISyntaxException, IOException {
 
         // Parse file
@@ -478,12 +730,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(3, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
         final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R02").get(0);
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
@@ -533,12 +785,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(3, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
         final IRNSSNavigationMessage irnss = file.getIRNSSNavigationMessages("I05").get(0);
         Assertions.assertEquals(0.0, irnss.getEpochToc().durationFrom(new AbsoluteDate(2019, 10, 27, 0, 0, 0, TimeScalesFactory.getIRNSS())), Double.MIN_VALUE);
@@ -585,6 +837,42 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testIRNSSRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_IRNSS_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(1, file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
+
+        final IRNSSNavigationMessage irnL = file.getIRNSSNavigationMessages().get("I02").get(0);
+        Assertions.assertEquals(0.0, irnL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 5, 36, TimeScalesFactory.getIRNSS())), Double.MIN_VALUE);
+    }
+
+    @Test
     public void testMixedRinex304() throws URISyntaxException, IOException {
 
         // Parse file
@@ -619,12 +907,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(2, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(2, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(1, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(2, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
 
         final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R05").get(0);
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2020, 2, 10, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
@@ -675,12 +963,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(2, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(2, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
 
         final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R01").get(0);
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2006, 10, 1, 0, 15, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
@@ -724,14 +1012,14 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(3, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(3, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
-        final QZSSNavigationMessage qzs = file.getQZSSNavigationMessages("J03").get(0);
+        final QZSSLegacyNavigationMessage qzs = file.getQZSSLegacyNavigationMessages("J03").get(0);
         Assertions.assertEquals(0.0, qzs.getEpochToc().durationFrom(new AbsoluteDate(2020, 6, 9, 1, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
         Assertions.assertEquals(-3.880355507135e-06, qzs.getAf0(), 1.0e-15);
         Assertions.assertEquals(-4.547473508865e-13, qzs.getAf1(), 1.0e-15);
@@ -811,14 +1099,14 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(3, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(3, file.getGPSLegacyNavigationMessages().size());
 
-        final GPSNavigationMessage gps = file.getGPSNavigationMessages("G01").get(0);
+        final GPSLegacyNavigationMessage gps = file.getGPSLegacyNavigationMessages("G01").get(0);
         Assertions.assertEquals(0.0, gps.getEpochToc().durationFrom(new AbsoluteDate(2021, 3, 5, 23, 59, 44, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(7.477793842554E-04,  gps.getAf0(), 1.0e-15);
         Assertions.assertEquals(-8.412825991400E-12, gps.getAf1(), 1.0e-15);
@@ -841,7 +1129,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-1.053615315878E-10, gps.getIDot(), 1.0e-15);
         Assertions.assertEquals(2147,                gps.getWeek());
         Assertions.assertEquals(2.000000000000E+00,  gps.getSvAccuracy(), 1.0e-15);
-        Assertions.assertEquals(0.000000000000e+00,  gps.getSvHealth(), 1.0e-15);
+        Assertions.assertEquals(0,                   gps.getSvHealth());
         Assertions.assertEquals(4.656612873077E-09,  gps.getTGD(), 1.0e-15);
         Assertions.assertEquals(9,                   gps.getIODC());
 
@@ -890,12 +1178,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(1, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
         final GalileoNavigationMessage gal = file.getGalileoNavigationMessages("E13").get(1);
         Assertions.assertEquals(0.0, gal.getEpochToc().durationFrom(new AbsoluteDate(2021, 3, 5, 22, 30, 0, TimeScalesFactory.getGST())), Double.MIN_VALUE);
@@ -964,12 +1252,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(3, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
         final SBASNavigationMessage sbas = file.getSBASNavigationMessages("S36").get(0);
         Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 58, 56.0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
@@ -1011,6 +1299,42 @@ public class NavigationFileParserTest {
 
     }
 
+    @Test
+    public void testSBASRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_SBAS_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(1, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
+
+        final SBASNavigationMessage sbas = file.getSBASNavigationMessages().get("S22").get(0);
+        Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 32, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
+
+    }
 
     @Test
     public void testIRNSSRinex304() throws URISyntaxException, IOException {
@@ -1031,12 +1355,12 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(0, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(2, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
         final IRNSSNavigationMessage irnss = file.getIRNSSNavigationMessages("I05").get(0);
         Assertions.assertEquals(0.0, irnss.getEpochToc().durationFrom(new AbsoluteDate(2021, 3, 7, 0, 0, 0, TimeScalesFactory.getIRNSS())), Double.MIN_VALUE);
@@ -1101,14 +1425,14 @@ public class NavigationFileParserTest {
 
         // Verify data
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
-        Assertions.assertEquals(0, file.getQZSSNavigationMessages().size());
-        Assertions.assertEquals(1, file.getBeidouNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(1, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getIRNSSNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
-        Assertions.assertEquals(0, file.getGPSNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
 
-        final BeidouNavigationMessage bdt = file.getBeidouNavigationMessages("C19").get(0);
+        final BeidouLegacyNavigationMessage bdt = file.getBeidouLegacyNavigationMessages("C19").get(0);
         Assertions.assertEquals(0.0, bdt.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 23, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
         Assertions.assertEquals(7.378066657111e-04,  bdt.getAf0(), 1.0e-15);
         Assertions.assertEquals(1.382893799473e-11,  bdt.getAf1(), 1.0e-15);
@@ -1153,6 +1477,293 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testStoRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_Sto_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSCivilianNavigationMessages().size());
+        Assertions.assertEquals(16, file.getSystemTimeOffsets().size());
+        Assertions.assertEquals(0,  file.getEarthOrientationParameters().size());
+        Assertions.assertEquals(0,  file.getKlobucharMessages().size());
+        Assertions.assertEquals(0,  file.getNequickGMessages().size());
+        Assertions.assertEquals(0,  file.getBDGIMMessages().size());
+
+        List<SystemTimeOffsetMessage> list = file.getSystemTimeOffsets();
+        Assertions.assertEquals(SatelliteSystem.BEIDOU, list.get(0).getSystem());
+        Assertions.assertEquals(35, list.get(0).getPrn());
+        Assertions.assertEquals("CNVX", list.get(0).getNavigationMessageType());
+        Assertions.assertEquals(TimeSystem.BEIDOU, list.get(0).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GALILEO, list.get(0).getReferenceTimeSystem());
+        Assertions.assertNull(list.get(0).getSbasId());
+        Assertions.assertNull(list.get(0).getUtcId());
+        Assertions.assertEquals(0.0,
+                                list.get(0).getReferenceEpoch().durationFrom(new AbsoluteDate(2022, 10, 4, 23, 20, 0.0,
+                                                                                              TimeScalesFactory.getBDT())),
+                                1.0e-15);
+        Assertions.assertEquals(259230.0,            list.get( 0).getTransmissionTime(), 1.0e-15);
+        Assertions.assertEquals(-2.657179720700e-08, list.get( 0).getA0(), 1.0e-17);
+        Assertions.assertEquals( 4.884981308351e-14, list.get( 0).getA1(), 1.0e-23);
+        Assertions.assertEquals( 2.066760391300e-19, list.get( 0).getA2(), 1.0e-28);
+
+        Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 1).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 1).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 2).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 2).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.BEIDOU,   list.get( 3).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get( 3).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.NTSC,          list.get( 3).getUtcId());
+        Assertions.assertEquals(TimeSystem.GALILEO,  list.get( 4).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 4).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 5).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 5).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 6).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 6).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 7).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get( 7).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.SU,            list.get( 7).getUtcId());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get( 8).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get( 8).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.USNO,          list.get( 8).getUtcId());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get( 9).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GLONASS,  list.get( 9).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get(10).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get(10).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get(11).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(11).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.IRN,           list.get(11).getUtcId());
+        Assertions.assertEquals(TimeSystem.IRNSS,    list.get(12).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(12).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.IRN,           list.get(12).getUtcId());
+        Assertions.assertEquals(TimeSystem.QZSS,     list.get(13).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.GPS,      list.get(13).getReferenceTimeSystem());
+        Assertions.assertEquals(TimeSystem.QZSS,     list.get(14).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(14).getReferenceTimeSystem());
+        Assertions.assertEquals(UtcId.NICT,          list.get(14).getUtcId());
+        Assertions.assertEquals(TimeSystem.SBAS,     list.get(15).getDefinedTimeSystem());
+        Assertions.assertEquals(TimeSystem.UTC,      list.get(15).getReferenceTimeSystem());
+        Assertions.assertEquals(SbasId.EGNOS,        list.get(15).getSbasId());
+        Assertions.assertEquals(UtcId.OP,            list.get(15).getUtcId());
+
+    }
+
+    @Test
+    public void testEopRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_Eop_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getSystemTimeOffsets().size());
+        Assertions.assertEquals(3,  file.getEarthOrientationParameters().size());
+        Assertions.assertEquals(0,  file.getKlobucharMessages().size());
+        Assertions.assertEquals(0,  file.getNequickGMessages().size());
+        Assertions.assertEquals(0,  file.getBDGIMMessages().size());
+
+        List<EarthOrientationParameterMessage> list = file.getEarthOrientationParameters();
+
+        Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSystem());
+        Assertions.assertEquals(15, list.get(0).getPrn());
+        Assertions.assertEquals("CNVX", list.get(0).getNavigationMessageType());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2022, 10, 6, 16, 38, 24.0, TimeScalesFactory.getGPS()).durationFrom(list.get(0).getReferenceEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals( 2.734127044678e-01, Unit.ARC_SECOND.fromSI(list.get(0).getXp()),            1.0e-10);
+        Assertions.assertEquals(-1.487731933594e-03, Unit.parse("as/d").fromSI(list.get(0).getXpDot()),      1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("as/d²").fromSI(list.get(0).getXpDotDot()),   1.0e-10);
+        Assertions.assertEquals( 2.485857009888e-01, Unit.ARC_SECOND.fromSI(list.get(0).getYp()),            1.0e-10);
+        Assertions.assertEquals(-1.955032348633e-03, Unit.parse("as/d").fromSI(list.get(0).getYpDot()),      1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("as/d²").fromSI(list.get(0).getYpDotDot()),  1.0e-10);
+        Assertions.assertEquals(259728.0,            Unit.SECOND.fromSI(list.get(0).getTransmissionTime()),  1.0e-10);
+        Assertions.assertEquals(-3.280282020569e-03, Unit.SECOND.fromSI(list.get(0).getDut1()),              1.0e-10);
+        Assertions.assertEquals( 1.151263713837e-04, Unit.parse("s/d").fromSI(list.get(0).getDut1Dot()),     1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("s/d²").fromSI(list.get(0).getDut1DotDot()), 1.0e-10);
+
+        Assertions.assertEquals(SatelliteSystem.QZSS, list.get(1).getSystem());
+        Assertions.assertEquals(4, list.get(1).getPrn());
+        Assertions.assertEquals("CNVX", list.get(1).getNavigationMessageType());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2022, 10, 6, 0, 0, 0.0, TimeScalesFactory.getQZSS()).durationFrom(list.get(1).getReferenceEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals( 2.723026275635e-01, Unit.ARC_SECOND.fromSI(list.get(1).getXp()),            1.0e-10);
+        Assertions.assertEquals(-2.049922943115e-03, Unit.parse("as/d").fromSI(list.get(1).getXpDot()),      1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("as/d²").fromSI(list.get(1).getXpDotDot()),   1.0e-10);
+        Assertions.assertEquals( 2.491779327393e-01, Unit.ARC_SECOND.fromSI(list.get(1).getYp()),            1.0e-10);
+        Assertions.assertEquals(-1.977920532227e-03, Unit.parse("as/d").fromSI(list.get(1).getYpDot()),      1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("as/d²").fromSI(list.get(1).getYpDotDot()),  1.0e-10);
+        Assertions.assertEquals(342186.0,            Unit.SECOND.fromSI(list.get(1).getTransmissionTime()),  1.0e-10);
+        Assertions.assertEquals(-3.003299236298e-03, Unit.SECOND.fromSI(list.get(1).getDut1()),              1.0e-10);
+        Assertions.assertEquals( 2.534389495850e-04, Unit.parse("s/d").fromSI(list.get(1).getDut1Dot()),     1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("s/d²").fromSI(list.get(1).getDut1DotDot()), 1.0e-10);
+
+        Assertions.assertEquals(SatelliteSystem.IRNSS, list.get(2).getSystem());
+        Assertions.assertEquals(3, list.get(2).getPrn());
+        Assertions.assertEquals("LNAV", list.get(2).getNavigationMessageType());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2022, 10, 5, 0, 0, 0.0, TimeScalesFactory.getIRNSS()).durationFrom(list.get(2).getReferenceEpoch()),
+                                1.0e-15);
+        Assertions.assertEquals( 2.751779556274e-01, Unit.ARC_SECOND.fromSI(list.get(2).getXp()),            1.0e-10);
+        Assertions.assertEquals(-1.739501953125e-03, Unit.parse("as/d").fromSI(list.get(2).getXpDot()),      1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("as/d²").fromSI(list.get(2).getXpDotDot()),   1.0e-10);
+        Assertions.assertEquals( 2.516956329346e-01, Unit.ARC_SECOND.fromSI(list.get(2).getYp()),            1.0e-10);
+        Assertions.assertEquals(-1.918315887451e-03, Unit.parse("as/d").fromSI(list.get(2).getYpDot()),      1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("as/d²").fromSI(list.get(2).getYpDotDot()),  1.0e-10);
+        Assertions.assertEquals(259248.0,            Unit.SECOND.fromSI(list.get(2).getTransmissionTime()),  1.0e-10);
+        Assertions.assertEquals(-3.213942050934e-03, Unit.SECOND.fromSI(list.get(2).getDut1()),              1.0e-10);
+        Assertions.assertEquals( 1.052916049957e-04, Unit.parse("s/d").fromSI(list.get(2).getDut1Dot()),     1.0e-10);
+        Assertions.assertEquals( 0.000000000000e+00, Unit.parse("s/d²").fromSI(list.get(2).getDut1DotDot()), 1.0e-10);
+
+    }
+
+    @Test
+    public void testIonRinex400() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_Ion_Rinex400.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.00,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("BCEmerge",                           file.getHeader().getProgramName());
+        Assertions.assertEquals("congo",                              file.getHeader().getRunByName());
+        Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
+
+        // Verify data
+        Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getIRNSSNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getGPSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getSystemTimeOffsets().size());
+        Assertions.assertEquals(0,  file.getEarthOrientationParameters().size());
+        Assertions.assertEquals(5,  file.getKlobucharMessages().size());
+        Assertions.assertEquals(1,  file.getNequickGMessages().size());
+        Assertions.assertEquals(2,  file.getBDGIMMessages().size());
+
+        List<IonosphereKlobucharMessage> listK = file.getKlobucharMessages();
+        List<IonosphereNequickGMessage>  listN = file.getNequickGMessages();
+        List<IonosphereBDGIMMessage>     listB = file.getBDGIMMessages();
+
+        Assertions.assertEquals(SatelliteSystem.GPS, listK.get(0).getSystem());
+        Assertions.assertEquals(17, listK.get(0).getPrn());
+        Assertions.assertEquals("LNAV", listK.get(0).getNavigationMessageType());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2022, 10, 5, 23, 33, 54.0, TimeScalesFactory.getGPS()).durationFrom(listK.get(0).getTransmitTime()),
+                                1.0e-15);
+        Assertions.assertEquals( 2.514570951462e-08, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(0).getAlpha()[0]), 1.0e-16);
+        Assertions.assertEquals( 1.490116119385e-08, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(0).getAlpha()[1]), 1.0e-16);
+        Assertions.assertEquals(-1.192092895508e-07, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(0).getAlpha()[2]), 1.0e-16);
+        Assertions.assertEquals(-5.960464477539e-08, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(0).getAlpha()[3]), 1.0e-16);
+        Assertions.assertEquals( 1.331200000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(0).getBeta()[0]),  1.0e-10);
+        Assertions.assertEquals(-1.638400000000e+04, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(0).getBeta()[1]),  1.0e-10);
+        Assertions.assertEquals(-2.621440000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(0).getBeta()[2]),  1.0e-10);
+        Assertions.assertEquals( 1.966080000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(0).getBeta()[3]),  1.0e-10);
+
+        Assertions.assertEquals(SatelliteSystem.GPS, listK.get(1).getSystem());
+        Assertions.assertEquals(25, listK.get(1).getPrn());
+        Assertions.assertEquals("CNVX", listK.get(1).getNavigationMessageType());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2022, 10, 5, 23, 30, 42.0, TimeScalesFactory.getGPS()).durationFrom(listK.get(1).getTransmitTime()),
+                                1.0e-15);
+        Assertions.assertEquals( 2.514570951462e-08, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(1).getAlpha()[0]), 1.0e-16);
+        Assertions.assertEquals( 1.490116119385e-08, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(1).getAlpha()[1]), 1.0e-16);
+        Assertions.assertEquals(-1.192092895508e-07, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(1).getAlpha()[2]), 1.0e-16);
+        Assertions.assertEquals(-5.960464477539e-08, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(1).getAlpha()[3]), 1.0e-16);
+        Assertions.assertEquals( 1.331200000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(1).getBeta()[0]),  1.0e-10);
+        Assertions.assertEquals(-1.638400000000e+04, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(1).getBeta()[1]),  1.0e-10);
+        Assertions.assertEquals(-2.621440000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(1).getBeta()[2]),  1.0e-10);
+        Assertions.assertEquals( 1.966080000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(1).getBeta()[3]),  1.0e-10);
+
+        Assertions.assertEquals(SatelliteSystem.GALILEO, listN.get(0).getSystem());
+        Assertions.assertEquals(2, listN.get(0).getPrn());
+        Assertions.assertEquals("IFNV", listN.get(0).getNavigationMessageType());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2022, 10, 5, 6, 21, 4.0, TimeScalesFactory.getGPS()).durationFrom(listN.get(0).getTransmitTime()),
+                                1.0e-15);
+        Assertions.assertEquals( 1.207500000000e+02, IonosphereNequickGMessage.SFU.fromSI(listN.get(0).getAi0()),          1.0e-16);
+        Assertions.assertEquals( -1.953125000000e-01, IonosphereNequickGMessage.SFU_PER_DEG.fromSI(listN.get(0).getAi1()), 1.0e-16);
+        Assertions.assertEquals(-7.629394531250e-04, IonosphereNequickGMessage.SFU_PER_DEG2.fromSI(listN.get(0).getAi2()), 1.0e-16);
+        Assertions.assertEquals(0, listN.get(0).getFlags());
+
+        Assertions.assertEquals(SatelliteSystem.BEIDOU, listB.get(0).getSystem());
+        Assertions.assertEquals(29, listB.get(0).getPrn());
+        Assertions.assertEquals("CNVX", listB.get(0).getNavigationMessageType());
+        Assertions.assertEquals(0.0,
+                                new AbsoluteDate(2022, 10, 5, 2, 0, 0.0, TimeScalesFactory.getBDT()).durationFrom(listB.get(0).getTransmitTime()),
+                                1.0e-15);
+        Assertions.assertEquals( 2.662500000000e+01, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[0]), 1.0e-16);
+        Assertions.assertEquals(-1.250000000000e-01, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[1]), 1.0e-16);
+        Assertions.assertEquals( 9.875000000000e+00, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[2]), 1.0e-16);
+        Assertions.assertEquals( 8.375000000000e+00, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[3]), 1.0e-16);
+        Assertions.assertEquals(-1.025000000000e+01, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[4]), 1.0e-10);
+        Assertions.assertEquals( 8.750000000000e-01, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[5]), 1.0e-10);
+        Assertions.assertEquals( 3.750000000000e-01, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[6]), 1.0e-10);
+        Assertions.assertEquals( 2.125000000000e+00, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[7]), 1.0e-10);
+        Assertions.assertEquals( 1.000000000000e+00, Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(listB.get(0).getAlpha()[8]), 1.0e-10);
+
+    }
+
+    @Test
     public void testUnknownHeaderKey() throws IOException {
         try {
             final String ex = "/gnss/navigation/unknown-key-header.n";
@@ -1177,6 +1788,19 @@ public class NavigationFileParserTest {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
             Assertions.assertEquals(9.99,  ((Double) oe.getParts()[0]).doubleValue(), 1.0e-10);
             Assertions.assertEquals(ex, oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testUnknownEphemeris() throws IOException {
+        try {
+            final String ex = "/gnss/navigation/unknown-ephemeris.n";
+            new RinexNavigationParser().
+                            parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM, oe.getSpecifier());
+            Assertions.assertEquals('X',  oe.getParts()[0]);
         }
     }
 

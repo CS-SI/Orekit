@@ -17,11 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 /**
- * Container for data contained in a QZSS navigation message.
+ * Container for data contained in a GPS/QZNSS legacy navigation message.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class QZSSNavigationMessage extends AbstractNavigationMessage {
+public class LegacyNavigationMessage extends AbstractNavigationMessage implements GNSSClockElements {
+
+    /** Identifier for message type. */
+    public static final String LNAV = "LNAV";
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -36,11 +39,23 @@ public class QZSSNavigationMessage extends AbstractNavigationMessage {
     private double svAccuracy;
 
     /** Satellite health status. */
-    private double svHealth;
+    private int svHealth;
 
-    /** Constructor. */
-    public QZSSNavigationMessage() {
-        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB);
+    /** Fit interval.
+     * @since 12.0
+     */
+    private int fitInterval;
+
+    /**
+     * Constructor.
+     * @param mu Earth's universal gravitational parameter
+     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
+     * @param weekNumber number of weeks in the GNSS cycle
+     */
+    protected LegacyNavigationMessage(final double mu,
+                                      final double angularVelocity,
+                                      final int weekNumber) {
+        super(mu, angularVelocity, weekNumber);
     }
 
     /**
@@ -52,7 +67,7 @@ public class QZSSNavigationMessage extends AbstractNavigationMessage {
     }
 
     /**
-     * Setter for the Issue of Data, Ephemeris.
+     * Setter for the Issue of Data Ephemeris.
      * @param value the IODE to set
      */
     public void setIODE(final double value) {
@@ -69,7 +84,7 @@ public class QZSSNavigationMessage extends AbstractNavigationMessage {
     }
 
     /**
-     * Setter for the Issue of Data, Clock.
+     * Setter for the Issue of Data Clock.
      * @param value the IODC to set
      */
     public void setIODC(final double value) {
@@ -113,7 +128,7 @@ public class QZSSNavigationMessage extends AbstractNavigationMessage {
      * Getter for the satellite health status.
      * @return the satellite health status
      */
-    public double getSvHealth() {
+    public int getSvHealth() {
         return svHealth;
     }
 
@@ -121,8 +136,26 @@ public class QZSSNavigationMessage extends AbstractNavigationMessage {
      * Setter for the satellite health status.
      * @param svHealth the value to set
      */
-    public void setSvHealth(final double svHealth) {
+    public void setSvHealth(final int svHealth) {
         this.svHealth = svHealth;
+    }
+
+    /**
+     * Getter for the fit interval.
+     * @return the fit interval
+     * @since 12.0
+     */
+    public int getFitInterval() {
+        return fitInterval;
+    }
+
+    /**
+     * Setter for the fit interval.
+     * @param fitInterval fit interval
+     * @since 12.0
+     */
+    public void setFitInterval(final int fitInterval) {
+        this.fitInterval = fitInterval;
     }
 
 }

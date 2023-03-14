@@ -30,7 +30,7 @@ public enum SignalCode {
     /** Galileo B I/NAV and B C/NAV / IRNSS B RS / GLONASS L1OCp and LO2Cp codes. */
     B,
 
-    /** GPS C/A / GLONASS C/A / Galileo C / SBAS C/A / QZSS C/A / IRNSS C RS(P) codes. */
+    /** GPS C/A / GLONASS C/A / Galileo C / SBAS C/A / QZSS C/A / QZSS C/B / IRNSS C RS(P) codes. */
     C,
 
     /** GPS L1(C/A) + (P2-P1) / QZSS L5D / Beidou Data codes. */

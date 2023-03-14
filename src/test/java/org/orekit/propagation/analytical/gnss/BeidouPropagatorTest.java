@@ -28,7 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.BeidouAlmanac;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -160,7 +160,7 @@ public class BeidouPropagatorTest {
     @Test
     public void testPosition() {
         // Initial BeiDou orbital elements (Ref: IGS)
-        final BeidouNavigationMessage boe = new BeidouNavigationMessage();
+        final BeidouLegacyNavigationMessage boe = new BeidouLegacyNavigationMessage();
         boe.setPRN(7);
         boe.setWeek(713);
         boe.setTime(284400.0);

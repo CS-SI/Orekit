@@ -29,7 +29,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.QZSSAlmanac;
-import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
@@ -156,7 +156,7 @@ public class QZSSPropagatorTest {
     @Test
     public void testPosition() {
         // Initial QZSS orbital elements (Ref: IGS)
-        final QZSSNavigationMessage qoe = new QZSSNavigationMessage();
+        final QZSSLegacyNavigationMessage qoe = new QZSSLegacyNavigationMessage();
         qoe.setPRN(195);
         qoe.setWeek(21);
         qoe.setTime(226800.0);
