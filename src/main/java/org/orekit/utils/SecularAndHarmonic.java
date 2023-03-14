@@ -151,7 +151,7 @@ public class SecularAndHarmonic {
      * @since 12.0
      */
     public double[] getPulsations() {
-        return pulsations;
+        return pulsations.clone();
     }
 
     /** Get an upper bound of the fitted harmonic amplitude.
