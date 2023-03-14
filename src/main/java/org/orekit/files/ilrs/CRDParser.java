@@ -18,10 +18,11 @@ package org.orekit.files.ilrs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -126,31 +127,36 @@ public class CRDParser {
         final ParseInfo pi = new ParseInfo();
 
         int lineNumber = 0;
-        Stream<LineParser> crdParsers = Stream.of(LineParser.H1);
+        Iterable<LineParser> crdParsers = Collections.singleton(LineParser.H1);
         try (BufferedReader reader = new BufferedReader(source.getOpener().openReaderOnce())) {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                ++lineNumber;
-                final String l = line;
-                final Optional<LineParser> selected = crdParsers.filter(p -> p.canHandle(l)).findFirst();
-                if (selected.isPresent()) {
-                    try {
-                        selected.get().parse(line, pi);
-                    } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                        throw new OrekitException(e,
-                                OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                lineNumber, source.getName(), line);
+            nextLine:
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    ++lineNumber;
+                    for (final LineParser candidate : crdParsers) {
+                        if (candidate.canHandle(line)) {
+                            try {
+                                candidate.parse(line, pi);
+                                if (pi.done) {
+                                    // Return file
+                                    return pi.file;
+                                }
+                                crdParsers = candidate.allowedNext();
+                                continue nextLine;
+                            } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                                throw new OrekitException(e,
+                                                          OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, source.getName(), line);
+                            }
+                        }
                     }
-                    crdParsers = selected.get().allowedNext();
                 }
-                if (pi.done) {
-                    // Return file
-                    return pi.file;
-                }
-            }
-        }
 
-        // We never reached the EOF marker
-        throw new OrekitException(OrekitMessages.CRD_UNEXPECTED_END_OF_FILE, lineNumber);
+            // We never reached the EOF marker
+            throw new OrekitException(OrekitMessages.CRD_UNEXPECTED_END_OF_FILE, lineNumber);
+
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
+        }
 
     }
 
@@ -263,8 +269,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H2, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H2, COMMENTS);
             }
 
         },
@@ -299,8 +305,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H3, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H3, COMMENTS);
             }
 
         },
@@ -336,8 +342,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H4, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H4, COMMENTS);
             }
 
         },
@@ -401,8 +407,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H5, C0, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H5, C0, COMMENTS);
             }
 
         },
@@ -428,8 +434,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C0, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C0, COMMENTS);
             }
 
         },
@@ -460,8 +466,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -497,8 +503,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -544,8 +550,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -578,8 +584,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -621,8 +627,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -654,8 +660,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -692,8 +698,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -709,8 +715,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -756,8 +762,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, TEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, TEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -804,8 +810,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -821,8 +827,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, TEN, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -861,8 +867,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -878,8 +884,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -931,8 +937,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, TEN, ELEVEN, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, TEN, ELEVEN, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -948,8 +954,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -965,8 +971,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -982,8 +988,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -999,8 +1005,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, H8, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, H8, COMMENTS);
             }
 
         },
@@ -1016,8 +1022,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
             }
 
         },
@@ -1037,9 +1043,9 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H1, H2, H3, H4, H5, H8, H9, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO,
-                        METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H1, H2, H3, H4, H5, H8, H9, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO,
+                                     METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS);
 
             }
 
@@ -1070,8 +1076,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H1, H9, COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H1, H9, COMMENTS);
             }
 
         },
@@ -1087,8 +1093,8 @@ public class CRDParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H9);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(H9);
             }
 
         };
@@ -1128,7 +1134,7 @@ public class CRDParser {
         /** Get the allowed parsers for next line.
          * @return allowed parsers for next line
          */
-        public abstract Stream<LineParser> allowedNext();
+        public abstract Iterable<LineParser> allowedNext();
 
         /** Check if parser can handle line.
          * @param line line to parse
