@@ -41,6 +41,11 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
     /** Satellite health status. */
     private int svHealth;
 
+    /** Fit interval.
+     * @since 12.0
+     */
+    private int fitInterval;
+
     /**
      * Constructor.
      * @param mu Earth's universal gravitational parameter
@@ -133,6 +138,24 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      */
     public void setSvHealth(final int svHealth) {
         this.svHealth = svHealth;
+    }
+
+    /**
+     * Getter for the fit interval.
+     * @return the fit interval
+     * @since 12.0
+     */
+    public int getFitInterval() {
+        return fitInterval;
+    }
+
+    /**
+     * Setter for the fit interval.
+     * @param fitInterval fit interval
+     * @since 12.0
+     */
+    public void setFitInterval(final int fitInterval) {
+        this.fitInterval = fitInterval;
     }
 
 }

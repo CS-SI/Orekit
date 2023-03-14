@@ -197,6 +197,7 @@ public class NavigationFileParserTest {
         final GPSLegacyNavigationMessage gpsL = file.getGPSLegacyNavigationMessages("G01").get(0);
         Assertions.assertEquals(0.0, gpsL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(0, gpsL.getSvHealth());
+        Assertions.assertEquals(4, gpsL.getFitInterval());
 
         final List<GPSCivilianNavigationMessage> list = file.getGPSCivilianNavigationMessages("G01");
         Assertions.assertEquals(2, list.size());
@@ -685,6 +686,7 @@ public class NavigationFileParserTest {
         final QZSSLegacyNavigationMessage qzssl = file.getQZSSLegacyNavigationMessages("J02").get(0);
         Assertions.assertEquals(0.0, qzssl.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getQZSS())), Double.MIN_VALUE);
         Assertions.assertEquals(0, qzssl.getSvHealth());
+        Assertions.assertEquals(0, qzssl.getFitInterval());
 
         final List<QZSSCivilianNavigationMessage> list = file.getQZSSCivilianNavigationMessages("J02");
         Assertions.assertEquals(4, list.size());
@@ -1127,7 +1129,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-1.053615315878E-10, gps.getIDot(), 1.0e-15);
         Assertions.assertEquals(2147,                gps.getWeek());
         Assertions.assertEquals(2.000000000000E+00,  gps.getSvAccuracy(), 1.0e-15);
-        Assertions.assertEquals(0.000000000000e+00,  gps.getSvHealth(), 1.0e-15);
+        Assertions.assertEquals(0,                   gps.getSvHealth());
         Assertions.assertEquals(4.656612873077E-09,  gps.getTGD(), 1.0e-15);
         Assertions.assertEquals(9,                   gps.getIODC());
 
