@@ -31,17 +31,24 @@ import org.orekit.utils.units.Unit;
  */
 class SpinStabilizedWriter extends AbstractWriter {
 
+    /** Format version.
+     * @since 12.0
+     */
+    private final double formatVersion;
+
     /** Spin stabilized block. */
     private final SpinStabilized spinStabilized;
 
     /** Create a writer.
+     * @param formatVersion format version
      * @param xmlTag name of the XML tag surrounding the section
      * @param kvnTag name of the KVN tag surrounding the section (may be null)
      * @param spinStabilized spin stabilized data to write
      */
-    SpinStabilizedWriter(final String xmlTag, final String kvnTag,
-                        final SpinStabilized spinStabilized) {
+    SpinStabilizedWriter(final double formatVersion, final String xmlTag, final String kvnTag,
+                         final SpinStabilized spinStabilized) {
         super(xmlTag, kvnTag);
+        this.formatVersion  = formatVersion;
         this.spinStabilized = spinStabilized;
     }
 
@@ -52,11 +59,16 @@ class SpinStabilizedWriter extends AbstractWriter {
         generator.writeComments(spinStabilized.getComments());
 
         // endpoints
-        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), null, true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), null, true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_DIR.name(),
-                             spinStabilized.getEndpoints().isA2b() ? AttitudeEndpoints.A2B : AttitudeEndpoints.B2A,
-                             null, true);
+        if (formatVersion < 2.0) {
+            generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), null, true);
+            generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), null, true);
+            generator.writeEntry(SpinStabilizedKey.SPIN_DIR.name(),
+                                 spinStabilized.getEndpoints().isA2b() ? AttitudeEndpoints.A2B : AttitudeEndpoints.B2A,
+                                                                       null, true);
+        } else {
+            generator.writeEntry(SpinStabilizedKey.REF_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), null, true);
+            generator.writeEntry(SpinStabilizedKey.REF_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), null, true);
+        }
 
         // spin
         generator.writeEntry(SpinStabilizedKey.SPIN_ALPHA.name(),     spinStabilized.getSpinAlpha(), Unit.DEGREE,        true);

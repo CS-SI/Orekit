@@ -27,7 +27,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
-import org.orekit.files.ccsds.section.Section;
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -38,10 +38,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ApmQuaternion implements Section {
-
-    /** Epoch of the data. */
-    private AbsoluteDate epoch;
+public class ApmQuaternion extends CommentsContainer {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
     private final AttitudeEndpoints endpoints;
@@ -65,29 +62,15 @@ public class ApmQuaternion implements Section {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        endpoints.checkMandatoryEntriesExceptExternalFrame(ApmQuaternionKey.Q_FRAME_A,
+        super.validate(version);
+        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                           ApmQuaternionKey.Q_FRAME_A,
                                                            ApmQuaternionKey.Q_FRAME_B,
                                                            ApmQuaternionKey.Q_DIR);
         endpoints.checkExternalFrame(ApmQuaternionKey.Q_FRAME_A, ApmQuaternionKey.Q_FRAME_B);
         if (Double.isNaN(q[0] + q[1] + q[2] + q[3])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}");
         }
-    }
-
-    /**
-     * Get the epoch of the data.
-     * @return epoch the epoch
-     */
-    public AbsoluteDate getEpoch() {
-        return epoch;
-    }
-
-    /**
-     * Set the epoch of the data.
-     * @param epoch the epoch to be set
-     */
-    public void setEpoch(final AbsoluteDate epoch) {
-        this.epoch = epoch;
     }
 
     /** Get the endpoints (i.e. frames A, B and their relationship).
@@ -111,6 +94,7 @@ public class ApmQuaternion implements Section {
      * @param value quaternion component
      */
     public void setQ(final int index, final double value) {
+        refuseFurtherComments();
         this.q[index] = value;
     }
 
@@ -128,6 +112,7 @@ public class ApmQuaternion implements Section {
      * @param derivative quaternion derivative component
      */
     public void setQDot(final int index, final double derivative) {
+        refuseFurtherComments();
         this.qDot[index] = derivative;
     }
 
@@ -139,6 +124,7 @@ public class ApmQuaternion implements Section {
     }
 
     /** Get the attitude.
+     * @param epoch attitude epoch
      * @param frame reference frame with respect to which attitude must be defined
      * (may be null if attitude is <em>not</em> orbit-relative and one wants
      * attitude in the same frame as used in the attitude message)
@@ -146,7 +132,8 @@ public class ApmQuaternion implements Section {
      * (may be null if attitude is <em>not</em> orbit-relative)
      * @return attitude
      */
-    public Attitude getAttitude(final Frame frame, final PVCoordinatesProvider pvProvider) {
+    public Attitude getAttitude(final AbsoluteDate epoch, final Frame frame,
+                                final PVCoordinatesProvider pvProvider) {
 
         if (Double.isNaN(qDot[0])) {
             // rotation as it is stored in the APM

@@ -52,6 +52,21 @@ public class SpinStabilized extends CommentsContainer {
     /** Inertial nutation phase (rad). */
     private double nutationPhase;
 
+    /** Right ascension of angular momentum vector (rad).
+     * @since 12.0
+     */
+    private double momentumAlpha;
+
+    /** Declination of the angular momentum vector (rad).
+     * @since 12.0
+     */
+    private double momentumDelta;
+
+    /** Angular velocity of spin vector around the angular momentum vector (rad/s).
+     * @since 12.0
+     */
+    private double nutationVel;
+
     /** Simple constructor.
      */
     public SpinStabilized() {
@@ -63,13 +78,17 @@ public class SpinStabilized extends CommentsContainer {
         nutation       = Double.NaN;
         nutationPer    = Double.NaN;
         nutationPhase  = Double.NaN;
+        momentumAlpha  = Double.NaN;
+        momentumDelta  = Double.NaN;
+        nutationVel    = Double.NaN;
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         super.validate(version);
-        endpoints.checkMandatoryEntriesExceptExternalFrame(SpinStabilizedKey.SPIN_FRAME_A,
+        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                           SpinStabilizedKey.SPIN_FRAME_A,
                                                            SpinStabilizedKey.SPIN_FRAME_B,
                                                            SpinStabilizedKey.SPIN_DIR);
         endpoints.checkExternalFrame(SpinStabilizedKey.SPIN_FRAME_A, SpinStabilizedKey.SPIN_FRAME_B);
@@ -81,6 +100,12 @@ public class SpinStabilized extends CommentsContainer {
             // if at least one is NaN, all must be NaN (i.e. not initialized)
             if (!(Double.isNaN(nutation) && Double.isNaN(nutationPer) && Double.isNaN(nutationPhase))) {
                 throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "NUTATION*");
+            }
+        }
+        if (Double.isNaN(momentumAlpha + momentumDelta + nutationVel)) {
+            // if at least one is NaN, all must be NaN (i.e. not initialized)
+            if (!(Double.isNaN(momentumAlpha) && Double.isNaN(momentumDelta) && Double.isNaN(nutationVel))) {
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "MOMENTUM*/NUTATION_VEL");
             }
         }
     }
@@ -209,6 +234,63 @@ public class SpinStabilized extends CommentsContainer {
     public void setNutationPhase(final double nutationPhase) {
         refuseFurtherComments();
         this.nutationPhase = nutationPhase;
+    }
+
+    /**
+     * Get the right ascension of angular momentum vector (rad).
+     * @return the right ascension of angular momentum vector
+     * @since 12.0
+     */
+    public double getMomentumAlpha() {
+        return momentumAlpha;
+    }
+
+    /**
+     * Set the right ascension of angular momentum vector (rad).
+     * @param momentumAlpha value to be set
+     * @since 12.0
+     */
+    public void setMomentumAlpha(final double momentumAlpha) {
+        refuseFurtherComments();
+        this.momentumAlpha = momentumAlpha;
+    }
+
+    /**
+     * Get the declination of the angular momentum vector (rad).
+     * @return the declination of the angular momentum vector (rad).
+     * @since 12.0
+     */
+    public double getMomentumDelta() {
+        return momentumDelta;
+    }
+
+    /**
+     * Set the declination of the angular momentum vector (rad).
+     * @param momentumDelta value to be set
+     * @since 12.0
+     */
+    public void setMomentumDelta(final double momentumDelta) {
+        refuseFurtherComments();
+        this.momentumDelta = momentumDelta;
+    }
+
+    /**
+     * Get the angular velocity of spin vector around angular momentum vector.
+     * @return angular velocity of spin vector around angular momentum vector (rad/s)
+     * @since 12.0
+     */
+    public double getNutationVel() {
+        return nutationVel;
+    }
+
+    /**
+     * Set the angular velocity of spin vector around angular momentum vector.
+     * @param nutationVel angular velocity of spin vector around angular momentum vector (rad/s)
+     * @since 12.0
+     */
+    public void setNutationVel(final double nutationVel) {
+        refuseFurtherComments();
+        this.nutationVel = nutationVel;
     }
 
 }

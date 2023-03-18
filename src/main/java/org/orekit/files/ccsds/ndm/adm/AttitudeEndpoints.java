@@ -98,11 +98,13 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * <p>
      * This method should throw an exception if some mandatory entry is missing
      * </p>
+     * @param version format version
      * @param aKey key for frame A
      * @param bKey key for frame B
      * @param dirKey key for direction
      */
-    public void checkMandatoryEntriesExceptExternalFrame(final Enum<?> aKey, final Enum<?> bKey,
+    public void checkMandatoryEntriesExceptExternalFrame(final double version,
+                                                         final Enum<?> aKey, final Enum<?> bKey,
                                                          final Enum<?> dirKey) {
 
         if (frameA == null) {
@@ -118,7 +120,10 @@ public class AttitudeEndpoints implements AttitudeBuilder {
             }
         }
 
-        checkNotNull(a2b, dirKey);
+        if (version < 2.0) {
+            // in ADM version 1, direction is mandatory
+            checkNotNull(a2b, dirKey);
+        }
 
     }
 

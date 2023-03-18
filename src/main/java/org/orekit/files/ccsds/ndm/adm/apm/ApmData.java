@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * Container for Attitude Parameter Message data.
@@ -33,53 +34,72 @@ public class ApmData implements Data {
     /** General comments block. */
     private final CommentsContainer commentsBlock;
 
+    /** Epoch of the data. */
+    private final AbsoluteDate epoch;
+
     /** Quaternion block. */
     private final ApmQuaternion quaternionBlock;
 
     /** Euler angles block. */
     private final Euler eulerBlock;
 
+    /** Angular velocity block.
+     * @since 12.0
+     */
+    private final AngularVelocity angularVelocityBlock;
+
     /** Spin-stabilized block. */
     private final SpinStabilized spinStabilizedBlock;
 
-    /** Spacecraft parameters block. */
-    private final SpacecraftParameters spacecraftParameters;
+    /** Inertia block. */
+    private final Inertia inertia;
 
     /** Maneuvers. */
     private final List<Maneuver> maneuvers;
 
     /** Simple constructor.
      * @param commentsBlock general comments block
-     * @param quaternionBlock quaternion logical block
+     * @param epoch epoch of the data
+     * @param quaternionBlock quaternion logical block (may be null)
      * @param eulerBlock Euler angles logicial block (may be null)
+     * @param angularVelocityBlock angular velocity block (may be null)
      * @param spinStabilizedBlock spin-stabilized logical block (may be null)
      * @param spacecraftParameters spacecraft parameters logical block (may be null)
      */
     public ApmData(final CommentsContainer commentsBlock,
+                   final AbsoluteDate epoch,
                    final ApmQuaternion quaternionBlock,
                    final Euler eulerBlock,
+                   final AngularVelocity angularVelocityBlock,
                    final SpinStabilized spinStabilizedBlock,
-                   final SpacecraftParameters spacecraftParameters) {
+                   final Inertia spacecraftParameters) {
         this.commentsBlock        = commentsBlock;
+        this.epoch                = epoch;
         this.quaternionBlock      = quaternionBlock;
         this.eulerBlock           = eulerBlock;
+        this.angularVelocityBlock = angularVelocityBlock;
         this.spinStabilizedBlock  = spinStabilizedBlock;
-        this.spacecraftParameters = spacecraftParameters;
+        this.inertia = spacecraftParameters;
         this.maneuvers            = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        quaternionBlock.validate(version);
+        if (quaternionBlock != null) {
+            quaternionBlock.validate(version);
+        }
         if (eulerBlock != null) {
             eulerBlock.validate(version);
+        }
+        if (angularVelocityBlock != null) {
+            angularVelocityBlock.validate(version);
         }
         if (spinStabilizedBlock != null) {
             spinStabilizedBlock.validate(version);
         }
-        if (spacecraftParameters != null) {
-            spacecraftParameters.validate(version);
+        if (inertia != null) {
+            inertia.validate(version);
         }
         for (final Maneuver maneuver : maneuvers) {
             maneuver.validate(version);
@@ -91,6 +111,15 @@ public class ApmData implements Data {
      */
     public List<String> getComments() {
         return commentsBlock.getComments();
+    }
+
+    /**
+     * Get the epoch of the data.
+     * @return epoch the epoch
+     * @since 12.0
+     */
+    public AbsoluteDate getEpoch() {
+        return epoch;
     }
 
     /** Get the quaternion logical block.
@@ -107,6 +136,14 @@ public class ApmData implements Data {
         return eulerBlock;
     }
 
+    /** Get the angular velocity logical block.
+     * @return angular velocity block (may be null)
+     * @since 12.0
+     */
+    public AngularVelocity getAngularVelocityBlock() {
+        return angularVelocityBlock;
+    }
+
     /** Get the spin-stabilized logical block.
      * @return spin-stabilized block (may be null)
      */
@@ -114,11 +151,11 @@ public class ApmData implements Data {
         return spinStabilizedBlock;
     }
 
-    /** Get the spacecraft parameters logical block.
-     * @return spacecraft parameters block (may be null)
+    /** Get the inertia logical block.
+     * @return inertia block (may be null)
      */
-    public SpacecraftParameters getSpacecraftParametersBlock() {
-        return spacecraftParameters;
+    public Inertia getInertiaBlock() {
+        return inertia;
     }
 
     /**

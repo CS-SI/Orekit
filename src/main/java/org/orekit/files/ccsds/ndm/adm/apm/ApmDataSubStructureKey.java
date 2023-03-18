@@ -19,26 +19,56 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 
-/** Keywords for APM data sub-structure in XML files.
+/** Keywords for APM data sub-structure.
  * @author Luc Maisonobe
  * @since 11.0
  */
-enum XmlSubStructureKey {
+enum ApmDataSubStructureKey {
 
     /** General comment. */
     COMMENT((token, parser) -> token.getType() == TokenType.ENTRY ? parser.addGeneralComment(token.getContentAsNormalizedString()) : true),
 
+    /** Quaternion block. */
+    QUAT((token, parser) -> parser.manageQuaternionSection(token.getType() == TokenType.START)),
+
     /** Quaternion section. */
     quaternionState((token, parser) -> parser.manageQuaternionSection(token.getType() == TokenType.START)),
 
-    /** Euler elements / three axis stabilized section. */
-    eulerElementsThree((token, parser) -> parser.manageEulerElementsThreeSection(token.getType() == TokenType.START)),
+    /** Euler elements. */
+    EULER((token, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
 
-    /** Euler elements /spin stabilized section. */
-    eulerElementsSpin((token, parser) -> parser.manageEulerElementsSpinSection(token.getType() == TokenType.START)),
+    /** Euler elements. */
+    eulerAngleState((token, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
 
-    /** Spacecraft parameters section. */
-    spacecraftParameters((token, parser) -> parser.manageSpacecraftParametersSection(token.getType() == TokenType.START)),
+    /** Angular velocity elements. */
+    ANGVEL((token, parser) -> parser.manageAngularVelocitylementsSection(token.getType() == TokenType.START)),
+
+    /** Angular velocity elements. */
+    angularVelocity((token, parser) -> parser.manageAngularVelocitylementsSection(token.getType() == TokenType.START)),
+
+    /** Euler elements / three axis stabilized section (ADM V1 only). */
+    eulerElementsThree((token, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
+
+    /** Euler elements /spin stabilized section (ADM V1 only). */
+    eulerElementsSpin((token, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+
+    /** Spin elements. */
+    SPIN((token, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+
+    /** Spin elements. */
+    spin((token, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+
+    /** Inertia elements. */
+    INERTIA((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
+
+    /** Inertia elements. */
+    inertia((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
+
+    /** Spacecraft parameters section (ADM V1 only). */
+    spacecraftParameters((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
+
+    /** Maneuver parameters section. */
+    MAN((token, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START)),
 
     /** Maneuver parameters section. */
     maneuverParameters((token, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START));
@@ -49,7 +79,7 @@ enum XmlSubStructureKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    XmlSubStructureKey(final TokenProcessor processor) {
+    ApmDataSubStructureKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 

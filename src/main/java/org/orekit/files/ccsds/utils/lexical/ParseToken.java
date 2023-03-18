@@ -481,7 +481,7 @@ public class ParseToken {
         return true;
     }
 
-    /** Process the content as an labeled double.
+    /** Process the content as a labeled double.
      * @param label label
      * @param standard units of parsed content as specified by CCSDS standard
      * @param behavior behavior to adopt for parsed unit

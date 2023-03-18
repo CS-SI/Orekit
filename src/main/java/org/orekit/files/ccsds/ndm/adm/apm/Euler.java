@@ -65,7 +65,8 @@ public class Euler extends CommentsContainer {
     public void validate(final double version) {
 
         super.validate(version);
-        endpoints.checkMandatoryEntriesExceptExternalFrame(EulerKey.EULER_FRAME_A,
+        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                           EulerKey.EULER_FRAME_A,
                                                            EulerKey.EULER_FRAME_B,
                                                            EulerKey.EULER_DIR);
         endpoints.checkExternalFrame(EulerKey.EULER_FRAME_A, EulerKey.EULER_FRAME_B);
@@ -76,7 +77,8 @@ public class Euler extends CommentsContainer {
             // if at least one is NaN, all must be NaN (i.e. not initialized)
             for (final double ra : rotationAngles) {
                 if (!Double.isNaN(ra)) {
-                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_ANGLE");
+                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                              version < 2.0 ? "{X|Y|Z}_ANGLE" : "ANGLE_{1|2|3}");
                 }
             }
         }
@@ -86,7 +88,8 @@ public class Euler extends CommentsContainer {
             // if at least one is NaN, all must be NaN (i.e. not initialized)
             for (final double rr : rotationRates) {
                 if (!Double.isNaN(rr)) {
-                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_RATE");
+                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                              version < 2.0 ? "{X|Y|Z}_RATE" : "ANGLE_{1|2|3}_DOT");
                 }
             }
         }
@@ -94,7 +97,8 @@ public class Euler extends CommentsContainer {
         // either angles or rates must be specified
         // (angles may be missing in the quaternion/Euler rate case)
         if (missingAngle && missingRate) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_{ANGLE|RATE}");
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                      version < 2.0 ? "{X|Y|Z}_{ANGLE|RATE}" : "ANGLE_{1|2|3}[_DOT]");
         }
 
     }
@@ -163,9 +167,26 @@ public class Euler extends CommentsContainer {
      * @param axis rotation axis
      * @param angle angle to set
      */
-    public void setRotationAngle(final char axis, final double angle) {
+    public void setLabeledRotationAngle(final char axis, final double angle) {
+        if (eulerRotSeq != null) {
+            for (int i = 0; i < rotationAngles.length; ++i) {
+                if (eulerRotSeq.name().charAt(i) == axis && Double.isNaN(rotationAngles[i])) {
+                    setIndexedRotationAngle(i, angle);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Set the Euler angle about (rad).
+     * @param axis rotation axis
+     * @param angle angle to set
+     * @since 12.0
+     */
+    public void setIndexedRotationAngle(final int axis, final double angle) {
         refuseFurtherComments();
-        setAngleOrRate(rotationAngles, axis, angle);
+        rotationAngles[axis] = angle;
     }
 
     /**
@@ -181,9 +202,26 @@ public class Euler extends CommentsContainer {
      * @param axis rotation axis
      * @param rate angle rate to set
      */
-    public void setRotationRate(final char axis, final double rate) {
+    public void setLabeledRotationRate(final char axis, final double rate) {
+        if (eulerRotSeq != null) {
+            for (int i = 0; i < rotationRates.length; ++i) {
+                if (eulerRotSeq.name().charAt(i) == axis && Double.isNaN(rotationRates[i])) {
+                    setIndexedRotationRate(i, rate);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Set the rate of Euler angle (rad/s).
+     * @param axis rotation axis
+     * @param rate angle rate to set
+     * @since 12.0
+     */
+    public void setIndexedRotationRate(final int axis, final double rate) {
         refuseFurtherComments();
-        setAngleOrRate(rotationRates, axis, rate);
+        rotationRates[axis] = rate;
     }
 
     /** Check if we are in the rotationAngles part of XML files.
@@ -208,21 +246,4 @@ public class Euler extends CommentsContainer {
         return !Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2]);
     }
 
-    /** Set an angle or rate in an array.
-     * @param array angle or rate array
-     * @param axis axis name
-     * @param value angle or rate to set
-     */
-    private void setAngleOrRate(final double[] array, final char axis, final double value) {
-        refuseFurtherComments();
-        if (eulerRotSeq != null) {
-            if (eulerRotSeq.name().charAt(0) == axis && Double.isNaN(array[0])) {
-                array[0] = value;
-            } else if (eulerRotSeq.name().charAt(1) == axis && Double.isNaN(array[1])) {
-                array[1] = value;
-            } else if (eulerRotSeq.name().charAt(2) == axis && Double.isNaN(array[2])) {
-                array[2] = value;
-            }
-        }
-    }
 }

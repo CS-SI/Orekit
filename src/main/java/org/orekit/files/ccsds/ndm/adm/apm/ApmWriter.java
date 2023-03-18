@@ -93,37 +93,60 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
         }
 
         generator.writeComments(segment.getData().getComments());
+        if (formatVersion >= 2.0) {
+            // starting with version 2, epoch is outside of other blocks
+            generator.writeEntry("EPOCH", getTimeConverter(), segment.getData().getEpoch(), false, true);
+        }
 
-        // write mandatory quaternion block
-        new ApmQuaternionWriter(XmlSubStructureKey.quaternionState.name(), null,
-                                segment.getData().getQuaternionBlock(), getTimeConverter()).
+        // write quaternion block
+        new ApmQuaternionWriter(formatVersion,
+                                ApmDataSubStructureKey.quaternionState.name(), null,
+                                segment.getData().getQuaternionBlock(),
+                                formatVersion >= 2.0 ? null : segment.getData().getEpoch(),
+                                getTimeConverter()).
         write(generator);
 
         if (segment.getData().getEulerBlock() != null) {
             // write optional Euler block for three axis stabilized satellites
-            new EulerWriter(XmlSubStructureKey.eulerElementsThree.name(), null,
+            final String xmlTag = formatVersion < 2.0 ?
+                                  ApmDataSubStructureKey.eulerElementsThree.name() :
+                                  ApmDataSubStructureKey.eulerAngleState.name();
+            new EulerWriter(formatVersion, xmlTag, null,
                             segment.getData().getEulerBlock()).
+            write(generator);
+        }
+
+        if (segment.getData().getAngularVelocityBlock() != null) {
+            // write optional angular velocity block
+            new AngularVelocityWriter(ApmDataSubStructureKey.angularVelocity.name(), null,
+                                      segment.getData().getAngularVelocityBlock()).
             write(generator);
         }
 
         if (segment.getData().getSpinStabilizedBlock() != null) {
             // write optional Euler block for spin stabilized satellites
-            new SpinStabilizedWriter(XmlSubStructureKey.eulerElementsSpin.name(), null,
+            final String xmlTag = formatVersion < 2.0 ?
+                                  ApmDataSubStructureKey.eulerElementsSpin.name() :
+                                  ApmDataSubStructureKey.spin.name();
+            new SpinStabilizedWriter(formatVersion, xmlTag, null,
                                      segment.getData().getSpinStabilizedBlock()).
             write(generator);
         }
 
-        if (segment.getData().getSpacecraftParametersBlock() != null) {
+        if (segment.getData().getInertiaBlock() != null) {
             // write optional spacecraft parameters block
-            new SpacecraftParametersWriter(XmlSubStructureKey.spacecraftParameters.name(), null,
-                                           segment.getData().getSpacecraftParametersBlock()).
+            final String xmlTag = formatVersion < 2.0 ?
+                                  ApmDataSubStructureKey.spacecraftParameters.name() :
+                                  ApmDataSubStructureKey.inertia.name();
+            new InertiaWriter(formatVersion, xmlTag, null,
+                              segment.getData().getInertiaBlock()).
             write(generator);
         }
 
         if (!segment.getData().getManeuvers().isEmpty()) {
             for (final Maneuver maneuver : segment.getData().getManeuvers()) {
                 // write optional maneuver block
-                new ManeuverWriter(XmlSubStructureKey.maneuverParameters.name(), null,
+                new ManeuverWriter(formatVersion, ApmDataSubStructureKey.maneuverParameters.name(), null,
                                    maneuver, getTimeConverter()).write(generator);
             }
         }

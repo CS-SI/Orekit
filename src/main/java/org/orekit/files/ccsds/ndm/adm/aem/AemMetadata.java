@@ -95,7 +95,8 @@ public class AemMetadata extends AdmMetadata {
 
         super.validate(version);
 
-        endpoints.checkMandatoryEntriesExceptExternalFrame(AemMetadataKey.REF_FRAME_A,
+        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                           AemMetadataKey.REF_FRAME_A,
                                                            AemMetadataKey.REF_FRAME_B,
                                                            AemMetadataKey.ATTITUDE_DIR);
 
