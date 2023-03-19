@@ -293,4 +293,20 @@ public class SpinStabilized extends CommentsContainer {
         this.nutationVel = nutationVel;
     }
 
+    /** Check if the logical block includes nutation.
+     * @return true if logical block includes nutation
+     * @since 12.0
+     */
+    public boolean hasNutation() {
+        return !Double.isNaN(nutation + nutationPer + nutationPhase);
+    }
+
+    /** Check if the logical block includes momentum.
+     * @return true if logical block includes momentum
+     * @since 12.0
+     */
+    public boolean hasMomentum() {
+        return !Double.isNaN(momentumAlpha + momentumDelta + nutationVel);
+    }
+
 }

@@ -484,8 +484,11 @@ CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 
-# attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+# unknown attitude type {0}
+CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
+
+# incomplete data
+CCSDS_INCOMPLETE_DATA = <MISSING TRANSLATION>
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>

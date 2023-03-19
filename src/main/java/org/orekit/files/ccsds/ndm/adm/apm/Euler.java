@@ -31,6 +31,26 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  */
 public class Euler extends CommentsContainer {
 
+    /** Key for angles in ADM V1.
+     * @since 12.0
+     */
+    private static final String KEY_ANGLES_V1 = "{X|Y|Z}_ANGLE";
+
+    /** Key for angles in ADM V2.
+     * @since 12.0
+     */
+    private static final String KEY_ANGLES_V2 = "ANGLE_{1|2|3}";
+
+    /** Key for rates in ADM V1.
+     * @since 12.0
+     */
+    private static final String KEY_RATES_V1 = "{X|Y|Z}_RATE";
+
+    /** Key for rates in ADM V2.
+     * @since 12.0
+     */
+    private static final String KEY_RATES_V2 = "ANGLE_{1|2|3}_DOT";
+
     /** Endpoints (i.e. frames A, B and their relationship). */
     private final AttitudeEndpoints endpoints;
 
@@ -72,33 +92,37 @@ public class Euler extends CommentsContainer {
         endpoints.checkExternalFrame(EulerKey.EULER_FRAME_A, EulerKey.EULER_FRAME_B);
         checkNotNull(eulerRotSeq, EulerKey.EULER_ROT_SEQ);
 
-        final boolean missingAngle = Double.isNaN(rotationAngles[0] + rotationAngles[1] + rotationAngles[2]);
-        if (missingAngle) {
-            // if at least one is NaN, all must be NaN (i.e. not initialized)
+        if (!hasAngles()) {
+            // if at least one angle is missing, all must be NaN (i.e. not initialized)
             for (final double ra : rotationAngles) {
                 if (!Double.isNaN(ra)) {
                     throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                              version < 2.0 ? "{X|Y|Z}_ANGLE" : "ANGLE_{1|2|3}");
+                                              version < 2.0 ? KEY_ANGLES_V1 : KEY_ANGLES_V2);
                 }
             }
         }
 
-        final boolean missingRate = Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2]);
-        if (missingRate) {
-            // if at least one is NaN, all must be NaN (i.e. not initialized)
+        if (!hasRates()) {
+            // if at least one rate is missing, all must be NaN (i.e. not initialized)
             for (final double rr : rotationRates) {
                 if (!Double.isNaN(rr)) {
                     throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                              version < 2.0 ? "{X|Y|Z}_RATE" : "ANGLE_{1|2|3}_DOT");
+                                              version < 2.0 ? KEY_RATES_V1 : KEY_RATES_V2);
                 }
             }
         }
 
-        // either angles or rates must be specified
-        // (angles may be missing in the quaternion/Euler rate case)
-        if (missingAngle && missingRate) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                      version < 2.0 ? "{X|Y|Z}_{ANGLE|RATE}" : "ANGLE_{1|2|3}[_DOT]");
+        if (version < 2.0) {
+            // in ADM V1, either angles or rates must be specified
+            // (angles may be missing in the quaternion/Euler rate case)
+            if (!hasAngles() && !hasRates()) {
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, KEY_ANGLES_V1 + "/" + KEY_RATES_V1);
+            }
+        } else {
+            // in ADM V2, angles are mandatory
+            if (!hasAngles()) {
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, KEY_ANGLES_V2);
+            }
         }
 
     }
@@ -237,6 +261,17 @@ public class Euler extends CommentsContainer {
     public void setInRotationAngles(final boolean inRotationAngles) {
         refuseFurtherComments();
         this.inRotationAngles = inRotationAngles;
+    }
+
+    /** Check if the logical block includes angles.
+     * <p>
+     * This can be false only for ADM V1, has angles are mandatory since ADM V2.
+     * </p>
+     * @return true if logical block includes angles
+     * @since 12.0
+     */
+    public boolean hasAngles() {
+        return !Double.isNaN(rotationAngles[0] + rotationAngles[1] + rotationAngles[2]);
     }
 
     /** Check if the logical block includes rates.

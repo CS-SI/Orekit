@@ -92,7 +92,7 @@ class AttitudeEntry {
     public void setRate(final char axis, final double value) {
         if (metadata.getEulerRotSeq() != null) {
             final String seq   = metadata.getEulerRotSeq().name();
-            final int    first = metadata.getAttitudeType() == AttitudeType.QUATERNION_RATE ? 4 : 3;
+            final int    first = metadata.getAttitudeType() == AttitudeType.QUATERNION_ANGVEL ? 4 : 3;
             if (seq.charAt(0) == axis && Double.isNaN(components[first])) {
                 components[first] = value;
             } else if (seq.charAt(1) == axis && Double.isNaN(components[first + 1])) {

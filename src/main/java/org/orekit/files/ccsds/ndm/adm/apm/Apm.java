@@ -18,19 +18,15 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.util.List;
 
-import org.hipparchus.complex.Quaternion;
 import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
-import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * This class stores all the information of the Attitude Parameter Message (APM) File parsed
@@ -80,63 +76,7 @@ public class Apm extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
      * @return attitude
      */
     public Attitude getAttitude(final Frame frame, final PVCoordinatesProvider pvProvider) {
-
-        final ApmData       data     = getSegments().get(0).getData();
-        final ApmQuaternion qBlock   = data.getQuaternionBlock();
-        final Euler         eBlock   = data.getEulerBlock();
-
-        final TimeStampedAngularCoordinates tac;
-        if (qBlock != null) {
-            // we have a quaternion
-            if (qBlock.hasRates()) {
-                // quaternion logical block includes everything we need
-                final Quaternion q    = qBlock.getQuaternion();
-                final Quaternion qDot = qBlock.getQuaternionDot();
-                tac = AttitudeType.QUATERNION_DERIVATIVE.build(true, qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                               null, true, data.getEpoch(),
-                                                               q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
-                                                               qDot.getQ0(), qDot.getQ1(), qDot.getQ2(), qDot.getQ3());
-            } else if (eBlock != null && eBlock.hasRates()) {
-                // we have to rely on the Euler logical block to take rates into account
-                final Quaternion q     = qBlock.getQuaternion();
-                final double[]   rates = eBlock.getRotationRates();
-                tac = AttitudeType.QUATERNION_RATE.build(true,
-                                                         qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                         eBlock.getEulerRotSeq(), eBlock.isSpacecraftBodyRate(), data.getEpoch(),
-                                                         q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
-                                                         rates[0], rates[1], rates[2]);
-            } else {
-                // we rely only on the quaternion logical block, despite it doesn't include rates
-                final Quaternion q    = qBlock.getQuaternion();
-                tac = AttitudeType.QUATERNION.build(true, qBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                    null, true, data.getEpoch(),
-                                                    q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3());
-            }
-        } else if (eBlock != null) {
-            // we have Euler angles
-            if (eBlock.hasRates()) {
-                final double[]   angles = eBlock.getRotationAngles();
-                final double[]   rates  = eBlock.getRotationRates();
-                tac = AttitudeType.EULER_ANGLE_RATE.build(true,
-                                                          eBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                          eBlock.getEulerRotSeq(), eBlock.isSpacecraftBodyRate(), data.getEpoch(),
-                                                          angles[0], angles[1], angles[2],
-                                                          rates[0], rates[1], rates[2]);
-            } else {
-                final double[]   angles = eBlock.getRotationAngles();
-                tac = AttitudeType.EULER_ANGLE.build(true,
-                                                     eBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                     eBlock.getEulerRotSeq(), eBlock.isSpacecraftBodyRate(), data.getEpoch(),
-                                                     angles[0], angles[1], angles[2]);
-            }
-        } else {
-            // TODO: handle other cases
-            throw new OrekitInternalError(null);
-        }
-
-        // build the attitude
-        return qBlock.getEndpoints().build(frame, pvProvider, tac);
-
+        return getData().getAttitude(frame, pvProvider);
     }
 
 }

@@ -147,7 +147,9 @@ public class StreamingAemWriter implements AutoCloseable {
                     // the external frame must be frame B
                     metadata.getEndpoints().setFrameB(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
                 }
-                writer.writeMetadata(generator, metadata);
+                writer.writeMetadata(generator,
+                                     header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                                     metadata);
                 writer.startAttitudeBlock(generator);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());

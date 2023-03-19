@@ -194,7 +194,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * @return true if attitude is from external frame to spacecraft body frame
      */
     public boolean isExternal2SpacecraftBody() {
-        return a2b ^ frameB.asSpacecraftBodyFrame() == null;
+        return isA2b() ^ frameB.asSpacecraftBodyFrame() == null;
     }
 
     /** Check if a endpoint is compatible with another one.

@@ -291,7 +291,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         throws IOException {
 
         final AemMetadata metadata = segment.getMetadata();
-        writeMetadata(generator, metadata);
+        writeMetadata(generator, formatVersion, metadata);
 
         // Loop on attitude data
         startAttitudeBlock(generator);
@@ -305,10 +305,12 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
     /** Write an ephemeris segment metadata.
      * @param generator generator to use for producing output
+     * @param formatVersion format version
      * @param metadata metadata to write
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeMetadata(final Generator generator, final AemMetadata metadata) throws IOException {
+    void writeMetadata(final Generator generator, final double formatVersion, final AemMetadata metadata)
+        throws IOException {
 
         final ContextBinding oldContext = getContext();
         setContext(new ContextBinding(oldContext::getConventions,
@@ -352,16 +354,16 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
         // types
         final AttitudeType attitudeType = metadata.getAttitudeType();
-        generator.writeEntry(AemMetadataKey.ATTITUDE_TYPE.name(), attitudeType.toString(), null, true);
+        generator.writeEntry(AemMetadataKey.ATTITUDE_TYPE.name(), attitudeType.getName(formatVersion), null, true);
         if (attitudeType == AttitudeType.QUATERNION ||
             attitudeType == AttitudeType.QUATERNION_DERIVATIVE ||
-            attitudeType == AttitudeType.QUATERNION_RATE) {
+            attitudeType == AttitudeType.QUATERNION_ANGVEL) {
             generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, null, false);
         }
 
-        if (attitudeType == AttitudeType.QUATERNION_RATE ||
+        if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
             attitudeType == AttitudeType.EULER_ANGLE ||
-            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
+            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
             if (metadata.getEulerRotSeq() == null) {
                 // the keyword *will* be missing because we cannot set it
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
@@ -372,8 +374,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
                                  null, false);
         }
 
-        if (attitudeType == AttitudeType.QUATERNION_RATE ||
-            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
+        if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
+            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
             generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
                                  metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
                                                          null, false);
@@ -435,20 +437,26 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
                 case QUATERNION_DERIVATIVE :
                     writeQuaternionDerivative(xmlGenerator, metadata.isFirst(), attitude.getDate(), data);
                     break;
-                case QUATERNION_RATE :
-                    writeQuaternionRate(xmlGenerator, metadata.isFirst(), metadata.getEulerRotSeq(), attitude.getDate(), data);
+                case QUATERNION_ANGVEL :
+                    writeQuaternionAngularVelocity(xmlGenerator, metadata.isFirst(), metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
                 case EULER_ANGLE :
                     writeEulerAngle(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
-                case EULER_ANGLE_RATE :
-                    writeEulerAngleRate(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
+                case EULER_ANGLE_DERIVATIVE :
+                    writeEulerAngleDerivative(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
+//                case EULER_ANGLE_ANGVEL :
+//                    writeEulerAngleAngularVelocity(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
+//                    break;
                 case SPIN :
                     writeSpin(xmlGenerator, attitude.getDate(), data);
                     break;
 //                case SPIN_NUTATION :
 //                    writeSpinNutation(xmlGenerator, attitude.getDate(), data);
+//                    break;
+//                case SPIN_NUTATION_MOMENTUM :
+//                    writeSpinNutationMomentum(xmlGenerator, attitude.getDate(), data);
 //                    break;
                 default :
                     // this should never happen
@@ -546,7 +554,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeQuaternionRate(final XmlGenerator xmlGenerator, final boolean first, final RotationOrder order,
+    void writeQuaternionAngularVelocity(final XmlGenerator xmlGenerator, final boolean first, final RotationOrder order,
                              final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
@@ -617,7 +625,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeEulerAngleRate(final XmlGenerator xmlGenerator, final RotationOrder order,
+    void writeEulerAngleDerivative(final XmlGenerator xmlGenerator, final RotationOrder order,
                              final AbsoluteDate epoch, final String[] data)
         throws IOException {
 

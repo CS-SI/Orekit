@@ -140,10 +140,10 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName,
-                                                    maxRelativeOffset, unitsColumn) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
-                                                    maxRelativeOffset, unitsColumn > 0, null)) {
+             new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName,
+                              maxRelativeOffset, unitsColumn) :
+             new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
+                              maxRelativeOffset, unitsColumn > 0, null)) {
 
             writer.writeHeader(generator, header);
 
@@ -181,7 +181,9 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
         metadata.setInterpolationMethod(segment.getInterpolationMethod());
         metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-        writer.writeMetadata(generator, metadata);
+        writer.writeMetadata(generator,
+                             header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                             metadata);
 
         // Loop on attitude data
         writer.startAttitudeBlock(generator);

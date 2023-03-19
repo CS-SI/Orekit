@@ -93,12 +93,14 @@ public class AEMAttitudeTypeTest {
 
         final Rotation zeroPhase = new Rotation(RotationOrder.ZYZ, RotationConvention.FRAME_TRANSFORM,
                                                 spinInert.getAlpha(), 0.5 * FastMath.PI - spinInert.getDelta(), 0.0);
-        Assertions.assertEquals(86.03122596451917, FastMath.toDegrees(Rotation.distance(zeroPhase, tsac.getRotation())),
-                ANGLE_PRECISION);
+        Assertions.assertEquals(86.03122596451917,
+                                FastMath.toDegrees(Rotation.distance(zeroPhase, tsac.getRotation())),
+                                ANGLE_PRECISION);
         Assertions.assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
         Assertions.assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
-        Assertions.assertEquals(-14.816053659122998, FastMath.toDegrees(tsac.getRotationRate().getZ()),
-                ANGLE_PRECISION);
+        Assertions.assertEquals(-14.816053659122998,
+                                FastMath.toDegrees(tsac.getRotationRate().getZ()),
+                                ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -114,8 +116,9 @@ public class AEMAttitudeTypeTest {
                                                                metadata.isSpacecraftBodyRate(),
                                                                tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
-                    ANGLE_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]),
+                                    Double.parseDouble(attitudeDataBis[i]),
+                                    ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -123,10 +126,6 @@ public class AEMAttitudeTypeTest {
 
     }
 
-    /**
-     * Attitude type SPIN_NUTATION in CCSDS AEM files is not implemented in Orekit.
-     * This test verify if an exception is thrown
-     */
     @Test
     public void testSpinNutation() {
 
@@ -134,23 +133,9 @@ public class AEMAttitudeTypeTest {
         final AttitudeType spinNutation = AttitudeType.parseType("SPIN/NUTATION");
 
         // Test exception on the first method
-        try {
-            spinNutation.parse(true, true, RotationOrder.XYZ, true,
-                               context, new String[] { "2021-03-17T00:00:00.000" });
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
-        }
-
-        // Test exception on the second method
-        try {
-            spinNutation.createDataFields(true, true, RotationOrder.XYZ, true, null);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
-        }
+        spinNutation.parse(true, true, RotationOrder.XYZ, true,
+                           context, new String[] { "2021-03-17T00:00:00.000" });
+        spinNutation.createDataFields(true, true, RotationOrder.XYZ, true, null);
 
         // no exception on the third method
         Assertions.assertEquals(AngularDerivativesFilter.USE_RR, spinNutation.getAngularDerivativesFilter());
@@ -183,7 +168,7 @@ public class AEMAttitudeTypeTest {
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
                                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO_FRAME, "1"),
-                        "GYRO 1"));
+                                                          "GYRO 1"));
         metadata.setIsFirst(true);
         metadata.setRateFrameIsA(false);
         metadata.getEndpoints().setA2b(true);
@@ -429,7 +414,7 @@ public class AEMAttitudeTypeTest {
 
     @Test
     public void testSymmetryQuaternionRate() {
-        doTestSymmetry(AttitudeType.QUATERNION_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AttitudeType.QUATERNION_ANGVEL, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
                        2.0e-16, 9.0e-17);
     }
 
@@ -441,14 +426,14 @@ public class AEMAttitudeTypeTest {
 
     @Test
     public void testSymmetryEulerAngleRate() {
-        doTestSymmetry(AttitudeType.EULER_ANGLE_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AttitudeType.EULER_ANGLE_DERIVATIVE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
                        2.0e-15, 3.0e-16);
     }
 
     @Test
     public void testSymmetrySpin() {
         doTestSymmetry(AttitudeType.SPIN, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
-                       8.0e-16, 5.0e-16);
+                       8.2e-16, 5.0e-16);
     }
 
     private void doTestSymmetry(AttitudeType type,
@@ -471,7 +456,7 @@ public class AEMAttitudeTypeTest {
 
         for (RotationOrder order : RotationOrder.values()) {
             final double fixedTolRate;
-            if (type == AttitudeType.EULER_ANGLE_RATE &&
+            if (type == AttitudeType.EULER_ANGLE_DERIVATIVE &&
                 order.name().charAt(0) == order.name().charAt(2)) {
                 // the rate definition in CCSDS cannot handle Euler angles with repeated axes
                 fixedTolRate = Double.POSITIVE_INFINITY;
@@ -502,7 +487,7 @@ public class AEMAttitudeTypeTest {
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
                                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO_FRAME, "1"),
                                                           "GYRO 1"));
-        if (type == AttitudeType.QUATERNION_RATE || type == AttitudeType.EULER_ANGLE_RATE) {
+        if (type == AttitudeType.QUATERNION_ANGVEL || type == AttitudeType.EULER_ANGLE_DERIVATIVE) {
             metadata.setRateFrameIsA(rateFrameIsA);
         }
         metadata.setIsFirst(isFirst);
@@ -530,9 +515,7 @@ public class AEMAttitudeTypeTest {
 
     @Test
     public void testInvalidAttitudeType() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            AttitudeType.parseType("TAG");
-        });
+        Assertions.assertThrows(OrekitException.class, () -> AttitudeType.parseType("TAG"));
     }
 
 }

@@ -58,14 +58,14 @@ enum ApmDataSubStructureKey {
     /** Spin elements. */
     spin((token, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
 
+    /** Spacecraft parameters section (ADM V1 only). */
+    spacecraftParameters((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
+
     /** Inertia elements. */
     INERTIA((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
 
     /** Inertia elements. */
     inertia((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
-
-    /** Spacecraft parameters section (ADM V1 only). */
-    spacecraftParameters((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
 
     /** Maneuver parameters section. */
     MAN((token, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START)),

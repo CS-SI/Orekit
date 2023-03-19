@@ -125,8 +125,8 @@ public class APMParserTest {
         Assertions.assertTrue(Double.isNaN(file.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
         Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
-                            file.getData().getQuaternionBlock().getAttitude(file.getData().getEpoch(), null, null).getDate());
-        Assertions.assertEquals(0.0, file.getData().getQuaternionBlock().getAttitude(file.getData().getEpoch(), null, null).getSpin().getNorm(), 1.0e-15);
+                            file.getAttitude(null, null).getDate());
+        Assertions.assertEquals(0.0, file.getAttitude(null, null).getSpin().getNorm(), 1.0e-15);
 
         Attitude attitude = file.getAttitude(null, null);
         Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
@@ -423,16 +423,12 @@ public class APMParserTest {
         Assertions.assertEquals(0.00001, segment.getData().getQuaternionBlock().getQuaternionDot().getQ1(), QUATERNION_PRECISION);
         Assertions.assertEquals(0.07543, segment.getData().getQuaternionBlock().getQuaternionDot().getQ2(), QUATERNION_PRECISION);
         Assertions.assertEquals(0.00949, segment.getData().getQuaternionBlock().getQuaternionDot().getQ3(), QUATERNION_PRECISION);
-        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
-                                             TimeScalesFactory.getUTC()),
-                            segment.getData().getQuaternionBlock().getAttitude(segment.getData().getEpoch(), null, null).getDate());
-        Assertions.assertEquals(8.63363e-2,
-                            segment.getData().getQuaternionBlock().getAttitude(segment.getData().getEpoch(), null, null).getSpin().getNorm(),
-                            1.0e-7);
+        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
+                                segment.getData().getAttitude(null, null).getDate());
+        Assertions.assertEquals(8.63363e-2, segment.getData().getAttitude(null, null).getSpin().getNorm(), 1.0e-7);
 
         Attitude attitude = file.getAttitude(null, null);
-        Assertions.assertEquals(segment.getData().getEpoch(),
-                            attitude.getDate());
+        Assertions.assertEquals(segment.getData().getEpoch(), attitude.getDate());
         Assertions.assertEquals(8.63363e-2, attitude.getSpin().getNorm(), 1.0e-7);
 
     }
@@ -495,6 +491,7 @@ public class APMParserTest {
         Assertions.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ3()));
 
         Assertions.assertEquals(RotationOrder.ZXY, segment.getData().getEulerBlock().getEulerRotSeq());
+        Assertions.assertFalse(segment.getData().getEulerBlock().hasAngles());
         Assertions.assertTrue(Double.isNaN(segment.getData().getEulerBlock().getRotationAngles()[0]));
         Assertions.assertTrue(Double.isNaN(segment.getData().getEulerBlock().getRotationAngles()[1]));
         Assertions.assertTrue(Double.isNaN(segment.getData().getEulerBlock().getRotationAngles()[2]));
@@ -504,7 +501,7 @@ public class APMParserTest {
 
         Attitude attitude = file.getAttitude(null, null);
         Assertions.assertEquals(segment.getData().getEpoch(), attitude.getDate());
-        Assertions.assertEquals(1.9449e-3, attitude.getSpin().getNorm(), 1.0e-7);
+        Assertions.assertEquals(2.0137e-3, attitude.getSpin().getNorm(), 1.0e-7);
 
     }
 
@@ -637,7 +634,7 @@ public class APMParserTest {
 
         Attitude attitude = file.getAttitude(null, null);
         Assertions.assertEquals(segment.getData().getEpoch(), attitude.getDate());
-        Assertions.assertEquals(0.0, attitude.getSpin().getNorm(), 1.0e-15);
+        Assertions.assertEquals(2.22728e-2, attitude.getSpin().getNorm(), 1.0e-7);
 
     }
 
@@ -1054,6 +1051,37 @@ public class APMParserTest {
             Assertions.assertEquals(ext.getName(), oe.getParts()[0]);
         }
 
+    }
+
+    @Test
+    public void testNoLogicalBlocks() {
+        try {
+            final String name = "/ccsds/adm/apm/APM-no-logical-blocks.txt";
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildApmParser().
+            parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_INCOMPLETE_DATA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testNoAttitude() {
+        final String name = "/ccsds/adm/apm/APM-no-attitude.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final Apm apm = new ParserBuilder().
+                        withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+                        buildApmParser().
+                        parseMessage(source);
+        try {
+            apm.getAttitude(FramesFactory.getGCRF(), null);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_INCOMPLETE_DATA, oe.getSpecifier());
+        }
     }
 
     @Test

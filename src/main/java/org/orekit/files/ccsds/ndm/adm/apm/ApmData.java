@@ -20,9 +20,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.complex.Quaternion;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.orekit.attitudes.Attitude;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * Container for Attitude Parameter Message data.
@@ -60,11 +70,11 @@ public class ApmData implements Data {
     /** Simple constructor.
      * @param commentsBlock general comments block
      * @param epoch epoch of the data
-     * @param quaternionBlock quaternion logical block (may be null)
+     * @param quaternionBlock quaternion logical block (may be null in ADM V2 or later)
      * @param eulerBlock Euler angles logicial block (may be null)
      * @param angularVelocityBlock angular velocity block (may be null)
      * @param spinStabilizedBlock spin-stabilized logical block (may be null)
-     * @param spacecraftParameters spacecraft parameters logical block (may be null)
+     * @param inertia inertia logical block (may be null)
      */
     public ApmData(final CommentsContainer commentsBlock,
                    final AbsoluteDate epoch,
@@ -72,20 +82,35 @@ public class ApmData implements Data {
                    final Euler eulerBlock,
                    final AngularVelocity angularVelocityBlock,
                    final SpinStabilized spinStabilizedBlock,
-                   final Inertia spacecraftParameters) {
+                   final Inertia inertia) {
         this.commentsBlock        = commentsBlock;
         this.epoch                = epoch;
         this.quaternionBlock      = quaternionBlock;
         this.eulerBlock           = eulerBlock;
         this.angularVelocityBlock = angularVelocityBlock;
         this.spinStabilizedBlock  = spinStabilizedBlock;
-        this.inertia = spacecraftParameters;
+        this.inertia              = inertia;
         this.maneuvers            = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
+
+        if (version < 2.0) {
+            // quaternion block is mandatory in ADM V1
+            if (quaternionBlock == null) {
+                // generate a dummy entry just for triggering the exception
+                new ApmQuaternion().validate(version);
+            }
+        } else {
+            // at least one logical block is mandatory in ADM V2
+            if (quaternionBlock == null && eulerBlock == null && angularVelocityBlock == null &&
+                spinStabilizedBlock == null && inertia == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_INCOMPLETE_DATA);
+            }
+        }
+
         if (quaternionBlock != null) {
             quaternionBlock.validate(version);
         }
@@ -104,6 +129,7 @@ public class ApmData implements Data {
         for (final Maneuver maneuver : maneuvers) {
             maneuver.validate(version);
         }
+
     }
 
     /** Get the comments.
@@ -198,6 +224,142 @@ public class ApmData implements Data {
      */
     public boolean hasManeuvers() {
         return !maneuvers.isEmpty();
+    }
+
+    /** Get the attitude.
+     * @param frame reference frame with respect to which attitude must be defined,
+     * (may be null if attitude is <em>not</em> orbit-relative and one wants
+     * attitude in the same frame as used in the attitude message)
+     * @param pvProvider provider for spacecraft position and velocity
+     * (may be null if attitude is <em>not</em> orbit-relative)
+     * @return attitude
+     * @since 12.0
+     */
+    public Attitude getAttitude(final Frame frame, final PVCoordinatesProvider pvProvider) {
+
+        if (quaternionBlock != null) {
+            // we have a quaternion
+            final Quaternion q = quaternionBlock.getQuaternion();
+
+            final TimeStampedAngularCoordinates tac;
+            if (quaternionBlock.hasRates()) {
+                // quaternion logical block includes everything we need
+                final Quaternion qDot = quaternionBlock.getQuaternionDot();
+                tac = AttitudeType.QUATERNION_DERIVATIVE.build(true, quaternionBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                               null, true, epoch,
+                                                               q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
+                                                               qDot.getQ0(), qDot.getQ1(), qDot.getQ2(), qDot.getQ3());
+            } else if (angularVelocityBlock != null) {
+                // get derivatives from the angular velocity logical block
+                tac = AttitudeType.QUATERNION_ANGVEL.build(true,
+                                                           quaternionBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                           null, true, epoch,
+                                                           q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
+                                                           angularVelocityBlock.getAngVelX(),
+                                                           angularVelocityBlock.getAngVelY(),
+                                                           angularVelocityBlock.getAngVelZ());
+            } else if (eulerBlock != null && eulerBlock.hasRates()) {
+                // get derivatives from the Euler logical block
+                final double[]   angles;
+                if (eulerBlock.hasAngles()) {
+                    // the Euler block has everything we need
+                    angles = eulerBlock.getRotationAngles();
+                } else {
+                    // the Euler block has only the rates (we are certainly using an ADM V1 message)
+                    // we need to rebuild the Euler angles from the quaternion
+                    angles = new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true).
+                             getAngles(eulerBlock.getEulerRotSeq(), RotationConvention.FRAME_TRANSFORM);
+                }
+                final double[] rates = eulerBlock.getRotationRates();
+                tac = AttitudeType.EULER_ANGLE_DERIVATIVE.build(true,
+                                                                eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                                eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
+                                                                angles[0], angles[1], angles[2],
+                                                                rates[0], rates[1], rates[2]);
+
+            } else {
+                // we rely only on the quaternion logical block, despite it doesn't include rates
+                tac = AttitudeType.QUATERNION.build(true, quaternionBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                    null, true, epoch,
+                                                    q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3());
+            }
+
+            // build the attitude
+            return quaternionBlock.getEndpoints().build(frame, pvProvider, tac);
+
+        } else if (eulerBlock != null) {
+            // we have Euler angles
+            final double[] angles = eulerBlock.getRotationAngles();
+
+            final TimeStampedAngularCoordinates tac;
+            if (eulerBlock.hasRates()) {
+                // the Euler block has everything we need
+                final double[] rates = eulerBlock.getRotationRates();
+                tac = AttitudeType.EULER_ANGLE_DERIVATIVE.build(true,
+                                                                eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                                eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
+                                                                angles[0], angles[1], angles[2],
+                                                                rates[0], rates[1], rates[2]);
+            } else if (angularVelocityBlock != null) {
+                // get derivatives from the angular velocity logical block
+                tac = AttitudeType.EULER_ANGLE_ANGVEL.build(true,
+                                                            quaternionBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                            eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
+                                                            angles[0], angles[1], angles[2],
+                                                            angularVelocityBlock.getAngVelX(),
+                                                            angularVelocityBlock.getAngVelY(),
+                                                            angularVelocityBlock.getAngVelZ());
+            } else {
+                // we rely only on the Euler logical block, despite it doesn't include rates
+                tac = AttitudeType.EULER_ANGLE.build(true,
+                                                     eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                     eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
+                                                     angles[0], angles[1], angles[2]);
+            }
+
+            // build the attitude
+            return eulerBlock.getEndpoints().build(frame, pvProvider, tac);
+
+        } else if (spinStabilizedBlock != null) {
+            // we have a spin block
+
+            final TimeStampedAngularCoordinates tac;
+            if (spinStabilizedBlock.hasNutation()) {
+                // we rely only on nutation
+                tac = AttitudeType.SPIN_NUTATION_MOMENTUM.build(true, true, null, true, epoch,
+                                                                spinStabilizedBlock.getSpinAlpha(),
+                                                                spinStabilizedBlock.getSpinDelta(),
+                                                                spinStabilizedBlock.getSpinAngle(),
+                                                                spinStabilizedBlock.getSpinAngleVel(),
+                                                                spinStabilizedBlock.getNutation(),
+                                                                spinStabilizedBlock.getNutationPeriod(),
+                                                                spinStabilizedBlock.getNutationPhase());
+            } else if (spinStabilizedBlock.hasMomentum()) {
+                // we rely only on momentum
+                tac = AttitudeType.SPIN_NUTATION_MOMENTUM.build(true, true, null, true, epoch,
+                                                                spinStabilizedBlock.getSpinAlpha(),
+                                                                spinStabilizedBlock.getSpinDelta(),
+                                                                spinStabilizedBlock.getSpinAngle(),
+                                                                spinStabilizedBlock.getSpinAngleVel(),
+                                                                spinStabilizedBlock.getMomentumAlpha(),
+                                                                spinStabilizedBlock.getMomentumDelta(),
+                                                                spinStabilizedBlock.getNutationVel());
+            } else {
+                // we rely only on the spin logical block, despite it doesn't include rates
+                tac = AttitudeType.SPIN.build(true, true, null, true, epoch,
+                                              spinStabilizedBlock.getSpinAlpha(),
+                                              spinStabilizedBlock.getSpinDelta(),
+                                              spinStabilizedBlock.getSpinAngle(),
+                                              spinStabilizedBlock.getSpinAngleVel());
+            }
+
+            // build the attitude
+            return spinStabilizedBlock.getEndpoints().build(frame, pvProvider, tac);
+
+        } else {
+            throw new OrekitException(OrekitMessages.CCSDS_INCOMPLETE_DATA);
+        }
+
     }
 
 }

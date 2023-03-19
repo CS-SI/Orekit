@@ -196,14 +196,14 @@ public class AttitudeWriterTest {
         final String id1 = "1999-012A";
         final String id2 = "1999-012B";
         StandAloneEphemerisFile file = new StandAloneEphemerisFile();
-        file.generate(id1, id1 + "-name", AttitudeType.QUATERNION_RATE,
+        file.generate(id1, id1 + "-name", AttitudeType.QUATERNION_ANGVEL,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,
                                                         new Vector3D(0.000, 0.010, 0.000),
                                                         new Vector3D(0.000, 0.000, 0.001)),
                       900.0, 60.0);
-        file.generate(id2, id2 + "-name", AttitudeType.QUATERNION_RATE,
+        file.generate(id2, id2 + "-name", AttitudeType.QUATERNION_ANGVEL,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,

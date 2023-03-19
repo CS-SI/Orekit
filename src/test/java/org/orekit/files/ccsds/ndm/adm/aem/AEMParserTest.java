@@ -378,13 +378,8 @@ public class AEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
 
-        try {
-            parser.parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
-        }  catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
-        }
+        final Aem file = parser.parseMessage(source);
+
     }
 
     @Test
@@ -478,7 +473,7 @@ public class AEMParserTest {
                             segment0.getMetadata().getStartTime());
         Assertions.assertEquals(new AbsoluteDate("2020-090T05:00:00.946", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assertions.assertEquals(AttitudeType.EULER_ANGLE_RATE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_DERIVATIVE, segment0.getMetadata().getAttitudeType());
 
         final AbsoluteDate refDate = new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC());
 
