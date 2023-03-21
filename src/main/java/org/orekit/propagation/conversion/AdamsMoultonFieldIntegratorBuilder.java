@@ -20,52 +20,40 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonFieldIntegrator;
-import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
-/** Builder for AdamsMoultonFieldIntegrator.
+/**
+ * Builder for AdamsMoultonFieldIntegrator.
+ *
  * @author Pascal Parraud
  * @author Vincent Cucchietti
  * @since 12.0
  */
-public class AdamsMoultonFieldIntegratorBuilder <T extends CalculusFieldElement<T>> implements FieldODEIntegratorBuilder<T> {
+public class AdamsMoultonFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
+        extends AbstractLimitedVariableStepFieldIntegratorBuilder<T> {
 
-    /** Number of steps. */
-    private final int nSteps;
-
-    /** Minimum step size (s). */
-    private final double minStep;
-
-    /** Maximum step size (s). */
-    private final double maxStep;
-
-    /** Minimum step size (s). */
-    private final double dP;
-
-    /** Build a new instance.
+    /**
+     * Build a new instance.
+     *
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
+     *
      * @see AdamsMoultonFieldIntegrator
      * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public AdamsMoultonFieldIntegratorBuilder(final int nSteps, final double minStep,
                                               final double maxStep, final double dP) {
-        this.nSteps  = nSteps;
-        this.minStep = minStep;
-        this.maxStep = maxStep;
-        this.dP      = dP;
+        super(nSteps, minStep, maxStep, dP);
     }
 
     /** {@inheritDoc} */
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field,
-                                                      final FieldOrbit<T> orbit,
-                                                      final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit.toOrbit(), orbitType);
+    @Override
+    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new AdamsMoultonFieldIntegrator<>(field, nSteps, minStep, maxStep, tol[0], tol[1]);
     }
-
 }

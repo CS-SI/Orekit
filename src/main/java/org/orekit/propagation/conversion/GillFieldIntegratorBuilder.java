@@ -20,32 +20,47 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.GillFieldIntegrator;
-import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
-/** Builder for GillFieldIntegrator.
+/**
+ * Builder for GillFieldIntegrator.
+ *
  * @author Pascal Parraud
  * @author Vincent Cucchietti
  * @since 12.0
  */
-public class GillFieldIntegratorBuilder<T extends CalculusFieldElement<T>> implements FieldODEIntegratorBuilder<T> {
+public class GillFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
+        extends AbstractFixedStepFieldIntegratorBuilder<T> {
 
-    /** Step size (s). */
-    private final T step;
-
-    /** Build a new instance.
+    /**
+     * Constructor.
+     *
      * @param step step size (s)
+     *
+     * @see GillFieldIntegrator
+     */
+    public GillFieldIntegratorBuilder(final double step) {
+        super(step);
+    }
+
+    /**
+     * Constructor using a "fielded" step.
+     * <p>
+     * <b>WARNING : Given "fielded" step must be using the same field as the one that will be used when calling
+     * {@link #buildIntegrator}</b>
+     *
+     * @param step step size (s)
+     *
      * @see GillFieldIntegrator
      */
     public GillFieldIntegratorBuilder(final T step) {
-        this.step = step;
+        super(step);
     }
 
     /** {@inheritDoc} */
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field,
-                                                      final FieldOrbit<T> orbit,
-                                                      final OrbitType orbitType) {
-        return new GillFieldIntegrator<>(field, step);
+    @Override
+    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+        return new GillFieldIntegrator<>(field, getFieldStep(field));
     }
-
 }
