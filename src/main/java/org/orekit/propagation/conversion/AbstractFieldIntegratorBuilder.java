@@ -19,39 +19,25 @@ package org.orekit.propagation.conversion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
-import org.hipparchus.ode.nonstiff.HighamHall54FieldIntegrator;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
 
 /**
- * Builder for HighamHall54Integrator.
+ * Abstract class for {@link FieldODEIntegratorBuilder}.
  *
- * @author Pascal Parraud
+ * @param <T>
+ *
  * @author Vincent Cucchietti
- * @since 12.0
  */
-public class HighamHall54FieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractVariableStepFieldIntegratorBuilder<T> {
-
-    /**
-     * Build a new instance.
-     *
-     * @param minStep minimum step size (s)
-     * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     *
-     * @see HighamHall54FieldIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
-     */
-    public HighamHall54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
-    }
+public abstract class AbstractFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
+        implements FieldODEIntegratorBuilder<T> {
 
     /** {@inheritDoc} */
-    @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-        return new HighamHall54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
+    public abstract AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType);
+
+    /** {@inheritDoc} */
+    public AbstractFieldIntegrator<T> buildIntegrator(final FieldOrbit<T> orbit, final OrbitType orbitType) {
+        return buildIntegrator(orbit.getA().getField(), orbit.toOrbit(), orbitType);
     }
 }

@@ -20,30 +20,47 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ThreeEighthesFieldIntegrator;
-import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
-/** Builder for ThreeEighthesFieldIntegrator.
+/**
+ * Builder for ThreeEighthesFieldIntegrator.
+ *
  * @author Pascal Parraud
  * @author Vincent Cucchietti
  * @since 12.0
  */
-public class ThreeEighthesFieldIntegratorBuilder <T extends CalculusFieldElement<T>> implements FieldODEIntegratorBuilder<T> {
+public class ThreeEighthesFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
+        extends AbstractFixedStepFieldIntegratorBuilder<T> {
 
-    /** Step size (s). */
-    private final T step;
-
-    /** Build a new instance.
+    /**
+     * Constructor.
+     *
      * @param step step size (s)
+     *
+     * @see ThreeEighthesFieldIntegrator
+     */
+    public ThreeEighthesFieldIntegratorBuilder(final double step) {
+        super(step);
+    }
+
+    /**
+     * Constructor using a "fielded" step.
+     * <p>
+     * <b>WARNING : Given "fielded" step must be using the same field as the one that will be used when calling
+     * {@link #buildIntegrator}</b>
+     *
+     * @param step step size (s)
+     *
      * @see ThreeEighthesFieldIntegrator
      */
     public ThreeEighthesFieldIntegratorBuilder(final T step) {
-        this.step = step;
+        super(step);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final FieldOrbit<T> orbit,
-                                                      final OrbitType orbitType) {
-        return new ThreeEighthesFieldIntegrator<>(field, step);
+    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+        return new ThreeEighthesFieldIntegrator<>(field, getFieldStep(field));
     }
 }

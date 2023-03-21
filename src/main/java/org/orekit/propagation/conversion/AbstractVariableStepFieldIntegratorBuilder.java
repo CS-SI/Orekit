@@ -19,39 +19,44 @@ package org.orekit.propagation.conversion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
-import org.hipparchus.ode.nonstiff.HighamHall54FieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
 
 /**
- * Builder for HighamHall54Integrator.
+ * Abstract class for integrator builder using variable step size.
  *
- * @author Pascal Parraud
+ * @param <T> type of the field elements
+ *
  * @author Vincent Cucchietti
- * @since 12.0
  */
-public class HighamHall54FieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractVariableStepFieldIntegratorBuilder<T> {
+public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
+        extends AbstractFieldIntegratorBuilder<T> {
+
+    // CHECKSTYLE: stop VisibilityModifier check
+    /** Minimum step size (s). */
+    protected final double minStep;
+
+    /** Maximum step size (s). */
+    protected final double maxStep;
+
+    /** Position error (m). */
+    protected final double dP;
+    // CHECKSTYLE: resume VisibilityModifier check
 
     /**
-     * Build a new instance.
+     * Constructor.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
-     *
-     * @see HighamHall54FieldIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
-    public HighamHall54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+    AbstractVariableStepFieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
+        this.minStep = minStep;
+        this.maxStep = maxStep;
+        this.dP      = dP;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-        return new HighamHall54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
-    }
+    public abstract AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType);
 }
