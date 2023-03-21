@@ -1070,7 +1070,9 @@ public class CRDParser {
                 int    span       = 0;
                 double returnRate = Double.NaN;
                 if (pi.version == 2) {
-                    span       = Integer.parseInt(values[16]);
+                    // fixed 20230321
+                    // the span may be "na"
+                    span       = readIntegerWithNaN(values[16], -1);
                     returnRate = Double.parseDouble(values[17]);
                 }
 
