@@ -192,6 +192,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
     CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS("wrong number of units for maneuver {0}"),
     CCSDS_MANEUVER_MISSING_TIME("missing time field for maneuver {0}"),
+    CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES("cannot estimate precession without proper derivatives"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),

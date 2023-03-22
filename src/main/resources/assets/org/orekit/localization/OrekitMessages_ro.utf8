@@ -361,6 +361,9 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = niciun convertor de unitate pseudo-dis
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = Sistemul de timp ar fi trebuit deja configurat înaintea liniei {0} din fișierul {1}
 
+# cannot estimate precession without proper derivatives
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = <MISSING TRANSLATION>
+
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = numele "{0}" este deja folosit pentru o stare adițională
 
