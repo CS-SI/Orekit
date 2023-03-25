@@ -65,6 +65,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
+import org.orekit.utils.ModifiedRodrigues;
 import org.orekit.utils.PVCoordinates;
 
 public class FramesFactoryTest {
@@ -661,7 +662,7 @@ public class FramesFactoryTest {
                                                                         ac.getRotation().getQ3(), previous.getQ3());
                         sign = FastMath.copySign(1.0, dot * sign);
                         previous = ac.getRotation();
-                        return ac.getModifiedRodrigues(sign)[0];
+                        return new ModifiedRodrigues(sign, ac).getValue().toArray();
                     }
                 });
 

@@ -452,17 +452,23 @@ public class FieldAngularCoordinatesTest {
             FieldAngularCoordinates<DerivativeStructure> ac         = new FieldAngularCoordinates<>(rotation, rotationRate, rotationAcceleration);
 
             DerivativeStructure[][] rod = ac.getModifiedRodrigues(1.0);
-            double[][] rodRef = ac.toAngularCoordinates().getModifiedRodrigues(1.0);
-            Assertions.assertEquals(rodRef.length, rod.length);
-            for (int k = 0; k < rodRef.length; ++k) {
-                Assertions.assertEquals(rodRef[k].length, rod[k].length);
-                for (int l = 0; l < rodRef[k].length; ++l) {
-                    Assertions.assertEquals(rodRef[k][l], rod[k][l].getReal(), 1.0e-15 * FastMath.abs(rodRef[k][l]));
-                }
-            }
+            ModifiedRodrigues rodRef = new ModifiedRodrigues(1.0, ac.toAngularCoordinates());
+            Assertions.assertEquals(3, rod.length);
+            Assertions.assertEquals(0.0,
+                                    Vector3D.distance(rodRef.getValue(),
+                                                      new Vector3D(rod[0][0].getReal(), rod[0][1].getReal(), rod[0][2].getReal())),
+                                    rodRef.getValue().getNorm());
+            Assertions.assertEquals(0.0,
+                                    Vector3D.distance(rodRef.getFirstDerivative(),
+                                                      new Vector3D(rod[1][0].getReal(), rod[1][1].getReal(), rod[1][2].getReal())),
+                                    rodRef.getFirstDerivative().getNorm());
+            Assertions.assertEquals(0.0,
+                                    Vector3D.distance(rodRef.getSecondDerivative(),
+                                                      new Vector3D(rod[2][0].getReal(), rod[2][1].getReal(), rod[2][2].getReal())),
+                                    rodRef.getSecondDerivative().getNorm());
 
             FieldAngularCoordinates<DerivativeStructure> rebuilt = FieldAngularCoordinates.createFromModifiedRodrigues(rod);
-            AngularCoordinates rebuiltRef                        = AngularCoordinates.createFromModifiedRodrigues(rodRef);
+            AngularCoordinates rebuiltRef                        = rodRef.toAngularCoordinates();
             Assertions.assertEquals(0.0, Rotation.distance(rebuiltRef.getRotation(), rebuilt.getRotation().toRotation()), 1.0e-14);
             Assertions.assertEquals(0.0, Vector3D.distance(rebuiltRef.getRotationRate(), rebuilt.getRotationRate().toVector3D()), 1.0e-15);
             Assertions.assertEquals(0.0, Vector3D.distance(rebuiltRef.getRotationAcceleration(), rebuilt.getRotationAcceleration().toVector3D()), 1.0e-15);

@@ -24,20 +24,12 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.DecompositionSolver;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.QRDecomposition;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -65,22 +57,53 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140414L;
+    private static final long serialVersionUID = 20230325L;
 
-    /** Rotation. */
-    private final Rotation rotation;
-
-    /** Rotation rate. */
-    private final Vector3D rotationRate;
-
-    /** Rotation acceleration. */
-    private final Vector3D rotationAcceleration;
+    /** Rotation and its derivatives. */
+    private final FieldRotation<UnivariateDerivative2> rotation;
 
     /** Simple constructor.
      * <p> Sets the Coordinates to default : Identity, Ω = (0 0 0), dΩ/dt = (0 0 0).</p>
      */
     public AngularCoordinates() {
-        this(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        this(FieldRotation.getIdentity(UnivariateDerivative2Field.getInstance()));
+    }
+
+    /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link Derivative}&gt;.
+     * <p>
+     * The rotation components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param r rotation with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
+     */
+    public <U extends Derivative<U>> AngularCoordinates(final FieldRotation<U> r) {
+
+        final Derivative<U> q0 = r.getQ0();
+        final Derivative<U> q1 = r.getQ1();
+        final Derivative<U> q2 = r.getQ2();
+        final Derivative<U> q3 = r.getQ3();
+
+        if (r.getQ0().getOrder() == 0) {
+            rotation = new FieldRotation<>(new UnivariateDerivative2(q0.getReal(), 0.0, 0.0),
+                                           new UnivariateDerivative2(q1.getReal(), 0.0, 0.0),
+                                           new UnivariateDerivative2(q2.getReal(), 0.0, 0.0),
+                                           new UnivariateDerivative2(q3.getReal(), 0.0, 0.0),
+                                           false);
+        } else if (r.getQ0().getOrder() == 1) {
+            rotation = new FieldRotation<>(new UnivariateDerivative2(q0.getReal(), q0.getPartialDerivative(1), 0.0),
+                                           new UnivariateDerivative2(q1.getReal(), q1.getPartialDerivative(1), 0.0),
+                                           new UnivariateDerivative2(q2.getReal(), q2.getPartialDerivative(1), 0.0),
+                                           new UnivariateDerivative2(q3.getReal(), q3.getPartialDerivative(1), 0.0),
+                                           false);
+        } else {
+            rotation = new FieldRotation<>(new UnivariateDerivative2(q0.getReal(), q0.getPartialDerivative(1), q0.getPartialDerivative(2)),
+                                           new UnivariateDerivative2(q1.getReal(), q1.getPartialDerivative(1), q1.getPartialDerivative(2)),
+                                           new UnivariateDerivative2(q2.getReal(), q2.getPartialDerivative(1), q2.getPartialDerivative(2)),
+                                           new UnivariateDerivative2(q3.getReal(), q3.getPartialDerivative(1), q3.getPartialDerivative(2)),
+                                           false);
+        }
+
     }
 
     /** Builds a rotation/rotation rate pair.
@@ -98,9 +121,38 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      */
     public AngularCoordinates(final Rotation rotation,
                               final Vector3D rotationRate, final Vector3D rotationAcceleration) {
-        this.rotation             = rotation;
-        this.rotationRate         = rotationRate;
-        this.rotationAcceleration = rotationAcceleration;
+        // quaternion components
+        final double q0 = rotation.getQ0();
+        final double q1 = rotation.getQ1();
+        final double q2 = rotation.getQ2();
+        final double q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final double oX    = rotationRate.getX();
+        final double oY    = rotationRate.getY();
+        final double oZ    = rotationRate.getZ();
+        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
+        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
+        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
+        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
+
+        // second time-derivatives of the quaternion
+        final double oXDotO2  = 0.5  * rotationAcceleration.getX();
+        final double oYDotO2  = 0.5  * rotationAcceleration.getY();
+        final double oZDotO2  = 0.5  * rotationAcceleration.getZ();
+        final double o2o4     = 0.25 * (oX * oX + oY * oY + oZ * oZ);
+        final double q0DotDot = -0.5 * MathArrays.linearCombination(-q1, oXDotO2, -q2, oYDotO2, -q3, oZDotO2, -q0, o2o4);
+        final double q1DotDot =  0.5 * MathArrays.linearCombination( q0, oXDotO2, -q3, oYDotO2,  q2, oZDotO2, -q1, o2o4);
+        final double q2DotDot =  0.5 * MathArrays.linearCombination( q3, oXDotO2,  q0, oYDotO2, -q1, oZDotO2, -q2, o2o4);
+        final double q3DotDot =  0.5 * MathArrays.linearCombination(-q2, oXDotO2,  q1, oYDotO2,  q0, oZDotO2, -q3, o2o4);
+
+        final UnivariateDerivative2 q0UD = new UnivariateDerivative2(q0, q0Dot, q0DotDot);
+        final UnivariateDerivative2 q1UD = new UnivariateDerivative2(q1, q1Dot, q1DotDot);
+        final UnivariateDerivative2 q2UD = new UnivariateDerivative2(q2, q2Dot, q2DotDot);
+        final UnivariateDerivative2 q3UD = new UnivariateDerivative2(q3, q3Dot, q3DotDot);
+
+        this.rotation = new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
+
     }
 
     /**
@@ -136,38 +188,10 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     public AngularCoordinates(final PVCoordinates u1, final PVCoordinates u2,
                               final PVCoordinates v1, final PVCoordinates v2,
                               final double tolerance) {
-
-        try {
-            // find the initial fixed rotation
-            rotation = new Rotation(u1.getPosition(), u2.getPosition(),
-                                    v1.getPosition(), v2.getPosition());
-
-            // find rotation rate Ω such that
-            //  Ω ⨯ v₁ = r(dot(u₁)) - dot(v₁)
-            //  Ω ⨯ v₂ = r(dot(u₂)) - dot(v₂)
-            final Vector3D ru1Dot = rotation.applyTo(u1.getVelocity());
-            final Vector3D ru2Dot = rotation.applyTo(u2.getVelocity());
-            rotationRate = inverseCrossProducts(v1.getPosition(), ru1Dot.subtract(v1.getVelocity()),
-                                                v2.getPosition(), ru2Dot.subtract(v2.getVelocity()),
-                                                tolerance);
-
-            // find rotation acceleration dot(Ω) such that
-            // dot(Ω) ⨯ v₁ = r(dotdot(u₁)) - 2 Ω ⨯ dot(v₁) - Ω ⨯  (Ω ⨯ v₁) - dotdot(v₁)
-            // dot(Ω) ⨯ v₂ = r(dotdot(u₂)) - 2 Ω ⨯ dot(v₂) - Ω ⨯  (Ω ⨯ v₂) - dotdot(v₂)
-            final Vector3D ru1DotDot = rotation.applyTo(u1.getAcceleration());
-            final Vector3D oDotv1    = Vector3D.crossProduct(rotationRate, v1.getVelocity());
-            final Vector3D oov1      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v1.getPosition()));
-            final Vector3D c1        = new Vector3D(1, ru1DotDot, -2, oDotv1, -1, oov1, -1, v1.getAcceleration());
-            final Vector3D ru2DotDot = rotation.applyTo(u2.getAcceleration());
-            final Vector3D oDotv2    = Vector3D.crossProduct(rotationRate, v2.getVelocity());
-            final Vector3D oov2      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v2.getPosition()));
-            final Vector3D c2        = new Vector3D(1, ru2DotDot, -2, oDotv2, -1, oov2, -1, v2.getAcceleration());
-            rotationAcceleration     = inverseCrossProducts(v1.getPosition(), c1, v2.getPosition(), c2, tolerance);
-
-        } catch (MathRuntimeException mrte) {
-            throw new OrekitException(mrte);
-        }
-
+        rotation = new FieldRotation<>(u1.toUnivariateDerivative2Vector(),
+                                       u2.toUnivariateDerivative2Vector(),
+                                       v1.toUnivariateDerivative2Vector(),
+                                       v2.toUnivariateDerivative2Vector());
     }
 
     /** Build one of the rotations that transform one pv coordinates into another one.
@@ -183,154 +207,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param v desired image of u by the rotation
      */
     public AngularCoordinates(final PVCoordinates u, final PVCoordinates v) {
-        this(new FieldRotation<>(u.toDerivativeStructureVector(2),
-                                 v.toDerivativeStructureVector(2)));
-    }
-
-    /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link Derivative}&gt;.
-     * <p>
-     * The rotation components must have time as their only derivation parameter and
-     * have consistent derivation orders.
-     * </p>
-     * @param r rotation with time-derivatives embedded within the coordinates
-     * @param <U> type of the derivative
-     */
-    public <U extends Derivative<U>> AngularCoordinates(final FieldRotation<U> r) {
-
-        final double q0       = r.getQ0().getReal();
-        final double q1       = r.getQ1().getReal();
-        final double q2       = r.getQ2().getReal();
-        final double q3       = r.getQ3().getReal();
-
-        rotation     = new Rotation(q0, q1, q2, q3, false);
-        if (r.getQ0().getOrder() >= 1) {
-            final double q0Dot    = r.getQ0().getPartialDerivative(1);
-            final double q1Dot    = r.getQ1().getPartialDerivative(1);
-            final double q2Dot    = r.getQ2().getPartialDerivative(1);
-            final double q3Dot    = r.getQ3().getPartialDerivative(1);
-            rotationRate =
-                    new Vector3D(2 * MathArrays.linearCombination(-q1, q0Dot,  q0, q1Dot,  q3, q2Dot, -q2, q3Dot),
-                                 2 * MathArrays.linearCombination(-q2, q0Dot, -q3, q1Dot,  q0, q2Dot,  q1, q3Dot),
-                                 2 * MathArrays.linearCombination(-q3, q0Dot,  q2, q1Dot, -q1, q2Dot,  q0, q3Dot));
-            if (r.getQ0().getOrder() >= 2) {
-                final double q0DotDot = r.getQ0().getPartialDerivative(2);
-                final double q1DotDot = r.getQ1().getPartialDerivative(2);
-                final double q2DotDot = r.getQ2().getPartialDerivative(2);
-                final double q3DotDot = r.getQ3().getPartialDerivative(2);
-                rotationAcceleration =
-                        new Vector3D(2 * MathArrays.linearCombination(-q1, q0DotDot,  q0, q1DotDot,  q3, q2DotDot, -q2, q3DotDot),
-                                     2 * MathArrays.linearCombination(-q2, q0DotDot, -q3, q1DotDot,  q0, q2DotDot,  q1, q3DotDot),
-                                     2 * MathArrays.linearCombination(-q3, q0DotDot,  q2, q1DotDot, -q1, q2DotDot,  q0, q3DotDot));
-            } else {
-                rotationAcceleration = Vector3D.ZERO;
-            }
-        } else {
-            rotationRate         = Vector3D.ZERO;
-            rotationAcceleration = Vector3D.ZERO;
-        }
-
-    }
-
-    /** Find a vector from two known cross products.
-     * <p>
-     * We want to find Ω such that: Ω ⨯ v₁ = c₁ and Ω ⨯ v₂ = c₂
-     * </p>
-     * <p>
-     * The first equation (Ω ⨯ v₁ = c₁) will always be fulfilled exactly,
-     * and the second one will be fulfilled if possible.
-     * </p>
-     * @param v1 vector forming the first known cross product
-     * @param c1 know vector for cross product Ω ⨯ v₁
-     * @param v2 vector forming the second known cross product
-     * @param c2 know vector for cross product Ω ⨯ v₂
-     * @param tolerance relative tolerance factor used to check singularities
-     * @return vector Ω such that: Ω ⨯ v₁ = c₁ and Ω ⨯ v₂ = c₂
-     * @exception MathIllegalArgumentException if vectors are inconsistent and
-     * no solution can be found
-     */
-    private static Vector3D inverseCrossProducts(final Vector3D v1, final Vector3D c1,
-                                                 final Vector3D v2, final Vector3D c2,
-                                                 final double tolerance)
-        throws MathIllegalArgumentException {
-
-        final double v12 = v1.getNormSq();
-        final double v1n = FastMath.sqrt(v12);
-        final double v22 = v2.getNormSq();
-        final double v2n = FastMath.sqrt(v22);
-        final double threshold = tolerance * FastMath.max(v1n, v2n);
-
-        Vector3D omega;
-
-        try {
-            // create the over-determined linear system representing the two cross products
-            final RealMatrix m = MatrixUtils.createRealMatrix(6, 3);
-            m.setEntry(0, 1,  v1.getZ());
-            m.setEntry(0, 2, -v1.getY());
-            m.setEntry(1, 0, -v1.getZ());
-            m.setEntry(1, 2,  v1.getX());
-            m.setEntry(2, 0,  v1.getY());
-            m.setEntry(2, 1, -v1.getX());
-            m.setEntry(3, 1,  v2.getZ());
-            m.setEntry(3, 2, -v2.getY());
-            m.setEntry(4, 0, -v2.getZ());
-            m.setEntry(4, 2,  v2.getX());
-            m.setEntry(5, 0,  v2.getY());
-            m.setEntry(5, 1, -v2.getX());
-
-            final RealVector rhs = MatrixUtils.createRealVector(new double[] {
-                c1.getX(), c1.getY(), c1.getZ(),
-                c2.getX(), c2.getY(), c2.getZ()
-            });
-
-            // find the best solution we can
-            final DecompositionSolver solver = new QRDecomposition(m, threshold).getSolver();
-            final RealVector v = solver.solve(rhs);
-            omega = new Vector3D(v.getEntry(0), v.getEntry(1), v.getEntry(2));
-
-        } catch (MathIllegalArgumentException miae) {
-            if (miae.getSpecifier() == LocalizedCoreFormats.SINGULAR_MATRIX) {
-
-                // handle some special cases for which we can compute a solution
-                final double c12 = c1.getNormSq();
-                final double c1n = FastMath.sqrt(c12);
-                final double c22 = c2.getNormSq();
-                final double c2n = FastMath.sqrt(c22);
-
-                if (c1n <= threshold && c2n <= threshold) {
-                    // simple special case, velocities are cancelled
-                    return Vector3D.ZERO;
-                } else if (v1n <= threshold && c1n >= threshold) {
-                    // this is inconsistent, if v₁ is zero, c₁ must be 0 too
-                    throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, c1n, 0, true);
-                } else if (v2n <= threshold && c2n >= threshold) {
-                    // this is inconsistent, if v₂ is zero, c₂ must be 0 too
-                    throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, c2n, 0, true);
-                } else if (Vector3D.crossProduct(v1, v2).getNorm() <= threshold && v12 > threshold) {
-                    // simple special case, v₂ is redundant with v₁, we just ignore it
-                    // use the simplest Ω: orthogonal to both v₁ and c₁
-                    omega = new Vector3D(1.0 / v12, Vector3D.crossProduct(v1, c1));
-                } else {
-                    throw miae;
-                }
-            } else {
-                throw miae;
-            }
-
-        }
-
-        // check results
-        final double d1 = Vector3D.distance(Vector3D.crossProduct(omega, v1), c1);
-        if (d1 > threshold) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, d1, 0, true);
-        }
-
-        final double d2 = Vector3D.distance(Vector3D.crossProduct(omega, v2), c2);
-        if (d2 > threshold) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, d2, 0, true);
-        }
-
-        return omega;
-
+        rotation = new FieldRotation<>(u.toUnivariateDerivative2Vector(),
+                                       v.toUnivariateDerivative2Vector());
     }
 
     /** Transform the instance to a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
@@ -343,78 +221,36 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      */
     public FieldRotation<DerivativeStructure> toDerivativeStructureRotation(final int order) {
 
-        // quaternion components
-        final double q0 = rotation.getQ0();
-        final double q1 = rotation.getQ1();
-        final double q2 = rotation.getQ2();
-        final double q3 = rotation.getQ3();
-
-        // first time-derivatives of the quaternion
-        final double oX    = rotationRate.getX();
-        final double oY    = rotationRate.getY();
-        final double oZ    = rotationRate.getZ();
-        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
-        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
-        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
-        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
-
-        // second time-derivatives of the quaternion
-        final double oXDot = rotationAcceleration.getX();
-        final double oYDot = rotationAcceleration.getY();
-        final double oZDot = rotationAcceleration.getZ();
-        final double q0DotDot = -0.5 * MathArrays.linearCombination(new double[] {
-            q1, q2,  q3, q1Dot, q2Dot,  q3Dot
-        }, new double[] {
-            oXDot, oYDot, oZDot, oX, oY, oZ
-        });
-        final double q1DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q2, -q3, q0Dot, q2Dot, -q3Dot
-        }, new double[] {
-            oXDot, oZDot, oYDot, oX, oZ, oY
-        });
-        final double q2DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q3, -q1, q0Dot, q3Dot, -q1Dot
-        }, new double[] {
-            oYDot, oXDot, oZDot, oY, oX, oZ
-        });
-        final double q3DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q1, -q2, q0Dot, q1Dot, -q2Dot
-        }, new double[] {
-            oZDot, oYDot, oXDot, oZ, oY, oX
-        });
-
+        final UnivariateDerivative2 q0 = rotation.getQ0();
+        final UnivariateDerivative2 q1 = rotation.getQ1();
+        final UnivariateDerivative2 q2 = rotation.getQ2();
+        final UnivariateDerivative2 q3 = rotation.getQ3();
         final DSFactory factory;
-        final DerivativeStructure q0DS;
-        final DerivativeStructure q1DS;
-        final DerivativeStructure q2DS;
-        final DerivativeStructure q3DS;
         switch (order) {
             case 0 :
                 factory = new DSFactory(1, order);
-                q0DS = factory.build(q0);
-                q1DS = factory.build(q1);
-                q2DS = factory.build(q2);
-                q3DS = factory.build(q3);
-                break;
+                return new FieldRotation<>(factory.build(q0.getValue()),
+                                           factory.build(q1.getValue()),
+                                           factory.build(q2.getValue()),
+                                           factory.build(q3.getValue()),
+                                           false);
             case 1 :
                 factory = new DSFactory(1, order);
-                q0DS = factory.build(q0, q0Dot);
-                q1DS = factory.build(q1, q1Dot);
-                q2DS = factory.build(q2, q2Dot);
-                q3DS = factory.build(q3, q3Dot);
-                break;
+                return new FieldRotation<>(factory.build(q0.getValue(), q0.getFirstDerivative()),
+                                           factory.build(q1.getValue(), q1.getFirstDerivative()),
+                                           factory.build(q2.getValue(), q2.getFirstDerivative()),
+                                           factory.build(q3.getValue(), q3.getFirstDerivative()),
+                                           false);
             case 2 :
                 factory = new DSFactory(1, order);
-                q0DS = factory.build(q0, q0Dot, q0DotDot);
-                q1DS = factory.build(q1, q1Dot, q1DotDot);
-                q2DS = factory.build(q2, q2Dot, q2DotDot);
-                q3DS = factory.build(q3, q3Dot, q3DotDot);
-                break;
+                return new FieldRotation<>(factory.build(q0.getValue(), q0.getFirstDerivative(), q0.getSecondDerivative()),
+                                           factory.build(q1.getValue(), q1.getFirstDerivative(), q1.getSecondDerivative()),
+                                           factory.build(q2.getValue(), q2.getFirstDerivative(), q2.getSecondDerivative()),
+                                           factory.build(q3.getValue(), q3.getFirstDerivative(), q3.getSecondDerivative()),
+                                           false);
             default :
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
-
-        return new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
 
     }
 
@@ -426,87 +262,26 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return rotation with time-derivatives embedded within the coordinates
      */
     public FieldRotation<UnivariateDerivative1> toUnivariateDerivative1Rotation() {
-
-        // quaternion components
-        final double q0 = rotation.getQ0();
-        final double q1 = rotation.getQ1();
-        final double q2 = rotation.getQ2();
-        final double q3 = rotation.getQ3();
-
-        // first time-derivatives of the quaternion
-        final double oX    = rotationRate.getX();
-        final double oY    = rotationRate.getY();
-        final double oZ    = rotationRate.getZ();
-        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
-        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
-        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
-        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
-
-        final UnivariateDerivative1 q0UD = new UnivariateDerivative1(q0, q0Dot);
-        final UnivariateDerivative1 q1UD = new UnivariateDerivative1(q1, q1Dot);
-        final UnivariateDerivative1 q2UD = new UnivariateDerivative1(q2, q2Dot);
-        final UnivariateDerivative1 q3UD = new UnivariateDerivative1(q3, q3Dot);
-
-        return new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
-
+        final UnivariateDerivative2 q0 = rotation.getQ0();
+        final UnivariateDerivative2 q1 = rotation.getQ1();
+        final UnivariateDerivative2 q2 = rotation.getQ2();
+        final UnivariateDerivative2 q3 = rotation.getQ3();
+        return new FieldRotation<>(new UnivariateDerivative1(q0.getValue(), q0.getFirstDerivative()),
+                                   new UnivariateDerivative1(q1.getValue(), q1.getFirstDerivative()),
+                                   new UnivariateDerivative1(q2.getValue(), q2.getFirstDerivative()),
+                                   new UnivariateDerivative1(q3.getValue(), q3.getFirstDerivative()),
+                                   false);
     }
 
-    /** Transform the instance to a {@link FieldRotation}&lt;{@link UnivariateDerivative2}&gt;.
+    /** Get the underlying {@link FieldRotation}&lt;{@link UnivariateDerivative2}&gt;.
      * <p>
      * The {@link UnivariateDerivative2} coordinates correspond to time-derivatives up
      * to the order 2.
      * </p>
      * @return rotation with time-derivatives embedded within the coordinates
      */
-    public FieldRotation<UnivariateDerivative2> toUnivariateDerivative2Rotation() {
-
-        // quaternion components
-        final double q0 = rotation.getQ0();
-        final double q1 = rotation.getQ1();
-        final double q2 = rotation.getQ2();
-        final double q3 = rotation.getQ3();
-
-        // first time-derivatives of the quaternion
-        final double oX    = rotationRate.getX();
-        final double oY    = rotationRate.getY();
-        final double oZ    = rotationRate.getZ();
-        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
-        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
-        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
-        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
-
-        // second time-derivatives of the quaternion
-        final double oXDot = rotationAcceleration.getX();
-        final double oYDot = rotationAcceleration.getY();
-        final double oZDot = rotationAcceleration.getZ();
-        final double q0DotDot = -0.5 * MathArrays.linearCombination(new double[] {
-            q1, q2,  q3, q1Dot, q2Dot,  q3Dot
-        }, new double[] {
-            oXDot, oYDot, oZDot, oX, oY, oZ
-        });
-        final double q1DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q2, -q3, q0Dot, q2Dot, -q3Dot
-        }, new double[] {
-            oXDot, oZDot, oYDot, oX, oZ, oY
-        });
-        final double q2DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q3, -q1, q0Dot, q3Dot, -q1Dot
-        }, new double[] {
-            oYDot, oXDot, oZDot, oY, oX, oZ
-        });
-        final double q3DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q1, -q2, q0Dot, q1Dot, -q2Dot
-        }, new double[] {
-            oZDot, oYDot, oXDot, oZ, oY, oX
-        });
-
-        final UnivariateDerivative2 q0UD = new UnivariateDerivative2(q0, q0Dot, q0DotDot);
-        final UnivariateDerivative2 q1UD = new UnivariateDerivative2(q1, q1Dot, q1DotDot);
-        final UnivariateDerivative2 q2UD = new UnivariateDerivative2(q2, q2Dot, q2DotDot);
-        final UnivariateDerivative2 q3UD = new UnivariateDerivative2(q3, q3Dot, q3DotDot);
-
-        return new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
-
+    public FieldRotation<UnivariateDerivative2> getUnivariateDerivative2Rotation() {
+        return rotation;
     }
 
     /** Estimate rotation rate between two orientations.
@@ -528,9 +303,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * of the instance
      */
     public AngularCoordinates revert() {
-        return new AngularCoordinates(rotation.revert(),
-                                      rotation.applyInverseTo(rotationRate).negate(),
-                                      rotation.applyInverseTo(rotationAcceleration).negate());
+        return new AngularCoordinates(rotation.revert());
     }
 
 
@@ -547,134 +320,75 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @see  #shiftedBy(double)
      */
     public Rotation rotationShiftedBy(final double dt) {
-
-        // the shiftedBy method is based on a local approximation.
-        // It considers separately the contribution of the constant
-        // rotation, the linear contribution or the rate and the
-        // quadratic contribution of the acceleration. The rate
-        // and acceleration contributions are small rotations as long
-        // as the time shift is small, which is the crux of the algorithm.
-        // Small rotations are almost commutative, so we append these small
-        // contributions one after the other, as if they really occurred
-        // successively, despite this is not what really happens.
-
-        // compute the linear contribution first, ignoring acceleration
-        // BEWARE: there is really a minus sign here, because if
-        // the target frame rotates in one direction, the vectors in the origin
-        // frame seem to rotate in the opposite direction
-        final double rate = rotationRate.getNorm();
-        final Rotation rateContribution = (rate == 0.0) ?
-                Rotation.IDENTITY :
-                new Rotation(rotationRate, rate * dt, RotationConvention.FRAME_TRANSFORM);
-
-        // append rotation and rate contribution
-        final Rotation linearPart =
-                rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR);
-
-        final double acc  = rotationAcceleration.getNorm();
-        if (acc == 0.0) {
-            // no acceleration, the linear part is sufficient
-            return linearPart;
-        }
-
-        // compute the quadratic contribution, ignoring initial rotation and rotation rate
-        // BEWARE: there is really a minus sign here, because if
-        // the target frame rotates in one direction, the vectors in the origin
-        // frame seem to rotate in the opposite direction
-        final Rotation quadraticContribution =
-                new Rotation(rotationAcceleration,
-                        0.5 * acc * dt * dt,
-                        RotationConvention.FRAME_TRANSFORM);
-
-        // the quadratic contribution is a small rotation:
-        // its initial angle and angular rate are both zero.
-        // small rotations are almost commutative, so we append the small
-        // quadratic part after the linear part as a simple offset
-        return quadraticContribution
-                .compose(linearPart, RotationConvention.VECTOR_OPERATOR);
-
+        return new Rotation(rotation.getQ0().taylor(dt),
+                            rotation.getQ1().taylor(dt),
+                            rotation.getQ2().taylor(dt),
+                            rotation.getQ3().taylor(dt),
+                            true);
     }
-
 
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * an approximate solution of the fixed acceleration motion. It is <em>not</em>
-     * intended as a replacement for proper attitude propagation but should be
-     * sufficient for either small time shifts or coarse accuracy.
+     * an approximate solution using {@link ModifiedRodrigues modified Rodrigues
+     * vector}. It is <em>not</em> intended as a replacement for proper attitude
+     * propagation but should be sufficient for either small time shifts or coarse
+     * accuracy.
      * </p>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public AngularCoordinates shiftedBy(final double dt) {
-
-        // the shiftedBy method is based on a local approximation.
-        // It considers separately the contribution of the constant
-        // rotation, the linear contribution or the rate and the
-        // quadratic contribution of the acceleration. The rate
-        // and acceleration contributions are small rotations as long
-        // as the time shift is small, which is the crux of the algorithm.
-        // Small rotations are almost commutative, so we append these small
-        // contributions one after the other, as if they really occurred
-        // successively, despite this is not what really happens.
-
-        // compute the linear contribution first, ignoring acceleration
-        // BEWARE: there is really a minus sign here, because if
-        // the target frame rotates in one direction, the vectors in the origin
-        // frame seem to rotate in the opposite direction
-        final double rate = rotationRate.getNorm();
-        final Rotation rateContribution = (rate == 0.0) ?
-                                          Rotation.IDENTITY :
-                                          new Rotation(rotationRate, rate * dt, RotationConvention.FRAME_TRANSFORM);
-
-        // append rotation and rate contribution
-        final AngularCoordinates linearPart =
-                new AngularCoordinates(rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR), rotationRate);
-
-        final double acc  = rotationAcceleration.getNorm();
-        if (acc == 0.0) {
-            // no acceleration, the linear part is sufficient
-            return linearPart;
-        }
-
-        // compute the quadratic contribution, ignoring initial rotation and rotation rate
-        // BEWARE: there is really a minus sign here, because if
-        // the target frame rotates in one direction, the vectors in the origin
-        // frame seem to rotate in the opposite direction
-        final AngularCoordinates quadraticContribution =
-                new AngularCoordinates(new Rotation(rotationAcceleration,
-                                                    0.5 * acc * dt * dt,
-                                                    RotationConvention.FRAME_TRANSFORM),
-                                       new Vector3D(dt, rotationAcceleration),
-                                       rotationAcceleration);
-
-        // the quadratic contribution is a small rotation:
-        // its initial angle and angular rate are both zero.
-        // small rotations are almost commutative, so we append the small
-        // quadratic part after the linear part as a simple offset
-        return quadraticContribution.addOffset(linearPart);
-
+        return new ModifiedRodrigues(1.0, this).shiftedBy(dt).toAngularCoordinates();
     }
 
     /** Get the rotation.
      * @return the rotation.
      */
     public Rotation getRotation() {
-        return rotation;
+        return rotation.toRotation();
     }
 
     /** Get the rotation rate.
      * @return the rotation rate vector Ω (rad/s).
      */
     public Vector3D getRotationRate() {
-        return rotationRate;
+
+        final double q0    = rotation.getQ0().getValue();
+        final double q1    = rotation.getQ1().getValue();
+        final double q2    = rotation.getQ2().getValue();
+        final double q3    = rotation.getQ3().getValue();
+
+        final double q0Dot = rotation.getQ0().getFirstDerivative();
+        final double q1Dot = rotation.getQ1().getFirstDerivative();
+        final double q2Dot = rotation.getQ2().getFirstDerivative();
+        final double q3Dot = rotation.getQ3().getFirstDerivative();
+
+        return new Vector3D(2 * MathArrays.linearCombination(-q1, q0Dot,  q0, q1Dot,  q3, q2Dot, -q2, q3Dot),
+                            2 * MathArrays.linearCombination(-q2, q0Dot, -q3, q1Dot,  q0, q2Dot,  q1, q3Dot),
+                            2 * MathArrays.linearCombination(-q3, q0Dot,  q2, q1Dot, -q1, q2Dot,  q0, q3Dot));
+
     }
 
     /** Get the rotation acceleration.
      * @return the rotation acceleration vector dΩ/dt (rad/s²).
      */
     public Vector3D getRotationAcceleration() {
-        return rotationAcceleration;
+
+        final double q0       = rotation.getQ0().getValue();
+        final double q1       = rotation.getQ1().getValue();
+        final double q2       = rotation.getQ2().getValue();
+        final double q3       = rotation.getQ3().getValue();
+
+        final double q0DotDot = rotation.getQ0().getSecondDerivative();
+        final double q1DotDot = rotation.getQ1().getSecondDerivative();
+        final double q2DotDot = rotation.getQ2().getSecondDerivative();
+        final double q3DotDot = rotation.getQ3().getSecondDerivative();
+
+        return new Vector3D(2 * MathArrays.linearCombination(-q1, q0DotDot,  q0, q1DotDot,  q3, q2DotDot, -q2, q3DotDot),
+                            2 * MathArrays.linearCombination(-q2, q0DotDot, -q3, q1DotDot,  q0, q2DotDot,  q1, q3DotDot),
+                            2 * MathArrays.linearCombination(-q3, q0DotDot,  q2, q1DotDot, -q1, q2DotDot,  q0, q3DotDot));
+
     }
 
     /** Add an offset from the instance.
@@ -696,13 +410,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @see #subtractOffset(AngularCoordinates)
      */
     public AngularCoordinates addOffset(final AngularCoordinates offset) {
-        final Vector3D rOmega    = rotation.applyTo(offset.rotationRate);
-        final Vector3D rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
-        return new AngularCoordinates(rotation.compose(offset.rotation, RotationConvention.VECTOR_OPERATOR),
-                                      rotationRate.add(rOmega),
-                                      new Vector3D( 1.0, rotationAcceleration,
-                                                    1.0, rOmegaDot,
-                                                   -1.0, Vector3D.crossProduct(rotationRate, rOmega)));
+        return new AngularCoordinates(rotation.applyTo(offset.rotation));
     }
 
     /** Subtract an offset from the instance.
@@ -732,20 +440,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return a new pv coordinates which is the image of u by the rotation
      */
     public PVCoordinates applyTo(final PVCoordinates pv) {
-
-        final Vector3D transformedP = rotation.applyTo(pv.getPosition());
-        final Vector3D crossP       = Vector3D.crossProduct(rotationRate, transformedP);
-        final Vector3D transformedV = rotation.applyTo(pv.getVelocity()).subtract(crossP);
-        final Vector3D crossV       = Vector3D.crossProduct(rotationRate, transformedV);
-        final Vector3D crossCrossP  = Vector3D.crossProduct(rotationRate, crossP);
-        final Vector3D crossDotP    = Vector3D.crossProduct(rotationAcceleration, transformedP);
-        final Vector3D transformedA = new Vector3D( 1, rotation.applyTo(pv.getAcceleration()),
-                                                   -2, crossV,
-                                                   -1, crossCrossP,
-                                                   -1, crossDotP);
-
-        return new PVCoordinates(transformedP, transformedV, transformedA);
-
+        return new PVCoordinates(rotation.applyTo(pv.toUnivariateDerivative2Vector()));
     }
 
     /** Apply the rotation to a pv coordinates.
@@ -753,20 +448,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return a new pv coordinates which is the image of u by the rotation
      */
     public TimeStampedPVCoordinates applyTo(final TimeStampedPVCoordinates pv) {
-
-        final Vector3D transformedP = getRotation().applyTo(pv.getPosition());
-        final Vector3D crossP       = Vector3D.crossProduct(getRotationRate(), transformedP);
-        final Vector3D transformedV = getRotation().applyTo(pv.getVelocity()).subtract(crossP);
-        final Vector3D crossV       = Vector3D.crossProduct(getRotationRate(), transformedV);
-        final Vector3D crossCrossP  = Vector3D.crossProduct(getRotationRate(), crossP);
-        final Vector3D crossDotP    = Vector3D.crossProduct(getRotationAcceleration(), transformedP);
-        final Vector3D transformedA = new Vector3D( 1, getRotation().applyTo(pv.getAcceleration()),
-                                                   -2, crossV,
-                                                   -1, crossCrossP,
-                                                   -1, crossDotP);
-
-        return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV, transformedA);
-
+        return new TimeStampedPVCoordinates(pv.getDate(), applyTo((PVCoordinates) pv));
     }
 
     /** Apply the rotation to a pv coordinates.
@@ -777,13 +459,17 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      */
     public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
 
-        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
+        final Rotation r                    = getRotation();
+        final Vector3D rotationRate         = getRotationRate();
+        final Vector3D rotationAcceleration = getRotationAcceleration();
+
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(r, pv.getPosition());
         final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
-        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(r, pv.getVelocity()).subtract(crossP);
         final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
         final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
         final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
-        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(r, pv.getAcceleration()),
                                                                   -2, crossV,
                                                                   -1, crossCrossP,
                                                                   -1, crossDotP);
@@ -799,148 +485,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @since 9.0
      */
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
-
-        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
-        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
-        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
-        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
-        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
-        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
-        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
-                                                                  -2, crossV,
-                                                                  -1, crossCrossP,
-                                                                  -1, crossDotP);
-
-        return new TimeStampedFieldPVCoordinates<>(pv.getDate(), transformedP, transformedV, transformedA);
-
-    }
-
-    /** Convert rotation, rate and acceleration to modified Rodrigues vector and derivatives.
-     * <p>
-     * The modified Rodrigues vector is tan(θ/4) u where θ and u are the
-     * rotation angle and axis respectively.
-     * </p>
-     * @param sign multiplicative sign for quaternion components
-     * @return modified Rodrigues vector and derivatives (vector on row 0, first derivative
-     * on row 1, second derivative on row 2)
-     * @see #createFromModifiedRodrigues(double[][])
-     */
-    public double[][] getModifiedRodrigues(final double sign) {
-
-        final double q0    = sign * getRotation().getQ0();
-        final double q1    = sign * getRotation().getQ1();
-        final double q2    = sign * getRotation().getQ2();
-        final double q3    = sign * getRotation().getQ3();
-        final double oX    = getRotationRate().getX();
-        final double oY    = getRotationRate().getY();
-        final double oZ    = getRotationRate().getZ();
-        final double oXDot = getRotationAcceleration().getX();
-        final double oYDot = getRotationAcceleration().getY();
-        final double oZDot = getRotationAcceleration().getZ();
-
-        // first time-derivatives of the quaternion
-        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
-        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
-        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
-        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
-
-        // second time-derivatives of the quaternion
-        final double q0DotDot = -0.5 * MathArrays.linearCombination(new double[] {
-            q1, q2,  q3, q1Dot, q2Dot,  q3Dot
-        }, new double[] {
-            oXDot, oYDot, oZDot, oX, oY, oZ
-        });
-        final double q1DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q2, -q3, q0Dot, q2Dot, -q3Dot
-        }, new double[] {
-            oXDot, oZDot, oYDot, oX, oZ, oY
-        });
-        final double q2DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q3, -q1, q0Dot, q3Dot, -q1Dot
-        }, new double[] {
-            oYDot, oXDot, oZDot, oY, oX, oZ
-        });
-        final double q3DotDot =  0.5 * MathArrays.linearCombination(new double[] {
-            q0, q1, -q2, q0Dot, q1Dot, -q2Dot
-        }, new double[] {
-            oZDot, oYDot, oXDot, oZ, oY, oX
-        });
-
-        // the modified Rodrigues is tan(θ/4) u where θ and u are the rotation angle and axis respectively
-        // this can be rewritten using quaternion components:
-        //      r (q₁ / (1+q₀), q₂ / (1+q₀), q₃ / (1+q₀))
-        // applying the derivation chain rule to previous expression gives rDot and rDotDot
-        final double inv          = 1.0 / (1.0 + q0);
-        final double mTwoInvQ0Dot = -2 * inv * q0Dot;
-
-        final double r1       = inv * q1;
-        final double r2       = inv * q2;
-        final double r3       = inv * q3;
-
-        final double mInvR1   = -inv * r1;
-        final double mInvR2   = -inv * r2;
-        final double mInvR3   = -inv * r3;
-
-        final double r1Dot    = MathArrays.linearCombination(inv, q1Dot, mInvR1, q0Dot);
-        final double r2Dot    = MathArrays.linearCombination(inv, q2Dot, mInvR2, q0Dot);
-        final double r3Dot    = MathArrays.linearCombination(inv, q3Dot, mInvR3, q0Dot);
-
-        final double r1DotDot = MathArrays.linearCombination(inv, q1DotDot, mTwoInvQ0Dot, r1Dot, mInvR1, q0DotDot);
-        final double r2DotDot = MathArrays.linearCombination(inv, q2DotDot, mTwoInvQ0Dot, r2Dot, mInvR2, q0DotDot);
-        final double r3DotDot = MathArrays.linearCombination(inv, q3DotDot, mTwoInvQ0Dot, r3Dot, mInvR3, q0DotDot);
-
-        return new double[][] {
-            {
-                r1,       r2,       r3
-            }, {
-                r1Dot,    r2Dot,    r3Dot
-            }, {
-                r1DotDot, r2DotDot, r3DotDot
-            }
-        };
-
-    }
-
-    /** Convert a modified Rodrigues vector and derivatives to angular coordinates.
-     * @param r modified Rodrigues vector (with first and second times derivatives)
-     * @return angular coordinates
-     * @see #getModifiedRodrigues(double)
-     */
-    public static AngularCoordinates createFromModifiedRodrigues(final double[][] r) {
-
-        // rotation
-        final double rSquared = r[0][0] * r[0][0] + r[0][1] * r[0][1] + r[0][2] * r[0][2];
-        final double oPQ0     = 2 / (1 + rSquared);
-        final double q0       = oPQ0 - 1;
-        final double q1       = oPQ0 * r[0][0];
-        final double q2       = oPQ0 * r[0][1];
-        final double q3       = oPQ0 * r[0][2];
-
-        // rotation rate
-        final double oPQ02    = oPQ0 * oPQ0;
-        final double q0Dot    = -oPQ02 * MathArrays.linearCombination(r[0][0], r[1][0], r[0][1], r[1][1],  r[0][2], r[1][2]);
-        final double q1Dot    = oPQ0 * r[1][0] + r[0][0] * q0Dot;
-        final double q2Dot    = oPQ0 * r[1][1] + r[0][1] * q0Dot;
-        final double q3Dot    = oPQ0 * r[1][2] + r[0][2] * q0Dot;
-        final double oX       = 2 * MathArrays.linearCombination(-q1, q0Dot,  q0, q1Dot,  q3, q2Dot, -q2, q3Dot);
-        final double oY       = 2 * MathArrays.linearCombination(-q2, q0Dot, -q3, q1Dot,  q0, q2Dot,  q1, q3Dot);
-        final double oZ       = 2 * MathArrays.linearCombination(-q3, q0Dot,  q2, q1Dot, -q1, q2Dot,  q0, q3Dot);
-
-        // rotation acceleration
-        final double q0DotDot = (1 - q0) / oPQ0 * q0Dot * q0Dot -
-                                oPQ02 * MathArrays.linearCombination(r[0][0], r[2][0], r[0][1], r[2][1], r[0][2], r[2][2]) -
-                                (q1Dot * q1Dot + q2Dot * q2Dot + q3Dot * q3Dot);
-        final double q1DotDot = MathArrays.linearCombination(oPQ0, r[2][0], 2 * r[1][0], q0Dot, r[0][0], q0DotDot);
-        final double q2DotDot = MathArrays.linearCombination(oPQ0, r[2][1], 2 * r[1][1], q0Dot, r[0][1], q0DotDot);
-        final double q3DotDot = MathArrays.linearCombination(oPQ0, r[2][2], 2 * r[1][2], q0Dot, r[0][2], q0DotDot);
-        final double oXDot    = 2 * MathArrays.linearCombination(-q1, q0DotDot,  q0, q1DotDot,  q3, q2DotDot, -q2, q3DotDot);
-        final double oYDot    = 2 * MathArrays.linearCombination(-q2, q0DotDot, -q3, q1DotDot,  q0, q2DotDot,  q1, q3DotDot);
-        final double oZDot    = 2 * MathArrays.linearCombination(-q3, q0DotDot,  q2, q1DotDot, -q1, q2DotDot,  q0, q3DotDot);
-
-        return new AngularCoordinates(new Rotation(q0, q1, q2, q3, false),
-                                      new Vector3D(oX, oY, oZ),
-                                      new Vector3D(oXDot, oYDot, oZDot));
-
+        return new TimeStampedFieldPVCoordinates<>(pv.getDate(), applyTo((FieldPVCoordinates<T>) pv));
     }
 
 }

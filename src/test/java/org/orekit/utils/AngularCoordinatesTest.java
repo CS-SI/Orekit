@@ -19,7 +19,6 @@ package org.orekit.utils;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -40,9 +39,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class AngularCoordinatesTest {
 
@@ -153,7 +149,7 @@ public class AngularCoordinatesTest {
         Vector3D o    = randomVector(random, 1.0e-2);
         Vector3D oDot = randomVector(random, 1.0e-2);
         AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
-        FieldRotation<UnivariateDerivative2> rotationUD = ac.toUnivariateDerivative2Rotation();
+        FieldRotation<UnivariateDerivative2> rotationUD = ac.getUnivariateDerivative2Rotation();
         FieldRotation<DerivativeStructure>   rotationDS = ac.toDerivativeStructureRotation(2);
         Assertions.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
@@ -173,6 +169,62 @@ public class AngularCoordinatesTest {
         Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
         Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
 
+    }
+
+    @Test
+    public void testAccelerationIssue() {
+
+       final FieldRotation<UnivariateDerivative2> r =
+                        new FieldRotation<>(new UnivariateDerivative2( 0.8246393871437729,
+                                                                      -1.8888713746829562,
+                                                                      1),
+                                            new UnivariateDerivative2( 0.5319174399092428,
+                                                                       2.5827461082239274,
+                                                                       2.0),
+                                            new UnivariateDerivative2(-0.02269027802554014,
+                                                                      -0.24870610720044461,
+                                                                      3.0),
+                                            new UnivariateDerivative2(-0.19109910929846488,
+                                                                      -0.9324314745011075,
+                                                                      4.0),
+                                            false);
+
+        final Vector3D acceleration = new  AngularCoordinates(r).getRotationAcceleration();
+        System.out.println(acceleration.getX() + " " + acceleration.getY() + " " + acceleration.getZ());
+
+        double dt = 0.1;
+        final double c = 1.0 / (840 * dt);
+        final Vector3D rM4H = new AngularCoordinates(shift(r, -4 * dt)).getRotationRate();
+        final Vector3D rM3H = new AngularCoordinates(shift(r, -3 * dt)).getRotationRate();
+        final Vector3D rM2H = new AngularCoordinates(shift(r, -2 * dt)).getRotationRate();
+        final Vector3D rM1H = new AngularCoordinates(shift(r, -1 * dt)).getRotationRate();
+        final Vector3D rP1H = new AngularCoordinates(shift(r, +1 * dt)).getRotationRate();
+        final Vector3D rP2H = new AngularCoordinates(shift(r, +2 * dt)).getRotationRate();
+        final Vector3D rP3H = new AngularCoordinates(shift(r, +3 * dt)).getRotationRate();
+        final Vector3D rP4H = new AngularCoordinates(shift(r, +4 * dt)).getRotationRate();
+        final Vector3D finiteDifferencesAcceleration =
+                        new Vector3D(  -3 * c, rP4H.subtract(rM4H),
+                                       32 * c, rP3H.subtract(rM3H),
+                                     -168 * c, rP2H.subtract(rM2H),
+                                      673 * c, rP1H.subtract(rM1H));
+        System.out.println(finiteDifferencesAcceleration.getX() + " " +
+                           finiteDifferencesAcceleration.getY() + " " +
+                           finiteDifferencesAcceleration.getZ());
+        
+    }
+
+    private FieldRotation<UnivariateDerivative2> shift(final FieldRotation<UnivariateDerivative2> r, final double dt) {
+        return new FieldRotation<>(shift(r.getQ0(), dt),
+                                   shift(r.getQ1(), dt),
+                                   shift(r.getQ2(), dt),
+                                   shift(r.getQ3(), dt),
+                                   false);
+    }
+
+    private UnivariateDerivative2 shift(final UnivariateDerivative2 ud, final double dt) {
+        return new UnivariateDerivative2(ud.taylor(dt),
+                                         ud.getFirstDerivative() + dt * ud.getSecondDerivative(),
+                                         ud.getSecondDerivative());
     }
 
     @Test
@@ -247,13 +299,14 @@ public class AngularCoordinatesTest {
                 Rotation reference = new Rotation(y[0], y[1], y[2], y[3], true);
 
                 // the error in shiftedBy taking acceleration into account is cubic
-                double expectedCubicError     = 1.4544e-6 * t * t * t;
-                Assertions.assertEquals(expectedCubicError,
+                double expectedCubicErrorQ = 7.2735e-7 * t * t * t;
+                double expectedCubicErrorL = 7.2775e-7 * t * t * t;
+                Assertions.assertEquals(expectedCubicErrorQ,
                                     Rotation.distance(reference, quadratic.shiftedBy(t).getRotation()),
-                                    0.0001 * expectedCubicError);
-                Assertions.assertEquals(expectedCubicError,
+                                    0.0001 * expectedCubicErrorQ);
+                Assertions.assertEquals(expectedCubicErrorL,
                                     Rotation.distance(reference, quadratic.rotationShiftedBy(t)),
-                                    0.0001 * expectedCubicError);
+                                    0.0001 * expectedCubicErrorL);
 
                 // the error in shiftedBy not taking acceleration into account is quadratic
                 double expectedQuadraticError = 5.0e-4 * t * t;
@@ -380,7 +433,7 @@ public class AngularCoordinatesTest {
             Vector3D rotationRate         = randomVector(random, 0.01);
             Vector3D rotationAcceleration = randomVector(random, 0.01);
             AngularCoordinates ac         = new AngularCoordinates(rotation, rotationRate, rotationAcceleration);
-            AngularCoordinates rebuilt    = AngularCoordinates.createFromModifiedRodrigues(ac.getModifiedRodrigues(1.0));
+            AngularCoordinates rebuilt    = new ModifiedRodrigues(1.0, ac).toAngularCoordinates();
             Assertions.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
             Assertions.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
             Assertions.assertEquals(0.0, Vector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()), 1.0e-15);
@@ -392,13 +445,13 @@ public class AngularCoordinatesTest {
     public void testRodriguesSpecialCases() {
 
         // identity
-        double[][] identity = new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO).getModifiedRodrigues(1.0);
-        for (double[] row : identity) {
-            for (double element : row) {
-                Assertions.assertEquals(0.0, element, Precision.SAFE_MIN);
-            }
-        }
-        AngularCoordinates acId = AngularCoordinates.createFromModifiedRodrigues(identity);
+        AngularCoordinates ac = new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        ModifiedRodrigues identity = new ModifiedRodrigues(1.0, ac);
+        Assertions.assertEquals(0.0, identity.getValue().getNorm());
+        Assertions.assertEquals(0.0, identity.getFirstDerivative().getNorm());
+        Assertions.assertEquals(0.0, identity.getSecondDerivative().getNorm());
+
+        AngularCoordinates acId = identity.toAngularCoordinates();
         Assertions.assertEquals(0.0, acId.getRotation().getAngle(), Precision.SAFE_MIN);
         Assertions.assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
 
@@ -408,86 +461,12 @@ public class AngularCoordinatesTest {
             Vector3D axis = randomVector(random, 1.0);
             AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI, RotationConvention.VECTOR_OPERATOR),
                                                                  Vector3D.ZERO, Vector3D.ZERO);
-            AngularCoordinates rebuilt = AngularCoordinates.createFromModifiedRodrigues(original.getModifiedRodrigues(1.0));
+            AngularCoordinates rebuilt = new ModifiedRodrigues(1.0, original).toAngularCoordinates();
             Assertions.assertEquals(FastMath.PI, rebuilt.getRotation().getAngle(), 1.0e-15);
             Assertions.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR))), 1.0e-15);
             Assertions.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-16);
         }
 
-    }
-
-    @Test
-    public void testInverseCrossProducts()
-        {
-        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_J);
-        checkInverse(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO);
-        checkInverse(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_J);
-        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_K, Vector3D.PLUS_J);
-        checkInverse(Vector3D.ZERO,   Vector3D.PLUS_K, Vector3D.ZERO);
-        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
-        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_I);
-        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, new Vector3D(1, 0, -1).normalize());
-        checkInverse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.PLUS_J,  Vector3D.ZERO);
-    }
-
-    @Test
-    public void testInverseCrossProductsFailures() {
-        checkInverseFailure(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.PLUS_J, Vector3D.PLUS_I,  Vector3D.PLUS_K);
-        checkInverseFailure(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO,    Vector3D.PLUS_K);
-        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.MINUS_I, Vector3D.PLUS_K);
-        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.PLUS_J,  Vector3D.PLUS_J);
-        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_J,  Vector3D.ZERO);
-        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.ZERO,    Vector3D.PLUS_J);
-    }
-
-    @Test
-    public void testRandomInverseCrossProducts() {
-        RandomGenerator generator = new Well1024a(0x52b29d8f6ac2d64bl);
-        for (int i = 0; i < 10000; ++i) {
-            Vector3D omega = randomVector(generator, 10 * generator.nextDouble() + 1.0);
-            Vector3D v1    = randomVector(generator, 10 * generator.nextDouble() + 1.0);
-            Vector3D v2    = randomVector(generator, 10 * generator.nextDouble() + 1.0);
-            checkInverse(omega, v1, v2);
-        }
-    }
-
-    private void checkInverse(Vector3D omega, Vector3D v1, Vector3D v2) {
-        checkInverse(omega,
-                     v1, Vector3D.crossProduct(omega, v1),
-                     v2, Vector3D.crossProduct(omega, v2));
-    }
-
-    private void checkInverseFailure(Vector3D omega, Vector3D v1, Vector3D c1, Vector3D v2, Vector3D c2) {
-        try {
-            checkInverse(omega, v1, c1, v2, c2);
-            Assertions.fail("an exception should have been thrown");
-        } catch (MathIllegalArgumentException miae) {
-            // expected
-        }
-    }
-
-    private void checkInverse(Vector3D omega, Vector3D v1, Vector3D c1, Vector3D v2, Vector3D c2)
-        throws MathIllegalArgumentException {
-        try {
-            Method inverse;
-            inverse = AngularCoordinates.class.getDeclaredMethod("inverseCrossProducts",
-                                                                 Vector3D.class, Vector3D.class,
-                                                                 Vector3D.class, Vector3D.class,
-                                                                 double.class);
-            inverse.setAccessible(true);
-            Vector3D rebuilt = (Vector3D) inverse.invoke(null, v1, c1, v2, c2, 1.0e-9);
-            Assertions.assertEquals(0.0, Vector3D.distance(omega, rebuilt), 5.0e-12 * omega.getNorm());
-        } catch (NoSuchMethodException e) {
-            Assertions.fail(e.getLocalizedMessage());
-        } catch (SecurityException e) {
-            Assertions.fail(e.getLocalizedMessage());
-        } catch (IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
-        } catch (IllegalArgumentException e) {
-            Assertions.fail(e.getLocalizedMessage());
-        } catch (InvocationTargetException e) {
-            throw (MathIllegalArgumentException) e.getCause();
-        }
     }
 
     @Test

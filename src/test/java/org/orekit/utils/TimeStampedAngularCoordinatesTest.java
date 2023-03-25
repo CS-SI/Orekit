@@ -191,7 +191,7 @@ public class TimeStampedAngularCoordinatesTest {
         Vector3D o    = randomVector(random, 1.0e-2);
         Vector3D oDot = randomVector(random, 1.0e-2);
         TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, oDot);
-        FieldRotation<UnivariateDerivative2> rotationUD = ac.toUnivariateDerivative2Rotation();
+        FieldRotation<UnivariateDerivative2> rotationUD = ac.getUnivariateDerivative2Rotation();
         FieldRotation<DerivativeStructure>   rotationDS = ac.toDerivativeStructureRotation(2);
         Assertions.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);

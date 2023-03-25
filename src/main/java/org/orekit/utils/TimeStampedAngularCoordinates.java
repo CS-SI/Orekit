@@ -312,19 +312,25 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
                     break;
                 }
 
-                final double[][] rodrigues = fixed.getModifiedRodrigues(sign);
+                final ModifiedRodrigues rodrigues = new ModifiedRodrigues(sign, fixed);
                 switch (filter) {
                     case USE_RRA:
                         // populate sample with rotation, rotation rate and acceleration data
-                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1], rodrigues[2]);
+                        interpolator.addSamplePoint(dt,
+                                                    rodrigues.getValue().toArray(),
+                                                    rodrigues.getFirstDerivative().toArray(),
+                                                    rodrigues.getSecondDerivative().toArray());
                         break;
                     case USE_RR:
                         // populate sample with rotation and rotation rate data
-                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1]);
+                        interpolator.addSamplePoint(dt,
+                                                    rodrigues.getValue().toArray(),
+                                                    rodrigues.getFirstDerivative().toArray());
                         break;
                     case USE_R:
                         // populate sample with rotation data only
-                        interpolator.addSamplePoint(dt, rodrigues[0]);
+                        interpolator.addSamplePoint(dt,
+                                                    rodrigues.getValue().toArray());
                         break;
                     default :
                         // this should never happen
@@ -342,11 +348,12 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
             } else {
                 // interpolation succeeded with the current offset
                 final double[][] p = interpolator.derivatives(0.0, 2);
-                final AngularCoordinates ac = createFromModifiedRodrigues(p);
-                return new TimeStampedAngularCoordinates(offset.getDate(),
-                                                         ac.getRotation(),
-                                                         ac.getRotationRate(),
-                                                         ac.getRotationAcceleration()).addOffset(offset);
+                final AngularCoordinates ac = new ModifiedRodrigues(new Vector3D(p[0]),
+                                                                    new Vector3D(p[1]),
+                                                                    new Vector3D(p[2])).
+                                              toAngularCoordinates();
+                return new TimeStampedAngularCoordinates(offset.getDate(), ac.getUnivariateDerivative2Rotation()).
+                       addOffset(offset);
             }
 
         }
