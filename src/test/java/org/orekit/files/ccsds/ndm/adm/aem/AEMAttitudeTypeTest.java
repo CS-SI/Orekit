@@ -17,12 +17,14 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,8 +93,10 @@ public class AEMAttitudeTypeTest {
         Assertions.assertEquals(-136.19348942398204, FastMath.toDegrees(spinInert.getAlpha()), ANGLE_PRECISION);
         Assertions.assertEquals(-33.53517498449179, FastMath.toDegrees(spinInert.getDelta()), ANGLE_PRECISION);
 
-        final Rotation zeroPhase = new Rotation(RotationOrder.ZYZ, RotationConvention.FRAME_TRANSFORM,
-                                                spinInert.getAlpha(), 0.5 * FastMath.PI - spinInert.getDelta(), 0.0);
+        final Rotation zeroPhase = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                                MathUtils.SEMI_PI + spinInert.getAlpha(),
+                                                MathUtils.SEMI_PI - spinInert.getDelta(),
+                                                0.0);
         Assertions.assertEquals(86.03122596451917,
                                 FastMath.toDegrees(Rotation.distance(zeroPhase, tsac.getRotation())),
                                 ANGLE_PRECISION);
@@ -122,23 +126,38 @@ public class AEMAttitudeTypeTest {
         }
 
         // Verify angular derivative filter
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, spin.getAngularDerivativesFilter());
+        Assertions.assertEquals(AngularDerivativesFilter.USE_R, spin.getAngularDerivativesFilter());
 
     }
 
     @Test
-    public void testSpinNutation() {
+    public void testSpinNutationMomentum() {
 
         // Initialize the attitude type
-        final AttitudeType spinNutation = AttitudeType.parseType("SPIN/NUTATION");
+        final AttitudeType spinNM = AttitudeType.parseType("SPIN/NUTATION_MOM");
 
-        // Test exception on the first method
-        spinNutation.parse(true, true, RotationOrder.XYZ, true,
-                           context, new String[] { "2021-03-17T00:00:00.000" });
-        spinNutation.createDataFields(true, true, RotationOrder.XYZ, true, null);
+        final String[] attitudeData = new String[] {            
+            "2021-03-17T00:00:00.000",
+            "0", "80", "45", "1", "0", "90", "0."
+        };
+        final TimeStampedAngularCoordinates tsac = spinNM.parse(true, true, RotationOrder.XYZ, true, context, attitudeData);
+        Assertions.assertEquals(0.3812, tsac.getRotation().getQ0(), 1.0e-4);
+        Assertions.assertEquals(0.0805, tsac.getRotation().getQ1(), 1.0e-4);
+        Assertions.assertEquals(0.0334, tsac.getRotation().getQ2(), 1.0e-4);
+        Assertions.assertEquals(0.9204, tsac.getRotation().getQ3(), 1.0e-4);
+        Vector3D spinInFrameA = tsac.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Assertions.assertEquals(0.1736, spinInFrameA.getX(), 1.0e-4);
+        Assertions.assertEquals(0.0,    spinInFrameA.getY(), 1.0e-4);
+        Assertions.assertEquals(0.9848, spinInFrameA.getZ(), 1.0e-4);
 
-        // no exception on the third method
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, spinNutation.getAngularDerivativesFilter());
+        final String[] attitudeDataBis = spinNM.createDataFields(true, true, RotationOrder.XYZ, true, tsac);
+        for (int i = 0; i < attitudeDataBis.length; i++) {
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]),
+                                    Double.parseDouble(attitudeDataBis[i]),
+                                    ANGLE_PRECISION);
+        }
+
+        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, spinNM.getAngularDerivativesFilter());
 
     }
 
@@ -237,11 +256,12 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
-            "2021-01-29T21:24:37", "0.56748", "0.03146", "0.45689", "0.68427", "43.1", "12.8", "37.9"
+            "2021-01-29T21:24:37", "0.56748", "0.03146", "0.45689", "0.68427", "4.31", "1.28", "3.79"
         };
         metadata.setRateFrameIsA(true);
         metadata.getEndpoints().setA2b(true);
         metadata.setIsFirst(false);
+        metadata.setEulerRotSeq(RotationOrder.XYZ);
         final TimeStampedAngularCoordinates tsac = quaternionRate.parse(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                         metadata.getEulerRotSeq(),
@@ -251,10 +271,13 @@ public class AEMAttitudeTypeTest {
         Assertions.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
         Assertions.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
         Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
-        Vector3D rebuiltRate = tsac.getRotation().applyInverseTo(tsac.getRotationRate());
-        Assertions.assertEquals(FastMath.toRadians(43.1), rebuiltRate.getX(), ANGLE_PRECISION);
-        Assertions.assertEquals(FastMath.toRadians(12.8), rebuiltRate.getY(), ANGLE_PRECISION);
-        Assertions.assertEquals(FastMath.toRadians(37.9), rebuiltRate.getZ(), ANGLE_PRECISION);
+        final UnivariateDerivative1[] rebuiltAngles = tsac.
+                                                      toUnivariateDerivative1Rotation().
+                                                      getAngles(metadata.getEulerRotSeq(),
+                                                                RotationConvention.FRAME_TRANSFORM);
+        Assertions.assertEquals(FastMath.toRadians(4.31), rebuiltAngles[0].getFirstDerivative(), ANGLE_PRECISION);
+        Assertions.assertEquals(FastMath.toRadians(1.28), rebuiltAngles[1].getFirstDerivative(), ANGLE_PRECISION);
+        Assertions.assertEquals(FastMath.toRadians(3.79), rebuiltAngles[2].getFirstDerivative(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -264,6 +287,7 @@ public class AEMAttitudeTypeTest {
                                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO_FRAME, "1"),
                                                           "GYRO 1"));
         metadata.setIsFirst(false);
+        metadata.setEulerRotSeq(RotationOrder.XYZ);
         metadata.setRateFrameIsA(true);
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = quaternionRate.createDataFields(metadata.isFirst(),
@@ -272,8 +296,9 @@ public class AEMAttitudeTypeTest {
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
-                    QUATERNION_PRECISION);
+            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]),
+                                    Double.parseDouble(attitudeDataBis[i]),
+                                    QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -368,13 +393,14 @@ public class AEMAttitudeTypeTest {
                                                                         metadata.getEulerRotSeq(),
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
-        final double[] angles = tsac.getRotation().getAngles(sequence, RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(43.1, FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
-        Assertions.assertEquals(12.8, FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
-        Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
-        Assertions.assertEquals(1.452, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
-        Assertions.assertEquals(0.475, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
-        Assertions.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
+        final FieldRotation<UnivariateDerivative1> r = tsac.toUnivariateDerivative1Rotation();
+        final UnivariateDerivative1[] angles = r.getAngles(sequence, RotationConvention.FRAME_TRANSFORM);
+        Assertions.assertEquals(43.1, FastMath.toDegrees(angles[0].getValue()),            ANGLE_PRECISION);
+        Assertions.assertEquals(12.8, FastMath.toDegrees(angles[1].getValue()),            ANGLE_PRECISION);
+        Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2].getValue()),            ANGLE_PRECISION);
+        Assertions.assertEquals(1.452, FastMath.toDegrees(angles[0].getFirstDerivative()), ANGLE_PRECISION);
+        Assertions.assertEquals(0.475, FastMath.toDegrees(angles[1].getFirstDerivative()), ANGLE_PRECISION);
+        Assertions.assertEquals(1.112, FastMath.toDegrees(angles[2].getFirstDerivative()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -402,58 +428,106 @@ public class AEMAttitudeTypeTest {
 
     @Test
     public void testSymmetryQuaternion() {
-        doTestSymmetry(AttitudeType.QUATERNION, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AttitudeType.QUATERNION,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
                        2.0e-16, Double.NaN);
     }
 
     @Test
     public void testSymmetryQuaternionDerivative() {
-        doTestSymmetry(AttitudeType.QUATERNION_DERIVATIVE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AttitudeType.QUATERNION_DERIVATIVE,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1,
+                       -0.04, -0.00016, -0.00031, -0.00047, 0.00109,
                        2.0e-16, 1.0e-16);
     }
 
     @Test
-    public void testSymmetryQuaternionRate() {
-        doTestSymmetry(AttitudeType.QUATERNION_ANGVEL, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+    public void testSymmetryQuaternionEulerRates() {
+        doTestSymmetry(AttitudeType.QUATERNION_EULER_RATES,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
+                       9.0e-16, 3.0e-16);
+    }
+
+    @Test
+    public void testSymmetryQuaternionAngvel() {
+        doTestSymmetry(AttitudeType.QUATERNION_ANGVEL,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
                        2.0e-16, 9.0e-17);
     }
 
     @Test
     public void testSymmetryEulerAngle() {
-        doTestSymmetry(AttitudeType.EULER_ANGLE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AttitudeType.EULER_ANGLE,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
                        2.0e-15, Double.NaN);
     }
 
     @Test
     public void testSymmetryEulerAngleRate() {
-        doTestSymmetry(AttitudeType.EULER_ANGLE_DERIVATIVE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AttitudeType.EULER_ANGLE_DERIVATIVE,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
+                       2.0e-15, 3.0e-16);
+    }
+
+    @Test
+    public void testSymmetryEulerAngleAngvel() {
+        doTestSymmetry(AttitudeType.EULER_ANGLE_ANGVEL,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
                        2.0e-15, 3.0e-16);
     }
 
     @Test
     public void testSymmetrySpin() {
-        doTestSymmetry(AttitudeType.SPIN, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AttitudeType.SPIN,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
                        8.2e-16, 5.0e-16);
+    }
+
+    @Test
+    public void testSymmetrySpinNutation() {
+        doTestSymmetry(AttitudeType.SPIN_NUTATION,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
+                       9.0e-16, 5.0e-16);
+    }
+
+    @Test
+    public void testSymmetrySpinNutationMomentum() {
+        doTestSymmetry(AttitudeType.SPIN_NUTATION_MOMENTUM,
+                       0.1, 0.2, 0.3, -0.7,
+                       0.02, -0.05, 0.1, -0.04,
+                       -0.00016, -0.00031, -0.00047, 0.00109,
+                       8.9e-16, 5.0e-16);
     }
 
     private void doTestSymmetry(AttitudeType type,
                                 double q0, double q1, double q2, double q3,
                                 double q0Dot, double q1Dot, double q2Dot, double q3Dot,
+                                double q0DotDot, double q1DotDot, double q2DotDot, double q3DotDot,
                                 double tolAngle, double tolRate) {
         TimeStampedAngularCoordinates tac =
                         new TimeStampedAngularCoordinates(AbsoluteDate.GLONASS_EPOCH,
-                                                          new FieldRotation<>(new UnivariateDerivative1(q0, q0Dot),
-                                                                              new UnivariateDerivative1(q1, q1Dot),
-                                                                              new UnivariateDerivative1(q2, q2Dot),
-                                                                              new UnivariateDerivative1(q3, q3Dot),
+                                                          new FieldRotation<>(new UnivariateDerivative2(q0, q0Dot, q0DotDot),
+                                                                              new UnivariateDerivative2(q1, q1Dot, q1DotDot),
+                                                                              new UnivariateDerivative2(q2, q2Dot, q2DotDot),
+                                                                              new UnivariateDerivative2(q3, q3Dot, q3DotDot),
                                                                               true));
-        if (type == AttitudeType.SPIN) {
-            // enforce spin axis to be +Z
-            tac = new TimeStampedAngularCoordinates(tac.getDate(), tac.getRotation(),
-                                                    new Vector3D(tac.getRotationRate().getNorm(), Vector3D.PLUS_K),
-                                                    tac.getRotationAcceleration());
-        }
-
         for (RotationOrder order : RotationOrder.values()) {
             final double fixedTolRate;
             if (type == AttitudeType.EULER_ANGLE_DERIVATIVE &&

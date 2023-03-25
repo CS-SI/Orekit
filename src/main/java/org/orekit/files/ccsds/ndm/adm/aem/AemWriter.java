@@ -217,7 +217,7 @@ import org.orekit.utils.units.Unit;
 public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
     /** Version number implemented. **/
-    public static final double CCSDS_AEM_VERS = 1.0;
+    public static final double CCSDS_AEM_VERS = 2.0;
 
     /** Padding width for aligning the '=' sign. */
     public static final int KVN_PADDING_WIDTH = 20;
@@ -228,7 +228,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
     /** Constant for frame B to frame A attitude. */
     private static final String B_TO_A = "B2A";
 
-    /** Constant for quaternions with scalar component in first position. */
+    /** Constant for quaternions with scalar component in  position. */
     private static final String FIRST = "FIRST";
 
     /** Constant for quaternions with scalar component in last position. */
@@ -297,7 +297,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         startAttitudeBlock(generator);
         generator.writeComments(((AemSegment) segment).getData().getComments());
         for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-            writeAttitudeEphemerisLine(generator, metadata, coordinates);
+            writeAttitudeEphemerisLine(generator, formatVersion, metadata, coordinates);
         }
         endAttitudeBlock(generator);
 
@@ -355,13 +355,15 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         // types
         final AttitudeType attitudeType = metadata.getAttitudeType();
         generator.writeEntry(AemMetadataKey.ATTITUDE_TYPE.name(), attitudeType.getName(formatVersion), null, true);
-        if (attitudeType == AttitudeType.QUATERNION ||
-            attitudeType == AttitudeType.QUATERNION_DERIVATIVE ||
-            attitudeType == AttitudeType.QUATERNION_ANGVEL) {
-            generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, null, false);
+        if (formatVersion < 2.0) {
+            if (attitudeType == AttitudeType.QUATERNION ||
+                            attitudeType == AttitudeType.QUATERNION_DERIVATIVE ||
+                            attitudeType == AttitudeType.QUATERNION_ANGVEL) {
+                generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, null, false);
+            }
         }
 
-        if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
+        if (attitudeType == AttitudeType.QUATERNION_EULER_RATES ||
             attitudeType == AttitudeType.EULER_ANGLE ||
             attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
             if (metadata.getEulerRotSeq() == null) {
@@ -397,11 +399,13 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
     /**
      * Write a single attitude ephemeris line according to section 4.2.4 and Table 4-4.
      * @param generator generator to use for producing output
+     * @param formatVersion format version to use
      * @param metadata metadata to use for interpreting data
      * @param attitude the attitude information for a given date
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeAttitudeEphemerisLine(final Generator generator, final AemMetadata metadata,
+    void writeAttitudeEphemerisLine(final Generator generator, final double formatVersion,
+                                    final AemMetadata metadata,
                                     final TimeStampedAngularCoordinates attitude)
         throws IOException {
 
@@ -418,8 +422,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
             generator.writeRawData(generator.dateToString(getTimeConverter(), attitude.getDate()));
 
             // data
-            final int      size = data.length;
-            for (int index = 0; index < size; index++) {
+            for (int index = 0; index < data.length; index++) {
                 generator.writeRawData(' ');
                 generator.writeRawData(data[index]);
             }
@@ -432,32 +435,35 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
             xmlGenerator.enterSection(XmlSubStructureKey.attitudeState.name());
             switch (metadata.getAttitudeType()) {
                 case QUATERNION :
-                    writeQuaternion(xmlGenerator, metadata.isFirst(), attitude.getDate(), data);
+                    writeQuaternion(xmlGenerator, formatVersion, metadata.isFirst(), attitude.getDate(), data);
                     break;
                 case QUATERNION_DERIVATIVE :
-                    writeQuaternionDerivative(xmlGenerator, metadata.isFirst(), attitude.getDate(), data);
+                    writeQuaternionDerivative(xmlGenerator, formatVersion, metadata.isFirst(), attitude.getDate(), data);
+                    break;
+                case QUATERNION_EULER_RATES :
+                    writeQuaternionEulerRates(xmlGenerator, metadata.isFirst(), metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
                 case QUATERNION_ANGVEL :
-                    writeQuaternionAngularVelocity(xmlGenerator, metadata.isFirst(), metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    writeQuaternionAngularVelocity(xmlGenerator, attitude.getDate(), data);
                     break;
                 case EULER_ANGLE :
-                    writeEulerAngle(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    writeEulerAngle(xmlGenerator, formatVersion, metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
                 case EULER_ANGLE_DERIVATIVE :
-                    writeEulerAngleDerivative(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    writeEulerAngleDerivative(xmlGenerator, formatVersion, metadata.getEulerRotSeq(), attitude.getDate(), data);
                     break;
-//                case EULER_ANGLE_ANGVEL :
-//                    writeEulerAngleAngularVelocity(xmlGenerator, metadata.getEulerRotSeq(), attitude.getDate(), data);
-//                    break;
+                case EULER_ANGLE_ANGVEL :
+                    writeEulerAngleAngularVelocity(xmlGenerator, formatVersion, metadata.getEulerRotSeq(), attitude.getDate(), data);
+                    break;
                 case SPIN :
                     writeSpin(xmlGenerator, attitude.getDate(), data);
                     break;
-//                case SPIN_NUTATION :
-//                    writeSpinNutation(xmlGenerator, attitude.getDate(), data);
-//                    break;
-//                case SPIN_NUTATION_MOMENTUM :
-//                    writeSpinNutationMomentum(xmlGenerator, attitude.getDate(), data);
-//                    break;
+                case SPIN_NUTATION :
+                    writeSpinNutation(xmlGenerator, attitude.getDate(), data);
+                    break;
+                case SPIN_NUTATION_MOMENTUM :
+                    writeSpinNutationMomentum(xmlGenerator, attitude.getDate(), data);
+                    break;
                 default :
                     // this should never happen
                     throw new OrekitInternalError(null);
@@ -469,44 +475,53 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
     /** Write a quaternion entry in XML.
      * @param xmlGenerator generator to use for producing output
-     * @param first flag for scalar component to appear first
+     * @param formatVersion format version to use
+     * @param first flag for scalar component to appear first (only relevant in ADM V1)
      * @param epoch of the entry
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeQuaternion(final XmlGenerator xmlGenerator, final boolean first, final AbsoluteDate epoch, final String[] data)
+    void writeQuaternion(final XmlGenerator xmlGenerator, final double formatVersion,
+                         final boolean first, final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
-        // wrapping element
-        xmlGenerator.enterSection(AttitudeEntryKey.quaternion.name());
+        xmlGenerator.enterSection(formatVersion < 2.0 ?
+                                  AttitudeEntryKey.quaternionState.name() :
+                                  AttitudeEntryKey.quaternionEphemeris.name());
 
         // data part
         xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
 
+        // wrapping element
+        xmlGenerator.enterSection(AttitudeEntryKey.quaternion.name());
+
         // quaternion part
         int i = 0;
-        if (first) {
+        if (formatVersion < 2.0 && first) {
             xmlGenerator.writeEntry(AttitudeEntryKey.QC.name(), data[i++], Unit.ONE, false);
         }
         xmlGenerator.writeEntry(AttitudeEntryKey.Q1.name(), data[i++], Unit.ONE, false);
         xmlGenerator.writeEntry(AttitudeEntryKey.Q2.name(), data[i++], Unit.ONE, false);
         xmlGenerator.writeEntry(AttitudeEntryKey.Q3.name(), data[i++], Unit.ONE, false);
-        if (!first) {
+        if (!(formatVersion < 2.0 && first)) {
             xmlGenerator.writeEntry(AttitudeEntryKey.QC.name(), data[i++], Unit.ONE, false);
         }
 
+        xmlGenerator.exitSection();
         xmlGenerator.exitSection();
 
     }
 
     /** Write a quaternion/derivative entry in XML.
      * @param xmlGenerator generator to use for producing output
-     * @param first flag for scalar component to appear first
+     * @param formatVersion format version to use
+     * @param first flag for scalar component to appear first (only relevant in ADM V1)
      * @param epoch of the entry
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeQuaternionDerivative(final XmlGenerator xmlGenerator, final boolean first, final AbsoluteDate epoch, final String[] data)
+    void writeQuaternionDerivative(final XmlGenerator xmlGenerator, final double formatVersion,
+                                   final boolean first, final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
         // wrapping element
@@ -518,26 +533,28 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
         // quaternion part
         xmlGenerator.enterSection(AttitudeEntryKey.quaternion.name());
-        if (first) {
+        if (formatVersion < 2.0 && first) {
             xmlGenerator.writeEntry(AttitudeEntryKey.QC.name(), data[i++], Unit.ONE, true);
         }
         xmlGenerator.writeEntry(AttitudeEntryKey.Q1.name(), data[i++], Unit.ONE, true);
         xmlGenerator.writeEntry(AttitudeEntryKey.Q2.name(), data[i++], Unit.ONE, true);
         xmlGenerator.writeEntry(AttitudeEntryKey.Q3.name(), data[i++], Unit.ONE, true);
-        if (!first) {
+        if (!(formatVersion < 2.0 && first)) {
             xmlGenerator.writeEntry(AttitudeEntryKey.QC.name(), data[i++], Unit.ONE, true);
         }
         xmlGenerator.exitSection();
 
         // derivative part
-        xmlGenerator.enterSection(AttitudeEntryKey.quaternionRate.name());
-        if (first) {
+        xmlGenerator.enterSection(formatVersion < 2.0 ?
+                                  AttitudeEntryKey.quaternionRate.name() :
+                                  AttitudeEntryKey.quaternionDot.name());
+        if (formatVersion < 2.0 && first) {
             xmlGenerator.writeEntry(AttitudeEntryKey.QC_DOT.name(), data[i++], Units.ONE_PER_S, true);
         }
         xmlGenerator.writeEntry(AttitudeEntryKey.Q1_DOT.name(), data[i++], Units.ONE_PER_S, true);
         xmlGenerator.writeEntry(AttitudeEntryKey.Q2_DOT.name(), data[i++], Units.ONE_PER_S, true);
         xmlGenerator.writeEntry(AttitudeEntryKey.Q3_DOT.name(), data[i++], Units.ONE_PER_S, true);
-        if (!first) {
+        if (!(formatVersion < 2.0 && first)) {
             xmlGenerator.writeEntry(AttitudeEntryKey.QC_DOT.name(), data[i++], Units.ONE_PER_S, true);
         }
         xmlGenerator.exitSection();
@@ -546,16 +563,16 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
     }
 
-    /** Write a quaternion/rate entry in XML.
+    /** Write a quaternion/Euler rates entry in XML.
      * @param xmlGenerator generator to use for producing output
-     * @param first flag for scalar component to appear first
+     * @param first flag for scalar component to appear first (only relevant in ADM V1)
      * @param order Euler rotation order
      * @param epoch of the entry
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeQuaternionAngularVelocity(final XmlGenerator xmlGenerator, final boolean first, final RotationOrder order,
-                             final AbsoluteDate epoch, final String[] data)
+    void writeQuaternionEulerRates(final XmlGenerator xmlGenerator, final boolean first, final RotationOrder order,
+                                   final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
         // wrapping element
@@ -580,9 +597,45 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
         // derivative part
         xmlGenerator.enterSection(AttitudeEntryKey.rotationRates.name());
-        writeEulerRate(xmlGenerator, 0, order.name(), data[i++]);
-        writeEulerRate(xmlGenerator, 1, order.name(), data[i++]);
-        writeEulerRate(xmlGenerator, 2, order.name(), data[i++]);
+        writeLabeledEulerRate(xmlGenerator, 0, order.name(), data[i++]);
+        writeLabeledEulerRate(xmlGenerator, 1, order.name(), data[i++]);
+        writeLabeledEulerRate(xmlGenerator, 2, order.name(), data[i++]);
+        xmlGenerator.exitSection();
+
+        xmlGenerator.exitSection();
+
+    }
+
+    /** Write a quaternion/rate entry in XML.
+     * @param xmlGenerator generator to use for producing output
+     * @param epoch of the entry
+     * @param data entry data
+     * @throws IOException if the output stream throws one while writing.
+     */
+    void writeQuaternionAngularVelocity(final XmlGenerator xmlGenerator,
+                                        final AbsoluteDate epoch, final String[] data)
+        throws IOException {
+
+        // wrapping element
+        xmlGenerator.enterSection(AttitudeEntryKey.quaternionAngvel.name());
+
+        // data part
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
+        int i = 0;
+
+        // quaternion part
+        xmlGenerator.enterSection(AttitudeEntryKey.quaternion.name());
+        xmlGenerator.writeEntry(AttitudeEntryKey.Q1.name(), data[i++], Unit.ONE, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.Q2.name(), data[i++], Unit.ONE, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.Q3.name(), data[i++], Unit.ONE, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.QC.name(), data[i++], Unit.ONE, true);
+        xmlGenerator.exitSection();
+
+        // angular velocity part
+        xmlGenerator.enterSection(AttitudeEntryKey.angVel.name());
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGVEL_X.name(), data[i++], Units.DEG_PER_S, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGVEL_Y.name(), data[i++], Units.DEG_PER_S, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGVEL_Z.name(), data[i++], Units.DEG_PER_S, true);
         xmlGenerator.exitSection();
 
         xmlGenerator.exitSection();
@@ -591,13 +644,14 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
     /** Write a Euler angles entry in XML.
      * @param xmlGenerator generator to use for producing output
+     * @param formatVersion format version to use
      * @param order Euler rotation order
      * @param epoch of the entry
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeEulerAngle(final XmlGenerator xmlGenerator, final RotationOrder order,
-                         final AbsoluteDate epoch, final String[] data)
+    void writeEulerAngle(final XmlGenerator xmlGenerator, final double formatVersion,
+                         final RotationOrder order, final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
         // wrapping element
@@ -608,47 +662,96 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         int i = 0;
 
         // angle part
-        xmlGenerator.enterSection(AttitudeEntryKey.rotationAngles.name());
-        writeEulerAngle(xmlGenerator, 0, order.name(), data[i++]);
-        writeEulerAngle(xmlGenerator, 1, order.name(), data[i++]);
-        writeEulerAngle(xmlGenerator, 2, order.name(), data[i++]);
-        xmlGenerator.exitSection();
+        if (formatVersion < 2.0) {
+            xmlGenerator.enterSection(AttitudeEntryKey.rotationAngles.name());
+            writeLabeledEulerAngle(xmlGenerator, 0, order.name(), data[i++]);
+            writeLabeledEulerAngle(xmlGenerator, 1, order.name(), data[i++]);
+            writeLabeledEulerAngle(xmlGenerator, 2, order.name(), data[i++]);
+            xmlGenerator.exitSection();
+        } else {
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_1.name(), data[i++], Unit.DEGREE, true);
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_2.name(), data[i++], Unit.DEGREE, true);
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_3.name(), data[i++], Unit.DEGREE, true);
+        }
 
         xmlGenerator.exitSection();
 
     }
 
-    /** Write a Euler angles/rates entry in XML.
+    /** Write a Euler angles entry in XML.
      * @param xmlGenerator generator to use for producing output
+     * @param formatVersion format version to use
      * @param order Euler rotation order
      * @param epoch of the entry
      * @param data entry data
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeEulerAngleDerivative(final XmlGenerator xmlGenerator, final RotationOrder order,
-                             final AbsoluteDate epoch, final String[] data)
+    void writeEulerAngleDerivative(final XmlGenerator xmlGenerator, final double formatVersion,
+                                   final RotationOrder order, final AbsoluteDate epoch, final String[] data)
         throws IOException {
 
         // wrapping element
-        xmlGenerator.enterSection(AttitudeEntryKey.eulerAngle.name());
+        xmlGenerator.enterSection(formatVersion < 2.0 ?
+                                  AttitudeEntryKey.eulerAngleRate.name() :
+                                  AttitudeEntryKey.eulerAngleDerivative.name());
 
         // data part
         xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
         int i = 0;
 
         // angle part
-        xmlGenerator.enterSection(AttitudeEntryKey.rotationAngles.name());
-        writeEulerAngle(xmlGenerator, 0, order.name(), data[i++]);
-        writeEulerAngle(xmlGenerator, 1, order.name(), data[i++]);
-        writeEulerAngle(xmlGenerator, 2, order.name(), data[i++]);
+        if (formatVersion < 2.0) {
+            xmlGenerator.enterSection(AttitudeEntryKey.rotationAngles.name());
+            writeLabeledEulerAngle(xmlGenerator, 0, order.name(), data[i++]);
+            writeLabeledEulerAngle(xmlGenerator, 1, order.name(), data[i++]);
+            writeLabeledEulerAngle(xmlGenerator, 2, order.name(), data[i++]);
+            xmlGenerator.exitSection();
+            xmlGenerator.enterSection(AttitudeEntryKey.rotationRates.name());
+            writeLabeledEulerRate(xmlGenerator, 0, order.name(), data[i++]);
+            writeLabeledEulerRate(xmlGenerator, 1, order.name(), data[i++]);
+            writeLabeledEulerRate(xmlGenerator, 2, order.name(), data[i++]);
+            xmlGenerator.exitSection();
+        } else {
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_1.name(),     data[i++], Unit.DEGREE,     true);
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_2.name(),     data[i++], Unit.DEGREE,     true);
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_3.name(),     data[i++], Unit.DEGREE,     true);
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_1_DOT.name(), data[i++], Units.DEG_PER_S, true);
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_2_DOT.name(), data[i++], Units.DEG_PER_S, true);
+            xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_3_DOT.name(), data[i++], Units.DEG_PER_S, true);
+        }
+
         xmlGenerator.exitSection();
 
-        // rates part
-        xmlGenerator.enterSection(AttitudeEntryKey.rotationRates.name());
-        writeEulerRate(xmlGenerator, 0, order.name(), data[i++]);
-        writeEulerRate(xmlGenerator, 1, order.name(), data[i++]);
-        writeEulerRate(xmlGenerator, 2, order.name(), data[i++]);
-        xmlGenerator.exitSection();
+    }
+
+    /** Write a Euler angles/angular velocity entry in XML.
+     * @param xmlGenerator generator to use for producing output
+     * @param formatVersion format version to use
+     * @param order Euler rotation order
+     * @param epoch of the entry
+     * @param data entry data
+     * @throws IOException if the output stream throws one while writing.
+     */
+    void writeEulerAngleAngularVelocity(final XmlGenerator xmlGenerator, final double formatVersion, final RotationOrder order,
+                                        final AbsoluteDate epoch, final String[] data)
+        throws IOException {
+
+        // wrapping element
+        xmlGenerator.enterSection(AttitudeEntryKey.eulerAngleAngvel.name());
+
+        // data part
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
+        int i = 0;
+
+        // angle part
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_1.name(), data[i++], Unit.DEGREE, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_2.name(), data[i++], Unit.DEGREE, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGLE_3.name(), data[i++], Unit.DEGREE, true);
+
+        // angular velocity part
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGVEL_X.name(), data[i++], Units.DEG_PER_S, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGVEL_Y.name(), data[i++], Units.DEG_PER_S, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.ANGVEL_Z.name(), data[i++], Units.DEG_PER_S, true);
 
         xmlGenerator.exitSection();
 
@@ -678,32 +781,59 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
 
     }
 
-//    /** Write a spin/nutation entry in XML.
-//     * @param xmlGenerator generator to use for producing output
-//     * @param epoch of the entry
-//     * @param data entry data
-//     * @throws IOException if the output stream throws one while writing.
-//     */
-//    void writeSpinNutation(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
-//        throws IOException {
-//
-//        // wrapping element
-//        xmlGenerator.enterSection(AttitudeEntryKey.spin.name());
-//
-//        // data part
-//        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, true);
-//        int i = 0;
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION.name(),       data[i++], Unit.DEGREE,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PER.name(),   data[i++], Unit.SECOND,     true);
-//        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PHASE.name(), data[i++], Unit.DEGREE,     true);
-//
-//        xmlGenerator.exitSection();
-//
-//    }
+    /** Write a spin/nutation entry in XML.
+     * @param xmlGenerator generator to use for producing output
+     * @param epoch of the entry
+     * @param data entry data
+     * @throws IOException if the output stream throws one while writing.
+     */
+    void writeSpinNutation(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
+        throws IOException {
+
+        // wrapping element
+        xmlGenerator.enterSection(AttitudeEntryKey.spinNutation.name());
+
+        // data part
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
+        int i = 0;
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION.name(),       data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PER.name(),   data[i++], Unit.SECOND,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_PHASE.name(), data[i++], Unit.DEGREE,     true);
+
+        xmlGenerator.exitSection();
+
+    }
+
+    /** Write a spin/nutation/momentum entry in XML.
+     * @param xmlGenerator generator to use for producing output
+     * @param epoch of the entry
+     * @param data entry data
+     * @throws IOException if the output stream throws one while writing.
+     */
+    void writeSpinNutationMomentum(final XmlGenerator xmlGenerator, final AbsoluteDate epoch, final String[] data)
+        throws IOException {
+
+        // wrapping element
+        xmlGenerator.enterSection(AttitudeEntryKey.spinNutationMom.name());
+
+        // data part
+        xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
+        int i = 0;
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ALPHA.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_DELTA.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE.name(),     data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.SPIN_ANGLE_VEL.name(), data[i++], Units.DEG_PER_S, true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.MOMENTUM_ALPHA.name(), data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.MOMENTUM_DELTA.name(), data[i++], Unit.DEGREE,     true);
+        xmlGenerator.writeEntry(AttitudeEntryKey.NUTATION_VEL.name(),   data[i++], Units.DEG_PER_S, true);
+
+        xmlGenerator.exitSection();
+
+    }
 
     /** Write an angle from an Euler sequence.
      * @param xmlGenerator generator to use
@@ -712,7 +842,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
      * @param angle angle value
      * @throws IOException if the output stream throws one while writing.
      */
-    private void writeEulerAngle(final XmlGenerator xmlGenerator, final int index, final String seq, final String angle)
+    private void writeLabeledEulerAngle(final XmlGenerator xmlGenerator, final int index,
+                                        final String seq, final String angle)
         throws IOException {
         if (xmlGenerator.writeUnits(Unit.DEGREE)) {
             xmlGenerator.writeTwoAttributesElement(ROTATION + (index + 1), angle,
@@ -732,7 +863,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
      * @param rate rate value
      * @throws IOException if the output stream throws one while writing.
      */
-    private void writeEulerRate(final XmlGenerator xmlGenerator, final int index, final String seq, final String rate)
+    private void writeLabeledEulerRate(final XmlGenerator xmlGenerator, final int index, final String seq, final String rate)
         throws IOException {
         if (xmlGenerator.writeUnits(Units.DEG_PER_S)) {
             xmlGenerator.writeTwoAttributesElement(ROTATION + (index + 1), rate,

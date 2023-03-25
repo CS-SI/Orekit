@@ -101,8 +101,8 @@ public class AemMetadata extends AdmMetadata {
                                                            AemMetadataKey.ATTITUDE_DIR);
 
         checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE);
-        if (attitudeType == AttitudeType.QUATERNION ||
-            attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
+        if (version < 2.0 &&
+            (attitudeType == AttitudeType.QUATERNION || attitudeType == AttitudeType.QUATERNION_DERIVATIVE)) {
             checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE);
         }
         if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||

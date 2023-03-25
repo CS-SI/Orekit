@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.complex.Quaternion;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -260,22 +258,24 @@ public class ApmData implements Data {
                                                            angularVelocityBlock.getAngVelZ());
             } else if (eulerBlock != null && eulerBlock.hasRates()) {
                 // get derivatives from the Euler logical block
-                final double[]   angles;
+                final double[] rates = eulerBlock.getRotationRates();
                 if (eulerBlock.hasAngles()) {
                     // the Euler block has everything we need
-                    angles = eulerBlock.getRotationAngles();
+                    final double[] angles = eulerBlock.getRotationAngles();
+                    tac = AttitudeType.EULER_ANGLE_DERIVATIVE.build(true,
+                                                                    eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                                    eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
+                                                                    angles[0], angles[1], angles[2],
+                                                                    rates[0], rates[1], rates[2]);
                 } else {
                     // the Euler block has only the rates (we are certainly using an ADM V1 message)
-                    // we need to rebuild the Euler angles from the quaternion
-                    angles = new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true).
-                             getAngles(eulerBlock.getEulerRotSeq(), RotationConvention.FRAME_TRANSFORM);
+                    // we need to rebuild the rotation from the quaternion
+                    tac = AttitudeType.QUATERNION_EULER_RATES.build(true,
+                                                                    eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                                    eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
+                                                                    q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(),
+                                                                    rates[0], rates[1], rates[2]);
                 }
-                final double[] rates = eulerBlock.getRotationRates();
-                tac = AttitudeType.EULER_ANGLE_DERIVATIVE.build(true,
-                                                                eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
-                                                                eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
-                                                                angles[0], angles[1], angles[2],
-                                                                rates[0], rates[1], rates[2]);
 
             } else {
                 // we rely only on the quaternion logical block, despite it doesn't include rates

@@ -70,35 +70,31 @@ class AttitudeEntry {
 
     /** Set one angle.
      * @param axis axis label
-     * @param value value of the angle
+     * @param angle value of the angle (rad)
      */
-    public void setAngle(final char axis, final double value) {
+    public void setLabeledAngle(final char axis, final double angle) {
         if (metadata.getEulerRotSeq() != null) {
-            final String seq = metadata.getEulerRotSeq().name();
-            if (seq.charAt(0) == axis && Double.isNaN(components[0])) {
-                components[0] = value;
-            } else if (seq.charAt(1) == axis && Double.isNaN(components[1])) {
-                components[1] = value;
-            } else if (seq.charAt(2) == axis && Double.isNaN(components[2])) {
-                components[2] = value;
+            for (int i = 0; i < components.length; ++i) {
+                if (metadata.getEulerRotSeq().name().charAt(i) == axis && Double.isNaN(components[i])) {
+                    setComponent(i, angle);
+                    return;
+                }
             }
         }
     }
 
     /** Set one rate.
      * @param axis axis label
-     * @param value value of the rate
+     * @param rate value of the rate (rad/s)
      */
-    public void setRate(final char axis, final double value) {
+    public void setLabeledRate(final char axis, final double rate) {
         if (metadata.getEulerRotSeq() != null) {
-            final String seq   = metadata.getEulerRotSeq().name();
             final int    first = metadata.getAttitudeType() == AttitudeType.QUATERNION_ANGVEL ? 4 : 3;
-            if (seq.charAt(0) == axis && Double.isNaN(components[first])) {
-                components[first] = value;
-            } else if (seq.charAt(1) == axis && Double.isNaN(components[first + 1])) {
-                components[first + 1] = value;
-            } else if (seq.charAt(2) == axis && Double.isNaN(components[first + 2])) {
-                components[first + 2] = value;
+            for (int i = 0; i < 3; ++i) {
+                if (metadata.getEulerRotSeq().name().charAt(i) == axis && Double.isNaN(components[i])) {
+                    setComponent( first + i, rate);
+                    return;
+                }
             }
         }
     }

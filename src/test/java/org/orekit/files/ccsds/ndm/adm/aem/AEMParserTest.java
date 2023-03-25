@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -355,21 +357,20 @@ public class AEMParserTest {
 
         // Reference values
         final AbsoluteDate refDate = new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC());
-        final Vector3D refRate     = new Vector3D(FastMath.toRadians(0.03214),
-                                                  FastMath.toRadians(0.02156),
-                                                  FastMath.toRadians(0.1045));
-        final Vector3D refAcc      = Vector3D.ZERO;
 
         // Computed angular coordinates
         final TimeStampedAngularCoordinates ac = segment0.getData().getAngularCoordinates().get(0);
-        final double[] angles = ac.getRotation().getAngles(segment0.getMetadata().getEulerRotSeq(),
+        final FieldRotation<UnivariateDerivative1> r = ac.toUnivariateDerivative1Rotation();
+        final UnivariateDerivative1[] angles = r.getAngles(segment0.getMetadata().getEulerRotSeq(),
                                                            RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(0.0, refDate.durationFrom(ac.getDate()),                                      1.0e-5);
-        Assertions.assertEquals(0.0, refRate.distance(ac.getRotation().applyInverseTo(ac.getRotationRate())), 1.0e-5);
-        Assertions.assertEquals(0.0, refAcc.distance(ac.getRotationAcceleration()),                           1.0e-5);
-        Assertions.assertEquals(-26.78, FastMath.toDegrees(angles[0]), 1.0e-2);
-        Assertions.assertEquals(46.26,  FastMath.toDegrees(angles[1]), 1.0e-2);
-        Assertions.assertEquals(144.10, FastMath.toDegrees(angles[2]), 1.0e-2);
+        Assertions.assertEquals(0.0,     refDate.durationFrom(ac.getDate()),                 1.0e-5);
+        Assertions.assertEquals(0.0,     ac.getRotationAcceleration().getNorm(),             1.0e-5);
+        Assertions.assertEquals(-26.78,  FastMath.toDegrees(angles[0].getValue()),           1.0e-2);
+        Assertions.assertEquals(46.26,   FastMath.toDegrees(angles[1].getValue()),           1.0e-2);
+        Assertions.assertEquals(144.10,  FastMath.toDegrees(angles[2].getValue()),           1.0e-2);
+        Assertions.assertEquals(0.10450, FastMath.toDegrees(angles[0].getFirstDerivative()), 1.0e-5);
+        Assertions.assertEquals(0.03214, FastMath.toDegrees(angles[1].getFirstDerivative()), 1.0e-5);
+        Assertions.assertEquals(0.02156, FastMath.toDegrees(angles[2].getFirstDerivative()), 1.0e-5);
     }
 
     @Test

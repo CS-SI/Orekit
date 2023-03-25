@@ -160,7 +160,9 @@ public class StreamingAemWriter implements AutoCloseable {
         @Override
         public void handleStep(final SpacecraftState currentState) {
             try {
-                writer.writeAttitudeEphemerisLine(generator, metadata, currentState.getAttitude().getOrientation());
+                writer.writeAttitudeEphemerisLine(generator,
+                                                  header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                                                  metadata, currentState.getAttitude().getOrientation());
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }

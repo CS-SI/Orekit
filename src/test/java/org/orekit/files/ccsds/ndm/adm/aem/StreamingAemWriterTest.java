@@ -84,7 +84,7 @@ public class StreamingAemWriterTest {
             FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
             FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
             boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
-            AttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
+            AttitudeType      attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
             // Initialize the header and metadata

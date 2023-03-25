@@ -191,7 +191,9 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
             generator.writeComments(((AemSegment) segment).getData().getComments());
         }
         for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-            writer.writeAttitudeEphemerisLine(generator, metadata, coordinates);
+            writer.writeAttitudeEphemerisLine(generator,
+                                              header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                                              metadata, coordinates);
         }
         writer.endAttitudeBlock(generator);
 

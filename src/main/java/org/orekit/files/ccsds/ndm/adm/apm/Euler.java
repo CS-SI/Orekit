@@ -179,17 +179,17 @@ public class Euler extends CommentsContainer {
     }
 
     /**
-     * Get the coordinates of the Euler angles (rad).
-     * @return rotation angles
+     * Get the coordinates of the Euler angles.
+     * @return rotation angles (rad)
      */
     public double[] getRotationAngles() {
         return rotationAngles.clone();
     }
 
     /**
-     * Set the Euler angle about (rad).
+     * Set the Euler angle about axis.
      * @param axis rotation axis
-     * @param angle angle to set
+     * @param angle angle to set (rad)
      */
     public void setLabeledRotationAngle(final char axis, final double angle) {
         if (eulerRotSeq != null) {
@@ -203,9 +203,9 @@ public class Euler extends CommentsContainer {
     }
 
     /**
-     * Set the Euler angle about (rad).
+     * Set the Euler angle about axis.
      * @param axis rotation axis
-     * @param angle angle to set
+     * @param angle angle to set (rad)
      * @since 12.0
      */
     public void setIndexedRotationAngle(final int axis, final double angle) {
@@ -214,17 +214,17 @@ public class Euler extends CommentsContainer {
     }
 
     /**
-     * Get the rates of the Euler angles (rad/s).
-     * @return rotation rates
+     * Get the rates of the Euler angles.
+     * @return rotation rates (rad/s)
      */
     public double[] getRotationRates() {
         return rotationRates.clone();
     }
 
     /**
-     * Set the rate of Euler angle (rad/s).
+     * Set the rate of Euler angle about axis.
      * @param axis rotation axis
-     * @param rate angle rate to set
+     * @param rate angle rate to set (rad/s)
      */
     public void setLabeledRotationRate(final char axis, final double rate) {
         if (eulerRotSeq != null) {
@@ -238,9 +238,9 @@ public class Euler extends CommentsContainer {
     }
 
     /**
-     * Set the rate of Euler angle (rad/s).
+     * Set the rate of Euler angle about axis.
      * @param axis rotation axis
-     * @param rate angle rate to set
+     * @param rate angle rate to set (rad/s)
      * @since 12.0
      */
     public void setIndexedRotationRate(final int axis, final double rate) {
@@ -265,7 +265,7 @@ public class Euler extends CommentsContainer {
 
     /** Check if the logical block includes angles.
      * <p>
-     * This can be false only for ADM V1, has angles are mandatory since ADM V2.
+     * This can be false only for ADM V1, as angles are mandatory since ADM V2.
      * </p>
      * @return true if logical block includes angles
      * @since 12.0

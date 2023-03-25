@@ -17,13 +17,14 @@
 package org.orekit.files.ccsds.ndm.adm;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -49,7 +50,7 @@ import org.orekit.utils.units.Unit;
 public enum AttitudeType {
 
     /** Quaternion. */
-    QUATERNION(Arrays.asList(new VersionedName(1.0, "QUATERNION")),
+    QUATERNION(Collections.singleton(new VersionedName(1.0, "QUATERNION")),
                AngularDerivativesFilter.USE_R,
                Unit.ONE, Unit.ONE, Unit.ONE, Unit.ONE) {
 
@@ -104,7 +105,7 @@ public enum AttitudeType {
     },
 
     /** Quaternion and derivatives. */
-    QUATERNION_DERIVATIVE(Arrays.asList(new VersionedName(1.0, "QUATERNION/DERIVATIVE")),
+    QUATERNION_DERIVATIVE(Collections.singleton(new VersionedName(1.0, "QUATERNION/DERIVATIVE")),
                           AngularDerivativesFilter.USE_RR,
                           Unit.ONE, Unit.ONE, Unit.ONE, Unit.ONE,
                           Units.ONE_PER_S, Units.ONE_PER_S, Units.ONE_PER_S, Units.ONE_PER_S) {
@@ -173,9 +174,74 @@ public enum AttitudeType {
 
     },
 
+    /** Quaternion and Euler angles rates (only in ADM V1). */
+    QUATERNION_EULER_RATES(Collections.singleton(new VersionedName(1.0, "QUATERNION/RATE")),
+                           AngularDerivativesFilter.USE_RR,
+                           Unit.ONE, Unit.ONE, Unit.ONE, Unit.ONE,
+                           Units.DEG_PER_S, Units.DEG_PER_S, Units.DEG_PER_S) {
+
+        /** {@inheritDoc} */
+        @Override
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                         final TimeStampedAngularCoordinates coordinates) {
+
+            // Initialize the array of attitude data
+            final double[] data = new double[7];
+
+            // Data index
+            final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3} : new int[] {3, 0, 1, 2};
+
+            // Attitude
+            FieldRotation<UnivariateDerivative1> rotation = coordinates.toUnivariateDerivative1Rotation();
+            if (!isExternal2SpacecraftBody) {
+                rotation = rotation.revert();
+            }
+            final UnivariateDerivative1[] euler = rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
+
+            // Fill the array
+            data[quaternionIndex[0]] = rotation.getQ0().getValue();
+            data[quaternionIndex[1]] = rotation.getQ1().getValue();
+            data[quaternionIndex[2]] = rotation.getQ2().getValue();
+            data[quaternionIndex[3]] = rotation.getQ3().getValue();
+            data[4]                  = euler[0].getFirstDerivative();
+            data[5]                  = euler[1].getFirstDerivative();
+            data[6]                  = euler[2].getFirstDerivative();
+
+            // Convert units and format
+            return QUATERNION_EULER_RATES.formatData(data);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeStampedAngularCoordinates build(final boolean isFirst,
+                                                   final boolean isExternal2SpacecraftBody,
+                                                   final RotationOrder eulerRotSequence,
+                                                   final boolean isSpacecraftBodyRate,
+                                                   final AbsoluteDate date,
+                                                   final double... components) {
+            // Build the needed objects
+            final Rotation rotation = isFirst ?
+                                      new Rotation(components[0], components[1], components[2], components[3], true) :
+                                      new Rotation(components[3], components[0], components[1], components[2], true);
+            final double[] euler = rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
+            final FieldRotation<UnivariateDerivative1> rUD1 =
+                            new FieldRotation<>(eulerRotSequence, RotationConvention.FRAME_TRANSFORM,
+                                                new UnivariateDerivative1(euler[0], components[4]),
+                                                new UnivariateDerivative1(euler[1], components[5]),
+                                                new UnivariateDerivative1(euler[2], components[6]));
+
+            // Return
+            final TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(date, rUD1);
+            return isExternal2SpacecraftBody ? ac : ac.revert();
+
+        }
+
+    },
+
     /** Quaternion and angular velocity. */
-    QUATERNION_ANGVEL(Arrays.asList(new VersionedName(1.0, "QUATERNION/RATE"),
-                                    new VersionedName(2.0, "QUATERNION/ANGVEL")),
+    QUATERNION_ANGVEL(Collections.singleton(new VersionedName(2.0, "QUATERNION/ANGVEL")),
                       AngularDerivativesFilter.USE_RR,
                       Unit.ONE, Unit.ONE, Unit.ONE, Unit.ONE,
                       Units.DEG_PER_S, Units.DEG_PER_S, Units.DEG_PER_S) {
@@ -236,7 +302,7 @@ public enum AttitudeType {
     },
 
     /** Euler angles. */
-    EULER_ANGLE(Arrays.asList(new VersionedName(1.0, "EULER ANGLE")),
+    EULER_ANGLE(Collections.singleton(new VersionedName(1.0, "EULER ANGLE")),
                 AngularDerivativesFilter.USE_R,
                 Unit.DEGREE, Unit.DEGREE, Unit.DEGREE) {
 
@@ -346,7 +412,7 @@ public enum AttitudeType {
     /** Euler angles and angular velocity.
      * @since 12.0
      */
-    EULER_ANGLE_ANGVEL(Arrays.asList(new VersionedName(2.0, "EULER ANGLE/ANGVEL")),
+    EULER_ANGLE_ANGVEL(Collections.singleton(new VersionedName(2.0, "EULER ANGLE/ANGVEL")),
                        AngularDerivativesFilter.USE_RR,
                        Unit.DEGREE, Unit.DEGREE, Unit.DEGREE,
                        Units.DEG_PER_S, Units.DEG_PER_S, Units.DEG_PER_S) {
@@ -405,16 +471,9 @@ public enum AttitudeType {
 
     },
 
-    /** Spin.
-     * <p>
-     * CCSDS enforces that spin axis is +Z, so if {@link #createDataFields(boolean, boolean, RotationOrder, boolean,
-     * TimeStampedAngularCoordinates) createDataFields} is called with {@code coordinates} with {@link
-     * TimeStampedAngularCoordinates#getRotationRate() rotation rate} that is not along the Z axis, result is
-     * undefined.
-     * </p>
-     */
-    SPIN(Arrays.asList(new VersionedName(1.0, "SPIN")),
-         AngularDerivativesFilter.USE_RR,
+    /** Spin. */
+    SPIN(Collections.singleton(new VersionedName(1.0, "SPIN")),
+         AngularDerivativesFilter.USE_R,
          Unit.DEGREE, Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
@@ -426,13 +485,22 @@ public enum AttitudeType {
             // Initialize the array of attitude data
             final double[] data = new double[4];
 
-            // Attitude
-            final double[] angles = coordinates.getRotation().getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM);
+            // spin axis is forced to Z (but it is not the instantaneous rotation rate as it also moves)
+            final Vector3D spinAxis  = coordinates.getRotation().applyInverseTo(Vector3D.PLUS_K);
+            final double   spinAlpha = spinAxis.getAlpha();
+            final double   spinDelta = spinAxis.getDelta();
+            final Rotation alignSpin = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                                    MathUtils.SEMI_PI + spinAlpha,
+                                                    MathUtils.SEMI_PI - spinDelta,
+                                                    0.0);
+            final Rotation phasing   = coordinates.getRotation().applyTo(alignSpin.revert());
+            final double   spinAngle = FastMath.copySign(phasing.getAngle(),
+                                                         phasing.getAxis(RotationConvention.FRAME_TRANSFORM).getZ());
 
             // Fill the array
-            data[0] = angles[0] - MathUtils.SEMI_PI;
-            data[1] = MathUtils.SEMI_PI - angles[1];
-            data[2] = angles[2];
+            data[0] = spinAlpha;
+            data[1] = spinDelta;
+            data[2] = spinAngle;
             data[3] = coordinates.getRotationRate().getZ();
 
             // Convert units and format
@@ -465,7 +533,7 @@ public enum AttitudeType {
     },
 
     /** Spin and nutation. */
-    SPIN_NUTATION(Arrays.asList(new VersionedName(1.0, "SPIN/NUTATION")),
+    SPIN_NUTATION(Collections.singleton(new VersionedName(1.0, "SPIN/NUTATION")),
                   AngularDerivativesFilter.USE_RR,
                   Unit.DEGREE, Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S,
                   Unit.DEGREE, Unit.SECOND, Unit.DEGREE) {
@@ -479,17 +547,41 @@ public enum AttitudeType {
             // Initialize the array of attitude data
             final double[] data = new double[7];
 
-            // Attitude
-            final double[] angles = coordinates.getRotation().getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM);
+            // spin axis is forced to Z (but it is not the instantaneous rotation rate as it also moves)
+            final FieldVector3D<UnivariateDerivative2> spinAxis =
+                            coordinates.toUnivariateDerivative2Rotation().applyInverseTo(Vector3D.PLUS_K);
+            final Vector3D spinAxis0 = new Vector3D(spinAxis.getX().getValue(),
+                                                    spinAxis.getY().getValue(),
+                                                    spinAxis.getZ().getValue());
+            final double   spinAlpha = spinAxis0.getAlpha();
+            final double   spinDelta = spinAxis0.getDelta();
+            final Rotation alignSpin = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                                    MathUtils.SEMI_PI + spinAlpha,
+                                                    MathUtils.SEMI_PI - spinDelta,
+                                                    0.0);
+            final Rotation phasing   = coordinates.getRotation().applyTo(alignSpin.revert());
+            final double   spinAngle = FastMath.copySign(phasing.getAngle(),
+                                                         phasing.getAxis(RotationConvention.FRAME_TRANSFORM).getZ());
+
+            // Orekit/CCSDS naming difference: for CCSDS this is nutation, for Orekt this is precession
+            final PrecessionFinder pf = new PrecessionFinder(spinAxis);
+
+            // intermediate inertial frame, with Z axis aligned with angular momentum
+            final Rotation intermediate2Inert = new Rotation(Vector3D.PLUS_K, pf.getAxis());
+
+            // base Euler angles from the intermediate frame to body
+            final Rotation intermediate2Body0 = coordinates.getRotation().applyTo(intermediate2Inert);
+            final double[] euler0             = intermediate2Body0.getAngles(RotationOrder.ZXZ,
+                                                                             RotationConvention.FRAME_TRANSFORM);
 
             // Fill the array
-            data[0] = angles[0] - MathUtils.SEMI_PI;
-            data[1] = MathUtils.SEMI_PI - angles[1];
-            data[2] = angles[2];
+            data[0] = spinAlpha;
+            data[1] = spinDelta;
+            data[2] = spinAngle;
             data[3] = coordinates.getRotationRate().getZ();
-            data[4] = Double.NaN; // TODO
-            data[5] = Double.NaN; // TODO
-            data[6] = Double.NaN; // TODO
+            data[4] = pf.getPrecessionAngle();
+            data[5] = MathUtils.TWO_PI / pf.getAngularVelocity();
+            data[6] = euler0[2];
 
             // Convert units and format
             return SPIN_NUTATION.formatData(data);
@@ -529,9 +621,9 @@ public enum AttitudeType {
             // add Euler angular rates to base Euler angles
             final FieldRotation<UnivariateDerivative2> intermediate2Body =
                             new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                new UnivariateDerivative2(euler0[0], MathUtils.TWO_PI / components[5], 0),
-                                                new UnivariateDerivative2(euler0[1], 0, 0),
-                                                new UnivariateDerivative2(euler0[2], components[3], 0));
+                                                new UnivariateDerivative2(euler0[0], components[6], 0.0),
+                                                new UnivariateDerivative2(euler0[1], 0.0,           0.0),
+                                                new UnivariateDerivative2(euler0[2], components[3], 0.0));
 
             // final rotation, including derivatives
             FieldRotation<UnivariateDerivative2> inert2Body = intermediate2Body.applyTo(inert2Intermediate);
@@ -548,10 +640,10 @@ public enum AttitudeType {
     /** Spin and momentum.
      * @since 12.0
      */
-    SPIN_NUTATION_MOMENTUM(Arrays.asList(new VersionedName(2.0, "SPIN/NUTATION_MOM")),
+    SPIN_NUTATION_MOMENTUM(Collections.singleton(new VersionedName(2.0, "SPIN/NUTATION_MOM")),
                            AngularDerivativesFilter.USE_RR,
                            Unit.DEGREE, Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S,
-                           Unit.DEGREE, Unit.SECOND, Unit.DEGREE) {
+                           Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
@@ -562,17 +654,33 @@ public enum AttitudeType {
             // Initialize the array of attitude data
             final double[] data = new double[7];
 
-            // Attitude
-            final double[] angles = coordinates.getRotation().getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM);
+            // spin axis is forced to Z (but it is not the instantaneous rotation rate as it also moves)
+            final FieldVector3D<UnivariateDerivative2> spinAxis =
+                            coordinates.toUnivariateDerivative2Rotation().applyInverseTo(Vector3D.PLUS_K);
+            final Vector3D spinAxis0 = new Vector3D(spinAxis.getX().getValue(),
+                                                    spinAxis.getY().getValue(),
+                                                    spinAxis.getZ().getValue());
+            final double   spinAlpha = spinAxis0.getAlpha();
+            final double   spinDelta = spinAxis0.getDelta();
+            final Rotation alignSpin = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                                    MathUtils.SEMI_PI + spinAlpha,
+                                                    MathUtils.SEMI_PI - spinDelta,
+                                                    0.0);
+            final Rotation phasing   = coordinates.getRotation().applyTo(alignSpin.revert());
+            final double   spinAngle = FastMath.copySign(phasing.getAngle(),
+                                                         phasing.getAxis(RotationConvention.FRAME_TRANSFORM).getZ());
+
+            // Orekit/CCSDS naming difference: for CCSDS this is nutation, for Orekt this is precession
+            final PrecessionFinder pf = new PrecessionFinder(spinAxis);
 
             // Fill the array
-            data[0] = angles[0] - MathUtils.SEMI_PI;
-            data[1] = MathUtils.SEMI_PI - angles[1];
-            data[2] = angles[2];
+            data[0] = spinAlpha;
+            data[1] = spinDelta;
+            data[2] = spinAngle;
             data[3] = coordinates.getRotationRate().getZ();
-            data[4] = Double.NaN; // TODO
-            data[5] = Double.NaN; // TODO
-            data[6] = Double.NaN; // TODO
+            data[4] = pf.getAxis().getAlpha();
+            data[5] = pf.getAxis().getDelta();
+            data[6] = pf.getAngularVelocity();
 
             // Convert units and format
             return SPIN_NUTATION_MOMENTUM.formatData(data);
@@ -609,9 +717,9 @@ public enum AttitudeType {
             // add Euler angular rates to base Euler angles
             final FieldRotation<UnivariateDerivative2> intermediate2Body =
                             new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                new UnivariateDerivative2(euler0[0], components[6], 0),
-                                                new UnivariateDerivative2(euler0[1], 0, 0),
-                                                new UnivariateDerivative2(euler0[2], components[3], 0));
+                                                new UnivariateDerivative2(euler0[0], components[6], 0.0),
+                                                new UnivariateDerivative2(euler0[1], 0.0,           0.0),
+                                                new UnivariateDerivative2(euler0[2], components[3], 0.0));
 
             // final rotation, including derivatives
             FieldRotation<UnivariateDerivative2> inert2Body = intermediate2Body.applyTo(inert2Intermediate);
@@ -638,7 +746,7 @@ public enum AttitudeType {
     }
 
     /** CCSDS names of the attitude type. */
-    private final List<VersionedName> ccsdsNames;
+    private final Iterable<VersionedName> ccsdsNames;
 
     /** Derivatives filter. */
     private final AngularDerivativesFilter filter;
@@ -651,7 +759,7 @@ public enum AttitudeType {
      * @param filter derivative filter
      * @param units components units (used only for parsing)
      */
-    AttitudeType(final List<VersionedName> ccsdsNames, final AngularDerivativesFilter filter, final Unit... units) {
+    AttitudeType(final Iterable<VersionedName> ccsdsNames, final AngularDerivativesFilter filter, final Unit... units) {
         this.ccsdsNames = ccsdsNames;
         this.filter     = filter;
         this.units      = units.clone();
@@ -663,9 +771,9 @@ public enum AttitudeType {
      * @since 12.0
      */
     public String getName(final double formatVersion) {
-        String name = ccsdsNames.get(0).name;
+        String name = null;
         for (final VersionedName vn : ccsdsNames) {
-            if (formatVersion >= vn.since) {
+            if (name == null || formatVersion >= vn.since) {
                 name = vn.name;
             }
         }
