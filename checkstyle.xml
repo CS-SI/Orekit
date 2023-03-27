@@ -67,7 +67,7 @@
                              SL_ASSIGN, SR_ASSIGN, STAR_ASSIGN, LAMBDA, TEXT_BLOCK_LITERAL_BEGIN, LAND,
                              LOR, LITERAL_INSTANCEOF, GT, LT, GE, LE, EQUAL, NOT_EQUAL, UNARY_MINUS,
                              UNARY_PLUS, INC, DEC, LNOT, BNOT, POST_INC, POST_DEC"/>
-        </module>    
+        </module>
         <module name="NeedBraces"/>
         <module name="UnusedImports"/>
         <module name="VisibilityModifier"/>
