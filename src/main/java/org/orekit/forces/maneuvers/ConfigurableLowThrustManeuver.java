@@ -127,7 +127,7 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
      * @return thrust force (N).
      */
     public double getThrust(final AbsoluteDate date) {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector(date).getNorm();
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector(date).getNorm();
     }
 
     /**
@@ -146,7 +146,7 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
      * @return specific impulse (s).
      */
     public double getISP(final AbsoluteDate date) {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp(date);
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp(date);
     }
 
     /**

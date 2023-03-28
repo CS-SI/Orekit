@@ -84,7 +84,7 @@ public class AlongTrackAiming implements TileAiming {
         int    iSup = halfTrack.size() - 1;
         while (iSup - iInf > 1) {
             final int iMiddle = (iSup + iInf) / 2;
-            if ((lStart < lEnd) ^ (halfTrack.get(iMiddle).getFirst().getLatitude() > gp.getLatitude())) {
+            if (lStart < lEnd ^ halfTrack.get(iMiddle).getFirst().getLatitude() > gp.getLatitude()) {
                 // the specified latitude is in the second half
                 iInf = iMiddle;
             } else {
