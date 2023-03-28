@@ -16,6 +16,9 @@
  */
 package org.orekit.utils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -29,6 +32,14 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.FieldExpandableODE;
+import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.FieldODEState;
+import org.hipparchus.ode.FieldODEStateAndDerivative;
+import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
+import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.ode.sampling.FieldODEFixedStepHandler;
+import org.hipparchus.ode.sampling.FieldStepNormalizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.Binary64;
@@ -41,10 +52,87 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 public class FieldAngularCoordinatesTest {
+
+    @Test
+    public void testAccelerationModeling() {
+        Binary64 rate = new Binary64(2 * FastMath.PI / (12 * 60));
+        Binary64 acc  = new Binary64(0.01);
+        Binary64 dt   = new Binary64(1.0);
+        int      n    = 2000;
+        final FieldAngularCoordinates<Binary64> quadratic =
+                new FieldAngularCoordinates<>(FieldRotation.getIdentity(Binary64Field.getInstance()),
+                                              new FieldVector3D<>(rate, Vector3D.PLUS_K),
+                                              new FieldVector3D<>(acc,  Vector3D.PLUS_J));
+
+        final FieldOrdinaryDifferentialEquation<Binary64> ode = new FieldOrdinaryDifferentialEquation<Binary64>() {
+            public int getDimension() {
+                return 4;
+            }
+            public Binary64[] computeDerivatives(final Binary64 t, final Binary64[] q) {
+                final Binary64 omegaX = quadratic.getRotationRate().getX().add(t.multiply(quadratic.getRotationAcceleration().getX()));
+                final Binary64 omegaY = quadratic.getRotationRate().getY().add(t.multiply(quadratic.getRotationAcceleration().getY()));
+                final Binary64 omegaZ = quadratic.getRotationRate().getZ().add(t.multiply(quadratic.getRotationAcceleration().getZ()));
+                return new Binary64[] {
+                    t.linearCombination(q[1].negate(), omegaX, q[2].negate(), omegaY, q[3].negate(),  omegaZ).multiply(0.5),
+                    t.linearCombination(q[0],          omegaX, q[3].negate(), omegaY,  q[2],          omegaZ).multiply(0.5),
+                    t.linearCombination(q[3],          omegaX, q[0],          omegaY,  q[1].negate(), omegaZ).multiply(0.5),
+                    t.linearCombination(q[2].negate(), omegaX, q[1],          omegaY,  q[0],          omegaZ).multiply(0.5)
+                };
+            }
+        };
+        FieldODEIntegrator<Binary64> integrator =
+                        new DormandPrince853FieldIntegrator<>(Binary64Field.getInstance(), 1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new FieldStepNormalizer<>(dt.getReal() / n, new FieldODEFixedStepHandler<Binary64>() {
+            private Binary64   tM4, tM3, tM2, tM1, t0, tP1, tP2, tP3, tP4;
+            private Binary64[] yM4, yM3, yM2, yM1, y0, yP1, yP2, yP3, yP4;
+            private Binary64[] ydM4, ydM3, ydM2, ydM1, yd0, ydP1, ydP2, ydP3, ydP4;
+            public void handleStep(FieldODEStateAndDerivative<Binary64> s, boolean isLast) {
+                tM4 = tM3; yM4 = yM3; ydM4 = ydM3;
+                tM3 = tM2; yM3 = yM2; ydM3 = ydM2;
+                tM2 = tM1; yM2 = yM1; ydM2 = ydM1;
+                tM1 = t0 ; yM1 = y0 ; ydM1 = yd0 ;
+                t0  = tP1; y0  = yP1; yd0  = ydP1;
+                tP1 = tP2; yP1 = yP2; ydP1 = ydP2;
+                tP2 = tP3; yP2 = yP3; ydP2 = ydP3;
+                tP3 = tP4; yP3 = yP4; ydP3 = ydP4;
+                tP4  = s.getTime();
+                yP4  = s.getPrimaryState();
+                ydP4 = s.getPrimaryDerivative();
+
+                if (yM4 != null) {
+                    Binary64 dt = tP4.subtract(tM4).divide(8);
+                    final Binary64 c = dt.multiply(840).reciprocal();
+                    final Binary64[] ydd0 = {
+                        c.multiply(-3).multiply(ydP4[0].subtract(ydM4[0])).add(c.multiply(32).multiply(ydP3[0].subtract(ydM3[0]))).add(c.multiply(-168).multiply(ydP2[0].subtract(ydM2[0]))).add(c.multiply(672).multiply(ydP1[0].subtract(ydM1[0]))),
+                        c.multiply(-3).multiply(ydP4[1].subtract(ydM4[1])).add(c.multiply(32).multiply(ydP3[1].subtract(ydM3[1]))).add(c.multiply(-168).multiply(ydP2[1].subtract(ydM2[1]))).add(c.multiply(672).multiply(ydP1[1].subtract(ydM1[1]))),
+                        c.multiply(-3).multiply(ydP4[2].subtract(ydM4[2])).add(c.multiply(32).multiply(ydP3[2].subtract(ydM3[2]))).add(c.multiply(-168).multiply(ydP2[2].subtract(ydM2[2]))).add(c.multiply(672).multiply(ydP1[2].subtract(ydM1[2]))),
+                        c.multiply(-3).multiply(ydP4[3].subtract(ydM4[3])).add(c.multiply(32).multiply(ydP3[3].subtract(ydM3[3]))).add(c.multiply(-168).multiply(ydP2[3].subtract(ydM2[3]))).add(c.multiply(672).multiply(ydP1[3].subtract(ydM1[3]))),
+                    };
+                    FieldAngularCoordinates<Binary64> ac =
+                                    new FieldAngularCoordinates<>(new FieldRotation<>(new FieldUnivariateDerivative2<>(y0[0], yd0[0], ydd0[0]),
+                                                                                      new FieldUnivariateDerivative2<>(y0[1], yd0[1], ydd0[1]),
+                                                                                      new FieldUnivariateDerivative2<>(y0[2], yd0[2], ydd0[2]),
+                                                                                      new FieldUnivariateDerivative2<>(y0[3], yd0[3], ydd0[3]),
+                                                                                      false));
+                    Assertions.assertEquals(0.0,
+                                            FieldVector3D.distance(quadratic.getRotationAcceleration(),
+                                                                   ac.getRotationAcceleration()).getReal(),
+                                            4.0e-13);
+                }
+
+           }
+        }));
+
+        Binary64[] y ={
+            quadratic.getRotation().getQ0(),
+            quadratic.getRotation().getQ1(),
+            quadratic.getRotation().getQ2(),
+            quadratic.getRotation().getQ3()
+        };
+        integrator.integrate(new FieldExpandableODE<>(ode), new FieldODEState<>(new Binary64(0), y), dt);
+
+    }
 
     @Test
     public void testDerivativesStructuresNeg() {
