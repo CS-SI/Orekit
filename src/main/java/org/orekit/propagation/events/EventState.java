@@ -222,7 +222,7 @@ public class EventState<T extends EventDetector> {
             final double gb = g(interpolator.getInterpolatedState(tb));
 
             // check events occurrence
-            if (gb == 0.0 || (g0Positive ^ (gb > 0))) {
+            if (gb == 0.0 || (g0Positive ^ gb > 0)) {
                 // there is a sign change: an event is expected during this step
                 if (findRoot(interpolator, ta, ga, tb, gb)) {
                     return true;
@@ -561,7 +561,7 @@ public class EventState<T extends EventDetector> {
      * @return min(a, b) if forward, else max (a, b)
      */
     private AbsoluteDate minTime(final AbsoluteDate a, final AbsoluteDate b) {
-        return (forward ^ (a.compareTo(b) > 0)) ? a : b;
+        return (forward ^ a.compareTo(b) > 0) ? a : b;
     }
 
     /**
