@@ -20,23 +20,39 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
-/** This interface is the top-level abstraction to build first order integrators for propagators conversion.
+/**
+ * This interface is the top-level abstraction to build first order integrators for propagators conversion.
+ *
  * @author Pascal Parraud
  * @author Vincent Cucchietti
  * @since 12.0
  */
 public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
 
-    /** Build a first order integrator.
+    /**
+     * Build a first order integrator.
+     *
      * @param field field to which the elements belong
      * @param orbit reference orbit
      * @param orbitType orbit type to use
+     *
      * @return a first order integrator ready to use
      */
     AbstractFieldIntegrator<T> buildIntegrator(Field<T> field,
-                                               FieldOrbit<T> orbit,
+                                               Orbit orbit,
                                                OrbitType orbitType);
 
+    /**
+     * Build a first order integrator.
+     *
+     * @param orbit reference orbit
+     * @param orbitType orbit type to use
+     *
+     * @return a first order integrator ready to use
+     */
+    AbstractFieldIntegrator<T> buildIntegrator(FieldOrbit<T> orbit,
+                                               OrbitType orbitType);
 }

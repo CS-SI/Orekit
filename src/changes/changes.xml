@@ -25,6 +25,9 @@
 	      Added PrecessionFinder to recover precession parameters from
 	      vector first and second derivatives (used by some CCSDS ADM modes).
       </action>
+      <action dev="vincent" type="update" issue="1058">
+        Refactored FieldODEIntegratorBuilder interface and its implementing classes
+      </action>
       <action dev="luc" type="add" issue="1047">
 	      Added support for Rinex 4.00 (currently only navigation).
       </action>

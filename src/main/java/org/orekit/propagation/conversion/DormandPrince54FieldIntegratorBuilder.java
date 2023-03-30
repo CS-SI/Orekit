@@ -20,46 +20,38 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
-import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
-/** Builder for DormandPrince54FieldIntegrator.
+/**
+ * Builder for DormandPrince54FieldIntegrator.
+ *
  * @author Pascal Parraud
  * @author Vincent Cucchietti
  * @since 12.0
  */
-public class DormandPrince54FieldIntegratorBuilder <T extends CalculusFieldElement<T>> implements FieldODEIntegratorBuilder<T> {
+public class DormandPrince54FieldIntegratorBuilder<T extends CalculusFieldElement<T>>
+        extends AbstractVariableStepFieldIntegratorBuilder<T> {
 
-    /** Minimum step size (s). */
-    private final double minStep;
-
-    /** Maximum step size (s). */
-    private final double maxStep;
-
-    /** Minimum step size (s). */
-    private final double dP;
-
-    /** Build a new instance.
+    /**
+     * Build a new instance.
+     *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
+     *
      * @see DormandPrince54FieldIntegrator
      * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public DormandPrince54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        this.minStep = minStep;
-        this.maxStep = maxStep;
-        this.dP      = dP;
+        super(minStep, maxStep, dP);
     }
 
     /** {@inheritDoc} */
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field,
-                                                      final FieldOrbit<T> orbit,
-                                                      final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit.toOrbit(), orbitType);
+    @Override
+    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new DormandPrince54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
     }
-
 }
