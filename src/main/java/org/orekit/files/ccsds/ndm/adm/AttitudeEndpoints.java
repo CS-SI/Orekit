@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
 import org.orekit.frames.Frame;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -123,6 +124,10 @@ public class AttitudeEndpoints implements AttitudeBuilder {
         if (version < 2.0) {
             // in ADM version 1, direction is mandatory
             checkNotNull(a2b, dirKey);
+        } else if (!isA2b()) {
+            // in ADM version 2, direction is always A → B
+            throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
+                                      AemMetadataKey.ATTITUDE_DIR, version);
         }
 
     }

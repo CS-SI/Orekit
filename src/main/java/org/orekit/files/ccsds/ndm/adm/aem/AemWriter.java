@@ -357,8 +357,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
         generator.writeEntry(AemMetadataKey.ATTITUDE_TYPE.name(), attitudeType.getName(formatVersion), null, true);
         if (formatVersion < 2.0) {
             if (attitudeType == AttitudeType.QUATERNION ||
-                            attitudeType == AttitudeType.QUATERNION_DERIVATIVE ||
-                            attitudeType == AttitudeType.QUATERNION_ANGVEL) {
+                attitudeType == AttitudeType.QUATERNION_DERIVATIVE ||
+                attitudeType == AttitudeType.QUATERNION_ANGVEL) {
                 generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, null, false);
             }
         }

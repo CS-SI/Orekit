@@ -213,8 +213,10 @@ public class AttitudeWriterTest {
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
+        Header header = new Header(2.0);
+        header.setFormatVersion(1.0);
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   null, metadata, FileFormat.KVN, "",
+                                                   header, metadata, FileFormat.KVN, "",
                                                    Constants.JULIAN_DAY, 60);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, file);

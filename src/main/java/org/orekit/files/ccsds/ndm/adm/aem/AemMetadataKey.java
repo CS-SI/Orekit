@@ -71,7 +71,7 @@ public enum AemMetadataKey {
     ATTITUDE_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setAttitudeType(AttitudeType.parseType(token.getContentAsNormalizedString()));
+                container.setAttitudeType(AttitudeType.parseType(token.getRawContent()));
                 return true;
             } catch (IllegalArgumentException iae) {
                 return false;

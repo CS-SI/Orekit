@@ -39,6 +39,7 @@ import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
 import org.orekit.files.ccsds.ndm.adm.aem.AttitudeWriter;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.OrekitAttitudeEphemerisFile.OrekitSatelliteAttitudeEphemeris;
@@ -140,8 +141,10 @@ public class OrekitAttitudeEphemerisFileTest {
 
         String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
+            final Header header = new Header(2.0);
+            header.setFormatVersion(1.0);
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                               null, dummyMetadata(), FileFormat.KVN, "", Constants.JULIAN_DAY, 60).
+                               header, dummyMetadata(), FileFormat.KVN, "", Constants.JULIAN_DAY, 60).
             write(writer, ephemerisFile);
         }
 

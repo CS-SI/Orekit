@@ -17,6 +17,8 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
@@ -78,6 +80,11 @@ public class AemMetadata extends AdmMetadata {
 
         checkNotNull(startTime, AemMetadataKey.START_TIME);
         checkNotNull(stopTime,  AemMetadataKey.STOP_TIME);
+
+        if (version >= 2.0 && isFirst()) {
+            throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
+                                      AemMetadataKey.QUATERNION_TYPE, version);
+        }
 
     }
 
@@ -173,10 +180,10 @@ public class AemMetadata extends AdmMetadata {
      * Get the flag for the placement of the quaternion QC in the attitude data.
      *
      * @return true if QC is the first element in the attitude data,
-     * null if not initialized
+     * false if not initialized
      */
     public Boolean isFirst() {
-        return isFirst == null ? Boolean.TRUE : isFirst;
+        return isFirst == null ? Boolean.FALSE : isFirst;
     }
 
     /**

@@ -89,10 +89,12 @@ class AttitudeEntry {
      */
     public void setLabeledRate(final char axis, final double rate) {
         if (metadata.getEulerRotSeq() != null) {
-            final int    first = metadata.getAttitudeType() == AttitudeType.QUATERNION_ANGVEL ? 4 : 3;
+            final int first = (metadata.getAttitudeType() == AttitudeType.QUATERNION_ANGVEL ||
+                               metadata.getAttitudeType() == AttitudeType.QUATERNION_EULER_RATES) ?
+                              4 : 3;
             for (int i = 0; i < 3; ++i) {
-                if (metadata.getEulerRotSeq().name().charAt(i) == axis && Double.isNaN(components[i])) {
-                    setComponent( first + i, rate);
+                if (metadata.getEulerRotSeq().name().charAt(i) == axis && Double.isNaN(components[first + i])) {
+                    setComponent(first + i, rate);
                     return;
                 }
             }

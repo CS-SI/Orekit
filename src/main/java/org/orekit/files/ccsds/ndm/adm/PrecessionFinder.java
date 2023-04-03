@@ -33,21 +33,25 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class PrecessionFinder {
+class PrecessionFinder {
 
     /** Precession axis (axis of the cone described by spin). */
     private final Vector3D axis;
 
-    /** Precession angle (fixed cone angle between precession axis an spin axis). */
+    /** Precession angle (fixed cone angle between precession axis and spin axis). */
     private final double precessionAngle;
 
     /** Angular velocity around the precession axis (rad/s). */
     private final double angularVelocity;
 
     /** Build from spin axis motion.
-     * @param spin spin axis
+     * <p>
+     * Note that the derivatives up to second order are really needed
+     * in order to retrieve the precession motion.
+     * </p>
+     * @param spin spin axis, including value, first and second derivative
      */
-    public PrecessionFinder(final FieldVector3D<UnivariateDerivative2> spin) {
+    PrecessionFinder(final FieldVector3D<UnivariateDerivative2> spin) {
 
         // using a suitable coordinates frame, the spin axis can be considered to describe
         // a cone of half aperture angle 0 ≤ η ≤ π around k axis, at angular rate ω ≥ 0
@@ -71,11 +75,11 @@ public class PrecessionFinder {
         //           w: (-cos η,   0,  sin η)
         // we can then deduce the following relations, which can be computed regardless
         // of frames used to express the various vectors:
-        //           s₁ · v = ω  sin η
+        //           s₁ · v = ω  sin η  = ||s₁||
         //           s₂ · w = ω² sin η cos η
         // these relations can be solved for η and ω (we know that 0 ≤ η ≤ π and ω ≥ 0):
-        //           η = atan2([s₁ · v]², s₂ · w)
-        //           ω = [s₁ · v] / sin  η
+        //           η = atan2(||s₁||², s₂ · w)
+        //           ω = ||s₁|| / sin  η
         // then the k axis, which is the precession axis, can be deduced as:
         //           k = cos η u + sin η w
 
@@ -99,13 +103,14 @@ public class PrecessionFinder {
                                              s.getY().getSecondDerivative(),
                                              s.getZ().getSecondDerivative());
 
-            final double nV = s1.getNorm();
-            if (nV == 0.0) {
+            final double nV2 = s1.getNormSq();
+            if (nV2 == 0.0) {
                 // special case: we have a fixed spin vector
                 axis            = s0;
                 precessionAngle = 0.0;
                 angularVelocity = 0.0;
             } else {
+
                 // check second derivatives were provided ; we do it on spin rather than s2
                 // and use test against exact 0.0 because the normalization process changes
                 // the derivatives and what we really want to check are missing derivatives
@@ -114,16 +119,16 @@ public class PrecessionFinder {
                                  spin.getZ().getSecondDerivative()).getNormSq() == 0) {
                     throw new OrekitException(OrekitMessages.CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES);
                 }
+
                 // build the unit vectors
-                final Vector3D v = s1.scalarMultiply(1.0 / nV);
-                final Vector3D w = Vector3D.crossProduct(s0, v);
+                final double   nV = FastMath.sqrt(nV2);
+                final Vector3D v  = s1.scalarMultiply(1.0 / nV);
+                final Vector3D w  = Vector3D.crossProduct(s0, v);
 
                 // compute precession model
-                final double s1v = Vector3D.dotProduct(s1, v);
-                final double s2w = Vector3D.dotProduct(s2, w);
-                precessionAngle  = FastMath.atan2(s1v * s1v, s2w);
+                precessionAngle  = FastMath.atan2(nV2, Vector3D.dotProduct(s2, w));
                 final SinCos sc  = FastMath.sinCos(precessionAngle);
-                angularVelocity  = s1v / sc.sin();
+                angularVelocity  = nV / sc.sin();
                 axis             = new Vector3D(sc.cos(), s0, sc.sin(), w);
 
             }
@@ -139,7 +144,7 @@ public class PrecessionFinder {
     }
 
     /** Get the precession angle.
-     * @return fixed cone angle between precession axis an spin axis (rad/)
+     * @return fixed cone angle between precession axis an spin axis (rad)
      */
     public double getPrecessionAngle() {
         return precessionAngle;

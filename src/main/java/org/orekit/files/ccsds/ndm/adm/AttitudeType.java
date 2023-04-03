@@ -56,28 +56,26 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
-
-            // Initialize the array of attitude data
-            final double[] data = new double[4];
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             // Data index
             final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3} : new int[] {3, 0, 1, 2};
 
-            // Fill the array
             Rotation rotation  = coordinates.getRotation();
             if (!isExternal2SpacecraftBody) {
                 rotation = rotation.revert();
             }
+
+            // Fill the array, taking care of quaternion ordering
+            final double[] data = new double[4];
             data[quaternionIndex[0]] = rotation.getQ0();
             data[quaternionIndex[1]] = rotation.getQ1();
             data[quaternionIndex[2]] = rotation.getQ2();
             data[quaternionIndex[3]] = rotation.getQ3();
 
-            // Convert units and format
-            return QUATERNION.formatData(data);
+            return data;
 
         }
 
@@ -112,12 +110,9 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
-
-            // Initialize the array of attitude data
-            final double[] data = new double[8];
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             FieldRotation<UnivariateDerivative1> rotation = coordinates.toUnivariateDerivative1Rotation();
             if (!isExternal2SpacecraftBody) {
@@ -129,7 +124,8 @@ public enum AttitudeType {
                                           new int[] {0, 1, 2, 3, 4, 5, 6, 7} :
                                           new int[] {3, 0, 1, 2, 7, 4, 5, 6};
 
-            // Fill the array
+            // Fill the array, taking care of quaternion ordering
+            final double[] data = new double[8];
             data[quaternionIndex[0]] = rotation.getQ0().getValue();
             data[quaternionIndex[1]] = rotation.getQ1().getValue();
             data[quaternionIndex[2]] = rotation.getQ2().getValue();
@@ -139,8 +135,7 @@ public enum AttitudeType {
             data[quaternionIndex[6]] = rotation.getQ2().getFirstDerivative();
             data[quaternionIndex[7]] = rotation.getQ3().getFirstDerivative();
 
-            // Convert units and format
-            return QUATERNION_DERIVATIVE.formatData(data);
+            return data;
 
         }
 
@@ -182,12 +177,9 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
-
-            // Initialize the array of attitude data
-            final double[] data = new double[7];
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             // Data index
             final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3} : new int[] {3, 0, 1, 2};
@@ -199,7 +191,8 @@ public enum AttitudeType {
             }
             final UnivariateDerivative1[] euler = rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
 
-            // Fill the array
+            // Fill the array, taking care of quaternion ordering
+            final double[] data = new double[7];
             data[quaternionIndex[0]] = rotation.getQ0().getValue();
             data[quaternionIndex[1]] = rotation.getQ1().getValue();
             data[quaternionIndex[2]] = rotation.getQ2().getValue();
@@ -208,8 +201,7 @@ public enum AttitudeType {
             data[5]                  = euler[1].getFirstDerivative();
             data[6]                  = euler[2].getFirstDerivative();
 
-            // Convert units and format
-            return QUATERNION_EULER_RATES.formatData(data);
+            return data;
 
         }
 
@@ -248,12 +240,9 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
-
-            // Initialize the array of attitude data
-            final double[] data = new double[7];
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             // Data index
             final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3} : new int[] {3, 0, 1, 2};
@@ -262,7 +251,8 @@ public enum AttitudeType {
             final TimeStampedAngularCoordinates c = isExternal2SpacecraftBody ? coordinates : coordinates.revert();
             final Vector3D rotationRate = QUATERNION_ANGVEL.metadataRate(isSpacecraftBodyRate, c.getRotationRate(), c.getRotation());
 
-            // Fill the array
+            // Fill the array, taking care of quaternion ordering
+            final double[] data = new double[7];
             data[quaternionIndex[0]] = c.getRotation().getQ0();
             data[quaternionIndex[1]] = c.getRotation().getQ1();
             data[quaternionIndex[2]] = c.getRotation().getQ2();
@@ -271,8 +261,7 @@ public enum AttitudeType {
             data[5] = rotationRate.getY();
             data[6] = rotationRate.getZ();
 
-            // Convert units and format
-            return QUATERNION_ANGVEL.formatData(data);
+            return data;
 
         }
 
@@ -302,15 +291,15 @@ public enum AttitudeType {
     },
 
     /** Euler angles. */
-    EULER_ANGLE(Collections.singleton(new VersionedName(1.0, "EULER ANGLE")),
+    EULER_ANGLE(Collections.singleton(new VersionedName(1.0, "EULER_ANGLE")),
                 AngularDerivativesFilter.USE_R,
                 Unit.DEGREE, Unit.DEGREE, Unit.DEGREE) {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             // Attitude
             Rotation rotation = coordinates.getRotation();
@@ -318,10 +307,7 @@ public enum AttitudeType {
                 rotation = rotation.revert();
             }
 
-            final double[] data = rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
-
-            // Convert units and format
-            return EULER_ANGLE.formatData(data);
+            return rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
 
         }
 
@@ -348,20 +334,17 @@ public enum AttitudeType {
     },
 
     /** Euler angles and rotation rate. */
-    EULER_ANGLE_DERIVATIVE(Arrays.asList(new VersionedName(1.0, "EULER ANGLE/RATE"),
-                                         new VersionedName(2.0, "EULER ANGLE/DERIVATIVE")),
+    EULER_ANGLE_DERIVATIVE(Arrays.asList(new VersionedName(1.0, "EULER_ANGLE/RATE"),
+                                         new VersionedName(2.0, "EULER_ANGLE/DERIVATIVE")),
                            AngularDerivativesFilter.USE_RR,
                            Unit.DEGREE, Unit.DEGREE, Unit.DEGREE,
                            Units.DEG_PER_S, Units.DEG_PER_S, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
-
-            // Initialize the array of attitude data
-            final double[] data = new double[6];
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             // Attitude
             FieldRotation<UnivariateDerivative1> rotation = coordinates.toUnivariateDerivative1Rotation();
@@ -371,16 +354,14 @@ public enum AttitudeType {
 
             final UnivariateDerivative1[] angles = rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
 
-            // Fill the array
-            data[0] = angles[0].getValue();
-            data[1] = angles[1].getValue();
-            data[2] = angles[2].getValue();
-            data[3] = angles[0].getFirstDerivative();
-            data[4] = angles[1].getFirstDerivative();
-            data[5] = angles[2].getFirstDerivative();
-
-            // Convert units and format
-            return EULER_ANGLE_DERIVATIVE.formatData(data);
+            return new double[] {
+                angles[0].getValue(),
+                angles[1].getValue(),
+                angles[2].getValue(),
+                angles[0].getFirstDerivative(),
+                angles[1].getFirstDerivative(),
+                angles[2].getFirstDerivative()
+            };
 
         }
 
@@ -412,35 +393,30 @@ public enum AttitudeType {
     /** Euler angles and angular velocity.
      * @since 12.0
      */
-    EULER_ANGLE_ANGVEL(Collections.singleton(new VersionedName(2.0, "EULER ANGLE/ANGVEL")),
+    EULER_ANGLE_ANGVEL(Collections.singleton(new VersionedName(2.0, "EULER_ANGLE/ANGVEL")),
                        AngularDerivativesFilter.USE_RR,
                        Unit.DEGREE, Unit.DEGREE, Unit.DEGREE,
                        Units.DEG_PER_S, Units.DEG_PER_S, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
-
-            // Initialize the array of attitude data
-            final double[] data = new double[6];
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             // Attitude
             final TimeStampedAngularCoordinates c = isExternal2SpacecraftBody ? coordinates : coordinates.revert();
             final Vector3D rotationRate = EULER_ANGLE_ANGVEL.metadataRate(isSpacecraftBodyRate, c.getRotationRate(), c.getRotation());
             final double[] angles       = c.getRotation().getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
 
-            // Fill the array
-            data[0] = angles[0];
-            data[1] = angles[1];
-            data[2] = angles[2];
-            data[3] = rotationRate.getX();
-            data[4] = rotationRate.getY();
-            data[5] = rotationRate.getZ();
-
-            // Convert units and format
-            return EULER_ANGLE_ANGVEL.formatData(data);
+            return new double[] {
+                angles[0],
+                angles[1],
+                angles[2],
+                rotationRate.getX(),
+                rotationRate.getY(),
+                rotationRate.getZ()
+            };
 
         }
 
@@ -478,33 +454,18 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
-
-            // Initialize the array of attitude data
-            final double[] data = new double[4];
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
             // spin axis is forced to Z (but it is not the instantaneous rotation rate as it also moves)
-            final Vector3D spinAxis  = coordinates.getRotation().applyInverseTo(Vector3D.PLUS_K);
-            final double   spinAlpha = spinAxis.getAlpha();
-            final double   spinDelta = spinAxis.getDelta();
-            final Rotation alignSpin = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                    MathUtils.SEMI_PI + spinAlpha,
-                                                    MathUtils.SEMI_PI - spinDelta,
-                                                    0.0);
-            final Rotation phasing   = coordinates.getRotation().applyTo(alignSpin.revert());
-            final double   spinAngle = FastMath.copySign(phasing.getAngle(),
-                                                         phasing.getAxis(RotationConvention.FRAME_TRANSFORM).getZ());
+            final TimeStampedAngularCoordinates c = isExternal2SpacecraftBody ? coordinates : coordinates.revert();
+            final SpinFinder sf = new SpinFinder(c);
+            final double spinAngleVel = coordinates.getRotationRate().getZ();
 
-            // Fill the array
-            data[0] = spinAlpha;
-            data[1] = spinDelta;
-            data[2] = spinAngle;
-            data[3] = coordinates.getRotationRate().getZ();
-
-            // Convert units and format
-            return SPIN.formatData(data);
+            return new double[] {
+                sf.getSpinAlpha(), sf.getSpinDelta(), sf.getSpinAngle(), spinAngleVel
+            };
 
         }
 
@@ -526,7 +487,9 @@ public enum AttitudeType {
             final Vector3D rotationRate = new Vector3D(0, 0, components[3]);
 
             // Return
-            return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
+            final TimeStampedAngularCoordinates ac =
+                            new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
+            return isExternal2SpacecraftBody ? ac : ac.revert();
 
         }
 
@@ -540,51 +503,36 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
-            // Initialize the array of attitude data
-            final double[] data = new double[7];
+            // spin data
+            final TimeStampedAngularCoordinates c = isExternal2SpacecraftBody ? coordinates : coordinates.revert();
+            final SpinFinder sf = new SpinFinder(c);
 
-            // spin axis is forced to Z (but it is not the instantaneous rotation rate as it also moves)
-            final FieldVector3D<UnivariateDerivative2> spinAxis =
-                            coordinates.toUnivariateDerivative2Rotation().applyInverseTo(Vector3D.PLUS_K);
-            final Vector3D spinAxis0 = new Vector3D(spinAxis.getX().getValue(),
-                                                    spinAxis.getY().getValue(),
-                                                    spinAxis.getZ().getValue());
-            final double   spinAlpha = spinAxis0.getAlpha();
-            final double   spinDelta = spinAxis0.getDelta();
-            final Rotation alignSpin = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                    MathUtils.SEMI_PI + spinAlpha,
-                                                    MathUtils.SEMI_PI - spinDelta,
-                                                    0.0);
-            final Rotation phasing   = coordinates.getRotation().applyTo(alignSpin.revert());
-            final double   spinAngle = FastMath.copySign(phasing.getAngle(),
-                                                         phasing.getAxis(RotationConvention.FRAME_TRANSFORM).getZ());
-
-            // Orekit/CCSDS naming difference: for CCSDS this is nutation, for Orekt this is precession
-            final PrecessionFinder pf = new PrecessionFinder(spinAxis);
+            // Orekit/CCSDS naming difference: for CCSDS this is nutation, for Orekit this is precession
+            final FieldRotation<UnivariateDerivative2> c2       = c.toUnivariateDerivative2Rotation();
+            final FieldVector3D<UnivariateDerivative2> spinAxis = c2.applyInverseTo(Vector3D.PLUS_K);
+            final PrecessionFinder                     pf       = new PrecessionFinder(spinAxis);
 
             // intermediate inertial frame, with Z axis aligned with angular momentum
             final Rotation intermediate2Inert = new Rotation(Vector3D.PLUS_K, pf.getAxis());
 
-            // base Euler angles from the intermediate frame to body
-            final Rotation intermediate2Body0 = coordinates.getRotation().applyTo(intermediate2Inert);
-            final double[] euler0             = intermediate2Body0.getAngles(RotationOrder.ZXZ,
-                                                                             RotationConvention.FRAME_TRANSFORM);
+            // recover Euler rotations starting from frame aligned with angular momentum
+            final FieldRotation<UnivariateDerivative2> intermediate2Body = c2.applyTo(intermediate2Inert);
+            final UnivariateDerivative2[] euler = intermediate2Body.
+                                                  getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM);
 
-            // Fill the array
-            data[0] = spinAlpha;
-            data[1] = spinDelta;
-            data[2] = spinAngle;
-            data[3] = coordinates.getRotationRate().getZ();
-            data[4] = pf.getPrecessionAngle();
-            data[5] = MathUtils.TWO_PI / pf.getAngularVelocity();
-            data[6] = euler0[2];
-
-            // Convert units and format
-            return SPIN_NUTATION.formatData(data);
+            return new double[] {
+                sf.getSpinAlpha(),
+                sf.getSpinDelta(),
+                sf.getSpinAngle(),
+                euler[2].getFirstDerivative(),
+                pf.getPrecessionAngle(),
+                MathUtils.TWO_PI / pf.getAngularVelocity(),
+                euler[2].getValue() - MathUtils.SEMI_PI
+            };
 
         }
 
@@ -608,8 +556,8 @@ public enum AttitudeType {
             final SinCos   scNutation         = FastMath.sinCos(components[4]);
             final SinCos   scPhase            = FastMath.sinCos(components[6]);
             final Vector3D momentumBody       = new Vector3D( scNutation.sin() * scPhase.cos(),
-                                                             -scNutation.sin() * scPhase.cos(),
-                                                              scPhase.sin());
+                                                             -scNutation.sin() * scPhase.sin(),
+                                                              scNutation.cos());
             final Vector3D momentumInert      = inert2Body0.applyInverseTo(momentumBody);
             final Rotation inert2Intermediate = new Rotation(momentumInert, Vector3D.PLUS_K);
 
@@ -621,17 +569,16 @@ public enum AttitudeType {
             // add Euler angular rates to base Euler angles
             final FieldRotation<UnivariateDerivative2> intermediate2Body =
                             new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                new UnivariateDerivative2(euler0[0], components[6], 0.0),
+                                                new UnivariateDerivative2(euler0[0], MathUtils.TWO_PI / components[5], 0.0),
                                                 new UnivariateDerivative2(euler0[1], 0.0,           0.0),
                                                 new UnivariateDerivative2(euler0[2], components[3], 0.0));
 
             // final rotation, including derivatives
-            FieldRotation<UnivariateDerivative2> inert2Body = intermediate2Body.applyTo(inert2Intermediate);
-            if (!isExternal2SpacecraftBody) {
-                inert2Body = inert2Body.revert();
-            }
+            final FieldRotation<UnivariateDerivative2> inert2Body = intermediate2Body.applyTo(inert2Intermediate);
 
-            return new TimeStampedAngularCoordinates(date, inert2Body);
+            final TimeStampedAngularCoordinates ac =
+                            new TimeStampedAngularCoordinates(date, inert2Body);
+            return isExternal2SpacecraftBody ? ac : ac.revert();
 
         }
 
@@ -647,43 +594,37 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
-                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                         final TimeStampedAngularCoordinates coordinates) {
+        public double[] generateData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates coordinates) {
 
-            // Initialize the array of attitude data
-            final double[] data = new double[7];
+            // spin data
+            final TimeStampedAngularCoordinates c = isExternal2SpacecraftBody ? coordinates : coordinates.revert();
+            final SpinFinder sf = new SpinFinder(c);
 
-            // spin axis is forced to Z (but it is not the instantaneous rotation rate as it also moves)
-            final FieldVector3D<UnivariateDerivative2> spinAxis =
-                            coordinates.toUnivariateDerivative2Rotation().applyInverseTo(Vector3D.PLUS_K);
-            final Vector3D spinAxis0 = new Vector3D(spinAxis.getX().getValue(),
-                                                    spinAxis.getY().getValue(),
-                                                    spinAxis.getZ().getValue());
-            final double   spinAlpha = spinAxis0.getAlpha();
-            final double   spinDelta = spinAxis0.getDelta();
-            final Rotation alignSpin = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                    MathUtils.SEMI_PI + spinAlpha,
-                                                    MathUtils.SEMI_PI - spinDelta,
-                                                    0.0);
-            final Rotation phasing   = coordinates.getRotation().applyTo(alignSpin.revert());
-            final double   spinAngle = FastMath.copySign(phasing.getAngle(),
-                                                         phasing.getAxis(RotationConvention.FRAME_TRANSFORM).getZ());
+            // Orekit/CCSDS naming difference: for CCSDS this is nutation, for Orekit this is precession
+            final FieldRotation<UnivariateDerivative2> c2       = c.toUnivariateDerivative2Rotation();
+            final FieldVector3D<UnivariateDerivative2> spinAxis = c2.applyInverseTo(Vector3D.PLUS_K);
+            final PrecessionFinder                     pf       = new PrecessionFinder(spinAxis);
 
-            // Orekit/CCSDS naming difference: for CCSDS this is nutation, for Orekt this is precession
-            final PrecessionFinder pf = new PrecessionFinder(spinAxis);
+            // intermediate inertial frame, with Z axis aligned with angular momentum
+            final Rotation intermediate2Inert = new Rotation(Vector3D.PLUS_K, pf.getAxis());
 
-            // Fill the array
-            data[0] = spinAlpha;
-            data[1] = spinDelta;
-            data[2] = spinAngle;
-            data[3] = coordinates.getRotationRate().getZ();
-            data[4] = pf.getAxis().getAlpha();
-            data[5] = pf.getAxis().getDelta();
-            data[6] = pf.getAngularVelocity();
+            // recover spin angle velocity
+            final FieldRotation<UnivariateDerivative2> intermediate2Body = c2.applyTo(intermediate2Inert);
+            final double spinAngleVel = intermediate2Body.
+                                        getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM)[2].
+                                        getFirstDerivative();
 
-            // Convert units and format
-            return SPIN_NUTATION_MOMENTUM.formatData(data);
+            return new double[] {
+                sf.getSpinAlpha(),
+                sf.getSpinDelta(),
+                sf.getSpinAngle(),
+                spinAngleVel,
+                pf.getAxis().getAlpha(),
+                pf.getAxis().getDelta(),
+                pf.getAngularVelocity()
+            };
 
         }
 
@@ -697,11 +638,6 @@ public enum AttitudeType {
                                                    final double... components) {
 
             // Build the needed objects
-            final Rotation inert2Body0 = new Rotation(RotationOrder.ZXZ,
-                                                      RotationConvention.FRAME_TRANSFORM,
-                                                      MathUtils.SEMI_PI + components[0],
-                                                      MathUtils.SEMI_PI - components[1],
-                                                      components[2]);
             final SinCos   scAlpha            = FastMath.sinCos(components[4]);
             final SinCos   scDelta            = FastMath.sinCos(components[5]);
             final Vector3D momentumInert      = new Vector3D(scAlpha.cos() * scDelta.cos(),
@@ -710,6 +646,11 @@ public enum AttitudeType {
             final Rotation inert2Intermediate = new Rotation(momentumInert, Vector3D.PLUS_K);
 
             // base Euler angles from the intermediate frame to body
+            final Rotation inert2Body0 = new Rotation(RotationOrder.ZXZ,
+                                                      RotationConvention.FRAME_TRANSFORM,
+                                                      MathUtils.SEMI_PI + components[0],
+                                                      MathUtils.SEMI_PI - components[1],
+                                                      components[2]);
             final Rotation intermediate2Body0 = inert2Body0.applyTo(inert2Intermediate.revert());
             final double[] euler0             = intermediate2Body0.getAngles(RotationOrder.ZXZ,
                                                                              RotationConvention.FRAME_TRANSFORM);
@@ -722,12 +663,12 @@ public enum AttitudeType {
                                                 new UnivariateDerivative2(euler0[2], components[3], 0.0));
 
             // final rotation, including derivatives
-            FieldRotation<UnivariateDerivative2> inert2Body = intermediate2Body.applyTo(inert2Intermediate);
-            if (!isExternal2SpacecraftBody) {
-                inert2Body = inert2Body.revert();
-            }
+            final FieldRotation<UnivariateDerivative2> inert2Body = intermediate2Body.applyTo(inert2Intermediate);
 
-            return new TimeStampedAngularCoordinates(date, inert2Body);
+            // return
+            final TimeStampedAngularCoordinates ac =
+                            new TimeStampedAngularCoordinates(date, inert2Body);
+            return isExternal2SpacecraftBody ? ac : ac.revert();
 
         }
 
@@ -812,9 +753,41 @@ public enum AttitudeType {
      * (i.e. from inertial frame to spacecraft frame)
      * @return the attitude data in CCSDS units
      */
-    public abstract String[] createDataFields(boolean isFirst, boolean isExternal2SpacecraftBody,
-                                              RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
-                                              TimeStampedAngularCoordinates attitude);
+    public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates attitude) {
+
+        // generate the double data
+        final double[] data = generateData(isFirst, isExternal2SpacecraftBody,
+                                           eulerRotSequence, isSpacecraftBodyRate, attitude);
+
+        // format as string array with CCSDS units
+        final String[] fields = new String[data.length];
+        for (int i = 0; i < data.length; ++i) {
+            fields[i] = AccurateFormatter.format(units[i].fromSI(data[i]));
+        }
+
+        return fields;
+
+    }
+
+    /**
+     * Generate the attitude data corresponding to the attitude type.
+     * <p>
+     * This method returns the components in SI units.
+     * </p>
+     * @param isFirst if true the first quaternion component is the scalar component
+     * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
+     * @param eulerRotSequence sequance of Euler angles
+     * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
+     * @param attitude angular coordinates, using {@link Attitude Attitude} convention
+     * (i.e. from inertial frame to spacecraft frame)
+     * @return the attitude data in CCSDS units
+     * @since 12.0
+     */
+    public abstract double[] generateData(boolean isFirst, boolean isExternal2SpacecraftBody,
+                                          RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
+                                          TimeStampedAngularCoordinates attitude);
 
     /**
      * Get the angular coordinates corresponding to the attitude data.
@@ -867,18 +840,6 @@ public enum AttitudeType {
      */
     public AngularDerivativesFilter getAngularDerivativesFilter() {
         return filter;
-    }
-
-    /** Format data for CCSDS ADM writing.
-     * @param data data to format
-     * @return formated data
-     */
-    private String[] formatData(final double[] data) {
-        final String[] fields = new String[data.length];
-        for (int i = 0; i < data.length; ++i) {
-            fields[i] = AccurateFormatter.format(units[i].fromSI(data[i]));
-        }
-        return fields;
     }
 
     /** Convert a rotation rate for Orekit convention to metadata convention.

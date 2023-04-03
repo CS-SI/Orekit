@@ -181,6 +181,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
         metadata.setInterpolationMethod(segment.getInterpolationMethod());
         metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
+        metadata.validate(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
         writer.writeMetadata(generator,
                              header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
                              metadata);
