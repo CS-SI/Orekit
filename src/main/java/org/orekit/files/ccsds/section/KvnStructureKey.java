@@ -62,7 +62,7 @@ public enum KvnStructureKey {
          * @param parser file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final AbstractConstituentParser<?, ?> parser) {
+    public boolean process(final ParseToken token, final AbstractConstituentParser<?, ?, ?> parser) {
         return processor.process(token, parser);
     }
 
@@ -73,7 +73,7 @@ public enum KvnStructureKey {
          * @param parser file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, AbstractConstituentParser<?, ?> parser);
+        boolean process(ParseToken token, AbstractConstituentParser<?, ?, ?> parser);
     }
 
 }

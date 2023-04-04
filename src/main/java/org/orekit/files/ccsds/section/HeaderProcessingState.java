@@ -35,12 +35,12 @@ public class HeaderProcessingState implements ProcessingState {
     private final ContextBinding context;
 
     /** Parser for the complete message. */
-    private final AbstractConstituentParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?, ?> parser;
 
     /** Simple constructor.
      * @param parser parser for the complete message
      */
-    public HeaderProcessingState(final AbstractConstituentParser<?, ?> parser) {
+    public HeaderProcessingState(final AbstractConstituentParser<?, ?, ?> parser) {
         this.context = new ContextBinding(
             parser::getConventions, parser::isSimpleEOP,
             parser::getDataContext, parser::getParsedUnitsBehavior, () -> null,
