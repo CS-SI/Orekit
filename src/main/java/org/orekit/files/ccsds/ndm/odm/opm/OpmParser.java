@@ -27,10 +27,11 @@ import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersKey;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
@@ -73,7 +74,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     private final double defaultMass;
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** File segments. */
     private List<Segment<CommonMetadata, OpmData>> segments;
@@ -156,7 +157,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header(3.0);
+        header                    = new OdmHeader();
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;

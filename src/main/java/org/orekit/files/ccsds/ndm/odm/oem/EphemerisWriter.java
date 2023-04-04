@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -50,7 +51,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
     private final OemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final OdmHeader header;
 
     /** Current metadata. */
     private final OemMetadata metadata;
@@ -94,7 +95,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * @since 12.0
      */
     public EphemerisWriter(final OemWriter writer,
-                           final Header header, final OemMetadata template,
+                           final OdmHeader header, final OemMetadata template,
                            final FileFormat fileFormat, final String outputName,
                            final double maxRelativeOffset, final int unitsColumn) {
         this.writer            = writer;

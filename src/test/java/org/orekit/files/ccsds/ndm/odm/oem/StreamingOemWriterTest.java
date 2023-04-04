@@ -16,6 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -37,7 +44,7 @@ import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
@@ -48,13 +55,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Check {@link StreamingOemWriter}.
@@ -140,7 +140,7 @@ public class StreamingOemWriterTest {
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
 
-            Header header = new Header(3.0);
+            OdmHeader header = new OdmHeader();
             header.setOriginator(originator);
             OemMetadata metadata = new OemMetadata(1);
             metadata.setObjectName(objectName);
@@ -222,7 +222,7 @@ public class StreamingOemWriterTest {
                 original.getSatellites().values().iterator().next();
         final BoundedPropagator propagator = originalEphem.getPropagator();
         StringBuilder buffer = new StringBuilder();
-        Header header = original.getHeader();
+        OdmHeader header = original.getHeader();
         OemMetadata metadata = original.getSegments().get(0).getMetadata();
         metadata.setTimeSystem(TimeSystem.UTC);
         metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));

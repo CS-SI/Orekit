@@ -31,8 +31,9 @@ import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.section.Header;
@@ -73,7 +74,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** File segments. */
     private List<OemSegment> segments;
@@ -148,7 +149,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header            = new Header(3.0);
+        header            = new OdmHeader();
         segments          = new ArrayList<>();
         metadata          = null;
         context           = null;

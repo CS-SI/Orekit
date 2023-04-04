@@ -23,7 +23,7 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>> implements TimeStamped {
+public class Opm extends NdmConstituent<OdmHeader, Segment<CommonMetadata, OpmData>> implements TimeStamped {
 
     /** Root element for XML files. */
     public static final String ROOT = "opm";
@@ -55,7 +55,7 @@ public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>
      * @param dataContext used for creating frames, time scales, etc.
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
-    public Opm(final Header header, final List<Segment<CommonMetadata, OpmData>> segments,
+    public Opm(final OdmHeader header, final List<Segment<CommonMetadata, OpmData>> segments,
                final IERSConventions conventions, final DataContext dataContext,
                final double mu) {
         super(header, segments, conventions, dataContext);

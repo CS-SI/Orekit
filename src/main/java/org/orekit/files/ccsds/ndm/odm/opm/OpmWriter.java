@@ -24,10 +24,10 @@ import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceWriter;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersWriter;
 import org.orekit.files.ccsds.ndm.odm.StateVectorWriter;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -44,7 +44,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetadata, OpmData>, Opm> {
+public class OpmWriter extends AbstractMessageWriter<OdmHeader, Segment<CommonMetadata, OpmData>, Opm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OPM_VERS = 3.0;

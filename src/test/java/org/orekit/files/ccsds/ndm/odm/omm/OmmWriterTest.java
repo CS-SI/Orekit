@@ -21,11 +21,11 @@ import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.time.AbsoluteDate;
 
-public class OmmWriterTest extends AbstractWriterTest<Header, Segment<OmmMetadata, OmmData>, Omm> {
+public class OmmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OmmMetadata, OmmData>, Omm> {
 
     protected OmmParser getParser() {
         return new ParserBuilder().

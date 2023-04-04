@@ -28,9 +28,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
@@ -69,7 +70,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** Metadata for current observation block. */
     private OcmMetadata metadata;
@@ -169,7 +170,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                  = new Header(3.0);
+        header                  = new OdmHeader();
         metadata                = null;
         context                 = null;
         trajectoryBlocks        = null;
