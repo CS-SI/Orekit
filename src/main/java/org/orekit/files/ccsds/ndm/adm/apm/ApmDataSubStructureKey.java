@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 
@@ -26,52 +27,61 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 enum ApmDataSubStructureKey {
 
     /** General comment. */
-    COMMENT((token, parser) -> token.getType() == TokenType.ENTRY ? parser.addGeneralComment(token.getContentAsNormalizedString()) : true),
+    COMMENT((token, context, parser) -> token.getType() == TokenType.ENTRY ? parser.addGeneralComment(token.getContentAsNormalizedString()) : true),
+
+    /** Epoch. */
+    EPOCH((token, context, parser) -> token.processAsDate(parser::setEpoch, context)),
 
     /** Quaternion block. */
-    QUAT((token, parser) -> parser.manageQuaternionSection(token.getType() == TokenType.START)),
+    QUAT((token, context, parser) -> parser.manageQuaternionSection(token.getType() == TokenType.START)),
 
     /** Quaternion section. */
-    quaternionState((token, parser) -> parser.manageQuaternionSection(token.getType() == TokenType.START)),
+    quaternionState((token, context, parser) -> parser.manageQuaternionSection(token.getType() == TokenType.START)),
 
     /** Euler elements. */
-    EULER((token, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
+    EULER((token, context, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
 
     /** Euler elements. */
-    eulerAngleState((token, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
+    eulerAngleState((token, context, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
 
     /** Angular velocity elements. */
-    ANGVEL((token, parser) -> parser.manageAngularVelocitylementsSection(token.getType() == TokenType.START)),
+    ANGVEL((token, context, parser) -> parser.manageAngularVelocitylementsSection(token.getType() == TokenType.START)),
 
     /** Angular velocity elements. */
-    angularVelocity((token, parser) -> parser.manageAngularVelocitylementsSection(token.getType() == TokenType.START)),
+    angularVelocity((token, context, parser) -> parser.manageAngularVelocitylementsSection(token.getType() == TokenType.START)),
 
     /** Euler elements / three axis stabilized section (ADM V1 only). */
-    eulerElementsThree((token, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
+    eulerElementsThree((token, context, parser) -> parser.manageEulerElementsSection(token.getType() == TokenType.START)),
 
     /** Euler elements /spin stabilized section (ADM V1 only). */
-    eulerElementsSpin((token, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+    eulerElementsSpin((token, context, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
 
     /** Spin elements. */
-    SPIN((token, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+    SPIN((token, context, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
 
     /** Spin elements. */
-    spin((token, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+    spin((token, context, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+
+    /** Spin elements. */
+    spinNutation((token, context, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
+
+    /** Spin elements. */
+    spinNutationMom((token, context, parser) -> parser.manageSpinElementsSection(token.getType() == TokenType.START)),
 
     /** Spacecraft parameters section (ADM V1 only). */
-    spacecraftParameters((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
+    spacecraftParameters((token, context, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
 
     /** Inertia elements. */
-    INERTIA((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
+    INERTIA((token, context, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
 
     /** Inertia elements. */
-    inertia((token, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
+    inertia((token, context, parser) -> parser.manageInertiaSection(token.getType() == TokenType.START)),
 
     /** Maneuver parameters section. */
-    MAN((token, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START)),
+    MAN((token, context, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START)),
 
     /** Maneuver parameters section. */
-    maneuverParameters((token, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START));
+    maneuverParameters((token, context, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -85,21 +95,23 @@ enum ApmDataSubStructureKey {
 
     /** Process one token.
      * @param token token to process
+     * @param context context binding
      * @param parser APM file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ApmParser parser) {
-        return processor.process(token, parser);
+    public boolean process(final ParseToken token, final ContextBinding context, final ApmParser parser) {
+        return processor.process(token, context, parser);
     }
 
     /** Interface for processing one token. */
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
+         * @param context context binding
          * @param parser APM file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ApmParser parser);
+        boolean process(ParseToken token, ContextBinding context, ApmParser parser);
     }
 
 }

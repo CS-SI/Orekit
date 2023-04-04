@@ -85,11 +85,19 @@ public class Euler extends CommentsContainer {
     public void validate(final double version) {
 
         super.validate(version);
-        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
-                                                           EulerKey.EULER_FRAME_A,
-                                                           EulerKey.EULER_FRAME_B,
-                                                           EulerKey.EULER_DIR);
-        endpoints.checkExternalFrame(EulerKey.EULER_FRAME_A, EulerKey.EULER_FRAME_B);
+        if (version < 2.0) {
+            endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                               EulerKey.EULER_FRAME_A,
+                                                               EulerKey.EULER_FRAME_B,
+                                                               EulerKey.EULER_DIR);
+            endpoints.checkExternalFrame(EulerKey.EULER_FRAME_A, EulerKey.EULER_FRAME_B);
+        } else {
+            endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                               EulerKey.REF_FRAME_A,
+                                                               EulerKey.REF_FRAME_B,
+                                                               EulerKey.EULER_DIR);
+            endpoints.checkExternalFrame(EulerKey.REF_FRAME_A, EulerKey.REF_FRAME_B);
+        }
         checkNotNull(eulerRotSeq, EulerKey.EULER_ROT_SEQ);
 
         if (!hasAngles()) {

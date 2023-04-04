@@ -78,9 +78,10 @@ class ManeuverWriter extends AbstractWriter {
             generator.writeEntry(ManeuverKey.MAN_TOR_2.name(), torque.getY(), Units.N_M, true);
             generator.writeEntry(ManeuverKey.MAN_TOR_3.name(), torque.getZ(), Units.N_M, true);
         } else {
-            generator.writeEntry(ManeuverKey.MAN_TOR_X.name(), torque.getX(), Units.N_M, true);
-            generator.writeEntry(ManeuverKey.MAN_TOR_Y.name(), torque.getY(), Units.N_M, true);
-            generator.writeEntry(ManeuverKey.MAN_TOR_Z.name(), torque.getZ(), Units.N_M, true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_X.name(),      torque.getX(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_Y.name(),      torque.getY(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_Z.name(),      torque.getZ(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_DELTA_MASS.name(), maneuver.getDeltaMass(), Unit.KILOGRAM, true);
         }
 
     }

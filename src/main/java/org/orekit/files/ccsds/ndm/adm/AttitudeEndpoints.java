@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -27,7 +27,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
-import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
 import org.orekit.frames.Frame;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -127,7 +126,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
         } else if (!isA2b()) {
             // in ADM version 2, direction is always A → B
             throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
-                                      AemMetadataKey.ATTITUDE_DIR, version);
+                                      dirKey, version);
         }
 
     }

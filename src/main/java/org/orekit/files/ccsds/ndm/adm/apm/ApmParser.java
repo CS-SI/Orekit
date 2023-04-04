@@ -265,6 +265,14 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
         return commentsBlock.addComment(comment);
     }
 
+    /** Set current epoch.
+     * @param epoch epoch to set
+     * @since 12.0
+     */
+    void setEpoch(final AbsoluteDate epoch) {
+        this.epoch = epoch;
+    }
+
     /** Manage quaternion section.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
@@ -358,7 +366,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processDataSubStructureToken(final ParseToken token) {
         try {
             return token.getName() != null &&
-                   ApmDataSubStructureKey.valueOf(token.getName()).process(token, this);
+                   ApmDataSubStructureKey.valueOf(token.getName()).process(token, context, this);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -408,7 +416,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
                        this::processEulerToken : this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
-                   ApmQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock, d -> epoch = d);
+                   ApmQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock, this::setEpoch);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;

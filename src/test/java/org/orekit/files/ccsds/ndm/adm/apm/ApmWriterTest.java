@@ -121,4 +121,15 @@ public class ApmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AdmMeta
 
     }
 
+    @Test
+    public void testException() {
+        try {
+            new ApmData(null, null, null, null, null, null, null).validate(1.0);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals(ApmQuaternionKey.Q_FRAME_A.name(), oe.getParts()[0]);
+        }
+    }
+
 }

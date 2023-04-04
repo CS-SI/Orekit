@@ -54,11 +54,19 @@ public class ApmQuaternion extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
-                                                           ApmQuaternionKey.Q_FRAME_A,
-                                                           ApmQuaternionKey.Q_FRAME_B,
-                                                           ApmQuaternionKey.Q_DIR);
-        endpoints.checkExternalFrame(ApmQuaternionKey.Q_FRAME_A, ApmQuaternionKey.Q_FRAME_B);
+        if (version < 2.0) {
+            endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                               ApmQuaternionKey.Q_FRAME_A,
+                                                               ApmQuaternionKey.Q_FRAME_B,
+                                                               ApmQuaternionKey.Q_DIR);
+            endpoints.checkExternalFrame(ApmQuaternionKey.Q_FRAME_A, ApmQuaternionKey.Q_FRAME_B);
+        } else {
+            endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                               ApmQuaternionKey.REF_FRAME_A,
+                                                               ApmQuaternionKey.REF_FRAME_B,
+                                                               ApmQuaternionKey.Q_DIR);
+            endpoints.checkExternalFrame(ApmQuaternionKey.REF_FRAME_A, ApmQuaternionKey.REF_FRAME_B);
+        }
         if (Double.isNaN(q[0] + q[1] + q[2] + q[3])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}");
         }

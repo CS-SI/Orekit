@@ -98,13 +98,15 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
             generator.writeEntry("EPOCH", getTimeConverter(), segment.getData().getEpoch(), false, true);
         }
 
-        // write quaternion block
-        new ApmQuaternionWriter(formatVersion,
-                                ApmDataSubStructureKey.quaternionState.name(), null,
-                                segment.getData().getQuaternionBlock(),
-                                formatVersion >= 2.0 ? null : segment.getData().getEpoch(),
-                                getTimeConverter()).
-        write(generator);
+        if (segment.getData().getQuaternionBlock() != null) {
+            // write quaternion block
+            new ApmQuaternionWriter(formatVersion,
+                                    ApmDataSubStructureKey.quaternionState.name(), null,
+                                    segment.getData().getQuaternionBlock(),
+                                    formatVersion >= 2.0 ? null : segment.getData().getEpoch(),
+                                                         getTimeConverter()).
+            write(generator);
+        }
 
         if (segment.getData().getEulerBlock() != null) {
             // write optional Euler block for three axis stabilized satellites
@@ -124,10 +126,17 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
         }
 
         if (segment.getData().getSpinStabilizedBlock() != null) {
-            // write optional Euler block for spin stabilized satellites
-            final String xmlTag = formatVersion < 2.0 ?
-                                  ApmDataSubStructureKey.eulerElementsSpin.name() :
-                                  ApmDataSubStructureKey.spin.name();
+            // write optional block for spin stabilized satellites
+            final String xmlTag;
+            if (formatVersion < 2.0) {
+                xmlTag = ApmDataSubStructureKey.eulerElementsSpin.name();
+            } else if (segment.getData().getSpinStabilizedBlock().hasMomentum()) {
+                xmlTag = ApmDataSubStructureKey.spinNutationMom.name();
+            } else if (segment.getData().getSpinStabilizedBlock().hasNutation()) {
+                xmlTag = ApmDataSubStructureKey.spinNutation.name();
+            } else {
+                xmlTag = ApmDataSubStructureKey.spin.name();
+            }
             new SpinStabilizedWriter(formatVersion, xmlTag, null,
                                      segment.getData().getSpinStabilizedBlock()).
             write(generator);

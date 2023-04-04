@@ -32,7 +32,7 @@ public class CdmHeader extends Header {
      * Constructor.
      */
     public CdmHeader() {
-        super(1.0, Double.POSITIVE_INFINITY);
+        super(1.0, 2.0);
     }
 
     /** {@inheritDoc} */

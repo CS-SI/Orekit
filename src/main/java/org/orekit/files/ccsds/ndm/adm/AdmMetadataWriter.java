@@ -52,8 +52,10 @@ public class AdmMetadataWriter extends AbstractWriter {
         generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), null, true);
         generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   null, true);
 
-        // center
-        generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, true);
+        if (metadata.getCenter() != null) {
+            // center
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, true);
+        }
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),    metadata.getTimeSystem(), true);

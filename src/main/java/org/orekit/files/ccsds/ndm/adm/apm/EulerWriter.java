@@ -89,16 +89,28 @@ class EulerWriter extends AbstractWriter {
         // if we don't have rates, at least we need angles
         // (we may have only rates, as orientation is already given by mandatory quaternion)
         final boolean needsAngles = !euler.hasRates();
-        generator.writeEntry(seq.charAt(0) + ANGLE, angles[0], Unit.DEGREE, needsAngles);
-        generator.writeEntry(seq.charAt(1) + ANGLE, angles[1], Unit.DEGREE, needsAngles);
-        generator.writeEntry(seq.charAt(2) + ANGLE, angles[2], Unit.DEGREE, needsAngles);
+        if (formatVersion < 2.0) {
+            generator.writeEntry(seq.charAt(0) + ANGLE, angles[0], Unit.DEGREE, needsAngles);
+            generator.writeEntry(seq.charAt(1) + ANGLE, angles[1], Unit.DEGREE, needsAngles);
+            generator.writeEntry(seq.charAt(2) + ANGLE, angles[2], Unit.DEGREE, needsAngles);
+        } else {
+            generator.writeEntry(EulerKey.ANGLE_1.name(), angles[0], Unit.DEGREE, needsAngles);
+            generator.writeEntry(EulerKey.ANGLE_2.name(), angles[1], Unit.DEGREE, needsAngles);
+            generator.writeEntry(EulerKey.ANGLE_3.name(), angles[2], Unit.DEGREE, needsAngles);
+        }
 
         // rates
         if (euler.hasRates()) {
             final double[] rates = euler.getRotationRates();
-            generator.writeEntry(seq.charAt(0) + RATE, rates[0], Units.DEG_PER_S, true);
-            generator.writeEntry(seq.charAt(1) + RATE, rates[1], Units.DEG_PER_S, true);
-            generator.writeEntry(seq.charAt(2) + RATE, rates[2], Units.DEG_PER_S, true);
+            if (formatVersion < 2.0) {
+                generator.writeEntry(seq.charAt(0) + RATE, rates[0], Units.DEG_PER_S, true);
+                generator.writeEntry(seq.charAt(1) + RATE, rates[1], Units.DEG_PER_S, true);
+                generator.writeEntry(seq.charAt(2) + RATE, rates[2], Units.DEG_PER_S, true);
+            } else {
+                generator.writeEntry(EulerKey.ANGLE_1_DOT.name(), rates[0], Units.DEG_PER_S, true);
+                generator.writeEntry(EulerKey.ANGLE_2_DOT.name(), rates[1], Units.DEG_PER_S, true);
+                generator.writeEntry(EulerKey.ANGLE_3_DOT.name(), rates[2], Units.DEG_PER_S, true);
+            }
         }
 
     }

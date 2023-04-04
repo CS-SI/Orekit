@@ -29,8 +29,8 @@ public class AdmHeader extends Header {
      * Constructor.
      */
     public AdmHeader() {
-        // message ID and classification are not yet allowed in ADM
-        super(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        // classification is not yet allowed in ADM
+        super(2.0, Double.POSITIVE_INFINITY);
     }
 
 }

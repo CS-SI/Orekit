@@ -1054,6 +1054,79 @@ public class APMParserTest {
     }
 
     @Test
+    public void testAttitudeQuaternion() {
+        doTestAttitude("/ccsds/adm/apm/APM-quaternion.xml");
+    }
+
+    @Test
+    public void testAtitudeQuaternionRates() {
+        doTestAttitude("/ccsds/adm/apm/APM-quaternion-rates.xml");
+    }
+
+    @Test
+    public void testAtitudeQuaternionAngvel() {
+        doTestAttitude("/ccsds/adm/apm/APM-quaternion-angvel.xml");
+    }
+
+    @Test
+    public void testAtitudeQuaternionEulerAnglesRates() {
+        doTestAttitude("/ccsds/adm/apm/APM-quaternion-euler-angles-rates.xml");
+    }
+
+    @Test
+    public void testAtitudeQuaternionEulerRates() {
+        doTestAttitude("/ccsds/adm/apm/APM-quaternion-euler-rates.xml");
+    }
+
+    @Test
+    public void testAtitudeEulerAnglesRates() {
+        doTestAttitude("/ccsds/adm/apm/APM-euler-angles-rates.xml");
+    }
+
+    @Test
+    public void testAtitudeEulerAnglesAngvel() {
+        doTestAttitude("/ccsds/adm/apm/APM-euler-angles-angvel.xml");
+    }
+
+    @Test
+    public void testAtitudeEulerAngles() {
+        doTestAttitude("/ccsds/adm/apm/APM-euler-angles.xml");
+    }
+
+    @Test
+    public void testAtitudeSpin() {
+        doTestAttitude("/ccsds/adm/apm/APM-spin.xml");
+    }
+
+    @Test
+    public void testAtitudeSpinNutation() {
+        doTestAttitude("/ccsds/adm/apm/APM-spin-nutation.xml");
+    }
+
+    @Test
+    public void testAtitudeSpinNutationMomentum() {
+        doTestAttitude("/ccsds/adm/apm/APM-spin-nutation-momentum.xml");
+    }
+
+    private void doTestAttitude(final String name) {
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final Apm apm = new ParserBuilder().
+                        withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+                        buildApmParser().
+                        parseMessage(source);
+        final Attitude attitude = apm.getAttitude(FramesFactory.getEME2000(), null);
+        Assertions.assertEquals(0.0,
+                                attitude.getDate().durationFrom(new AbsoluteDate(2008, 4, 7, TimeScalesFactory.getUTC())),
+                                1.0e-15);
+        final double sign = FastMath.copySign(1.0, attitude.getRotation().getQ0());
+        Assertions.assertEquals( 0.6184633325084984,  sign * attitude.getRotation().getQ0(), 1.0e-15);
+        Assertions.assertEquals(-0.6447327809733585,  sign * attitude.getRotation().getQ1(), 1.0e-15);
+        Assertions.assertEquals(-0.3463409538535587,  sign * attitude.getRotation().getQ2(), 1.0e-15);
+        Assertions.assertEquals(-0.28613054916357517, sign * attitude.getRotation().getQ3(), 1.0e-15);
+
+    }
+
+    @Test
     public void testNoLogicalBlocks() {
         try {
             final String name = "/ccsds/adm/apm/APM-no-logical-blocks.txt";

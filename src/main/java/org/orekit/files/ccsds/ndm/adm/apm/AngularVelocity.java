@@ -61,6 +61,7 @@ public class AngularVelocity extends CommentsContainer {
                                                            AngularVelocityKey.REF_FRAME_B,
                                                            null);
         endpoints.checkExternalFrame(AngularVelocityKey.REF_FRAME_A, AngularVelocityKey.REF_FRAME_B);
+        checkNotNull(frame, AngularVelocityKey.ANGVEL_FRAME);
         checkNotNaN(angVelX, AngularVelocityKey.ANGVEL_X);
         checkNotNaN(angVelY, AngularVelocityKey.ANGVEL_Y);
         checkNotNaN(angVelZ, AngularVelocityKey.ANGVEL_Z);
