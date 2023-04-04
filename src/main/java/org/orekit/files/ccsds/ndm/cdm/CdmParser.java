@@ -143,7 +143,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new CdmHeader(1.0);
+        header                    = new CdmHeader();
         segments                  = new ArrayList<>();
         metadata                  = null;
         relativeMetadata          = null;
