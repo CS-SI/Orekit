@@ -1210,7 +1210,7 @@ public class APMParserTest {
 
     @Test
     public void testNonExistentFile() throws URISyntaxException {
-        final String realName = getClass().getResource("/ccsds/adm/apm/APMExample1.txt").toURI().getPath();
+        final String realName = getClass().getResource("/ccsds/adm/apm/APMExample01.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
             final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
