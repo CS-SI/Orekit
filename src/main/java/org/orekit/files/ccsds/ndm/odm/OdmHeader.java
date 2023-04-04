@@ -29,7 +29,7 @@ public class OdmHeader extends Header {
      * Constructor.
      */
     public OdmHeader() {
-        super(3.0);
+        super(3.0, 3.0);
     }
 
 }

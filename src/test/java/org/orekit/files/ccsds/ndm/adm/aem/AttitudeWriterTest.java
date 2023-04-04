@@ -50,7 +50,6 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.general.AttitudeEphemerisFile;
@@ -86,7 +85,7 @@ public class AttitudeWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        Header header = new Header(2.0);
+        AdmHeader header = new AdmHeader();
         header.setFormatVersion(aem.getHeader().getFormatVersion());
         header.setCreationDate(aem.getHeader().getCreationDate());
         header.setOriginator(aem.getHeader().getOriginator());

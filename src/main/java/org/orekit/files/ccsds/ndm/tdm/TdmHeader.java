@@ -29,7 +29,8 @@ public class TdmHeader extends Header {
      * Constructor.
      */
     public TdmHeader() {
-        super(2.0);
+        // classification is not yet allowed in TDM
+        super(2.0, Double.POSITIVE_INFINITY);
     }
 
 }

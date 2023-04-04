@@ -102,4 +102,23 @@ public class ApmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AdmMeta
 
     }
 
+    @Test
+    public void testClassificationForbidden() throws IOException {
+        final String  name = "/ccsds/adm/apm/APMExample01.txt";
+        final Apm file = new ParserBuilder().
+                             buildApmParser().
+                             parseMessage(new DataSource(name, () -> getClass().getResourceAsStream(name)));
+        file.getHeader().setFormatVersion(999999.0);
+        file.getHeader().setClassification("classification is not allowed in ADM");
+        try (Generator generator = new XmlGenerator(new CharArrayWriter(), XmlGenerator.DEFAULT_INDENT, "",
+                                                    Constants.JULIAN_DAY, false, null)) {
+            new WriterBuilder().buildApmWriter().writeMessage(generator, file);
+            Assertions.fail("an exception should heave been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(HeaderKey.CLASSIFICATION.name(), oe.getParts()[0]);
+        }
+
+    }
+
 }
