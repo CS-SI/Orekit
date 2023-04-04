@@ -26,7 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -38,7 +38,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class Aem extends NdmConstituent<Header, AemSegment>
+public class Aem extends NdmConstituent<AdmHeader, AemSegment>
     implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> {
 
     /** Root element for XML files. */
@@ -53,7 +53,7 @@ public class Aem extends NdmConstituent<Header, AemSegment>
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public Aem(final Header header, final List<AemSegment> segments,
+    public Aem(final AdmHeader header, final List<AemSegment> segments,
                final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

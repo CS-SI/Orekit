@@ -22,11 +22,11 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
@@ -57,7 +57,7 @@ import org.orekit.utils.IERSConventions;
 public class ApmParser extends AdmParser<Apm, ApmParser> {
 
     /** File header. */
-    private Header header;
+    private AdmHeader header;
 
     /** File segments. */
     private List<Segment<AdmMetadata, ApmData>> segments;
@@ -128,14 +128,14 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public AdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header              = new Header(2.0);
+        header              = new AdmHeader();
         segments            = new ArrayList<>();
         metadata            = null;
         context             = null;

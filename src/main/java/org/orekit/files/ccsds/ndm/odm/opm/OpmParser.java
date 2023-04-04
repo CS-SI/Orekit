@@ -38,7 +38,6 @@ import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
@@ -150,7 +149,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public OdmHeader getHeader() {
         return header;
     }
 

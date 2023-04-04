@@ -16,6 +16,21 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +48,7 @@ import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -44,21 +60,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class AttitudeWriterTest {
 
@@ -160,7 +161,7 @@ public class AttitudeWriterTest {
 
     @Test
     public void testNullEphemeris() throws IOException {
-        Header header = new Header(2.0);
+        AdmHeader header = new AdmHeader();
         header.setOriginator("NASA/JPL");
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("1996-062A");
@@ -213,7 +214,7 @@ public class AttitudeWriterTest {
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        Header header = new Header(2.0);
+        AdmHeader header = new AdmHeader();
         header.setFormatVersion(1.0);
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
                                                    header, metadata, FileFormat.KVN, "",

@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
@@ -214,7 +215,7 @@ import org.orekit.utils.units.Unit;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AemWriter extends AbstractMessageWriter<Header, AemSegment, Aem> {
+public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem> {
 
     /** Version number implemented. **/
     public static final double CCSDS_AEM_VERS = 2.0;

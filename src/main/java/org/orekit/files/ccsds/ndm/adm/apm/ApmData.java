@@ -303,7 +303,7 @@ public class ApmData implements Data {
             } else if (angularVelocityBlock != null) {
                 // get derivatives from the angular velocity logical block
                 tac = AttitudeType.EULER_ANGLE_ANGVEL.build(true,
-                                                            quaternionBlock.getEndpoints().isExternal2SpacecraftBody(),
+                                                            eulerBlock.getEndpoints().isExternal2SpacecraftBody(),
                                                             eulerBlock.getEulerRotSeq(), eulerBlock.isSpacecraftBodyRate(), epoch,
                                                             angles[0], angles[1], angles[2],
                                                             angularVelocityBlock.getAngVelX(),
@@ -326,14 +326,14 @@ public class ApmData implements Data {
             final TimeStampedAngularCoordinates tac;
             if (spinStabilizedBlock.hasNutation()) {
                 // we rely only on nutation
-                tac = AttitudeType.SPIN_NUTATION_MOMENTUM.build(true, true, null, true, epoch,
-                                                                spinStabilizedBlock.getSpinAlpha(),
-                                                                spinStabilizedBlock.getSpinDelta(),
-                                                                spinStabilizedBlock.getSpinAngle(),
-                                                                spinStabilizedBlock.getSpinAngleVel(),
-                                                                spinStabilizedBlock.getNutation(),
-                                                                spinStabilizedBlock.getNutationPeriod(),
-                                                                spinStabilizedBlock.getNutationPhase());
+                tac = AttitudeType.SPIN_NUTATION.build(true, true, null, true, epoch,
+                                                       spinStabilizedBlock.getSpinAlpha(),
+                                                       spinStabilizedBlock.getSpinDelta(),
+                                                       spinStabilizedBlock.getSpinAngle(),
+                                                       spinStabilizedBlock.getSpinAngleVel(),
+                                                       spinStabilizedBlock.getNutation(),
+                                                       spinStabilizedBlock.getNutationPeriod(),
+                                                       spinStabilizedBlock.getNutationPhase());
             } else if (spinStabilizedBlock.hasMomentum()) {
                 // we rely only on momentum
                 tac = AttitudeType.SPIN_NUTATION_MOMENTUM.build(true, true, null, true, epoch,

@@ -21,8 +21,8 @@ import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
@@ -34,7 +34,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class Apm extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
+public class Apm extends NdmConstituent<AdmHeader, Segment<AdmMetadata, ApmData>> {
 
     /** Root element for XML files. */
     public static final String ROOT = "apm";
@@ -48,7 +48,7 @@ public class Apm extends NdmConstituent<Header, Segment<AdmMetadata, ApmData>> {
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public Apm(final Header header, final List<Segment<AdmMetadata, ApmData>> segments,
+    public Apm(final AdmHeader header, final List<Segment<AdmMetadata, ApmData>> segments,
                final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

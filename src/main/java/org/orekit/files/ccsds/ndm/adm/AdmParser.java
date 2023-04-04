@@ -49,8 +49,8 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends AbstractConstituentParser<T, ?>>
-    extends AbstractConstituentParser<T, P> {
+public abstract class AdmParser<T extends NdmConstituent<AdmHeader, ?>, P extends AbstractConstituentParser<AdmHeader, T, ?>>
+    extends AbstractConstituentParser<AdmHeader, T, P> {
 
     /** Index rotation element name. */
     private static final String ROTATION_1 = "rotation1";

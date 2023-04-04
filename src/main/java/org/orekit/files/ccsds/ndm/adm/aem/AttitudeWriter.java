@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -42,7 +43,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
     private final AemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final AdmHeader header;
 
     /** Current metadata. */
     private final AemMetadata metadata;
@@ -90,7 +91,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * @since 12.0
      */
     public AttitudeWriter(final AemWriter writer,
-                          final Header header, final AemMetadata template,
+                          final AdmHeader header, final AemMetadata template,
                           final FileFormat fileFormat, final String outputName,
                           final double maxRelativeOffset, final int unitsColumn) {
         this.writer            = writer;

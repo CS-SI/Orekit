@@ -22,7 +22,6 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -55,7 +54,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
+public class TdmParser extends AbstractConstituentParser<TdmHeader, Tdm, TdmParser> {
 
     /** Converter for {@link RangeUnits#RU Range Units} (may be null). */
     private final RangeUnitsConverter converter;
@@ -102,7 +101,7 @@ public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public TdmHeader getHeader() {
         return header;
     }
 

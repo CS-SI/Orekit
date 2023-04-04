@@ -22,6 +22,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.propagation.Propagator;
@@ -70,7 +71,7 @@ public class StreamingAemWriter implements AutoCloseable {
     private final AemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final AdmHeader header;
 
     /** Current metadata. */
     private final AemMetadata metadata;
@@ -86,7 +87,7 @@ public class StreamingAemWriter implements AutoCloseable {
      * @since 11.0
      */
     public StreamingAemWriter(final Generator generator, final AemWriter writer,
-                              final Header header, final AemMetadata template) {
+                              final AdmHeader header, final AemMetadata template) {
         this.generator          = generator;
         this.writer             = writer;
         this.header             = header;

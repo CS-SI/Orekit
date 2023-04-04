@@ -21,9 +21,9 @@ import java.io.IOException;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataWriter;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata, ApmData>, Apm> {
+public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetadata, ApmData>, Apm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_APM_VERS = 1.0;

@@ -44,7 +44,8 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OdmParser<T extends NdmConstituent<?, ?>, P extends OdmParser<T, ?>> extends AbstractConstituentParser<T, P> {
+public abstract class OdmParser<T extends NdmConstituent<OdmHeader, ?>, P extends OdmParser<T, ?>>
+    extends AbstractConstituentParser<OdmHeader, T, P> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;

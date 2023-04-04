@@ -72,7 +72,7 @@ public class APMParserTest {
     public void testParseAPM1() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample1.txt";
+        final String ex = "/ccsds/adm/apm/APMExample01.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().
@@ -144,7 +144,7 @@ public class APMParserTest {
                                  withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                            TimeScalesFactory.getUTC())).
                                  buildApmParser();
-        final String name = "/ccsds/adm/apm/APMExample2.txt";
+        final String name = "/ccsds/adm/apm/APMExample02.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         validateAPM2(parser.parseMessage(source));
     }
@@ -155,7 +155,7 @@ public class APMParserTest {
                         withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                   TimeScalesFactory.getUTC())).
                         buildApmParser();
-        final String name = "/ccsds/adm/apm/APMExample2.xml";
+        final String name = "/ccsds/adm/apm/APMExample02.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         validateAPM2(parser.parseMessage(source));
     }
@@ -166,7 +166,7 @@ public class APMParserTest {
                         withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                   TimeScalesFactory.getUTC())).
                         buildApmParser();
-        final String name = "/ccsds/adm/apm/APMExample2.xml";
+        final String name = "/ccsds/adm/apm/APMExample02.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Apm original = parser.parseMessage(source);
 
@@ -291,7 +291,7 @@ public class APMParserTest {
     public void testParseAPM3() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample3.txt";
+        final String ex = "/ccsds/adm/apm/APMExample03.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().
@@ -368,7 +368,7 @@ public class APMParserTest {
     public void testParseAPM4() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample4.txt";
+        final String ex = "/ccsds/adm/apm/APMExample04.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().
@@ -437,7 +437,7 @@ public class APMParserTest {
     public void testParseAPM5() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample5.txt";
+        final String ex = "/ccsds/adm/apm/APMExample05.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().buildApmParser();
@@ -509,7 +509,7 @@ public class APMParserTest {
     public void testParseAPM6() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample6.txt";
+        final String ex = "/ccsds/adm/apm/APMExample06.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().buildApmParser();
@@ -581,7 +581,7 @@ public class APMParserTest {
     public void testParseAPM7() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample7.txt";
+        final String ex = "/ccsds/adm/apm/APMExample07.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().buildApmParser();
@@ -642,7 +642,7 @@ public class APMParserTest {
     public void testParseAPM8() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample8.txt";
+        final String ex = "/ccsds/adm/apm/APMExample08.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().buildApmParser();
@@ -708,7 +708,7 @@ public class APMParserTest {
     public void testParseAPM9() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APMExample9.txt";
+        final String ex = "/ccsds/adm/apm/APMExample09.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().buildApmParser();

@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.io.CharArrayWriter;
+import java.io.IOException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
@@ -25,18 +28,15 @@ import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.utils.Constants;
 
-import java.io.CharArrayWriter;
-import java.io.IOException;
-
-public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadata, ApmData>, Apm> {
+public class ApmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AdmMetadata, ApmData>, Apm> {
 
     protected ApmParser getParser() {
         return new ParserBuilder().
@@ -50,42 +50,42 @@ public class ApmWriterTest extends AbstractWriterTest<Header, Segment<AdmMetadat
 
     @Test
     public void testWriteExample1() {
-        doTest("/ccsds/adm/apm/APMExample1.txt");
+        doTest("/ccsds/adm/apm/APMExample01.txt");
     }
 
     @Test
     public void testWriteKvnExample2() {
-        doTest("/ccsds/adm/apm/APMExample2.txt");
+        doTest("/ccsds/adm/apm/APMExample02.txt");
     }
 
     @Test
     public void testWriteXmlExample2() {
-        doTest("/ccsds/adm/apm/APMExample2.xml");
+        doTest("/ccsds/adm/apm/APMExample02.xml");
     }
 
     @Test
     public void testWriteExample3() {
-        doTest("/ccsds/adm/apm/APMExample3.txt");
+        doTest("/ccsds/adm/apm/APMExample03.txt");
     }
 
     @Test
     public void testWriteExample4() {
-        doTest("/ccsds/adm/apm/APMExample4.txt");
+        doTest("/ccsds/adm/apm/APMExample04.txt");
     }
 
     @Test
     public void testWriteExample5() {
-        doTest("/ccsds/adm/apm/APMExample5.txt");
+        doTest("/ccsds/adm/apm/APMExample05.txt");
     }
 
     @Test
     public void testWriteExample6() {
-        doTest("/ccsds/adm/apm/APMExample6.txt");
+        doTest("/ccsds/adm/apm/APMExample06.txt");
     }
 
     @Test
     public void testWrongVersion() throws IOException {
-        final String  name = "/ccsds/adm/apm/APMExample1.txt";
+        final String  name = "/ccsds/adm/apm/APMExample01.txt";
         final Apm file = new ParserBuilder().
                              buildApmParser().
                              parseMessage(new DataSource(name, () -> getClass().getResourceAsStream(name)));
