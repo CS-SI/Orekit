@@ -70,7 +70,7 @@ public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
     private ObservationsBlock observationsBlock;
 
     /** File header. */
-    private Header header;
+    private TdmHeader header;
 
     /** File segments. */
     private List<Segment<TdmMetadata, ObservationsBlock>> segments;
@@ -109,7 +109,7 @@ public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header             = new Header(2.0);
+        header             = new TdmHeader();
         segments           = new ArrayList<>();
         metadata           = null;
         context            = null;
