@@ -30,7 +30,7 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class PhysicalProperties extends CommonPhysicalProperties {
+public class OrbitPhysicalProperties extends CommonPhysicalProperties {
 
     /** Satellite manufacturer name. */
     private String manufacturer;
@@ -110,7 +110,7 @@ public class PhysicalProperties extends CommonPhysicalProperties {
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      */
-    public PhysicalProperties(final AbsoluteDate epochT0) {
+    public OrbitPhysicalProperties(final AbsoluteDate epochT0) {
 
         // Call to CommonPhysicalProperties constructor
         super();

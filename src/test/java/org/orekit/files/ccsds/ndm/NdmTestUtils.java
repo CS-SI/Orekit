@@ -35,10 +35,10 @@ import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
 import org.orekit.files.ccsds.ndm.cdm.CdmRelativeMetadata;
-import org.orekit.files.ccsds.ndm.odm.ocm.Covariance;
-import org.orekit.files.ccsds.ndm.odm.ocm.CovarianceHistory;
-import org.orekit.files.ccsds.ndm.odm.ocm.Maneuver;
-import org.orekit.files.ccsds.ndm.odm.ocm.ManeuverHistory;
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitCovariance;
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitCovarianceHistory;
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitManeuver;
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitManeuverHistory;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmSatelliteEphemeris;
 import org.orekit.files.ccsds.ndm.odm.ocm.TrajectoryState;
 import org.orekit.files.ccsds.ndm.odm.ocm.TrajectoryStateHistory;
@@ -106,11 +106,11 @@ public class NdmTestUtils {
                    original instanceof OcmSatelliteEphemeris ||
                    original instanceof OemSatelliteEphemeris ||
                    original instanceof AemSatelliteEphemeris ||
-                   original instanceof CovarianceHistory     ||
-                   original instanceof ManeuverHistory       ||
+                   original instanceof OrbitCovarianceHistory     ||
+                   original instanceof OrbitManeuverHistory       ||
                    original instanceof TrajectoryState       ||
-                   original instanceof Covariance            ||
-                   original instanceof Maneuver              ||
+                   original instanceof OrbitCovariance            ||
+                   original instanceof OrbitManeuver              ||
                    original instanceof Observation           ||
                    original instanceof SpacecraftBodyFrame   ||
                    original instanceof PVCoordinates         ||

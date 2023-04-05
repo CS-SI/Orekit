@@ -17,14 +17,14 @@
 
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.time.AbsoluteDate;
 
 /** Metadata for Orbit Ephemeris Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OemMetadata extends CommonMetadata {
+public class OemMetadata extends OdmCommonMetadata {
 
     /** Start of total time span covered by ephemerides data and covariance data. */
     private AbsoluteDate startTime;

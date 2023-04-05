@@ -23,11 +23,11 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
 
 
-/** Keys for {@link PhysicalProperties physical properties data} entries.
+/** Keys for {@link OrbitPhysicalProperties physical properties data} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum PhysicalPropertiesKey {
+public enum OrbitPhysicalPropertiesKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
@@ -229,7 +229,7 @@ public enum PhysicalPropertiesKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    PhysicalPropertiesKey(final TokenProcessor processor) {
+    OrbitPhysicalPropertiesKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -239,7 +239,7 @@ public enum PhysicalPropertiesKey {
      * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final PhysicalProperties data) {
+    public boolean process(final ParseToken token, final ContextBinding context, final OrbitPhysicalProperties data) {
         return processor.process(token, context, data);
     }
 
@@ -251,7 +251,7 @@ public enum PhysicalPropertiesKey {
          * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, PhysicalProperties data);
+        boolean process(ParseToken token, ContextBinding context, OrbitPhysicalProperties data);
     }
 
 }

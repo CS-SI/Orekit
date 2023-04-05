@@ -16,18 +16,17 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
 
 
-/** Keys for {@link CovarianceHistoryMetadata covariance history container} entries.
+/** Keys for {@link OrbitCovarianceHistoryMetadata covariance history container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum CovarianceHistoryMetadataKey {
+public enum OrbitCovarianceHistoryMetadataKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
@@ -69,7 +68,7 @@ public enum CovarianceHistoryMetadataKey {
     /** Covariance element set type.
      * @see ElementsType
      */
-    COV_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setCovType)),
+    COV_TYPE((token, context, container) -> token.processAsEnum(OrbitElementsType.class, container::setCovType)),
 
     /** Covariance ordering. */
     COV_ORDERING((token, context, container) -> token.processAsEnum(Ordering.class, container::setCovOrdering)),
@@ -83,7 +82,7 @@ public enum CovarianceHistoryMetadataKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    CovarianceHistoryMetadataKey(final TokenProcessor processor) {
+    OrbitCovarianceHistoryMetadataKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -93,7 +92,7 @@ public enum CovarianceHistoryMetadataKey {
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final CovarianceHistoryMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final OrbitCovarianceHistoryMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -105,7 +104,7 @@ public enum CovarianceHistoryMetadataKey {
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, CovarianceHistoryMetadata container);
+        boolean process(ParseToken token, ContextBinding context, OrbitCovarianceHistoryMetadata container);
     }
 
 }

@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.definitions;
+package org.orekit.files.ccsds.ndm.odm.ocm;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -24,24 +27,22 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
 
-import java.util.Arrays;
-import java.util.Collections;
 
-
-public class ElementsTypeTest {
+public class OrbitElementsTypeTest {
 
     @Test
     public void testNotSupported() {
-        for (final ElementsType et : Arrays.asList(ElementsType.ADBARV,
-                                                   ElementsType.DELAUNAY, ElementsType.DELAUNAYMOD,
-                                                   ElementsType.EIGVAL3EIGVEC3, ElementsType.GEODETIC,
-                                                   ElementsType.LDBARV, ElementsType.ONSTATION,
-                                                   ElementsType.POINCARE)) {
+        for (final OrbitElementsType et : Arrays.asList(OrbitElementsType.ADBARV,
+                                                        OrbitElementsType.DELAUNAY, OrbitElementsType.DELAUNAYMOD,
+                                                        OrbitElementsType.EIGVAL3EIGVEC3, OrbitElementsType.GEODETIC,
+                                                        OrbitElementsType.LDBARV, OrbitElementsType.ONSTATION,
+                                                        OrbitElementsType.POINCARE)) {
             try {
                 et.toCartesian(AbsoluteDate.J2000_EPOCH, new double[et.getUnits().size()],
                                Constants.EIGEN5C_EARTH_MU);
@@ -55,7 +56,7 @@ public class ElementsTypeTest {
 
     @Test
     public void testUnsupportedRetrograde() {
-        for (final ElementsType et : Arrays.asList(ElementsType.EQUINOCTIAL, ElementsType.EQUINOCTIALMOD)) {
+        for (final OrbitElementsType et : Arrays.asList(OrbitElementsType.EQUINOCTIAL, OrbitElementsType.EQUINOCTIALMOD)) {
             try {
                 et.toCartesian(AbsoluteDate.J2000_EPOCH,
                                new double[] { 7e6, 1.0e-3, 2.0e-3, 1.2, 0.4, 0.5, -1 },
@@ -73,19 +74,19 @@ public class ElementsTypeTest {
 
         final double[] elements = { 1e6, 2e6, 3e6, 4e3, 5e3, 6e3, 7, 8, 9 };
 
-        final TimeStampedPVCoordinates p = ElementsType.CARTP.toCartesian(AbsoluteDate.J2000_EPOCH,
+        final TimeStampedPVCoordinates p = OrbitElementsType.CARTP.toCartesian(AbsoluteDate.J2000_EPOCH,
                                                                           elements, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertEquals(14.0e12, p.getPosition().getNormSq(),     1.0);
         Assertions.assertEquals(0.0,     p.getVelocity().getNormSq(),     1.0e-12);
         Assertions.assertEquals(0.0,     p.getAcceleration().getNormSq(), 1.0e-12);
 
-        final TimeStampedPVCoordinates pv = ElementsType.CARTPV.toCartesian(AbsoluteDate.J2000_EPOCH,
+        final TimeStampedPVCoordinates pv = OrbitElementsType.CARTPV.toCartesian(AbsoluteDate.J2000_EPOCH,
                                                                             elements, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertEquals(14.0e12, pv.getPosition().getNormSq(),     1.0);
         Assertions.assertEquals(77.0e6,  pv.getVelocity().getNormSq(),     1.0);
         Assertions.assertEquals(0.0,     pv.getAcceleration().getNormSq(), 1.0e-12);
 
-        final TimeStampedPVCoordinates pva = ElementsType.CARTPVA.toCartesian(AbsoluteDate.J2000_EPOCH,
+        final TimeStampedPVCoordinates pva = OrbitElementsType.CARTPVA.toCartesian(AbsoluteDate.J2000_EPOCH,
                                                                               elements, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertEquals(14.0e12, pva.getPosition().getNormSq(),     1.0);
         Assertions.assertEquals(77.0e6,  pva.getVelocity().getNormSq(),     1.0);
@@ -96,7 +97,7 @@ public class ElementsTypeTest {
     @Test
     public void testKeplerian() {
         TimeStampedPVCoordinates cart =
-                        ElementsType.KEPLERIAN.
+                        OrbitElementsType.KEPLERIAN.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 24464560.0, 0.7311, 0.122138, 1.00681, 3.10686, 0.048363 },
                                     3.9860047e14);
@@ -114,7 +115,7 @@ public class ElementsTypeTest {
     @Test
     public void testKeplerianMean() {
         TimeStampedPVCoordinates cart =
-                        ElementsType.KEPLERIANMEAN.
+                        OrbitElementsType.KEPLERIANMEAN.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 24464560.0, 0.7311, 0.122138, 1.00681, 3.10686, 0.048363 },
                                     3.9860047e14);
@@ -132,7 +133,7 @@ public class ElementsTypeTest {
     @Test
     public void testEquinoctial() {
         TimeStampedPVCoordinates cart =
-                        ElementsType.EQUINOCTIAL.
+                        OrbitElementsType.EQUINOCTIAL.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 7000000.0, 0.01, -0.02, FastMath.toRadians(40.), 2.1, 1.2, +1 },
                                     3.9860047e14);
@@ -145,7 +146,7 @@ public class ElementsTypeTest {
     @Test
     public void testEquinoctialMod() {
         TimeStampedPVCoordinates cart =
-                        ElementsType.EQUINOCTIALMOD.
+                        OrbitElementsType.EQUINOCTIALMOD.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 7000000.0, 0.01, -0.02, FastMath.toRadians(40.), 2.1, 1.2, +1 },
                                     3.9860047e14);
@@ -158,7 +159,7 @@ public class ElementsTypeTest {
     @Test
     public void checkWrongNumber() {
         try {
-            ElementsType.CARTP.checkUnits(Collections.singletonList(Unit.KILOMETRE));
+            OrbitElementsType.CARTP.checkUnits(Collections.singletonList(Unit.KILOMETRE));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS,
@@ -169,7 +170,7 @@ public class ElementsTypeTest {
     @Test
     public void checkWrongUnitsDimension() {
         try {
-            ElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
+            OrbitElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
                                                          Units.KM_PER_S, Units.KM_PER_S, Units.KM_PER_S2));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -182,7 +183,7 @@ public class ElementsTypeTest {
     @Test
     public void checkWrongUnitsScale() {
         try {
-            ElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
+            OrbitElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
                                                          Units.KM_PER_S, Units.KM_PER_S, Unit.parse("m/s")));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -194,7 +195,7 @@ public class ElementsTypeTest {
 
     @Test
     public void checkCorreectUnits() {
-        ElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
+        OrbitElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
                                                      Units.KM_PER_S, Units.KM_PER_S, Units.KM_PER_S));
     }
 

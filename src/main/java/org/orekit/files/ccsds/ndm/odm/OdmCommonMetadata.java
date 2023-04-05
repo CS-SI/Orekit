@@ -32,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CommonMetadata extends OdmMetadata {
+public class OdmCommonMetadata extends OdmMetadata {
 
     /** Object identifier of the object for which the orbit state is provided. */
     private String objectID;
@@ -54,7 +54,7 @@ public class CommonMetadata extends OdmMetadata {
 
     /** Simple constructor.
      */
-    public CommonMetadata() {
+    public OdmCommonMetadata() {
         super(null);
     }
 

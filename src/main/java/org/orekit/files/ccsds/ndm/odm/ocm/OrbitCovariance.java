@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.units.Unit;
@@ -30,10 +29,10 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class Covariance implements TimeStamped {
+public class OrbitCovariance implements TimeStamped {
 
     /** Type of the elements. */
-    private final ElementsType type;
+    private final OrbitElementsType type;
 
     /** Entry date. */
     private final AbsoluteDate date;
@@ -48,8 +47,8 @@ public class Covariance implements TimeStamped {
      * @param fields matrix elements
      * @param first index of first field to consider
      */
-    public Covariance(final ElementsType type, final Ordering ordering, final AbsoluteDate date,
-                      final String[] fields, final int first) {
+    public OrbitCovariance(final OrbitElementsType type, final Ordering ordering, final AbsoluteDate date,
+                           final String[] fields, final int first) {
         final List<Unit> units = type.getUnits();
         this.type   = type;
         this.date   = date;
@@ -86,7 +85,7 @@ public class Covariance implements TimeStamped {
     /** Get the type of the elements.
      * @return type of the elements
      */
-    public ElementsType getType() {
+    public OrbitElementsType getType() {
         return type;
     }
 

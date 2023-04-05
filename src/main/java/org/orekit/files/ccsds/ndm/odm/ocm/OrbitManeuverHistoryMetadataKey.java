@@ -23,11 +23,11 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
 
 
-/** Keys for {@link ManeuverHistoryMetadata maneuver history container} entries.
+/** Keys for {@link OrbitManeuverHistoryMetadata maneuver history container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum ManeuverHistoryMetadataKey {
+public enum OrbitManeuverHistoryMetadataKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
@@ -135,7 +135,7 @@ public enum ManeuverHistoryMetadataKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    ManeuverHistoryMetadataKey(final TokenProcessor processor) {
+    OrbitManeuverHistoryMetadataKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -145,7 +145,7 @@ public enum ManeuverHistoryMetadataKey {
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final ManeuverHistoryMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final OrbitManeuverHistoryMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -157,7 +157,7 @@ public enum ManeuverHistoryMetadataKey {
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, ManeuverHistoryMetadata container);
+        boolean process(ParseToken token, ContextBinding context, OrbitManeuverHistoryMetadata container);
     }
 
 }

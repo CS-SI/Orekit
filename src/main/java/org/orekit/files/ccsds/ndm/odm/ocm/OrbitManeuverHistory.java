@@ -24,20 +24,20 @@ import java.util.List;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ManeuverHistory {
+public class OrbitManeuverHistory {
 
     /** Metadata. */
-    private final ManeuverHistoryMetadata metadata;
+    private final OrbitManeuverHistoryMetadata metadata;
 
     /** Maneuver. */
-    private final List<Maneuver> maneuvers;
+    private final List<OrbitManeuver> maneuvers;
 
     /** Simple constructor.
      * @param metadata metadata
      * @param maneuvers maneuvers
      */
-    public ManeuverHistory(final ManeuverHistoryMetadata metadata,
-                           final List<Maneuver> maneuvers) {
+    public OrbitManeuverHistory(final OrbitManeuverHistoryMetadata metadata,
+                           final List<OrbitManeuver> maneuvers) {
         this.metadata  = metadata;
         this.maneuvers = maneuvers;
     }
@@ -45,14 +45,14 @@ public class ManeuverHistory {
     /** Get metadata.
      * @return metadata
      */
-    public ManeuverHistoryMetadata getMetadata() {
+    public OrbitManeuverHistoryMetadata getMetadata() {
         return metadata;
     }
 
     /** Get the maneuvers.
      * @return maneuvers
      */
-    public List<Maneuver> getManeuvers() {
+    public List<OrbitManeuver> getManeuvers() {
         return Collections.unmodifiableList(maneuvers);
     }
 

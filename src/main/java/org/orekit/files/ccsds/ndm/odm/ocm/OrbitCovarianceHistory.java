@@ -24,20 +24,20 @@ import java.util.List;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CovarianceHistory {
+public class OrbitCovarianceHistory {
 
     /** Metadata. */
-    private final CovarianceHistoryMetadata metadata;
+    private final OrbitCovarianceHistoryMetadata metadata;
 
     /** Covariance. */
-    private final List<Covariance> covariances;
+    private final List<OrbitCovariance> covariances;
 
     /** Simple constructor.
      * @param metadata metadata
      * @param covariances covariances
      */
-    public CovarianceHistory(final CovarianceHistoryMetadata metadata,
-                             final List<Covariance> covariances) {
+    public OrbitCovarianceHistory(final OrbitCovarianceHistoryMetadata metadata,
+                             final List<OrbitCovariance> covariances) {
         this.metadata    = metadata;
         this.covariances = covariances;
     }
@@ -45,14 +45,14 @@ public class CovarianceHistory {
     /** Get metadata.
      * @return metadata
      */
-    public CovarianceHistoryMetadata getMetadata() {
+    public OrbitCovarianceHistoryMetadata getMetadata() {
         return metadata;
     }
 
     /** Get the covariances.
      * @return covariances
      */
-    public List<Covariance> getCovariances() {
+    public List<OrbitCovariance> getCovariances() {
         return Collections.unmodifiableList(covariances);
     }
 

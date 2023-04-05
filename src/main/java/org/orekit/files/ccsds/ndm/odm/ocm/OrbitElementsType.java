@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.definitions;
+package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +25,6 @@ import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.ocm.Ocm;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -39,7 +38,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum ElementsType {
+public enum OrbitElementsType {
 
     // CHECKSTYLE: stop MultipleStringLiterals check
 
@@ -197,7 +196,7 @@ public enum ElementsType {
      * @param description description
      * @param unitsSpecifications elements units specifications
      */
-    ElementsType(final String description, final String... unitsSpecifications) {
+    OrbitElementsType(final String description, final String... unitsSpecifications) {
         this.description = description;
         this.units       = Stream.of(unitsSpecifications).
                            map(s -> Unit.parse(s)).

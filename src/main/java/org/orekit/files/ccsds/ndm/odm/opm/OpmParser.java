@@ -25,7 +25,7 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
@@ -76,10 +76,10 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     private OdmHeader header;
 
     /** File segments. */
-    private List<Segment<CommonMetadata, OpmData>> segments;
+    private List<Segment<OdmCommonMetadata, OpmData>> segments;
 
     /** OPM metadata being read. */
-    private CommonMetadata metadata;
+    private OdmCommonMetadata metadata;
 
     /** Context binding valid for current metadata. */
     private ContextBinding context;
@@ -203,7 +203,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
         if (metadata != null) {
             return false;
         }
-        metadata  = new CommonMetadata();
+        metadata  = new OdmCommonMetadata();
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
@@ -461,7 +461,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     private boolean processCovarianceToken(final ParseToken token) {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
-            final CommonMetadata savedMetadata = metadata;
+            final OdmCommonMetadata savedMetadata = metadata;
             covarianceBlock = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
             if (moveCommentsIfEmpty(spacecraftParametersBlock, covarianceBlock)) {
                 // get rid of the empty logical block

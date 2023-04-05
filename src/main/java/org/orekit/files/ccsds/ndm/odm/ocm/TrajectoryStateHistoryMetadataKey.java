@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -87,7 +86,7 @@ public enum TrajectoryStateHistoryMetadataKey {
     /** Trajectory element set type.
      * @see ElementsType
      */
-    TRAJ_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setTrajType)),
+    TRAJ_TYPE((token, context, container) -> token.processAsEnum(OrbitElementsType.class, container::setTrajType)),
 
     /** SI units for each elements of the trajectory state. */
     TRAJ_UNITS((token, context, container) -> token.processAsUnitList(container::setTrajUnits));

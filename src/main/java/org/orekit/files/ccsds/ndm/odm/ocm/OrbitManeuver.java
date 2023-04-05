@@ -26,7 +26,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class Maneuver implements TimeStamped {
+public class OrbitManeuver implements TimeStamped {
 
     /** Maneuver date. */
     private AbsoluteDate date;
@@ -99,7 +99,7 @@ public class Maneuver implements TimeStamped {
 
     /** Build an uninitialized maneuver.
      */
-    public Maneuver() {
+    public OrbitManeuver() {
         acceleration = new double[3];
         dV           = new double[3];
         thrust       = new double[3];

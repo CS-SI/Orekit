@@ -33,10 +33,10 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-class CovarianceHistoryWriter extends AbstractWriter {
+class OrbitCovarianceHistoryWriter extends AbstractWriter {
 
     /** Covariance history block. */
-    private final CovarianceHistory history;
+    private final OrbitCovarianceHistory history;
 
     /** Converter for dates. */
     private final TimeConverter timeConverter;
@@ -45,7 +45,7 @@ class CovarianceHistoryWriter extends AbstractWriter {
      * @param covarianceHistory covariance history to write
      * @param timeConverter converter for dates
      */
-    CovarianceHistoryWriter(final CovarianceHistory covarianceHistory,
+    OrbitCovarianceHistoryWriter(final OrbitCovarianceHistory covarianceHistory,
                             final TimeConverter timeConverter) {
         super(OcmDataSubStructureKey.cov.name(), OcmDataSubStructureKey.COV.name());
         this.history       = covarianceHistory;
@@ -57,37 +57,37 @@ class CovarianceHistoryWriter extends AbstractWriter {
     protected void writeContent(final Generator generator) throws IOException {
 
         // covariance history block
-        final CovarianceHistoryMetadata metadata = history.getMetadata();
+        final OrbitCovarianceHistoryMetadata metadata = history.getMetadata();
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      null, false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  null, false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_NEXT_ID.name(),  metadata.getCovNextID(),  null, false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   null, false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      null, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  null, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_NEXT_ID.name(),  metadata.getCovNextID(),  null, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   null, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
 
         // references
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_REF_FRAME.name(),   metadata.getCovReferenceFrame().getName(),  null, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_REF_FRAME.name(),   metadata.getCovReferenceFrame().getName(),  null, false);
         if (!metadata.getCovFrameEpoch().equals(timeConverter.getReferenceDate()) &&
             metadata.getCovReferenceFrame().asOrbitRelativeFrame() == null &&
             metadata.getCovReferenceFrame().asSpacecraftBodyFrame() == null) {
-            generator.writeEntry(CovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(), true, false);
+            generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(), true, false);
         }
 
         // scaling
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  metadata.getCovScaleMin(), Unit.ONE,       false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  metadata.getCovScaleMax(), Unit.ONE,       false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), metadata.getCovConfidence(), Unit.PERCENT, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  metadata.getCovScaleMin(), Unit.ONE,       false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  metadata.getCovScaleMax(), Unit.ONE,       false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), metadata.getCovConfidence(), Unit.PERCENT, false);
 
         // elements
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_TYPE.name(),     metadata.getCovType(),                                     false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_ORDERING.name(), metadata.getCovOrdering(),                                 false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_UNITS.name(),    generator.unitsListToString(metadata.getCovUnits()), null, false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_TYPE.name(),     metadata.getCovType(),                                     false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_ORDERING.name(), metadata.getCovOrdering(),                                 false);
+        generator.writeEntry(OrbitCovarianceHistoryMetadataKey.COV_UNITS.name(),    generator.unitsListToString(metadata.getCovUnits()), null, false);
 
         // data
         final List<Unit> units = metadata.getCovType().getUnits();
-        for (final Covariance covariance : history.getCovariances()) {
+        for (final OrbitCovariance covariance : history.getCovariances()) {
             final RealMatrix        matrix   = covariance.getMatrix();
             final Ordering          ordering = metadata.getCovOrdering();
             final CovarianceIndexer indexer  = new CovarianceIndexer(units.size());

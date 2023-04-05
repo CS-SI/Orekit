@@ -33,10 +33,10 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-class ManeuverHistoryWriter extends AbstractWriter {
+class OrbitManeuverHistoryWriter extends AbstractWriter {
 
     /** Maneuvers history block. */
-    private final ManeuverHistory history;
+    private final OrbitManeuverHistory history;
 
     /** Converter for dates. */
     private final TimeConverter timeConverter;
@@ -45,7 +45,7 @@ class ManeuverHistoryWriter extends AbstractWriter {
      * @param maneuverHistory maneuvers history to write
      * @param timeConverter converter for dates
      */
-    ManeuverHistoryWriter(final ManeuverHistory maneuverHistory,
+    OrbitManeuverHistoryWriter(final OrbitManeuverHistory maneuverHistory,
                           final TimeConverter timeConverter) {
         super(OcmDataSubStructureKey.man.name(), OcmDataSubStructureKey.MAN.name());
         this.history       = maneuverHistory;
@@ -57,59 +57,59 @@ class ManeuverHistoryWriter extends AbstractWriter {
     protected void writeContent(final Generator generator) throws IOException {
 
         // maneuvers history block
-        final ManeuverHistoryMetadata metadata = history.getMetadata();
+        final OrbitManeuverHistoryMetadata metadata = history.getMetadata();
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_ID.name(),        metadata.getManID(),       null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PREV_ID.name(),   metadata.getManPrevID(),   null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_NEXT_ID.name(),   metadata.getManNextID(),   null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_BASIS.name(),     metadata.getManBasis(),          false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_BASIS_ID.name(),  metadata.getManBasisID(),  null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_DEVICE_ID.name(), metadata.getManDeviceID(), null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_ID.name(),        metadata.getManID(),       null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PREV_ID.name(),   metadata.getManPrevID(),   null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_NEXT_ID.name(),   metadata.getManNextID(),   null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_BASIS.name(),     metadata.getManBasis(),          false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_BASIS_ID.name(),  metadata.getManBasisID(),  null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_DEVICE_ID.name(), metadata.getManDeviceID(), null, false);
 
         // time
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PREV_EPOCH.name(), timeConverter, metadata.getManPrevEpoch(), true, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_NEXT_EPOCH.name(), timeConverter, metadata.getManNextEpoch(), true, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PREV_EPOCH.name(), timeConverter, metadata.getManPrevEpoch(), true, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_NEXT_EPOCH.name(), timeConverter, metadata.getManNextEpoch(), true, false);
 
         // references
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PURPOSE.name(),      metadata.getManPurpose(),                          false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_REF_FRAME.name(),    metadata.getManReferenceFrame().getName(),   null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PURPOSE.name(),      metadata.getManPurpose(),                          false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_REF_FRAME.name(),    metadata.getManReferenceFrame().getName(),   null, false);
         if (!metadata.getManFrameEpoch().equals(timeConverter.getReferenceDate()) &&
             metadata.getManReferenceFrame().asOrbitRelativeFrame() == null &&
             metadata.getManReferenceFrame().asSpacecraftBodyFrame() == null) {
-            generator.writeEntry(ManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  true, false);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  true, false);
         }
         if (metadata.getGravitationalAssist() != null) {
-            generator.writeEntry(ManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), null, false);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), null, false);
         }
 
         // duty cycle
         final boolean notContinuous = metadata.getDcType() != DutyCycleType.CONTINUOUS;
         final boolean timeAndAngle  = metadata.getDcType() == DutyCycleType.TIME_AND_ANGLE;
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),  timeConverter, metadata.getDcWindowOpen(),  false, notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(), timeConverter, metadata.getDcWindowClose(), false, notContinuous);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TYPE.name(), metadata.getDcType(), false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),  timeConverter, metadata.getDcWindowOpen(),  false, notContinuous);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(), timeConverter, metadata.getDcWindowClose(), false, notContinuous);
         if (metadata.getDcMinCycles() >= 0) {
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(), metadata.getDcMinCycles(), false);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(), metadata.getDcMinCycles(), false);
         }
         if (metadata.getDcMaxCycles() >= 0) {
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(), metadata.getDcMaxCycles(), false);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(), metadata.getDcMaxCycles(), false);
         }
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(), false, notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),  false, notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),   false, notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND,  notContinuous);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND,  notContinuous);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(), false, notContinuous);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),  false, notContinuous);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),   false, notContinuous);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND,  notContinuous);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND,  notContinuous);
         if (timeAndAngle) {
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_DIR.name(), toString(metadata.getDcRefDir()), null, timeAndAngle);
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_BODY_FRAME.name(),
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name(), toString(metadata.getDcRefDir()), null, timeAndAngle);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME.name(),
                                  metadata.getDcBodyFrame().toString().replace(' ', '_'),
                                  null, timeAndAngle);
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name(),   toString(metadata.getDcBodyTrigger()), null,   timeAndAngle);
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE,  timeAndAngle);
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(),  Unit.DEGREE,  timeAndAngle);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name(),   toString(metadata.getDcBodyTrigger()), null,   timeAndAngle);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE,  timeAndAngle);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(),  Unit.DEGREE,  timeAndAngle);
         }
 
         // elements
@@ -121,11 +121,11 @@ class ManeuverHistoryWriter extends AbstractWriter {
             }
             composition.append(types.get(i).name());
         }
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_COMPOSITION.name(), composition.toString(),                        null, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.MAN_UNITS.name(), generator.unitsListToString(metadata.getManUnits()), null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_COMPOSITION.name(), composition.toString(),                        null, false);
+        generator.writeEntry(OrbitManeuverHistoryMetadataKey.MAN_UNITS.name(), generator.unitsListToString(metadata.getManUnits()), null, false);
 
         // data
-        for (final Maneuver maneuver : history.getManeuvers()) {
+        for (final OrbitManeuver maneuver : history.getManeuvers()) {
             final StringBuilder line = new StringBuilder();
             for (int i = 0; i < types.size(); ++i) {
                 if (i > 0) {

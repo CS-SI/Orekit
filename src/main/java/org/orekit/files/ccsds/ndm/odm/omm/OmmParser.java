@@ -26,7 +26,7 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
@@ -446,7 +446,7 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
     private boolean processCovarianceToken(final ParseToken token) {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
-            final CommonMetadata savedMetadata = metadata;
+            final OdmCommonMetadata savedMetadata = metadata;
             covarianceBlock = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
             if (moveCommentsIfEmpty(tleBlock, covarianceBlock)) {
                 // get rid of the empty logical block

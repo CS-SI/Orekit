@@ -98,23 +98,23 @@ public class OcmWriter extends AbstractMessageWriter<OdmHeader, Segment<OcmMetad
 
         if (segment.getData().getPhysicBlock() != null) {
             // write optional physical properties block
-            new PhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
+            new OrbitPhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
                                          getTimeConverter()).
             write(generator);
         }
 
         // covariance history
         if (segment.getData().getCovarianceBlocks() != null && !segment.getData().getCovarianceBlocks().isEmpty()) {
-            for (final CovarianceHistory history : segment.getData().getCovarianceBlocks()) {
+            for (final OrbitCovarianceHistory history : segment.getData().getCovarianceBlocks()) {
                 // write optional covariance history block
-                new CovarianceHistoryWriter(history, getTimeConverter()).write(generator);
+                new OrbitCovarianceHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 
         if (segment.getData().getManeuverBlocks() != null && !segment.getData().getManeuverBlocks().isEmpty()) {
-            for (final ManeuverHistory maneuver : segment.getData().getManeuverBlocks()) {
+            for (final OrbitManeuverHistory maneuver : segment.getData().getManeuverBlocks()) {
                 // write optional maneuver block
-                new ManeuverHistoryWriter(maneuver, getTimeConverter()).write(generator);
+                new OrbitManeuverHistoryWriter(maneuver, getTimeConverter()).write(generator);
             }
         }
 

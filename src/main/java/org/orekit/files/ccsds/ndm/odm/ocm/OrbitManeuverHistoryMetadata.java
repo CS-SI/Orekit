@@ -36,7 +36,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ManeuverHistoryMetadata extends CommentsContainer {
+public class OrbitManeuverHistoryMetadata extends CommentsContainer {
 
     /** Default duty cycle type.
      * @since 12.0
@@ -136,7 +136,7 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      */
-    public ManeuverHistoryMetadata(final AbsoluteDate epochT0) {
+    public OrbitManeuverHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         manBasis            = ManBasis.PLANNED;
@@ -156,27 +156,27 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(manID,          ManeuverHistoryMetadataKey.MAN_ID);
-        checkNotNull(manDeviceID,    ManeuverHistoryMetadataKey.MAN_DEVICE_ID);
+        checkNotNull(manID,          OrbitManeuverHistoryMetadataKey.MAN_ID);
+        checkNotNull(manDeviceID,    OrbitManeuverHistoryMetadataKey.MAN_DEVICE_ID);
 
         if (dcType != DutyCycleType.CONTINUOUS) {
-            checkNotNull(dcWindowOpen,       ManeuverHistoryMetadataKey.DC_WIN_OPEN);
-            checkNotNull(dcWindowClose,      ManeuverHistoryMetadataKey.DC_WIN_CLOSE);
-            checkNotNull(dcExecStart,        ManeuverHistoryMetadataKey.DC_EXEC_START);
-            checkNotNull(dcExecStop,         ManeuverHistoryMetadataKey.DC_EXEC_STOP);
-            checkNotNull(dcRefTime,          ManeuverHistoryMetadataKey.DC_REF_TIME);
-            checkNotNaN(dcTimePulseDuration, ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION);
-            checkNotNaN(dcTimePulsePeriod,   ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD);
+            checkNotNull(dcWindowOpen,       OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN);
+            checkNotNull(dcWindowClose,      OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE);
+            checkNotNull(dcExecStart,        OrbitManeuverHistoryMetadataKey.DC_EXEC_START);
+            checkNotNull(dcExecStop,         OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP);
+            checkNotNull(dcRefTime,          OrbitManeuverHistoryMetadataKey.DC_REF_TIME);
+            checkNotNaN(dcTimePulseDuration, OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION);
+            checkNotNaN(dcTimePulsePeriod,   OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD);
         }
         if (dcType == DutyCycleType.TIME_AND_ANGLE) {
-            checkNotNull(dcRefDir,           ManeuverHistoryMetadataKey.DC_REF_DIR);
-            checkNotNull(dcBodyFrame,        ManeuverHistoryMetadataKey.DC_BODY_FRAME);
-            checkNotNull(dcBodyTrigger,      ManeuverHistoryMetadataKey.DC_BODY_TRIGGER);
-            checkNotNull(dcPhaseStartAngle,  ManeuverHistoryMetadataKey.DC_PA_START_ANGLE);
-            checkNotNull(dcPhaseStopAngle,   ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE);
+            checkNotNull(dcRefDir,           OrbitManeuverHistoryMetadataKey.DC_REF_DIR);
+            checkNotNull(dcBodyFrame,        OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME);
+            checkNotNull(dcBodyTrigger,      OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER);
+            checkNotNull(dcPhaseStartAngle,  OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE);
+            checkNotNull(dcPhaseStopAngle,   OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE);
         }
 
-        checkNotNull(manComposition, ManeuverHistoryMetadataKey.MAN_COMPOSITION);
+        checkNotNull(manComposition, OrbitManeuverHistoryMetadataKey.MAN_COMPOSITION);
         if (!manComposition.get(0).isTime()) {
             throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_MISSING_TIME, manID);
         }

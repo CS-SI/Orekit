@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -30,7 +29,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CovarianceHistoryMetadata extends CommentsContainer {
+public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
 
     /** Covariance identification number. */
     private String covID;
@@ -63,7 +62,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     private double covConfidence;
 
     /** Covariance element set type. */
-    private ElementsType covType;
+    private OrbitElementsType covType;
 
     /** Covariance ordering. */
     private Ordering covOrdering;
@@ -74,7 +73,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      */
-    public CovarianceHistoryMetadata(final AbsoluteDate epochT0) {
+    public OrbitCovarianceHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         covBasis          = "PREDICTED";
@@ -85,7 +84,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
         covScaleMin       = Double.NaN;
         covScaleMax       = Double.NaN;
         covConfidence     = Double.NaN;
-        covType           = ElementsType.CARTPV;
+        covType           = OrbitElementsType.CARTPV;
         covOrdering       = Ordering.LTM;
     }
 
@@ -248,14 +247,14 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Get covariance element set type.
      * @return covariance element set type
      */
-    public ElementsType getCovType() {
+    public OrbitElementsType getCovType() {
         return covType;
     }
 
     /** Set covariance element set type.
      * @param covType covariance element set type
      */
-    public void setCovType(final ElementsType covType) {
+    public void setCovType(final OrbitElementsType covType) {
         refuseFurtherComments();
         this.covType = covType;
     }
