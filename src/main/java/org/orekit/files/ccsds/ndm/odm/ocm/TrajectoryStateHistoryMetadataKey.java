@@ -84,7 +84,7 @@ public enum TrajectoryStateHistoryMetadataKey {
     ORB_AVERAGING((token, context, container) -> token.processAsFreeTextString(container::setOrbAveraging)),
 
     /** Trajectory element set type.
-     * @see ElementsType
+     * @see OrbitElementsType
      */
     TRAJ_TYPE((token, context, container) -> token.processAsEnum(OrbitElementsType.class, container::setTrajType)),
 

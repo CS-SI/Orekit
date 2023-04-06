@@ -211,7 +211,7 @@ public enum OrbitElementsType {
 
     /** Convert to Cartesian coordinates.
      * @param date elements date
-     * @param elements elements values
+     * @param elements elements values in SI units
      * @param mu gravitational parameter in m³/s²
      * @return Cartesian coordinates
      */

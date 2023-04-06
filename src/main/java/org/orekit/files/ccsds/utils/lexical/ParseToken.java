@@ -531,12 +531,16 @@ public class ParseToken {
     }
 
     /** Process the content as a vector.
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
      * @param consumer consumer of the vector
      * @return always returns {@code true} (or throws an exception)
      */
-    public boolean processAsVector(final VectorConsumer consumer) {
+    public boolean processAsVector(final Unit standard, final ParsedUnitsBehavior behavior,
+                                   final VectorConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsVector());
+            final double scale = behavior.select(getUnits(), standard).getScale();
+            consumer.accept(getContentAsVector().scalarMultiply(scale));
         }
         return true;
     }

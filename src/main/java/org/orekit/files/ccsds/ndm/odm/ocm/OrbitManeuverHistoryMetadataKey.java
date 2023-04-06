@@ -106,14 +106,16 @@ public enum OrbitManeuverHistoryMetadataKey {
                                                                               container::setDcTimePulsePeriod)),
 
     /** Reference direction for triggering duty cycle. */
-    DC_REF_DIR((token, context, container) -> token.processAsVector(container::setDcRefDir)),
+    DC_REF_DIR((token, context, container) -> token.processAsVector(Unit.NONE, context.getParsedUnitsBehavior(),
+                                                                    container::setDcRefDir)),
 
     /** Spacecraft body frame in which {@link #DC_BODY_TRIGGER} is specified. */
     DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame()),
                                                                       context, false, false, true)),
 
     /** Direction in {@link #DC_BODY_FRAME body frame} for triggering duty cycle. */
-    DC_BODY_TRIGGER((token, context, container) -> token.processAsVector(container::setDcBodyTrigger)),
+    DC_BODY_TRIGGER((token, context, container) -> token.processAsVector(Unit.NONE, context.getParsedUnitsBehavior(),
+                                                                         container::setDcBodyTrigger)),
 
     /** Phase angle of pulse start. */
     DC_PA_START_ANGLE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
