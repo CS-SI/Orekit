@@ -502,9 +502,6 @@ CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = todavía no hay soporte para el tipo de ele
 # retrograde factor not supported in element set {0}
 CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = factor retrógrado sin soporte en el tipo de elementos {0}
 
-# element set type {0} ({1}) expects {2} elements
-CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = el tipo de elementos {0} ({1}) necesita {2} elementos
-
 # wrong number of units for maneuver {0}
 CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = número incorrecto de unidades para la maniobra {0}
 
@@ -788,6 +785,9 @@ UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
 WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
+
+# {0} expects {1} elements, got {2}
+WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 
 # cannot change covariance type if defined in a local orbital frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>

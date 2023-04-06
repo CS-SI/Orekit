@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -208,24 +207,6 @@ public enum OrbitElementsType {
      */
     public List<Unit> getUnits() {
         return units;
-    }
-
-    /** Check if parsed units are compatible with elements types.
-     * @param parsedUnits units to check
-     */
-    public void checkUnits(final List<Unit> parsedUnits) {
-        if (parsedUnits.size() != units.size()) {
-            throw new OrekitException(OrekitMessages.CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS,
-                                      name(), toString(), units.size());
-        }
-        for (int i = 0; i < units.size(); ++i) {
-            if (!(units.get(i).sameDimension(parsedUnits.get(i)) &&
-                  Precision.equals(units.get(i).getScale(), parsedUnits.get(i).getScale(), 1))) {
-                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
-                                          units.get(i).getName(),
-                                          parsedUnits.get(i).getName());
-            }
-        }
     }
 
     /** Convert to Cartesian coordinates.

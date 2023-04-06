@@ -159,19 +159,25 @@ public class OrbitElementsTypeTest {
     @Test
     public void checkWrongNumber() {
         try {
-            OrbitElementsType.CARTP.checkUnits(Collections.singletonList(Unit.KILOMETRE));
+            Unit.checkCompatibility(OrbitElementsType.CARTP.toString(), OrbitElementsType.CARTP.getUnits(),
+                                    false, Collections.singletonList(Unit.KILOMETRE));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS,
-                                oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.WRONG_NB_COMPONENTS, oe.getSpecifier());
+            Assertions.assertEquals(OrbitElementsType.CARTP.toString(), oe.getParts()[0]);
+            Assertions.assertEquals(3, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[2]).intValue());
         }
     }
 
     @Test
     public void checkWrongUnitsDimension() {
         try {
-            OrbitElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
-                                                         Units.KM_PER_S, Units.KM_PER_S, Units.KM_PER_S2));
+            Unit.checkCompatibility(OrbitElementsType.CARTPV.toString(),
+                                    OrbitElementsType.CARTPV.getUnits(),
+                                    false,
+                                    Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
+                                                  Units.KM_PER_S, Units.KM_PER_S, Units.KM_PER_S2));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
@@ -183,8 +189,11 @@ public class OrbitElementsTypeTest {
     @Test
     public void checkWrongUnitsScale() {
         try {
-            OrbitElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
-                                                         Units.KM_PER_S, Units.KM_PER_S, Unit.parse("m/s")));
+            Unit.checkCompatibility(OrbitElementsType.CARTPV.toString(),
+                                    OrbitElementsType.CARTPV.getUnits(),
+                                    false,
+                                    Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
+                                                  Units.KM_PER_S, Units.KM_PER_S, Unit.parse("m/s")));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
@@ -194,9 +203,11 @@ public class OrbitElementsTypeTest {
     }
 
     @Test
-    public void checkCorreectUnits() {
-        OrbitElementsType.CARTPV.checkUnits(Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
-                                                     Units.KM_PER_S, Units.KM_PER_S, Units.KM_PER_S));
+    public void checkCorrectUnits() {
+        Unit.checkCompatibility(OrbitElementsType.CARTPV.toString(), OrbitElementsType.CARTPV.getUnits(),
+                                false,
+                                Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
+                                              Units.KM_PER_S, Units.KM_PER_S, Units.KM_PER_S));
     }
 
     @BeforeEach

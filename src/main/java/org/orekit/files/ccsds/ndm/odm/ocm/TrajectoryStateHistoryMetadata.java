@@ -136,7 +136,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
             checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING);
         }
         if (trajUnits != null) {
-            trajType.checkUnits(trajUnits);
+            Unit.checkCompatibility(trajType.toString(), trajType.getUnits(), false, trajUnits);
         }
         if (orbRevNum >= 0 && orbRevNumBasis < 0) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,

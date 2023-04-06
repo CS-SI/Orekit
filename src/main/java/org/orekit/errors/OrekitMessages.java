@@ -189,7 +189,6 @@ public enum OrekitMessages implements Localizable {
     CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),
     CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE("element set type {0} ({1}) is not supported yet"),
     CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL("retrograde factor not supported in element set {0}"),
-    CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
     CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS("wrong number of units for maneuver {0}"),
     CCSDS_MANEUVER_MISSING_TIME("missing time field for maneuver {0}"),
     CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES("cannot estimate precession without proper derivatives"),
@@ -347,6 +346,7 @@ public enum OrekitMessages implements Localizable {
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
     UNSUPPORTED_TRANSFORM("transform from {0} to {1} is not implemented"),
     WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}"),
+    WRONG_NB_COMPONENTS("{0} expects {1} elements, got {2}"),
     CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF("cannot change covariance type if defined in a local orbital frame"),
     CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME("cannot change covariance type if defined in a non pseudo-inertial reference frame");
     // CHECKSTYLE: resume JavadocVariable check

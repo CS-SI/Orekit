@@ -223,10 +223,10 @@ public class OcmParserTest {
             parseMessage(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS, oe.getSpecifier());
-            Assertions.assertEquals(OrbitElementsType.CARTP.name(), oe.getParts()[0]);
-            Assertions.assertEquals(OrbitElementsType.CARTP.toString(), oe.getParts()[1]);
-            Assertions.assertEquals(3, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(OrekitMessages.WRONG_NB_COMPONENTS, oe.getSpecifier());
+            Assertions.assertEquals(OrbitElementsType.CARTP.toString(), oe.getParts()[0]);
+            Assertions.assertEquals(3, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(6, ((Integer) oe.getParts()[2]).intValue());
         }
     }
 
