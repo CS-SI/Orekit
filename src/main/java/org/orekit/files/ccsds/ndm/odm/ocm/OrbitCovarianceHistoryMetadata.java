@@ -93,7 +93,7 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     public void validate(final double version) {
         super.validate(version);
         if (covUnits != null) {
-            Unit.checkCompatibility(covType.toString(), covType.getUnits(), false, covUnits);
+            Unit.ensureCompatible(covType.toString(), covType.getUnits(), false, covUnits);
         }
     }
 

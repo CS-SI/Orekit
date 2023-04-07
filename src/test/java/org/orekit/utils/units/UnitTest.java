@@ -272,7 +272,7 @@ public class UnitTest {
     @Test
     public void checkWrongNumber() {
         try {
-            Unit.checkCompatibility("some description",
+            Unit.ensureCompatible("some description",
                                     Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                     false,
                                     Collections.singletonList(Unit.KILOMETRE));
@@ -288,7 +288,7 @@ public class UnitTest {
     @Test
     public void checkWrongUnitsDimension() {
         try {
-            Unit.checkCompatibility(null,
+            Unit.ensureCompatible(null,
                                     Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                     false,
                                     Arrays.asList(Unit.METRE, Unit.SECOND, Unit.METRE));
@@ -303,7 +303,7 @@ public class UnitTest {
     @Test
     public void checkWrongUnitsScale() {
         try {
-            Unit.checkCompatibility(null,
+            Unit.ensureCompatible(null,
                                     Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                     false,
                                     Arrays.asList(Unit.METRE, Unit.KILOMETRE, Unit.METRE));
@@ -317,7 +317,7 @@ public class UnitTest {
 
     @Test
     public void checkCorrectUnitsScale() {
-        Unit.checkCompatibility(null,
+        Unit.ensureCompatible(null,
                                 Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                 true,
                                 Arrays.asList(Unit.METRE, Unit.KILOMETRE, Unit.METRE));

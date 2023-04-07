@@ -257,16 +257,16 @@ public class Unit implements Serializable {
         return new Unit(builder.toString(), 1.0, mass, length, time, current, angle);
     }
 
-    /** Check if some units are compatible with reference units.
+    /** Ensure some units are compatible with reference units.
      * @param description description of the units list (for error message generation)
      * @param reference reference units
      * @param units units to check
      * @param allowScaleDifferences if true, unit with same dimension but different
      * scale (like {@link #KILOMETRE} versus {@link #METRE}) are allowed, otherwise they will trigger an exception
-     * @exception OrekitException if units are not compatible (number of elements or dimensions)
+     * @exception OrekitException if units are not compatible (number of elements, dimensions or scaling)
      */
-    public static void checkCompatibility(final String description, final List<Unit> reference,
-                                          final boolean allowScaleDifferences, final List<Unit> units) {
+    public static void ensureCompatible(final String description, final List<Unit> reference,
+                                        final boolean allowScaleDifferences, final List<Unit> units) {
         if (units.size() != reference.size()) {
             throw new OrekitException(OrekitMessages.WRONG_NB_COMPONENTS,
                                       description, reference.size(), units.size());
