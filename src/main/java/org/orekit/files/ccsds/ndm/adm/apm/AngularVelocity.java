@@ -61,10 +61,10 @@ public class AngularVelocity extends CommentsContainer {
                                                            AngularVelocityKey.REF_FRAME_B,
                                                            null);
         endpoints.checkExternalFrame(AngularVelocityKey.REF_FRAME_A, AngularVelocityKey.REF_FRAME_B);
-        checkNotNull(frame, AngularVelocityKey.ANGVEL_FRAME);
-        checkNotNaN(angVelX, AngularVelocityKey.ANGVEL_X);
-        checkNotNaN(angVelY, AngularVelocityKey.ANGVEL_Y);
-        checkNotNaN(angVelZ, AngularVelocityKey.ANGVEL_Z);
+        checkNotNull(frame, AngularVelocityKey.ANGVEL_FRAME.name());
+        checkNotNaN(angVelX, AngularVelocityKey.ANGVEL_X.name());
+        checkNotNaN(angVelY, AngularVelocityKey.ANGVEL_Y.name());
+        checkNotNaN(angVelZ, AngularVelocityKey.ANGVEL_Z.name());
     }
 
     /** Get the endpoints (i.e. frames A, B and their relationship).

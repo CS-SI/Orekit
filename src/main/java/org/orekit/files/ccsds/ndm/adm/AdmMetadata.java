@@ -30,9 +30,6 @@ public class AdmMetadata extends Metadata {
     /** Spacecraft name for which the attitude data are provided. */
     private String objectName;
 
-    /** Object identifier of the object for which the attitude data are provided. */
-    private String objectID;
-
     /** Body at origin of reference frame. */
     private BodyFacade center;
 
@@ -46,8 +43,7 @@ public class AdmMetadata extends Metadata {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(objectName, AdmMetadataKey.OBJECT_NAME);
-        checkNotNull(objectID,   AdmMetadataKey.OBJECT_ID);
+        checkNotNull(objectName, AdmMetadataKey.OBJECT_NAME.name());
     }
 
     /**
@@ -65,44 +61,6 @@ public class AdmMetadata extends Metadata {
     public void setObjectName(final String objectName) {
         refuseFurtherComments();
         this.objectName = objectName;
-    }
-
-    /**
-     * Get the spacecraft ID for which the attitude data are provided.
-     * @return the spacecraft ID
-     */
-    public String getObjectID() {
-        return objectID;
-    }
-
-    /**
-     * Set the spacecraft ID for which the attitude data are provided.
-     * @param objectID the spacecraft ID to be set
-     */
-    public void setObjectID(final String objectID) {
-        refuseFurtherComments();
-        this.objectID = objectID;
-    }
-
-    /** Get the launch year.
-     * @return launch year
-     */
-    public int getLaunchYear() {
-        return getLaunchYear(objectID);
-    }
-
-    /** Get the launch number.
-     * @return launch number
-     */
-    public int getLaunchNumber() {
-        return getLaunchNumber(objectID);
-    }
-
-    /** Get the piece of launch.
-     * @return piece of launch
-     */
-    public String getLaunchPiece() {
-        return getLaunchPiece(objectID);
     }
 
     /** Get the body at origin of reference frame.

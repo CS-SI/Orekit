@@ -61,12 +61,12 @@ public class Maneuver extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(epochStart, ManeuverKey.MAN_EPOCH_START);
-        checkNotNaN(duration,    ManeuverKey.MAN_DURATION);
-        checkNotNull(frame,      ManeuverKey.MAN_REF_FRAME);
-        checkNotNaN(torque[0],   ManeuverKey.MAN_TOR_1);
-        checkNotNaN(torque[1],   ManeuverKey.MAN_TOR_2);
-        checkNotNaN(torque[2],   ManeuverKey.MAN_TOR_3);
+        checkNotNull(epochStart, ManeuverKey.MAN_EPOCH_START.name());
+        checkNotNaN(duration,    ManeuverKey.MAN_DURATION.name());
+        checkNotNull(frame,      ManeuverKey.MAN_REF_FRAME.name());
+        checkNotNaN(torque[0],   ManeuverKey.MAN_TOR_1.name());
+        checkNotNaN(torque[1],   ManeuverKey.MAN_TOR_2.name());
+        checkNotNaN(torque[2],   ManeuverKey.MAN_TOR_3.name());
     }
 
     /**

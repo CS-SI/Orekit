@@ -57,8 +57,8 @@ public class OemMetadata extends OdmCommonMetadata {
     @Override
     public void validate(final double version) {
         checkMandatoryEntriesExceptDates(version);
-        checkNotNull(startTime, OemMetadataKey.START_TIME);
-        checkNotNull(stopTime,  OemMetadataKey.STOP_TIME);
+        checkNotNull(startTime, OemMetadataKey.START_TIME.name());
+        checkNotNull(stopTime,  OemMetadataKey.STOP_TIME.name());
     }
 
     /** Check is mandatory entries EXCEPT DATES have been initialized.

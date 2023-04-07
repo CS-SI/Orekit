@@ -62,11 +62,11 @@ public class Header extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(creationDate, HeaderKey.CREATION_DATE);
-        checkNotNull(originator,   HeaderKey.ORIGINATOR);
-        checkAllowed(version, messageId,      HeaderKey.MESSAGE_ID,
+        checkNotNull(creationDate, HeaderKey.CREATION_DATE.name());
+        checkNotNull(originator,   HeaderKey.ORIGINATOR.name());
+        checkAllowed(version, messageId,      HeaderKey.MESSAGE_ID.name(),
                      minVersionMessageId, Double.POSITIVE_INFINITY);
-        checkAllowed(version, classification, HeaderKey.CLASSIFICATION,
+        checkAllowed(version, classification, HeaderKey.CLASSIFICATION.name(),
                      minVersionClassification, Double.POSITIVE_INFINITY);
     }
 

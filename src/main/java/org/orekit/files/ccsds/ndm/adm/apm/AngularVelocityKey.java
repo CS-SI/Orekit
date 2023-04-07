@@ -37,7 +37,7 @@ public enum AngularVelocityKey {
     /** Second reference frame entry. */
     REF_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A);
+            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A.name());
             final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);

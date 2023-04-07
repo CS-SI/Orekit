@@ -62,10 +62,10 @@ public class OdmCommonMetadata extends OdmMetadata {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(getObjectName(), OdmMetadataKey.OBJECT_NAME);
-        checkNotNull(objectID,        CommonMetadataKey.OBJECT_ID);
-        checkNotNull(center,          CommonMetadataKey.CENTER_NAME);
-        checkNotNull(referenceFrame,  CommonMetadataKey.REF_FRAME);
+        checkNotNull(getObjectName(), OdmMetadataKey.OBJECT_NAME.name());
+        checkNotNull(objectID,        CommonMetadataKey.OBJECT_ID.name());
+        checkNotNull(center,          CommonMetadataKey.CENTER_NAME.name());
+        checkNotNull(referenceFrame,  CommonMetadataKey.REF_FRAME.name());
     }
 
     /** Finalize the metadata.

@@ -98,7 +98,7 @@ public class Euler extends CommentsContainer {
                                                                EulerKey.EULER_DIR);
             endpoints.checkExternalFrame(EulerKey.REF_FRAME_A, EulerKey.REF_FRAME_B);
         }
-        checkNotNull(eulerRotSeq, EulerKey.EULER_ROT_SEQ);
+        checkNotNull(eulerRotSeq, EulerKey.EULER_ROT_SEQ.name());
 
         if (!hasAngles()) {
             // if at least one angle is missing, all must be NaN (i.e. not initialized)

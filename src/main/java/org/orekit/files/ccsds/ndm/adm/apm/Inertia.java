@@ -49,14 +49,14 @@ public class Inertia extends CommonPhysicalProperties {
     public void validate(final double version) {
         super.validate(version);
         if (version >= 2.0) {
-            checkNotNull(frame, InertiaKey.INERTIA_REF_FRAME);
+            checkNotNull(frame, InertiaKey.INERTIA_REF_FRAME.name());
         }
-        checkNotNaN(inertiaMatrix.getEntry(0, 0), InertiaKey.IXX);
-        checkNotNaN(inertiaMatrix.getEntry(1, 1), InertiaKey.IYY);
-        checkNotNaN(inertiaMatrix.getEntry(2, 2), InertiaKey.IZZ);
-        checkNotNaN(inertiaMatrix.getEntry(0, 1), InertiaKey.IXY);
-        checkNotNaN(inertiaMatrix.getEntry(0, 2), InertiaKey.IXZ);
-        checkNotNaN(inertiaMatrix.getEntry(1, 2), InertiaKey.IYZ);
+        checkNotNaN(inertiaMatrix.getEntry(0, 0), InertiaKey.IXX.name());
+        checkNotNaN(inertiaMatrix.getEntry(1, 1), InertiaKey.IYY.name());
+        checkNotNaN(inertiaMatrix.getEntry(2, 2), InertiaKey.IZZ.name());
+        checkNotNaN(inertiaMatrix.getEntry(0, 1), InertiaKey.IXY.name());
+        checkNotNaN(inertiaMatrix.getEntry(0, 2), InertiaKey.IXZ.name());
+        checkNotNaN(inertiaMatrix.getEntry(1, 2), InertiaKey.IYZ.name());
     }
 
     /** Set frame in which inertia is specified.

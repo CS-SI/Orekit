@@ -110,24 +110,24 @@ public class OmmTle extends CommentsContainer {
     public void validate(final double version) {
         super.validate(version);
 
-        checkNotNegative(noradID,      OmmTleKey.NORAD_CAT_ID);
-        checkNotNegative(elementSetNo, OmmTleKey.ELEMENT_SET_NO);
-        checkNotNegative(revAtEpoch,   OmmTleKey.REV_AT_EPOCH);
+        checkNotNegative(noradID,      OmmTleKey.NORAD_CAT_ID.name());
+        checkNotNegative(elementSetNo, OmmTleKey.ELEMENT_SET_NO.name());
+        checkNotNegative(revAtEpoch,   OmmTleKey.REV_AT_EPOCH.name());
 
         if (ephemerisType == EPHEMERIS_TYPE_SGP4) {
-            checkNotNaN(bStar, OmmTleKey.BSTAR);
+            checkNotNaN(bStar, OmmTleKey.BSTAR.name());
         } else if (ephemerisType == EPHEMERIS_TYPE_SGP4_XP) {
-            checkNotNaN(bTerm, OmmTleKey.BTERM);
+            checkNotNaN(bTerm, OmmTleKey.BTERM.name());
         }
 
         if (ephemerisType == EPHEMERIS_TYPE_SGP  || ephemerisType == EPHEMERIS_TYPE_PPT3) {
-            checkNotNaN(meanMotionDot, OmmTleKey.MEAN_MOTION_DOT);
+            checkNotNaN(meanMotionDot, OmmTleKey.MEAN_MOTION_DOT.name());
         }
 
         if (ephemerisType == EPHEMERIS_TYPE_SGP  || ephemerisType == EPHEMERIS_TYPE_PPT3) {
-            checkNotNaN(meanMotionDotDot, OmmTleKey.MEAN_MOTION_DDOT);
+            checkNotNaN(meanMotionDotDot, OmmTleKey.MEAN_MOTION_DDOT.name());
         } else if (ephemerisType == EPHEMERIS_TYPE_SGP4_XP) {
-            checkNotNaN(agOm, OmmTleKey.AGOM);
+            checkNotNaN(agOm, OmmTleKey.AGOM.name());
         }
 
     }

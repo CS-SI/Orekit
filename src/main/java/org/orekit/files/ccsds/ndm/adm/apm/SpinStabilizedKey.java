@@ -43,7 +43,7 @@ public enum SpinStabilizedKey {
     /** Second reference frame entry (only for ADM V1). */
     SPIN_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.checkNotNull(container.getEndpoints().getFrameA(), SPIN_FRAME_A);
+            container.checkNotNull(container.getEndpoints().getFrameA(), SPIN_FRAME_A.name());
             final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
@@ -56,7 +56,7 @@ public enum SpinStabilizedKey {
      */
     REF_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A);
+            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A.name());
             final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);

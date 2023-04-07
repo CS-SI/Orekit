@@ -92,10 +92,10 @@ public class SpinStabilized extends CommentsContainer {
                                                            SpinStabilizedKey.SPIN_FRAME_B,
                                                            SpinStabilizedKey.SPIN_DIR);
         endpoints.checkExternalFrame(SpinStabilizedKey.SPIN_FRAME_A, SpinStabilizedKey.SPIN_FRAME_B);
-        checkNotNaN(spinAlpha,    SpinStabilizedKey.SPIN_ALPHA);
-        checkNotNaN(spinDelta,    SpinStabilizedKey.SPIN_DELTA);
-        checkNotNaN(spinAngle,    SpinStabilizedKey.SPIN_ANGLE);
-        checkNotNaN(spinAngleVel, SpinStabilizedKey.SPIN_ANGLE_VEL);
+        checkNotNaN(spinAlpha,    SpinStabilizedKey.SPIN_ALPHA.name());
+        checkNotNaN(spinDelta,    SpinStabilizedKey.SPIN_DELTA.name());
+        checkNotNaN(spinAngle,    SpinStabilizedKey.SPIN_ANGLE.name());
+        checkNotNaN(spinAngleVel, SpinStabilizedKey.SPIN_ANGLE_VEL.name());
         if (Double.isNaN(nutation + nutationPer + nutationPhase)) {
             // if at least one is NaN, all must be NaN (i.e. not initialized)
             if (!(Double.isNaN(nutation) && Double.isNaN(nutationPer) && Double.isNaN(nutationPhase))) {

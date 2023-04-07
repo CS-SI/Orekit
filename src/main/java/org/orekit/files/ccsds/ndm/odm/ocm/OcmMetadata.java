@@ -208,10 +208,10 @@ public class OcmMetadata extends OdmMetadata {
         // all of the parameters considered mandatory at ODM level
         // for OPM, OMM and OEM are in fact optional in OCM
         // only TIME_SYSTEM and EPOCH_TZERO are mandatory
-        checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM);
-        checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO);
+        checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM.name());
+        checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO.name());
         if (nextLeapEpoch != null) {
-            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC);
+            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC.name());
         }
     }
 

@@ -19,16 +19,16 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
-import org.orekit.files.ccsds.ndm.adm.AttitudeType;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AemMetadata extends AdmMetadata {
+public class AemMetadata extends AdmCommonMetadata {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
     private final AttitudeEndpoints endpoints;
@@ -78,8 +78,8 @@ public class AemMetadata extends AdmMetadata {
         checkMandatoryEntriesExceptDatesAndExternalFrame(version);
         endpoints.checkExternalFrame(AemMetadataKey.REF_FRAME_A, AemMetadataKey.REF_FRAME_B);
 
-        checkNotNull(startTime, AemMetadataKey.START_TIME);
-        checkNotNull(stopTime,  AemMetadataKey.STOP_TIME);
+        checkNotNull(startTime, AemMetadataKey.START_TIME.name());
+        checkNotNull(stopTime,  AemMetadataKey.STOP_TIME.name());
 
         if (version >= 2.0 && isFirst()) {
             throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
@@ -107,19 +107,19 @@ public class AemMetadata extends AdmMetadata {
                                                            AemMetadataKey.REF_FRAME_B,
                                                            AemMetadataKey.ATTITUDE_DIR);
 
-        checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE);
+        checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE.name());
         if (version < 2.0 &&
             (attitudeType == AttitudeType.QUATERNION || attitudeType == AttitudeType.QUATERNION_DERIVATIVE)) {
-            checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE);
+            checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE.name());
         }
         if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
             attitudeType == AttitudeType.EULER_ANGLE ||
             attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
-            checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ);
+            checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ.name());
         }
         if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
             attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
-            checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME);
+            checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME.name());
         }
 
     }

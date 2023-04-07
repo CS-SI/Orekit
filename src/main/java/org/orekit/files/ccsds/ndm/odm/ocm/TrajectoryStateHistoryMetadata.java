@@ -133,7 +133,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         if (trajType != OrbitElementsType.CARTP   &&
             trajType != OrbitElementsType.CARTPV  &&
             trajType != OrbitElementsType.CARTPVA) {
-            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING);
+            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name());
         }
         if (trajUnits != null) {
             Unit.ensureCompatible(trajType.toString(), trajType.getUnits(), false, trajUnits);

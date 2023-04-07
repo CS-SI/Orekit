@@ -156,27 +156,27 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(manID,          OrbitManeuverHistoryMetadataKey.MAN_ID);
-        checkNotNull(manDeviceID,    OrbitManeuverHistoryMetadataKey.MAN_DEVICE_ID);
+        checkNotNull(manID,          OrbitManeuverHistoryMetadataKey.MAN_ID.name());
+        checkNotNull(manDeviceID,    OrbitManeuverHistoryMetadataKey.MAN_DEVICE_ID.name());
 
         if (dcType != DutyCycleType.CONTINUOUS) {
-            checkNotNull(dcWindowOpen,       OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN);
-            checkNotNull(dcWindowClose,      OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE);
-            checkNotNull(dcExecStart,        OrbitManeuverHistoryMetadataKey.DC_EXEC_START);
-            checkNotNull(dcExecStop,         OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP);
-            checkNotNull(dcRefTime,          OrbitManeuverHistoryMetadataKey.DC_REF_TIME);
-            checkNotNaN(dcTimePulseDuration, OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION);
-            checkNotNaN(dcTimePulsePeriod,   OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD);
+            checkNotNull(dcWindowOpen,       OrbitManeuverHistoryMetadataKey.DC_WIN_OPEN.name());
+            checkNotNull(dcWindowClose,      OrbitManeuverHistoryMetadataKey.DC_WIN_CLOSE.name());
+            checkNotNull(dcExecStart,        OrbitManeuverHistoryMetadataKey.DC_EXEC_START.name());
+            checkNotNull(dcExecStop,         OrbitManeuverHistoryMetadataKey.DC_EXEC_STOP.name());
+            checkNotNull(dcRefTime,          OrbitManeuverHistoryMetadataKey.DC_REF_TIME.name());
+            checkNotNaN(dcTimePulseDuration, OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name());
+            checkNotNaN(dcTimePulsePeriod,   OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name());
         }
         if (dcType == DutyCycleType.TIME_AND_ANGLE) {
-            checkNotNull(dcRefDir,           OrbitManeuverHistoryMetadataKey.DC_REF_DIR);
-            checkNotNull(dcBodyFrame,        OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME);
-            checkNotNull(dcBodyTrigger,      OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER);
-            checkNotNull(dcPhaseStartAngle,  OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE);
-            checkNotNull(dcPhaseStopAngle,   OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE);
+            checkNotNull(dcRefDir,           OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name());
+            checkNotNull(dcBodyFrame,        OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME.name());
+            checkNotNull(dcBodyTrigger,      OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name());
+            checkNotNull(dcPhaseStartAngle,  OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name());
+            checkNotNull(dcPhaseStopAngle,   OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name());
         }
 
-        checkNotNull(manComposition, OrbitManeuverHistoryMetadataKey.MAN_COMPOSITION);
+        checkNotNull(manComposition, OrbitManeuverHistoryMetadataKey.MAN_COMPOSITION.name());
         if (!manComposition.get(0).isTime()) {
             throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_MISSING_TIME, manID);
         }
