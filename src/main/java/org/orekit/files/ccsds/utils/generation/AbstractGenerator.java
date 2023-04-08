@@ -366,7 +366,13 @@ public abstract class AbstractGenerator implements Generator {
     private void appendExponent(final StringBuilder builder, final Fraction exponent) {
         if (!exponent.equals(Fraction.ONE)) {
             builder.append("**");
-            builder.append(exponent.equals(Fraction.ONE_HALF) ? "0.5" : exponent);
+            if (exponent.equals(Fraction.ONE_HALF)) {
+                builder.append("0.5");
+            } else if (exponent.getNumerator() == 3 && exponent.getDenominator() == 2) {
+                builder.append("1.5");
+            } else {
+                builder.append(exponent);
+            }
         }
     }
 

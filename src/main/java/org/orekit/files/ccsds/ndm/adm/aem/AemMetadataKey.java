@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
-import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -89,7 +88,7 @@ public enum AemMetadataKey {
     }),
 
     /** Rotation order entry for Euler angles. */
-    EULER_ROT_SEQ((token, context, container) -> AdmParser.processRotationOrder(token, container::setEulerRotSeq)),
+    EULER_ROT_SEQ((token, context, container) -> token.processAsRotationOrder(container::setEulerRotSeq)),
 
     /** Reference frame for Euler rates. */
     RATE_FRAME((token, context, container) -> {

@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
@@ -53,7 +54,7 @@ import org.orekit.utils.units.Unit;
  * <p> The AEM header and metadata used by this writer are described in the following tables.
  * Many metadata items are optional or have default values so they do not need to be specified.
  * At a minimum the user must supply those values that are required and for which no
- * default exits: {@link AdmMetadataKey#OBJECT_NAME}, {@link AdmMetadataKey#OBJECT_ID},
+ * default exits: {@link AdmMetadataKey#OBJECT_NAME}, {@link AdmCommonMetadataKey#OBJECT_ID},
  * {@link AemMetadataKey#START_TIME} and {@link AemMetadataKey#STOP_TIME}.
  * The usage column in the table indicates where the metadata item is used, either in the AEM header
  * or in the metadata section at the start of an AEM attitude segment.
@@ -331,8 +332,8 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         generator.writeComments(metadata.getComments());
 
         // objects
-        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(),       null, true);
-        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),         null, true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(),     metadata.getObjectName(), null, true);
+        generator.writeEntry(AdmCommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   null, true);
         if (metadata.getCenter() != null) {
             generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
         }

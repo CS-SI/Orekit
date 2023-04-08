@@ -108,7 +108,7 @@ public class ApmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AdmMeta
         final Apm file = new ParserBuilder().
                              buildApmParser().
                              parseMessage(new DataSource(name, () -> getClass().getResourceAsStream(name)));
-        file.getHeader().setFormatVersion(999999.0);
+        file.getHeader().setFormatVersion(1.0);
         file.getHeader().setClassification("classification is not allowed in ADM");
         try (Generator generator = new XmlGenerator(new CharArrayWriter(), XmlGenerator.DEFAULT_INDENT, "",
                                                     Constants.JULIAN_DAY, false, null)) {

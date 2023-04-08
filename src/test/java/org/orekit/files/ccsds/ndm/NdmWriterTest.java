@@ -190,6 +190,14 @@ public class NdmWriterTest {
             pool.add(builder.buildApmParser().parseMessage(source));
         }
 
+        // ACM files
+        for (final String name :
+            Arrays.asList("/ccsds/adm/acm/ACMExample01.txt",  "/ccsds/adm/acm/ACMExample02.txt",  "/ccsds/adm/acm/ACMExample03.txt",
+                          "/ccsds/adm/acm/ACMExample04.txt",  "/ccsds/adm/acm/ACMExample05.txt")) {
+            final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
+            pool.add(builder.buildAcmParser().parseMessage(source));
+        }
+
         // OCM files
         for (final String name :
             Arrays.asList("/ccsds/odm/ocm/OCMExample1.txt",  "/ccsds/odm/ocm/OCMExample2.txt",  "/ccsds/odm/ocm/OCMExample2.xml",

@@ -159,7 +159,7 @@ public class OrbitElementsTypeTest {
     @Test
     public void checkWrongNumber() {
         try {
-            Unit.checkCompatibility(OrbitElementsType.CARTP.toString(), OrbitElementsType.CARTP.getUnits(),
+            Unit.ensureCompatible(OrbitElementsType.CARTP.toString(), OrbitElementsType.CARTP.getUnits(),
                                     false, Collections.singletonList(Unit.KILOMETRE));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -173,7 +173,7 @@ public class OrbitElementsTypeTest {
     @Test
     public void checkWrongUnitsDimension() {
         try {
-            Unit.checkCompatibility(OrbitElementsType.CARTPV.toString(),
+            Unit.ensureCompatible(OrbitElementsType.CARTPV.toString(),
                                     OrbitElementsType.CARTPV.getUnits(),
                                     false,
                                     Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
@@ -189,7 +189,7 @@ public class OrbitElementsTypeTest {
     @Test
     public void checkWrongUnitsScale() {
         try {
-            Unit.checkCompatibility(OrbitElementsType.CARTPV.toString(),
+            Unit.ensureCompatible(OrbitElementsType.CARTPV.toString(),
                                     OrbitElementsType.CARTPV.getUnits(),
                                     false,
                                     Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
@@ -204,7 +204,7 @@ public class OrbitElementsTypeTest {
 
     @Test
     public void checkCorrectUnits() {
-        Unit.checkCompatibility(OrbitElementsType.CARTPV.toString(), OrbitElementsType.CARTPV.getUnits(),
+        Unit.ensureCompatible(OrbitElementsType.CARTPV.toString(), OrbitElementsType.CARTPV.getUnits(),
                                 false,
                                 Arrays.asList(Unit.KILOMETRE, Unit.KILOMETRE, Unit.KILOMETRE,
                                               Units.KM_PER_S, Units.KM_PER_S, Units.KM_PER_S));

@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadata;
+import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.time.AbsoluteDate;
@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AemMetadata extends AdmCommonMetadata {
+public class AemMetadata extends AdmMetadata {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
     private final AttitudeEndpoints endpoints;
@@ -74,6 +74,8 @@ public class AemMetadata extends AdmCommonMetadata {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
+
+        super.validate(version);
 
         checkMandatoryEntriesExceptDatesAndExternalFrame(version);
         endpoints.checkExternalFrame(AemMetadataKey.REF_FRAME_A, AemMetadataKey.REF_FRAME_B);

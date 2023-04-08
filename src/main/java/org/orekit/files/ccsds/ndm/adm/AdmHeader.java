@@ -29,8 +29,7 @@ public class AdmHeader extends Header {
      * Constructor.
      */
     public AdmHeader() {
-        // classification is not yet allowed in ADM
-        super(2.0, Double.POSITIVE_INFINITY);
+        super(2.0, 2.0);
     }
 
 }

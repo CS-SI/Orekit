@@ -21,9 +21,9 @@ import java.io.IOException;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataWriter;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
-import org.orekit.files.ccsds.ndm.adm.AdmMetadataWriter;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -85,7 +85,7 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
                                       oldContext::getClockRate));
-        new AdmMetadataWriter(metadata).write(generator);
+        new AdmCommonMetadataWriter(metadata).write(generator);
 
         // start data block
         if (generator.getFormat() == FileFormat.XML) {

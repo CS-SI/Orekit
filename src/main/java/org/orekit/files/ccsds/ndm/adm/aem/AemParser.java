@@ -26,6 +26,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
@@ -263,10 +264,14 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
                 return AdmMetadataKey.valueOf(token.getName()).process(token, context, metadata);
             } catch (IllegalArgumentException iaeD) {
                 try {
-                    return AemMetadataKey.valueOf(token.getName()).process(token, context, metadata);
-                } catch (IllegalArgumentException iaeE) {
-                    // token has not been recognized
-                    return false;
+                    return AdmCommonMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeC) {
+                    try {
+                        return AemMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                    } catch (IllegalArgumentException iaeE) {
+                        // token has not been recognized
+                        return false;
+                    }
                 }
             }
         }

@@ -59,7 +59,7 @@ public enum OrbitDeterminationKey {
     DAYS_SINCE_LAST_OBS((token, context, container) -> token.processAsDouble(Unit.DAY, context.getParsedUnitsBehavior(),
                                                                              container::setTimeSinceLastObservation)),
 
-    /** Sime span of observation recommended for the OD of the object. */
+    /** Time span of observation recommended for the OD of the object. */
     RECOMMENDED_OD_SPAN((token, context, container) -> token.processAsDouble(Unit.DAY, context.getParsedUnitsBehavior(),
                                                                              container::setRecommendedOdSpan)),
 

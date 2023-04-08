@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
@@ -353,8 +354,12 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
             try {
                 return AdmMetadataKey.valueOf(token.getName()).process(token, context, metadata);
             } catch (IllegalArgumentException iaeD) {
-                // token has not been recognized
-                return false;
+                try {
+                    return AdmCommonMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeC) {
+                    // token has not been recognized
+                    return false;
+                }
             }
         }
     }

@@ -508,6 +508,18 @@ CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 # missing time field for maneuver {0}
 CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
 
+# attitude type {0} and rate type {1} calls for {2} states, got {3}
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = <MISSING TRANSLATION>
+
+# incompatible keys {0} and {1} should not both be used
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = <MISSING TRANSLATION>
+
+# no sensor index {0}, allowed indices: [1, {1}]
+CCSDS_UNKNOWN_SENSOR_INDEX = <MISSING TRANSLATION>
+
+# inconsistent number of elements: expected {0}, got {1}
+INCONSISTENT_NUMBER_OF_ELEMENTS = <MISSING TRANSLATION>
+
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Das erstellen von AggregatePropagator benötigt zumindest einen Bestandteil des Propagator. Es wurden keine zur Verfügung gestellt
 

@@ -160,6 +160,15 @@ class Lexer {
             return emit(start + 3, TokenType.FRACTION, 1, 2);
         }
 
+        // look for special case "1.5" (used by CCSDS for power 3/2)
+        if (start < end - 2 &&
+             unitSpecification.charAt(start)     == '1' &&
+             unitSpecification.charAt(start + 1) == '.' &&
+             unitSpecification.charAt(start + 2) == '5') {
+            // 3/2 written as decimal number
+            return emit(start + 3, TokenType.FRACTION, 3, 2);
+        }
+
         // look for unicode fractions
         if (unitSpecification.charAt(start) == '¼') {
             return emit(start + 1, TokenType.FRACTION, 1, 4);

@@ -29,7 +29,7 @@ import org.orekit.files.ccsds.utils.generation.Generator;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class AdmMetadataWriter extends AbstractWriter {
+public class AdmCommonMetadataWriter extends AbstractWriter {
 
     /** Metadata. */
     private final AdmMetadata metadata;
@@ -37,7 +37,7 @@ public class AdmMetadataWriter extends AbstractWriter {
     /** Simple constructor.
      * @param metadata metadata to write
      */
-    public AdmMetadataWriter(final AdmMetadata metadata) {
+    public AdmCommonMetadataWriter(final AdmMetadata metadata) {
         super(XmlStructureKey.metadata.name(), null);
         this.metadata      = metadata;
     }
@@ -49,8 +49,8 @@ public class AdmMetadataWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // object
-        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), null, true);
-        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   null, true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(),     metadata.getObjectName(), null, true);
+        generator.writeEntry(AdmCommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   null, true);
 
         if (metadata.getCenter() != null) {
             // center

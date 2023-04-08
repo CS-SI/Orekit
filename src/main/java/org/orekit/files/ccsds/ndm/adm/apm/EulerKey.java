@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.definitions.Units;
-import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -80,7 +79,7 @@ public enum EulerKey {
     }),
 
     /** Rotation sequence entry. */
-    EULER_ROT_SEQ((token, context, container) -> AdmParser.processRotationOrder(token, container::setEulerRotSeq)),
+    EULER_ROT_SEQ((token, context, container) -> token.processAsRotationOrder(container::setEulerRotSeq)),
 
     /** Reference frame for rate entry (ADM V1 only). */
     RATE_FRAME((token, context, container) -> {

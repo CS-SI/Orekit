@@ -1,0 +1,30 @@
+CCSDS_ACM_VERS           = 2.0
+CREATION_DATE            = 2017-12-01T00:00:00
+ORIGINATOR               = NASA
+MESSAGE_ID               = A7015Z5
+
+META_START
+OBJECT_NAME              = SDO
+INTERNATIONAL_DESIGNATOR = 2010-005A
+TIME_SYSTEM              = UTC
+EPOCH_TZERO              = 2017-12-26T19:40:00.000
+META_STOP
+
+
+AD_START
+COMMENT  test file with intentional error: wrong number of standard deviation elements for sensor 2
+AD_METHOD                        = EKF
+ATTITUDE_SOURCE                  = OBC
+ATTITUDE_STATES                  = QUATERNION
+REF_FRAME_A                      = J2000
+REF_FRAME_B                      = SC_BODY_1
+NUMBER_SENSORS_USED              = 4
+SENSORS_USED_1                   = AST1
+SENSORS_USED_2                   = AST2
+SENSORS_USED_3                   = DSS
+SENSORS_USED_4                   = IMU
+NUMBER_SENSOR_NOISE_COVARIANCE_1 = 2
+NUMBER_SENSOR_NOISE_COVARIANCE_2 = 1
+SENSOR_NOISE_STDDEV_1            = 0.0097 0.0097
+SENSOR_NOISE_STDDEV_2            = 0.0097 0.0097
+AD_STOP

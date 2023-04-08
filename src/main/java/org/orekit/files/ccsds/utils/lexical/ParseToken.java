@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
@@ -415,6 +416,19 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as an indexed integer.
+     * @param index index
+     * @param consumer consumer of the integer
+     * @return always returns {@code true}
+     * @since 12.0
+     */
+    public boolean processAsIndexedInteger(final int index, final IndexedIntConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(index, getContentAsInt());
+        }
+        return true;
+    }
+
     /** Process the content as an array of integers. No spaces between commas are allowed.
      * @param consumer consumer of the array
      * @return always returns {@code true}
@@ -530,6 +544,28 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as an indexed double array.
+     * @param index index
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
+     * @param consumer consumer of the indexed double array
+     * @return always returns {@code true}
+     * @since 12.0
+     */
+    public boolean processAsIndexedDoubleArray(final int index,
+                                               final Unit standard, final ParsedUnitsBehavior behavior,
+                                               final IndexedDoubleArrayConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            final String[] fields = SPACE.split(content);
+            final double[] values = new double[fields.length];
+            for (int i = 0; i < fields.length; ++i) {
+                values[i] = behavior.select(getUnits(), standard).toSI(Double.parseDouble(fields[i]));
+            }
+            consumer.accept(index, values);
+        }
+        return true;
+    }
+
     /** Process the content as a vector.
      * @param standard units of parsed content as specified by CCSDS standard
      * @param behavior behavior to adopt for parsed unit
@@ -624,6 +660,26 @@ public class ParseToken {
                 facades.add(new BodyFacade(centerName, body(centerName, celestialBodies)));
             }
             consumer.accept(facades);
+        }
+        return true;
+    }
+
+    /** Process the content as a rotation sequence.
+     * @param consumer consumer of the rotation sequence
+     * @return always returns {@code true}
+     * @since 12.0
+     */
+    public boolean processAsRotationOrder(final RotationOrderConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            try {
+                consumer.accept(RotationOrder.valueOf(getContentAsUppercaseString().
+                                                      replace('1', 'X').
+                                                      replace('2', 'Y').
+                                                      replace('3', 'Z')));
+            } catch (IllegalArgumentException iae) {
+                throw new OrekitException(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE,
+                                          getContentAsUppercaseString(), getLineNumber(), getFileName());
+            }
         }
         return true;
     }
@@ -813,6 +869,17 @@ public class ParseToken {
         void accept(int value);
     }
 
+    /** Interface representing instance methods that consume indexed integer values.
+     * @since 12.0
+     */
+    public interface IndexedIntConsumer {
+        /** Consume an integer.
+         * @param index index
+         * @param value value to consume
+         */
+        void accept(int index, int value);
+    }
+
     /** Interface representing instance methods that consume integer array. */
     public interface IntegerArrayConsumer {
         /** Consume an array of integers.
@@ -865,6 +932,17 @@ public class ParseToken {
         void accept(int i, int j, double value);
     }
 
+    /** Interface representing instance methods that consume indexed double array values.
+     * @since 12.0
+     */
+    public interface IndexedDoubleArrayConsumer {
+        /** Consume an indexed double array.
+         * @param index index
+         * @param value array value to consume
+         */
+        void accept(int index, double[] value);
+    }
+
     /** Interface representing instance methods that consume vector values. */
     public interface VectorConsumer {
         /** Consume a vector.
@@ -911,6 +989,16 @@ public class ParseToken {
          * @param bodyFacades facades for celestial bodies name and bodies
          */
         void accept(List<BodyFacade> bodyFacades);
+    }
+
+    /** Interface representing instance methods that consume otation order values.
+     * @since 12.0
+     */
+    public interface RotationOrderConsumer {
+        /** Consume a data.
+         * @param value value to consume
+         */
+        void accept(RotationOrder value);
     }
 
     /** Interface representing instance methods that consume units lists values. */

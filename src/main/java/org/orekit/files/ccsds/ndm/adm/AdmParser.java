@@ -20,14 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.time.AbsoluteDate;
@@ -105,36 +101,6 @@ public abstract class AdmParser<T extends NdmConstituent<AdmHeader, ?>, P extend
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
-    }
-
-    /** Process a CCSDS Euler angles sequence as a {@link RotationOrder}.
-     * @param sequence Euler angles sequence token
-     * @param consumer consumer of the rotation order
-     * @return always return {@code true}
-     */
-    public static boolean processRotationOrder(final ParseToken sequence,
-                                               final RotationOrderConsumer consumer) {
-        if (sequence.getType() == TokenType.ENTRY) {
-            try {
-                consumer.accept(RotationOrder.valueOf(sequence.getContentAsUppercaseString().
-                                                      replace('1', 'X').
-                                                      replace('2', 'Y').
-                                                      replace('3', 'Z')));
-            } catch (IllegalArgumentException iae) {
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE,
-                                          sequence.getContentAsUppercaseString(),
-                                          sequence.getLineNumber(), sequence.getFileName());
-            }
-        }
-        return true;
-    }
-
-    /** Interface representing instance methods that consume otation order values. */
-    public interface RotationOrderConsumer {
-        /** Consume a data.
-         * @param value value to consume
-         */
-        void accept(RotationOrder value);
     }
 
 }
