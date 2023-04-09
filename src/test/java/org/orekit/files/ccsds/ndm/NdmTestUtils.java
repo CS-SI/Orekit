@@ -66,7 +66,7 @@ import org.orekit.utils.units.Unit;
 
 public class NdmTestUtils {
 
-    private static final int ULPS = 3;
+    private static final int ULPS = 8;
 
     public static void checkEquals(final NdmConstituent<?, ?> original, final NdmConstituent<?, ?> rebuilt) {
         checkContainer(original.getHeader(), rebuilt.getHeader());

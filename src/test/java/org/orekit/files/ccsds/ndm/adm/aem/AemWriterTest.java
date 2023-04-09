@@ -108,4 +108,9 @@ public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem
         doTest("/ccsds/adm/aem/AEMExample13.xml");
     }
 
+    @Test
+    public void testWriteExample14() {
+        doTest("/ccsds/adm/aem/AEMExample14.txt");
+    }
+
 }

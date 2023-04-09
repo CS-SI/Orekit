@@ -21,9 +21,7 @@ import java.util.Date;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -260,17 +258,6 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
     /**
      * Constructor used to create a new AEM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
-     * <p>
-     * If the mandatory header entries are not present (or if header is null),
-     * built-in defaults will be used
-     * </p>
-     * <p>
-     * The writer is built from the complete header and partial metadata. The template
-     * metadata is used to initialize and independent local copy, that will be updated
-     * as new segments are written (with at least the segment start and stop will change,
-     * but some other parts may change too). The {@code template} argument itself is not
-     * changed.
-     * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
@@ -288,8 +275,8 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final AemSegment segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final AemSegment segment)
         throws IOException {
 
         final AemMetadata metadata = segment.getMetadata();
@@ -341,7 +328,9 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         // frames
         generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),  metadata.getEndpoints().getFrameA().getName(),     null, true);
         generator.writeEntry(AemMetadataKey.REF_FRAME_B.name(),  metadata.getEndpoints().getFrameB().getName(),     null, true);
-        generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, null, true);
+        if (formatVersion < 2.0) {
+            generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, null, true);
+        }
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
@@ -366,32 +355,48 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         }
 
         if (attitudeType == AttitudeType.QUATERNION_EULER_RATES ||
-            attitudeType == AttitudeType.EULER_ANGLE ||
-            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
-            if (metadata.getEulerRotSeq() == null) {
-                // the keyword *will* be missing because we cannot set it
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                          AemMetadataKey.EULER_ROT_SEQ.name(), generator.getOutputName());
+            attitudeType == AttitudeType.EULER_ANGLE            ||
+            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE ||
+            attitudeType == AttitudeType.EULER_ANGLE_ANGVEL) {
+            if (formatVersion < 2.0) {
+                generator.writeEntry(AemMetadataKey.EULER_ROT_SEQ.name(),
+                                     metadata.getEulerRotSeq().name().replace('X', '1').replace('Y', '2').replace('Z', '3'),
+                                     null, false);
+            } else {
+                generator.writeEntry(AemMetadataKey.EULER_ROT_SEQ.name(),
+                                     metadata.getEulerRotSeq().name(),
+                                     null, false);
             }
-            generator.writeEntry(AemMetadataKey.EULER_ROT_SEQ.name(),
-                                 metadata.getEulerRotSeq().name().replace('X', '1').replace('Y', '2').replace('Z', '3'),
+        }
+
+        if (formatVersion < 2 && attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
+            generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
+                                 metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
                                  null, false);
         }
 
         if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
-            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
-            generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
-                                 metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
-                                                         null, false);
+            attitudeType == AttitudeType.EULER_ANGLE_ANGVEL) {
+            if (formatVersion < 2) {
+                generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
+                                     metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
+                                     null, false);
+            } else {
+                generator.writeEntry(AemMetadataKey.ANGVEL_FRAME.name(),
+                                     metadata.getFrameAngvelFrame().getName(),
+                                     null, true);
+            }
         }
 
         // interpolation
-        generator.writeEntry(AemMetadataKey.INTERPOLATION_METHOD.name(),
-                             metadata.getInterpolationMethod(),
-                             null, false);
-        generator.writeEntry(AemMetadataKey.INTERPOLATION_DEGREE.name(),
-                             Integer.toString(metadata.getInterpolationDegree()),
-                             null, false);
+        if (metadata.getInterpolationMethod() != null) {
+            generator.writeEntry(AemMetadataKey.INTERPOLATION_METHOD.name(),
+                                 metadata.getInterpolationMethod(),
+                                 null, true);
+            generator.writeEntry(AemMetadataKey.INTERPOLATION_DEGREE.name(),
+                                 Integer.toString(metadata.getInterpolationDegree()),
+                                 null, true);
+        }
 
         // Stop metadata
         generator.exitSection();

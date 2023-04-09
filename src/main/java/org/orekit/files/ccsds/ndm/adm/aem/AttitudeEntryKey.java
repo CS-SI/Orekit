@@ -186,21 +186,21 @@ public enum AttitudeEntryKey {
      * @since 12.0
      */
     ANGLE_1_DOT((token, context, container) -> token.processAsIndexedDouble(3,
-                                                                            Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                            Units.DEG_PER_S, context.getParsedUnitsBehavior(),
                                                                             container::setComponent)),
 
     /** Rotation about second axis.
      * @since 12.0
      */
     ANGLE_2_DOT((token, context, container) -> token.processAsIndexedDouble(4,
-                                                                            Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                            Units.DEG_PER_S, context.getParsedUnitsBehavior(),
                                                                             container::setComponent)),
 
     /** Rotation about third axis.
      * @since 12.0
      */
     ANGLE_3_DOT((token, context, container) -> token.processAsIndexedDouble(5,
-                                                                            Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                            Units.DEG_PER_S, context.getParsedUnitsBehavior(),
                                                                             container::setComponent)),
 
     /** Rotation about X axis (only for ADM V1). */

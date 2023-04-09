@@ -66,8 +66,8 @@ public class OcmWriter extends AbstractMessageWriter<OdmHeader, Segment<OcmMetad
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final Segment<OcmMetadata, OcmData> segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final Segment<OcmMetadata, OcmData> segment)
         throws IOException {
 
         // write the metadata

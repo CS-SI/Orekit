@@ -1855,11 +1855,9 @@ public class NavigationFileParserTest {
                 }
             }
 
-            // call the methods, triggering the exception on purpose
         } catch (NoSuchFieldException | NoSuchMethodException | SecurityException |
                  IllegalAccessException | IllegalArgumentException | InvocationTargetException |
                  InstantiationException e) {
-            e.printStackTrace();
             Assertions.fail(e.getLocalizedMessage());
         }
     }

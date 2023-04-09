@@ -236,8 +236,8 @@ public class OemWriter extends AbstractMessageWriter<OdmHeader, OemSegment, Oem>
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final OemSegment segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final OemSegment segment)
         throws IOException {
 
         final OemMetadata metadata = segment.getMetadata();

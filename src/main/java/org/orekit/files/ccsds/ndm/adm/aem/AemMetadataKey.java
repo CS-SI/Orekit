@@ -90,7 +90,7 @@ public enum AemMetadataKey {
     /** Rotation order entry for Euler angles. */
     EULER_ROT_SEQ((token, context, container) -> token.processAsRotationOrder(container::setEulerRotSeq)),
 
-    /** Reference frame for Euler rates. */
+    /** Reference frame for Euler rates. (only for ADM V1) */
     RATE_FRAME((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             final String content = token.getContentAsUppercaseString();
@@ -99,6 +99,11 @@ public enum AemMetadataKey {
         }
         return true;
     }),
+
+    /** Reference frame for angular velocities.
+     * @since 12.0
+     */
+    ANGVEL_FRAME((token, context, container) -> token.processAsFrame(container::setAngvelFrame, context, true, true, true)),
 
     /** Interpolation method in ephemeris. */
     INTERPOLATION_METHOD((token, context, container) -> token.processAsUppercaseString(container::setInterpolationMethod)),

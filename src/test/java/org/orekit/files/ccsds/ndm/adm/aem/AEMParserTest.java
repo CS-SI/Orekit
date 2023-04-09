@@ -584,6 +584,38 @@ public class AEMParserTest {
     }
 
     @Test
+    public void testParseAEM14() throws URISyntaxException {
+        final TimeScale tai = TimeScalesFactory.getTAI();
+        final String ex = "/ccsds/adm/aem/AEMExample14.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+        final Aem file = parser.parseMessage(source);
+
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
+        Assertions.assertEquals(TimeSystem.TAI,          segment0.getMetadata().getTimeSystem());
+        Assertions.assertEquals("MMS",                   segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("2015-011A",             segment0.getMetadata().getObjectID());
+        Assertions.assertEquals("EME2000",               segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assertions.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assertions.assertEquals(new AbsoluteDate("2023-01-01T00:00:00.000", tai), segment0.getMetadata().getStartTime());
+        Assertions.assertEquals(new AbsoluteDate("2023-01-01T00:04:30.000", tai), segment0.getMetadata().getStopTime());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_DERIVATIVE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals(RotationOrder.ZXZ, segment0.getMetadata().getEulerRotSeq());
+        Assertions.assertEquals(10, segment0.getData().getAngularCoordinates().size());
+
+        Assertions.assertEquals(AttitudeType.SPIN_NUTATION_MOMENTUM,
+                                file.getSegments().get(1).getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.QUATERNION,
+                                file.getSegments().get(2).getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.QUATERNION_ANGVEL,
+                                file.getSegments().get(3).getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_ANGVEL,
+                                file.getSegments().get(4).getMetadata().getAttitudeType());
+
+    }
+
+    @Test
     public void testWrongNDMType() {
         final String name = "/ccsds/odm/opm/OPMExample1.txt";
         try {

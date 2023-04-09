@@ -71,8 +71,8 @@ public class OmmWriter extends AbstractMessageWriter<OdmHeader, Segment<OmmMetad
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final Segment<OmmMetadata, OmmData> segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final Segment<OmmMetadata, OmmData> segment)
         throws IOException {
 
         // write the metadata

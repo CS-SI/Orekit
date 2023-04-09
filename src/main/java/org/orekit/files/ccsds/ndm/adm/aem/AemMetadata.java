@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
@@ -54,8 +55,13 @@ public class AemMetadata extends AdmMetadata {
     /** The rotation sequence of the Euler angles. */
     private RotationOrder eulerRotSeq;
 
-    /** The frame in which rates are specified. */
+    /** The frame in which rates are specified (only for ADM V1). */
     private Boolean rateFrameIsA;
+
+    /** The frame in which angular velocities are specified.
+     * @since 12.0
+     */
+    private FrameFacade angvelFrame;
 
     /** The interpolation method to be used. */
     private String interpolationMethod;
@@ -110,18 +116,23 @@ public class AemMetadata extends AdmMetadata {
                                                            AemMetadataKey.ATTITUDE_DIR);
 
         checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE.name());
-        if (version < 2.0 &&
-            (attitudeType == AttitudeType.QUATERNION || attitudeType == AttitudeType.QUATERNION_DERIVATIVE)) {
-            checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE.name());
+        if (version < 2.0) {
+            if (attitudeType == AttitudeType.QUATERNION ||
+                attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
+                checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE.name());
+            }
+            if (attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
+                checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME.name());
+            }
+        } else {
+            if (attitudeType == AttitudeType.QUATERNION_ANGVEL) {
+                checkNotNull(angvelFrame, AemMetadataKey.ANGVEL_FRAME.name());
+            }
         }
-        if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
-            attitudeType == AttitudeType.EULER_ANGLE ||
+
+        if (attitudeType == AttitudeType.EULER_ANGLE ||
             attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
             checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ.name());
-        }
-        if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
-            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
-            checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME.name());
         }
 
     }
@@ -146,6 +157,22 @@ public class AemMetadata extends AdmMetadata {
     public void setRateFrameIsA(final boolean rateFrameIsA) {
         refuseFurtherComments();
         this.rateFrameIsA = rateFrameIsA;
+    }
+
+    /** Set frame in which angular velocities are specified.
+     * @param angvelFrame frame in which angular velocities are specified
+     * @since 12.0
+     */
+    public void setAngvelFrame(final FrameFacade angvelFrame) {
+        this.angvelFrame = angvelFrame;
+    }
+
+    /** Get frame in which angular velocities are specified.
+     * @return frame in which angular velocities are specified
+     * @since 12.0
+     */
+    public FrameFacade getFrameAngvelFrame() {
+        return angvelFrame;
     }
 
     /** Check if rates are specified in spacecraft body frame.

@@ -68,8 +68,8 @@ public class TdmWriter extends AbstractMessageWriter<TdmHeader, Segment<TdmMetad
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final Segment<TdmMetadata, ObservationsBlock> segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final Segment<TdmMetadata, ObservationsBlock> segment)
         throws IOException {
 
         // write the metadata

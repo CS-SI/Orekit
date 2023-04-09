@@ -219,7 +219,7 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public abstract void writeSegmentContent(Generator generator, double formatVersion, S segment) throws IOException;
+    protected abstract void writeSegmentContent(Generator generator, double formatVersion, S segment) throws IOException;
 
     /** {@inheritDoc} */
     @Override
