@@ -140,15 +140,15 @@ public class CdmMetadata extends Metadata {
     @Override
     public void validate(final double version) {
         // We only check values that are mandatory in a cdm file
-        checkNotNull(object,                  CdmMetadataKey.OBJECT);
-        checkNotNull(objectDesignator,        CdmMetadataKey.OBJECT_DESIGNATOR);
-        checkNotNull(catalogName,             CdmMetadataKey.CATALOG_NAME);
-        checkNotNull(objectName,              CdmMetadataKey.OBJECT_NAME);
-        checkNotNull(internationalDesignator, CdmMetadataKey.INTERNATIONAL_DESIGNATOR);
-        checkNotNull(ephemName,               CdmMetadataKey.EPHEMERIS_NAME);
-        checkNotNull(covarianceMethod,        CdmMetadataKey.COVARIANCE_METHOD);
-        checkNotNull(maneuverable,            CdmMetadataKey.MANEUVERABLE);
-        checkNotNull(refFrame,                CdmMetadataKey.REF_FRAME);
+        checkNotNull(object,                  CdmMetadataKey.OBJECT.name());
+        checkNotNull(objectDesignator,        CdmMetadataKey.OBJECT_DESIGNATOR.name());
+        checkNotNull(catalogName,             CdmMetadataKey.CATALOG_NAME.name());
+        checkNotNull(objectName,              CdmMetadataKey.OBJECT_NAME.name());
+        checkNotNull(internationalDesignator, CdmMetadataKey.INTERNATIONAL_DESIGNATOR.name());
+        checkNotNull(ephemName,               CdmMetadataKey.EPHEMERIS_NAME.name());
+        checkNotNull(covarianceMethod,        CdmMetadataKey.COVARIANCE_METHOD.name());
+        checkNotNull(maneuverable,            CdmMetadataKey.MANEUVERABLE.name());
+        checkNotNull(refFrame,                CdmMetadataKey.REF_FRAME.name());
     }
 
     /**

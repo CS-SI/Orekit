@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
-import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -39,7 +38,7 @@ public enum AemMetadataKey {
     /** Second reference frame. */
     REF_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A);
+            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A.name());
             final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
@@ -71,7 +70,7 @@ public enum AemMetadataKey {
     ATTITUDE_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setAttitudeType(AttitudeType.parseType(token.getContentAsNormalizedString()));
+                container.setAttitudeType(AttitudeType.parseType(token.getRawContent()));
                 return true;
             } catch (IllegalArgumentException iae) {
                 return false;
@@ -89,7 +88,7 @@ public enum AemMetadataKey {
     }),
 
     /** Rotation order entry for Euler angles. */
-    EULER_ROT_SEQ((token, context, container) -> AdmParser.processRotationOrder(token, container::setEulerRotSeq)),
+    EULER_ROT_SEQ((token, context, container) -> token.processAsRotationOrder(container::setEulerRotSeq)),
 
     /** Reference frame for Euler rates. */
     RATE_FRAME((token, context, container) -> {

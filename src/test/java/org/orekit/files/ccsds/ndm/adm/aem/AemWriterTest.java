@@ -22,9 +22,9 @@ import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 
-public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, Aem> {
+public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem> {
 
     protected AemParser getParser() {
         return new ParserBuilder().

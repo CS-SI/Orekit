@@ -24,6 +24,7 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
 /** Writer for quaternion data.
@@ -32,22 +33,35 @@ import org.orekit.utils.units.Unit;
  */
 class ApmQuaternionWriter extends AbstractWriter {
 
+    /** Format version.
+     * @since 12.0
+     */
+    private final double formatVersion;
+
     /** Quaternion block. */
     private final ApmQuaternion quaternion;
+
+    /** Quaternion epoch. */
+    private final AbsoluteDate epoch;
 
     /** Converter for dates. */
     private final TimeConverter timeConverter;
 
     /** Create a writer.
+     * @param formatVersion format version
      * @param xmlTag name of the XML tag surrounding the section
      * @param kvnTag name of the KVN tag surrounding the section (may be null)
      * @param quaternion quaternion to write
+     * @param epoch quaternion epoch (only for ADM V1)
      * @param timeConverter converter for dates
      */
-    ApmQuaternionWriter(final String xmlTag, final String kvnTag,
-                        final ApmQuaternion quaternion, final TimeConverter timeConverter) {
+    ApmQuaternionWriter(final double formatVersion, final String xmlTag, final String kvnTag,
+                        final ApmQuaternion quaternion,
+                        final AbsoluteDate epoch, final TimeConverter timeConverter) {
         super(xmlTag, kvnTag);
+        this.formatVersion = formatVersion;
         this.quaternion    = quaternion;
+        this.epoch         = epoch;
         this.timeConverter = timeConverter;
     }
 
@@ -55,14 +69,24 @@ class ApmQuaternionWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        generator.writeEntry(ApmQuaternionKey.EPOCH.name(), timeConverter, quaternion.getEpoch(), false, true);
+        generator.writeComments(quaternion.getComments());
+
+        if (epoch != null) {
+            // epoch is in the quaternion block only in ADM V1
+            generator.writeEntry(ApmQuaternionKey.EPOCH.name(), timeConverter, epoch, false, true);
+        }
 
         // endpoints
-        generator.writeEntry(ApmQuaternionKey.Q_FRAME_A.name(), quaternion.getEndpoints().getFrameA().getName(), null, true);
-        generator.writeEntry(ApmQuaternionKey.Q_FRAME_B.name(), quaternion.getEndpoints().getFrameB().getName(), null, true);
-        generator.writeEntry(ApmQuaternionKey.Q_DIR.name(),
-                             quaternion.getEndpoints().isA2b() ? AttitudeEndpoints.A2B : AttitudeEndpoints.B2A,
-                             null, true);
+        if (formatVersion < 2.0) {
+            generator.writeEntry(ApmQuaternionKey.Q_FRAME_A.name(), quaternion.getEndpoints().getFrameA().getName(), null, true);
+            generator.writeEntry(ApmQuaternionKey.Q_FRAME_B.name(), quaternion.getEndpoints().getFrameB().getName(), null, true);
+            generator.writeEntry(ApmQuaternionKey.Q_DIR.name(),
+                                 quaternion.getEndpoints().isA2b() ? AttitudeEndpoints.A2B : AttitudeEndpoints.B2A,
+                                                                   null, true);
+        } else {
+            generator.writeEntry(ApmQuaternionKey.REF_FRAME_A.name(), quaternion.getEndpoints().getFrameA().getName(), null, true);
+            generator.writeEntry(ApmQuaternionKey.REF_FRAME_B.name(), quaternion.getEndpoints().getFrameB().getName(), null, true);
+        }
 
         // quaternion
         final Quaternion q = quaternion.getQuaternion();

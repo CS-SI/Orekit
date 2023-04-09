@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -42,7 +43,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
     private final AemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final AdmHeader header;
 
     /** Current metadata. */
     private final AemMetadata metadata;
@@ -90,7 +91,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * @since 12.0
      */
     public AttitudeWriter(final AemWriter writer,
-                          final Header header, final AemMetadata template,
+                          final AdmHeader header, final AemMetadata template,
                           final FileFormat fileFormat, final String outputName,
                           final double maxRelativeOffset, final int unitsColumn) {
         this.writer            = writer;
@@ -140,10 +141,10 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName,
-                                                    maxRelativeOffset, unitsColumn) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
-                                                    maxRelativeOffset, unitsColumn > 0, null)) {
+             new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName,
+                              maxRelativeOffset, unitsColumn) :
+             new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
+                              maxRelativeOffset, unitsColumn > 0, null)) {
 
             writer.writeHeader(generator, header);
 
@@ -181,7 +182,10 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
         metadata.setInterpolationMethod(segment.getInterpolationMethod());
         metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-        writer.writeMetadata(generator, metadata);
+        metadata.validate(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        writer.writeMetadata(generator,
+                             header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                             metadata);
 
         // Loop on attitude data
         writer.startAttitudeBlock(generator);
@@ -189,7 +193,9 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
             generator.writeComments(((AemSegment) segment).getData().getComments());
         }
         for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-            writer.writeAttitudeEphemerisLine(generator, metadata, coordinates);
+            writer.writeAttitudeEphemerisLine(generator,
+                                              header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                                              metadata, coordinates);
         }
         writer.endAttitudeBlock(generator);
 

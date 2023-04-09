@@ -16,6 +16,14 @@
  */
 package org.orekit.files.general;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +43,7 @@ import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
@@ -52,14 +61,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 public class OrekitAttitudeEphemerisFileTest {
 
@@ -140,8 +141,10 @@ public class OrekitAttitudeEphemerisFileTest {
 
         String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
+            final AdmHeader header = new AdmHeader();
+            header.setFormatVersion(1.0);
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                               null, dummyMetadata(), FileFormat.KVN, "", Constants.JULIAN_DAY, 60).
+                               header, dummyMetadata(), FileFormat.KVN, "", Constants.JULIAN_DAY, 60).
             write(writer, ephemerisFile);
         }
 

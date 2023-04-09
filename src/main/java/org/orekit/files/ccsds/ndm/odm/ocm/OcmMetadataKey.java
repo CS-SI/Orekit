@@ -129,9 +129,8 @@ public enum OcmMetadataKey {
      */
     ORBIT_CATEGORY((token, context, container) -> token.processAsEnum(OrbitCategory.class, container::setOrbitCategory)),
 
-
     /** List of elements of information data blocks included in this message. */
-    OCM_DATA_ELEMENTS((token, context, container) -> token.processAsUppercaseList(container::setOcmDataElements)),
+    OCM_DATA_ELEMENTS((token, context, container) -> token.processAsEnumsList(OcmElements.class, container::setOcmDataElements)),
 
     /** Spacecraft clock count at {@link #EPOCH_TZERO}. */
     SCLK_OFFSET_AT_EPOCH((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),

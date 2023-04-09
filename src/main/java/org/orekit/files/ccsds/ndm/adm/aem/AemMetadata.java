@@ -17,9 +17,11 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
-import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -73,11 +75,18 @@ public class AemMetadata extends AdmMetadata {
     @Override
     public void validate(final double version) {
 
+        super.validate(version);
+
         checkMandatoryEntriesExceptDatesAndExternalFrame(version);
         endpoints.checkExternalFrame(AemMetadataKey.REF_FRAME_A, AemMetadataKey.REF_FRAME_B);
 
-        checkNotNull(startTime, AemMetadataKey.START_TIME);
-        checkNotNull(stopTime,  AemMetadataKey.STOP_TIME);
+        checkNotNull(startTime, AemMetadataKey.START_TIME.name());
+        checkNotNull(stopTime,  AemMetadataKey.STOP_TIME.name());
+
+        if (version >= 2.0 && isFirst()) {
+            throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
+                                      AemMetadataKey.QUATERNION_TYPE, version);
+        }
 
     }
 
@@ -95,23 +104,24 @@ public class AemMetadata extends AdmMetadata {
 
         super.validate(version);
 
-        endpoints.checkMandatoryEntriesExceptExternalFrame(AemMetadataKey.REF_FRAME_A,
+        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                           AemMetadataKey.REF_FRAME_A,
                                                            AemMetadataKey.REF_FRAME_B,
                                                            AemMetadataKey.ATTITUDE_DIR);
 
-        checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE);
-        if (attitudeType == AttitudeType.QUATERNION ||
-            attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
-            checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE);
+        checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE.name());
+        if (version < 2.0 &&
+            (attitudeType == AttitudeType.QUATERNION || attitudeType == AttitudeType.QUATERNION_DERIVATIVE)) {
+            checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE.name());
         }
-        if (attitudeType == AttitudeType.QUATERNION_RATE ||
+        if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
             attitudeType == AttitudeType.EULER_ANGLE ||
-            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
-            checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ);
+            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
+            checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ.name());
         }
-        if (attitudeType == AttitudeType.QUATERNION_RATE ||
-            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
-            checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME);
+        if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
+            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
+            checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME.name());
         }
 
     }
@@ -172,10 +182,10 @@ public class AemMetadata extends AdmMetadata {
      * Get the flag for the placement of the quaternion QC in the attitude data.
      *
      * @return true if QC is the first element in the attitude data,
-     * null if not initialized
+     * false if not initialized
      */
     public Boolean isFirst() {
-        return isFirst == null ? Boolean.TRUE : isFirst;
+        return isFirst == null ? Boolean.FALSE : isFirst;
     }
 
     /**

@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.adm.acm.AcmWriter;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmWriter;
 import org.orekit.files.ccsds.ndm.cdm.CdmWriter;
@@ -140,6 +141,14 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      */
     public AemWriter buildAemWriter() {
         return new AemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
+    }
+
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.acm.Acm Attitude Comprehensive Messages}.
+     * @return a new writer
+     * @since 12.0
+     */
+    public AcmWriter buildAcmWriter() {
+        return new AcmWriter(getConventions(), getDataContext());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.

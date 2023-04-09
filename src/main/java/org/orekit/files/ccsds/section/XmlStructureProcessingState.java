@@ -34,13 +34,13 @@ public class XmlStructureProcessingState implements ProcessingState {
     private final String root;
 
     /** Parser for the complete message. */
-    private final AbstractConstituentParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?, ?> parser;
 
     /** Simple constructor.
      * @param root name of the root element
      * @param parser parser for the complete message
      */
-    public XmlStructureProcessingState(final String root, final AbstractConstituentParser<?, ?> parser) {
+    public XmlStructureProcessingState(final String root, final AbstractConstituentParser<?, ?, ?> parser) {
         this.root   = root;
         this.parser = parser;
     }

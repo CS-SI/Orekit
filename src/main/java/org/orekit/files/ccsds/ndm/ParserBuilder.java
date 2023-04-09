@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.adm.acm.AcmParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmParser;
 import org.orekit.files.ccsds.ndm.cdm.CdmParser;
@@ -398,6 +399,15 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public AemParser buildAemParser() {
         return new AemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
                              getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
+    }
+
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.acm.Acm Attitude Comprehensive Messages}.
+     * @return a new parser
+     * @since 12.0
+     */
+    public AcmParser buildAcmParser() {
+        return new AcmParser(getConventions(), isSimpleEOP(), getDataContext(),
+                             getParsedUnitsBehavior(), getFilters());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.

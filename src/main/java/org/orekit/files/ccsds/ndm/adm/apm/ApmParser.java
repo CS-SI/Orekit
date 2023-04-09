@@ -22,11 +22,12 @@ import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
@@ -57,7 +58,7 @@ import org.orekit.utils.IERSConventions;
 public class ApmParser extends AdmParser<Apm, ApmParser> {
 
     /** File header. */
-    private Header header;
+    private AdmHeader header;
 
     /** File segments. */
     private List<Segment<AdmMetadata, ApmData>> segments;
@@ -68,6 +69,11 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     /** Context binding valid for current metadata. */
     private ContextBinding context;
 
+    /** APM epoch.
+     * @since 12.0
+     */
+    private AbsoluteDate epoch;
+
     /** APM general comments block being read. */
     private CommentsContainer commentsBlock;
 
@@ -77,11 +83,18 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     /** APM Euler angles logical block being read. */
     private Euler eulerBlock;
 
+    /** APM angular velocity logical block being read.
+     * @since 12.0
+     */
+    private AngularVelocity angularVelocityBlock;
+
     /** APM spin-stabilized logical block being read. */
     private SpinStabilized spinStabilizedBlock;
 
-    /** APM spacecraft parameters logical block being read. */
-    private SpacecraftParameters spacecraftParametersBlock;
+    /** APM inertia block being read.
+     * @since 12.0
+     */
+    private Inertia inertiaBlock;
 
     /** Current maneuver. */
     private Maneuver currentManeuver;
@@ -116,23 +129,23 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public AdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header(2.0);
-        segments                  = new ArrayList<>();
-        metadata                  = null;
-        context                   = null;
-        quaternionBlock           = null;
-        eulerBlock                = null;
-        spinStabilizedBlock       = null;
-        spacecraftParametersBlock = null;
-        currentManeuver           = null;
-        maneuvers                 = new ArrayList<>();
+        header              = new AdmHeader();
+        segments            = new ArrayList<>();
+        metadata            = null;
+        context             = null;
+        quaternionBlock     = null;
+        eulerBlock          = null;
+        spinStabilizedBlock = null;
+        inertiaBlock        = null;
+        currentManeuver     = null;
+        maneuvers           = new ArrayList<>();
         if (fileFormat == FileFormat.XML) {
             structureProcessor = new XmlStructureProcessingState(Apm.ROOT, this);
             reset(fileFormat, structureProcessor);
@@ -181,7 +194,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processGeneralCommentToken);
+        anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataToken);
         return true;
     }
 
@@ -196,7 +209,8 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     @Override
     public boolean prepareData() {
         commentsBlock = new CommentsContainer();
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                       this::processDataToken : this::processDataSubStructureToken);
         return true;
     }
 
@@ -210,21 +224,27 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     @Override
     public boolean finalizeData() {
         if (metadata != null) {
-            final ApmData data = new ApmData(commentsBlock, quaternionBlock, eulerBlock,
-                                             spinStabilizedBlock, spacecraftParametersBlock);
+            final ApmData data = new ApmData(commentsBlock, epoch, quaternionBlock, eulerBlock,
+                                             angularVelocityBlock, spinStabilizedBlock, inertiaBlock);
+            if (currentManeuver != null) {
+                // current maneuver is completed
+                maneuvers.add(currentManeuver);
+                currentManeuver = null;
+            }
             for (final Maneuver maneuver : maneuvers) {
                 data.addManeuver(maneuver);
             }
             data.validate(header.getFormatVersion());
             segments.add(new Segment<>(metadata, data));
         }
-        metadata                  = null;
-        context                   = null;
-        quaternionBlock           = null;
-        eulerBlock                = null;
-        spinStabilizedBlock       = null;
-        spacecraftParametersBlock = null;
-        currentManeuver           = null;
+        metadata             = null;
+        context              = null;
+        quaternionBlock      = null;
+        eulerBlock           = null;
+        angularVelocityBlock = null;
+        spinStabilizedBlock  = null;
+        inertiaBlock         = null;
+        currentManeuver      = null;
         return true;
     }
 
@@ -246,6 +266,14 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
         return commentsBlock.addComment(comment);
     }
 
+    /** Set current epoch.
+     * @param epoch epoch to set
+     * @since 12.0
+     */
+    void setEpoch(final AbsoluteDate epoch) {
+        this.epoch = epoch;
+    }
+
     /** Manage quaternion section.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
@@ -261,8 +289,19 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * otherwise it is leaving the section
      * @return always return true
      */
-    boolean manageEulerElementsThreeSection(final boolean starting) {
+    boolean manageEulerElementsSection(final boolean starting) {
         anticipateNext(starting ? this::processEulerToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage angular velocity section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     * @since 12.0
+     */
+    boolean manageAngularVelocitylementsSection(final boolean starting) {
+        anticipateNext(starting ? this::processAngularVelocityToken : structureProcessor);
         return true;
     }
 
@@ -271,18 +310,19 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * otherwise it is leaving the section
      * @return always return true
      */
-    boolean manageEulerElementsSpinSection(final boolean starting) {
+    boolean manageSpinElementsSection(final boolean starting) {
         anticipateNext(starting ? this::processSpinStabilizedToken : structureProcessor);
         return true;
     }
 
-    /** Manage spacecraft parameters section.
+    /** Manage inertia section.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
      * @return always return true
+     * @since 12.0
      */
-    boolean manageSpacecraftParametersSection(final boolean starting) {
-        anticipateNext(starting ? this::processSpacecraftParametersToken : structureProcessor);
+    boolean manageInertiaSection(final boolean starting) {
+        anticipateNext(starting ? this::processInertiaToken : structureProcessor);
         return true;
     }
 
@@ -314,31 +354,35 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
             try {
                 return AdmMetadataKey.valueOf(token.getName()).process(token, context, metadata);
             } catch (IllegalArgumentException iaeD) {
-                // token has not been recognized
-                return false;
+                try {
+                    return AdmCommonMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeC) {
+                    // token has not been recognized
+                    return false;
+                }
             }
         }
     }
 
-    /** Process one XML data substructure token.
+    /** Process one data substructure token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processXmlSubStructureToken(final ParseToken token) {
+    private boolean processDataSubStructureToken(final ParseToken token) {
         try {
             return token.getName() != null &&
-                   XmlSubStructureKey.valueOf(token.getName()).process(token, this);
+                   ApmDataSubStructureKey.valueOf(token.getName()).process(token, context, this);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
         }
     }
 
-    /** Process one comment token.
+    /** Process one data token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processGeneralCommentToken(final ParseToken token) {
+    private boolean processDataToken(final ParseToken token) {
         if (commentsBlock == null) {
             // APM KVN file lack a META_STOP keyword, hence we can't call finalizeMetadata()
             // automatically before the first data token arrives
@@ -347,10 +391,16 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
             // automatically before the first data token arrives
             prepareData();
         }
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processQuaternionToken);
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                       this::processQuaternionToken : this::processDataSubStructureToken);
         if ("COMMENT".equals(token.getName())) {
             if (token.getType() == TokenType.ENTRY) {
                 commentsBlock.addComment(token.getContentAsNormalizedString());
+            }
+            return true;
+        } else if ("EPOCH".equals(token.getName())) {
+            if (token.getType() == TokenType.ENTRY) {
+                token.processAsDate(date -> epoch = date, context);
             }
             return true;
         } else {
@@ -367,10 +417,11 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
         if (quaternionBlock == null) {
             quaternionBlock = new ApmQuaternion();
         }
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processEulerToken);
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                       this::processEulerToken : this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
-                   ApmQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock);
+                   ApmQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock, this::setEpoch);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -384,11 +435,40 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processEulerToken(final ParseToken token) {
         if (eulerBlock == null) {
             eulerBlock = new Euler();
+            if (moveCommentsIfEmpty(quaternionBlock, eulerBlock)) {
+                // get rid of the empty logical block
+                quaternionBlock = null;
+            }
         }
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpinStabilizedToken);
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                       this::processAngularVelocityToken : this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    EulerKey.valueOf(token.getName()).process(token, context, eulerBlock);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one angular velocity data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     * @since 12.0
+     */
+    private boolean processAngularVelocityToken(final ParseToken token) {
+        if (angularVelocityBlock == null) {
+            angularVelocityBlock = new AngularVelocity();
+            if (moveCommentsIfEmpty(eulerBlock, angularVelocityBlock)) {
+                // get rid of the empty logical block
+                eulerBlock = null;
+            }
+        }
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                       this::processSpinStabilizedToken : this::processDataSubStructureToken);
+        try {
+            return token.getName() != null &&
+                   AngularVelocityKey.valueOf(token.getName()).process(token, context, angularVelocityBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -402,12 +482,13 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processSpinStabilizedToken(final ParseToken token) {
         if (spinStabilizedBlock == null) {
             spinStabilizedBlock = new SpinStabilized();
-            if (moveCommentsIfEmpty(eulerBlock, spinStabilizedBlock)) {
+            if (moveCommentsIfEmpty(angularVelocityBlock, spinStabilizedBlock)) {
                 // get rid of the empty logical block
-                eulerBlock = null;
+                angularVelocityBlock = null;
             }
         }
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                       this::processInertiaToken : this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
                    SpinStabilizedKey.valueOf(token.getName()).process(token, context, spinStabilizedBlock);
@@ -421,18 +502,19 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processSpacecraftParametersToken(final ParseToken token) {
-        if (spacecraftParametersBlock == null) {
-            spacecraftParametersBlock = new SpacecraftParameters();
-            if (moveCommentsIfEmpty(spinStabilizedBlock, spacecraftParametersBlock)) {
+    private boolean processInertiaToken(final ParseToken token) {
+        if (inertiaBlock == null) {
+            inertiaBlock = new Inertia();
+            if (moveCommentsIfEmpty(spinStabilizedBlock, inertiaBlock)) {
                 // get rid of the empty logical block
                 spinStabilizedBlock = null;
             }
         }
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                                          this::processManeuverToken : this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
-                   SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
+                   InertiaKey.valueOf(token.getName()).process(token, context, inertiaBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -446,28 +528,22 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
     private boolean processManeuverToken(final ParseToken token) {
         if (currentManeuver == null) {
             currentManeuver = new Maneuver();
-            if (moveCommentsIfEmpty(spacecraftParametersBlock, currentManeuver)) {
+            if (moveCommentsIfEmpty(inertiaBlock, currentManeuver)) {
                 // get rid of the empty logical block
-                spacecraftParametersBlock = null;
+                inertiaBlock = null;
             }
         }
-        anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
+        anticipateNext(getFileFormat() == FileFormat.KVN && header.getFormatVersion() < 2.0 ?
+                       new ErrorState() : this::processDataSubStructureToken);
         try {
-            if (token.getName() != null &&
-                ManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
-                // the token was processed properly
-                if (currentManeuver.completed()) {
-                    // current maneuver is completed
-                    maneuvers.add(currentManeuver);
-                    currentManeuver = null;
-                }
-                return true;
-            }
+            return token.getName() != null &&
+                   ManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver);
         } catch (IllegalArgumentException iae) {
-            // ignored, delegate to next state below
+            // token has not been recognized
+            maneuvers.add(currentManeuver);
+            currentManeuver = null;
+            return false;
         }
-        // the token was not processed
-        return false;
     }
 
     /** Move comments from one empty logical block to another logical block.

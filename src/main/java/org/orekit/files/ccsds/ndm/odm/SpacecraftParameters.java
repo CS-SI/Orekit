@@ -54,7 +54,7 @@ public class SpacecraftParameters extends CommentsContainer implements Data {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        checkNotNaN(mass, SpacecraftParametersKey.MASS);
+        checkNotNaN(mass, SpacecraftParametersKey.MASS.name());
     }
 
     /** Get the spacecraft mass.

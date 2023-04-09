@@ -50,7 +50,7 @@ import org.orekit.utils.IERSConventions;
  * @author Melina Vanel
  * @since 11.2
  */
-public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
+public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmParser> {
 
     /** Comment key. */
     private static String COMMENT = "COMMENT";
@@ -143,7 +143,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new CdmHeader(1.0);
+        header                    = new CdmHeader();
         segments                  = new ArrayList<>();
         metadata                  = null;
         relativeMetadata          = null;

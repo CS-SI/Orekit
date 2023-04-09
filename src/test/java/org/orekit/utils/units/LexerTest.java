@@ -167,6 +167,13 @@ public class LexerTest {
     }
 
     @Test
+    public void testThreeHalfAsDecimal() {
+        final Lexer lexer = new Lexer("1.5");
+        expect(lexer, "1.5", TokenType.FRACTION, 3, 2);
+        Assertions.assertNull(lexer.next());
+    }
+
+    @Test
     public void testUnicodeFractions() {
         final Lexer lexer = new Lexer("¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞");
         expect(lexer, "¼", TokenType.FRACTION, 1, 4);

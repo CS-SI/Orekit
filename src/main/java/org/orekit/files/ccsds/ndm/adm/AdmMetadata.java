@@ -46,8 +46,8 @@ public class AdmMetadata extends Metadata {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(objectName, AdmMetadataKey.OBJECT_NAME);
-        checkNotNull(objectID,   AdmMetadataKey.OBJECT_ID);
+        checkNotNull(objectName, AdmMetadataKey.OBJECT_NAME.name());
+        checkNotNull(objectID,   AdmCommonMetadataKey.OBJECT_ID.name());
     }
 
     /**

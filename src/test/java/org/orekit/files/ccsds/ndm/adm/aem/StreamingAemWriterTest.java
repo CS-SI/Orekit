@@ -16,6 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
@@ -29,8 +34,8 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -39,11 +44,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
 
 
 public class StreamingAemWriterTest {
@@ -84,12 +84,12 @@ public class StreamingAemWriterTest {
             FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
             FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
             boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
-            AttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
+            AttitudeType      attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
             // Initialize the header and metadata
             // Here, we use only one data segment.
-            Header header = new Header(3.0);
+            AdmHeader header = new AdmHeader();
             header.setOriginator(originator);
             header.addComment(headerCmt);
 

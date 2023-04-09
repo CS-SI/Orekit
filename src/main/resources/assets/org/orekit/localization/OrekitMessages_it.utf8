@@ -361,6 +361,9 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = non è stato configurato un convertito
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = Nel file {1}, il sistema temporale deve essere impostato prima della linea {0} 
 
+# cannot estimate precession without proper derivatives
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = <MISSING TRANSLATION>
+
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = il nome "{0}" è già utilizzato per uno stato aggiuntivo
 
@@ -484,8 +487,11 @@ CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = l''utilizzo del sistema temporale {0} nei fi
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = sistema temporale inconsistente nei blocchi di assetto: {0} ≠ {1}
 
-# attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = il tipo di assetto {0} nei file CCSDS AEM non è ancora implementato in Orekit
+# unknown attitude type {0}
+CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
+
+# incomplete data
+CCSDS_INCOMPLETE_DATA = <MISSING TRANSLATION>
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE = la sequenza di rotazione {0} presente alla linea {1} del file {2} è inconsistente
@@ -496,14 +502,23 @@ CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = il tipo di settaggio {0} ({1}) non è ancor
 # retrograde factor not supported in element set {0}
 CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = fattore retrogrado non supportato per il tipo di elementi {0}
 
-# element set type {0} ({1}) expects {2} elements
-CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = il tipo di settaggio {0} ({1}) presuppone {2} elementi
-
 # wrong number of units for maneuver {0}
 CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = errato numero di unità per la manovra {0}
 
 # missing time field for maneuver {0}
 CCSDS_MANEUVER_MISSING_TIME = campo temporale manacante per la manovra {0}
+
+# attitude type {0} and rate type {1} calls for {2} states, got {3}
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = <MISSING TRANSLATION>
+
+# incompatible keys {0} and {1} should not both be used
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = <MISSING TRANSLATION>
+
+# no sensor index {0}, allowed indices: [1, {1}]
+CCSDS_UNKNOWN_SENSOR_INDEX = <MISSING TRANSLATION>
+
+# inconsistent number of elements: expected {0}, got {1}
+INCONSISTENT_NUMBER_OF_ELEMENTS = <MISSING TRANSLATION>
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = la creazione di un propagatore combinato richiede almeno un propagatore, ma non ne è stato fornito alcuno
@@ -782,6 +797,9 @@ UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
 WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
+
+# {0} expects {1} elements, got {2}
+WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 
 # cannot change covariance type if defined in a local orbital frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>

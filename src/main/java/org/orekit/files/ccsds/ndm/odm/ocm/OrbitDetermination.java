@@ -133,9 +133,9 @@ public class OrbitDetermination extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(id,     OrbitDeterminationKey.OD_ID);
-        checkNotNull(method, OrbitDeterminationKey.OD_METHOD);
-        checkNotNull(epoch,  OrbitDeterminationKey.OD_EPOCH);
+        checkNotNull(id,     OrbitDeterminationKey.OD_ID.name());
+        checkNotNull(method, OrbitDeterminationKey.OD_METHOD.name());
+        checkNotNull(epoch,  OrbitDeterminationKey.OD_EPOCH.name());
     }
 
     /** Get identification number.

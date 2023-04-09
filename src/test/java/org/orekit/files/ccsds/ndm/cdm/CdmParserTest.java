@@ -1657,7 +1657,7 @@ public class CdmParserTest {
         Assertions.assertEquals(DataContext.getDefault(),  file.getDataContext());
 
         // Check Header Block
-        Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 22, 31, 12,
                                                  TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());

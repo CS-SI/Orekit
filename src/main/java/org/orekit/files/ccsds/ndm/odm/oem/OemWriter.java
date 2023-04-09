@@ -30,9 +30,9 @@ import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KvnStructureKey;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -189,7 +189,7 @@ import org.orekit.utils.units.Unit;
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
-public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
+public class OemWriter extends AbstractMessageWriter<OdmHeader, OemSegment, Oem> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OEM_VERS = 3.0;

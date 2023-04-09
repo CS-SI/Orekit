@@ -16,6 +16,9 @@
  */
 package org.orekit.utils.units;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -264,6 +267,60 @@ public class UnitTest {
         checkReference("km/√(d³)",
                        1000.0 / (Constants.JULIAN_DAY * FastMath.sqrt(Constants.JULIAN_DAY)),
                        Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO);
+    }
+
+    @Test
+    public void checkWrongNumber() {
+        try {
+            Unit.ensureCompatible("some description",
+                                    Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
+                                    false,
+                                    Collections.singletonList(Unit.KILOMETRE));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.WRONG_NB_COMPONENTS, oe.getSpecifier());
+            Assertions.assertEquals("some description", oe.getParts()[0]);
+            Assertions.assertEquals(3, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[2]).intValue());
+        }
+    }
+
+    @Test
+    public void checkWrongUnitsDimension() {
+        try {
+            Unit.ensureCompatible(null,
+                                    Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
+                                    false,
+                                    Arrays.asList(Unit.METRE, Unit.SECOND, Unit.METRE));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assertions.assertEquals("m", oe.getParts()[0]);
+            Assertions.assertEquals("s", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void checkWrongUnitsScale() {
+        try {
+            Unit.ensureCompatible(null,
+                                    Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
+                                    false,
+                                    Arrays.asList(Unit.METRE, Unit.KILOMETRE, Unit.METRE));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assertions.assertEquals("m",  oe.getParts()[0]);
+            Assertions.assertEquals("km", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void checkCorrectUnitsScale() {
+        Unit.ensureCompatible(null,
+                                Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
+                                true,
+                                Arrays.asList(Unit.METRE, Unit.KILOMETRE, Unit.METRE));
     }
 
     private void checkReference(final String unitSpecification, final double scale,

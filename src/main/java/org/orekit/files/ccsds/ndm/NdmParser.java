@@ -77,6 +77,7 @@ public class NdmParser extends AbstractMessageParser<Ndm> {
         builders.putAll(builder.buildOcmParser().getSpecialXmlElementsBuilders());
         builders.putAll(builder.buildApmParser().getSpecialXmlElementsBuilders());
         builders.putAll(builder.buildAemParser().getSpecialXmlElementsBuilders());
+        builders.putAll(builder.buildAcmParser().getSpecialXmlElementsBuilders());
         builders.putAll(builder.buildCdmParser().getSpecialXmlElementsBuilders());
 
         return builders;
@@ -159,6 +160,14 @@ public class NdmParser extends AbstractMessageParser<Ndm> {
      */
     boolean manageAemConstituent() {
         return manageConstituent(builder::buildAemParser);
+    }
+
+    /** Prepare parsing of a ACM constituent.
+     * @return always return true
+     * @since 12.0
+     */
+    boolean manageAcmConstituent() {
+        return manageConstituent(builder::buildAcmParser);
     }
 
     /** Prepare parsing of a CDM constituent.

@@ -20,7 +20,6 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.IOException;
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -95,9 +94,9 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
 
         // elements
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_TYPE.name(),        metadata.getTrajType(),     true);
-        if (metadata.getTrajType() != ElementsType.CARTP   &&
-            metadata.getTrajType() != ElementsType.CARTPV  &&
-            metadata.getTrajType() != ElementsType.CARTPVA) {
+        if (metadata.getTrajType() != OrbitElementsType.CARTP   &&
+            metadata.getTrajType() != OrbitElementsType.CARTPV  &&
+            metadata.getTrajType() != OrbitElementsType.CARTPVA) {
             generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name(), metadata.getOrbAveraging(), null,  true);
         }
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_UNITS.name(), generator.unitsListToString(metadata.getTrajUnits()), null, false);

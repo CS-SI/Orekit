@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 import org.hipparchus.util.Precision;
 import org.orekit.files.ccsds.definitions.TimeConverter;
@@ -135,8 +136,10 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getOpsStatus(), false);
         generator.writeEntry(OcmMetadataKey.ORBIT_CATEGORY.name(),
                              metadata.getOrbitCategory(), false);
-        generator.writeEntry(OcmMetadataKey.OCM_DATA_ELEMENTS.name(),
-                             metadata.getOcmDataElements(), false);
+        if (metadata.getOcmDataElements() != null) {
+            generator.writeEntry(OcmMetadataKey.OCM_DATA_ELEMENTS.name(),
+                                 metadata.getOcmDataElements().stream().map(e -> e.name()).collect(Collectors.toList()), false);
+        }
 
         // other times
         if (!(Precision.equals(metadata.getSclkOffsetAtEpoch(), OcmMetadata.DEFAULT_SCLK_OFFSET_AT_EPOCH) &&

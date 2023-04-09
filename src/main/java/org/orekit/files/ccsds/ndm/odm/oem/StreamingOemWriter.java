@@ -22,6 +22,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
@@ -76,7 +77,7 @@ public class StreamingOemWriter implements AutoCloseable {
     private final OemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final OdmHeader header;
 
     /** Current metadata. */
     private final OemMetadata metadata;
@@ -102,7 +103,7 @@ public class StreamingOemWriter implements AutoCloseable {
      * @see #StreamingOemWriter(Generator, OemWriter, Header, OemMetadata, boolean)
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
-                              final Header header, final OemMetadata template) {
+                              final OdmHeader header, final OemMetadata template) {
         this(generator, writer, header, template, true);
     }
 
@@ -123,7 +124,7 @@ public class StreamingOemWriter implements AutoCloseable {
      * @since 11.1.2
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
-                              final Header header, final OemMetadata template,
+                              final OdmHeader header, final OemMetadata template,
                               final boolean useAttitudeFrame) {
         this(generator, writer, header, template, useAttitudeFrame, true);
     }
@@ -146,7 +147,7 @@ public class StreamingOemWriter implements AutoCloseable {
      * @since 11.1.2
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
-                              final Header header, final OemMetadata template,
+                              final OdmHeader header, final OemMetadata template,
                               final boolean useAttitudeFrame,
                               final boolean includeAcceleration) {
         this.generator          = generator;

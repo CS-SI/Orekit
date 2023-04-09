@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -97,7 +96,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     private int orbRevNumBasis;
 
     /** Trajectory element set type. */
-    private ElementsType trajType;
+    private OrbitElementsType trajType;
 
     /** Type of averaging (Osculating, mean Brouwer, other...). */
     private String orbAveraging;
@@ -122,7 +121,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
                                               CelestialBodyFrame.ICRF, null, null,
                                               CelestialBodyFrame.ICRF.name());
         trajFrameEpoch      = epochT0;
-        trajType            = ElementsType.CARTPV;
+        trajType            = OrbitElementsType.CARTPV;
         orbRevNum           = -1;
         orbRevNumBasis      = -1;
     }
@@ -131,13 +130,13 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        if (trajType != ElementsType.CARTP   &&
-            trajType != ElementsType.CARTPV  &&
-            trajType != ElementsType.CARTPVA) {
-            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING);
+        if (trajType != OrbitElementsType.CARTP   &&
+            trajType != OrbitElementsType.CARTPV  &&
+            trajType != OrbitElementsType.CARTPVA) {
+            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name());
         }
         if (trajUnits != null) {
-            trajType.checkUnits(trajUnits);
+            Unit.ensureCompatible(trajType.toString(), trajType.getUnits(), false, trajUnits);
         }
         if (orbRevNum >= 0 && orbRevNumBasis < 0) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
@@ -383,14 +382,14 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Get trajectory element set type.
      * @return trajectory element set type
      */
-    public ElementsType getTrajType() {
+    public OrbitElementsType getTrajType() {
         return trajType;
     }
 
     /** Set trajectory element set type.
      * @param trajType trajectory element set type
      */
-    public void setTrajType(final ElementsType trajType) {
+    public void setTrajType(final OrbitElementsType trajType) {
         refuseFurtherComments();
         this.trajType = trajType;
     }

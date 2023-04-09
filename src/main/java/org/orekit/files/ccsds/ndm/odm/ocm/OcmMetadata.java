@@ -96,13 +96,13 @@ public class OcmMetadata extends OdmMetadata {
     /** Unique ID identifying next message from a given originator. */
     private String nextMessageID;
 
-    /** Unique identifier of Attitude Data Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
     private String admMessageLink;
 
-    /** Unique identifier of Conjunction Data Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
     private String cdmMessageLink;
 
-    /** Unique identifier of Pointing Request Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
     private String prmMessageLink;
 
     /** Unique identifier of Reentry Data Messages linked to this Orbit Data Message. */
@@ -133,11 +133,11 @@ public class OcmMetadata extends OdmMetadata {
     /** Operational status. */
     private OpsStatus opsStatus;
 
-    /** Orbit catgory. */
+    /** Orbit category. */
     private OrbitCategory orbitCategory;
 
     /** List of elements of information data blocks included in this message. */
-    private List<String> ocmDataElements;
+    private List<OcmElements> ocmDataElements;
 
     /** Spacecraft clock count at {@link #getEpochT0()}. */
     private double sclkOffsetAtEpoch;
@@ -208,10 +208,10 @@ public class OcmMetadata extends OdmMetadata {
         // all of the parameters considered mandatory at ODM level
         // for OPM, OMM and OEM are in fact optional in OCM
         // only TIME_SYSTEM and EPOCH_TZERO are mandatory
-        checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM);
-        checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO);
+        checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM.name());
+        checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO.name());
         if (nextLeapEpoch != null) {
-            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC);
+            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC.name());
         }
     }
 
@@ -672,14 +672,14 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the list of elements of information data blocks included in this message.
      * @return list of elements of information data blocks included in this message
      */
-    public List<String> getOcmDataElements() {
+    public List<OcmElements> getOcmDataElements() {
         return ocmDataElements;
     }
 
     /** Set the list of elements of information data blocks included in this message.
      * @param ocmDataElements list of elements of information data blocks included in this message
      */
-    public void setOcmDataElements(final List<String> ocmDataElements) {
+    public void setOcmDataElements(final List<OcmElements> ocmDataElements) {
         refuseFurtherComments();
         this.ocmDataElements = ocmDataElements;
     }

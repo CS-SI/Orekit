@@ -16,6 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -23,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,11 +63,6 @@ import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AEMParserTest {
 
@@ -355,36 +358,46 @@ public class AEMParserTest {
 
         // Reference values
         final AbsoluteDate refDate = new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC());
-        final Vector3D refRate     = new Vector3D(FastMath.toRadians(0.03214),
-                                                  FastMath.toRadians(0.02156),
-                                                  FastMath.toRadians(0.1045));
-        final Vector3D refAcc      = Vector3D.ZERO;
 
         // Computed angular coordinates
         final TimeStampedAngularCoordinates ac = segment0.getData().getAngularCoordinates().get(0);
-        final double[] angles = ac.getRotation().getAngles(segment0.getMetadata().getEulerRotSeq(),
+        final FieldRotation<UnivariateDerivative1> r = ac.toUnivariateDerivative1Rotation();
+        final UnivariateDerivative1[] angles = r.getAngles(segment0.getMetadata().getEulerRotSeq(),
                                                            RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(0.0, refDate.durationFrom(ac.getDate()),                                      1.0e-5);
-        Assertions.assertEquals(0.0, refRate.distance(ac.getRotation().applyInverseTo(ac.getRotationRate())), 1.0e-5);
-        Assertions.assertEquals(0.0, refAcc.distance(ac.getRotationAcceleration()),                           1.0e-5);
-        Assertions.assertEquals(-26.78, FastMath.toDegrees(angles[0]), 1.0e-2);
-        Assertions.assertEquals(46.26,  FastMath.toDegrees(angles[1]), 1.0e-2);
-        Assertions.assertEquals(144.10, FastMath.toDegrees(angles[2]), 1.0e-2);
+        Assertions.assertEquals(0.0,     refDate.durationFrom(ac.getDate()),                 1.0e-5);
+        Assertions.assertEquals(0.0,     ac.getRotationAcceleration().getNorm(),             1.0e-5);
+        Assertions.assertEquals(-26.78,  FastMath.toDegrees(angles[0].getValue()),           1.0e-2);
+        Assertions.assertEquals(46.26,   FastMath.toDegrees(angles[1].getValue()),           1.0e-2);
+        Assertions.assertEquals(144.10,  FastMath.toDegrees(angles[2].getValue()),           1.0e-2);
+        Assertions.assertEquals(0.10450, FastMath.toDegrees(angles[0].getFirstDerivative()), 1.0e-5);
+        Assertions.assertEquals(0.03214, FastMath.toDegrees(angles[1].getFirstDerivative()), 1.0e-5);
+        Assertions.assertEquals(0.02156, FastMath.toDegrees(angles[2].getFirstDerivative()), 1.0e-5);
     }
 
     @Test
-    public void testParseAEM06() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample06.txt";
+    public void testParseAEM06a() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample06a.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
 
-        try {
-            parser.parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
-        }  catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
-        }
+        final Aem file = parser.parseMessage(source);
+        final TimeStampedAngularCoordinates ac = file.getSegments().get(0).getAngularCoordinates().get(7);
+        final Vector3D lastSpin = ac.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Assertions.assertEquals(268.45119, FastMath.toDegrees(MathUtils.normalizeAngle(lastSpin.getAlpha(), FastMath.PI)), 1.0e-5);
+        Assertions.assertEquals(68.317275, FastMath.toDegrees(lastSpin.getDelta()), 1.0e-5);
+    }
+
+    @Test
+    public void testParseAEM06b() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample06b.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+
+        final Aem file = parser.parseMessage(source);
+        final TimeStampedAngularCoordinates ac = file.getSegments().get(0).getAngularCoordinates().get(7);
+        final Vector3D lastSpin = ac.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Assertions.assertEquals(268.45119, FastMath.toDegrees(MathUtils.normalizeAngle(lastSpin.getAlpha(), FastMath.PI)), 1.0e-5);
+        Assertions.assertEquals(68.317275, FastMath.toDegrees(lastSpin.getDelta()), 1.0e-5);
     }
 
     @Test
@@ -478,7 +491,7 @@ public class AEMParserTest {
                             segment0.getMetadata().getStartTime());
         Assertions.assertEquals(new AbsoluteDate("2020-090T05:00:00.946", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assertions.assertEquals(AttitudeType.EULER_ANGLE_RATE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_DERIVATIVE, segment0.getMetadata().getAttitudeType());
 
         final AbsoluteDate refDate = new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC());
 
@@ -607,6 +620,34 @@ public class AEMParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
             Assertions.assertEquals(AemMetadataKey.ATTITUDE_TYPE.name(), oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testInconsistentDirection() {
+        try {
+            final String name = "/ccsds/adm/aem/AEM-inconsistent-direction.txt";
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().buildAemParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(AemMetadataKey.ATTITUDE_DIR, oe.getParts()[0]);
+            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
+        }
+    }
+
+    @Test
+    public void testInconsistentQuaternionType() {
+        try {
+            final String name = "/ccsds/adm/aem/AEM-inconsistent-quaternion-type.txt";
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().buildAemParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(AemMetadataKey.QUATERNION_TYPE, oe.getParts()[0]);
+            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
         }
     }
 

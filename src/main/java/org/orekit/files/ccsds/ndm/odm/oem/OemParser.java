@@ -29,13 +29,13 @@ import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -73,7 +73,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** File segments. */
     private List<OemSegment> segments;
@@ -141,14 +141,14 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public OdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header            = new Header(3.0);
+        header            = new OdmHeader();
         segments          = new ArrayList<>();
         metadata          = null;
         context           = null;
@@ -289,7 +289,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     boolean manageCovarianceSection(final boolean starting) {
         if (starting) {
             // save the current metadata for later retrieval of reference frame
-            final CommonMetadata savedMetadata = metadata;
+            final OdmCommonMetadata savedMetadata = metadata;
             currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
             anticipateNext(getFileFormat() == FileFormat.XML ?
                         this::processXmlCovarianceToken :
@@ -432,7 +432,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
 
                 if (currentCovariance == null) {
                     // save the current metadata for later retrieval of reference frame
-                    final CommonMetadata savedMetadata = metadata;
+                    final OdmCommonMetadata savedMetadata = metadata;
                     currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
                     currentRow        = 0;
                 }

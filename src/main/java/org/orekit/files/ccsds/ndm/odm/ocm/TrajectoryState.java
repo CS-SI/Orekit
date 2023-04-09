@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -33,7 +32,7 @@ import org.orekit.utils.units.Unit;
 public class TrajectoryState implements TimeStamped {
 
     /** Type of the elements. */
-    private final ElementsType type;
+    private final OrbitElementsType type;
 
     /** Entry date. */
     private final AbsoluteDate date;
@@ -48,7 +47,7 @@ public class TrajectoryState implements TimeStamped {
      * @param first index of first field to consider
      * @param units units to use for parsing
      */
-    public TrajectoryState(final ElementsType type, final AbsoluteDate date,
+    public TrajectoryState(final OrbitElementsType type, final AbsoluteDate date,
                            final String[] fields, final int first, final List<Unit> units) {
         this.type     = type;
         this.date     = date;
@@ -74,7 +73,7 @@ public class TrajectoryState implements TimeStamped {
     /** Get the type of the elements.
      * @return type of the elements
      */
-    public ElementsType getType() {
+    public OrbitElementsType getType() {
         return type;
     }
 
@@ -82,9 +81,9 @@ public class TrajectoryState implements TimeStamped {
      * @return a value indicating if the file contains velocity and/or acceleration
       */
     public CartesianDerivativesFilter getAvailableDerivatives() {
-        return type ==  ElementsType.CARTP ?
+        return type ==  OrbitElementsType.CARTP ?
                         CartesianDerivativesFilter.USE_P :
-                        (type == ElementsType.CARTPVA ?
+                        (type == OrbitElementsType.CARTPVA ?
                          CartesianDerivativesFilter.USE_PVA :
                          CartesianDerivativesFilter.USE_PV);
     }

@@ -26,9 +26,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -62,7 +63,7 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private Header header;
+    private AdmHeader header;
 
     /** File segments. */
     private List<AemSegment> segments;
@@ -118,14 +119,14 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public AdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header   = new Header(2.0);
+        header   = new AdmHeader();
         segments = new ArrayList<>();
         metadata = null;
         context  = null;
@@ -263,10 +264,14 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
                 return AdmMetadataKey.valueOf(token.getName()).process(token, context, metadata);
             } catch (IllegalArgumentException iaeD) {
                 try {
-                    return AemMetadataKey.valueOf(token.getName()).process(token, context, metadata);
-                } catch (IllegalArgumentException iaeE) {
-                    // token has not been recognized
-                    return false;
+                    return AdmCommonMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeC) {
+                    try {
+                        return AemMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                    } catch (IllegalArgumentException iaeE) {
+                        // token has not been recognized
+                        return false;
+                    }
                 }
             }
         }

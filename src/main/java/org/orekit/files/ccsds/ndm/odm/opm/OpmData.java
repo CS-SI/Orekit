@@ -88,7 +88,7 @@ public class OpmData implements Data {
             keplerianElementsBlock.validate(version);
             // in OPM, only semi-major axis is allowed, not mean motion
             keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
-                                               KeplerianElementsKey.SEMI_MAJOR_AXIS);
+                                               KeplerianElementsKey.SEMI_MAJOR_AXIS.name());
         }
         if (spacecraftParametersBlock != null) {
             spacecraftParametersBlock.validate(version);

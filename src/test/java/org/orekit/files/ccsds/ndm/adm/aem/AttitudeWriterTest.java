@@ -16,6 +16,21 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
@@ -33,8 +48,8 @@ import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.general.AttitudeEphemerisFile;
@@ -44,21 +59,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class AttitudeWriterTest {
 
@@ -85,7 +85,7 @@ public class AttitudeWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        Header header = new Header(2.0);
+        AdmHeader header = new AdmHeader();
         header.setFormatVersion(aem.getHeader().getFormatVersion());
         header.setCreationDate(aem.getHeader().getCreationDate());
         header.setOriginator(aem.getHeader().getOriginator());
@@ -160,7 +160,7 @@ public class AttitudeWriterTest {
 
     @Test
     public void testNullEphemeris() throws IOException {
-        Header header = new Header(2.0);
+        AdmHeader header = new AdmHeader();
         header.setOriginator("NASA/JPL");
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("1996-062A");
@@ -196,14 +196,14 @@ public class AttitudeWriterTest {
         final String id1 = "1999-012A";
         final String id2 = "1999-012B";
         StandAloneEphemerisFile file = new StandAloneEphemerisFile();
-        file.generate(id1, id1 + "-name", AttitudeType.QUATERNION_RATE,
+        file.generate(id1, id1 + "-name", AttitudeType.QUATERNION_ANGVEL,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,
                                                         new Vector3D(0.000, 0.010, 0.000),
                                                         new Vector3D(0.000, 0.000, 0.001)),
                       900.0, 60.0);
-        file.generate(id2, id2 + "-name", AttitudeType.QUATERNION_RATE,
+        file.generate(id2, id2 + "-name", AttitudeType.QUATERNION_ANGVEL,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,
@@ -213,8 +213,10 @@ public class AttitudeWriterTest {
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
+        AdmHeader header = new AdmHeader();
+        header.setFormatVersion(1.0);
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   null, metadata, FileFormat.KVN, "",
+                                                   header, metadata, FileFormat.KVN, "",
                                                    Constants.JULIAN_DAY, 60);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, file);

@@ -58,13 +58,13 @@ public class Maneuver extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(epochIgnition,  ManeuverKey.MAN_EPOCH_IGNITION);
-        checkNotNull(referenceFrame, ManeuverKey.MAN_REF_FRAME);
-        checkNotNaN(duration,        ManeuverKey.MAN_DURATION);
-        checkNotNaN(deltaMass,       ManeuverKey.MAN_DELTA_MASS);
-        checkNotNaN(dV[0],           ManeuverKey.MAN_DV_1);
-        checkNotNaN(dV[1],           ManeuverKey.MAN_DV_2);
-        checkNotNaN(dV[2],           ManeuverKey.MAN_DV_3);
+        checkNotNull(epochIgnition,  ManeuverKey.MAN_EPOCH_IGNITION.name());
+        checkNotNull(referenceFrame, ManeuverKey.MAN_REF_FRAME.name());
+        checkNotNaN(duration,        ManeuverKey.MAN_DURATION.name());
+        checkNotNaN(deltaMass,       ManeuverKey.MAN_DELTA_MASS.name());
+        checkNotNaN(dV[0],           ManeuverKey.MAN_DV_1.name());
+        checkNotNaN(dV[1],           ManeuverKey.MAN_DV_2.name());
+        checkNotNaN(dV[2],           ManeuverKey.MAN_DV_3.name());
     }
 
     /** Get epoch ignition.

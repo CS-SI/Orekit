@@ -257,6 +257,35 @@ public class Unit implements Serializable {
         return new Unit(builder.toString(), 1.0, mass, length, time, current, angle);
     }
 
+    /** Ensure some units are compatible with reference units.
+     * @param description description of the units list (for error message generation)
+     * @param reference reference units
+     * @param units units to check
+     * @param allowScaleDifferences if true, unit with same dimension but different
+     * scale (like {@link #KILOMETRE} versus {@link #METRE}) are allowed, otherwise they will trigger an exception
+     * @exception OrekitException if units are not compatible (number of elements, dimensions or scaling)
+     */
+    public static void ensureCompatible(final String description, final List<Unit> reference,
+                                        final boolean allowScaleDifferences, final List<Unit> units) {
+        if (units.size() != reference.size()) {
+            throw new OrekitException(OrekitMessages.WRONG_NB_COMPONENTS,
+                                      description, reference.size(), units.size());
+        }
+        for (int i = 0; i < reference.size(); ++i) {
+            if (!reference.get(i).sameDimension(units.get(i))) {
+                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
+                                          reference.get(i).getName(),
+                                          units.get(i).getName());
+            }
+            if (!(allowScaleDifferences ||
+                  Precision.equals(reference.get(i).getScale(), units.get(i).getScale(), 1))) {
+                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
+                                          reference.get(i).getName(),
+                                          units.get(i).getName());
+            }
+        }
+    }
+
     /** Append a dimension contribution to a unit name.
      * @param builder builder for unit name
      * @param dim name of the dimension
