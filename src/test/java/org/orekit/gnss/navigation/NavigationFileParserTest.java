@@ -17,7 +17,12 @@
 package org.orekit.gnss.navigation;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -30,6 +35,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
@@ -187,7 +193,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(1, file.getGPSLegacyNavigationMessages().size());
-        Assertions.assertEquals(1, file.getGPSCivilianNavigationMessages().size());
+        Assertions.assertEquals(2, file.getGPSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getSystemTimeOffsets().size());
         Assertions.assertEquals(0, file.getEarthOrientationParameters().size());
         Assertions.assertEquals(0, file.getKlobucharMessages().size());
@@ -1696,7 +1702,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0,  file.getGPSCivilianNavigationMessages().size());
         Assertions.assertEquals(0,  file.getSystemTimeOffsets().size());
         Assertions.assertEquals(0,  file.getEarthOrientationParameters().size());
-        Assertions.assertEquals(5,  file.getKlobucharMessages().size());
+        Assertions.assertEquals(6,  file.getKlobucharMessages().size());
         Assertions.assertEquals(1,  file.getNequickGMessages().size());
         Assertions.assertEquals(2,  file.getBDGIMMessages().size());
 
@@ -1772,7 +1778,7 @@ public class NavigationFileParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                oe.getSpecifier());
+                                    oe.getSpecifier());
             Assertions.assertEquals(4,  oe.getParts()[0]);
         }
     }
@@ -1805,6 +1811,60 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testDefensiveProgrammingExceptions() {
+        // this test is really only meant to increase coverage with some reflection black magic
+        // the methods tested here should not be called directly: they are overridden in concrete parsers
+        try {
+
+            // create ParseInfo
+            final RinexNavigationParser rnp = new RinexNavigationParser();
+            Class<?> parseInfoClass = null;
+            for (Class<?> c : RinexNavigationParser.class.getDeclaredClasses()) {
+                if (c.getName().endsWith("ParseInfo")) {
+                    parseInfoClass = c;
+                }
+            }
+            Constructor<?> ctr = parseInfoClass.getDeclaredConstructor(RinexNavigationParser.class, String.class);
+            Object parseInfo = ctr.newInstance(rnp, "");
+
+            Class<?> parserClass = null;
+            for (Class<?> c : RinexNavigationParser.class.getDeclaredClasses()) {
+                if (c.getName().endsWith("SatelliteSystemLineParser")) {
+                    parserClass = c;
+                }
+            }
+
+            // we select SBAS because it implements only the first 3 methods
+            final Field sbasParserField = parserClass.getDeclaredField("SBAS");
+
+            // get the methods inherited from base class
+            for (String methodName : Arrays.asList("parseFourthBroadcastOrbit",
+                                                   "parseFifthBroadcastOrbit",
+                                                   "parseSixthBroadcastOrbit",
+                                                   "parseSeventhBroadcastOrbit",
+                                                   "parseEighthBroadcastOrbit",
+                                                   "parseNinthBroadcastOrbit")) {
+                Method m = parserClass.getMethod(methodName, String.class, parseInfoClass);
+                m.setAccessible(true);
+                try {
+                    // call the method, triggering the internal error exception
+                    m.invoke(sbasParserField.get(null), "", parseInfo);
+                    Assertions.fail("an exception should have been thrown");
+                } catch (InvocationTargetException e) {
+                    Assertions.assertTrue(e.getCause() instanceof OrekitInternalError);
+                }
+            }
+
+            // call the methods, triggering the exception on purpose
+        } catch (NoSuchFieldException | NoSuchMethodException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException | InvocationTargetException |
+                 InstantiationException e) {
+            e.printStackTrace();
+            Assertions.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
     public void testWrongFormat() throws IOException {
         try {
             final String ex = "/gnss/navigation/wrong-format.n";
@@ -1815,6 +1875,77 @@ public class NavigationFileParserTest {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                 oe.getSpecifier());
             Assertions.assertEquals(4,  oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testWrongTypeBeidou() throws IOException {
+        doTestWrongType("/gnss/navigation/wrong-type-Beidou.n");
+    }
+
+    @Test
+    public void testWrongTypeGalileo() throws IOException {
+        doTestWrongType("/gnss/navigation/wrong-type-Galileo.n");
+    }
+
+    @Test
+    public void testWrongTypeGlonass() throws IOException {
+        doTestWrongType("/gnss/navigation/wrong-type-Glonass.n");
+    }
+
+    @Test
+    public void testWrongTypeGPS() throws IOException {
+        doTestWrongType("/gnss/navigation/wrong-type-GPS.n");
+    }
+
+    @Test
+    public void testWrongTypeIRNSS() throws IOException {
+        doTestWrongType("/gnss/navigation/wrong-type-IRNSS.n");
+    }
+
+    @Test
+    public void testWrongTypeQZSS() throws IOException {
+        doTestWrongType("/gnss/navigation/wrong-type-QZSS.n");
+    }
+
+    @Test
+    public void testWrongTypeSBAS() throws IOException {
+        doTestWrongType("/gnss/navigation/wrong-type-SBAS.n");
+    }
+
+    private void doTestWrongType(final String ex) throws IOException {
+        try {
+            new RinexNavigationParser().
+                            parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertTrue(((String) oe.getParts()[2]).endsWith("XXXX"));
+        }
+    }
+
+    @Test
+    public void testMissingRunBy305() throws IOException {
+        final String ex = "/gnss/navigation/missing-run-by-305.n";
+        try {
+            new RinexNavigationParser().
+                            parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMissingRunBy400() throws IOException {
+        final String ex = "/gnss/navigation/missing-run-by-400.n";
+        try {
+            new RinexNavigationParser().
+                            parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCOMPLETE_HEADER, oe.getSpecifier());
+            Assertions.assertEquals(ex, oe.getParts()[0]);
         }
     }
 

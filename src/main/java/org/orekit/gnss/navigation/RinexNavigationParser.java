@@ -30,6 +30,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.RegionCode;
@@ -389,15 +390,9 @@ public class RinexNavigationParser {
                        final double version = header.getFormatVersion();
 
                        // check mandatory header fields
-                       if (version < 4) {
-                           if (header.getRunByName() == null) {
-                               throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, pi.name);
-                           }
-                       } else {
-                           if (header.getRunByName() == null ||
-                               header.getNumberOfLeapSeconds() < 0) {
-                               throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, pi.name);
-                           }
+                       if (header.getRunByName() == null ||
+                           version >= 4 && header.getNumberOfLeapSeconds() < 0) {
+                           throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, pi.name);
                        }
                    },
                    LineParser::navigationNext),
@@ -1052,15 +1047,12 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseFourthBroadcastOrbit(final String line, final ParseInfo pi) {
-                if (pi.file.getHeader().getFormatVersion() > 3.045) {
-                    // this line has been introduced in 3.05
-                    pi.glonassNav.setStatusFlags(parseBroadcastDouble1(line,          Unit.NONE));
-                    pi.glonassNav.setGroupDelayDifference(parseBroadcastDouble2(line, Unit.NONE));
-                    pi.glonassNav.setURA(parseBroadcastDouble3(line,                  Unit.NONE));
-                    pi.glonassNav.setHealthFlags(parseBroadcastDouble4(line,          Unit.NONE));
-                    pi.file.addGlonassNavigationMessage(pi.glonassNav);
-                    pi.glonassNav = null;
-                }
+                pi.glonassNav.setStatusFlags(parseBroadcastDouble1(line,          Unit.NONE));
+                pi.glonassNav.setGroupDelayDifference(parseBroadcastDouble2(line, Unit.NONE));
+                pi.glonassNav.setURA(parseBroadcastDouble3(line,                  Unit.NONE));
+                pi.glonassNav.setHealthFlags(parseBroadcastDouble4(line,          Unit.NONE));
+                pi.file.addGlonassNavigationMessage(pi.glonassNav);
+                pi.glonassNav = null;
             }
 
         },
@@ -1599,8 +1591,8 @@ public class RinexNavigationParser {
          * @param line line being parsed
          * @return the satellite system
          */
-        public static SatelliteSystemLineParser getParser(final SatelliteSystem system, final String type,
-                                                          final ParseInfo parseInfo, final String line) {
+        private static SatelliteSystemLineParser getParser(final SatelliteSystem system, final String type,
+                                                           final ParseInfo parseInfo, final String line) {
             switch (system) {
                 case GPS :
                     if (type == null || type.equals(LegacyNavigationMessage.LNAV)) {
@@ -1820,7 +1812,8 @@ public class RinexNavigationParser {
          * @param pi holder for transient data
          */
         public void parseFourthBroadcastOrbit(final String line, final ParseInfo pi) {
-            // do nothing by default
+            // this should never be called (except by some tests that use reflection)
+            throw new OrekitInternalError(null);
         }
 
         /**
@@ -1829,7 +1822,8 @@ public class RinexNavigationParser {
          * @param pi holder for transient data
          */
         public void parseFifthBroadcastOrbit(final String line, final ParseInfo pi) {
-            // do nothing by default
+            // this should never be called (except by some tests that use reflection)
+            throw new OrekitInternalError(null);
         }
 
         /**
@@ -1838,7 +1832,8 @@ public class RinexNavigationParser {
          * @param pi holder for transient data
          */
         public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
-            // do nothing by default
+            // this should never be called (except by some tests that use reflection)
+            throw new OrekitInternalError(null);
         }
 
         /**
@@ -1847,7 +1842,8 @@ public class RinexNavigationParser {
          * @param pi holder for transient data
          */
         public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
-            // do nothing by default
+            // this should never be called (except by some tests that use reflection)
+            throw new OrekitInternalError(null);
         }
 
         /**
@@ -1856,7 +1852,8 @@ public class RinexNavigationParser {
          * @param pi holder for transient data
          */
         public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
-            // do nothing by default
+            // this should never be called (except by some tests that use reflection)
+            throw new OrekitInternalError(null);
         }
 
         /**
@@ -1865,7 +1862,8 @@ public class RinexNavigationParser {
          * @param pi holder for transient data
          */
         public void parseNinthBroadcastOrbit(final String line, final ParseInfo pi) {
-            // do nothing by default
+            // this should never be called (except by some tests that use reflection)
+            throw new OrekitInternalError(null);
         }
 
         /**
