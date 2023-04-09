@@ -765,13 +765,24 @@ public class RinexObservationParserTest {
     }
 
     @Test
-    public void testUnknownEventFlag() {
+    public void testUnknownEventFlag3() {
         try {
-            load("rinex/unknown-event-flag.00o");
+            load("rinex/unknown-event-flag-3.00o");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assertions.assertEquals(61, ((Integer) oe.getParts()[0]).intValue());
+        }
+    }
+
+    @Test
+    public void testUnknownEventFlag4() {
+        try {
+            load("rinex/unknown-event-flag-4.00o");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(53, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 

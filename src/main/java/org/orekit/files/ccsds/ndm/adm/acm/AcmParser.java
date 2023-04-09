@@ -461,9 +461,6 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      * @return true if token was processed, false otherwise
      */
     private boolean processPhysicalPropertyToken(final ParseToken token) {
-        if (physicBlock == null) {
-            physicBlock = new AttitudePhysicalProperties(metadata.getEpochT0());
-        }
         anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
@@ -516,9 +513,6 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      * @return true if token was processed, false otherwise
      */
     private boolean processManeuverToken(final ParseToken token) {
-        if (currentManeuver == null) {
-            currentManeuver = new AttitudeManeuver();
-        }
         anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
@@ -534,9 +528,6 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      * @return true if token was processed, false otherwise
      */
     private boolean processAttitudeDeterminationToken(final ParseToken token) {
-        if (attitudeDeterminationBlock == null) {
-            attitudeDeterminationBlock = new AttitudeDetermination();
-        }
         anticipateNext(this::processDataSubStructureToken);
         if (token.getName() == null) {
             return false;
@@ -564,9 +555,6 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      * @return true if token was processed, false otherwise
      */
     private boolean processUserDefinedToken(final ParseToken token) {
-        if (userDefinedBlock == null) {
-            userDefinedBlock = new UserDefined();
-        }
         anticipateNext(this::processDataSubStructureToken);
         if ("COMMENT".equals(token.getName())) {
             return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
