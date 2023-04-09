@@ -369,9 +369,6 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
     @Override
     public Acm build() {
 
-        // ACM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
-        // automatically before the end of the file
-        finalizeData();
         if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
             userDefinedBlock = null;
         }
