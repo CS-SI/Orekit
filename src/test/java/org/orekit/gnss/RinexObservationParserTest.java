@@ -513,6 +513,66 @@ public class RinexObservationParserTest {
     }
 
     @Test
+    public void testNumberFormatError() {
+        try {
+            load("rinex/number-format-error.06o");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(33, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("-45####.120", ((String) oe.getParts()[2]).substring(21, 33).trim());
+        }
+    }
+
+    @Test
+    public void testUnsupportedTimeScale() {
+        try {
+            load("rinex/unsupported-time-scale.06o");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(18, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("XYZ", ((String) oe.getParts()[2]).substring(48, 51).trim());
+        }
+    }
+
+    @Test
+    public void testNoTimeScale() {
+        try {
+            load("rinex/no-time-scale.07o");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(18, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("", ((String) oe.getParts()[2]).substring(48, 51).trim());
+        }
+    }
+
+    @Test
+    public void testInconsistentSatelliteSystem() {
+        try {
+            load("rinex/inconsistent-satellite-system.00o");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCONSISTENT_SATELLITE_SYSTEM, oe.getSpecifier());
+            Assertions.assertEquals(SatelliteSystem.GPS,     oe.getParts()[3]);
+            Assertions.assertEquals(SatelliteSystem.GALILEO, oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testInconsistentNumberOfSatellites() {
+        try {
+            load("rinex/inconsistent-number-of-sats.00o");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCONSISTENT_NUMBER_OF_SATS, oe.getSpecifier());
+            Assertions.assertEquals(3, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(2, ((Integer) oe.getParts()[3]).intValue());
+        }
+    }
+
+    @Test
     public void testMissingHeaderLabel() {
         try {
             //Test with RinexV3 Missing Label inside Header
@@ -705,6 +765,17 @@ public class RinexObservationParserTest {
     }
 
     @Test
+    public void testUnknownEventFlag() {
+        try {
+            load("rinex/unknown-event-flag.00o");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(61, ((Integer) oe.getParts()[0]).intValue());
+        }
+    }
+
+    @Test
     public void testUnknownFrequency() {
         try {
             load("rinex/unknown-rinex-frequency.00o");
@@ -736,6 +807,23 @@ public class RinexObservationParserTest {
     @Test
     public void testPCVSApplied() {
         List<ObservationDataSet> l = load("rinex/pcvs.00o");
+        Assertions.assertEquals(51, l.size());
+        for (ObservationDataSet dataSet : l) {
+            RinexObservationHeader header = dataSet.getHeader();
+            List<AppliedPCVS> list = header.getListAppliedPCVS();
+            Assertions.assertEquals(2, list.size());
+            Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+            Assertions.assertEquals("pcvs-program-name", list.get(0).getProgPCVS());
+            Assertions.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
+            Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+            Assertions.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
+            Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
+        }
+    }
+
+    @Test
+    public void testCycleSlip() {
+        List<ObservationDataSet> l = load("rinex/cycle-slip.00o");
         Assertions.assertEquals(51, l.size());
         for (ObservationDataSet dataSet : l) {
             RinexObservationHeader header = dataSet.getHeader();

@@ -67,24 +67,6 @@ public class RinexObservationParser {
     /** Default name pattern for rinex 3 observation files. */
     public static final String DEFAULT_RINEX_3_NAMES = "^\\w{9}_\\w{1}_\\d{11}_\\d{2}\\w_\\d{2}\\w{1}_\\w{2}\\.rnx$";
 
-    /** GPS time scale. */
-    private static final String GPS = "GPS";
-
-    /** Galileo time scale. */
-    private static final String GAL = "GAL";
-
-    /** GLONASS time scale. */
-    private static final String GLO = "GLO";
-
-    /** QZSS time scale. */
-    private static final String QZS = "QZS";
-
-    /** Beidou time scale. */
-    private static final String BDT = "BDT";
-
-    /** IRNSS time scale. */
-    private static final String IRN = "IRN";
-
     /** Maximum number of satellites per line in Rinex 2 format . */
     private static final int MAX_SAT_PER_RINEX_2_LINE = 12;
 
@@ -126,7 +108,7 @@ public class RinexObservationParser {
         final ParseInfo parseInfo = new ParseInfo(source.getName());
 
         try (Reader reader = source.getOpener().openReaderOnce();
-                        BufferedReader br = new BufferedReader(reader)) {
+             BufferedReader br = new BufferedReader(reader)) {
             ++parseInfo.lineNumber;
             nextLine:
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
@@ -417,22 +399,14 @@ public class RinexObservationParser {
                           (line, parseInfo) -> {
                               if (parseInfo.header.getSatelliteSystem() == SatelliteSystem.MIXED) {
                                   // in case of mixed data, time scale must be specified in the Time of First line
-                                  final String timeScaleStr = RinexUtils.parseString(line, 48, 3);
-
-                                  if (timeScaleStr.equals(GPS)) {
-                                      parseInfo.timeScale = parseInfo.timeScales.getGPS();
-                                  } else if (timeScaleStr.equals(GAL)) {
-                                      parseInfo.timeScale = parseInfo.timeScales.getGST();
-                                  } else if (timeScaleStr.equals(GLO)) {
-                                      parseInfo.timeScale = parseInfo.timeScales.getGLONASS();
-                                  } else if (timeScaleStr.equals(QZS)) {
-                                      parseInfo.timeScale = parseInfo.timeScales.getQZSS();
-                                  } else if (timeScaleStr.equals(BDT)) {
-                                      parseInfo.timeScale = parseInfo.timeScales.getBDT();
-                                  } else if (timeScaleStr.equals(IRN)) {
-                                      parseInfo.timeScale = parseInfo.timeScales.getIRNSS();
-                                  } else {
-                                      throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, parseInfo.name);
+                                  try {
+                                      parseInfo.timeScale = ObservationTimeScale.
+                                                            valueOf(RinexUtils.parseString(line, 48, 3)).
+                                                            timeScaleSupplier.
+                                                            apply(parseInfo.timeScales);
+                                  } catch (IllegalArgumentException iae) {
+                                      throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                                parseInfo.lineNumber, parseInfo.name, line);
                                   }
                               } else {
                                   parseInfo.timeScale = parseInfo.header.getSatelliteSystem().getDefaultTimeSystem(parseInfo.timeScales);
@@ -868,8 +842,8 @@ public class RinexObservationParser {
                                      parseInfo.observations.size() < types.size();
                                      index += 16) {
                                     final ObservationData observationData;
-                                    if (parseInfo.cycleSlip) {
-                                        // we are in a cycle slip data block (eventFlag = 6), we just ignore everything
+                                    if (parseInfo.specialRecord || parseInfo.cycleSlip) {
+                                        // we are in a special record (eventFlag < 6) or in a cycle slip data block (eventFlag = 6), we just ignore everything
                                         observationData = null;
                                     } else {
                                         // this is a regular observation line
@@ -890,7 +864,7 @@ public class RinexObservationParser {
                                     parseInfo.observations.add(observationData);
                                 }
 
-                                if (!parseInfo.cycleSlip) {
+                                if (!(parseInfo.specialRecord || parseInfo.cycleSlip)) {
                                     parseInfo.observationDataSets.add(new ObservationDataSet(parseInfo.header,
                                                                                              sat,
                                                                                              parseInfo.tObs,
@@ -1185,6 +1159,41 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          */
         void parse(String line, ParseInfo parseInfo);
+    }
+
+    /** Observation time scales.
+     * @since 12.0
+     */
+    private enum ObservationTimeScale {
+
+        /** GPS time scale. */
+        GPS(ts -> ts.getGPS()),
+
+        /** Galileo time scale. */
+        GAL(ts -> ts.getGST()),
+
+        /** GLONASS time scale. */
+        GLO(ts -> ts.getGLONASS()),
+
+        /** QZSS time scale. */
+        QZS(ts -> ts.getQZSS()),
+
+        /** Beidou time scale. */
+        BDT(ts -> ts.getBDT()),
+
+        /** IRNSS time scale. */
+        IRN(ts -> ts.getIRNSS());
+
+        /** Supplier for time scale. */
+        private final Function<TimeScales, TimeScale> timeScaleSupplier;
+
+        /** Simple constructor.
+         * @param timeScaleSupplier supplier for time scale
+         */
+        ObservationTimeScale(final Function<TimeScales, TimeScale> timeScaleSupplier) {
+            this.timeScaleSupplier = timeScaleSupplier;
+        }
+
     }
 
 }
