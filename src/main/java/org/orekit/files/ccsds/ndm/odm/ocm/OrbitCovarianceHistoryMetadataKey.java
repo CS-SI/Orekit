@@ -66,7 +66,7 @@ public enum OrbitCovarianceHistoryMetadataKey {
                                                                         container::setCovConfidence)),
 
     /** Covariance element set type.
-     * @see ElementsType
+     * @see OrbitElementsType
      */
     COV_TYPE((token, context, container) -> token.processAsEnum(OrbitElementsType.class, container::setCovType)),
 

@@ -26,7 +26,7 @@ import org.orekit.orbits.OrbitType;
 /**
  * Abstract class for {@link FieldODEIntegratorBuilder}.
  *
- * @param <T>
+ * @param <T> type of the field elements
  *
  * @author Vincent Cucchietti
  */

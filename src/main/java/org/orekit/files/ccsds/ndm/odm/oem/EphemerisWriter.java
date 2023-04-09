@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -114,7 +113,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame...) will be inherited from the template  metadata set at writer
-     * {@link #EphemerisWriter(OemWriter, Header, OemMetadata, FileFormat, String, double, int) construction}.
+     * {@link #EphemerisWriter(OemWriter, OdmHeader, OemMetadata, FileFormat, String, double, int) construction}.
      * </p>
      */
     @Override

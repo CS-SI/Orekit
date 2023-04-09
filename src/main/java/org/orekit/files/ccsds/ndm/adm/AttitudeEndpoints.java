@@ -190,7 +190,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
 
     /** Check if attitude is from external frame to spacecraft body frame.
      * <p>
-     * {@link #checkMandatoryEntriesExceptExternalFrame(Enum, Enum, Enum)
+     * {@link #checkMandatoryEntriesExceptExternalFrame(double, Enum, Enum, Enum)
      * Mandatory entries} must have been initialized properly to non-null
      * values before this method is called, otherwise {@code NullPointerException}
      * will be thrown.

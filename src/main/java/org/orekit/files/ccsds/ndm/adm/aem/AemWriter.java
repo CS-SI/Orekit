@@ -120,7 +120,7 @@ import org.orekit.utils.units.Unit;
  *            <td></td>
  *        </tr>
  *        <tr>
- *            <td>{@link AdmMetadataKey#OBJECT_ID}</td>
+ *            <td>{@link AdmCommonMetadataKey#OBJECT_ID}</td>
  *            <td>Yes</td>
  *            <td></td>
  *        </tr>
@@ -172,7 +172,7 @@ import org.orekit.utils.units.Unit;
  *        <tr>
  *            <td>{@link AemMetadataKey#ATTITUDE_TYPE}</td>
  *            <td>Yes</td>
- *            <td>{@link AttitudeType#QUATERNION_RATE QUATERNION/RATE}</td>
+ *            <td>{@link AttitudeType#QUATERNION_DERIVATIVE QUATERNION/DERIVATIVE}</td>
  *        </tr>
  *        <tr>
  *            <td>{@link AemMetadataKey#QUATERNION_TYPE}</td>

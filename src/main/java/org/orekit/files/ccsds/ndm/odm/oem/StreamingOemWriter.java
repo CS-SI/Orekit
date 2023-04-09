@@ -100,7 +100,7 @@ public class StreamingOemWriter implements AutoCloseable {
      * @param header    file header (may be null)
      * @param template  template for metadata
      * @since 11.0
-     * @see #StreamingOemWriter(Generator, OemWriter, Header, OemMetadata, boolean)
+     * @see #StreamingOemWriter(Generator, OemWriter, OdmHeader, OemMetadata, boolean)
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
                               final OdmHeader header, final OemMetadata template) {
@@ -119,8 +119,7 @@ public class StreamingOemWriter implements AutoCloseable {
      *                         segment is taken from the first state's attitude.
      *                         Otherwise the {@code template}'s reference frame
      *                         is used, {@link OemMetadata#getReferenceFrame()}.
-     * @see #StreamingOemWriter(Generator, OemWriter, Header, OemMetadata,
-     * boolean, boolean)
+     * @see #StreamingOemWriter(Generator, OemWriter, OdmHeader, OemMetadata, boolean, boolean)
      * @since 11.1.2
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,

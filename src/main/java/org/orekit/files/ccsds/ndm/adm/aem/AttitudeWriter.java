@@ -23,7 +23,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -110,7 +109,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame, attitude type...) will be inherited from the template  metadata set at writer
-     * {@link #AttitudeWriter(AemWriter, Header, AemMetadata, FileFormat, String, double, int) construction}.
+     * {@link #AttitudeWriter(AemWriter, AdmHeader, AemMetadata, FileFormat, String, double, int) construction}.
      * </p>
      */
     @Override
