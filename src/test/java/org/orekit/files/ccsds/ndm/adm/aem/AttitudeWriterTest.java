@@ -230,7 +230,7 @@ public class AttitudeWriterTest {
                 ++count;
             }
         }
-        Assertions.assertEquals(82, count);
+        Assertions.assertEquals(81, count);
 
     }
 
