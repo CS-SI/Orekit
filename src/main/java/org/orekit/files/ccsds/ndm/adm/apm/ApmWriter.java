@@ -100,8 +100,9 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
 
         if (segment.getData().getQuaternionBlock() != null) {
             // write quaternion block
-            new ApmQuaternionWriter(formatVersion,
-                                    ApmDataSubStructureKey.quaternionState.name(), null,
+            final String xmlTag = ApmDataSubStructureKey.quaternionState.name();
+            final String kvnTag = formatVersion < 2.0 ? null : ApmDataSubStructureKey.QUAT.name();
+            new ApmQuaternionWriter(formatVersion, xmlTag, kvnTag,
                                     segment.getData().getQuaternionBlock(),
                                     formatVersion >= 2.0 ? null : segment.getData().getEpoch(),
                                                          getTimeConverter()).
@@ -113,14 +114,17 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
             final String xmlTag = formatVersion < 2.0 ?
                                   ApmDataSubStructureKey.eulerElementsThree.name() :
                                   ApmDataSubStructureKey.eulerAngleState.name();
-            new EulerWriter(formatVersion, xmlTag, null,
+            final String kvnTag = formatVersion < 2.0 ? null : ApmDataSubStructureKey.EULER.name();
+            new EulerWriter(formatVersion, xmlTag, kvnTag,
                             segment.getData().getEulerBlock()).
             write(generator);
         }
 
         if (segment.getData().getAngularVelocityBlock() != null) {
             // write optional angular velocity block
-            new AngularVelocityWriter(ApmDataSubStructureKey.angularVelocity.name(), null,
+            final String xmlTag = ApmDataSubStructureKey.angularVelocity.name();
+            final String kvnTag = ApmDataSubStructureKey.ANGVEL.name();
+            new AngularVelocityWriter(xmlTag, kvnTag,
                                       segment.getData().getAngularVelocityBlock()).
             write(generator);
         }
@@ -128,16 +132,21 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
         if (segment.getData().getSpinStabilizedBlock() != null) {
             // write optional block for spin stabilized satellites
             final String xmlTag;
+            final String kvnTag;
             if (formatVersion < 2.0) {
                 xmlTag = ApmDataSubStructureKey.eulerElementsSpin.name();
+                kvnTag = null;
             } else if (segment.getData().getSpinStabilizedBlock().hasMomentum()) {
                 xmlTag = ApmDataSubStructureKey.spinNutationMom.name();
+                kvnTag = ApmDataSubStructureKey.SPIN.name();
             } else if (segment.getData().getSpinStabilizedBlock().hasNutation()) {
                 xmlTag = ApmDataSubStructureKey.spinNutation.name();
+                kvnTag = ApmDataSubStructureKey.SPIN.name();
             } else {
                 xmlTag = ApmDataSubStructureKey.spin.name();
+                kvnTag = ApmDataSubStructureKey.SPIN.name();
             }
-            new SpinStabilizedWriter(formatVersion, xmlTag, null,
+            new SpinStabilizedWriter(formatVersion, xmlTag, kvnTag,
                                      segment.getData().getSpinStabilizedBlock()).
             write(generator);
         }
@@ -147,7 +156,8 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
             final String xmlTag = formatVersion < 2.0 ?
                                   ApmDataSubStructureKey.spacecraftParameters.name() :
                                   ApmDataSubStructureKey.inertia.name();
-            new InertiaWriter(formatVersion, xmlTag, null,
+            final String kvnTag = formatVersion < 2.0 ? null : ApmDataSubStructureKey.INERTIA.name();
+            new InertiaWriter(formatVersion, xmlTag, kvnTag,
                               segment.getData().getInertiaBlock()).
             write(generator);
         }
@@ -155,7 +165,9 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
         if (!segment.getData().getManeuvers().isEmpty()) {
             for (final Maneuver maneuver : segment.getData().getManeuvers()) {
                 // write optional maneuver block
-                new ManeuverWriter(formatVersion, ApmDataSubStructureKey.maneuverParameters.name(), null,
+                final String xmlTag = ApmDataSubStructureKey.maneuverParameters.name();
+                final String kvnTag = formatVersion < 2.0 ? null : ApmDataSubStructureKey.MAN.name();
+                new ManeuverWriter(formatVersion, xmlTag, kvnTag,
                                    maneuver, getTimeConverter()).write(generator);
             }
         }
