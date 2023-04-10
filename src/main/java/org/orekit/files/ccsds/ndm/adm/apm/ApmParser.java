@@ -433,6 +433,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processEulerToken(final ParseToken token) {
+        commentsBlock.refuseFurtherComments();
         if (eulerBlock == null) {
             eulerBlock = new Euler();
             if (moveCommentsIfEmpty(quaternionBlock, eulerBlock)) {
@@ -457,6 +458,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @since 12.0
      */
     private boolean processAngularVelocityToken(final ParseToken token) {
+        commentsBlock.refuseFurtherComments();
         if (angularVelocityBlock == null) {
             angularVelocityBlock = new AngularVelocity();
             if (moveCommentsIfEmpty(eulerBlock, angularVelocityBlock)) {
@@ -480,6 +482,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processSpinStabilizedToken(final ParseToken token) {
+        commentsBlock.refuseFurtherComments();
         if (spinStabilizedBlock == null) {
             spinStabilizedBlock = new SpinStabilized();
             if (moveCommentsIfEmpty(angularVelocityBlock, spinStabilizedBlock)) {
@@ -503,6 +506,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processInertiaToken(final ParseToken token) {
+        commentsBlock.refuseFurtherComments();
         if (inertiaBlock == null) {
             inertiaBlock = new Inertia();
             if (moveCommentsIfEmpty(spinStabilizedBlock, inertiaBlock)) {
@@ -526,6 +530,7 @@ public class ApmParser extends AdmParser<Apm, ApmParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processManeuverToken(final ParseToken token) {
+        commentsBlock.refuseFurtherComments();
         if (currentManeuver == null) {
             currentManeuver = new Maneuver();
             if (moveCommentsIfEmpty(inertiaBlock, currentManeuver)) {
