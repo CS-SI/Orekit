@@ -70,7 +70,7 @@ class EulerWriter extends AbstractWriter {
             generator.writeEntry(EulerKey.EULER_FRAME_B.name(), euler.getEndpoints().getFrameB().getName(), null, true);
             generator.writeEntry(EulerKey.EULER_DIR.name(),
                                  euler.getEndpoints().isA2b() ? AttitudeEndpoints.A2B : AttitudeEndpoints.B2A,
-                                                              null, true);
+                                 null, true);
         } else {
             generator.writeEntry(EulerKey.REF_FRAME_A.name(), euler.getEndpoints().getFrameA().getName(), null, true);
             generator.writeEntry(EulerKey.REF_FRAME_B.name(), euler.getEndpoints().getFrameB().getName(), null, true);
@@ -79,12 +79,16 @@ class EulerWriter extends AbstractWriter {
         // angles
         final String   seq    = euler.getEulerRotSeq().name();
         final double[] angles = euler.getRotationAngles();
-        generator.writeEntry(EulerKey.EULER_ROT_SEQ.name(),
-                             seq.replace('X', '1').replace('Y', '2').replace('Z', '3'),
-                             null, true);
-        generator.writeEntry(EulerKey.RATE_FRAME.name(),
-                             euler.rateFrameIsA() ? EulerKey.EULER_FRAME_A.name() : EulerKey.EULER_FRAME_B.name(),
-                             null, true);
+        if (formatVersion < 2.0) {
+            generator.writeEntry(EulerKey.EULER_ROT_SEQ.name(),
+                                 seq.replace('X', '1').replace('Y', '2').replace('Z', '3'),
+                                 null, true);
+            generator.writeEntry(EulerKey.RATE_FRAME.name(),
+                                 euler.rateFrameIsA() ? EulerKey.EULER_FRAME_A.name() : EulerKey.EULER_FRAME_B.name(),
+                                 null, euler.hasRates());
+        } else {
+            generator.writeEntry(EulerKey.EULER_ROT_SEQ.name(), seq, null, true);
+        }
 
         // if we don't have rates, at least we need angles
         // (we may have only rates, as orientation is already given by mandatory quaternion)
