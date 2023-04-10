@@ -183,7 +183,7 @@ public class Euler extends CommentsContainer {
      * @return true if rates are specified in spacecraft body frame
      */
     public boolean isSpacecraftBodyRate() {
-        return rateFrameIsA ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
+        return rateFrameIsA() ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
     }
 
     /**
