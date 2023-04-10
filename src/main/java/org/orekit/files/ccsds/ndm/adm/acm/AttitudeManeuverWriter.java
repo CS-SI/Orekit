@@ -71,7 +71,9 @@ class AttitudeManeuverWriter extends AbstractWriter {
             momentum.append(' ');
             momentum.append(AccurateFormatter.format(Units.N_M_S.fromSI(man.getTargetMomentum().getZ())));
             generator.writeEntry(AttitudeManeuverKey.TARGET_MOMENTUM.name(), momentum.toString(),                Units.N_M_S, true);
-            generator.writeEntry(AttitudeManeuverKey.TARGET_MOM_FRAME.name(), man.getTargetMomFrame().getName(), null,        false);
+            if (man.getTargetMomFrame() != null) {
+                generator.writeEntry(AttitudeManeuverKey.TARGET_MOM_FRAME.name(), man.getTargetMomFrame().getName(), null,    false);
+            }
         }
 
         if (man.getTargetAttitude() != null) {
