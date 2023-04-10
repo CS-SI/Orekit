@@ -175,7 +175,8 @@ public class NdmWriterTest {
                           "/ccsds/adm/aem/AEMExample03.xml", "/ccsds/adm/aem/AEMExample04.txt", "/ccsds/adm/aem/AEMExample05.txt",
                           "/ccsds/adm/aem/AEMExample07.txt", "/ccsds/adm/aem/AEMExample08.txt", "/ccsds/adm/aem/AEMExample09.txt",
                           "/ccsds/adm/aem/AEMExample10.txt", "/ccsds/adm/aem/AEMExample11.xml", "/ccsds/adm/aem/AEMExample12.txt",
-                          "/ccsds/adm/aem/AEMExample13.xml")) {
+                          "/ccsds/adm/aem/AEMExample13.xml", "/ccsds/adm/aem/AEMExample14.txt", "/ccsds/adm/aem/AEMExample15.txt",
+                          "/ccsds/adm/aem/AEMExample16.txt", "/ccsds/adm/aem/AEMExample17.txt")) {
             final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
             pool.add(builder.buildAemParser().parseMessage(source));
         }
@@ -185,7 +186,8 @@ public class NdmWriterTest {
             Arrays.asList("/ccsds/adm/apm/APMExample01.txt",  "/ccsds/adm/apm/APMExample02.txt",  "/ccsds/adm/apm/APMExample02.xml",
                           "/ccsds/adm/apm/APMExample03.txt",  "/ccsds/adm/apm/APMExample04.txt",  "/ccsds/adm/apm/APMExample05.txt",
                           "/ccsds/adm/apm/APMExample06.txt",  "/ccsds/adm/apm/APMExample07.txt",  "/ccsds/adm/apm/APMExample08.txt",
-                          "/ccsds/adm/apm/APMExample09.txt")) {
+                          "/ccsds/adm/apm/APMExample09.txt",  "/ccsds/adm/apm/APMExample10.txt",  "/ccsds/adm/apm/APMExample11.txt",
+                          "/ccsds/adm/apm/APMExample12.txt")) {
             final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
             pool.add(builder.buildApmParser().parseMessage(source));
         }
@@ -193,7 +195,8 @@ public class NdmWriterTest {
         // ACM files
         for (final String name :
             Arrays.asList("/ccsds/adm/acm/ACMExample01.txt",  "/ccsds/adm/acm/ACMExample02.txt",  "/ccsds/adm/acm/ACMExample03.txt",
-                          "/ccsds/adm/acm/ACMExample04.txt",  "/ccsds/adm/acm/ACMExample05.txt")) {
+                          "/ccsds/adm/acm/ACMExample04.txt",  "/ccsds/adm/acm/ACMExample05.txt",  "/ccsds/adm/acm/ACMExample06.txt",
+                          "/ccsds/adm/acm/ACMExample07.txt",  "/ccsds/adm/acm/ACMExample08.txt",  "/ccsds/adm/acm/ACMExample09.txt")) {
             final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
             pool.add(builder.buildAcmParser().parseMessage(source));
         }

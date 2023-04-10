@@ -61,4 +61,24 @@ public class AcmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AcmMeta
         doTest("/ccsds/adm/acm/ACMExample05.txt");
     }
 
+    @Test
+    public void testWriteExample06() {
+        doTest("/ccsds/adm/acm/ACMExample06.txt");
+    }
+
+    @Test
+    public void testWriteExample07() {
+        doTest("/ccsds/adm/acm/ACMExample07.txt");
+    }
+
+    @Test
+    public void testWriteExample08() {
+        doTest("/ccsds/adm/acm/ACMExample08.txt");
+    }
+
+    @Test
+    public void testWriteExample09() {
+        doTest("/ccsds/adm/acm/ACMExample09.txt");
+    }
+
 }

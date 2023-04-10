@@ -49,38 +49,68 @@ public class ApmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AdmMeta
     }
 
     @Test
-    public void testWriteExample1() {
+    public void testWriteExample01() {
         doTest("/ccsds/adm/apm/APMExample01.txt");
     }
 
     @Test
-    public void testWriteKvnExample2() {
+    public void testWriteKvnExample02() {
         doTest("/ccsds/adm/apm/APMExample02.txt");
     }
 
     @Test
-    public void testWriteXmlExample2() {
+    public void testWriteXmlExample02() {
         doTest("/ccsds/adm/apm/APMExample02.xml");
     }
 
     @Test
-    public void testWriteExample3() {
+    public void testWriteExample03() {
         doTest("/ccsds/adm/apm/APMExample03.txt");
     }
 
     @Test
-    public void testWriteExample4() {
+    public void testWriteExample04() {
         doTest("/ccsds/adm/apm/APMExample04.txt");
     }
 
     @Test
-    public void testWriteExample5() {
+    public void testWriteExample05() {
         doTest("/ccsds/adm/apm/APMExample05.txt");
     }
 
     @Test
-    public void testWriteExample6() {
+    public void testWriteExample06() {
         doTest("/ccsds/adm/apm/APMExample06.txt");
+    }
+
+    @Test
+    public void testWriteExample07() {
+        doTest("/ccsds/adm/apm/APMExample07.txt");
+    }
+
+    @Test
+    public void testWriteExample08() {
+        doTest("/ccsds/adm/apm/APMExample08.txt");
+    }
+
+    @Test
+    public void testWriteExample09() {
+        doTest("/ccsds/adm/apm/APMExample09.txt");
+    }
+
+    @Test
+    public void testWriteExample10() {
+        doTest("/ccsds/adm/apm/APMExample10.txt");
+    }
+
+    @Test
+    public void testWriteExample11() {
+        doTest("/ccsds/adm/apm/APMExample11.txt");
+    }
+
+    @Test
+    public void testWriteExample12() {
+        doTest("/ccsds/adm/apm/APMExample12.txt");
     }
 
     @Test
