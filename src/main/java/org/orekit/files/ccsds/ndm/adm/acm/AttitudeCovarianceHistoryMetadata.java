@@ -48,8 +48,7 @@ public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(covReferenceFrame, AttitudeCovarianceHistoryMetadataKey.COV_REF_FRAME.name());
-        checkNotNull(covType,           AttitudeCovarianceHistoryMetadataKey.COV_TYPE.name());
+        checkNotNull(covType, AttitudeCovarianceHistoryMetadataKey.COV_TYPE.name());
     }
 
     /** Get covariance identification number.

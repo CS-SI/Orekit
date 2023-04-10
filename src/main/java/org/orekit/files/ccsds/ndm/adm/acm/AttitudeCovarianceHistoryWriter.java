@@ -66,10 +66,12 @@ class AttitudeCovarianceHistoryWriter extends AbstractWriter {
         generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
 
         // references
-        generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_REF_FRAME.name(), metadata.getCovReferenceFrame().getName(), null, false);
+        if (metadata.getCovReferenceFrame() != null) {
+            generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_REF_FRAME.name(), metadata.getCovReferenceFrame().getName(), null, false);
+        }
 
         // elements
-        generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_TYPE.name(), metadata.getCovType(),                                     false);
+        generator.writeEntry(AttitudeCovarianceHistoryMetadataKey.COV_TYPE.name(), metadata.getCovType(), false);
 
         // data
         final List<Unit> units = metadata.getCovType().getUnits();
