@@ -45,6 +45,9 @@ public enum AttitudeDeterminationKey {
     /** Source of attitude estimate. */
     ATTITUDE_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setSource)),
 
+    /** Rotation sequence entry. */
+    EULER_ROT_SEQ((token, context, container) -> token.processAsRotationOrder(container::setEulerRotSeq)),
+
     /** Number of states. */
     NUMBER_STATES((token, context, container) -> token.processAsInteger(container::setNbStates)),
 

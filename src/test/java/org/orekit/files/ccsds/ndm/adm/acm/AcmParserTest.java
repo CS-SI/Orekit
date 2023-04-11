@@ -867,12 +867,14 @@ public class AcmParserTest {
         Assertions.assertNull(man3.getTargetAttitude());
         Assertions.assertEquals( 0.12,                          FastMath.toDegrees(man3.getTargetSpinRate()), 1.0e-10);
 
+        // attitude determi nation
         AttitudeDetermination ad = acm.getData().getAttitudeDeterminationBlock();
         Assertions.assertEquals("attitude determination block",        ad.getComments().get(0));
         Assertions.assertEquals("AD_1",                                ad.getId());
         Assertions.assertEquals("AD_0",                                ad.getPrevId());
         Assertions.assertEquals(AdMethodType.Q_METHOD,                 ad.getMethod());
         Assertions.assertEquals("OBC",                                 ad.getSource());
+        Assertions.assertEquals(RotationOrder.XYZ,                     ad.getEulerRotSeq());
         Assertions.assertEquals(7,                                     ad.getNbStates());
         Assertions.assertEquals(AttitudeElementsType.QUATERNION,       ad.getAttitudeStates());
         Assertions.assertEquals(AttitudeCovarianceType.ANGLE_GYROBIAS, ad.getCovarianceType());

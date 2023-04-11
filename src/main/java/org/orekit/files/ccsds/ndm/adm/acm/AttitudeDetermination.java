@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 
 import java.util.Arrays;
 
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.AdMethodType;
@@ -45,6 +46,9 @@ public class AttitudeDetermination extends CommentsContainer {
 
     /** Source of attitude estimate. */
     private String source;
+
+    /** Rotation order for Euler angles. */
+    private RotationOrder eulerRotSeq;
 
     /** Number of states for {@link AdMethodType#EKF}, {@link AdMethodType#BATCH} or {@link AdMethodType#FILTER_SMOOTHER}. */
     private int nbStates;
@@ -169,6 +173,20 @@ public class AttitudeDetermination extends CommentsContainer {
      */
     public void setSource(final String source) {
         this.source = source;
+    }
+
+    /** Get the rotation order for Euler angles.
+     * @return rotation order for Euler angles
+     */
+    public RotationOrder getEulerRotSeq() {
+        return eulerRotSeq;
+    }
+
+    /** Set the rotation order for Euler angles.
+     * @param eulerRotSeq rotation order for Euler angles
+     */
+    public void setEulerRotSeq(final RotationOrder eulerRotSeq) {
+        this.eulerRotSeq = eulerRotSeq;
     }
 
     /** Get number of states for {@link AdMethodType#EKF}, {@link AdMethodType#BATCH} or {@link AdMethodType#FILTER_SMOOTHER}.

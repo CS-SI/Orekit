@@ -59,6 +59,7 @@ class AttitudeDeterminationWriter extends AbstractWriter {
         generator.writeEntry(AttitudeDeterminationKey.ATTITUDE_SOURCE.name(), ad.getSource(), null, false);
 
         // parameters
+        generator.writeEntry(AttitudeDeterminationKey.EULER_ROT_SEQ.name(),             ad.getEulerRotSeq(),    false);
         generator.writeEntry(AttitudeDeterminationKey.NUMBER_STATES.name(),             ad.getNbStates(),       false);
         generator.writeEntry(AttitudeDeterminationKey.ATTITUDE_STATES.name(),           ad.getAttitudeStates(), true);
         generator.writeEntry(AttitudeDeterminationKey.COV_TYPE.name(),                  ad.getCovarianceType(), false);

@@ -235,6 +235,7 @@ AD_ID                             = AD_1
 AD_PREV_ID                        = AD_0
 AD_METHOD                         = Q_METHOD
 ATTITUDE_SOURCE                   = OBC
+EULER_ROT_SEQ                     = XYZ
 NUMBER_STATES                     = 7
 ATTITUDE_STATES                   = QUATERNION
 COV_TYPE                          = ANGLE_GYROBIAS
