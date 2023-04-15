@@ -781,12 +781,12 @@ public class APMParserTest {
 
         Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                                 segment.getData().getManeuver(0).getFrame().asSpacecraftBodyFrame().getBaseEquipment());
-        Assertions.assertEquals("",    segment.getData().getManeuver(0).getFrame().asSpacecraftBodyFrame().getLabel());
-        Assertions.assertEquals(1.0,   segment.getData().getManeuver(0).getDuration(),      1.0e-10);
-        Assertions.assertEquals(1.0,   segment.getData().getManeuver(0).getTorque().getX(), 1.0e-10);
-        Assertions.assertEquals(0.0,   segment.getData().getManeuver(0).getTorque().getY(), 1.0e-10);
-        Assertions.assertEquals(0.0,   segment.getData().getManeuver(0).getTorque().getZ(), 1.0e-10);
-        Assertions.assertEquals(0.001, segment.getData().getManeuver(0).getDeltaMass(),     1.0e-10);
+        Assertions.assertEquals("",      segment.getData().getManeuver(0).getFrame().asSpacecraftBodyFrame().getLabel());
+        Assertions.assertEquals(1.0,     segment.getData().getManeuver(0).getDuration(),      1.0e-10);
+        Assertions.assertEquals(1.0,     segment.getData().getManeuver(0).getTorque().getX(), 1.0e-10);
+        Assertions.assertEquals(0.0,     segment.getData().getManeuver(0).getTorque().getY(), 1.0e-10);
+        Assertions.assertEquals(0.0,     segment.getData().getManeuver(0).getTorque().getZ(), 1.0e-10);
+        Assertions.assertEquals(-0.001,  segment.getData().getManeuver(0).getDeltaMass(),     1.0e-10);
 
     }
 

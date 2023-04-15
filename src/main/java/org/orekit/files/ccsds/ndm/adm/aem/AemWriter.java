@@ -624,7 +624,7 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         throws IOException {
 
         // wrapping element
-        xmlGenerator.enterSection(AttitudeEntryKey.quaternionAngvel.name());
+        xmlGenerator.enterSection(AttitudeEntryKey.quaternionAngVel.name());
 
         // data part
         xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);
@@ -744,7 +744,7 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
         throws IOException {
 
         // wrapping element
-        xmlGenerator.enterSection(AttitudeEntryKey.eulerAngleAngvel.name());
+        xmlGenerator.enterSection(AttitudeEntryKey.eulerAngleAngVel.name());
 
         // data part
         xmlGenerator.writeEntry(AttitudeEntryKey.EPOCH.name(), getTimeConverter(), epoch, false, true);

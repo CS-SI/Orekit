@@ -46,7 +46,7 @@ public enum AttitudeEntryKey {
     /** Quaternion/angular velocity sub-section.
      * @since 12.0
      */
-    quaternionAngvel((token, context, container) -> true),
+    quaternionAngVel((token, context, container) -> true),
 
     /** Euler angle sub-section. */
     eulerAngle((token, context, container) -> true),
@@ -62,7 +62,7 @@ public enum AttitudeEntryKey {
     /** Euler angle/angular velocity sub-section.
      * @since 12.0
      */
-    eulerAngleAngvel((token, context, container) -> true),
+    eulerAngleAngVel((token, context, container) -> true),
 
     /** Spin sub-section. */
     spin((token, context, container) -> true),

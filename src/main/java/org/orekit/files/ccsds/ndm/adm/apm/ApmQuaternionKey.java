@@ -31,8 +31,13 @@ public enum ApmQuaternionKey {
     /** Quaternion wrapping element in XML files. */
     quaternion((token, context, container, epochSetter) -> true),
 
-    /** Quaternion wrapping element in XML files. */
+    /** Quaternion derivative wrapping element in XML files (ADM V1 only). */
     quaternionRate((token, context, container, epochSetter) -> true),
+
+    /** Quaternion derivative wrapping element in XML files.
+     * @since 12.0
+     */
+    quaternionDot((token, context, container, epochSetter) -> true),
 
     /** Comment entry. */
     COMMENT((token, context, container, epochSetter) ->

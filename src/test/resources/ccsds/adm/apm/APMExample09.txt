@@ -57,5 +57,5 @@ MAN_REF_FRAME      = SC_BODY
 MAN_TOR_X          = 1
 MAN_TOR_Y          = 0
 MAN_TOR_Z          = 0
-MAN_DELTA_MASS     = 0.001 [kg]
+MAN_DELTA_MASS     = -0.001 [kg]
 MAN_STOP

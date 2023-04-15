@@ -23,6 +23,7 @@ import org.hipparchus.complex.Quaternion;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.AbstractWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
@@ -89,19 +90,33 @@ class ApmQuaternionWriter extends AbstractWriter {
         }
 
         // quaternion
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.enterSection(ApmQuaternionKey.quaternion.name());
+        }
         final Quaternion q = quaternion.getQuaternion();
         generator.writeEntry(ApmQuaternionKey.Q1.name(), q.getQ1(), Unit.ONE, true);
         generator.writeEntry(ApmQuaternionKey.Q2.name(), q.getQ2(), Unit.ONE, true);
         generator.writeEntry(ApmQuaternionKey.Q3.name(), q.getQ3(), Unit.ONE, true);
         generator.writeEntry(ApmQuaternionKey.QC.name(), q.getQ0(), Unit.ONE, true);
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.exitSection();
+        }
 
         // quaternion derivative
         if (quaternion.hasRates()) {
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.enterSection(formatVersion < 2.0 ?
+                                       ApmQuaternionKey.quaternionRate.name() :
+                                       ApmQuaternionKey.quaternionDot.name());
+            }
             final Quaternion qDot = quaternion.getQuaternionDot();
             generator.writeEntry(ApmQuaternionKey.Q1_DOT.name(), qDot.getQ1(), Unit.ONE, true);
             generator.writeEntry(ApmQuaternionKey.Q2_DOT.name(), qDot.getQ2(), Unit.ONE, true);
             generator.writeEntry(ApmQuaternionKey.Q3_DOT.name(), qDot.getQ3(), Unit.ONE, true);
             generator.writeEntry(ApmQuaternionKey.QC_DOT.name(), qDot.getQ0(), Unit.ONE, true);
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.exitSection();
+            }
         }
 
     }

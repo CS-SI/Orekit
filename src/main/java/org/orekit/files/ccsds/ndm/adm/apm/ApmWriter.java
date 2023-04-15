@@ -136,12 +136,6 @@ public class ApmWriter extends AbstractMessageWriter<AdmHeader, Segment<AdmMetad
             if (formatVersion < 2.0) {
                 xmlTag = ApmDataSubStructureKey.eulerElementsSpin.name();
                 kvnTag = null;
-            } else if (segment.getData().getSpinStabilizedBlock().hasMomentum()) {
-                xmlTag = ApmDataSubStructureKey.spinNutationMom.name();
-                kvnTag = ApmDataSubStructureKey.SPIN.name();
-            } else if (segment.getData().getSpinStabilizedBlock().hasNutation()) {
-                xmlTag = ApmDataSubStructureKey.spinNutation.name();
-                kvnTag = ApmDataSubStructureKey.SPIN.name();
             } else {
                 xmlTag = ApmDataSubStructureKey.spin.name();
                 kvnTag = ApmDataSubStructureKey.SPIN.name();
