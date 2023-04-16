@@ -17,7 +17,7 @@
 package org.orekit.gnss;
 
 /** Container for satellite system and PRN.
- * @author luc Luc Maisonobe
+ * @author Luc Maisonobe
  * @since 12.0
  */
 public class SatInSystem {
@@ -49,6 +49,20 @@ public class SatInSystem {
      */
     public int getPRN() {
         return prn;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof SatInSystem) {
+            final SatInSystem other = (SatInSystem) object;
+            return getSystem().equals(other.getSystem()) && getPRN() == other.getPRN();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return getSystem().hashCode() ^ getPRN();
     }
 
 }

@@ -229,6 +229,9 @@ public class RinexObservationParser {
         /** Satellites in current observation. */
         private final List<SatInSystem> satObs;
 
+        /** Current satellite. */
+        private SatInSystem currentSat;
+
         /** Constructor, build the ParseInfo object.
          * @param name name of the data source
          */
@@ -265,7 +268,7 @@ public class RinexObservationParser {
         HEADER_VERSION(line -> RinexUtils.matchesLabel(line, "RINEX VERSION / TYPE"),
                        (line, parseInfo) ->  RinexUtils.parseVersionFileTypeSatelliteSystem(line, parseInfo.name, parseInfo.header,
                                                                                             2.00, 2.10, 2.11, 2.12, 2.20,
-                                                                                            3.00, 3.01, 3.02, 3.03, 3.04, 3.05),
+                                                                                            3.00, 3.01, 3.02, 3.03, 3.04, 3.05, 4.00),
                        LineParser::headerNext),
 
         /** Parser for generating program and emiting agency. */
@@ -349,6 +352,7 @@ public class RinexObservationParser {
         /** Parser for antenna phase center. */
         ANTENNA_PHASECENTER(line -> RinexUtils.matchesLabel(line, "ANTENNA: PHASECENTER"),
                             (line, parseInfo) -> {
+                                // we don't parse satellite system here because it was already parsed in HEADER_VERSION
                                 parseInfo.header.setObservationCode(RinexUtils.parseString(line, 2, 3));
                                 parseInfo.header.setAntennaPhaseCenter(new Vector3D(RinexUtils.parseDouble(line, 5, 9),
                                                                                     RinexUtils.parseDouble(line, 14, 14),
@@ -398,14 +402,15 @@ public class RinexObservationParser {
         TIME_OF_FIRST_OBS(line -> RinexUtils.matchesLabel(line, "TIME OF FIRST OBS"),
                           (line, parseInfo) -> {
                               if (parseInfo.header.getSatelliteSystem() == SatelliteSystem.MIXED) {
-                                  // in case of mixed data, time scale must be specified in the Time of First line
+                                  // in case of mixed data, time scale must be specified in the Time of First Observation line
                                   try {
                                       parseInfo.timeScale = ObservationTimeScale.
                                                             valueOf(RinexUtils.parseString(line, 48, 3)).
                                                             timeScaleSupplier.
                                                             apply(parseInfo.timeScales);
                                   } catch (IllegalArgumentException iae) {
-                                      throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      throw new OrekitException(iae,
+                                                                OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                 parseInfo.lineNumber, parseInfo.name, line);
                                   }
                               } else {
@@ -453,7 +458,30 @@ public class RinexObservationParser {
         /** Parser for PRN and number of observations . */
         PRN_NB_OF_OBS(line -> RinexUtils.matchesLabel(line, "PRN / # OF OBS"),
                       (line, parseInfo) ->  {
-                          // optional line, not stored for now
+                          final String systemName = RinexUtils.parseString(line, 3, 1);
+                          if (systemName.length() > 0) {
+                              final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(systemName);
+                              final int             prn    = RinexUtils.parseInt(line, 4, 2);
+                              parseInfo.currentSat         = new SatInSystem(system,
+                                                                             system == SatelliteSystem.SBAS ? prn + 100 : prn);
+                              parseInfo.nbTypes            = 0;
+                          }
+                          final List<ObservationType> types = parseInfo.mapTypeObs.get(parseInfo.currentSat.getSystem());
+
+                          final int firstIndex = 6;
+                          final int increment  = 6;
+                          final int size       = 6;
+                          for (int i = firstIndex;
+                               (i + size) <= RinexUtils.LABEL_INDEX && parseInfo.nbTypes < types.size();
+                               i += increment) {
+                              final String nb = RinexUtils.parseString(line, i, size);
+                              if (nb.length() > 0) {
+                                  parseInfo.header.setNbObsPerSatellite(parseInfo.currentSat, types.get(parseInfo.nbTypes),
+                                                                        RinexUtils.parseInt(line, i, size));
+                              }
+                              ++parseInfo.nbTypes;
+                          }
+
                       },
                       LineParser::headerNext),
 
@@ -987,13 +1015,12 @@ public class RinexObservationParser {
 
                        } else {
                            if (parseInfo.header.getMarkerName()           == null ||
-                                           parseInfo.header.getObserverName()         == null ||
-                                           parseInfo.header.getReceiverNumber()       == null ||
-                                           parseInfo.header.getAntennaNumber()        == null ||
-                                           Double.isNaN(parseInfo.header.getAntennaHeight())  ||
-                                           parseInfo.header.getTFirstObs()            == null ||
-                                           parseInfo.mapTypeObs.isEmpty()                     ||
-                                           version >= 3.01 && version < 4.0 && parseInfo.header.getPhaseShiftCorrections().isEmpty()) {
+                               parseInfo.header.getObserverName()         == null ||
+                               parseInfo.header.getReceiverNumber()       == null ||
+                               parseInfo.header.getAntennaNumber()        == null ||
+                               Double.isNaN(parseInfo.header.getAntennaHeight())  ||
+                               parseInfo.header.getTFirstObs()            == null ||
+                               parseInfo.mapTypeObs.isEmpty()) {
                                throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);
                            }
                        }

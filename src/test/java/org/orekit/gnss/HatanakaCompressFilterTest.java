@@ -39,6 +39,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Map;
 
 public class HatanakaCompressFilterTest {
 
@@ -641,9 +642,78 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(25161895.332,            ods.get(96).getObservationData().get(1).getValue(), 1.0e-3);
         Assertions.assertEquals(25161903.730,            ods.get(96).getObservationData().get(2).getValue(), 1.0e-3);
         Assertions.assertEquals(1488.887,                ods.get(96).getObservationData().get(3).getValue(), 1.0e-3);
-        Assertions.assertEquals(1207.371,           ods.get(96).getObservationData().get(4).getValue(), 1.0e-3);
+        Assertions.assertEquals(1207.371,                ods.get(96).getObservationData().get(4).getValue(), 1.0e-3);
+
+        final SatInSystem c07 = new SatInSystem(SatelliteSystem.BEIDOU, 7);
+        final Map<ObservationType, Integer> map = ods.get(0).getHeader().getNbObsPerSat().get(c07);
+        Assertions.assertEquals(9, map.size());
+        Assertions.assertEquals(1395, map.get(ObservationType.C2I));
+        Assertions.assertEquals(1395, map.get(ObservationType.C6I));
+        Assertions.assertEquals(1395, map.get(ObservationType.C7I));
+        Assertions.assertEquals(1395, map.get(ObservationType.D2I));
+        Assertions.assertEquals(1388, map.get(ObservationType.D6I));
+        Assertions.assertEquals(1387, map.get(ObservationType.D7I));
+        Assertions.assertEquals(1384, map.get(ObservationType.L2I));
+        Assertions.assertEquals(1382, map.get(ObservationType.L6I));
+        Assertions.assertEquals(1382, map.get(ObservationType.L7I));
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
+        digester.checkDigest();
+
+    }
+
+    @Test
+    public void testPrnNbObs() throws IOException, NoSuchAlgorithmException {
+
+        //Tests Rinex 3 with Hatanaka compression
+        final String name = "rinex/YEBE00ESP_R_20230891800_01H_30S_MO.crx.gz";
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        Digester digester = new Digester(new HatanakaCompressFilter().filter(new GzipFilter().filter(raw)),
+                                         "bef4d59c47cb908a41e4efae0d7add7ce2bbcbb57ad4fa51f63f315cdfe1cfeb");
+        RinexObservationParser parser = new RinexObservationParser();
+
+        List<ObservationDataSet> ods = parser.parse(digester.getDigestedSource());
+        Assertions.assertEquals(4767, ods.size());
+
+        final SatInSystem g08 = new SatInSystem(SatelliteSystem.GPS, 8);
+        final Map<ObservationType, Integer> mapG08 = ods.get(0).getHeader().getNbObsPerSat().get(g08);
+        Assertions.assertEquals(12, mapG08.size());
+        Assertions.assertEquals(120, mapG08.get(ObservationType.C1C));
+        Assertions.assertNull(mapG08.get(ObservationType.C1L));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.C2S));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.C2W));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.C5Q));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.L1C));
+        Assertions.assertNull(mapG08.get(ObservationType.L1L));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.L2S));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.L2W));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.L5Q));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.S1C));
+        Assertions.assertNull(mapG08.get(ObservationType.S1L));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.S2S));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.S2W));
+        Assertions.assertEquals(120, mapG08.get(ObservationType.S5Q));
+
+        final SatInSystem e11 = new SatInSystem(SatelliteSystem.GALILEO, 11);
+        final Map<ObservationType, Integer> mapE11 = ods.get(0).getHeader().getNbObsPerSat().get(e11);
+        Assertions.assertEquals(15, mapE11.size());
+        Assertions.assertEquals(37, mapE11.get(ObservationType.C1C));
+        Assertions.assertEquals(83, mapE11.get(ObservationType.C5Q));
+        Assertions.assertEquals(74, mapE11.get(ObservationType.C6C));
+        Assertions.assertEquals(84, mapE11.get(ObservationType.C7Q));
+        Assertions.assertEquals(89, mapE11.get(ObservationType.C8Q));
+        Assertions.assertEquals(37, mapE11.get(ObservationType.L1C));
+        Assertions.assertEquals(83, mapE11.get(ObservationType.L5Q));
+        Assertions.assertEquals(74, mapE11.get(ObservationType.L6C));
+        Assertions.assertEquals(84, mapE11.get(ObservationType.L7Q));
+        Assertions.assertEquals(89, mapE11.get(ObservationType.L8Q));
+        Assertions.assertEquals(37, mapE11.get(ObservationType.S1C));
+        Assertions.assertEquals(83, mapE11.get(ObservationType.S5Q));
+        Assertions.assertEquals(74, mapE11.get(ObservationType.S6C));
+        Assertions.assertEquals(84, mapE11.get(ObservationType.S7Q));
+        Assertions.assertEquals(89, mapE11.get(ObservationType.S8Q));
+
         digester.checkDigest();
 
     }

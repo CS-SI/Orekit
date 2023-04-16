@@ -16,6 +16,10 @@
  */
 package org.orekit.gnss;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -31,10 +35,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 public class RinexObservationParserTest {
 

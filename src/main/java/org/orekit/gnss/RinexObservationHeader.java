@@ -125,6 +125,11 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     private final List<GlonassSatelliteChannel> glonassChannels;
 
+    /** Number of observations per satellite.
+     * @since 12.0
+     */
+    private final Map<SatInSystem, Map<ObservationType, Integer>> nbObsPerSat;
+
     /** Number of leap seconds since 6-Jan-1980. */
     private int leapSeconds;
 
@@ -177,6 +182,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
         phaseShiftCorrections  = new ArrayList<>();
         scaleFactorCorrections = new HashMap<>();
         glonassChannels        = new ArrayList<>();
+        nbObsPerSat            = new HashMap<>();
         tLastObs               = AbsoluteDate.FUTURE_INFINITY;
     }
 
@@ -665,6 +671,29 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     public List<GlonassSatelliteChannel> getGlonassChannels() {
         return Collections.unmodifiableList(glonassChannels);
+    }
+
+    /** Set number of observations for a satellite.
+     * @param sat satellite
+     * @param type observation type
+     * @param nbObs number of observations of this type for this satellite
+     * @since 12.0
+     */
+    public void setNbObsPerSatellite(final SatInSystem sat, final ObservationType type, final int nbObs) {
+        Map<ObservationType, Integer> satNbObs = nbObsPerSat.get(sat);
+        if (satNbObs == null) {
+            satNbObs = new HashMap<>();
+            nbObsPerSat.put(sat, satNbObs);
+        }
+        satNbObs.put(type, nbObs);
+    }
+
+    /** Get an unmodifiable view of the map of number of observations per satellites.
+     * @return unmodifiable view of the map of number of observations per satellites
+     * @since 12.0
+     */
+    public Map<SatInSystem, Map<ObservationType, Integer>> getNbObsPerSat() {
+        return Collections.unmodifiableMap(nbObsPerSat);
     }
 
     /** Set the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.

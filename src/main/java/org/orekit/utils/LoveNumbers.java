@@ -19,7 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 
 /** Container for Love numbers.
- * @author luc Luc Maisonobe
+ * @author Luc Maisonobe
  * @since 6.1
  */
 public class LoveNumbers implements Serializable {

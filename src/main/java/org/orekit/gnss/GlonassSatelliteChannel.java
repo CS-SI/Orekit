@@ -17,7 +17,7 @@
 package org.orekit.gnss;
 
 /** Container for association between GLONASS satellites and frequency channels (f = f₀ + k Δf with k ranging-7 to +6).
- * @author luc Luc Maisonobe
+ * @author Luc Maisonobe
  * @since 12.0
  */
 public class GlonassSatelliteChannel {
