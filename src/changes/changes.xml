@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="vincent" type="fix" issue="1079">
+        Fixed OrbitRelativeFrame enum as some instances were not built using their recently introduced inertial LOFType
+        equivalent
+      </action>
        <action dev="luc" type="add" issue="1060">
 	      Added support for CCSDS ADM V2.
        </action>
