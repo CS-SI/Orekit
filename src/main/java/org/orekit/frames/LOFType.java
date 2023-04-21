@@ -23,6 +23,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -68,6 +71,12 @@ public enum LOFType {
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.TNW;
+        }
+
     },
 
     /**
@@ -103,6 +112,12 @@ public enum LOFType {
             return true;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.TNW_INERTIAL;
+        }
+
     },
 
     /** Constant for QSW frame
@@ -136,6 +151,12 @@ public enum LOFType {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.QSW;
         }
 
     },
@@ -174,6 +195,12 @@ public enum LOFType {
         @Override
         public boolean isQuasiInertial() {
             return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.RSW_INERTIAL;
         }
 
     },
@@ -215,6 +242,12 @@ public enum LOFType {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            throw new OrekitException(OrekitMessages.CCSDS_DIFFERENT_LVLH_DEFINITION);
         }
 
     },
@@ -261,6 +294,12 @@ public enum LOFType {
             return true;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            throw new OrekitException(OrekitMessages.CCSDS_DIFFERENT_LVLH_DEFINITION);
+        }
+
     },
 
     /** Constant for Local Vertical, Local Horizontal frame as defined by CCSDS
@@ -298,6 +337,12 @@ public enum LOFType {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.MINUS_K),
                                        new FieldVector3D<>(field, Vector3D.MINUS_J));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.LVLH;
         }
 
     },
@@ -342,6 +387,12 @@ public enum LOFType {
             return true;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.LVLH_INERTIAL;
+        }
+
     },
 
     /** Constant for Vehicle Velocity, Local Horizontal frame
@@ -375,6 +426,12 @@ public enum LOFType {
         public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                          final FieldPVCoordinates<T> pv) {
             return LVLH_CCSDS.rotationFromInertial(field, pv);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.LVLH;
         }
 
     },
@@ -419,6 +476,12 @@ public enum LOFType {
             return true;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.LVLH_INERTIAL;
+        }
+
     },
 
     /** Constant for Velocity - Normal - Co-normal frame
@@ -450,6 +513,12 @@ public enum LOFType {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_J));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.VNC_ROTATING;
         }
 
     },
@@ -488,6 +557,12 @@ public enum LOFType {
             return true;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.VNC_INERTIAL;
+        }
+
     },
 
     /**
@@ -522,6 +597,12 @@ public enum LOFType {
             return true;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.EQW_INERTIAL;
+        }
+
     },
 
     /** Constant for Transverse Velocity Normal coordinate system
@@ -553,6 +634,12 @@ public enum LOFType {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_J),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.NTW_ROTATING;
         }
 
     },
@@ -590,6 +677,12 @@ public enum LOFType {
         @Override
         public boolean isQuasiInertial() {
             return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return OrbitRelativeFrame.NTW_INERTIAL;
         }
 
     };
@@ -839,5 +932,12 @@ public enum LOFType {
     public boolean isQuasiInertial() {
         return false;
     }
+
+    /**
+     * @return CCSDS equivalent orbit relative frame
+     *
+     * @see OrbitRelativeFrame
+     */
+    public abstract OrbitRelativeFrame toOrbitRelativeFrame();
 
 }
