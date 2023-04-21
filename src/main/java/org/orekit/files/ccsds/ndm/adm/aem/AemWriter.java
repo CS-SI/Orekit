@@ -377,15 +377,9 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
 
         if (attitudeType == AttitudeType.QUATERNION_ANGVEL ||
             attitudeType == AttitudeType.EULER_ANGLE_ANGVEL) {
-            if (formatVersion < 2) {
-                generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
-                                     metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
-                                     null, false);
-            } else {
-                generator.writeEntry(AemMetadataKey.ANGVEL_FRAME.name(),
-                                     metadata.getFrameAngvelFrame().getName(),
-                                     null, true);
-            }
+            generator.writeEntry(AemMetadataKey.ANGVEL_FRAME.name(),
+                                 metadata.getFrameAngvelFrame().getName(),
+                                 null, true);
         }
 
         // interpolation
