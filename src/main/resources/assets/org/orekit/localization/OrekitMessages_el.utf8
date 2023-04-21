@@ -349,6 +349,9 @@ CCSDS_UNKNOWN_CONVENTIONS = δεν υπάρχουν IERs συμβάσεις πο
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = το πλαίσιο {0} δεν είναι έγκυρο στο πλαίσιο αρχείου CCSDS
 
+# this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
+CCSDS_DIFFERENT_LVLH_DEFINITION = <MISSING TRANSLATION>
+
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS = μη έγκυρα συστήματα του χρόνου: {0} ≠ {1}
 

@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.definitions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.LOFType;
 
 class OrbitRelativeFrameTest {
@@ -96,5 +97,47 @@ class OrbitRelativeFrameTest {
         Assertions.assertNull(sezInertialLOF);
         Assertions.assertEquals(vncRotating.isQuasiInertial(), vncRotatingLOF.isQuasiInertial());
         Assertions.assertEquals(vncInertial.isQuasiInertial(), vncInertialLOF.isQuasiInertial());
+    }
+
+    @Test
+    @DisplayName("test conversion from/to orbit relative frame to/from orekit local orbital frame")
+    void testConversionFromToOrbitRelativeFrameToFromLOFType() {
+        for (OrbitRelativeFrame ccsdsFrame : OrbitRelativeFrame.values()) {
+            final LOFType orekitEquivalentLOF = ccsdsFrame.getLofType();
+
+            // Bypass cases where there is no Orekit equivalent
+            if (orekitEquivalentLOF == null) {
+                break;
+            }
+
+            // Assert that we come back to the initial CCSDS frame
+            final OrbitRelativeFrame ccsdsFrameFromOrekitLOF = orekitEquivalentLOF.toOrbitRelativeFrame();
+
+            // Cases where we start from a "_ROTATING" enum and go back to the equivalent version without "_ROTATION" are
+            // necessary equivalent
+            if (!(ccsdsFrameFromOrekitLOF.name() + "_ROTATING").equals(ccsdsFrame.name())) {
+                Assertions.assertEquals(ccsdsFrame, ccsdsFrameFromOrekitLOF);
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("test error thrown when trying to convert LVLH LOFType to its OrbitRelativeFrame equivalent")
+    void testErrorThrownWhenTryingToConvertLVLHLOFTypeToOrbitRelativeFrame() {
+        // Given
+        final LOFType lvlh         = LOFType.LVLH;
+        final LOFType lvlhInertial = LOFType.LVLH_INERTIAL;
+
+        // When
+        final Exception firstException  = Assertions.assertThrows(OrekitException.class, lvlh::toOrbitRelativeFrame);
+        final Exception secondException = Assertions.assertThrows(OrekitException.class, lvlhInertial::toOrbitRelativeFrame);
+
+        // Then
+        final String expectedErrorMessage =
+                "this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead";
+
+        Assertions.assertEquals(expectedErrorMessage, firstException.getMessage());
+        Assertions.assertEquals(expectedErrorMessage, secondException.getMessage());
+
     }
 }
