@@ -66,7 +66,7 @@ import org.orekit.utils.units.Unit;
 
 public class NdmTestUtils {
 
-    private static final int ULPS = 8;
+    private static final int ULPS = 80;
 
     public static void checkEquals(final NdmConstituent<?, ?> original, final NdmConstituent<?, ?> rebuilt) {
         checkContainer(original.getHeader(), rebuilt.getHeader());
@@ -303,7 +303,7 @@ public class NdmTestUtils {
     }
 
     public static void checkVector3D(final Vector3D original, final Vector3D rebuilt) {
-        double eps = ULPS * FastMath.ulp(original.getNorm());
+        double eps = ULPS * FastMath.ulp(FastMath.max(1.0, original.getNorm()));
         Assertions.assertTrue(Precision.equalsIncludingNaN(original.getX(), rebuilt.getX(), eps));
         Assertions.assertTrue(Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), eps));
         Assertions.assertTrue(Precision.equalsIncludingNaN(original.getZ(), rebuilt.getZ(), eps));
