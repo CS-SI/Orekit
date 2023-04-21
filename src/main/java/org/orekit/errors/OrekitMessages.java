@@ -177,6 +177,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
     CCSDS_INVALID_FRAME("frame {0} is not valid in this CCSDS file context"),
+    CCSDS_DIFFERENT_LVLH_DEFINITION("this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead"),
     CCSDS_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems: {0} ≠ {1}"),
     CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED(
             "use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit"),

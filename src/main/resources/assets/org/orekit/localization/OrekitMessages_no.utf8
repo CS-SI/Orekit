@@ -349,6 +349,9 @@ CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konvensjoner er blitt satt før lesingen
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne CCSDS filens sammenheng
 
+# this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
+CCSDS_DIFFERENT_LVLH_DEFINITION = <MISSING TRANSLATION>
+
 # inconsistent time systems: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS = ukonsekvente tidssystemer: {0} ≠ {1}
 

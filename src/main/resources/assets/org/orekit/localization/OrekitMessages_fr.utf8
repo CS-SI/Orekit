@@ -349,6 +349,9 @@ CCSDS_UNKNOWN_CONVENTIONS = les conventions IERS n''ont pas été initialisées 
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = le repère {0} est invalide dans ce contexte de fichier CCSDS
 
+# this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
+CCSDS_DIFFERENT_LVLH_DEFINITION = ce repère orbital local LVLH utilise une définition différente, veuillez utiliser le repère LVLH_CCSDS à la place
+
 # inconsistent time systems: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents : {0} ≠ {1}
 

@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="vincent" type="add" issue="1081">
+        Added "toOrbitRelativeFrame" method in LOFType enum to allow for a better compatibility between Orekit and CCSDS
+        files
+        Added new error message when trying to convert LVLH and LVLH_INERTIAL LOFType enum to OrbitRelativeFrame as they use
+        a different definition than the one expected in CCSDS files
+      </action>
       <action dev="vincent" type="fix" issue="1079">
         Fixed OrbitRelativeFrame enum as some instances were not built using their recently introduced inertial LOFType
         equivalent
