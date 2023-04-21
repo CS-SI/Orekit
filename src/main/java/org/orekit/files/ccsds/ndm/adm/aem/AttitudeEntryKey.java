@@ -247,7 +247,7 @@ public enum AttitudeEntryKey {
                                                                                container::setComponent)),
 
     /** Nutation angle entry. */
-    NUTATION((token, context, container) -> token.processAsIndexedDouble(4, Units.DEG_PER_S, context.getParsedUnitsBehavior(),
+    NUTATION((token, context, container) -> token.processAsIndexedDouble(4, Unit.DEGREE, context.getParsedUnitsBehavior(),
                                                                          container::setComponent)),
 
     /** Nutation period entry. */
