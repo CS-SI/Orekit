@@ -1,12 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+/* Copyright 2023 Luc Maisonobe
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,29 +16,34 @@
  */
 package org.orekit.propagation.sampling;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * This class wraps an object implementing {@link OrekitFixedStepHandler}
- * into a {@link OrekitStepHandler}.
+ * This class wraps an object implementing {@link MultiSatFixedStepHandler}
+ * into a {@link MultiSatStepHandler}.
 
  * <p>It mirrors the <code>StepNormalizer</code> interface from <a
  * href="https://hipparchus.org/">Hipparchus</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
+ * @since 12.0
  */
-public class OrekitStepNormalizer implements OrekitStepHandler {
+public class MultisatStepNormalizer implements MultiSatStepHandler {
 
     /** Fixed time step. */
     private double h;
 
     /** Underlying fixed step handler. */
-    private OrekitFixedStepHandler handler;
+    private MultiSatFixedStepHandler handler;
 
-    /** Last State vector. */
-    private SpacecraftState lastState;
+    /** Last State vectors. */
+    private List<SpacecraftState> lastStates;
 
     /** Integration direction indicator. */
     private boolean forward;
@@ -47,16 +52,15 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * @param h fixed time step (sign is not used)
      * @param handler fixed time step handler to wrap
      */
-    public OrekitStepNormalizer(final double h, final OrekitFixedStepHandler handler) {
-        this.h         = FastMath.abs(h);
-        this.handler   = handler;
-        this.lastState = null;
-        this.forward   = true;
+    public MultisatStepNormalizer(final double h, final MultiSatFixedStepHandler handler) {
+        this.h          = FastMath.abs(h);
+        this.handler    = handler;
+        this.lastStates = null;
+        this.forward    = true;
     }
 
     /** Get the fixed time step.
      * @return fixed time step
-     * @since 11.0
      */
     public double getFixedTimeStep() {
         return h;
@@ -64,72 +68,64 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
     /** Get the underlying fixed step handler.
      * @return underlying fixed step handler
-     * @since 11.0
      */
-    public OrekitFixedStepHandler getFixedStepHandler() {
+    public MultiSatFixedStepHandler getFixedStepHandler() {
         return handler;
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        lastState = null;
-        forward   = true;
+    public void init(final List<SpacecraftState> s0, final AbsoluteDate t) {
+        lastStates = new ArrayList<>(s0);
+        forward    = true;
         handler.init(s0, t, h);
     }
 
-    /**
-     * Handle the last accepted step.
-     * @param interpolator interpolator for the last accepted step. For
-     * efficiency purposes, the various propagators reuse the same
-     * object on each call, so if the instance wants to keep it across
-     * all calls (for example to provide at the end of the propagation a
-     * continuous model valid throughout the propagation range), it
-     * should build a local copy using the clone method and store this
-     * copy.
-     */
-    public void handleStep(final OrekitStepInterpolator interpolator) {
+    /** {@inheritDoc} */
+    public void handleStep(final List<OrekitStepInterpolator> interpolators) {
 
-        if (lastState == null) {
+        if (lastStates == null) {
             // initialize lastState in the first step case
-            lastState = interpolator.getPreviousState();
+            lastStates = interpolators.stream().map(i -> i.getPreviousState()).collect(Collectors.toList());
         }
 
         // take the propagation direction into account
         double step = h;
-        forward = interpolator.isForward();
+        forward = interpolators.get(0).isForward();
         if (!forward) {
             step = -h;
         }
 
 
         // use the interpolator to push fixed steps events to the underlying handler
-        AbsoluteDate nextTime = lastState.getDate().shiftedBy(step);
-        boolean nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
+        AbsoluteDate nextTime = lastStates.get(0).getDate().shiftedBy(step);
+        boolean nextInStep = forward ^ nextTime.compareTo(interpolators.get(0).getCurrentState().getDate()) > 0;
         while (nextInStep) {
 
             // output the stored previous step
-            handler.handleStep(lastState);
+            handler.handleStep(lastStates);
 
             // store the next step
-            lastState = interpolator.getInterpolatedState(nextTime);
+            final AbsoluteDate time = nextTime;
+            lastStates = interpolators.stream().map(i -> i.getInterpolatedState(time)).collect(Collectors.toList());
 
             // prepare next iteration
             nextTime = nextTime.shiftedBy(step);
-            nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
+            nextInStep = forward ^ nextTime.compareTo(interpolators.get(0).getCurrentState().getDate()) > 0;
 
         }
+
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finish(final SpacecraftState finalState) {
+    public void finish(final List<SpacecraftState> finalStates) {
 
         // there will be no more steps,
         // the stored one should be handled now
-        handler.handleStep(lastState);
+        handler.handleStep(lastStates);
 
         // and the final state handled too
-        handler.finish(finalState);
+        handler.finish(finalStates);
 
     }
 

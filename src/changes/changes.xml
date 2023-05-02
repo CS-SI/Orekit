@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+       <action dev="luc" type="add" issue="1080">
+	      Added MultiSatFixedStepHandler.
+       </action>
       <action dev="vincent" type="add" issue="1081">
         Added "toOrbitRelativeFrame" method in LOFType enum to allow for a better compatibility between Orekit and CCSDS
         files
