@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
@@ -57,10 +61,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class PropagatorsParallelizerTest {
@@ -299,12 +299,33 @@ public class PropagatorsParallelizerTest {
         final AtomicInteger called1 = new AtomicInteger();
         propagators.get(1).getMultiplexer().add(interpolator -> called1.set(22));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
-                                                                    propagate(startDate, endDate);
+                                        propagate(startDate, endDate);
         Assertions.assertEquals(2, results.size());
         Assertions.assertEquals(0.0, results.get(0).getDate().durationFrom(endDate), 1.0e-15);
         Assertions.assertEquals(0.0, results.get(1).getDate().durationFrom(endDate), 1.0e-15);
         Assertions.assertEquals(11, called0.get());
         Assertions.assertEquals(22, called1.get());
+    }
+
+    @Test
+    public void testFixedStepHandler() {
+        final AbsoluteDate startDate =  orbit.getDate();
+        final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
+        final double       h         = 60.0;
+        List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
+                                                     buildNumerical());
+        final AtomicInteger counter = new AtomicInteger();
+        new PropagatorsParallelizer(propagators,
+                                    h,
+                                    states -> {
+                                        for (final SpacecraftState state : states) {
+                                            Assertions.assertEquals(h * counter.get(),
+                                                                    state.getDate().durationFrom(startDate),
+                                                                    1.0e-10);
+                                        }
+                                        counter.addAndGet(1);
+                                    }).propagate(startDate, endDate);
+        Assertions.assertEquals(1 + (int) FastMath.rint(endDate.durationFrom(startDate) / h), counter.get());
     }
 
     @Test

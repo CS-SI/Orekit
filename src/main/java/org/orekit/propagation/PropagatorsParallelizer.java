@@ -29,7 +29,9 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.sampling.MultiSatFixedStepHandler;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
+import org.orekit.propagation.sampling.MultisatStepNormalizer;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -118,6 +120,20 @@ public class PropagatorsParallelizer {
                                    final MultiSatStepHandler globalHandler) {
         this.propagators = propagators;
         this.globalHandler = globalHandler;
+    }
+
+    /** Simple constructor.
+     * @param propagators list of propagators to use
+     * @param h fixed time step (sign is not used)
+     * @param globalHandler global handler for managing all spacecrafts
+     * simultaneously
+     * @since 12.0
+     */
+    public PropagatorsParallelizer(final List<Propagator> propagators,
+                                   final double h,
+                                   final MultiSatFixedStepHandler globalHandler) {
+        this.propagators   = propagators;
+        this.globalHandler = new MultisatStepNormalizer(h, globalHandler);
     }
 
     /** Get an unmodifiable list of the underlying mono-satellite propagators.
