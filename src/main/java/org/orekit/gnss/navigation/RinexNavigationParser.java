@@ -742,7 +742,7 @@ public class RinexNavigationParser {
                 } else {
                     // workaround for some invalid files that should nevertheless be parsed
                     // we have encountered in the wild merged files that claimed to be in 3.05 version
-                    // and hence needed at least 3 broadcast GLONASS orbit lines (the fourth line was
+                    // and hence needed at least 4 broadcast GLONASS orbit lines (the fourth line was
                     // introduced in 3.05), but in fact only had 3 broadcast lines. We think they were
                     // merged from files in 3.04 or earlier format. In order to parse these files,
                     // we accept after the third line either another broadcast orbit line or a new message
