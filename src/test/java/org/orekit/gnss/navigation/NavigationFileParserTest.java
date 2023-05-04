@@ -77,6 +77,22 @@ public class NavigationFileParserTest {
     }
 
     @Test
+    public void testWorkAroundWrongFormatNumber() throws IOException {
+        // the test file tells it is in 3.05 format, but in fact
+        // its GLONASS navigation messages are in 3.04 format
+        // so there the 4th broadcast line expected in 3.05 is missing here
+        // such a file has really been found in the wild
+        final String ex = "/gnss/navigation/invalid-but-accepted.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+        Assertions.assertEquals(3.05, file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(1, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(1, file.getGPSLegacyNavigationMessages().get("G32").size());
+        Assertions.assertEquals(1, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(2, file.getGlonassNavigationMessages().get("R01").size());
+    }
+
+    @Test
     public void testGpsRinex301() throws URISyntaxException, IOException {
 
         // Parse file
