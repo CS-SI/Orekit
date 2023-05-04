@@ -179,23 +179,23 @@ public class TimeSpanMap<T> {
      * entries already present in the map.
      * </p>
      * <p>
-     * If the map already contains transitions that occur earlier than {@code earliestValidityDate},
-     * the {@code erasesEarlier} parameter controls what to do with them. Lets consider
+     * If the map already contains transitions that occur later than {@code earliestValidityDate},
+     * the {@code erasesLater} parameter controls what to do with them. Lets consider
      * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
      * {@code earliestValidityDate} prior to the call to the method (i.e. tₖ &lt;
      * {@code earliestValidityDate} &lt; tₖ₊₁).
      * </p>
      * <ul>
-     *  <li>if {@code erasesEarlier} is {@code true}, then all earlier transitions
-     *      up to and including tₖ are erased, and the {@code entry} will be valid from past infinity
-     *      to {@code earliestValidityDate}</li>
-     *  <li>if {@code erasesEarlier} is {@code false}, then all earlier transitions
-     *      are preserved, and the {@code entry} will be valid from tₖ
-     *      to {@code earliestValidityDate}</li>
+     *  <li>if {@code erasesLater} is {@code true}, then all later transitions
+     *      from and including tₖ₊₁ are erased, and the {@code entry} will be valid from
+     *      {@code earliestValidityDate} to future infinity</li>
+     *  <li>if {@code erasesLater} is {@code false}, then all later transitions
+     *      are preserved, and the {@code entry} will be valid from {@code earliestValidityDate}
+     *      to tₖ₊₁</li>
      *  </ul>
      * <p>
      * In both cases, the existing entry eₖ time span will be truncated and will be valid
-     * only from {@code earliestValidityDate} to tₖ₊₁.
+     * only from tₖ to {@code earliestValidityDate}.
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
