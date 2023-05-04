@@ -180,6 +180,8 @@ public class RinexNavigationParser {
                 }
         }
 
+        pi.closePendingMessage();
+
         return pi.file;
 
     }
@@ -263,6 +265,16 @@ public class RinexNavigationParser {
             this.isIonosphereAlphaInitialized = false;
             this.file                         = new RinexNavigation();
             this.systemLineParser             = SatelliteSystemLineParser.GPS_LNAV;
+        }
+
+        /** Ensure navigation message has been closed.
+         */
+        void closePendingMessage() {
+            if (systemLineParser != null) {
+                systemLineParser.closeMessage(this);
+                systemLineParser = null;
+            }
+
         }
 
     }
@@ -409,6 +421,7 @@ public class RinexNavigationParser {
                                           final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
 
                                           // Initialize parser
+                                          pi.closePendingMessage();
                                           pi.systemLineParser = SatelliteSystemLineParser.getParser(system, null, pi, line);
                                       }
 
@@ -423,6 +436,7 @@ public class RinexNavigationParser {
                  (line, pi) -> {
                      final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1));
                      final String          type   = RinexUtils.parseString(line, 10, 4);
+                     pi.closePendingMessage();
                      pi.systemLineParser = SatelliteSystemLineParser.getParser(system, type, pi, line);
                  },
                  pi -> Collections.singleton(NAVIGATION_SV_EPOCH_CLOCK)),
@@ -496,10 +510,12 @@ public class RinexNavigationParser {
 
         /** Parser for system time offset message type. */
         STO_TYPE(line -> line.startsWith("> STO"),
-                 (line, pi) ->
+                 (line, pi) -> {
+                     pi.closePendingMessage();
                      pi.sto = new SystemTimeOffsetMessage(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1)),
                                                           RinexUtils.parseInt(line, 7, 2),
-                                                          RinexUtils.parseString(line, 10, 4)),
+                                                          RinexUtils.parseString(line, 10, 4));
+                 },
                  pi -> Collections.singleton(STO_SV_EPOCH_CLOCK)),
 
         /** Parser for Earth orientation parameter message model. */
@@ -542,10 +558,12 @@ public class RinexNavigationParser {
 
         /** Parser for Earth orientation parameter message type. */
         EOP_TYPE(line -> line.startsWith("> EOP"),
-                 (line, pi) ->
+                 (line, pi) -> {
+                     pi.closePendingMessage();
                      pi.eop = new EarthOrientationParameterMessage(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1)),
                                                                    RinexUtils.parseInt(line, 7, 2),
-                                                                   RinexUtils.parseString(line, 10, 4)),
+                                                                   RinexUtils.parseString(line, 10, 4));
+                 },
                  pi -> Collections.singleton(EOP_SV_EPOCH_CLOCK)),
 
         /** Parser for ionosphere Klobuchar message model. */
@@ -652,6 +670,7 @@ public class RinexNavigationParser {
         /** Parser for ionosphere message type. */
         IONO_TYPE(line -> line.startsWith("> ION"),
                   (line, pi) -> {
+                      pi.closePendingMessage();
                       final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1));
                       final int             prn    = RinexUtils.parseInt(line, 7, 2);
                       final String          type   = RinexUtils.parseString(line, 10, 4);
@@ -715,9 +734,24 @@ public class RinexNavigationParser {
         private static Iterable<LineParser> navigationNext(final ParseInfo parseInfo) {
             if (parseInfo.gpsLNav    != null || parseInfo.gpsCNav    != null || parseInfo.galileoNav != null ||
                 parseInfo.beidouLNav != null || parseInfo.beidouCNav != null || parseInfo.qzssLNav   != null ||
-                parseInfo.qzssCNav   != null || parseInfo.irnssNav   != null || parseInfo.glonassNav != null ||
-                parseInfo.sbasNav    != null) {
+                parseInfo.qzssCNav   != null || parseInfo.irnssNav   != null || parseInfo.sbasNav    != null) {
                 return Collections.singleton(BROADCAST_ORBIT);
+            } else if (parseInfo.glonassNav != null) {
+                if (parseInfo.messageLineNumber < 3) {
+                    return Collections.singleton(BROADCAST_ORBIT);
+                } else {
+                    // workaround for some invalid files that should nevertheless be parsed
+                    // we have encountered in the wild merged files that claimed to be in 3.05 version
+                    // and hence needed at least 3 broadcast GLONASS orbit lines (the fourth line was
+                    // introduced in 3.05), but in fact only had 3 broadcast lines. We think they were
+                    // merged from files in 3.04 or earlier format. In order to parse these files,
+                    // we accept after the third line either another broadcast orbit line or a new message
+                    if (parseInfo.file.getHeader().getFormatVersion() < 4) {
+                        return Arrays.asList(BROADCAST_ORBIT, NAVIGATION_SV_EPOCH_CLOCK);
+                    } else {
+                        return Arrays.asList(BROADCAST_ORBIT, EPH_TYPE, STO_TYPE, EOP_TYPE, IONO_TYPE);
+                    }
+                }
             } else if (parseInfo.file.getHeader().getFormatVersion() < 4) {
                 return Collections.singleton(NAVIGATION_SV_EPOCH_CLOCK);
             } else {
@@ -804,8 +838,16 @@ public class RinexNavigationParser {
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.gpsLNav.setTransmissionTime(parseBroadcastDouble1(line, Unit.SECOND));
                 pi.gpsLNav.setFitInterval(parseBroadcastInt2(line));
-                pi.file.addGPSLegacyNavigationMessage(pi.gpsLNav);
-                pi.gpsLNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.gpsLNav != null) {
+                    pi.file.addGPSLegacyNavigationMessage(pi.gpsLNav);
+                    pi.gpsLNav = null;
+                }
             }
 
         },
@@ -908,8 +950,16 @@ public class RinexNavigationParser {
              */
             private void parseTransmissionTimeLine(final String line, final ParseInfo pi) {
                 pi.gpsCNav.setTransmissionTime(parseBroadcastDouble1(line, Unit.SECOND));
-                pi.file.addGPSLegacyNavigationMessage(pi.gpsCNav);
-                pi.gpsCNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.gpsCNav != null) {
+                    pi.file.addGPSLegacyNavigationMessage(pi.gpsCNav);
+                    pi.gpsCNav = null;
+                }
             }
 
         },
@@ -986,8 +1036,16 @@ public class RinexNavigationParser {
             @Override
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.galileoNav.setTransmissionTime(parseBroadcastDouble1(line, Unit.SECOND));
-                pi.file.addGalileoNavigationMessage(pi.galileoNav);
-                pi.galileoNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.galileoNav != null) {
+                    pi.file.addGalileoNavigationMessage(pi.galileoNav);
+                    pi.galileoNav = null;
+                }
             }
 
         },
@@ -1039,8 +1097,7 @@ public class RinexNavigationParser {
                 pi.glonassNav.setZDot(parseBroadcastDouble2(line,    KM_PER_S));
                 pi.glonassNav.setZDotDot(parseBroadcastDouble3(line, KM_PER_S2));
                 if (pi.file.getHeader().getFormatVersion() < 3.045) {
-                    pi.file.addGlonassNavigationMessage(pi.glonassNav);
-                    pi.glonassNav = null;
+                    pi.closePendingMessage();
                 }
             }
 
@@ -1051,8 +1108,16 @@ public class RinexNavigationParser {
                 pi.glonassNav.setGroupDelayDifference(parseBroadcastDouble2(line, Unit.NONE));
                 pi.glonassNav.setURA(parseBroadcastDouble3(line,                  Unit.NONE));
                 pi.glonassNav.setHealthFlags(parseBroadcastDouble4(line,          Unit.NONE));
-                pi.file.addGlonassNavigationMessage(pi.glonassNav);
-                pi.glonassNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.glonassNav != null) {
+                    pi.file.addGlonassNavigationMessage(pi.glonassNav);
+                    pi.glonassNav = null;
+                }
             }
 
         },
@@ -1131,8 +1196,16 @@ public class RinexNavigationParser {
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.qzssLNav.setTransmissionTime(parseBroadcastDouble1(line, Unit.SECOND));
                 pi.qzssLNav.setFitInterval(parseBroadcastInt2(line));
-                pi.file.addQZSSLegacyNavigationMessage(pi.qzssLNav);
-                pi.qzssLNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.qzssLNav != null) {
+                    pi.file.addQZSSLegacyNavigationMessage(pi.qzssLNav);
+                    pi.qzssLNav = null;
+                }
             }
 
         },
@@ -1235,8 +1308,16 @@ public class RinexNavigationParser {
              */
             private void parseTransmissionTimeLine(final String line, final ParseInfo pi) {
                 pi.qzssCNav.setTransmissionTime(parseBroadcastDouble1(line, Unit.SECOND));
-                pi.file.addQZSSCivilianNavigationMessage(pi.qzssCNav);
-                pi.qzssCNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.qzssCNav != null) {
+                    pi.file.addQZSSCivilianNavigationMessage(pi.qzssCNav);
+                    pi.qzssCNav = null;
+                }
             }
 
         },
@@ -1313,8 +1394,16 @@ public class RinexNavigationParser {
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.beidouLNav.setTransmissionTime(parseBroadcastDouble1(line, Unit.SECOND));
                 pi.beidouLNav.setAODC(parseBroadcastDouble2(line,             Unit.SECOND));
-                pi.file.addBeidouLegacyNavigationMessage(pi.beidouLNav);
-                pi.beidouLNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.beidouLNav != null) {
+                    pi.file.addBeidouLegacyNavigationMessage(pi.beidouLNav);
+                    pi.beidouLNav = null;
+                }
             }
 
         },
@@ -1435,12 +1524,20 @@ public class RinexNavigationParser {
                 // field 2 is spare
                 // field 3 is spare
                 pi.beidouCNav.setIODE(parseBroadcastInt4(line));
-                pi.file.addBeidouCivilianNavigationMessage(pi.beidouCNav);
-                pi.beidouCNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.beidouCNav != null) {
+                    pi.file.addBeidouCivilianNavigationMessage(pi.beidouCNav);
+                    pi.beidouCNav = null;
+                }
             }
 
             /**
-             * Parse the SISMAI/Health/integroty line.
+             * Parse the SISMAI/Health/integrity line.
              * @param line line to read
              * @param pi holder for transient data
              */
@@ -1502,8 +1599,16 @@ public class RinexNavigationParser {
                 pi.sbasNav.setZDot(parseBroadcastDouble2(line,    KM_PER_S));
                 pi.sbasNav.setZDotDot(parseBroadcastDouble3(line, KM_PER_S2));
                 pi.sbasNav.setIODN(parseBroadcastDouble4(line,    Unit.NONE));
-                pi.file.addSBASNavigationMessage(pi.sbasNav);
-                pi.sbasNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.sbasNav != null) {
+                    pi.file.addSBASNavigationMessage(pi.sbasNav);
+                    pi.sbasNav = null;
+                }
             }
 
         },
@@ -1578,8 +1683,16 @@ public class RinexNavigationParser {
             @Override
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.irnssNav.setTransmissionTime(parseBroadcastDouble1(line, Unit.SECOND));
-                pi.file.addIRNSSNavigationMessage(pi.irnssNav);
-                pi.irnssNav = null;
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
+                if (pi.irnssNav != null) {
+                    pi.file.addIRNSSNavigationMessage(pi.irnssNav);
+                    pi.irnssNav = null;
+                }
             }
 
         };
@@ -1589,7 +1702,7 @@ public class RinexNavigationParser {
          * @param type message type (null for Rinex 3.x)
          * @param parseInfo container for transient data
          * @param line line being parsed
-         * @return the satellite system
+         * @return the satellite system line parser
          */
         private static SatelliteSystemLineParser getParser(final SatelliteSystem system, final String type,
                                                            final ParseInfo parseInfo, final String line) {
@@ -1865,6 +1978,12 @@ public class RinexNavigationParser {
             // this should never be called (except by some tests that use reflection)
             throw new OrekitInternalError(null);
         }
+
+        /**
+         * Close a message as last line was parsed.
+         * @param pi holder for transient data
+         */
+        public abstract void closeMessage(ParseInfo pi);
 
         /**
          * Calculates the floating-point remainder of a / b.
