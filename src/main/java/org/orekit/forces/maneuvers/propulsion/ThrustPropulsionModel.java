@@ -118,6 +118,9 @@ public interface ThrustPropulsionModel extends PropulsionModel {
 
         final Vector3D thrustVector = getThrustVector(s, parameters);
         final double thrust = thrustVector.getNorm();
+        if (thrust == 0) {
+            return Vector3D.ZERO;
+        }
         final Vector3D direction = thrustVector.normalize();
 
         // Compute thrust acceleration in inertial frame
@@ -138,6 +141,9 @@ public interface ThrustPropulsionModel extends PropulsionModel {
         // Extract thrust & direction from thrust vector
         final FieldVector3D<T> thrustVector = getThrustVector(s, parameters);
         final T thrust = thrustVector.getNorm();
+        if (thrust.isZero()) {
+            return FieldVector3D.getZero(s.getDate().getField());
+        }
         final FieldVector3D<T> direction = thrustVector.normalize();
 
         // Compute thrust acceleration in inertial frame

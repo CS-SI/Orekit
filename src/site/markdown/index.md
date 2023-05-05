@@ -76,7 +76,7 @@
     * impulse maneuvers for any propagator type
     * continuous maneuvers for numerical propagator type
     * configurable low thrust maneuver model based on event detectors
-    * propulsion models intended to be used with maneuver class
+    * used-defined propulsion models intended to be used with maneuver class (constant and piecewise polynomials already provided by the library)
     * user-friendly interface for the maneuver triggers
 
   * Propagation

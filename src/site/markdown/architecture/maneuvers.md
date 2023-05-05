@@ -67,7 +67,9 @@ override.
 
 The `PropulsionModel` defines the characteristics of the acceleration. Its main implementation
 is `BasicConstantThrustPropulsionModel`. The `ScaledConstantThrustPropulsionModel` implementation
-is inteded to be used in estimation processes, by evaluating scaling factors.
+is intended to be used in estimation processes, by evaluating scaling factors. The `ProfileThrustPropulsionModel`
+provides a piecewise-polynomial thrust with constant specific impulse that can model
+profile-based thrusts.
 
 ![propulsion class diagram](../images/design/propulsion-class-diagram.png)
 
