@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Enumerate for RINEX files types.
  * @since 12.0
@@ -27,35 +27,35 @@ public enum RinexFileType {
     /** Rinex Observation. */
     OBSERVATION("O"),
 
-    /** Rinex navigation. */
-    NAVIGATION("N");
+    /** Rinex navigation (G is for Glonass navigation, in Rinex 2.X). */
+    NAVIGATION("N", "G");
+
+    /** Parsing map. */
+    private static final Map<String, RinexFileType> KEYS_MAP = new HashMap<>();
+    static {
+        for (final RinexFileType type : values()) {
+            for (final String key : type.keys) {
+                KEYS_MAP.put(key, type);
+            }
+        }
+    }
 
     /** Key of the file type. */
-    private final String key;
+    private final String[] keys;
 
     /** Simple constructor.
-     * @param key key of the file type
+     * @param keys keys of the file type
      */
-    RinexFileType(final String key) {
-        this.key = key;
+    RinexFileType(final String... keys) {
+        this.keys = keys;
     }
 
-    /** Get the key of the file type.
-     * @return key of the file type
+    /** Parse the string to get the type.
+     * @param s string to parse (must correspond to a one-character key)
+     * @return the type corresponding to the string
      */
-    public String getKey() {
-        return key;
-    }
-
-    /** Check if a file matches type.
-     * @param name name of the file (for error message generation)
-     * @param parsedKey key parsed from the file
-     * @exception OrekitException if file does not match type
-     */
-    public void complainIfNoMatch(final String name, final String parsedKey) {
-        if (!key.endsWith(parsedKey)) {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
-        }
+    public static RinexFileType parseRinexFileType(final String s) {
+        return KEYS_MAP.get(s);
     }
 
 }

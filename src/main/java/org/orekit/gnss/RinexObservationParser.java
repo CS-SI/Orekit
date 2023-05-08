@@ -45,8 +45,8 @@ import org.orekit.time.TimeScales;
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
  * 3.00, 3.01, 3.02, 3.03, 3.04, 3.05, and 4.00.
  * </p>
- * @see <a href="https://files.igs.org/pub/data/format/rinex2.pdf">rinex 2.0</a>
- * @see <a href="https://files.igs.org/pub/data/format/rinex210.pdf">rinex 2.10</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex211.pdf">rinex 2.11</a>
  * @see <a href="http://www.aiub.unibe.ch/download/rinex/rinex212.txt">unofficial rinex 2.12</a>
  * @see <a href="http://www.aiub.unibe.ch/download/rinex/rnx_leo.txt">unofficial rinex 2.20</a>

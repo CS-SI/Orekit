@@ -577,6 +577,9 @@ UNKNOWN_RINEX_FREQUENCY = Unbekannte RINEX Frequenz {0} in Datei {1} bei Zeile {
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
 MISMATCHED_FREQUENCIES = Keine Übereinstimmung der Frequenzen in Datei {0}, Zeile {1} (erwartet {2}, erhalten {3})
 
+# wrong parsing type for file {0}
+WRONG_PARSING_TYPE = <MISSING TRANSLATION>
+
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER = Falsche Anzahl an Spalten in Datei {0}, Zeile {1} (erwartet {2}, erhalten {3})
 
