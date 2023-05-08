@@ -106,6 +106,18 @@ public enum SatelliteSystem {
         return satelliteSystem;
     }
 
+    /** Parse a string to get the satellite system.
+     * <p>
+     * The string first character must be the satellite system, or empty to get GPS as default
+     * </p>
+     * @param s string to parse
+     * @return the satellite system
+     * @since 12.0
+     */
+    public static SatelliteSystem parseSatelliteSystemWithGPSDefault(final String s) {
+        return s.isEmpty() ? SatelliteSystem.GPS : parseSatelliteSystem(s);
+    }
+
     /** Get default time scale for satellite system.
      * @param timeScales the set of timeScales to use
      * @return the default time scale among the given set matching to satellite system,

@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -111,10 +112,43 @@ public class RinexUtils {
         header.setFormatVersion(parsedVersion);
 
         // File type
-        header.getFileType().complainIfNoMatch(name, parseString(line, 20, 1));
+        if (header.getFileType() != RinexFileType.parseRinexFileType(parseString(line, 20, 1))) {
+            throw new OrekitException(OrekitMessages.WRONG_PARSING_TYPE, name);
+        }
 
         // Satellite system
-        header.setSatelliteSystem(SatelliteSystem.parseSatelliteSystem(parseString(line, 40, 1)));
+        switch (header.getFileType()) {
+            case OBSERVATION:
+                // for observation files, the satellite system is in column 40, and empty defaults to GPS
+                header.setSatelliteSystem(SatelliteSystem.parseSatelliteSystemWithGPSDefault(parseString(line, 40, 1)));
+                break;
+            case NAVIGATION: {
+                if (header.getFormatVersion() < 3.0) {
+                    // the satellite system is hidden within the entry, with GPS as default
+
+                    // set up default
+                    header.setSatelliteSystem(SatelliteSystem.GPS);
+
+                    // look if default is overridden somewhere in the entry
+                    final String entry = parseString(line, 0, LABEL_INDEX).toUpperCase();
+                    for (final SatelliteSystem satelliteSystem : SatelliteSystem.values()) {
+                        if (entry.contains(satelliteSystem.name())) {
+                            // we found a satellite system hidden in the middle of the line
+                            header.setSatelliteSystem(satelliteSystem);
+                            break;
+                        }
+                    }
+
+                } else {
+                    // the satellite system is in column 40 for 3.X and later
+                    header.setSatelliteSystem(SatelliteSystem.parseSatelliteSystemWithGPSDefault(parseString(line, 40, 1)));
+                }
+                break;
+            }
+            default:
+                //  this should never happen
+                throw new OrekitInternalError(null);
+        }
 
     }
 

@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.navigation;
 
+import org.orekit.time.AbsoluteDate;
+
 /** Container for time system corrections.
  * @author Bryan Cazabonne
  * @since 12.0
@@ -31,30 +33,24 @@ public class TimeSystemCorrection {
     /** A1 coefficient of linear polynomial for time system correction. */
     private double timeSystemCorrectionA1;
 
-    /** Reference time for time system correction (seconds into GNSS week). */
-    private int timeSystemCorrectionSecOfWeek;
-
-    /** Reference week number for time system correction. */
-    private int timeSystemCorrectionWeekNumber;
+    /** Reference date for time system correction. */
+    private AbsoluteDate referenceDate;
 
     /**
      * Constructor.
      * @param timeSystemCorrectionType       time system correction type
+     * @param referenceDate                  reference date for time system correction
      * @param timeSystemCorrectionA0         A0 coefficient of linear polynomial for time system correction
      * @param timeSystemCorrectionA1         A1 coefficient of linear polynomial for time system correction
-     * @param timeSystemCorrectionSecOfWeek  reference time for time system correction
-     * @param timeSystemCorrectionWeekNumber reference week number for time system correction
      */
     public TimeSystemCorrection(final String timeSystemCorrectionType,
+                                final AbsoluteDate referenceDate,
                                 final double timeSystemCorrectionA0,
-                                final double timeSystemCorrectionA1,
-                                final int timeSystemCorrectionSecOfWeek,
-                                final int timeSystemCorrectionWeekNumber) {
-        this.timeSystemCorrectionType       = timeSystemCorrectionType;
-        this.timeSystemCorrectionA0         = timeSystemCorrectionA0;
-        this.timeSystemCorrectionA1         = timeSystemCorrectionA1;
-        this.timeSystemCorrectionSecOfWeek  = timeSystemCorrectionSecOfWeek;
-        this.timeSystemCorrectionWeekNumber = timeSystemCorrectionWeekNumber;
+                                final double timeSystemCorrectionA1) {
+        this.timeSystemCorrectionType = timeSystemCorrectionType;
+        this.referenceDate            = referenceDate;
+        this.timeSystemCorrectionA0   = timeSystemCorrectionA0;
+        this.timeSystemCorrectionA1   = timeSystemCorrectionA1;
     }
 
     /**
@@ -90,25 +86,12 @@ public class TimeSystemCorrection {
     }
 
     /**
-     * Getter for the reference time of the time system correction polynomial.
-     * <p>
-     * Seconds into GNSS week
-     * </p>
-     * @return the reference time of the time system correction polynomial
+     * Getter for the reference date of the time system correction polynomial.
+     * @return the reference date of the time system correction polynomial,
+     * or null for GLONASS correction, which is constant
      */
-    public int getTimeSystemCorrectionSecOfWeek() {
-        return timeSystemCorrectionSecOfWeek;
-    }
-
-    /**
-     * Getter for the reference week number of the time system correction polynomial.
-     * <p>
-     * Continuous number since the reference epoch of the corresponding GNSS constellation
-     * </p>
-     * @return the reference week number of the time system correction polynomial
-     */
-    public int getTimeSystemCorrectionWeekNumber() {
-        return timeSystemCorrectionWeekNumber;
+    public AbsoluteDate getReferenceDate() {
+        return referenceDate;
     }
 
 }

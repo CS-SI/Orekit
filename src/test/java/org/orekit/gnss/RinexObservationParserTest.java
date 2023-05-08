@@ -88,7 +88,7 @@ public class RinexObservationParserTest {
             load("rinex/unknown-type.06o");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.WRONG_PARSING_TYPE, oe.getSpecifier());
         }
     }
 

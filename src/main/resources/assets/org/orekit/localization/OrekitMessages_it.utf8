@@ -577,6 +577,9 @@ UNKNOWN_RINEX_FREQUENCY = frequenza RINEX {0} sconociuta alla linea {2} del file
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
 MISMATCHED_FREQUENCIES = frequenza incoerente alla linea {1} del file {0} (letta {3}, attesa {2})
 
+# wrong parsing type for file {0}
+WRONG_PARSING_TYPE = <MISSING TRANSLATION>
+
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER = numero di colonne errato alla linea {1} del file {0} ({3} colonne invece di {2} attese)
 
