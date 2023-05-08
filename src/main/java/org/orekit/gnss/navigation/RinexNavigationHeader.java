@@ -29,7 +29,7 @@ import org.orekit.gnss.RinexFileType;
 public class RinexNavigationHeader extends RinexBaseHeader {
 
     /** Ionospheric correction type. */
-    private String ionosphericCorrectionType;
+    private IonosphericCorrectionType ionosphericCorrectionType;
 
     /** List of time system corrections. */
     private List<TimeSystemCorrection> timeSystemCorrections;
@@ -51,12 +51,9 @@ public class RinexNavigationHeader extends RinexBaseHeader {
 
     /**
      * Getter for the ionospheric correction type.
-     * <p>
-     * Only the three first characters are given (e.g. GAL, GPS, QZS, BDS, or IRN)
-     * </p>
      * @return the ionospheric correction type
      */
-    public String getIonosphericCorrectionType() {
+    public IonosphericCorrectionType getIonosphericCorrectionType() {
         return ionosphericCorrectionType;
     }
 
@@ -64,7 +61,7 @@ public class RinexNavigationHeader extends RinexBaseHeader {
      * Setter for the ionospheric correction type.
      * @param ionosphericCorrectionType the ionospheric correction type to set
      */
-    public void setIonosphericCorrectionType(final String ionosphericCorrectionType) {
+    public void setIonosphericCorrectionType(final IonosphericCorrectionType ionosphericCorrectionType) {
         this.ionosphericCorrectionType = ionosphericCorrectionType;
     }
 

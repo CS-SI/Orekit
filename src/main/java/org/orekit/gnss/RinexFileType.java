@@ -47,7 +47,7 @@ public enum RinexFileType {
      * @param keys keys of the file type
      */
     RinexFileType(final String... keys) {
-        this.keys = keys;
+        this.keys = keys.clone();
     }
 
     /** Parse the string to get the type.

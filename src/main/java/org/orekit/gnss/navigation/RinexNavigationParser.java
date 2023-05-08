@@ -63,8 +63,11 @@ import org.orekit.utils.units.Unit;
 /**
  * Parser for RINEX navigation messages files.
  * <p>
- * This parser handles RINEX version from 3.01 to 4.00. It is not adapted for RINEX 2.10 and 2.11 versions.
+ * This parser handles RINEX version from 2 to 4.00.
  * </p>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex211.pdf">rinex 2.11</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex301.pdf"> 3.01 navigation messages file format</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex302.pdf"> 3.02 navigation messages file format</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex303.pdf"> 3.03 navigation messages file format</a>
@@ -285,7 +288,9 @@ public class RinexNavigationParser {
         /** Parser for version, file type and satellite system. */
         HEADER_VERSION(line -> RinexUtils.matchesLabel(line, "RINEX VERSION / TYPE"),
                        (line, pi) -> RinexUtils.parseVersionFileTypeSatelliteSystem(line, pi.name, pi.file.getHeader(),
-                                                                                    3.01, 3.02, 3.03, 3.04, 3.05, 4.00),
+                                                                                    2.0, 2.01, 2.10, 2.11,
+                                                                                    3.01, 3.02, 3.03, 3.04, 3.05,
+                                                                                    4.00),
                        LineParser::headerNext),
 
         /** Parser for generating program and emitting agency. */
@@ -299,11 +304,47 @@ public class RinexNavigationParser {
                        LineParser::headerNext),
 
         /** Parser for ionospheric correction parameters. */
+        HEADER_ION_ALPHA(line -> RinexUtils.matchesLabel(line, "ION ALPHA"),
+                         (line, pi) -> {
+
+                             pi.file.getHeader().setIonosphericCorrectionType(IonosphericCorrectionType.GPS);
+
+                             // Read coefficients
+                             final double[] parameters = new double[4];
+                             parameters[0] = RinexUtils.parseDouble(line, 2,  12);
+                             parameters[1] = RinexUtils.parseDouble(line, 14, 12);
+                             parameters[2] = RinexUtils.parseDouble(line, 26, 12);
+                             parameters[3] = RinexUtils.parseDouble(line, 38, 12);
+                             pi.file.setKlobucharAlpha(parameters);
+                             pi.isIonosphereAlphaInitialized = true;
+
+                         },
+                         LineParser::headerNext),
+
+        /** Parser for ionospheric correction parameters. */
+        HEADER_ION_BETA(line -> RinexUtils.matchesLabel(line, "ION BETA"),
+                        (line, pi) -> {
+
+                            pi.file.getHeader().setIonosphericCorrectionType(IonosphericCorrectionType.GPS);
+
+                            // Read coefficients
+                            final double[] parameters = new double[4];
+                            parameters[0] = RinexUtils.parseDouble(line, 2,  12);
+                            parameters[1] = RinexUtils.parseDouble(line, 14, 12);
+                            parameters[2] = RinexUtils.parseDouble(line, 26, 12);
+                            parameters[3] = RinexUtils.parseDouble(line, 38, 12);
+                            pi.file.setKlobucharBeta(parameters);
+
+                        },
+                        LineParser::headerNext),
+
+        /** Parser for ionospheric correction parameters. */
         HEADER_IONOSPHERIC(line -> RinexUtils.matchesLabel(line, "IONOSPHERIC CORR"),
                            (line, pi) -> {
 
-                               // Satellite system
-                               final String ionoType = RinexUtils.parseString(line, 0, 3);
+                               // ionospheric correction type
+                               final IonosphericCorrectionType ionoType =
+                                               IonosphericCorrectionType.valueOf(RinexUtils.parseString(line, 0, 3));
                                pi.file.getHeader().setIonosphericCorrectionType(ionoType);
 
                                // Read coefficients
@@ -314,7 +355,7 @@ public class RinexNavigationParser {
                                parameters[3] = RinexUtils.parseDouble(line, 41, 12);
 
                                // Verify if we are parsing Galileo ionospheric parameters
-                               if ("GAL".equals(ionoType)) {
+                               if (ionoType == IonosphericCorrectionType.GAL) {
 
                                    // We are parsing Galileo ionospheric parameters
                                    pi.file.setNeQuickAlpha(parameters);
