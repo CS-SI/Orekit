@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="vincent" type="fix" issue="1092">
+        Fixed typos in parameters name and associated getters when impacted.
+      </action>
        <action dev="luc" type="add" issue="1091">
 	      Added support for old Rinex 2 navigation files.
        </action>
