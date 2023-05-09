@@ -1548,7 +1548,7 @@ public class CdmParserTest {
         Assertions.assertEquals(800000, file.getDataObject1().getAdditionalParametersBlock().getApoapsisAltitude(), 0.0); 	
 
         // Check PERIAPSIS_HEIGHT is correctly read
-        Assertions.assertEquals(750000, file.getDataObject1().getAdditionalParametersBlock().getPeriapsissAltitude(), 0.0); 
+        Assertions.assertEquals(750000, file.getDataObject1().getAdditionalParametersBlock().getPeriapsisAltitude(), 0.0);
 
         // Check INCLINATION is correctly read
         Assertions.assertEquals(FastMath.toRadians(89.0), file.getDataObject1().getAdditionalParametersBlock().getInclination(), 0.0);    
@@ -1616,10 +1616,10 @@ public class CdmParserTest {
 
         // OBJECT 2 - Eigenvector covariance block
         Assertions.assertEquals(AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType(), "ALT_COV_TYPE");
-        Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getComments().get(0));
-        Assertions.assertEquals(12,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3().length);
+        Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",  file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().get(0));
+        Assertions.assertEquals(12,  file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3().length);
         for (int i=0; i<12; i++) {
-            Assertions.assertEquals(i+1,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3()[i], COVARIANCE_DIAG_PRECISION);
+            Assertions.assertEquals(i+1, file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3()[i], COVARIANCE_DIAG_PRECISION);
         }
 
 
