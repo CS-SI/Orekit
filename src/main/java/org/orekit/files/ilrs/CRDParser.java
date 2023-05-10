@@ -301,7 +301,7 @@ public class CRDParser {
 
         },
 
-        /** Format header. */
+        /** Station header. */
         H2("H2", "h2") {
 
             /** {@inheritDoc} */
@@ -339,7 +339,7 @@ public class CRDParser {
 
         },
 
-        /** Format header. */
+        /** Target header. */
         H3("H3", "h3") {
 
             /** {@inheritDoc} */
@@ -378,7 +378,7 @@ public class CRDParser {
 
         },
 
-        /** Format header. */
+        /** Session (Pass/Pass segment) header. */
         H4("H4", "h4") {
 
             /** {@inheritDoc} */
