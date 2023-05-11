@@ -70,4 +70,8 @@ public enum PocMethodType {
     /** Patera 2005 method. */
     PATERA_2005;
 
+    /** @return CCSDS compatible name. */
+    public String getCCSDSName() {
+        return this.name().replace("_", "-");
+    }
 }
