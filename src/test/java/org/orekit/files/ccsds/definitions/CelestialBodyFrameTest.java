@@ -45,6 +45,9 @@ import org.orekit.utils.IERSConventions;
 
 public class CelestialBodyFrameTest {
 
+    /** Latest ITRF body frame to which the ITRF enum should correspond. */
+    private final CelestialBodyFrame LATEST_ITRF_FRAME = CelestialBodyFrame.ITRF2020;
+
     /**
      * Check mapping frames to CCSDS frames.
      */
@@ -64,7 +67,11 @@ public class CelestialBodyFrameTest {
                 // TDR (in ODM table 5-3 and section A2) names
                 // Orekit chose to use GTOD when guessing name from frame instance
                 MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.GTOD));
-            } else {
+            }
+            else if (ccsdsFrame == CelestialBodyFrame.ITRF) {
+                Assertions.assertEquals(LATEST_ITRF_FRAME, actual);
+            }
+            else {
                 MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame));
             }
         }
@@ -157,17 +164,12 @@ public class CelestialBodyFrameTest {
         Assertions.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("EME2000"));
         Assertions.assertEquals(CelestialBodyFrame.ITRF2014, CelestialBodyFrame.parse("ITRF2014"));
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, CelestialBodyFrame.parse("ITRF97"));
+        Assertions.assertEquals(CelestialBodyFrame.ITRF, CelestialBodyFrame.parse("ITRF"));
         try {
             Assertions.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("ITRF00"));
             Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             Assertions.assertTrue(iae.getMessage().contains("ITRF00"));
-        }
-        try {
-            CelestialBodyFrame.parse("ITRF");
-            Assertions.fail("an exception should have been thrown");
-        } catch (IllegalArgumentException iae) {
-            Assertions.assertTrue(iae.getMessage().contains("ITRF"));
         }
     }
 
