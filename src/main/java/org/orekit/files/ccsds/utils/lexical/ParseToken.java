@@ -457,7 +457,7 @@ public class ParseToken {
     public boolean processAsIntegerArray(final IntegerArrayConsumer consumer) {
         try {
             if (type == TokenType.ENTRY) {
-                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
+                final String[] fields = SPACE.split(getRawContent());
                 final int[] integers = new int[fields.length];
                 for (int i = 0; i < fields.length; ++i) {
                     integers[i] = Integer.parseInt(fields[i]);
@@ -555,7 +555,7 @@ public class ParseToken {
                                         final DoubleArrayConsumer consumer) {
         try {
             if (type == TokenType.ENTRY) {
-                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
+                final String[] fields = SPACE.split(getRawContent());
                 final double[] doubles = new double[fields.length];
                 for (int i = 0; i < fields.length; ++i) {
                     doubles[i] = behavior.select(getUnits(), standard).toSI(Double.parseDouble(fields[i]));
