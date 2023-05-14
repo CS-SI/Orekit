@@ -18,13 +18,24 @@ ATTITUDE_SOURCE                  = OBC
 ATTITUDE_STATES                  = QUATERNION
 REF_FRAME_A                      = J2000
 REF_FRAME_B                      = SC_BODY_1
-NUMBER_SENSORS_USED              = 4
-SENSORS_USED_1                   = AST1
-SENSORS_USED_2                   = AST2
-SENSORS_USED_3                   = DSS
-SENSORS_USED_4                   = IMU
-NUMBER_SENSOR_NOISE_COVARIANCE_1 = 2
-NUMBER_SENSOR_NOISE_COVARIANCE_2 = 1
-SENSOR_NOISE_STDDEV_1            = 0.0097 0.0097
-SENSOR_NOISE_STDDEV_2            = 0.0097 0.0097
+SENSOR_START
+SENSOR_NUMBER                    = 1
+SENSOR_USED                      = AST1
+NUMBER_SENSOR_NOISE_COVARIANCE   = 2
+SENSOR_NOISE_STDDEV              = 0.0097 0.0097
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER                    = 2
+SENSOR_USED                      = AST2
+NUMBER_SENSOR_NOISE_COVARIANCE   = 1
+SENSOR_NOISE_STDDEV              = 0.0097 0.0097
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER                    = 3
+SENSOR_USED                      = DSS
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER                    = 4
+SENSOR_USED                      = IMU
+SENSOR_STOP
 AD_STOP

@@ -30,56 +30,56 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 public enum AttitudeDeterminationKey {
 
     /** Comment entry. */
-    COMMENT((token, context, container) ->
+    COMMENT((token, parser, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Identification number. */
-    AD_ID((token, context, container) -> token.processAsFreeTextString(container::setId)),
+    AD_ID((token, parser, context, container) -> token.processAsFreeTextString(container::setId)),
 
     /** Identification of previous attitude determination. */
-    AD_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setPrevId)),
+    AD_PREV_ID((token, parser, context, container) -> token.processAsFreeTextString(container::setPrevId)),
 
     /** Attitude determination method. */
-    AD_METHOD((token, context, container) -> token.processAsEnum(AdMethodType.class, container::setMethod)),
+    AD_METHOD((token, parser, context, container) -> token.processAsEnum(AdMethodType.class, container::setMethod)),
 
     /** Source of attitude estimate. */
-    ATTITUDE_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setSource)),
+    ATTITUDE_SOURCE((token, parser, context, container) -> token.processAsFreeTextString(container::setSource)),
 
     /** Rotation sequence entry. */
-    EULER_ROT_SEQ((token, context, container) -> token.processAsRotationOrder(container::setEulerRotSeq)),
+    EULER_ROT_SEQ((token, parser, context, container) -> token.processAsRotationOrder(container::setEulerRotSeq)),
 
     /** Number of states. */
-    NUMBER_STATES((token, context, container) -> token.processAsInteger(container::setNbStates)),
+    NUMBER_STATES((token, parser, context, container) -> token.processAsInteger(container::setNbStates)),
 
     /** Attitude states. */
-    ATTITUDE_STATES((token, context, container) -> token.processAsEnum(AttitudeElementsType.class, container::setAttitudeStates)),
+    ATTITUDE_STATES((token, parser, context, container) -> token.processAsEnum(AttitudeElementsType.class, container::setAttitudeStates)),
 
     /** Type of attitude error state. */
-    COV_TYPE((token, context, container) -> token.processAsEnum(AttitudeCovarianceType.class, container::setCovarianceType)),
+    COV_TYPE((token, parser, context, container) -> token.processAsEnum(AttitudeCovarianceType.class, container::setCovarianceType)),
 
     /** Reference frame defining the starting point of the transformation. */
-    REF_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, false)),
+    REF_FRAME_A((token, parser, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, false)),
 
     /** Reference frame defining the end point of the transformation. */
-    REF_FRAME_B((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameB, context, false, false, true)),
+    REF_FRAME_B((token, parser, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameB, context, false, false, true)),
 
     /** Attitude rate states. */
-    RATE_STATES((token, context, container) -> token.processAsEnum(RateElementsType.class, container::setRateStates)),
+    RATE_STATES((token, parser, context, container) -> token.processAsEnum(RateElementsType.class, container::setRateStates)),
 
     /** Rate random walk if {@link #RATE_STATES} is {@link RateElementsType#GYRO_BIAS}. */
-    SIGMA_U((token, context, container) -> token.processAsDouble(Units.DEG_PER_S_3_2, context.getParsedUnitsBehavior(),
-                                                                 container::setSigmaU)),
+    SIGMA_U((token, parser, context, container) -> token.processAsDouble(Units.DEG_PER_S_3_2, context.getParsedUnitsBehavior(),
+                                                                         container::setSigmaU)),
 
     /** Angle random walk if {@link #RATE_STATES} is {@link RateElementsType#GYRO_BIAS}. */
-    SIGMA_V((token, context, container) -> token.processAsDouble(Units.DEG_PER_S_1_2, context.getParsedUnitsBehavior(),
-                                                                 container::setSigmaV)),
+    SIGMA_V((token, parser, context, container) -> token.processAsDouble(Units.DEG_PER_S_1_2, context.getParsedUnitsBehavior(),
+                                                                         container::setSigmaV)),
 
     /** Process noise standard deviation if {@link #RATE_STATES} is {@link RateElementsType#ANGVEL}. */
-    RATE_PROCESS_NOISE_STDDEV((token, context, container) -> token.processAsDouble(Units.DEG_PER_S_3_2, context.getParsedUnitsBehavior(),
-                                                                                   container::setRateProcessNoiseStdDev)),
+    RATE_PROCESS_NOISE_STDDEV((token, parser, context, container) -> token.processAsDouble(Units.DEG_PER_S_3_2, context.getParsedUnitsBehavior(),
+                                                                                           container::setRateProcessNoiseStdDev)),
 
-    /** Number of sensors used. */
-    NUMBER_SENSORS_USED((token, context, container) -> token.processAsInteger(container::setNbSensorsUsed));
+    /** Sensor block sub-structure. */
+    SENSOR((token, parser, context, container) -> parser.manageAttitudeDeterminationSensorSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -93,23 +93,26 @@ public enum AttitudeDeterminationKey {
 
     /** Process an token.
      * @param token token to process
+     * @param parser ACM file parser
      * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final AttitudeDetermination container) {
-        return processor.process(token, context, container);
+    public boolean process(final ParseToken token, final AcmParser parser, final ContextBinding context,
+                           final AttitudeDetermination container) {
+        return processor.process(token, parser, context, container);
     }
 
     /** Interface for processing one token. */
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
+         * @param parser ACM file parser
          * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, AttitudeDetermination container);
+        boolean process(ParseToken token, AcmParser parser, ContextBinding context, AttitudeDetermination container);
     }
 
 }

@@ -96,30 +96,28 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testTooLargeSensorIndex() throws URISyntaxException {
-        final String name = "/ccsds/adm/acm/too-large-sensor-index.txt";
+    public void testSensorIndexAlreadyUsed() throws URISyntaxException {
+        final String name = "/ccsds/adm/acm/sensor-index-already-used.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new ParserBuilder().buildAcmParser().parseMessage(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SENSOR_INDEX, oe.getSpecifier());
-            Assertions.assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertEquals(3, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(OrekitMessages.CCSDS_SENSOR_INDEX_ALREADY_USED, oe.getSpecifier());
+            Assertions.assertEquals(2, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
     @Test
-    public void testTooSmallSensorIndex() throws URISyntaxException {
-        final String name = "/ccsds/adm/acm/too-small-sensor-index.txt";
+    public void testMissingSensorIndex() throws URISyntaxException {
+        final String name = "/ccsds/adm/acm/missing-sensor-index.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new ParserBuilder().buildAcmParser().parseMessage(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SENSOR_INDEX, oe.getSpecifier());
-            Assertions.assertEquals(0, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertEquals(4, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_SENSOR_INDEX, oe.getSpecifier());
+            Assertions.assertEquals(3, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
@@ -307,11 +305,11 @@ public class AcmParserTest {
         Assertions.assertEquals("J2000",                 ad.getEndpoints().getFrameA().getName());
         Assertions.assertEquals(BaseEquipment.SC_BODY,   ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("1",                     ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
-        Assertions.assertEquals(4,                       ad.getNbSensorsUsed());
-        Assertions.assertEquals("AST1",                  ad.getSensorUsed(1));
-        Assertions.assertEquals("AST2",                  ad.getSensorUsed(2));
-        Assertions.assertEquals("DSS",                   ad.getSensorUsed(3));
-        Assertions.assertEquals("IMU",                   ad.getSensorUsed(4));
+        Assertions.assertEquals(4,                       ad.getSensorsUsed().size());
+        Assertions.assertEquals("AST1",                  ad.getSensorsUsed().get(0).getSensorUsed());
+        Assertions.assertEquals("AST2",                  ad.getSensorsUsed().get(1).getSensorUsed());
+        Assertions.assertEquals("DSS",                   ad.getSensorsUsed().get(2).getSensorUsed());
+        Assertions.assertEquals("IMU",                   ad.getSensorsUsed().get(3).getSensorUsed());
 
     }
 
@@ -413,10 +411,10 @@ public class AcmParserTest {
         Assertions.assertEquals(BaseEquipment.SC_BODY,                 ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("1",                                   ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(RateElementsType.GYRO_BIAS,            ad.getRateStates());
-        Assertions.assertEquals(3,                                     ad.getNbSensorsUsed());
-        Assertions.assertEquals("AST1",                                ad.getSensorUsed(1));
-        Assertions.assertEquals("AST2",                                ad.getSensorUsed(2));
-        Assertions.assertEquals("IMU",                                 ad.getSensorUsed(3));
+        Assertions.assertEquals(3,                                     ad.getSensorsUsed().size());
+        Assertions.assertEquals("AST1",                                ad.getSensorsUsed().get(0).getSensorUsed());
+        Assertions.assertEquals("AST2",                                ad.getSensorsUsed().get(1).getSensorUsed());
+        Assertions.assertEquals("IMU",                                 ad.getSensorsUsed().get(2).getSensorUsed());
 
     }
 
@@ -882,21 +880,24 @@ public class AcmParserTest {
         Assertions.assertEquals(BaseEquipment.SC_BODY,                 ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("1",                                   ad.getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(RateElementsType.ANGVEL,               ad.getRateStates());
-        Assertions.assertEquals(3,                                     ad.getNbSensorsUsed());
-        Assertions.assertEquals("AST1",                                ad.getSensorUsed(1));
-        Assertions.assertEquals("AST2",                                ad.getSensorUsed(2));
-        Assertions.assertEquals("IMU",                                 ad.getSensorUsed(3));
-        Assertions.assertEquals( 2,                                    ad.getNbSensorNoiseCovariance(1));
-        Assertions.assertEquals( 2,                                    ad.getNbSensorNoiseCovariance(2));
-        Assertions.assertEquals(-1,                                    ad.getNbSensorNoiseCovariance(3));
-        Assertions.assertEquals(0.0097, FastMath.toDegrees(ad.getSensorNoiseCovariance(1)[0]), 1.0e-10);
-        Assertions.assertEquals(0.0098, FastMath.toDegrees(ad.getSensorNoiseCovariance(1)[1]), 1.0e-10);
-        Assertions.assertEquals(0.0079, FastMath.toDegrees(ad.getSensorNoiseCovariance(2)[0]), 1.0e-10);
-        Assertions.assertEquals(0.0089, FastMath.toDegrees(ad.getSensorNoiseCovariance(2)[1]), 1.0e-10);
-        Assertions.assertNull(ad.getSensorNoiseCovariance(3));
-        Assertions.assertEquals( 5.0, ad.getSensorFrequency(1), 1.0e-10);
-        Assertions.assertEquals(10.0, ad.getSensorFrequency(2), 1.0e-10);
-        Assertions.assertTrue(Double.isNaN(ad.getSensorFrequency(3)));
+        Assertions.assertEquals(3,                                     ad.getSensorsUsed().size());
+        Assertions.assertEquals(1,                                     ad.getSensorsUsed().get(0).getSensorNumber());
+        Assertions.assertEquals("AST1",                                ad.getSensorsUsed().get(0).getSensorUsed());
+        Assertions.assertEquals( 2,                                    ad.getSensorsUsed().get(0).getNbSensorNoiseCovariance());
+        Assertions.assertEquals(0.0097, FastMath.toDegrees(ad.getSensorsUsed().get(0).getSensorNoiseCovariance()[0]), 1.0e-10);
+        Assertions.assertEquals(0.0098, FastMath.toDegrees(ad.getSensorsUsed().get(0).getSensorNoiseCovariance()[1]), 1.0e-10);
+        Assertions.assertEquals( 5.0, ad.getSensorsUsed().get(0).getSensorFrequency(), 1.0e-10);
+        Assertions.assertEquals(2,                                     ad.getSensorsUsed().get(1).getSensorNumber());
+        Assertions.assertEquals("AST2",                                ad.getSensorsUsed().get(1).getSensorUsed());
+        Assertions.assertEquals( 2,                                    ad.getSensorsUsed().get(1).getNbSensorNoiseCovariance());
+        Assertions.assertEquals(0.0079, FastMath.toDegrees(ad.getSensorsUsed().get(1).getSensorNoiseCovariance()[0]), 1.0e-10);
+        Assertions.assertEquals(0.0089, FastMath.toDegrees(ad.getSensorsUsed().get(1).getSensorNoiseCovariance()[1]), 1.0e-10);
+        Assertions.assertEquals(10.0, ad.getSensorsUsed().get(1).getSensorFrequency(), 1.0e-10);
+        Assertions.assertEquals(3,                                     ad.getSensorsUsed().get(2).getSensorNumber());
+        Assertions.assertEquals("IMU",                                 ad.getSensorsUsed().get(2).getSensorUsed());
+        Assertions.assertEquals(-1,                                    ad.getSensorsUsed().get(2).getNbSensorNoiseCovariance());
+        Assertions.assertNull(ad.getSensorsUsed().get(2).getSensorNoiseCovariance());
+        Assertions.assertTrue(Double.isNaN(ad.getSensorsUsed().get(2).getSensorFrequency()));
 
         Assertions.assertEquals(1, acm.getData().getUserDefinedBlock().getParameters().size());
         Assertions.assertEquals("viscum-album", acm.getData().getUserDefinedBlock().getParameters().get("OXIDIZER"));
