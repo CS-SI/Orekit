@@ -517,8 +517,11 @@ CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = attitude type {0} and rate type {
 # incompatible keys {0} and {1} should not both be used
 CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = incompatible keys {0} and {1} should not both be used
 
-# no sensor index {0}, allowed indices: [1, {1}]
-CCSDS_UNKNOWN_SENSOR_INDEX = no sensor index {0}, allowed indices: [1, {1}]
+# sensor index {0} is already used
+CCSDS_SENSOR_INDEX_ALREADY_USED = sensor index {0} is already used
+
+# missing sensor index {0}
+CCSDS_MISSING_SENSOR_INDEX = missing sensor index {0}
 
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS = inconsistent number of elements: expected {0}, got {1}

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
@@ -59,9 +58,6 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
 
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
-
-    /** Pattern for splitting sensor index at end of keywords. */
-    private static final Pattern SPLIT_INDEX = Pattern.compile("([A-Z_]+)_([0-9]+)$");
 
     /** File header. */
     private AdmHeader header;
@@ -101,6 +97,9 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
 
     /** Attitude determination logical block. */
     private AttitudeDetermination attitudeDeterminationBlock;
+
+    /** Attitude determination sensor logical block. */
+    private AttitudeDeterminationSensor attitudeDeterminationSensorBlock;
 
     /** User defined parameters logical block. */
     private UserDefined userDefinedBlock;
@@ -347,6 +346,24 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
         return true;
     }
 
+    /** Manage attitude determination sensor section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageAttitudeDeterminationSensorSection(final boolean starting) {
+        if (starting) {
+            if (attitudeDeterminationSensorBlock == null) {
+                // this is the first (and unique) attitude determination block, we need to allocate the container
+                attitudeDeterminationSensorBlock = new AttitudeDeterminationSensor();
+            }
+            anticipateNext(this::processAttitudeDeterminationSensorToken);
+        } else {
+            anticipateNext(this::processDataSubStructureToken);
+        }
+        return true;
+    }
+
     /** Manage user-defined parameters section.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
@@ -528,25 +545,36 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      * @return true if token was processed, false otherwise
      */
     private boolean processAttitudeDeterminationToken(final ParseToken token) {
-        anticipateNext(this::processDataSubStructureToken);
+        anticipateNext(attitudeDeterminationSensorBlock != null ?
+                       this::processAttitudeDeterminationSensorToken :
+                       this::processDataSubStructureToken);
         if (token.getName() == null) {
             return false;
         }
         try {
-            return AttitudeDeterminationKey.valueOf(token.getName()).process(token, context, attitudeDeterminationBlock);
+            return AttitudeDeterminationKey.valueOf(token.getName()).process(token, this, context, attitudeDeterminationBlock);
         } catch (IllegalArgumentException iae1) {
-            try {
-                final Matcher matcher = SPLIT_INDEX.matcher(token.getName());
-                if (matcher.matches()) {
-                    return AttitudeDeterminationSensorKey.valueOf(matcher.group(1)).
-                           process(token, context, Integer.parseInt(matcher.group(2)), attitudeDeterminationBlock);
-                } else {
-                    return false;
-                }
-            } catch (IllegalArgumentException iae2) {
-                // token has not been recognized
-                return false;
-            }
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one attitude determination sensor data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processAttitudeDeterminationSensorToken(final ParseToken token) {
+        anticipateNext(this::processAttitudeDeterminationToken);
+        if (token.getName() == null) {
+            return false;
+        }
+        try {
+            return AttitudeDeterminationSensorKey.valueOf(token.getName()).process(token, context, attitudeDeterminationSensorBlock);
+        } catch (IllegalArgumentException iae1) {
+            // token has not been recognized
+            attitudeDeterminationBlock.addSensor(attitudeDeterminationSensorBlock);
+            attitudeDeterminationSensorBlock = null;
+            return false;
         }
     }
 

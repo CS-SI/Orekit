@@ -517,8 +517,11 @@ CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = <MISSING TRANSLATION>
 # incompatible keys {0} and {1} should not both be used
 CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = <MISSING TRANSLATION>
 
-# no sensor index {0}, allowed indices: [1, {1}]
-CCSDS_UNKNOWN_SENSOR_INDEX = <MISSING TRANSLATION>
+# sensor index {0} is already used
+CCSDS_SENSOR_INDEX_ALREADY_USED = <MISSING TRANSLATION>
+
+# missing sensor index {0}
+CCSDS_MISSING_SENSOR_INDEX = <MISSING TRANSLATION>
 
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS = <MISSING TRANSLATION>

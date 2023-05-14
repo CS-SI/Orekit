@@ -27,21 +27,22 @@ import org.orekit.utils.units.Unit;
  */
 public enum AttitudeDeterminationSensorKey {
 
+    /** Sensor number. */
+    SENSOR_NUMBER((token, context, container) -> token.processAsInteger(container::setSensorNumber)),
+
     /** Sensor used. */
-    SENSORS_USED((token, context, index, container) -> token.processAsIndexedUppercaseString(index, container::setSensorUsed)),
+    SENSOR_USED((token, context, container) -> token.processAsUppercaseString(container::setSensorUsed)),
 
-    /** Number of noise elements for sensor i. */
-    NUMBER_SENSOR_NOISE_COVARIANCE((token, context, index, container) -> token.processAsIndexedInteger(index, container::setNbSensorNoiseCovariance)),
+    /** Number of noise elements. */
+    NUMBER_SENSOR_NOISE_COVARIANCE((token, context, container) -> token.processAsInteger(container::setNbSensorNoiseCovariance)),
 
-    /** Standard deviation of sensor noises for sensor i. */
-    SENSOR_NOISE_STDDEV((token, context, index, container) -> token.processAsIndexedDoubleArray(index,
-                                                                                                Unit.DEGREE, context.getParsedUnitsBehavior(),
-                                                                                                container::setSensorNoiseCovariance)),
+    /** Standard deviation of sensor noises. */
+    SENSOR_NOISE_STDDEV((token, context, container) -> token.processAsDoubleArray(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                                  container::setSensorNoiseCovariance)),
 
-    /** Frequency of sensor data for sensor i. */
-    SENSOR_FREQUENCY((token, context, index, container) -> token.processAsIndexedDouble(index,
-                                                                                        Unit.HERTZ, context.getParsedUnitsBehavior(),
-                                                                                        container::setSensorFrequency));
+    /** Frequency of sensor data. */
+    SENSOR_FREQUENCY((token, context, container) -> token.processAsDouble(Unit.HERTZ, context.getParsedUnitsBehavior(),
+                                                                          container::setSensorFrequency));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -56,13 +57,12 @@ public enum AttitudeDeterminationSensorKey {
     /** Process an token.
      * @param token token to process
      * @param context context binding
-     * @param index sensor index
      * @param container container to fill
      * @return true of token was accepted
      */
     public boolean process(final ParseToken token, final ContextBinding context,
-                           final int index, final AttitudeDetermination container) {
-        return processor.process(token, context, index, container);
+                           final AttitudeDeterminationSensor container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -70,11 +70,10 @@ public enum AttitudeDeterminationSensorKey {
         /** Process one token.
          * @param token token to process
          * @param context context binding
-         * @param index sensor index
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, int index, AttitudeDetermination container);
+        boolean process(ParseToken token, ContextBinding context, AttitudeDeterminationSensor container);
     }
 
 }

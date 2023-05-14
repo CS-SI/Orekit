@@ -245,16 +245,24 @@ RATE_STATES                       = ANGVEL
 SIGMA_U                           = 3.7e-7
 SIGMA_V                           = 1.3e-5
 RATE_PROCESS_NOISE_STDDEV         = 5.1e-6
-NUMBER_SENSORS_USED               = 3
-SENSORS_USED_1                    = AST1
-SENSORS_USED_2                    = AST2
-SENSORS_USED_3                    = IMU
-NUMBER_SENSOR_NOISE_COVARIANCE_1  =  2
-NUMBER_SENSOR_NOISE_COVARIANCE_2  =  2
-SENSOR_NOISE_STDDEV_1             = 0.0097 0.0098
-SENSOR_NOISE_STDDEV_2             = 0.0079 0.0089
-SENSOR_FREQUENCY_1                =  5.0 [Hz]
-SENSOR_FREQUENCY_2                = 10.0 [Hz]
+SENSOR_START
+SENSOR_NUMBER                     = 1
+SENSOR_USED                       = AST1
+NUMBER_SENSOR_NOISE_COVARIANCE    =  2
+SENSOR_NOISE_STDDEV               = 0.0097 0.0098
+SENSOR_FREQUENCY                  =  5.0 [Hz]
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER                     = 2
+SENSOR_USED                       = AST2
+NUMBER_SENSOR_NOISE_COVARIANCE    =  2
+SENSOR_NOISE_STDDEV               = 0.0079 0.0089
+SENSOR_FREQUENCY                  = 10.0 [Hz]
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER                     = 3
+SENSOR_USED                       = IMU
+SENSOR_STOP
 AD_STOP
 
 USER_START

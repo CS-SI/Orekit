@@ -17,7 +17,9 @@
 
 package org.orekit.files.ccsds.ndm.adm.acm;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
@@ -71,26 +73,15 @@ public class AttitudeDetermination extends CommentsContainer {
     /** Process noise standard deviation if {@link #rateStates} is {@link RateElementsType#ANGVEL}. */
     private double rateProcessNoiseStdDev;
 
-    /** Number of sensors used. */
-    private int nbSensorsUsed;
-
     /** Sensors used. */
-    private String[] sensorsUsed;
-
-    /** Number of noise elements for sensor i. */
-    private int[] nbSensorNoiseCovariance;
-
-    /** Standard deviation of sensor noises for sensor i. */
-    private double[][] sensorNoiseCovariance;
-
-    /** Frequency of sensor i data. */
-    private double[] sensorFrequency;
+    private List<AttitudeDeterminationSensor> sensorsUsed;
 
     /** Simple constructor.
      */
     public AttitudeDetermination() {
-        endpoints = new AttitudeEndpoints();
-        nbStates  = -1;
+        endpoints   = new AttitudeEndpoints();
+        sensorsUsed = new ArrayList<>();
+        nbStates    = -1;
     }
 
     /** {@inheritDoc} */
@@ -100,16 +91,32 @@ public class AttitudeDetermination extends CommentsContainer {
         checkNotNull(attitudeStates, AttitudeDeterminationKey.ATTITUDE_STATES.name());
         endpoints.checkExternalFrame(AttitudeDeterminationKey.REF_FRAME_A,
                                      AttitudeDeterminationKey.REF_FRAME_B);
-        for (int i = 0; i < nbSensorsUsed; ++i) {
-            checkNotNull(sensorsUsed[i], AttitudeDeterminationSensorKey.SENSORS_USED.name() + "_" + i);
-            if (nbSensorNoiseCovariance[i] >= 0) {
-                final int n = sensorNoiseCovariance[i] == null ? 0 : sensorNoiseCovariance[i].length;
-                if (nbSensorNoiseCovariance[i] != n) {
-                    throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_ELEMENTS,
-                                              nbSensorNoiseCovariance[i], n);
-                }
+
+        // check sensors in increasing number
+        for (int number = 1; number <= sensorsUsed.size(); ++number) {
+            final AttitudeDeterminationSensor sensor = findSensor(number);
+            if (sensor != null) {
+                sensor.validate(version);
+            } else {
+                // no sensor has the expected index
+                throw new OrekitException(OrekitMessages.CCSDS_MISSING_SENSOR_INDEX, number);
+            }
+
+        }
+
+    }
+
+    /** Find sensor by number.
+     * @param number number of the sensor
+     * @return sensor with specified number, or null if not found
+     */
+    private AttitudeDeterminationSensor findSensor(final int number) {
+        for (final AttitudeDeterminationSensor sensor : sensorsUsed) {
+            if (sensor.getSensorNumber() == number) {
+                return sensor;
             }
         }
+        return null;
     }
 
     /** Get the endpoints (i.e. frames A, B and their relationship).
@@ -287,114 +294,23 @@ public class AttitudeDetermination extends CommentsContainer {
         this.rateProcessNoiseStdDev = rateProcessNoiseStdDev;
     }
 
-    /** Get number of sensors used.
-     * @return number of sensors used
+    /** Get sensors used.
+     * @return sensors used
      */
-    public int getNbSensorsUsed() {
-        return nbSensorsUsed;
+    public List<AttitudeDeterminationSensor> getSensorsUsed() {
+        return Collections.unmodifiableList(sensorsUsed);
     }
 
-    /** Set number of sensors used.
-     * @param nbSensorsUsed number of sensors used
+    /** Add a sensor used.
+     * @param sensor sensor to add
      */
-    public void setNbSensorsUsed(final int nbSensorsUsed) {
-
-        this.nbSensorsUsed      = nbSensorsUsed;
-
-        sensorsUsed             = new String[nbSensorsUsed];
-        nbSensorNoiseCovariance = new int[nbSensorsUsed];
-        sensorNoiseCovariance   = new double[nbSensorsUsed][];
-        sensorFrequency         = new double[nbSensorsUsed];
-
-        Arrays.fill(nbSensorNoiseCovariance, -1);
-        Arrays.fill(sensorFrequency, Double.NaN);
-
-    }
-
-    /** Ensure a sensor index is within range.
-     * @param i sensor index, counting from 1
-     * @exception OrekitException if index is out of range
-     */
-    private void ensureSensorIndexInRange(final int i) {
-        if (i < 1 || i > nbSensorsUsed) {
-            throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_SENSOR_INDEX, i, nbSensorsUsed);
+    public void addSensor(final AttitudeDeterminationSensor sensor) {
+        for (final AttitudeDeterminationSensor existing : sensorsUsed) {
+            if (sensor.getSensorNumber() == existing.getSensorNumber()) {
+                throw new OrekitException(OrekitMessages.CCSDS_SENSOR_INDEX_ALREADY_USED, sensor.getSensorNumber());
+            }
         }
-    }
-
-    /** Get sensor used.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @return sensor used
-     */
-    public String getSensorUsed(final int i) {
-        ensureSensorIndexInRange(i);
-        return sensorsUsed[i - 1];
-    }
-
-    /** Set sensor used.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @param sensor sensor used
-     */
-    public void setSensorUsed(final int i, final String sensor) {
-        ensureSensorIndexInRange(i);
-        sensorsUsed[i - 1] = sensor;
-    }
-
-    /** Get number of noise elements for sensor.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @return number of noise elements for sensor
-     */
-    public int getNbSensorNoiseCovariance(final int i) {
-        ensureSensorIndexInRange(i);
-        return nbSensorNoiseCovariance[i - 1];
-    }
-
-    /** Set number of noise elements for sensor.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @param n number of noise elements for sensor
-     */
-    public void setNbSensorNoiseCovariance(final int i, final int n) {
-        ensureSensorIndexInRange(i);
-        nbSensorNoiseCovariance[i - 1] = n;
-    }
-
-    /** Get standard deviation of sensor noise for sensor.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @return standard deviation of sensor noise for sensor
-     */
-    public double[] getSensorNoiseCovariance(final int i) {
-        ensureSensorIndexInRange(i);
-        return sensorNoiseCovariance[i - 1] == null ? null : sensorNoiseCovariance[i - 1].clone();
-    }
-
-    /** Set standard deviation of sensor noise for sensor.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @param stddev standard deviation of sensor noise
-     */
-    public void setSensorNoiseCovariance(final int i, final double[] stddev) {
-        ensureSensorIndexInRange(i);
-        if (stddev.length != nbSensorNoiseCovariance[i - 1]) {
-            throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_ELEMENTS,
-                                      nbSensorNoiseCovariance[i - 1], stddev.length);
-        }
-        sensorNoiseCovariance[i - 1] = stddev.clone();
-    }
-
-    /** Get frequency of sensor data for sensor.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @return frequency of sensor data for sensor
-     */
-    public double getSensorFrequency(final int i) {
-        ensureSensorIndexInRange(i);
-        return sensorFrequency[i - 1];
-    }
-
-    /** Set frequency of sensor data for sensor.
-     * @param i sensor index, counting from 1 (not 0!)
-     * @param frequency frequency of sensor data for sensor
-     */
-    public void setSensorFrequency(final int i, final double frequency) {
-        ensureSensorIndexInRange(i);
-        sensorFrequency[i - 1] = frequency;
+        sensorsUsed.add(sensor);
     }
 
 }

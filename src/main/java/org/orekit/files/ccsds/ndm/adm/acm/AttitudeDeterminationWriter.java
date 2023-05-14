@@ -71,19 +71,13 @@ class AttitudeDeterminationWriter extends AbstractWriter {
         generator.writeEntry(AttitudeDeterminationKey.RATE_PROCESS_NOISE_STDDEV.name(), ad.getRateProcessNoiseStdDev(), Units.DEG_PER_S_3_2, false);
 
         // sensors
-        final int nbSensors = ad.getNbSensorsUsed();
-        generator.writeEntry(AttitudeDeterminationKey.NUMBER_SENSORS_USED.name(), nbSensors, false);
-        for (int i = 1; i <= nbSensors; ++i) {
-            generator.writeEntry(AttitudeDeterminationSensorKey.SENSORS_USED.name() + "_" + i,
-                                 ad.getSensorUsed(i), null, false);
-        }
-        for (int i = 1; i <= nbSensors; ++i) {
-            generator.writeEntry(AttitudeDeterminationSensorKey.NUMBER_SENSOR_NOISE_COVARIANCE.name() + "_" + i,
-                                 ad.getNbSensorNoiseCovariance(i), false);
-        }
-        for (int i = 1; i <= nbSensors; ++i) {
-            final double[] stddevDouble = ad.getSensorNoiseCovariance(i);
+        for (final AttitudeDeterminationSensor sensor : ad.getSensorsUsed()) {
+            generator.enterSection(AttitudeDeterminationKey.SENSOR.name());
+            generator.writeEntry(AttitudeDeterminationSensorKey.SENSOR_NUMBER.name(), sensor.getSensorNumber(),   true);
+            generator.writeEntry(AttitudeDeterminationSensorKey.SENSOR_USED.name(), sensor.getSensorUsed(), null, true);
+            final double[] stddevDouble = sensor.getSensorNoiseCovariance();
             if (stddevDouble != null) {
+                generator.writeEntry(AttitudeDeterminationSensorKey.NUMBER_SENSOR_NOISE_COVARIANCE.name(), stddevDouble.length, true);
                 final StringBuilder stddev = new StringBuilder();
                 for (int k = 0; k < stddevDouble.length; ++k) {
                     if (k > 0) {
@@ -91,13 +85,11 @@ class AttitudeDeterminationWriter extends AbstractWriter {
                     }
                     stddev.append(AccurateFormatter.format(Unit.DEGREE.fromSI(stddevDouble[k])));
                 }
-                generator.writeEntry(AttitudeDeterminationSensorKey.SENSOR_NOISE_STDDEV.name() + "_" + i,
+                generator.writeEntry(AttitudeDeterminationSensorKey.SENSOR_NOISE_STDDEV.name(),
                                      stddev.toString(), Unit.DEGREE, false);
             }
-        }
-        for (int i = 1; i <= nbSensors; ++i) {
-            generator.writeEntry(AttitudeDeterminationSensorKey.SENSOR_FREQUENCY.name() + "_" + i,
-                                 ad.getSensorFrequency(i), Unit.HERTZ, false);
+            generator.writeEntry(AttitudeDeterminationSensorKey.SENSOR_FREQUENCY.name(), sensor.getSensorFrequency(), Unit.HERTZ, false);
+            generator.exitSection();
         }
 
     }
