@@ -544,6 +544,30 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as an array of doubles.
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
+     * @param consumer consumer of the array
+     * @return always returns {@code true}
+     * @since 12.0
+     */
+    public boolean processAsDoubleArray(final Unit standard, final ParsedUnitsBehavior behavior,
+                                        final DoubleArrayConsumer consumer) {
+        try {
+            if (type == TokenType.ENTRY) {
+                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
+                final double[] doubles = new double[fields.length];
+                for (int i = 0; i < fields.length; ++i) {
+                    doubles[i] = behavior.select(getUnits(), standard).toSI(Double.parseDouble(fields[i]));
+                }
+                consumer.accept(doubles);
+            }
+            return true;
+        } catch (NumberFormatException nfe) {
+            throw generateException(nfe);
+        }
+    }
+
     /** Process the content as an indexed double array.
      * @param index index
      * @param standard units of parsed content as specified by CCSDS standard
@@ -716,26 +740,6 @@ public class ParseToken {
             consumer.accept(getRawContent());
         }
         return true;
-    }
-
-    /** Process the content as an array of doubles.
-     * @param consumer consumer of the array
-     * @return always returns {@code true}
-     */
-    public boolean processAsDoubleArray(final DoubleArrayConsumer consumer) {
-        try {
-            if (type == TokenType.ENTRY) {
-                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent().replace(" ", ","));
-                final double[] doubles = new double[fields.length];
-                for (int i = 0; i < fields.length; ++i) {
-                    doubles[i] = Double.parseDouble(fields[i]);
-                }
-                consumer.accept(doubles);
-            }
-            return true;
-        } catch (NumberFormatException nfe) {
-            throw generateException(nfe);
-        }
     }
 
     /** Process the content of the Maneuvrable enum.
@@ -932,6 +936,14 @@ public class ParseToken {
         void accept(int i, int j, double value);
     }
 
+    /** Interface representing instance methods that consume double array. */
+    public interface DoubleArrayConsumer {
+        /** Consume an array of doubles.
+         * @param doubles array of doubles
+         */
+        void accept(double[] doubles);
+    }
+
     /** Interface representing instance methods that consume indexed double array values.
      * @since 12.0
      */
@@ -1007,14 +1019,6 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(List<Unit> value);
-    }
-
-    /** Interface representing instance methods that consume double array. */
-    public interface DoubleArrayConsumer {
-        /** Consume an array of doubles.
-         * @param doubles array of doubles
-         */
-        void accept(double[] doubles);
     }
 
     /** Interface representing instance methods that consume Maneuvrable values. */

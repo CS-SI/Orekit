@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 /** Keys for {@link SigmaEigenvectorsCovariance covariance format} entries.
  */
@@ -30,7 +31,8 @@ public enum SigmaEigenvectorsCovarianceKey {
 
     /** The 3x3 positional covariance one-sigma dispersions corresponding to the major, intermediate and minor eigenvalues,
      * followed by the associated eigenvectors. */
-    CSIG3EIGVEC3((token, context, container) -> token.processAsDoubleArray(container::setCsig3eigvec3));
+    CSIG3EIGVEC3((token, context, container) -> token.processAsDoubleArray(Unit.NONE, context.getParsedUnitsBehavior(),
+                                                                           container::setCsig3eigvec3));
 
     /** Processing method. */
     private final TokenProcessor processor;
