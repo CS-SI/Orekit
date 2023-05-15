@@ -782,8 +782,7 @@ public class RinexObservationParser {
                                if (!parseInfo.specialRecord) {
 
                                    // observations epoch
-                                   final int yy = RinexUtils.parseInt(line, 1, 2);
-                                   parseInfo.tObs = new AbsoluteDate(yy >= 80 ? (yy + 1900) : (yy + 2000),
+                                   parseInfo.tObs = new AbsoluteDate(RinexUtils.convert2DigitsYear(RinexUtils.parseInt(line, 1, 2)),
                                                                      RinexUtils.parseInt(line,  4, 2),
                                                                      RinexUtils.parseInt(line,  7, 2),
                                                                      RinexUtils.parseInt(line, 10, 2),

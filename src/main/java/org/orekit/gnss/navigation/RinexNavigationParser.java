@@ -1187,14 +1187,13 @@ public class RinexNavigationParser {
                     pi.glonassNav.setPRN(RinexUtils.parseInt(line, 0, 2));
 
                     // Toc
-                    final int    yy    = RinexUtils.parseInt(line,  3, 2);
+                    final int    year  = RinexUtils.convert2DigitsYear(RinexUtils.parseInt(line,  3, 2));
                     final int    month = RinexUtils.parseInt(line,  6, 2);
                     final int    day   = RinexUtils.parseInt(line,  9, 2);
                     final int    hours = RinexUtils.parseInt(line, 12, 2);
                     final int    min   = RinexUtils.parseInt(line, 15, 2);
                     final double sec   = RinexUtils.parseDouble(line, 17, 5);
-                    pi.glonassNav.setEpochToc(new AbsoluteDate(yy >= 80 ? (yy + 1900) : (yy + 2000),
-                                                               month, day, hours, min, sec,
+                    pi.glonassNav.setEpochToc(new AbsoluteDate(year, month, day, hours, min, sec,
                                                                pi.timeScales.getUTC()));
 
                     // clock
@@ -1941,14 +1940,13 @@ public class RinexNavigationParser {
             message.setPRN(RinexUtils.parseInt(line, 0, 2));
 
             // Toc
-            final int    yy    = RinexUtils.parseInt(line,  2, 3);
+            final int    year  = RinexUtils.convert2DigitsYear(RinexUtils.parseInt(line,  2, 3));
             final int    month = RinexUtils.parseInt(line,  5, 3);
             final int    day   = RinexUtils.parseInt(line,  8, 3);
             final int    hours = RinexUtils.parseInt(line, 11, 3);
             final int    min   = RinexUtils.parseInt(line, 14, 3);
             final double sec   = RinexUtils.parseDouble(line, 17, 5);
-            message.setEpochToc(new AbsoluteDate(yy >= 80 ? (yy + 1900) : (yy + 2000),
-                                month, day, hours, min, sec, timeScale));
+            message.setEpochToc(new AbsoluteDate( year, month, day, hours, min, sec, timeScale));
 
             // clock
             message.setAf0(RinexUtils.parseDouble(line, 22, 19));

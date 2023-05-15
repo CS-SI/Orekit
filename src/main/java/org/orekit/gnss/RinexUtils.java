@@ -42,13 +42,16 @@ public class RinexUtils {
     public static final int LABEL_INDEX = 60;
 
     /** Pattern for splitting date, time and time zone. */
-    private static final Pattern SPLITTING_PATTERN = Pattern.compile("([0-9A-Za-z-]+) *([0-9:]+) *([A-Z][A-Z0-9_-]*)?");
+    private static final Pattern SPLITTING_PATTERN = Pattern.compile("([0-9A-Za-z/-]+) *([0-9:]+) *([A-Z][A-Z0-9_-]*)?");
 
     /** Pattern for dates with month abbrevation. */
     private static final Pattern DATE_DD_MMM_YY_PATTERN = Pattern.compile("([0-9]{2})-([A-Za-z]{3})-([0-9]{2})");
 
     /** Pattern for dates in ISO-8601 complete representation (basic or extended). */
     private static final Pattern DATE_ISO_8601_PATTERN = Pattern.compile("([0-9]{4})-?([0-9]{2})-?([0-9]{2})");
+
+    /** Pattern for dates in european format. */
+    private static final Pattern DATE_EUROPEAN_PATTERN = Pattern.compile("([0-9]{2})/([0-9]{2})/([0-9]{2})");
 
     /** Pattern for time. */
     private static final Pattern TIME_PATTERN = Pattern.compile("([0-9]{2}):?([0-9]{2})(?::?([0-9]{2}))?");
@@ -176,6 +179,7 @@ public class RinexUtils {
         // however, we have also found this:
         // teqc  2016Nov7      root                20180130 10:38:06UTCPGM / RUN BY / DATE
         // BJFMTLcsr           UTCSR               2007-09-30 05:30:06 PGM / RUN BY / DATE
+        // NEODIS              TAS                 27/05/22 10:28      PGM / RUN BY / DATE
 
         // in versions 3.x, the pattern is expected to be:
         // sbf2rin-11.3.3                          20180130 002558 LCL PGM / RUN BY / DATE
@@ -190,9 +194,8 @@ public class RinexUtils {
             final DateComponents dc;
             final Matcher abbrevMatcher = DATE_DD_MMM_YY_PATTERN.matcher(splittingMatcher.group(1));
             if (abbrevMatcher.matches()) {
-                final int yy = Integer.parseInt(abbrevMatcher.group(3));
                 // hoping this obsolete format will not be used past year 2079…
-                dc = new DateComponents(yy >= 80 ? (yy + 1900) : (yy + 2000),
+                dc = new DateComponents(convert2DigitsYear(Integer.parseInt(abbrevMatcher.group(3))),
                                         Month.parseMonth(abbrevMatcher.group(2)).getNumber(),
                                         Integer.parseInt(abbrevMatcher.group(1)));
             } else {
@@ -202,7 +205,14 @@ public class RinexUtils {
                                             Integer.parseInt(isoMatcher.group(2)),
                                             Integer.parseInt(isoMatcher.group(3)));
                 } else {
-                    dc = null;
+                    final Matcher europeanMatcher = DATE_EUROPEAN_PATTERN.matcher(splittingMatcher.group(1));
+                    if (europeanMatcher.matches()) {
+                        dc = new DateComponents(convert2DigitsYear(Integer.parseInt(europeanMatcher.group(3))),
+                                                Integer.parseInt(europeanMatcher.group(2)),
+                                                Integer.parseInt(europeanMatcher.group(1)));
+                    } else {
+                        dc = null;
+                    }
                 }
             }
 
@@ -293,6 +303,15 @@ public class RinexUtils {
         } else {
             return null;
         }
+    }
+
+    /** Convert a 2 digits year to a complete year.
+     * @param yy year between 0 and 99
+     * @return complete year
+     * @since 12.0
+     */
+    public static int convert2DigitsYear(final int yy) {
+        return yy >= 80 ? (yy + 1900) : (yy + 2000);
     }
 
 }
