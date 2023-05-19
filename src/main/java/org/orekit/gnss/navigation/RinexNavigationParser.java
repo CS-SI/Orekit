@@ -180,6 +180,10 @@ public class RinexNavigationParser {
                 }
         }
 
+        if (!pi.headerParsed) {
+            throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE, source.getName());
+        }
+
         pi.closePendingMessage();
 
         return pi.file;
@@ -200,6 +204,9 @@ public class RinexNavigationParser {
 
         /** Number of initial spaces in broadcase orbits lines. */
         private int initialSpaces;
+
+        /** Flag indicating header has been completely parsed. */
+        private boolean headerParsed;
 
         /** Flag indicating the distinction between "alpha" and "beta" ionospheric coefficients. */
         private boolean isIonosphereAlphaInitialized;
@@ -502,6 +509,9 @@ public class RinexNavigationParser {
                            version >= 4 && header.getNumberOfLeapSeconds() < 0) {
                            throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, pi.name);
                        }
+
+                       pi.headerParsed = true;
+
                    },
                    LineParser::navigationNext),
 

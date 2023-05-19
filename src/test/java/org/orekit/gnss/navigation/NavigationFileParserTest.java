@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
+import org.orekit.data.TruncatingFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -90,6 +91,21 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1, file.getGPSLegacyNavigationMessages().get("G32").size());
         Assertions.assertEquals(1, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(2, file.getGlonassNavigationMessages().get("R01").size());
+    }
+
+    @Test
+    public void testGpsRinex301Truncated() throws URISyntaxException, IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_GPS_Rinex301.n";
+        try {
+            new RinexNavigationParser().
+                        parse(new TruncatingFilter(5).
+                              filter(new DataSource(ex, () -> getClass().getResourceAsStream(ex))));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNEXPECTED_END_OF_FILE, oe.getSpecifier());
+        }
     }
 
     @Test
