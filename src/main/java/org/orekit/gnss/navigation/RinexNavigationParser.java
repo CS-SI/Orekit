@@ -267,7 +267,7 @@ public class RinexNavigationParser {
             this.timeScales                   = RinexNavigationParser.this.timeScales;
             this.isIonosphereAlphaInitialized = false;
             this.file                         = new RinexNavigation();
-            this.systemLineParser             = SatelliteSystemLineParser.GPS_LNAV;
+
         }
 
         /** Ensure navigation message has been closed.
@@ -969,10 +969,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.gpsLNav != null) {
-                    pi.file.addGPSLegacyNavigationMessage(pi.gpsLNav);
-                    pi.gpsLNav = null;
-                }
+                pi.file.addGPSLegacyNavigationMessage(pi.gpsLNav);
+                pi.gpsLNav = null;
             }
 
         },
@@ -1081,10 +1079,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.gpsCNav != null) {
-                    pi.file.addGPSLegacyNavigationMessage(pi.gpsCNav);
-                    pi.gpsCNav = null;
-                }
+                pi.file.addGPSLegacyNavigationMessage(pi.gpsCNav);
+                pi.gpsCNav = null;
             }
 
         },
@@ -1167,10 +1163,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.galileoNav != null) {
-                    pi.file.addGalileoNavigationMessage(pi.galileoNav);
-                    pi.galileoNav = null;
-                }
+                pi.file.addGalileoNavigationMessage(pi.galileoNav);
+                pi.galileoNav = null;
             }
 
         },
@@ -1263,10 +1257,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.glonassNav != null) {
-                    pi.file.addGlonassNavigationMessage(pi.glonassNav);
-                    pi.glonassNav = null;
-                }
+                pi.file.addGlonassNavigationMessage(pi.glonassNav);
+                pi.glonassNav = null;
             }
 
         },
@@ -1351,10 +1343,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.qzssLNav != null) {
-                    pi.file.addQZSSLegacyNavigationMessage(pi.qzssLNav);
-                    pi.qzssLNav = null;
-                }
+                pi.file.addQZSSLegacyNavigationMessage(pi.qzssLNav);
+                pi.qzssLNav = null;
             }
 
         },
@@ -1463,10 +1453,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.qzssCNav != null) {
-                    pi.file.addQZSSCivilianNavigationMessage(pi.qzssCNav);
-                    pi.qzssCNav = null;
-                }
+                pi.file.addQZSSCivilianNavigationMessage(pi.qzssCNav);
+                pi.qzssCNav = null;
             }
 
         },
@@ -1549,10 +1537,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.beidouLNav != null) {
-                    pi.file.addBeidouLegacyNavigationMessage(pi.beidouLNav);
-                    pi.beidouLNav = null;
-                }
+                pi.file.addBeidouLegacyNavigationMessage(pi.beidouLNav);
+                pi.beidouLNav = null;
             }
 
         },
@@ -1659,8 +1645,7 @@ public class RinexNavigationParser {
             public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
                 if (pi.beidouCNav.getSignal() == Frequency.B2B) {
                     pi.beidouCNav.setTransmissionTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
-                    pi.file.addBeidouCivilianNavigationMessage(pi.beidouCNav);
-                    pi.beidouCNav = null;
+                    pi.closePendingMessage();
                 } else {
                     parseSismaiHealthIntegrity(line, pi);
                 }
@@ -1679,10 +1664,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.beidouCNav != null) {
-                    pi.file.addBeidouCivilianNavigationMessage(pi.beidouCNav);
-                    pi.beidouCNav = null;
-                }
+                pi.file.addBeidouCivilianNavigationMessage(pi.beidouCNav);
+                pi.beidouCNav = null;
             }
 
             /**
@@ -1754,10 +1737,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.sbasNav != null) {
-                    pi.file.addSBASNavigationMessage(pi.sbasNav);
-                    pi.sbasNav = null;
-                }
+                pi.file.addSBASNavigationMessage(pi.sbasNav);
+                pi.sbasNav = null;
             }
 
         },
@@ -1838,10 +1819,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                if (pi.irnssNav != null) {
-                    pi.file.addIRNSSNavigationMessage(pi.irnssNav);
-                    pi.irnssNav = null;
-                }
+                pi.file.addIRNSSNavigationMessage(pi.irnssNav);
+                pi.irnssNav = null;
             }
 
         };
