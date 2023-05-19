@@ -100,7 +100,7 @@ public class AcmParserTest {
         final String name = "/ccsds/adm/acm/sensor-index-already-used.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new ParserBuilder().buildAcmParser().parseMessage(source);
+            new ParserBuilder().buildAcmParser().parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_SENSOR_INDEX_ALREADY_USED, oe.getSpecifier());

@@ -272,10 +272,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean managePhysicalPropertiesSection(final boolean starting) {
         if (starting) {
-            if (physicBlock == null) {
-                // this is the first (and unique) physical properties block, we need to allocate the container
-                physicBlock = new AttitudePhysicalProperties(metadata.getEpochT0());
-            }
+            physicBlock = new AttitudePhysicalProperties(metadata.getEpochT0());
             anticipateNext(this::processPhysicalPropertyToken);
         } else {
             anticipateNext(structureProcessor);
@@ -335,10 +332,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean manageAttitudeDeterminationSection(final boolean starting) {
         if (starting) {
-            if (attitudeDeterminationBlock == null) {
-                // this is the first (and unique) attitude determination block, we need to allocate the container
-                attitudeDeterminationBlock = new AttitudeDetermination();
-            }
+            attitudeDeterminationBlock = new AttitudeDetermination();
             anticipateNext(this::processAttitudeDeterminationToken);
         } else {
             anticipateNext(structureProcessor);
@@ -353,10 +347,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean manageAttitudeDeterminationSensorSection(final boolean starting) {
         if (starting) {
-            if (attitudeDeterminationSensorBlock == null) {
-                // this is the first (and unique) attitude determination block, we need to allocate the container
-                attitudeDeterminationSensorBlock = new AttitudeDeterminationSensor();
-            }
+            attitudeDeterminationSensorBlock = new AttitudeDeterminationSensor();
             anticipateNext(this::processAttitudeDeterminationSensorToken);
         } else {
             anticipateNext(this::processDataSubStructureToken);
@@ -371,10 +362,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean manageUserDefinedParametersSection(final boolean starting) {
         if (starting) {
-            if (userDefinedBlock == null) {
-                // this is the first (and unique) user-defined parameters block, we need to allocate the container
-                userDefinedBlock = new UserDefined();
-            }
+            userDefinedBlock = new UserDefined();
             anticipateNext(this::processUserDefinedToken);
         } else {
             anticipateNext(structureProcessor);
