@@ -521,6 +521,20 @@ public class OmmParserTest {
     }
 
     @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/odm/omm/spurious-metadata.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().buildOmmParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(17, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("metadata", oe.getParts()[2]);
+        }
+    }
+
+    @Test
     public void testNumberFormatErrorType() {
         final String name = "/ccsds/odm/omm/OMM-number-format-error.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));

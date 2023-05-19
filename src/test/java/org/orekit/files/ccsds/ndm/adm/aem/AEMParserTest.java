@@ -789,6 +789,20 @@ public class AEMParserTest {
     }
 
     @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/adm/aem/spurious-metadata.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().buildAemParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(26, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("META", oe.getParts()[2]);
+        }
+    }
+
+    @Test
     public void testMissingConvention() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));

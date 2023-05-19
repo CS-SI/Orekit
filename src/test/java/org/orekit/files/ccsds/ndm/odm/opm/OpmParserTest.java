@@ -900,6 +900,23 @@ public class OpmParserTest {
     }
 
     @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/spurious-metadata.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(CelestialBodyFactory.getMars().getGM()).
+            buildOpmParser().
+            parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(23, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("metadata", oe.getParts()[2]);
+        }
+    }
+
+    @Test
     public void testIncompatibleUnits1() throws URISyntaxException {
         final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));

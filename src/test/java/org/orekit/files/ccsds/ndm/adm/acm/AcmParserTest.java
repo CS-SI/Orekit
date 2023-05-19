@@ -136,6 +136,20 @@ public class AcmParserTest {
     }
 
     @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/adm/acm/spurious-metadata.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().buildAcmParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(13, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("META", oe.getParts()[2]);
+        }
+    }
+
+    @Test
     public void testMissingTargetMomentum() throws URISyntaxException {
         final String name = "/ccsds/adm/acm/missing-target-momentum.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));

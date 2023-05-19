@@ -1356,4 +1356,18 @@ public class APMParserTest {
         }
     }
 
+    @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/adm/apm/spurious-metadata.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().buildApmParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(15, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("metadata", oe.getParts()[2]);
+        }
+    }
+
 }
