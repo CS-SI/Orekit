@@ -27,7 +27,7 @@ public class TruncatingFilterTest {
 
     @Test
     public void testNoTruncation() throws IOException {
-        doTestTruncate("regular-data/UTC-TAI.history", 10000, 49);
+        doTestTruncate("regular-data/UTC-TAI.history", 10000, 50);
     }
 
     @Test

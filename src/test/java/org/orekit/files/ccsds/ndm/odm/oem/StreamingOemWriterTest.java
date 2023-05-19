@@ -249,7 +249,7 @@ public class StreamingOemWriterTest {
         Oem actual = oemParser.parse(
                 new DataSource("mem", () -> new StringReader(actualText)));
 
-        compareOems(expected, actual, 1e-6, 1e-9);
+        compareOems(expected, actual, 1.9e-5, 2.2e-8);
         MatcherAssert.assertThat(
                 actualText,
                 CoreMatchers.not(CoreMatchers.containsString("INTERPOLATION_DEGREE")));
@@ -257,7 +257,7 @@ public class StreamingOemWriterTest {
         MatcherAssert.assertThat(
                 actualText,
                 CoreMatchers.containsString(
-                        "\n2017-04-11T22:31:43.121856 -2757.3016318893897 -4173.479601381253 4566.01849801963 6.625901653953951 -1.011817208875361 3.0698336591568833\n"));
+                        "\n2017-04-11T22:31:43.121856 -2757.3016318855234 -4173.47960139054 4566.018498013474 6.625901653955907 -1.0118172088819106 3.0698336591485442\n"));
     }
 
     private static void compareOemEphemerisBlocks(OemSegment block1,

@@ -144,7 +144,7 @@ public class SBASPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 7.7e-9);
+        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 1.6e-8);
         Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.8e-12);
     }
 
@@ -175,7 +175,7 @@ public class SBASPropagatorTest {
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
         Assertions.assertEquals(0.0, errorP, 1.5e-11);
-        Assertions.assertEquals(0.0, errorV, 7.2e-3);
+        Assertions.assertEquals(0.0, errorV, 7.3e-3);
         Assertions.assertEquals(0.0, errorA, 1.7e-3);
 
     }

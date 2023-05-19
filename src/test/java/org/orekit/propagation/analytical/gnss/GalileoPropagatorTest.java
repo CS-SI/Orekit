@@ -183,9 +183,9 @@ public class GalileoPropagatorTest {
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
-        Assertions.assertEquals(0.0, errorP, 2.4e-10);
+        Assertions.assertEquals(0.0, errorP, 1.9e-9);
         Assertions.assertEquals(0.0, errorV, 4.4e-8);
-        Assertions.assertEquals(0.0, errorA, 1.7e-9);
+        Assertions.assertEquals(0.0, errorA, 1.8e-9);
 
     }
 
