@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,15 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.orekit.gnss.rflink.gps;
+
 /**
- *
- * This package provides the top level {@link org.orekit.gnss.metric.parser.MessagesParser
- * MessagesParser} class that can extract {@link org.orekit.gnss.metric.messages.ParsedMessage
- * messages} from binary containers like {@link  org.orekit.gnss.metric.parser.ByteArrayEncodedMessage
- * ByteArrayEncodedMessages} or {link org.orekit.metric.gnss.ssr.parser.InputStreamEncodedMessages
- * InputStreamEncodedMessages}.
- *
+ * Container for sub-frames 4, pages 2, 3, 4, 5, 7, 8, and 9.
+ * <p>
+ * Table 40-1, sheet 7 in
+ * <a href="https://navcen.uscg.gov/sites/default/files/pdf/gps/IS-GPS-200N.pdf">NAVSTAR
+ * GPS Space Segment/Navigation User Segment Interface</a>, IS-GPS-200N, 22 Aug 2022
+ * </p>
  * @author Luc Maisonobe
- * @since 11.0
+ * @since 12.0
  */
-package org.orekit.gnss.metric.parser;
+public class SubFrame4A1 extends SubFrame4A {
+
+    /** Simple constructor.
+     * @param words raw words
+     */
+    SubFrame4A1(final int[] words) {
+        super(words);
+    }
+
+}

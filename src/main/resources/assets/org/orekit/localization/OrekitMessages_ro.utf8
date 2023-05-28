@@ -750,6 +750,9 @@ UNEXPECTED_CONTENT_TYPE = tip de conținut {0} neașteptat
 # cannot parse GNSS data from {0}
 CANNOT_PARSE_GNSS_DATA = imposibil de analizat datele GNSS de la {0}
 
+# invalid GNSS data: {0}
+INVALID_GNSS_DATA = <MISSING TRANSLATION>
+
 # unknown host {0}
 UNKNOWN_HOST = mașina gazdă {0} este necunoscută
 

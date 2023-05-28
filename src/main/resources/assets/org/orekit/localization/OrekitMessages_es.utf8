@@ -750,6 +750,9 @@ UNEXPECTED_CONTENT_TYPE = tipo de contenido {0} inesperado
 # cannot parse GNSS data from {0}
 CANNOT_PARSE_GNSS_DATA = no se pueden analizar los datos GNSS de {0}
 
+# invalid GNSS data: {0}
+INVALID_GNSS_DATA = <MISSING TRANSLATION>
+
 # unknown host {0}
 UNKNOWN_HOST = anfitrión {0} desconocido
 

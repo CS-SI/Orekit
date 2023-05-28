@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,15 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.orekit.gnss.rflink.gps;
+
 /**
- *
- * This package provides the top level {@link org.orekit.gnss.metric.parser.MessagesParser
- * MessagesParser} class that can extract {@link org.orekit.gnss.metric.messages.ParsedMessage
- * messages} from binary containers like {@link  org.orekit.gnss.metric.parser.ByteArrayEncodedMessage
- * ByteArrayEncodedMessages} or {link org.orekit.metric.gnss.ssr.parser.InputStreamEncodedMessages
- * InputStreamEncodedMessages}.
- *
+ * Container for invalid sub-frames that present parity errors.
  * @author Luc Maisonobe
- * @since 11.0
+ * @since 12.0
  */
-package org.orekit.gnss.metric.parser;
+public class ParityErrorSubFrame extends SubFrame {
+
+    /** Simple constructor.
+     * @param words raw words
+     */
+    ParityErrorSubFrame(final int[] words) {
+        super(words, 7);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasParityErrors() {
+        return true;
+    }
+
+}

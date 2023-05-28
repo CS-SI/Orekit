@@ -156,6 +156,51 @@ public class GNSSDate implements Serializable, TimeStamped {
 
     }
 
+    /**
+     * Build an instance corresponding to a GNSS date.
+     * <p>
+     * GNSS dates are provided as a week number starting at the GNSS reference epoch and
+     * as a number of seconds since week start.
+     * </p>
+     *
+     * @param weekNumber    week number
+     * @param secondsInWeek number of seconds since week start
+     * @param system        satellite system to consider
+     * @param reference     reference date for rollover, the generated date will be less
+     *                      than one half cycle from this date
+     * @param timeScales    the set of time scales. Used to retrieve the appropriate time
+     *                      scale for the given {@code system}.
+     * @since 12.0
+     */
+    public GNSSDate(final int weekNumber, final double secondsInWeek,
+                    final SatelliteSystem system, final DateComponents reference,
+                    final TimeScales timeScales) {
+
+        final int day = (int) FastMath.floor(secondsInWeek / Constants.JULIAN_DAY);
+        final double secondsInDay = secondsInWeek - day * Constants.JULIAN_DAY;
+
+        int w = weekNumber;
+        DateComponents dc = new DateComponents(getWeekReferenceDateComponents(system), weekNumber * 7 + day);
+        final int cycleW = GNSSDateType.getRollOverWeek(system);
+        if (weekNumber < cycleW) {
+
+            // fix GNSS week rollover
+            final int cycleD = WEEK_D * cycleW;
+            while (dc.getJ2000Day() < reference.getJ2000Day() - cycleD / 2) {
+                dc = new DateComponents(dc, cycleD);
+                w += cycleW;
+            }
+
+        }
+
+        this.weekNumber    = w;
+        this.secondsInWeek = secondsInWeek;
+        this.system        = system;
+
+        date = new AbsoluteDate(dc, new TimeComponents(secondsInDay), getTimeScale(system, timeScales));
+
+    }
+
     /** Build an instance from an absolute date.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.

@@ -87,9 +87,8 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      * Setter for the Issue of Data Clock.
      * @param value the IODC to set
      */
-    public void setIODC(final double value) {
-        // The value is given as a floating number in the navigation message
-        this.iodc = (int) value;
+    public void setIODC(final int value) {
+        this.iodc = value;
     }
 
     /**
