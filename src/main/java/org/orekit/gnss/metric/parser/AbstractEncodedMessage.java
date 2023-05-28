@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AbstractEncodedMessages implements EncodedMessage {
+public abstract class AbstractEncodedMessage implements EncodedMessage {
 
     /** Current byte (as an int). */
     private int current;

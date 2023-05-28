@@ -16,10 +16,10 @@
  */
 package org.orekit.gnss.metric.parser;
 
-public class ByteArrayEncodedMessagesTest extends AbstractEncodedMessagesTest {
+public class ByteArrayEncodedMessageTest extends AbstractEncodedMessageTest {
 
     protected EncodedMessage buildRawMessages(byte[] bytes) {
-        return new ByteArrayEncodedMessages(bytes);
+        return new ByteArrayEncodedMessage(bytes);
     }
 
 }

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1064;
 import org.orekit.gnss.metric.messages.rtcm.correction.RtcmClockCorrectionData;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 
@@ -51,7 +51,7 @@ public class Rtcm1064Test {
                          "001110101111110111111" +             // Delta Clock C1
                          "0011101011111101111111000110000000"; // Delta Clock C2
 
-        message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         messages = new ArrayList<>();

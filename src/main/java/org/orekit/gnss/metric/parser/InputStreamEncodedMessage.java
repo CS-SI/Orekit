@@ -16,39 +16,36 @@
  */
 package org.orekit.gnss.metric.parser;
 
-/** Encoded messages as a byte array.
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+
+/** Encoded message from an input stream.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ByteArrayEncodedMessages extends AbstractEncodedMessages {
+public class InputStreamEncodedMessage extends AbstractEncodedMessage {
 
-    /** Byte array containing the message. */
-    private final byte[] message;
-
-    /** Index of current byte in array. */
-    private int byteIndex;
+    /** Input stream providing the message. */
+    private final InputStream stream;
 
     /** Simple constructor.
-     * @param message byte array containing the message
+     * @param stream input stream providing the message
      */
-    public ByteArrayEncodedMessages(final byte[] message) {
-        this.message = message.clone();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void start() {
-        super.start();
-        this.byteIndex = -1;
+    public InputStreamEncodedMessage(final InputStream stream) {
+        this.stream = stream;
     }
 
     /** {@inheritDoc} */
     @Override
     protected int fetchByte() {
-        if (++byteIndex >= message.length) {
-            return -1;
+        try {
+            return stream.read();
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, OrekitMessages.END_OF_ENCODED_MESSAGE);
         }
-        return message[byteIndex] & 0xFF;
     }
 
 }

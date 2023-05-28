@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitMessages;
 
 import java.util.Random;
 
-public abstract class AbstractEncodedMessagesTest {
+public abstract class AbstractEncodedMessageTest {
 
     protected abstract EncodedMessage buildRawMessages(byte[] bytes);
 

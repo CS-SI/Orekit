@@ -18,10 +18,10 @@ package org.orekit.gnss.metric.parser;
 
 import java.io.ByteArrayInputStream;
 
-public class InputStreamEncodedMessagesTest extends AbstractEncodedMessagesTest {
+public class InputStreamEncodedMessageTest extends AbstractEncodedMessageTest {
 
     protected EncodedMessage buildRawMessages(byte[] bytes) {
-        return new InputStreamEncodedMessages(new ByteArrayInputStream(bytes));
+        return new InputStreamEncodedMessage(new ByteArrayInputStream(bytes));
     }
 
 }
