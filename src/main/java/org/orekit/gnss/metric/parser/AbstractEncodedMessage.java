@@ -21,6 +21,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 /** Encoded messages as a sequence of bytes.
+ * <p>
+ * Note that only full bytes are supported. This means that for example
+ * the 300 bits message from GPS sub-frames must be completed with 4 zero
+ * bits to reach 304 bits = 38 bytes, even if only the first 300 bits
+ * will be decoded and the 4 extra bits in the last byte will be ignored.
+ * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */
