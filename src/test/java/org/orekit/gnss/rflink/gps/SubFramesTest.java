@@ -69,11 +69,36 @@ public class SubFramesTest {
         Assertions.assertEquals(   1, page01.getDataId());
         Assertions.assertEquals(  57, page01.getSvId());
         Assertions.assertFalse(page01.hasParityErrors());
+
+        // raw 30 bits words
+        final int word01 = 0x8b030854 >>> 2;
+        final int word02 = 0x40008c3c & 0x3FFFFFFF;
+        final int word03 = 0x7978c9dc >>> 2;
+        final int word04 = 0xcda8a653 & 0x3FFFFFFF;
+        final int word05 = 0x3a6f2ca7 >>> 2;
+        final int word06 = 0x78c052ab & 0x3FFFFFFF;
+        final int word07 = 0x26a21a7f >>> 2;
+        final int word08 = 0xf17a01ce & 0x3FFFFFFF;
+        final int word09 = 0x0526c473 >>> 2;
+        final int word10 = 0x32e9bb84 & 0x3FFFFFFF;
+
+        Assertions.assertEquals((word01 >>>  8) &   0x3FFF, page01.getMessage());
+        Assertions.assertEquals((word02 >>>  8) &      0x7, page01.getId());
+        Assertions.assertEquals((word03 >>>  6) &   0xFFFF, page01.getReserved03());
+        Assertions.assertEquals((word04 >>>  6) & 0xFFFFFF, page01.getReserved04());
+        Assertions.assertEquals((word05 >>>  6) & 0xFFFFFF, page01.getReserved05());
+        Assertions.assertEquals((word06 >>>  6) & 0xFFFFFF, page01.getReserved06());
+        Assertions.assertEquals((word07 >>>  6) & 0xFFFFFF, page01.getReserved07());
+        Assertions.assertEquals((word08 >>>  6) & 0xFFFFFF, page01.getReserved08());
+        Assertions.assertEquals((word09 >>> 22) &     0xFF, page01.getReservedA09());
+        Assertions.assertEquals((word09 >>>  6) &   0xFFFF, page01.getReservedB09());
+        Assertions.assertEquals((word10 >>>  8) & 0x3FFFFF, page01.getReserved10());
+
     }
 
     @Test
     public void testSubFrame4Page02() {
-        SubFrameAlmanac page02 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540012c68595a43dc90200abfd4c00ce843061a7649d8a4a4b16351ee15418d4009d00"));                        
+        SubFrameAlmanac page02 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540012c68595a43dc90200abfd4c00ce843061a7649d8a4a4b16351ee15418d4009d00"));
         Assertions.assertEquals(  54, page02.getTow());
         Assertions.assertEquals(   4, page02.getId());
         Assertions.assertEquals(   1, page02.getDataId());
@@ -82,7 +107,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page03() {
-        SubFrameAlmanac page03 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854001cc0c5a3f0ad493ede0afd37008e84318fd742311b44484c0dfedaab307c003f80"));                        
+        SubFrameAlmanac page03 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854001cc0c5a3f0ad493ede0afd37008e84318fd742311b44484c0dfedaab307c003f80"));
         Assertions.assertEquals( 84, page03.getTow());
         Assertions.assertEquals(  4, page03.getId());
         Assertions.assertEquals(  1, page03.getDataId());
@@ -91,7 +116,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page04() {
-        SubFrameAlmanac page04 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540026cc05b5a184c9047207fd6000068433dd5a13e92c06f96b70b6cad1344bfeedc0"));                        
+        SubFrameAlmanac page04 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540026cc05b5a184c9047207fd6000068433dd5a13e92c06f96b70b6cad1344bfeedc0"));
         Assertions.assertEquals(114, page04.getTow());
         Assertions.assertEquals(  4, page04.getId());
         Assertions.assertEquals(  1, page04.getDataId());
@@ -101,7 +126,7 @@ public class SubFramesTest {
     @Test
     public void testSubFrame4Page05() {
         // page 5 should be almanac for PRN 28, but here holds a dummy almanac (SV 0)
-        SubFrameDummyAlmanac page05 = (SubFrameDummyAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540030c2040aaaab2aaaaabcaaaaaaf2aaaaabcaaaaaaf2aaaaabcaaaaaaf2aaaaabc0"));                        
+        SubFrameDummyAlmanac page05 = (SubFrameDummyAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540030c2040aaaab2aaaaabcaaaaaaf2aaaaabcaaaaaaf2aaaaabcaaaaaaf2aaaaabc0"));
         Assertions.assertEquals(144, page05.getTow());
         Assertions.assertEquals(  4, page05.getId());
         Assertions.assertEquals(  1, page05.getDataId());
@@ -110,7 +135,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page06() {
-        SubFrame4A0 page06 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854003acbc7978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c47183039880"));                        
+        SubFrame4A0 page06 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854003acbc7978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c47183039880"));
         Assertions.assertEquals(174, page06.getTow());
         Assertions.assertEquals(  4, page06.getId());
         Assertions.assertEquals(  1, page06.getDataId());
@@ -119,7 +144,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page07() {
-        SubFrameAlmanac page07 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540044cb05d113640905defcfd65003a84320e6a46fe0098ef2fc4b41fe2e2d3ffbb00"));                        
+        SubFrameAlmanac page07 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540044cb05d113640905defcfd65003a84320e6a46fe0098ef2fc4b41fe2e2d3ffbb00"));
         Assertions.assertEquals(204, page07.getTow());
         Assertions.assertEquals(  4, page07.getId());
         Assertions.assertEquals(  1, page07.getDataId());
@@ -128,7 +153,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page08() {
-        SubFrameAlmanac page08 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854004ec2c5e31142893ed016fd3500f284330ae4c83f4e64d436513d0410dae4007640"));                        
+        SubFrameAlmanac page08 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854004ec2c5e31142893ed016fd3500f284330ae4c83f4e64d436513d0410dae4007640"));
         Assertions.assertEquals(234, page08.getTow());
         Assertions.assertEquals(  4, page08.getId());
         Assertions.assertEquals(  1, page08.getDataId());
@@ -137,7 +162,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page09() {
-        SubFrameAlmanac page09 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540058ccc5f585130901e8b9fd4600e284323814cf61d504f39dc92ad34b1f94002c00"));                        
+        SubFrameAlmanac page09 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540058ccc5f585130901e8b9fd4600e284323814cf61d504f39dc92ad34b1f94002c00"));
         Assertions.assertEquals(264, page09.getTow());
         Assertions.assertEquals(  4, page09.getId());
         Assertions.assertEquals(  1, page09.getDataId());
@@ -146,7 +171,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page10() {
-        SubFrameAlmanac page10 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540062c0060343d0c902b213fd60000684349462101d9b28b1abdad379494b4ffe0800"));                        
+        SubFrameAlmanac page10 = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540062c0060343d0c902b213fd60000684349462101d9b28b1abdad379494b4ffe0800"));
         Assertions.assertEquals(294, page10.getTow());
         Assertions.assertEquals(  4, page10.getId());
         Assertions.assertEquals(  1, page10.getDataId());
@@ -155,7 +180,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page11() {
-        SubFrame4A0 page11 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854006cc647978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c473fddb08c0"));                        
+        SubFrame4A0 page11 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854006cc647978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c473fddb08c0"));
         Assertions.assertEquals(324, page11.getTow());
         Assertions.assertEquals(  4, page11.getId());
         Assertions.assertEquals(  1, page11.getDataId());
@@ -164,7 +189,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page12() {
-        SubFrame4A1 page12 = (SubFrame4A1) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540076c307e04887f64206ee7d8a2d7572d5e09e14d671b724005fe9910ba732a8f2c0"));                        
+        SubFrame4A1 page12 = (SubFrame4A1) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540076c307e04887f64206ee7d8a2d7572d5e09e14d671b724005fe9910ba732a8f2c0"));
         Assertions.assertEquals(354, page12.getTow());
         Assertions.assertEquals(  4, page12.getId());
         Assertions.assertEquals(  1, page12.getDataId());
@@ -173,7 +198,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page13() {
-        SubFrame4C page13 = (SubFrame4C) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540080ce4747026e640a3f104b3e59089759d1957cd4b951ec3140e6f502c059fa8380"));                        
+        SubFrame4C page13 = (SubFrame4C) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540080ce4747026e640a3f104b3e59089759d1957cd4b951ec3140e6f502c059fa8380"));
         Assertions.assertEquals(384, page13.getTow());
         Assertions.assertEquals(  4, page13.getId());
         Assertions.assertEquals(  1, page13.getDataId());
@@ -182,7 +207,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page14() {
-        SubFrame4B page14 = (SubFrame4B) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854008ac7875aaaac6aaaaaaaaaaaaa56aaaaaaaaaaaaa56aaaaaaaaaaaaa56aaaaa5c0"));                        
+        SubFrame4B page14 = (SubFrame4B) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854008ac7875aaaac6aaaaaaaaaaaaa56aaaaaaaaaaaaa56aaaaaaaaaaaaa56aaaaa5c0"));
         Assertions.assertEquals(414, page14.getTow());
         Assertions.assertEquals(  4, page14.getId());
         Assertions.assertEquals(  1, page14.getDataId());
@@ -191,7 +216,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page15() {
-        SubFrame4B page15 = (SubFrame4B) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540094cd476aaaa9aaaaabcd3f494828e2dfabec3504c536fcf2a194c3eb3d2833efc0"));            
+        SubFrame4B page15 = (SubFrame4B) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540094cd476aaaa9aaaaabcd3f494828e2dfabec3504c536fcf2a194c3eb3d2833efc0"));
         Assertions.assertEquals(444, page15.getTow());
         Assertions.assertEquals(  4, page15.getId());
         Assertions.assertEquals(  1, page15.getDataId());
@@ -200,7 +225,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page16() {
-        SubFrame4A0 page16 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854009ec487978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c4705db5bb00"));    
+        SubFrame4A0 page16 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b030854009ec487978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c4705db5bb00"));
         Assertions.assertEquals(474, page16.getTow());
         Assertions.assertEquals(  4, page16.getId());
         Assertions.assertEquals(  1, page16.getDataId());
@@ -209,7 +234,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page17() {
-        SubFrame4B page17 = (SubFrame4B) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400a8c30772053a958dcaf3f84938693528c3c504838551d08c0b2239494d5d080580"));                        
+        SubFrame4B page17 = (SubFrame4B) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400a8c30772053a958dcaf3f84938693528c3c504838551d08c0b2239494d5d080580"));
         Assertions.assertEquals(504, page17.getTow());
         Assertions.assertEquals(  4, page17.getId());
         Assertions.assertEquals(  1, page17.getDataId());
@@ -218,7 +243,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page18() {
-        SubFrame4D page18 = (SubFrame4D) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400b2c647811ff03fc08ff7f301051fffffea4ffffff0ffc930b7128907c048000f00"));                    
+        SubFrame4D page18 = (SubFrame4D) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400b2c647811ff03fc08ff7f301051fffffea4ffffff0ffc930b7128907c048000f00"));
         Assertions.assertEquals(534, page18.getTow());
         Assertions.assertEquals(  4, page18.getId());
         Assertions.assertEquals(  1, page18.getDataId());
@@ -227,7 +252,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page19() {
-        SubFrame4A1 page19 = (SubFrame4A1) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400bcc007a8462455cd2b586377bd0162ada731d15f824cc2805767a31bedb12b2780"));                
+        SubFrame4A1 page19 = (SubFrame4A1) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400bcc007a8462455cd2b586377bd0162ada731d15f824cc2805767a31bedb12b2780"));
         Assertions.assertEquals(564, page19.getTow());
         Assertions.assertEquals(  4, page19.getId());
         Assertions.assertEquals(  1, page19.getDataId());
@@ -236,7 +261,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page20() {
-        SubFrame4A1 page20 = (SubFrame4A1) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400c6cf47b1ef74c48f76b6634b680ce21fc6dc1e416b04c2c0749266de7d218ad940"));                        
+        SubFrame4A1 page20 = (SubFrame4A1) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400c6cf47b1ef74c48f76b6634b680ce21fc6dc1e416b04c2c0749266de7d218ad940"));
         Assertions.assertEquals(594, page20.getTow());
         Assertions.assertEquals(  4, page20.getId());
         Assertions.assertEquals(  1, page20.getDataId());
@@ -245,7 +270,7 @@ public class SubFramesTest {
 
     @Test
     public void testSubFrame4Page21() {
-        SubFrame4A0 page21 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400d0c147978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c473e1a50a00"));        
+        SubFrame4A0 page21 = (SubFrame4A0) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085400d0c147978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c473e1a50a00"));
         Assertions.assertEquals(624, page21.getTow());
         Assertions.assertEquals(  4, page21.getId());
         Assertions.assertEquals(  1, page21.getDataId());
