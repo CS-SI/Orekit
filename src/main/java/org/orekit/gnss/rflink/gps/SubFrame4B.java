@@ -61,14 +61,14 @@ public class SubFrame4B extends SubFrame45 {
         super(words, RESERVED_10 + 1);
 
         // populate container
-        setField(RESERVED_3,    3,  6, 16);
-        setField(RESERVED_4,    4,  6, 24);
-        setField(RESERVED_5,    5,  6, 24);
-        setField(RESERVED_6,    6,  6, 24);
-        setField(RESERVED_7,    7,  6, 24);
-        setField(RESERVED_8,    8,  6, 24);
-        setField(RESERVED_9,    9,  6, 24);
-        setField(RESERVED_10,  10,  8, 22);
+        setField(RESERVED_3,    3,  6, 16, words);
+        setField(RESERVED_4,    4,  6, 24, words);
+        setField(RESERVED_5,    5,  6, 24, words);
+        setField(RESERVED_6,    6,  6, 24, words);
+        setField(RESERVED_7,    7,  6, 24, words);
+        setField(RESERVED_8,    8,  6, 24, words);
+        setField(RESERVED_9,    9,  6, 24, words);
+        setField(RESERVED_10,  10,  8, 22, words);
 
     }
 

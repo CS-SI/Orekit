@@ -70,17 +70,17 @@ public class SubFrameAlmanac extends SubFrame45 {
         super(words, AF1 + 1);
 
         // populate container
-        setField(E,                3,  6, 16);
-        setField(TOA,              4, 22,  8);
-        setField(DELTA_I,          4,  6, 16);
-        setField(OMEGA_DOT,        5, 14, 16);
-        setField(SV_HEALTH,        5,  6,  8);
-        setField(SQRT_A,           6,  6, 24);
-        setField(UPPERCASE_OMEGA,  7,  6, 24);
-        setField(LOWERCASE_OMEGA,  8,  6, 24);
-        setField(M0,               9,  6, 24);
-        setField(AF0,             10, 22,  8, 10,  8,  3);
-        setField(AF1,             10, 11, 11);
+        setField(E,                3,  6, 16, words);
+        setField(TOA,              4, 22,  8, words);
+        setField(DELTA_I,          4,  6, 16, words);
+        setField(OMEGA_DOT,        5, 14, 16, words);
+        setField(SV_HEALTH,        5,  6,  8, words);
+        setField(SQRT_A,           6,  6, 24, words);
+        setField(UPPERCASE_OMEGA,  7,  6, 24, words);
+        setField(LOWERCASE_OMEGA,  8,  6, 24, words);
+        setField(M0,               9,  6, 24, words);
+        setField(AF0,             10, 22,  8, 10,  8,  3, words);
+        setField(AF1,             10, 11, 11, words);
 
     }
 

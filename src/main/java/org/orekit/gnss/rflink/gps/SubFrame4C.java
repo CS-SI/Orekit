@@ -51,19 +51,19 @@ public class SubFrame4C extends SubFrame45 {
         int field = AVAILABILITY_INDICATOR;
         int word  = 3;
         int shift = 20;
-        setField(field, word, shift, 2);
+        setField(field, word, shift, 2, words);
         for (int i = 0; i < NB_ERD; ++i) {
             if (shift >= ERD_SIZE + PARITY_SIZE) {
                 // current word contains a complete ERD
                 shift -= ERD_SIZE;
-                setField(++field, word, shift, ERD_SIZE);
+                setField(++field, word, shift, ERD_SIZE, words);
             } else {
                 // current word contains only the MSF of next ERD
                 final int msbBits = shift - PARITY_SIZE;
                 shift += WORD_SIZE - ERD_SIZE;
                 setField(++field,
                          word,     PARITY_SIZE,                      msbBits,
-                         word + 1, WORD_SIZE - (ERD_SIZE - msbBits), ERD_SIZE - msbBits);
+                         word + 1, WORD_SIZE - (ERD_SIZE - msbBits), ERD_SIZE - msbBits, words);
                 ++word;
             }
         }

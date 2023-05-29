@@ -18,7 +18,6 @@ package org.orekit.gnss.rflink.gps;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.metric.parser.DataType;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 
 /**
@@ -58,9 +57,6 @@ public abstract class SubFrame  {
     /** Sub-frame ID index. */
     private static final int ID = 6;
 
-    /** Raw words. */
-    private final int[] words;
-
     /** Raw data fields. */
     private final int[] fields;
 
@@ -71,17 +67,16 @@ public abstract class SubFrame  {
      */
     protected SubFrame(final int[] words, final int nbFields) {
 
-        this.words = words.clone();
         this.fields = new int[nbFields];
 
         // common fields present in telemetry and handover words for all sub-frames
-        setField(PREAMBLE,         1, 22,  8);
-        setField(MESSAGE,          1,  8, 14);
-        setField(INTEGRITY_STATUS, 1,  7,  1);
-        setField(TOW_COUNT,        2, 13, 17);
-        setField(ALERT,            2, 12,  1);
-        setField(ANTI_SPOOFING,    2, 11,  1);
-        setField(ID,               2,  8,  3);
+        setField(PREAMBLE,         1, 22,  8, words);
+        setField(MESSAGE,          1,  8, 14, words);
+        setField(INTEGRITY_STATUS, 1,  7,  1, words);
+        setField(TOW_COUNT,        2, 13, 17, words);
+        setField(ALERT,            2, 12,  1, words);
+        setField(ANTI_SPOOFING,    2, 11,  1, words);
+        setField(ID,               2,  8,  3, words);
 
         if (getField(PREAMBLE) != PREAMBLE_VALUE) {
             throw new OrekitException(OrekitMessages.INVALID_GNSS_DATA, getField(PREAMBLE));
@@ -91,10 +86,22 @@ public abstract class SubFrame  {
 
     /** Builder for sub-frames.
      * <p>
-     * This builder creates the proper sub-frame type corresponding to the ID in handover word.
+     * This builder creates the proper sub-frame type corresponding to the ID in handover word
+     * and the SV Id for sub-frames 4 and 5.
      * </p>
      * @param encodedMessage encoded message containing exactly one sub-frame
      * @return sub-frame with TLM and HOW fields already set up
+     * @see SubFrame1
+     * @see SubFrame2
+     * @see SubFrame3
+     * @see SubFrame4A0
+     * @see SubFrame4A1
+     * @see SubFrame4B
+     * @see SubFrame4C
+     * @see SubFrame4D
+     * @see SubFrame4E
+     * @see SubFrameAlmanac
+     * @see SubFrameDummyAlmanac
      */
     public static SubFrame parse(final EncodedMessage encodedMessage) {
 
@@ -103,7 +110,7 @@ public abstract class SubFrame  {
         // get the raw words
         final int[] words = new int[10];
         for (int i = 0; i < words.length; ++i) {
-            words[i] = DataType.U_INT_30.decode(encodedMessage).intValue();
+            words[i] = (int) encodedMessage.extractBits(30);
         }
 
         // check parity on all words
@@ -213,9 +220,11 @@ public abstract class SubFrame  {
      * @param wordIndex word index (counting from 1, to match IS-GPS-200 tables)
      * @param shift right shift to apply (i.e. number of LSB bits for next fields that should be removed)
      * @param nbBits number of bits in the field
+     * @param words raw 30 bits words
      */
-    protected void setField(final int fieldIndex,
-                            final int wordIndex, final int shift, final int nbBits) {
+    protected void setField(final int fieldIndex, final int wordIndex,
+                            final int shift, final int nbBits,
+                            final int[] words) {
         fields[fieldIndex] = (words[wordIndex - 1] >>> shift) & ((0x1 << nbBits) - 1);
     }
 
@@ -227,10 +236,12 @@ public abstract class SubFrame  {
      * @param wordIndexLSB word index containing LSB (counting from 1, to match IS-GPS-200 tables)
      * @param shiftLSB right shift to apply to LSB (i.e. number of LSB bits for next fields that should be removed)
      * @param nbBitsLSB number of bits in the LSB
+     * @param words raw 30 bits words
      */
     protected void setField(final int fieldIndex,
                             final int wordIndexMSB, final int shiftMSB, final int nbBitsMSB,
-                            final int wordIndexLSB, final int shiftLSB, final int nbBitsLSB) {
+                            final int wordIndexLSB, final int shiftLSB, final int nbBitsLSB,
+                            int[] words) {
         final int msb = (words[wordIndexMSB - 1] >>> shiftMSB) & ((0x1 << nbBitsMSB) - 1);
         final int lsb = (words[wordIndexLSB - 1] >>> shiftLSB) & ((0x1 << nbBitsLSB) - 1);
         fields[fieldIndex] = msb << nbBitsLSB | lsb;

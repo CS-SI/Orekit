@@ -40,8 +40,8 @@ public class SubFrame45 extends SubFrame {
         super(words, nbFields);
 
         // populate container
-        setField(DATA_ID, 3, 28, 2);
-        setField(SV_ID,   3, 22, 6);
+        setField(DATA_ID, 3, 28, 2, words);
+        setField(SV_ID,   3, 22, 6, words);
 
     }
 

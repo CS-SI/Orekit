@@ -69,32 +69,32 @@ public class SubFrame4E extends SubFrame45 {
             if (shift >= AS_SIZE + PARITY_SIZE) {
                 // current word contains a complete AS
                 shift -= AS_SIZE;
-                setField(++field, word, shift, AS_SIZE);
+                setField(++field, word, shift, AS_SIZE, words);
             } else {
                 // current word is exhausted
                 shift = WORD_SIZE - AS_SIZE;
-                setField(++field, ++word, shift, AS_SIZE);
+                setField(++field, ++word, shift, AS_SIZE, words);
             }
         }
 
         // 2 bits for system use
         shift -= 2;
-        setField(RESERVED_8, word, shift, 2);
+        setField(RESERVED_8, word, shift, 2, words);
 
         // SV health
         for (int i = 0; i < NB_SVH; ++i) {
             if (shift >= SVH_SIZE + PARITY_SIZE) {
                 // current word contains a complete SVH
                 shift -= SVH_SIZE;
-                setField(++field, word, shift, SVH_SIZE);
+                setField(++field, word, shift, SVH_SIZE, words);
             } else {
                 // current word is exhausted
                 shift = WORD_SIZE - SVH_SIZE;
-                setField(++field, ++word, shift, SVH_SIZE);
+                setField(++field, ++word, shift, SVH_SIZE, words);
             }
         }
 
-        setField(RESERVED_10, 10,  8, 4);
+        setField(RESERVED_10, 10,  8, 4, words);
 
     }
 

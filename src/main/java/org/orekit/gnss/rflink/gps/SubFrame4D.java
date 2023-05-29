@@ -88,23 +88,23 @@ public class SubFrame4D extends SubFrame45 {
         super(words, RESERVED_10 + 1);
 
         // populate container
-        setField(ALPHA0,           3, 14,  8);
-        setField(ALPHA1,           3,  6,  8);
-        setField(ALPHA2,           4, 22,  8);
-        setField(ALPHA3,           4, 14,  8);
-        setField(BETA0,            4,  6,  8);
-        setField(BETA1,            5, 22,  8);
-        setField(BETA2,            5, 14,  8);
-        setField(BETA3,            5,  6,  8);
-        setField(A1,               6,  6, 24);
-        setField(A0,               7,  6, 24, 8, 22, 8);
-        setField(TOT,              8, 14,  8);
-        setField(WEEK_NUMBER_T,    8,  6,  8);
-        setField(DELTA_T_LS,       9, 22,  8);
-        setField(WEEK_NUMBER_LSF,  9, 14,  8);
-        setField(DN,               9,  6,  8);
-        setField(DELTA_T_LSF,     10, 22,  8);
-        setField(RESERVED_10,     10,  8, 14);
+        setField(ALPHA0,           3, 14,  8, words);
+        setField(ALPHA1,           3,  6,  8, words);
+        setField(ALPHA2,           4, 22,  8, words);
+        setField(ALPHA3,           4, 14,  8, words);
+        setField(BETA0,            4,  6,  8, words);
+        setField(BETA1,            5, 22,  8, words);
+        setField(BETA2,            5, 14,  8, words);
+        setField(BETA3,            5,  6,  8, words);
+        setField(A1,               6,  6, 24, words);
+        setField(A0,               7,  6, 24, 8, 22, 8, words);
+        setField(TOT,              8, 14,  8, words);
+        setField(WEEK_NUMBER_T,    8,  6,  8, words);
+        setField(DELTA_T_LS,       9, 22,  8, words);
+        setField(WEEK_NUMBER_LSF,  9, 14,  8, words);
+        setField(DN,               9,  6,  8, words);
+        setField(DELTA_T_LSF,     10, 22,  8, words);
+        setField(RESERVED_10,     10,  8, 14, words);
 
     }
 

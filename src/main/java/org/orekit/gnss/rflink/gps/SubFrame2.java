@@ -70,17 +70,17 @@ public class SubFrame2 extends SubFrame {
         super(words, AODO + 1);
 
         // populate container
-        setField(IODE,          3, 22,  8);
-        setField(CRS,           3,  6, 16);
-        setField(DELTA_N,       4, 14, 16);
-        setField(M0,            4,  6,  8, 5,  6, 24);
-        setField(CUC,           6, 14, 16);
-        setField(E,             6,  6,  8, 7,  6, 24);
-        setField(CUS,           8, 14, 16);
-        setField(SQRT_A,        8,  6,  8, 9,  6, 24);
-        setField(TOE,          10, 14, 16);
-        setField(FIT_INTERVAL, 10, 13,  1);
-        setField(AODO,         10,  8,  5);
+        setField(IODE,          3, 22,  8, words);
+        setField(CRS,           3,  6, 16, words);
+        setField(DELTA_N,       4, 14, 16, words);
+        setField(M0,            4,  6,  8, 5,  6, 24, words);
+        setField(CUC,           6, 14, 16, words);
+        setField(E,             6,  6,  8, 7,  6, 24, words);
+        setField(CUS,           8, 14, 16, words);
+        setField(SQRT_A,        8,  6,  8, 9,  6, 24, words);
+        setField(TOE,          10, 14, 16, words);
+        setField(FIT_INTERVAL, 10, 13,  1, words);
+        setField(AODO,         10,  8,  5, words);
 
     }
 

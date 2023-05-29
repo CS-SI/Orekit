@@ -83,21 +83,21 @@ public class SubFrame1 extends SubFrame {
         super(words, AF0 + 1);
 
         // populate container
-        setField(WEEK_NUMBER,  3, 20, 10);
-        setField(CA_OR_P,      3, 18,  2);
-        setField(URA,          3, 14,  4);
-        setField(SV_HEALTH,    3,  8,  6);
-        setField(IODC,         3,  6,  2, 8, 22, 8);
-        setField(L2_P_DATA,    4, 29,  1);
-        setField(RESERVED_4,   4,  6, 23);
-        setField(RESERVED_5,   5,  6, 24);
-        setField(RESERVED_6,   6,  6, 24);
-        setField(RESERVED_7,   7, 14, 16);
-        setField(TGD,          7,  6,  8);
-        setField(TOC,          8,  6, 16);
-        setField(AF2,          9, 22,  8);
-        setField(AF1,          9,  6, 16);
-        setField(AF0,         20,  8, 22);
+        setField(WEEK_NUMBER,  3, 20, 10, words);
+        setField(CA_OR_P,      3, 18,  2, words);
+        setField(URA,          3, 14,  4, words);
+        setField(SV_HEALTH,    3,  8,  6, words);
+        setField(IODC,         3,  6,  2, 8, 22, 8, words);
+        setField(L2_P_DATA,    4, 29,  1, words);
+        setField(RESERVED_4,   4,  6, 23, words);
+        setField(RESERVED_5,   5,  6, 24, words);
+        setField(RESERVED_6,   6,  6, 24, words);
+        setField(RESERVED_7,   7, 14, 16, words);
+        setField(TGD,          7,  6,  8, words);
+        setField(TOC,          8,  6, 16, words);
+        setField(AF2,          9, 22,  8, words);
+        setField(AF1,          9,  6, 16, words);
+        setField(AF0,         20,  8, 22, words);
 
     }
 

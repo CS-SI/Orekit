@@ -18,7 +18,8 @@ package org.orekit.gnss.rflink.gps;
 
 /**
  * Container for sub-frames 4, pages 1, 6, 11, 16 and 21,
- * but also for sub-frames 4, pages 2, 3, 4, 5, 7, 8, and 9.
+ * but also for sub-frames 4, pages 2, 3, 4, 5, 7, 8, and 9
+ * which have a similar structure.
  * <p>
  * Table 40-1, sheets 6 and 7 in
  * <a href="https://navcen.uscg.gov/sites/default/files/pdf/gps/IS-GPS-200N.pdf">NAVSTAR
@@ -65,16 +66,79 @@ public class SubFrame4A extends SubFrame45 {
         super(words, RESERVED_10 + 1);
 
         // populate container
-        setField(RESERVED_3,    3,  6, 16);
-        setField(RESERVED_4,    4,  6, 24);
-        setField(RESERVED_5,    5,  6, 24);
-        setField(RESERVED_6,    6,  6, 24);
-        setField(RESERVED_7,    7,  6, 24);
-        setField(RESERVED_8,    8,  6, 24);
-        setField(RESERVED_A_9,  9, 22,  8);
-        setField(RESERVED_B_9,  9,  6, 16);
-        setField(RESERVED_10,  10,  8, 22);
+        setField(RESERVED_3,    3,  6, 16, words);
+        setField(RESERVED_4,    4,  6, 24, words);
+        setField(RESERVED_5,    5,  6, 24, words);
+        setField(RESERVED_6,    6,  6, 24, words);
+        setField(RESERVED_7,    7,  6, 24, words);
+        setField(RESERVED_8,    8,  6, 24, words);
+        setField(RESERVED_A_9,  9, 22,  8, words);
+        setField(RESERVED_B_9,  9,  6, 16, words);
+        setField(RESERVED_10,  10,  8, 22, words);
 
+    }
+
+    /** Get the reserved field in word 3.
+     * @return reserved field in word 3
+     */
+    public int getReserved03() {
+        return getField(RESERVED_3);
+    }
+
+    /** Get the reserved field in word 4.
+     * @return reserved field in word 4
+     */
+    public int getReserved04() {
+        return getField(RESERVED_4);
+    }
+
+    /** Get the reserved field in word 5.
+     * @return reserved field in word 5
+     */
+    public int getReserved05() {
+        return getField(RESERVED_5);
+    }
+
+    /** Get the reserved field in word 6.
+     * @return reserved field in word 6
+     */
+    public int getReserved06() {
+        return getField(RESERVED_6);
+    }
+
+    /** Get the reserved field in word 7.
+     * @return reserved field in word 7
+     */
+    public int getReserved07() {
+        return getField(RESERVED_7);
+    }
+
+    /** Get the reserved field in word 8.
+     * @return reserved field in word 8
+     */
+    public int getReserved08() {
+        return getField(RESERVED_8);
+    }
+
+    /** Get the reserved field A in word 9.
+     * @return reserved field A in word 9
+     */
+    public int getReservedA09() {
+        return getField(RESERVED_A_9);
+    }
+
+    /** Get the reserved field B in word 9.
+     * @return reserved field B in word 9
+     */
+    public int getReservedB09() {
+        return getField(RESERVED_B_9);
+    }
+
+    /** Get the reserved field in word 10.
+     * @return reserved field in word 10
+     */
+    public int getReserved10() {
+        return getField(RESERVED_10);
     }
 
 }

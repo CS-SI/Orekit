@@ -64,15 +64,15 @@ public class SubFrame3 extends SubFrame {
         super(words, IDOT + 1);
 
         // populate container
-        setField(CIC,                   3, 14, 16);
-        setField(UPPERCASE_OMEGA0,      3,  6,  8, 4,  6, 24);
-        setField(CIS,                   5, 14, 16);
-        setField(I0,                    5,  6,  8, 6,  6, 24);
-        setField(CRC,                   7, 14, 16);
-        setField(LOWERCASE_OMEGA,       7,  6,  8, 8,  6, 24);
-        setField(OMEGA_DOT,             9,  6, 24);
-        setField(IODE,                 10, 22,  8);
-        setField(IDOT,                 10,  8, 14);
+        setField(CIC,                   3, 14, 16, words);
+        setField(UPPERCASE_OMEGA0,      3,  6,  8, 4,  6, 24, words);
+        setField(CIS,                   5, 14, 16, words);
+        setField(I0,                    5,  6,  8, 6,  6, 24, words);
+        setField(CRC,                   7, 14, 16, words);
+        setField(LOWERCASE_OMEGA,       7,  6,  8, 8,  6, 24, words);
+        setField(OMEGA_DOT,             9,  6, 24, words);
+        setField(IODE,                 10, 22,  8, words);
+        setField(IDOT,                 10,  8, 14, words);
 
     }
 

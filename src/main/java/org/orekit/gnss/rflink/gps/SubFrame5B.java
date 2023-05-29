@@ -57,16 +57,16 @@ public class SubFrame5B extends SubFrame45 {
         super(words, RESERVED_B_10 + 1);
 
         // populate container
-        setField(TOA,              3, 14,  8);
-        setField(WEEK_NUMBER,      3,  6,  8);
+        setField(TOA,              3, 14,  8, words);
+        setField(WEEK_NUMBER,      3,  6,  8, words);
         int fieldIndex = WEEK_NUMBER + 1;
         for (int i = 0; i < SVH_WORDS; ++i) {
             for (int j = 0; j < SVH_FIELDS; ++j) {
-                setField(fieldIndex++, 4 + i, 18 - 6 * j, 6);
+                setField(fieldIndex++, 4 + i, 18 - 6 * j, 6, words);
             }
         }
-        setField(RESERVED_A_10, 10, 24,  6);
-        setField(RESERVED_B_10, 10,  8, 16);
+        setField(RESERVED_A_10, 10, 24,  6, words);
+        setField(RESERVED_B_10, 10,  8, 16, words);
 
     }
 
