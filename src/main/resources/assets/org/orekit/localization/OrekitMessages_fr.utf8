@@ -753,6 +753,9 @@ CANNOT_PARSE_GNSS_DATA = les données GNSS de {0} ne peuvent pas être analysée
 # invalid GNSS data: {0}
 INVALID_GNSS_DATA = données GNSS invalides : {0}
 
+# GNSS parity error on word {0}
+GNSS_PARITY_ERROR = erreur de parité GNSS sur le mot {0}
+
 # unknown host {0}
 UNKNOWN_HOST = hôte {0} inconnu
 

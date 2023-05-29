@@ -30,7 +30,7 @@ public class SubFramesTest {
     @Test
     public void testWrongPreamble() {
         try {
-            SubFrame.parse(new HexadecimalSequenceEncodedMessage("8c0308540008c3c7978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c4732e9bb840"));
+            SubFrame.parse(new HexadecimalSequenceEncodedMessage("8c0308d40008c3c7978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c4732e9bb840"));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INVALID_GNSS_DATA, oe.getSpecifier());
@@ -41,20 +41,24 @@ public class SubFramesTest {
     @Test
     public void testWrongSvId() {
         try {
-            // replaced ID 57 = (111001) base 2 with ID 9 = (001001) base 2
-            // BEWARE: the parity has not been updated yet, we should update the test hex value when parity check is properly implemented
-            SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540008c3c4978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c4732e9bb840"));
+            // replaced ID 57 = (111001) base 2 with ID 9 = (001001) base 2 and updated parity
+            SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b0308540008c3c4978c940da8a66c3a6f2c5b8c0529426a21a8317a01f10526c48f2e9bbbb0"));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INVALID_GNSS_DATA, oe.getSpecifier());
-            Assertions.assertEquals(0x9, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(9, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
     @Test
     public void testParityError() {
-        ParityErrorSubFrame subFrame = (ParityErrorSubFrame) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8c0308540008c3e7978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c4732e9bb840"));
-        Assertions.assertTrue(subFrame.hasParityErrors());
+        try {
+            SubFrame.parse(new HexadecimalSequenceEncodedMessage("8c0308540008c3e7978c9dcda8a6533a6f2ca78c052ab26a21a7f17a01ce0526c4732e9bb840"));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.GNSS_PARITY_ERROR, oe.getSpecifier());
+            Assertions.assertEquals(0x1, ((Integer) oe.getParts()[0]).intValue());
+        }
     }
 
     @Test

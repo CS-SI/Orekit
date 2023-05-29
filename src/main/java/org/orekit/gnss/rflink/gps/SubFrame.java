@@ -111,7 +111,7 @@ public abstract class SubFrame  {
             // we assume last word of previous sub frame had parity bits set to 0,
             // using the non_information bits at the end of each sub-frame
             if (!checkParity(i == 0 ? 0x0 : words[i - 1], words[i])) {
-                return new ParityErrorSubFrame(words);
+                throw new OrekitException(OrekitMessages.GNSS_PARITY_ERROR, i + 1);
             }
         }
 
@@ -174,16 +174,17 @@ public abstract class SubFrame  {
      */
     public static boolean checkParity(final int previous, final int current) {
 
-        final int d29Star = (previous >>> 1) & 0x1;
+        final int d29Star = previous & 0x2;
         final int d30Star = previous & 0x1;
 
-        final int d25    = d29Star ^ Integer.bitCount(previous | 0x4B3E37);
-        final int d26    = d30Star ^ Integer.bitCount(previous | 0x967C6E);
-        final int d27    = d29Star ^ Integer.bitCount(previous | 0x2CF8DD);
-        final int d28    = d30Star ^ Integer.bitCount(previous | 0x59F1BA);
-        final int d29    = d29Star ^ Integer.bitCount(previous | 0xB3E375);
-        final int d30    = d30Star ^ Integer.bitCount(previous | 0xE457B4);
-        final int parity = ((((d25 << 1 | d26) << 1 | d27) << 1 | d28) << 1 | d29) << 1 | d30;
+        final int d25     = 0x1 & Integer.bitCount(d29Star | (current & 0x3B1F3480)); // 111011000111110011010010000000
+        final int d26     = 0x1 & Integer.bitCount(d30Star | (current & 0x1D8F9A40)); // 011101100011111001101001000000
+        final int d27     = 0x1 & Integer.bitCount(d29Star | (current & 0x2EC7CD00)); // 101110110001111100110100000000
+        final int d28     = 0x1 & Integer.bitCount(d30Star | (current & 0x1763E680)); // 010111011000111110011010000000
+        final int d29     = 0x1 & Integer.bitCount(d30Star | (current & 0x2BB1F340)); // 101011101100011111001101000000
+        final int d30     = 0x1 & Integer.bitCount(d29Star | (current & 0x0B7A89C0)); // 001011011110101000100111000000
+
+        final int parity  = ((((d25 << 1 | d26) << 1 | d27) << 1 | d28) << 1 | d29) << 1 | d30;
 
         return (parity & 0x3F) == (current & 0x3F);
 

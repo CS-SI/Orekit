@@ -333,6 +333,7 @@ public enum OrekitMessages implements Localizable {
     UNEXPECTED_CONTENT_TYPE("unexpected content type {0}"),
     CANNOT_PARSE_GNSS_DATA("cannot parse GNSS data from {0}"),
     INVALID_GNSS_DATA("invalid GNSS data: {0}"),
+    GNSS_PARITY_ERROR("GNSS parity error on word {0}"),
     UNKNOWN_HOST("unknown host {0}"),
     SOURCETABLE_PARSE_ERROR("error parsing sourcetable line {0} from {1}: {2}"),
     CANNOT_PARSE_SOURCETABLE("cannot parse sourcetable from {0}"),
