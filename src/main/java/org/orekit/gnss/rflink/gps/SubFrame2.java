@@ -16,6 +16,9 @@
  */
 package org.orekit.gnss.rflink.gps;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.gnss.metric.parser.Units;
+
 /**
  * Container for sub-frames 2.
  * <p>
@@ -82,6 +85,83 @@ public class SubFrame2 extends SubFrame {
         setField(FIT_INTERVAL, 10, 13,  1, words);
         setField(AODO,         10,  8,  5, words);
 
+    }
+
+    /** Get Issue Of Data (ephemeris).
+     * @return Issue Of Data (ephemeris)
+     */
+    public int getIODE() {
+        return getField(IODE);
+    }
+
+    /** Get Crs.
+     * @return crs (m)
+     */
+    public double getCrs() {
+        return FastMath.scalb((double) getField(CRS), -5);
+    }
+
+    /** Get Δn.
+     * @return Δn (rad/s)
+     */
+    public double getDeltaN() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(DELTA_N), -43));
+    }
+
+    /** Get M₀.
+     * @return M₀ (rad)
+     */
+    public double getM0() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(M0), -31));
+    }
+
+    /** Get Cuc.
+     * @return Cuc (rad)
+     */
+    public double getCuc() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(CUC), -29));
+    }
+
+    /** Get e.
+     * @return e
+     */
+    public double getE() {
+        return FastMath.scalb((double) getField(E), -33);
+    }
+
+    /** Get Cus.
+     * @return Cus (rad)
+     */
+    public double getCus() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(CUS), -29));
+    }
+
+    /** Get √a.
+     * @return d√a (√m)
+     */
+    public double getSqrtA() {
+        return FastMath.scalb((double) getField(SQRT_A), -19);
+    }
+
+    /** Get Time Of Ephemeris.
+     * @return Time Of Ephemeris
+     */
+    public int getToe() {
+        return getField(TOE) << 4;
+    }
+
+    /** Get fit interval.
+     * @return fit interval
+     */
+    public int getFitInterval() {
+        return getField(FIT_INTERVAL);
+    }
+
+    /** Get Age Of data Offset.
+     * @return Age Of Data Offset (s)
+     */
+    public int getAODO() {
+        return getField(AODO) * 900;
     }
 
 }

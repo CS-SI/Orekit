@@ -16,6 +16,10 @@
  */
 package org.orekit.gnss.rflink.gps;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.gnss.metric.parser.Units;
+import org.orekit.utils.units.Unit;
+
 /**
  * Container for sub-frames 4, page 18.
  * <p>
@@ -28,6 +32,15 @@ package org.orekit.gnss.rflink.gps;
  */
 public class SubFrame4D extends SubFrame45 {
 
+    /** Seconds per semi-circle. */
+    private static final Unit S_PER_SC = Unit.SECOND.divide("s/sc", Units.SEMI_CIRCLE);
+   
+    /** Seconds per semi-circle². */
+    private static final Unit S_PER_SC2 = S_PER_SC.divide("s/sc²", Units.SEMI_CIRCLE);
+   
+    /** Seconds per semi-circle³. */
+    private static final Unit S_PER_SC3 = S_PER_SC2.divide("s/sc³", Units.SEMI_CIRCLE);
+   
     /** Index of α₀ field. */
     private static final int ALPHA0 = 9;
 
@@ -106,6 +119,118 @@ public class SubFrame4D extends SubFrame45 {
         setField(DELTA_T_LSF,     10, 22,  8, words);
         setField(RESERVED_10,     10,  8, 14, words);
 
+    }
+
+    /** Get α₀ field.
+     * @return α₀ field (second).
+     */
+    public double getAlpha0() {
+        return FastMath.scalb((double) getField(ALPHA0), -30);
+    }
+
+    /** Get α₁ field.
+     * @return α₁ field (second/rad).
+     */
+    public double getAlpha1() {
+        return S_PER_SC.toSI(FastMath.scalb((double) getField(ALPHA1), -27));
+    }
+
+    /** Get α₂ field.
+     * @return α₂ field (second/rad²).
+     */
+    public double getAlpha2() {
+        return S_PER_SC2.toSI(FastMath.scalb((double) getField(ALPHA2), -24));
+    }
+
+    /** Get α₃ field.
+     * @return α₃ field (second/rad³)
+     */
+    public double getAlpha3() {
+        return S_PER_SC3.toSI(FastMath.scalb((double) getField(ALPHA3), -24));
+    }
+
+    /** Get β₀ field.
+     * @return β₀ field (second)
+     */
+    public double getBeta0() {
+        return FastMath.scalb((double) getField(BETA0), 11);
+    }
+
+    /** Get β₁ field.
+     * @return β₁ field (second/rad)
+     */
+    public double getBeta1() {
+        return S_PER_SC.toSI(FastMath.scalb((double) getField(BETA1), 14));
+    }
+
+    /** Get β₂ field.
+     * @return β₂ field (second/rad²)
+     */
+    public double getBeta2() {
+        return S_PER_SC2.toSI(FastMath.scalb((double) getField(BETA2), 16));
+    }
+
+    /** Get β₃ field.
+     * @return β₃ field (second/rad³)
+     */
+    public double getBeta3() {
+        return S_PER_SC3.toSI(FastMath.scalb((double) getField(BETA3), 16));
+    }
+
+    /** Get A₁ field
+     * @return A₁ field (second/second).
+     */
+    public double getA1() {
+        return FastMath.scalb((double) getField(A1), -50);
+    }
+
+    /** Get A0 field
+     * @return A0 field (seconds).
+     */
+    public double getA0() {
+        return FastMath.scalb((double) getField(A0), -30);
+    }
+
+    /** Get TOT field
+     * @return TOT field. */
+    public int getTot() {
+        return getField(TOT) << 12;
+    }
+
+    /** Get Week Number T field
+     * @return Week Number T field. */
+    public int getWeekNumberT() {
+        return getField(WEEK_NUMBER_T);
+    }
+
+    /** Get ΔtLS field.
+     * @return ΔtLS field. */
+    public int getDeltaTLs() {
+        return getField(DELTA_T_LS);
+    }
+
+    /** Get Week Number LSF field.
+     * @return Week Number LSF field. */
+    public int getWeekNumberLsf() {
+        return getField(WEEK_NUMBER_LSF);
+    }
+
+    /** Get DN field.
+     * @return DN field. */
+    public int getDn() {
+        return getField(DN);
+    }
+
+    /** Get ΔtLSF field.
+     * @return ΔtLSF field. */
+    public int getDeltaTLsf() {
+        return getField(DELTA_T_LSF);
+    }
+
+    /** Get reserved field in word 10.
+     * @return reserved field in word 10. */
+    public int getReserved10() {
+        return getField(RESERVED_10);
     }
 
 }

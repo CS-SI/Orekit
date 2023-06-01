@@ -72,4 +72,60 @@ public class SubFrame4B extends SubFrame45 {
 
     }
 
+    /** Get the reserved field in word 3.
+     * @return reserved field in word 3
+     */
+    public int getReserved03() {
+        return getField(RESERVED_3);
+    }
+
+    /** Get the reserved field in word 4.
+     * @return reserved field in word 4
+     */
+    public int getReserved04() {
+        return getField(RESERVED_4);
+    }
+
+    /** Get the reserved field in word 5.
+     * @return reserved field in word 5
+     */
+    public int getReserved05() {
+        return getField(RESERVED_5);
+    }
+
+    /** Get the reserved field in word 6.
+     * @return reserved field in word 6
+     */
+    public int getReserved06() {
+        return getField(RESERVED_6);
+    }
+
+    /** Get the reserved field in word 7.
+     * @return reserved field in word 7
+     */
+    public int getReserved07() {
+        return getField(RESERVED_7);
+    }
+
+    /** Get the reserved field in word 8.
+     * @return reserved field in word 8
+     */
+    public int getReserved08() {
+        return getField(RESERVED_8);
+    }
+
+    /** Get the reserved field in word 9.
+     * @return reserved field  in word 9
+     */
+    public int getReserved09() {
+        return getField(RESERVED_9);
+    }
+
+    /** Get the reserved field in word 10.
+     * @return reserved field in word 10
+     */
+    public int getReserved10() {
+        return getField(RESERVED_10);
+    }
+
 }

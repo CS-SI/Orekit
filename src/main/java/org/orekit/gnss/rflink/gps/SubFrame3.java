@@ -16,6 +16,9 @@
  */
 package org.orekit.gnss.rflink.gps;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.gnss.metric.parser.Units;
+
 /**
  * Container for sub-frames 3.
  * <p>
@@ -32,7 +35,7 @@ public class SubFrame3 extends SubFrame {
     private static final int CIC = 7;
 
     /** Index of Ω₀ field. */
-    private static final int UPPERCASE_OMEGA0 = 8;
+    private static final int UPPERCASE_OMEGA_0 = 8;
 
     /** Index of Cis field. */
     private static final int CIS = 9;
@@ -52,8 +55,8 @@ public class SubFrame3 extends SubFrame {
     /** Index of IODE field. */
     private static final int IODE = 14;
 
-    /** Index of IDOT field. */
-    private static final int IDOT = 15;
+    /** Index of dot(i) field. */
+    private static final int I_DOT = 15;
 
     /** Simple constructor.
      * @param words raw words
@@ -61,19 +64,82 @@ public class SubFrame3 extends SubFrame {
     SubFrame3(final int[] words) {
 
         // create raw container
-        super(words, IDOT + 1);
+        super(words, I_DOT + 1);
 
         // populate container
         setField(CIC,                   3, 14, 16, words);
-        setField(UPPERCASE_OMEGA0,      3,  6,  8, 4,  6, 24, words);
+        setField(UPPERCASE_OMEGA_0,     3,  6,  8, 4,  6, 24, words);
         setField(CIS,                   5, 14, 16, words);
         setField(I0,                    5,  6,  8, 6,  6, 24, words);
         setField(CRC,                   7, 14, 16, words);
         setField(LOWERCASE_OMEGA,       7,  6,  8, 8,  6, 24, words);
         setField(OMEGA_DOT,             9,  6, 24, words);
         setField(IODE,                 10, 22,  8, words);
-        setField(IDOT,                 10,  8, 14, words);
+        setField(I_DOT,                10,  8, 14, words);
 
+    }
+
+    /** Get Cic.
+     * @return Cic (rad)
+     */
+    public double getCic() {
+        return FastMath.scalb((double) getField(CIC), -29);
+    }
+
+    /** Get Ω₀.
+     * @return Ω₀ (rad)
+     */
+    public double getUppercaseOmega0() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(UPPERCASE_OMEGA_0), -31));
+    }
+
+    /** Get Cis.
+     * @return Cis (rad)
+     */
+    public double getCis() {
+        return FastMath.scalb((double) getField(CIS), -29);
+    }
+
+    /** Get i₀.
+     * @return i₀ (rad)
+     */
+    public double getI0() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(I0), -31));
+    }
+
+    /** Get Crc.
+     * @return Crc (rad)
+     */
+    public double getCrc() {
+        return FastMath.scalb((double) getField(CRC), -5);
+    }
+
+    /** Get ω.
+     * @return ω(rad)
+     */
+    public double getLowercaseOmega() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(LOWERCASE_OMEGA), -31));
+    }
+
+    /** Get dot(Ω).
+     * @return dot(Ω) (rad/s)
+     */
+    public double getOmegaDot() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(OMEGA_DOT), -43));
+    }
+
+    /** Get Issue Of Data (ephemeris).
+     * @return Issue Of Data (ephemeris)
+     */
+    public int getIODE() {
+        return getField(IODE);
+    }
+
+    /** Get dot(i).
+     * @return dot(i) (rad/s)
+     */
+    public double getIDot() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(I_DOT), -43));
     }
 
 }

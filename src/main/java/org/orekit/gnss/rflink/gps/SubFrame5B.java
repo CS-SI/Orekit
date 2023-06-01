@@ -89,7 +89,7 @@ public class SubFrame5B extends SubFrame45 {
      * it is also related to {@link #getDataId()})
      * @return SV health
      */
-    public int getSvHEalth(final int index) {
+    public int getSvHealth(final int index) {
         MathUtils.checkRangeInclusive(index, 1, 24);
         return getField(WEEK_NUMBER + index);
     }

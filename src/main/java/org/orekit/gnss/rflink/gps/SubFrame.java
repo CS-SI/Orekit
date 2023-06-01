@@ -285,7 +285,7 @@ public abstract class SubFrame  {
     /** Get anti-spoofing flag.
      * @return anti-spoofing flag
      */
-    public int geAntiSpoofing() {
+    public int getAntiSpoofing() {
         return getField(ANTI_SPOOFING);
     }
 

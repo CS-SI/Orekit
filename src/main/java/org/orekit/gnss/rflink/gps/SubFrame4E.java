@@ -60,7 +60,7 @@ public class SubFrame4E extends SubFrame45 {
         super(words, RESERVED_10 + 1);
 
         // populate container
-        int field = FIRST_AS;
+        int field = FIRST_AS - 1;
         int word  = 3;
         int shift = 22;
 

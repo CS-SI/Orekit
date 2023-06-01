@@ -16,6 +16,9 @@
  */
 package org.orekit.gnss.rflink.gps;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.gnss.metric.parser.Units;
+
 /**
  * Container for sub-frames 5, page 1-24.
  * <p>
@@ -47,7 +50,7 @@ public class SubFrameAlmanac extends SubFrame45 {
     private static final int SQRT_A = 14;
 
     /** Index of Ω₀ field. */
-    private static final int UPPERCASE_OMEGA = 15;
+    private static final int UPPERCASE_OMEGA_0 = 15;
 
     /** Index of ω field. */
     private static final int LOWERCASE_OMEGA = 16;
@@ -70,17 +73,17 @@ public class SubFrameAlmanac extends SubFrame45 {
         super(words, AF1 + 1);
 
         // populate container
-        setField(E,                3,  6, 16, words);
-        setField(TOA,              4, 22,  8, words);
-        setField(DELTA_I,          4,  6, 16, words);
-        setField(OMEGA_DOT,        5, 14, 16, words);
-        setField(SV_HEALTH,        5,  6,  8, words);
-        setField(SQRT_A,           6,  6, 24, words);
-        setField(UPPERCASE_OMEGA,  7,  6, 24, words);
-        setField(LOWERCASE_OMEGA,  8,  6, 24, words);
-        setField(M0,               9,  6, 24, words);
-        setField(AF0,             10, 22,  8, 10,  8,  3, words);
-        setField(AF1,             10, 11, 11, words);
+        setField(E,                  3,  6, 16, words);
+        setField(TOA,                4, 22,  8, words);
+        setField(DELTA_I,            4,  6, 16, words);
+        setField(OMEGA_DOT,          5, 14, 16, words);
+        setField(SV_HEALTH,          5,  6,  8, words);
+        setField(SQRT_A,             6,  6, 24, words);
+        setField(UPPERCASE_OMEGA_0,  7,  6, 24, words);
+        setField(LOWERCASE_OMEGA,    8,  6, 24, words);
+        setField(M0,                 9,  6, 24, words);
+        setField(AF0,               10, 22,  8, 10,  8,  3, words);
+        setField(AF1,               10, 11, 11, words);
 
     }
 
@@ -90,6 +93,83 @@ public class SubFrameAlmanac extends SubFrame45 {
     public int getPRN() {
         // sub-frames that contain almanacs use the SV-ID for the PRN
         return getSvId();
+    }
+
+    /** Get eccentricity.
+     * @return eccentricity
+     */
+    public double getE() {
+        return FastMath.scalb((double) getField(E), -21);
+    }
+
+    /** Get Time Of Almanac.
+     * @return Time Of Almanac (seconds)
+     */
+    public int getToaA() {
+        return getField(TOA) << 12 ;
+    }
+
+    /** Get Δi.
+     * @return Δi (rad)
+     */
+    public double getDeltai() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(DELTA_I), -19));
+    }
+
+    /** Get dot(Ω).
+     * @return dot(Ω) (rad/s)
+     */
+    public double getOmegaDot() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(OMEGA_DOT), -38));
+    }
+
+    /** Get SV health.
+     * @return SV health
+     */
+    public int getSvHealth() {
+        return getField(SV_HEALTH);
+    }
+
+    /** Get √a.
+     * @return d√a (√m)
+     */
+    public double getSqrtA() {
+        return FastMath.scalb((double) getField(SQRT_A), -11);
+    }
+
+    /** Get Ω₀.
+     * @return Ω₀ (rad)
+     */
+    public double getUppercaseOmega0() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(UPPERCASE_OMEGA_0), -23));
+    }
+
+    /** Get ω.
+     * @return ω(rad)
+     */
+    public double getLowercaseOmega() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(LOWERCASE_OMEGA), -23));
+    }
+
+    /** Get M₀.
+     * @return M₀ (rad)
+     */
+    public double getM0() {
+        return Units.SEMI_CIRCLE.toSI(FastMath.scalb((double) getField(M0), -23));
+    }
+
+    /** Get af₀.
+     * @return af₀ (second)
+     */
+    public double getAF0() {
+        return FastMath.scalb((double) getField(AF0), -20);
+    }
+
+    /** Get af₁.
+     * @return af₁ (second/second)
+     */
+    public double getAF1() {
+        return FastMath.scalb((double) getField(AF1), -38);
     }
 
 }
