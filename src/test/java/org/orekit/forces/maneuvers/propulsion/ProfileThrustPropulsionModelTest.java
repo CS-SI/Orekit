@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.FramesFactory;
@@ -83,7 +83,8 @@ public class ProfileThrustPropulsionModelTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                           Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -169,7 +170,8 @@ public class ProfileThrustPropulsionModelTest {
         final double f        = 420;
         final double delta    = FastMath.toRadians(-7.4978);
         final double alpha    = FastMath.toRadians(351);
-        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                           Vector3D.PLUS_I));
 
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field,
                                                                       new DateComponents(2004, 01, 01),

@@ -28,7 +28,7 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -135,7 +135,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
@@ -197,7 +197,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
                                          final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, M2);
     }
@@ -217,7 +217,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
 
@@ -251,7 +251,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
                                          final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
@@ -376,7 +376,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final PropagationType initialType,
                                          final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
     }
@@ -634,7 +634,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                                                              final double epsilon, final int maxIterations) {
         final FieldBrouwerLyddanePropagator<T> propagator =
                         new FieldBrouwerLyddanePropagator<>(osculating,
-                                                            InertialProvider.of(osculating.getFrame()),
+                                                            FrameAlignedProvider.of(osculating.getFrame()),
                                                             osculating.getMu().newInstance(DEFAULT_MASS),
                                                             referenceRadius, osculating.getMu().newInstance(mu),
                                                             c20, c30, c40, c50,

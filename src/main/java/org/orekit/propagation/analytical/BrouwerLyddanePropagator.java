@@ -28,7 +28,7 @@ import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -146,7 +146,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
@@ -210,8 +210,8 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
                                     final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, M2);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
@@ -229,7 +229,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     public BrouwerLyddanePropagator(final Orbit initialOrbit, final double mass,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
@@ -264,7 +264,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
                                     final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
@@ -389,7 +389,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final PropagationType initialType, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), initialType, M2);
     }
 
@@ -640,7 +640,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                                   final double epsilon, final int maxIterations) {
         final BrouwerLyddanePropagator propagator =
                         new BrouwerLyddanePropagator(osculating,
-                                                     InertialProvider.of(osculating.getFrame()),
+                                                     FrameAlignedProvider.of(osculating.getFrame()),
                                                      DEFAULT_MASS,
                                                      referenceRadius, mu, c20, c30, c40, c50,
                                                      PropagationType.OSCULATING, M2Value,

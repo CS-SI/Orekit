@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.BistaticRange;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -63,7 +63,7 @@ public class BistaticRangeIonosphericDelayModifier extends BaseRangeIonosphericD
         final SpacecraftState state     = estimated.getStates()[0];
 
         BistaticModifierUtil.modify(estimated, getIonoModel(),
-                                    new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                    new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeErrorIonosphericModel,
                                     this::rangeErrorIonosphericModel);

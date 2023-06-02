@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
@@ -117,8 +117,8 @@ public class StreamingAemWriterTest {
             StreamingAemWriter.SegmentWriter segment = writer.newSegment();
             KeplerianPropagator propagator =
                             createPropagator(ephemerisBlock.getStart(),
-                                             new InertialProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
-                                                                  FramesFactory.getEME2000()));
+                                             new FrameAlignedProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
+                                                                      FramesFactory.getEME2000()));
 
             // We propagate 60 seconds after the start date with a step equals to 10.0 seconds
             // It is expected to have an attitude data block containing 7 data lines

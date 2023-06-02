@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -176,7 +176,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
 
         // Update estimated derivatives with Jacobian of the measure wrt state
         final ModifierGradientConverter converter =
-                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+                new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
         final Gradient[] gParameters        = converter.getParametersAtStateDate(gState, ionoModel);
         final Gradient primaryGDelay        = rangeErrorIonosphericModel(primaryStation, gState, gParameters);

@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.maneuvers;
 
+import java.util.List;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -37,7 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
@@ -66,8 +68,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.List;
 
 public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
@@ -278,7 +278,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                           Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -524,7 +525,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                           Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -647,7 +649,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider inertialLaw = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider inertialLaw = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                                   Vector3D.PLUS_I));
         final AttitudeProvider lofLaw = new LofOffset(orbit.getFrame(), LOFType.VNC);
 
         final SpacecraftState initialState =
@@ -740,7 +743,8 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider inertialLaw = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider inertialLaw = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                                   Vector3D.PLUS_I));
 
         final SpacecraftState initialState =
             new SpacecraftState(orbit, inertialLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);

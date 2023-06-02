@@ -32,7 +32,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -859,7 +859,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme, templateTLE.getParameters(field));
+            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new FrameAlignedProvider(Rotation.IDENTITY, teme),
+                                                                                           state.getMass(), teme, templateTLE.getParameters(field));
             final FieldOrbit<T> recovOrbit = propagator.getInitialState().getOrbit();
             final FieldEquinoctialOrbit<T> recovEquiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -951,8 +952,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         final T meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
         // Returns the new TLE
         return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                       elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
+                              elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
+                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
     }
 
 

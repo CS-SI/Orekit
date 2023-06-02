@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -107,7 +107,7 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         final SpacecraftState state         = estimated.getStates()[0];
 
         TDOAModifierUtil.modify(estimated, ionoModel,
-                                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                 primeStation, secondStation,
                                 this::timeErrorIonosphericModel,
                                 this::timeErrorIonosphericModel);

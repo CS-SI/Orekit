@@ -18,7 +18,7 @@ package org.orekit;
 
 import org.junit.jupiter.api.Assertions;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
@@ -225,7 +225,7 @@ public class Utils {
      * @return an attitude law.
      */
     public static AttitudeProvider defaultLaw() {
-        return InertialProvider.of(FramesFactory.getEME2000());
+        return FrameAlignedProvider.of(FramesFactory.getEME2000());
     }
 
 }
