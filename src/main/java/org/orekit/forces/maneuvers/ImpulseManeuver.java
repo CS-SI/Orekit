@@ -58,7 +58,7 @@ import org.orekit.utils.PVCoordinates;
  * was constructed using LOFType.VNC the velocity increment should be
  * provided in VNC coordinates.</p>
  * <p>The norm through which the delta-V maps to the mass consumption is chosen via the
- * enum {@link ControlVector3DNormType]. Default is Euclidean. </p>
+ * enum {@link ControlVector3DNormType}. Default is Euclidean. </p>
  * <p>Beware that the triggering event detector must behave properly both
  * before and after maneuver. If for example a node detector is used to trigger
  * an inclination maneuver and the maneuver change the orbit to an equatorial one,
