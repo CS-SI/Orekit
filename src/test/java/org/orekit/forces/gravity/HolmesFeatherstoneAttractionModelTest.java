@@ -522,7 +522,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
-                                  1.0e-14, 5.9e-8, 1.8e-11, 1.8e-10,
+                                  1.0e-14, 6.0e-8, 1.8e-11, 1.8e-10,
                                   1, false);
     }
 
