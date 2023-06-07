@@ -487,9 +487,6 @@ NOT_ENOUGH_GNSS_FOR_DOP = sólo se han especificado {0} órbitas GNSS y se neces
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = para utilizar el sistema temporal {0} en los ficheros CCSDS se requiere un ICD adicional y no está disponible en Orekit
 
-# inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporales incoherentes en los bloques de actitud : {0} ≠ {1}
-
 # unknown attitude type {0}
 CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
 

@@ -219,9 +219,7 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
     /** {@inheritDoc} */
     @Override
     public Aem build() {
-        final Aem file = new Aem(header, segments, getConventions(), getDataContext());
-        file.checkTimeSystems();
-        return file;
+        return new Aem(header, segments, getConventions(), getDataContext());
     }
 
     /** Manage attitude state section in a XML message.

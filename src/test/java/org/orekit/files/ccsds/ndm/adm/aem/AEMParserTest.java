@@ -684,20 +684,6 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testInconsistentTimeSystems() {
-        try {
-            final String name = "/ccsds/adm/aem/AEM-inconsistent-time-systems.txt";
-            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new ParserBuilder().buildAemParser().parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
-            Assertions.assertEquals("UTC", oe.getParts()[0]);
-            Assertions.assertEquals("TCG", oe.getParts()[1]);
-        }
-    }
-
-    @Test
     public void testLowerCaseValue() {
         //setup
         String file = "/ccsds/adm/aem/aemLowerCaseValue.aem";

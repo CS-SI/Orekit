@@ -184,7 +184,6 @@ public enum OrekitMessages implements Localizable {
     CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
     CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER("no Range Units converter configured for parsing Tracking Data Message"),
     CCSDS_TIME_SYSTEM_NOT_READ_YET("Time system should have already been set before line {0} of file {1}"),
-    CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
     CCSDS_UNKNOWN_ATTITUDE_TYPE("unknown attitude type {0}"),
     CCSDS_INCOMPLETE_DATA("incomplete data"),
     CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),

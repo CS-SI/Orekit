@@ -487,9 +487,6 @@ NOT_ENOUGH_GNSS_FOR_DOP = Bare {0} GNSS baner har blitt presistert mens {1} bane
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = Bruk av tidssystemet {0} i CCSDS-filer krever en ytterligere ICD og er ikke støttet av Orekit
 
-# inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
-
 # unknown attitude type {0}
 CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
 

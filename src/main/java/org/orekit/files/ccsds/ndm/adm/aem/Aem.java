@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.general.AttitudeEphemerisFile;
@@ -72,22 +69,6 @@ public class Aem extends NdmConstituent<AdmHeader, AemSegment>
             ret.put(entry.getKey(), new AemSatelliteEphemeris(entry.getKey(), entry.getValue()));
         }
         return ret;
-    }
-
-    /**
-     * Check that, according to the CCSDS standard, every AEMBlock has the same time system.
-     */
-    public void checkTimeSystems() {
-        TimeSystem referenceTimeSystem = null;
-        for (final AemSegment segment : getSegments()) {
-            final TimeSystem timeSystem = segment.getMetadata().getTimeSystem();
-            if (referenceTimeSystem == null) {
-                referenceTimeSystem = timeSystem;
-            } else if (!referenceTimeSystem.equals(timeSystem)) {
-                throw new OrekitException(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS,
-                                          referenceTimeSystem.name(), timeSystem.name());
-            }
-        }
     }
 
 }
