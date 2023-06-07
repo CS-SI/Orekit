@@ -19,7 +19,7 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
@@ -44,6 +44,7 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
      * used together with the {@code positionScale} to convert from the {@link
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param templateOrbit reference orbit from which real orbits will be built
@@ -56,7 +57,7 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                       final double positionScale) {
         this(templateOrbit, positionAngle, positionScale,
-                InertialProvider.of(templateOrbit.getFrame()));
+             FrameAlignedProvider.of(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.

@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.CelestialBodyPointed;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -77,10 +77,10 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         final double duration    = 4000;
         final double f           = 400;
 
-        final AttitudeProvider maneuverLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_I));
+        final AttitudeProvider maneuverLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_I));
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
-        final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
+        final AttitudeProvider accelerationLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_K));
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", AbsoluteDate.J2000_EPOCH, 0);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         Assertions.assertTrue(inertialAcceleration.dependsOnPositionOnly());
@@ -181,10 +181,10 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         final double duration    = 4000;
         final double f           = 400;
 
-        final AttitudeProvider maneuverLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_I));
+        final AttitudeProvider maneuverLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_I));
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
-        final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
+        final AttitudeProvider accelerationLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_K));
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", AbsoluteDate.J2000_EPOCH, 0);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);

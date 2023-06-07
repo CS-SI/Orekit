@@ -39,8 +39,8 @@ base attitude law a complementary rotation in order to fulfill specific mission 
 
 ### Basic attitude laws
 
-* InertialProvider, which represents an inertial attitude law, perfectly 
-  aligned with the EME2000 frame.
+* FrameAlignedProvider, which represents an attitude law aligned
+  with a given frame or a fixed offset to it.
   
 * FixedRate, which represents a rotation around a fixed axis at
   constant rate.

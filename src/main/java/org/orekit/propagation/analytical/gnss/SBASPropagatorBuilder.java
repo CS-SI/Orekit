@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
@@ -82,7 +82,7 @@ public class SBASPropagatorBuilder {
 
     /** Initializes the builder.
      * <p>The SBAS orbital elements is the only requested parameter to build a SBASPropagator.</p>
-     * <p>The attitude provider is set by default be aligned with the EME2000 frame.<br>
+     * <p>The attitude provider is set by default to be aligned with the EME2000 frame.<br>
      * The Earth gravity coefficient is set by default to the
      *  {@link org.orekit.propagation.analytical.gnss.data.GNSSConstants#SBAS_MU SBAS_MU}.<br>
      * The mass is set by default to the
@@ -104,12 +104,12 @@ public class SBASPropagatorBuilder {
      * @see #ecef(Frame bodyFixed)
      */
     public SBASPropagatorBuilder(final SBASOrbitalElements sbasOrbElt, final Frames frames) {
-        this.orbit = sbasOrbElt;
-        this.mass  = Propagator.DEFAULT_MASS;
-        this.eci   = frames.getEME2000();
-        this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
-        this.mu    = GNSSConstants.SBAS_MU;
-        this.attitudeProvider = new InertialProvider(eci);
+        this.orbit            = sbasOrbElt;
+        this.mass             = Propagator.DEFAULT_MASS;
+        this.eci              = frames.getEME2000();
+        this.ecef             = frames.getITRF(IERSConventions.IERS_2010, true);
+        this.mu               = GNSSConstants.SBAS_MU;
+        this.attitudeProvider = new FrameAlignedProvider(eci);
     }
 
     /** Sets the attitude provider.

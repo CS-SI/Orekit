@@ -31,11 +31,10 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /**
  * This class handles an attitude provider aligned with a frame or a fixed offset to it.
- * Contrary to the name the frame need not be an inertial frame.
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  */
-public class InertialProvider implements AttitudeProvider {
+public class FrameAlignedProvider implements AttitudeProvider {
 
     /** Fixed satellite frame. */
     private final Frame satelliteFrame;
@@ -45,10 +44,10 @@ public class InertialProvider implements AttitudeProvider {
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @param rotation rotation from EME2000 to the desired satellite frame
-     * @see #InertialProvider(Rotation, Frame)
+     * @see #FrameAlignedProvider(Rotation, Frame)
      */
     @DefaultDataContext
-    public InertialProvider(final Rotation rotation) {
+    public FrameAlignedProvider(final Rotation rotation) {
         this(rotation, DataContext.getDefault().getFrames().getEME2000());
     }
 
@@ -57,7 +56,7 @@ public class InertialProvider implements AttitudeProvider {
      *
      * @param frame the reference frame for the attitude.
      */
-    public InertialProvider(final Frame frame) {
+    public FrameAlignedProvider(final Frame frame) {
         // it is faster to use the frame directly here rather than call the other
         // constructor because of the == shortcut in frame.getTransformTo
         this.satelliteFrame = frame;
@@ -70,16 +69,15 @@ public class InertialProvider implements AttitudeProvider {
      * @param reference frame for {@code rotation}.
      * @since 10.1
      */
-    public InertialProvider(final Rotation rotation,
-                            final Frame reference) {
+    public FrameAlignedProvider(final Rotation rotation,
+                                final Frame reference) {
         satelliteFrame =
             new Frame(reference,
-                    new Transform(AbsoluteDate.ARBITRARY_EPOCH, rotation), null, false);
+                      new Transform(AbsoluteDate.ARBITRARY_EPOCH, rotation), null, false);
     }
 
     /**
-     * Creates an attitude provider aligned with the given frame. The frame does not need
-     * to be inertial.
+     * Creates an attitude provider aligned with the given frame.
      *
      * <p>This attitude provider returned by this method is designed to be as fast as
      * possible for when attitude is irrelevant while still being a valid implementation
@@ -92,19 +90,21 @@ public class InertialProvider implements AttitudeProvider {
      * @since 11.0
      */
     public static AttitudeProvider of(final Frame satelliteFrame) {
-        return new InertialProvider(satelliteFrame);
+        return new FrameAlignedProvider(satelliteFrame);
     }
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame) {
+                                final AbsoluteDate date,
+                                final Frame frame) {
         final Transform t = frame.getTransformTo(satelliteFrame, date);
         return new Attitude(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration());
     }
 
     /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                       final FieldAbsoluteDate<T> date, final Frame frame) {
+                                                                           final FieldAbsoluteDate<T> date,
+                                                                           final Frame frame) {
         final FieldTransform<T> t = frame.getTransformTo(satelliteFrame, date);
         return new FieldAttitude<>(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration());
     }

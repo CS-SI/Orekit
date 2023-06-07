@@ -94,7 +94,7 @@
       GroundPointing               <|-- YawSteering
       AttitudeProviderModifier     <|-- YawSteering
       AttitudeProvider             <|-- CelestialBodyPointed
-      AttitudeProvider             <|-- InertialProvider
+      AttitudeProvider             <|-- FrameAlignedProvider
       AttitudeProvider             <|-- LofOffset
       AttitudeProvider             <|-- TabulatedProvider
 

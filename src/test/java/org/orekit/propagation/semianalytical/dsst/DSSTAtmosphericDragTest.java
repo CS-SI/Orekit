@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -116,7 +116,7 @@ public class DSSTAtmosphericDragTest {
         drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
-        AttitudeProvider attitudeProvider = new InertialProvider(rotation);
+        AttitudeProvider attitudeProvider = new FrameAlignedProvider(rotation);
         drag.registerAttitudeProvider(attitudeProvider );
 
         // Compute the mean element rate

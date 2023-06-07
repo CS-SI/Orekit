@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
@@ -266,7 +266,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     private AttitudeProvider buildAttitudeProvider() {
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        return new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        return new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
     }
 
     private SpacecraftState buildInitialState(final AttitudeProvider attitudeProvider) {

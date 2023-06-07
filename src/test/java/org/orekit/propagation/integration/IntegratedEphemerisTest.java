@@ -26,7 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.CelestialBodyPointed;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
@@ -145,7 +145,7 @@ public class IntegratedEphemerisTest {
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // verify
-        Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof InertialProvider);
+        Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof FrameAlignedProvider);
 
         // action
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();

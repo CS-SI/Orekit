@@ -34,7 +34,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -125,7 +125,7 @@ public class FieldDSSTSolarRadiationPressureTest {
                                           -4.028108631990782E-8,
                                           -3.539139805514139E-8,
                                           false);
-        AttitudeProvider attitudeProvider = new InertialProvider(rotation);
+        AttitudeProvider attitudeProvider = new FrameAlignedProvider(rotation);
         srp.registerAttitudeProvider(attitudeProvider);
 
         // Attitude of the satellite

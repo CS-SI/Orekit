@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -85,7 +85,7 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getIonoModel(),
-                                 new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                 new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                  station,
                                  this::rangeRateErrorIonosphericModel,
                                  this::rangeRateErrorIonosphericModel);

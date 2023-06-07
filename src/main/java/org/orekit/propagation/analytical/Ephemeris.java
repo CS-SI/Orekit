@@ -26,7 +26,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -110,8 +110,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
                      final double extrapolationThreshold)
         throws MathIllegalArgumentException {
         this(states, interpolationPoints, extrapolationThreshold,
-                // if states is empty an exception will be thrown in the other constructor
-                states.isEmpty() ? null : InertialProvider.of(states.get(0).getFrame()));
+             // if states is empty an exception will be thrown in the other constructor
+             states.isEmpty() ? null : FrameAlignedProvider.of(states.get(0).getFrame()));
     }
 
     /** Constructor with tabulated states.

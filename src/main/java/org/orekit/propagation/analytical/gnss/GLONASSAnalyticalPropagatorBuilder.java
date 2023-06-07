@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
@@ -118,13 +118,13 @@ public class GLONASSAnalyticalPropagatorBuilder {
      */
     public GLONASSAnalyticalPropagatorBuilder(final GLONASSOrbitalElements glonassOrbElt,
                                               final DataContext dataContext) {
-        this.orbit = glonassOrbElt;
-        this.dataContext = dataContext;
-        this.mass  = Propagator.DEFAULT_MASS;
-        final Frames frames = dataContext.getFrames();
-        this.eci   = frames.getEME2000();
-        this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
-        attitudeProvider = InertialProvider.of(this.eci);
+        this.orbit            = glonassOrbElt;
+        this.dataContext      = dataContext;
+        this.mass             = Propagator.DEFAULT_MASS;
+        final Frames frames   = dataContext.getFrames();
+        this.eci              = frames.getEME2000();
+        this.ecef             = frames.getITRF(IERSConventions.IERS_2010, true);
+        this.attitudeProvider = FrameAlignedProvider.of(this.eci);
     }
 
     /** Sets the attitude provider.
