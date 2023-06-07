@@ -28,7 +28,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -244,7 +244,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
         return selectExtrapolator(
                 tle,
-                InertialProvider.of(frames.getTEME()),
+                FrameAlignedProvider.of(frames.getTEME()),
                 DEFAULT_MASS,
                 frames.getTEME());
     }
@@ -263,7 +263,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
                                                    final double mass) {
         return selectExtrapolator(tle, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+                                  DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.

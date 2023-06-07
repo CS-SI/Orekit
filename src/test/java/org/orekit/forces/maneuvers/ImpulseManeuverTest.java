@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
@@ -108,7 +108,7 @@ public class ImpulseManeuverTest {
 
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, new LofOffset(initialOrbit.getFrame(), LOFType.VNC));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(driftTimeInSec));
-        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+        FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(driftTimeInSec/4);
@@ -175,7 +175,7 @@ public class ImpulseManeuverTest {
         final double isp = 300;
         ImpulseManeuver maneuver =
                         new ImpulseManeuver(dateDetector,
-                                            new InertialProvider(Rotation.IDENTITY),
+                                            new FrameAlignedProvider(Rotation.IDENTITY),
                                             deltaV, isp).
                         withMaxCheck(3600.0).
                         withThreshold(1.0e-6);
@@ -232,7 +232,7 @@ public class ImpulseManeuverTest {
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
         propagator.resetInitialState(initialState.addAdditionalState("testOnly", -1.0));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
-        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+        FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
@@ -279,7 +279,7 @@ public class ImpulseManeuverTest {
         MatricesHarvester harvester = propagator.setupMatricesComputation("derivatives", null, null);
         propagator.resetInitialState(new SpacecraftState(initialOrbit, initialAttitude));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
-        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+        FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
@@ -364,7 +364,7 @@ public class ImpulseManeuverTest {
         // Thrust configuration
         final DateDetector     dateDetector       = new DateDetector(date.shiftedBy(1000.));
         final AbsoluteDate     endPropagationDate = dateDetector.getDate().shiftedBy(10000.);
-        final AttitudeProvider provider           = new InertialProvider(gcrf);
+        final AttitudeProvider provider           = new FrameAlignedProvider(gcrf);
         final Vector3D         deltaV             = new Vector3D(2., -1., 0.5);
         final double           initialMass        = 1000.;
         final double           isp                = 100.;

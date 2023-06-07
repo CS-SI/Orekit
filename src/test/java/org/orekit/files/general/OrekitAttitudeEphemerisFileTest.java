@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataSource;
@@ -100,7 +100,7 @@ public class OrekitAttitudeEphemerisFileTest {
         // Initialize a Keplerian propagator with an Inertial attitude provider
         // It is expected that all attitude data lines will have the same value
         final Rotation refRot = new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false);
-        AttitudeProvider inertialPointing = new InertialProvider(refRot);
+        AttitudeProvider inertialPointing = new FrameAlignedProvider(refRot);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, inertialPointing);
 
         final double propagationDurationSeconds = 1200.0;

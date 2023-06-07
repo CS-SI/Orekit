@@ -16,6 +16,12 @@
  */
 package org.orekit.attitudes;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.orekit.OrekitMatchers.attitudeIs;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.distanceIs;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -52,21 +58,16 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.orekit.OrekitMatchers.attitudeIs;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.distanceIs;
 
-
-public class InertialAttitudeTest {
+public class FrameAlignedAttitudeTest {
 
     private AbsoluteDate t0;
     private Orbit        orbit0;
 
     @Test
     public void testIsInertial() {
-        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9, RotationConvention.VECTOR_OPERATOR));
+        FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9,
+                                                                         RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
@@ -82,7 +83,8 @@ public class InertialAttitudeTest {
 
     @Test
     public void testCompensateMomentum() {
-        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2, RotationConvention.VECTOR_OPERATOR));
+        FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2,
+                                                                         RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
@@ -96,13 +98,12 @@ public class InertialAttitudeTest {
 
     @Test
     public void testSpin() {
-
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
-        AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2, RotationConvention.VECTOR_OPERATOR));
-
+        AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2,
+                                                                     RotationConvention.VECTOR_OPERATOR));
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
@@ -140,8 +141,8 @@ public class InertialAttitudeTest {
     }
 
     private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
-                                                            final Orbit orbit, final AbsoluteDate date,
-                                                            final Frame frame)
+                                                                final Orbit orbit, final AbsoluteDate date,
+                                                                final Frame frame)
         {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
@@ -157,7 +158,7 @@ public class InertialAttitudeTest {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
-        AttitudeProvider law = InertialProvider.of(eci);
+        AttitudeProvider law = FrameAlignedProvider.of(eci);
 
         // action + verify
         Attitude actual = law.getAttitude(orbit0, t0, eci);
@@ -187,7 +188,7 @@ public class InertialAttitudeTest {
         MatcherAssert.assertThat(actual, attitudeIs(expected));
         // check not identity rotation
         MatcherAssert.assertThat(actual.getRotation(),
-                not(distanceIs(Rotation.IDENTITY, closeTo(0.0, 1e-1))));
+                                 not(distanceIs(Rotation.IDENTITY, closeTo(0.0, 1e-1))));
     }
 
 
@@ -200,7 +201,7 @@ public class InertialAttitudeTest {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
-        AttitudeProvider law = InertialProvider.of(eci);
+        AttitudeProvider law = FrameAlignedProvider.of(eci);
         Binary64 one = Binary64.ONE;
         FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(one.getField(), t0);
         FieldOrbit<Binary64> orbit = new FieldCartesianOrbit<>(

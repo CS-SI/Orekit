@@ -19,7 +19,7 @@ package org.orekit.files.general;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
@@ -67,7 +67,7 @@ class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends Abs
      * @param ephemeris segment containing the data for this propagator.
      */
     EphemerisSegmentPropagator(final EphemerisSegment<C> ephemeris) {
-        super(new InertialProvider(ephemeris.getInertialFrame()));
+        super(new FrameAlignedProvider(ephemeris.getInertialFrame()));
         this.cache = new ImmutableTimeStampedCache<>(
                 ephemeris.getInterpolationSamples(),
                 ephemeris.getCoordinates());

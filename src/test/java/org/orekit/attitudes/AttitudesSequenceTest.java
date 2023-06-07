@@ -317,9 +317,9 @@ public class AttitudesSequenceTest {
                                                       Constants.EIGEN5C_EARTH_MU);
 
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        final AttitudeProvider past    = new InertialProvider(Rotation.IDENTITY);
-        final AttitudeProvider current = new InertialProvider(Rotation.IDENTITY);
-        final AttitudeProvider future  = new InertialProvider(Rotation.IDENTITY);
+        final AttitudeProvider past    = new FrameAlignedProvider(Rotation.IDENTITY);
+        final AttitudeProvider current = new FrameAlignedProvider(Rotation.IDENTITY);
+        final AttitudeProvider future  = new FrameAlignedProvider(Rotation.IDENTITY);
         final Handler handler = new Handler(current, past);
         attitudesSequence.addSwitchingCondition(past, current,
                                                 new DateDetector(initialDate.shiftedBy(-500.0)),
@@ -355,8 +355,8 @@ public class AttitudesSequenceTest {
         double threshold      = 1.5;
         double transitionTime = 0.5;
         try {
-            new AttitudesSequence().addSwitchingCondition(new InertialProvider(Rotation.IDENTITY),
-                                                          new InertialProvider(Rotation.IDENTITY),
+            new AttitudesSequence().addSwitchingCondition(new FrameAlignedProvider(Rotation.IDENTITY),
+                                                          new FrameAlignedProvider(Rotation.IDENTITY),
                                                           new DateDetector(1000.0, threshold,
                                                                            AbsoluteDate.J2000_EPOCH),
                                                           true, false, transitionTime,
@@ -583,9 +583,9 @@ public class AttitudesSequenceTest {
                                                       Constants.WGS84_EARTH_MU);
 
         // Define attitude laws
-        final AttitudeProvider before = new InertialProvider(new Rotation(0, 0, 0, 1, false));
-        final AttitudeProvider current = new InertialProvider(Rotation.IDENTITY);
-        final AttitudeProvider after = new InertialProvider(new Rotation(0, 0, 0, -1, false));
+        final AttitudeProvider before  = new FrameAlignedProvider(new Rotation(0, 0, 0, 1, false));
+        final AttitudeProvider current = new FrameAlignedProvider(Rotation.IDENTITY);
+        final AttitudeProvider after   = new FrameAlignedProvider(new Rotation(0, 0, 0, -1, false));
 
         // Define attitude sequence
         final AbsoluteDate forwardSwitchDate = initialDate.shiftedBy(600);

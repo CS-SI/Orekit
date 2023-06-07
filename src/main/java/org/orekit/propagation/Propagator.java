@@ -22,7 +22,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.events.EventDetector;
@@ -70,7 +70,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @return attitude law.
      */
     static AttitudeProvider getDefaultLaw(final Frames frames) {
-        return new InertialProvider(Rotation.IDENTITY, frames.getEME2000());
+        return new FrameAlignedProvider(Rotation.IDENTITY, frames.getEME2000());
     }
 
     /** Get the multiplexer holding all step handlers.

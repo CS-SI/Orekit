@@ -34,7 +34,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -127,7 +127,7 @@ public class FieldDSSTAtmosphericDragTest {
 
         // Register the attitude provider to the force model
         Rotation rotation =  new Rotation(1., 0., 0., 0., false);
-        AttitudeProvider attitudeProvider = new InertialProvider(rotation);
+        AttitudeProvider attitudeProvider = new FrameAlignedProvider(rotation);
         drag.registerAttitudeProvider(attitudeProvider);
 
         // Attitude of the satellite

@@ -24,7 +24,7 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -187,7 +187,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final double[] oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
-        final ModifierGradientConverter converter = new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final ModifierGradientConverter converter = new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
         final Gradient[] gParameters = converter.getParametersAtStateDate(gState, tropoModel);
         final Gradient gDelay = phaseErrorTroposphericModel(station, gState, gParameters, measurement.getWavelength());

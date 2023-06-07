@@ -22,7 +22,7 @@ import java.util.List;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -34,9 +34,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Base class for propagator builders.
  * @author Pascal Parraud
@@ -91,8 +91,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * inertial frame, the central attraction coefficient, the orbit type, and is also
      * used together with the {@code positionScale} to convert from the {@link
      * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters. The initial attitude
-     * provider is aligned with the inertial frame.
+     * callers of this builder to the real orbital parameters. The default attitude
+     * provider is aligned with the orbit's inertial frame.
      * </p>
      * <p>
      * By default, all the {@link #getOrbitalParametersDrivers() orbital parameters drivers}
@@ -115,7 +115,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                         final double positionScale, final boolean addDriverForCentralAttraction) {
         this(templateOrbit, positionAngle, positionScale, addDriverForCentralAttraction,
-             new InertialProvider(templateOrbit.getFrame()));
+             new FrameAlignedProvider(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.

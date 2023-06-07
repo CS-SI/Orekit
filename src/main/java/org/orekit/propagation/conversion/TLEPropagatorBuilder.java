@@ -19,7 +19,7 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
@@ -148,6 +148,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements P
      * classification, .... and is also used together with the {@code positionScale} to
      * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
      * parameters used by the callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      * @param templateTLE reference TLE from which real orbits will be built
      * @param positionAngle position angle type to use
@@ -167,7 +168,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements P
         super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
                         .getInitialState().getOrbit(),
               positionAngle, positionScale, false,
-              InertialProvider.of(dataContext.getFrames().getTEME()));
+              FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
         for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
             addSupportedParameter(driver);
         }

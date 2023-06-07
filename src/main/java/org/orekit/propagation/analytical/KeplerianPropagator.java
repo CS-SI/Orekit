@@ -19,7 +19,7 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -47,8 +47,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @see #KeplerianPropagator(Orbit, AttitudeProvider)
      */
     public KeplerianPropagator(final Orbit initialOrbit) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                initialOrbit.getMu(), DEFAULT_MASS);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             initialOrbit.getMu(), DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
@@ -59,8 +59,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @see #KeplerianPropagator(Orbit, AttitudeProvider, double)
      */
     public KeplerianPropagator(final Orbit initialOrbit, final double mu) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mu, DEFAULT_MASS);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mu, DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and attitude provider.

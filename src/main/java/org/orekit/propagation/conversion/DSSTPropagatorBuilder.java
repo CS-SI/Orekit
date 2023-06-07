@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -69,6 +69,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * with the {@code positionScale} to convert from the {@link
      * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param referenceOrbit reference orbit from which real orbits will be built
@@ -86,7 +87,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                  final PropagationType propagationType,
                                  final PropagationType stateType) {
         this(referenceOrbit, builder, positionScale, propagationType, stateType,
-                InertialProvider.of(referenceOrbit.getFrame()));
+             FrameAlignedProvider.of(referenceOrbit.getFrame()));
     }
 
     /** Build a new instance.

@@ -22,7 +22,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Ev
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.TLEContext;
@@ -149,7 +149,7 @@ public class TLEBatchLSEstimatorTest {
         final TLEPropagatorBuilder propagatorBuilder =
                         context.createBuilder(1.0e-6, 60.0, 1.0);
         // this test based on range measurements seems to have an attitude dependence?
-        propagatorBuilder.setAttitudeProvider(new InertialProvider(FramesFactory.getEME2000()));
+        propagatorBuilder.setAttitudeProvider(new FrameAlignedProvider(FramesFactory.getEME2000()));
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();

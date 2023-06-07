@@ -30,7 +30,7 @@ import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -813,7 +813,9 @@ public class TLE implements TimeStamped, Serializable {
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme);
+            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current,
+                                                                              new FrameAlignedProvider(Rotation.IDENTITY, teme),
+                                                                              state.getMass(), teme);
             final Orbit recovOrbit = propagator.getInitialState().getOrbit();
             final EquinoctialOrbit recovEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -854,7 +856,7 @@ public class TLE implements TimeStamped, Serializable {
             lv  += deltaLv;
             final EquinoctialOrbit newEquiOrbit =
                                     new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
+                                                         equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
             final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE

@@ -81,7 +81,7 @@ public class SpinStabilizedTest {
                                              TimeScalesFactory.getUTC());
         double rate = 2.0 * FastMath.PI / (12 * 60);
         AttitudeProvider law =
-            new SpinStabilized(new InertialProvider(Rotation.IDENTITY),
+            new SpinStabilized(new FrameAlignedProvider(Rotation.IDENTITY),
                                date, Vector3D.PLUS_K, rate);
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),

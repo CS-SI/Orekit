@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -169,7 +169,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
 
         // Compute ionospheric delay (the division by the wavelength is performed)
         final ModifierGradientConverter converter =
-                        new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+                        new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(ionoModel);
         final Gradient[] gParameters = converter.getParametersAtStateDate(gState, ionoModel);
         final Gradient gDelay = phaseErrorIonosphericModel(station, gState, gParameters);
