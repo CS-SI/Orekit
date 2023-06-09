@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="672">
+        Fixed DSST tesseral force model short period terms update when order of gravity potential is lower or equal to 3.
+      </action>
       <action dev="maxime" type="fix" issue="1098">
         Fixed DSST osculating performance issues with high degree and order of geopotential.
       </action>
