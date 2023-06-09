@@ -289,6 +289,10 @@ public class DSSTTesseral implements DSSTForceModel {
         this.maxOrderMdailyTesseralSP  = maxOrderMdailyTesseralSP;
 
         // set the maximum value for eccentricity power
+        if (maxOrder > 0) {
+            // Range check can be silently ignored if order = 0
+            checkIndexRange(maxEccPowTesseralSP, 0, maxOrder);
+        }
         this.maxEccPowTesseralSP       = maxEccPowTesseralSP;
 
         checkIndexRange(maxEccPowMdailyTesseralSP, 0, maxDegreeMdailyTesseralSP - 2);

@@ -299,10 +299,6 @@ public class DSSTTesseralTest {
         // Initialize short period terms
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         final AuxiliaryElements aux = new AuxiliaryElements(orbit, 1);
-
-        //dsstTesseral.registerAttitudeProvider(null);
-
-
         shortPeriodTerms.addAll(dsstTesseral.initializeShortPeriodTerms(aux,
                                                                         PropagationType.OSCULATING,
                                                                         dsstTesseral.getParameters()));
@@ -318,6 +314,61 @@ public class DSSTTesseralTest {
 
         // Verify that no exception was raised
         Assertions.assertNotNull(shortPeriodTerms);
+
+    }
+
+    /** Test issue 672 with OUT_OF_RANGE_SIMPLE exception:
+     * 1. DSSTTesseral should throw an exception if input "maxEccPowTesseralSP" is greater than the order of the gravity field.
+     * 2. DSSTTesseral should not throw an exception if order = 0, even if input "maxEccPowTesseralSP" is greater than the
+     *    order of the gravity field (0 in this case). This last behavior was added for non-regression purposes.
+     */
+    @Test
+    public void testIssue672OutOfRangeException() {
+
+        // Throwing exception
+        // ------------------
+
+        // GIVEN
+        // Test with a central Body geopotential of 3x3
+        int degree = 3;
+        int order  = 2;
+        UnnormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getUnnormalizedProvider(degree, order);
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+
+        try {
+
+            // WHEN
+            // Tesseral force model: force "maxEccPowTesseralSP" to 3 which is greater than the order (2)
+            new DSSTTesseral(earthFrame,
+                             Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                             degree, order, 3,  FastMath.min(12, degree + 4),
+                             degree, order, FastMath.min(4, degree - 2));
+            Assertions.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+
+            // THEN
+            Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+        }
+
+
+        // NOT throwing exception
+        // ----------------------
+
+        // GIVEN
+        // Test with a central Body geopotential of 2x0
+        degree = 2;
+        order  = 0;
+        provider = GravityFieldFactory.getUnnormalizedProvider(degree, order);
+
+        // WHEN
+        // Tesseral force model: force "maxEccPowTesseralSP" to 4 which is greater than the order (0)
+        final DSSTTesseral dsstTesseral = new DSSTTesseral(earthFrame,
+                                                           Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                           degree, order, 4,  FastMath.min(12, degree + 4),
+                                                           degree, order, FastMath.min(4, degree - 2));
+        // THEN: Verify that no exception was raised
+        Assertions.assertNotNull(dsstTesseral);
 
     }
 
