@@ -1120,9 +1120,8 @@ public class DSSTPropagatorTest {
         // THEN
         // -----
 
-        // Verify that no exception occured
+        // Verify that no exception occurred
         Assertions.assertNotNull(state);
-
     }
 
     private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
