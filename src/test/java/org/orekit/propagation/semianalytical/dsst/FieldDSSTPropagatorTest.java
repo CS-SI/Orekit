@@ -1210,6 +1210,54 @@ public class FieldDSSTPropagatorTest {
         Assertions.assertTrue(force.accComputed);
 
     }
+    
+    /** Test issue 672:
+     * DSST Propagator was crashing with tesseral harmonics of the gravity field
+     * when the order is lower or equal to 3.
+     */
+    @Test
+    public void testIssue672() {
+        doTestIssue672(Binary64Field.getInstance());
+    }
+    
+    private <T extends CalculusFieldElement<T>> void doTestIssue672(final Field<T> field) {
+
+        // GIVEN
+        // -----
+
+        // Test with a central Body geopotential of 3x3
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getUnnormalizedProvider(3, 3);
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+
+        // LEO spacecraft stateOrbit
+        FieldSpacecraftState<T> initialState = getLEOState(field);
+
+        // Set propagator with state and force model
+        final T zero = field.getZero();
+        initialState.getDate();
+        final T minStep = initialState.getKeplerianPeriod();
+        final T maxStep = minStep.multiply(100.);
+        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(1.), initialState.getOrbit());
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        propagator.setInitialState(initialState, PropagationType.OSCULATING);
+        propagator.addForceModel(new DSSTZonal(provider));
+        propagator.addForceModel(new DSSTTesseral(earthFrame,
+                                                  Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+
+        // WHEN
+        // ----
+
+        // 1h propagation
+        final FieldSpacecraftState<T> state = propagator.propagate(initialState.getDate().shiftedBy(3600.));
+
+        // THEN
+        // -----
+
+        // Verify that no exception occurred
+        Assertions.assertNotNull(state);
+    }
 
     private <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
         final T zero = field.getZero();
@@ -1242,7 +1290,7 @@ public class FieldDSSTPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> FieldDSSTPropagator<T> setDSSTProp(Field<T> field,
-                                                                               FieldSpacecraftState<T> initialState) {
+                                                                                   FieldSpacecraftState<T> initialState) {
         final T zero = field.getZero();
         initialState.getDate();
         final T minStep = initialState.getKeplerianPeriod();
