@@ -223,7 +223,7 @@ public class DSSTTesseral implements DSSTForceModel {
                         final double centralBodyRotationRate,
                         final UnnormalizedSphericalHarmonicsProvider provider) {
         this(centralBodyFrame, centralBodyRotationRate, provider, provider.getMaxDegree(),
-             provider.getMaxOrder(), 4,  FastMath.min(12, provider.getMaxDegree() + 4),
+             provider.getMaxOrder(), FastMath.min(4, provider.getMaxOrder()),  FastMath.min(12, provider.getMaxDegree() + 4),
              provider.getMaxDegree(), provider.getMaxOrder(), FastMath.min(4, provider.getMaxDegree() - 2));
     }
 
