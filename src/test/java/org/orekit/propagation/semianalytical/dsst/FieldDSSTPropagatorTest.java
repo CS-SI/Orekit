@@ -42,6 +42,7 @@ import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -171,8 +172,8 @@ public class FieldDSSTPropagatorTest {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
         FieldCircularOrbit<T> orbit = new FieldCircularOrbit<>(zero.add(7389068.5), zero.add(1.0e-15), zero.add(1.0e-15), zero.add(1.709573), zero.add(1.308398), zero.add(0), PositionAngle.MEAN,
-                                                FramesFactory.getTOD(IERSConventions.IERS_2010, false),
-                                                date, zero.add(Constants.WGS84_EARTH_MU));
+                        FramesFactory.getTOD(IERSConventions.IERS_2010, false),
+                        date, zero.add(Constants.WGS84_EARTH_MU));
         FieldSpacecraftState<T> osculatingState = new FieldSpacecraftState<>(orbit, zero.add(1116.2829));
 
         List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
@@ -200,8 +201,8 @@ public class FieldDSSTPropagatorTest {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
         FieldCircularOrbit<T> orbit = new FieldCircularOrbit<>(zero.add(7389068.5), zero.add(0.0), zero.add(0.0), zero.add(1.709573), zero.add(1.308398), zero.add(0), PositionAngle.MEAN,
-                                                FramesFactory.getTOD(IERSConventions.IERS_2010, false),
-                                                date, zero.add(Constants.WGS84_EARTH_MU));
+                        FramesFactory.getTOD(IERSConventions.IERS_2010, false),
+                        date, zero.add(Constants.WGS84_EARTH_MU));
         FieldSpacecraftState<T> osculatingState = new FieldSpacecraftState<>(orbit, zero.add(1116.2829));
 
         List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
@@ -233,23 +234,23 @@ public class FieldDSSTPropagatorTest {
         int earthOrder  = 36;
         int eccPower    = 4;
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(earthDegree, earthOrder);
+                        GravityFieldFactory.getUnnormalizedProvider(earthDegree, earthOrder);
         final org.orekit.frames.Frame earthFrame =
-                FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame
+                        FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame
         final DSSTForceModel force =
-                new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                 earthDegree, earthOrder, eccPower, earthDegree + eccPower,
-                                 earthDegree, earthOrder, eccPower);
+                        new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                         earthDegree, earthOrder, eccPower, earthDegree + eccPower,
+                                         earthDegree, earthOrder, eccPower);
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(force);
         TimeScale tai = TimeScalesFactory.getTAI();
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, "2015-07-01", tai);
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(
-                zero.add(7120000.0), zero.add(1.0e-3), zero.add(FastMath.toRadians(60.0)),
-                zero.add(FastMath.toRadians(120.0)), zero.add(FastMath.toRadians(47.0)),
-                zero.add(FastMath.toRadians(12.0)),
-                PositionAngle.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
+                        zero.add(7120000.0), zero.add(1.0e-3), zero.add(FastMath.toRadians(60.0)),
+                        zero.add(FastMath.toRadians(120.0)), zero.add(FastMath.toRadians(47.0)),
+                        zero.add(FastMath.toRadians(12.0)),
+                        PositionAngle.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
         FieldSpacecraftState<T> oscuState = FieldDSSTPropagator.computeOsculatingState(state, null, forces);
         Assertions.assertEquals(7119927.097122, oscuState.getA().getReal(), 0.001);
@@ -269,12 +270,12 @@ public class FieldDSSTPropagatorTest {
         FieldAbsoluteDate<T> endDate     = new FieldAbsoluteDate<>(field, "2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(
-                zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
-                PositionAngle.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
+                        zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
+                        PositionAngle.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
         double[][] tol = FieldDSSTPropagator
-                .tolerances(zero.add(1.), orbit);
+                        .tolerances(zero.add(1.), orbit);
         FieldPropagator<T> prop = new FieldDSSTPropagator<>(field,
-                                        new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
+                        new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
         prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
@@ -286,17 +287,17 @@ public class FieldDSSTPropagatorTest {
         TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getPVCoordinates(startDate, eci);
         TimeStampedFieldPVCoordinates<T> expectedPV = orbit.getPVCoordinates(startDate, eci);
         MatcherAssert.assertThat(actualPV.getPosition().toVector3D(),
-                OrekitMatchers.vectorCloseTo(expectedPV.getPosition().toVector3D(), 1.0));
+                                 OrekitMatchers.vectorCloseTo(expectedPV.getPosition().toVector3D(), 1.0));
         MatcherAssert.assertThat(actualPV.getVelocity().toVector3D(),
-                OrekitMatchers.vectorCloseTo(expectedPV.getVelocity().toVector3D(), 1.0));
+                                 OrekitMatchers.vectorCloseTo(expectedPV.getVelocity().toVector3D(), 1.0));
         MatcherAssert.assertThat(ephemeris.getMinDate().durationFrom(startDate).getReal(),
-                OrekitMatchers.closeTo(0, 0));
+                                 OrekitMatchers.closeTo(0, 0));
         MatcherAssert.assertThat(ephemeris.getMaxDate().durationFrom(endDate).getReal(),
-                OrekitMatchers.closeTo(0, 0));
+                                 OrekitMatchers.closeTo(0, 0));
         //test date
         FieldAbsoluteDate<T> date = endDate.shiftedBy(-0.11);
         Assertions.assertEquals(
-                ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0, 0);
+                                ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0, 0);
     }
 
     @Test
@@ -396,29 +397,29 @@ public class FieldDSSTPropagatorTest {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         // GPS Orbit
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 4, 16, 0, 46, 42.400,
-                                                       TimeScalesFactory.getUTC());
+                        TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(26559890.),
-                                                              zero.add(0.0041632),
-                                                              zero.add(FastMath.toRadians(55.2)),
-                                                              zero.add(FastMath.toRadians(315.4985)),
-                                                              zero.add(FastMath.toRadians(130.7562)),
-                                                              zero.add(FastMath.toRadians(44.2377)),
-                                                              PositionAngle.MEAN,
-                                                              FramesFactory.getEME2000(),
-                                                              initDate,
-                                                              zero.add(provider.getMu()));
+                        zero.add(0.0041632),
+                        zero.add(FastMath.toRadians(55.2)),
+                        zero.add(FastMath.toRadians(315.4985)),
+                        zero.add(FastMath.toRadians(130.7562)),
+                        zero.add(FastMath.toRadians(44.2377)),
+                        PositionAngle.MEAN,
+                        FramesFactory.getEME2000(),
+                        initDate,
+                        zero.add(provider.getMu()));
 
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, new FieldSpacecraftState<>(orbit));
         dsstPropagator.addForceModel(new DSSTZonal(provider, 4, 3, 9));
         dsstPropagator.addForceModel(new DSSTTesseral(earthFrame,
-                                                Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                                4, 4, 4, 8, 4, 4, 2));
+                                                      Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                      4, 4, 4, 8, 4, 4, 2));
 
         // 5 days propagation
         final FieldSpacecraftState<T> state = dsstPropagator.propagate(initDate.shiftedBy(5. * 86400.));
@@ -436,8 +437,8 @@ public class FieldDSSTPropagatorTest {
         Assertions.assertEquals(-0.3399607878, state.getHx().getReal(), 5.e-8);
         Assertions.assertEquals(0.3971568634, state.getHy().getReal(), 2.e-6);
         Assertions.assertEquals(140.6375352,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
-                            5.e-3);
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                5.e-3);
     }
 
     @Test
@@ -451,7 +452,7 @@ public class FieldDSSTPropagatorTest {
 
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(2, 0);
+                        GravityFieldFactory.getUnnormalizedProvider(2, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
@@ -464,17 +465,17 @@ public class FieldDSSTPropagatorTest {
 
         // SIRIUS Orbit
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 7, 1, 0, 0, 00.000,
-                                                       TimeScalesFactory.getUTC());
+                        TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(42163393.),
-                                                              zero.add(0.2684),
-                                                              zero.add(FastMath.toRadians(63.435)),
-                                                              zero.add(FastMath.toRadians(270.0)),
-                                                              zero.add(FastMath.toRadians(285.0)),
-                                                              zero.add(FastMath.toRadians(344.0)),
-                                                              PositionAngle.MEAN,
-                                                              FramesFactory.getEME2000(),
-                                                              initDate,
-                                                              zero.add(provider.getMu()));
+                        zero.add(0.2684),
+                        zero.add(FastMath.toRadians(63.435)),
+                        zero.add(FastMath.toRadians(270.0)),
+                        zero.add(FastMath.toRadians(285.0)),
+                        zero.add(FastMath.toRadians(344.0)),
+                        PositionAngle.MEAN,
+                        FramesFactory.getEME2000(),
+                        initDate,
+                        zero.add(provider.getMu()));
 
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, new FieldSpacecraftState<>(orbit));
@@ -499,8 +500,8 @@ public class FieldDSSTPropagatorTest {
         Assertions.assertEquals( 0.1595005111738418, state.getHx().getReal(), 2.e-7);
         Assertions.assertEquals(-0.5968524904937771, state.getHy().getReal(), 5.e-8);
         Assertions.assertEquals(183.9386620425922,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
-                            3.e-2);
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                3.e-2);
     }
 
     @Test
@@ -534,7 +535,7 @@ public class FieldDSSTPropagatorTest {
         final T zero = field.getZero();
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(2, 0);
+                        GravityFieldFactory.getUnnormalizedProvider(2, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 0, 5);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
@@ -553,17 +554,17 @@ public class FieldDSSTPropagatorTest {
 
         // LEO Orbit
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 7, 1, 0, 0, 00.000,
-                                                       TimeScalesFactory.getUTC());
+                        TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7204535.848109440),
-                                                              zero.add(0.0012402238462686),
-                                                              zero.add(FastMath.toRadians(98.74341600466740)),
-                                                              zero.add(FastMath.toRadians(111.1990175076630)),
-                                                              zero.add(FastMath.toRadians(43.32990110790340)),
-                                                              zero.add(FastMath.toRadians(68.66852509725620)),
-                                                              PositionAngle.MEAN,
-                                                              FramesFactory.getEME2000(),
-                                                              initDate,
-                                                              zero.add(provider.getMu()));
+                        zero.add(0.0012402238462686),
+                        zero.add(FastMath.toRadians(98.74341600466740)),
+                        zero.add(FastMath.toRadians(111.1990175076630)),
+                        zero.add(FastMath.toRadians(43.32990110790340)),
+                        zero.add(FastMath.toRadians(68.66852509725620)),
+                        PositionAngle.MEAN,
+                        FramesFactory.getEME2000(),
+                        initDate,
+                        zero.add(provider.getMu()));
 
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, new FieldSpacecraftState<>(orbit));
@@ -587,8 +588,8 @@ public class FieldDSSTPropagatorTest {
         Assertions.assertEquals(0.7757573478894775, state.getHx().getReal(), 5.e-8);
         Assertions.assertEquals(0.8698955648709271, state.getHy().getReal(), 5.e-8);
         Assertions.assertEquals(193.0939742953394,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
-                            2.e-3);
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                2.e-3);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
         Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
@@ -619,17 +620,17 @@ public class FieldDSSTPropagatorTest {
 
         // GEO Orbit
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 9, 16, 0, 0, 00.000,
-                                                       TimeScalesFactory.getUTC());
+                        TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(42166258.),
-                                                              zero.add(0.0001),
-                                                              zero.add(FastMath.toRadians(0.001)),
-                                                              zero.add(FastMath.toRadians(315.4985)),
-                                                              zero.add(FastMath.toRadians(130.7562)),
-                                                              zero.add(FastMath.toRadians(44.2377)),
-                                                              PositionAngle.MEAN,
-                                                              FramesFactory.getGCRF(),
-                                                              initDate,
-                                                              zero.add(provider.getMu()));
+                        zero.add(0.0001),
+                        zero.add(FastMath.toRadians(0.001)),
+                        zero.add(FastMath.toRadians(315.4985)),
+                        zero.add(FastMath.toRadians(130.7562)),
+                        zero.add(FastMath.toRadians(44.2377)),
+                        PositionAngle.MEAN,
+                        FramesFactory.getGCRF(),
+                        initDate,
+                        zero.add(provider.getMu()));
 
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagatorp = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(86400.)));
@@ -654,8 +655,8 @@ public class FieldDSSTPropagatorTest {
         Assertions.assertEquals(-0.5624363171289686e-05, state.getHx().getReal(), 4.e-9);
         Assertions.assertEquals( 0.6618387121369373e-05, state.getHy().getReal(), 3.e-10);
         Assertions.assertEquals(140.3496229467104,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
-                            2.e-4);
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                2.e-4);
     }
 
     @Test
@@ -712,13 +713,13 @@ public class FieldDSSTPropagatorTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(13378000), zero.add(0.05), zero.add(0), zero.add(0), zero.add(FastMath.PI), zero.add(0), PositionAngle.MEAN,
-                                         FramesFactory.getTOD(false),
-                                         new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
-                                         zero.add(nshp.getMu()));
+                        FramesFactory.getTOD(false),
+                        new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
+                        zero.add(nshp.getMu()));
         T period = orbit.getKeplerianPeriod();
         double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-                new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.).getReal());
         FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -752,24 +753,31 @@ public class FieldDSSTPropagatorTest {
 
     }
 
+    /**
+     * Compare classical propagation with a fixed-step handler with ephemeris generation on the same points.
+     */
     @Test
     public void testEphemerisGeneration() {
         doTestEphemerisGeneration(Decimal64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEphemerisGeneration(Field<T> field){
+
+        // GIVEN
+        // -----
+
         Utils.setDataRoot("regular-data:potential/icgem-format");
         final T zero = field.getZero();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(13378000), zero.add(0.05), zero.add(0), zero.add(0), zero.add(FastMath.PI), zero.add(0), PositionAngle.MEAN,
-                                         FramesFactory.getTOD(false),
-                                         new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
-                                         zero.add(nshp.getMu()));
+                        FramesFactory.getTOD(false),
+                        new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
+                        zero.add(nshp.getMu()));
         T period = orbit.getKeplerianPeriod();
         double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-                new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.).getReal());
         FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -787,16 +795,23 @@ public class FieldDSSTPropagatorTest {
         propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
         propagator.setInterpolationGridToMaxTimeGap(zero.add(0.5 * Constants.JULIAN_DAY));
 
+        // WHEN
+        // ----
+
+        // Number of days of propagation
+        // Was 30 days but was reduced for issue 1106
+        final double nDays = 5.;
+
         // direct generation of states
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         final List<FieldSpacecraftState<T>> states = new ArrayList<FieldSpacecraftState<T>>();
         propagator.setStepHandler(zero.add(600), currentState -> states.add(currentState));
-        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        propagator.propagate(orbit.getDate().shiftedBy(nDays * Constants.JULIAN_DAY));
 
         // ephemeris generation
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
-        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        propagator.propagate(orbit.getDate().shiftedBy(nDays * Constants.JULIAN_DAY));
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         T maxError = zero;
@@ -806,7 +821,12 @@ public class FieldDSSTPropagatorTest {
                                                    fromEphemeris.getPVCoordinates().getPosition());
             maxError = FastMath.max(maxError, error);
         }
-        Assertions.assertEquals(0.0, maxError.getReal(), 1.0e-10);
+
+        // THEN
+        // ----
+
+        // Check on orbits' distances was 1e-10 m but was reduced during issue 1106
+        Assertions.assertEquals(0.0, maxError.getReal(), Precision.SAFE_MIN);
     }
 
     @Test
@@ -828,7 +848,7 @@ public class FieldDSSTPropagatorTest {
         FieldDSSTPropagator<T> prop = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
 
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(4, 0);
+                        GravityFieldFactory.getUnnormalizedProvider(4, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel zonal    = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
@@ -866,9 +886,10 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(1559.1,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()).getReal(),
-                            1.0);
+                                FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
+                                                  osculatingState.getPVCoordinates().getPosition()).getReal(),
+                                1.0);
+
     }
 
     @Test
@@ -898,9 +919,9 @@ public class FieldDSSTPropagatorTest {
 
         Assertions.assertEquals(meanState.getA().getReal(), computedMeanState.getA().getReal(), 2.0e-8);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                             computedMeanState.getPVCoordinates().getPosition()).getReal(),
-                            2.0e-8);
+                                FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
+                                                 computedMeanState.getPVCoordinates().getPosition()).getReal(),
+                                2.0e-8);
     }
 
     @Test
@@ -914,13 +935,13 @@ public class FieldDSSTPropagatorTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(4, 4);
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(13378000), zero.add(0.05), zero.add(0), zero.add(0), zero.add(FastMath.PI), zero.add(0), PositionAngle.MEAN,
-                                         FramesFactory.getTOD(false),
-                                         new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
-                                         zero.add(nshp.getMu()));
+                        FramesFactory.getTOD(false),
+                        new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
+                        zero.add(nshp.getMu()));
         T period = orbit.getKeplerianPeriod();
         double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-                new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10).getReal());
         FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -976,16 +997,16 @@ public class FieldDSSTPropagatorTest {
 
         // Initialize the DSST propagator with only J2 perturbation
         FieldOrbit<T> orb = new FieldKeplerianOrbit<>(new TimeStampedFieldPVCoordinates<>(new FieldAbsoluteDate<>(field, "1992-10-08T15:20:38.821",
-                                                                                     TimeScalesFactory.getUTC()),
-                                                                    new FieldVector3D<>(zero.add(5392808.809823), zero.add(-4187618.3357927715), zero.add(-44206.638015847195)),
-                                                                    new FieldVector3D<>(zero.add(2337.4472786270794), zero.add(2474.0146611860464), zero.add(6778.507766114648)),
-                                                                    FieldVector3D.getZero(field)),
-                                       FramesFactory.getTOD(false), zero.add(earthMu));
+                        TimeScalesFactory.getUTC()),
+                        new FieldVector3D<>(zero.add(5392808.809823), zero.add(-4187618.3357927715), zero.add(-44206.638015847195)),
+                        new FieldVector3D<>(zero.add(2337.4472786270794), zero.add(2474.0146611860464), zero.add(6778.507766114648)),
+                        FieldVector3D.getZero(field)),
+                        FramesFactory.getTOD(false), zero.add(earthMu));
         final FieldSpacecraftState<T> ss = new FieldSpacecraftState<>(orb);
         final UnnormalizedSphericalHarmonicsProvider provider =
-              GravityFieldFactory.getUnnormalizedProvider(earthAe, earthMu, TideSystem.UNKNOWN,
-                                                          new double[][] { { 0.0 }, { 0.0 }, { -earthJ2 } },
-                                                          new double[][] { { 0.0 }, { 0.0 }, { 0.0 } });
+                        GravityFieldFactory.getUnnormalizedProvider(earthAe, earthMu, TideSystem.UNKNOWN,
+                                                                    new double[][] { { 0.0 }, { 0.0 }, { -earthJ2 } },
+                                                                    new double[][] { { 0.0 }, { 0.0 }, { 0.0 } });
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
@@ -1017,20 +1038,19 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assertions.assertEquals(734.3,
-                            FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                              osculatingState.getPVCoordinates().getPosition()).getReal(),
-                            1.0);
+                                FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
+                                                  osculatingState.getPVCoordinates().getPosition()).getReal(),
+                                1.0);
 
         final FieldSpacecraftState<T> computedMeanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, forces);
         Assertions.assertEquals(734.3,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedMeanState.getPVCoordinates().getPosition()).getReal(),
-                            1.0);
-
+                                FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
+                                                  computedMeanState.getPVCoordinates().getPosition()).getReal(),
+                                1.0);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(computedMeanState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()).getReal(),
-                            5.0e-6);
+                                FieldVector3D.distance(computedMeanState.getPVCoordinates().getPosition(),
+                                                  meanState.getPVCoordinates().getPosition()).getReal(),
+                                5.0e-6);
 
     }
 
@@ -1068,15 +1088,15 @@ public class FieldDSSTPropagatorTest {
 
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         Assertions.assertEquals(0.522,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              meanState.getPVCoordinates().getPosition()).getReal(),
-                            0.001);
+                                FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
+                                                  meanState.getPVCoordinates().getPosition()).getReal(),
+                                0.001);
 
         final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
-                                              computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
-                            5.0e-6);
+                                FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
+                                                  computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
+                                5.0e-6);
 
     }
 
@@ -1217,7 +1237,7 @@ public class FieldDSSTPropagatorTest {
      */
     @Test
     public void testIssue672() {
-        doTestIssue672(Binary64Field.getInstance());
+        doTestIssue672(Decimal64Field.getInstance());
     }
     
     private <T extends CalculusFieldElement<T>> void doTestIssue672(final Field<T> field) {
@@ -1263,17 +1283,17 @@ public class FieldDSSTPropagatorTest {
         final T zero = field.getZero();
         // No shadow at this date
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
-                                                                                  TimeScalesFactory.getUTC());
+                        TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(42164000),
-                                                                zero.add(10e-3),
-                                                                zero.add(10e-3),
-                                                                zero.add(FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3)),
-                                                                zero.add(FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3)),
-                                                                zero.add(0.1),
-                                                                PositionAngle.TRUE,
-                                                                FramesFactory.getEME2000(),
-                                                                initDate,
-                                                                zero.add(3.986004415E14));
+                        zero.add(10e-3),
+                        zero.add(10e-3),
+                        zero.add(FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3)),
+                        zero.add(FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3)),
+                        zero.add(0.1),
+                        PositionAngle.TRUE,
+                        FramesFactory.getEME2000(),
+                        initDate,
+                        zero.add(3.986004415E14));
         return new FieldSpacecraftState<>(orbit);
     }
 
@@ -1284,9 +1304,9 @@ public class FieldDSSTPropagatorTest {
         // Spring equinoxe 21st mars 2003 1h00m
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         return new FieldSpacecraftState<>(new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                        FramesFactory.getEME2000(),
-                                                        initDate,
-                                                        zero.add(3.986004415E14)));
+                        FramesFactory.getEME2000(),
+                        initDate,
+                        zero.add(3.986004415E14)));
     }
 
     private <T extends CalculusFieldElement<T>> FieldDSSTPropagator<T> setDSSTProp(Field<T> field,
@@ -1355,13 +1375,13 @@ public class FieldDSSTPropagatorTest {
         protected double[] getLLimits(SpacecraftState state,
                                       AuxiliaryElements auxiliaryElements) {
             return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
-                                   FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0) };
+                FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0) };
         }
 
         /** {@inheritDoc} */
         @Override
         protected <T extends CalculusFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
-                                                                 FieldAuxiliaryElements<T> auxiliaryElements) {
+                                                                     FieldAuxiliaryElements<T> auxiliaryElements) {
             final Field<T> field = state.getDate().getField();
             final T zero = field.getZero();
             final T[] tab = MathArrays.buildArray(field, 2);
@@ -1441,7 +1461,7 @@ public class FieldDSSTPropagatorTest {
         // Spring equinoxe 21st mars 2003 1h00m
         final FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final FieldCartesianOrbit<T> osculatingOrbit = new FieldCartesianOrbit<>(new FieldPVCoordinates<>(position, velocity), FramesFactory.getTOD(IERSConventions.IERS_1996, false),
-                                                                  initialDate, zero.add(Constants.WGS84_EARTH_MU));
+                        initialDate, zero.add(Constants.WGS84_EARTH_MU));
         // Adaptive step integrator
         // with a minimum step of 0.001 and a maximum step of 1000
         double minStep = 0.001;
