@@ -477,12 +477,12 @@ public class PropagatorsParallelizer {
 
         /** Clear existing instances of MultiplePropagatorsHandler in a monitored propagator.
          * <p>
-         * Remove former instances of "MultiplePropagatorsHandler" from step handlers multiplexer.
+         * Removes former instances of "MultiplePropagatorsHandler" from step handlers multiplexer.
          * <p>
          * This is done to avoid propagation getting stuck after several calls to PropagatorsParallelizer.propagate(...)
          * <p>
-         * See {@ref https://gitlab.orekit.org/orekit/orekit/-/issues/1105}
-         * @param propagator monitored propagator whose MultiplePropagatorsHandlers must be clared
+         * See issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1105">1105</a>.
+         * @param propagator monitored propagator whose MultiplePropagatorsHandlers must be cleared
          */
         private void clearMultiplePropagatorsHandler(final Propagator propagator) {
 
@@ -494,9 +494,9 @@ public class PropagatorsParallelizer {
                     existingMultiplePropagatorsHandler.add(handler);
                 }
             }
-            // Then, clear all MultiplePropagatorsHandler instances from multiplexer
-            // This is done in two steps because method "remove" already loops on OrekitStepHandler
-            // Leading to a ConcurrentModificationException if attempting to do everything in a single loop
+            // Then, clear all MultiplePropagatorsHandler instances from multiplexer.
+            // This is done in two steps because method "StepHandlerMultiplexer.remove(...)" already loops on the OrekitStepHandlers,
+            // leading to a ConcurrentModificationException if attempting to do everything in a single loop
             for (final OrekitStepHandler handler : existingMultiplePropagatorsHandler) {
                 multiplexer.remove(handler);
             }
