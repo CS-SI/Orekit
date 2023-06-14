@@ -30,7 +30,6 @@ import java.util.TreeMap;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldGradient;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -888,8 +887,9 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final Gradient jacobi =
-                        JacobiPolynomials.getValue(l, v, w, Gradient.variable(1, 0, auxiliaryElements.getGamma()));
+//                final Gradient jacobi =
+//                        JacobiPolynomials.getValue(l, v, w, Gradient.variable(1, 0, auxiliaryElements.getGamma()));
+                final double[] jacobi = JacobiPolynomials.getValueAndDerivatives(l, v, w, auxiliaryElements.getGamma());
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -897,7 +897,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                 // Common factors from expansion of equations 3.3-4
                 final double cf_0      = roaPow[n] * Im * vMNS;
-                final double cf_1      = cf_0 * gaMNS * jacobi.getValue();
+                final double cf_1      = cf_0 * gaMNS * jacobi[0]; //jacobi.getValue();
                 final double cf_2      = cf_1 * kJNS;
                 final double gcPhs     = gMSJ * cnm + hMSJ * snm;
                 final double gsMhc     = gMSJ * snm - hMSJ * cnm;
@@ -905,7 +905,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
                 final double dUdaCoef  = (n + 1) * cf_2;
                 final double dUdlCoef  = j * cf_2;
-                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getGradient()[0]);
+                //final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getGradient()[0]);
+                final double dUdGaCoef = cf_0 * kJNS * (jacobi[0] * dGaMNS + gaMNS * jacobi[1]);
 
                 // dU / da components
                 dUdaCos  += dUdaCoef * gcPhs;

@@ -41,10 +41,70 @@ public class JacobiPolynomials {
 
     /** Storage map. */
     private static final Map<JacobiKey, List<PolynomialFunction>> MAP =
-            new HashMap<JacobiPolynomials.JacobiKey, List<PolynomialFunction>>();
+                    new HashMap<JacobiPolynomials.JacobiKey, List<PolynomialFunction>>();
 
     /** Private constructor as class is a utility. */
     private JacobiPolynomials() {
+    }
+
+    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
+     * <p>
+     * This method is guaranteed to be thread-safe
+     * </p>
+     * @param l degree of the polynomial
+     * @param v v value
+     * @param w w value
+     * @param x x value
+     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
+     * @since 10.2
+     */
+    public static double[] getValueAndDerivatives(final int l, final int v, final int w, final double x) {
+
+        final List<PolynomialFunction> polyList;
+        synchronized (MAP) {
+
+            final JacobiKey key = new JacobiKey(v, w);
+
+            // Check the existence of the corresponding key in the map.
+            if (!MAP.containsKey(key)) {
+                MAP.put(key, new ArrayList<PolynomialFunction>());
+            }
+
+            polyList = MAP.get(key);
+
+        }
+
+        final PolynomialFunction polynomial;
+        synchronized (polyList) {
+            // If the l-th degree polynomial has not been computed yet, the polynomials
+            // up to this degree are computed.
+            for (int degree = polyList.size(); degree <= l; degree++) {
+                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
+            }
+            polynomial = polyList.get(l);
+        }
+
+        // compute value and derivative
+        return getValueAndDerivatives(polynomial, x);
+    }
+
+    private static double[] getValueAndDerivatives(final PolynomialFunction polynomial, final double x) {
+
+        // FIXME: to be checked and optimized
+        final double[] coefficients = polynomial.getCoefficients();
+
+        final int degree = polynomial.degree();
+
+        double value      = coefficients[degree];
+        double derivative = value * degree;
+        for (int j = degree - 1; j >= 1; j--) {
+            final double coef = coefficients[j];
+            value        = value      * x +  coef;
+            derivative   = derivative * x +  coef * j;
+        }
+        value = value * x + coefficients[0];
+        return new double[] {value, derivative};
+
     }
 
     /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
@@ -86,7 +146,6 @@ public class JacobiPolynomials {
 
         // compute value and derivative
         return polynomial.value(gamma);
-
     }
 
     /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
@@ -102,7 +161,7 @@ public class JacobiPolynomials {
      * @since 10.2
      */
     public static <T extends CalculusFieldElement<T>> FieldGradient<T> getValue(final int l, final int v, final int w,
-                                                                            final FieldGradient<T> gamma) {
+                                                                                final FieldGradient<T> gamma) {
 
         final List<PolynomialFunction> polyList;
         synchronized (MAP) {

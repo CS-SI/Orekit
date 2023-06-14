@@ -29,7 +29,6 @@ import java.util.SortedMap;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
@@ -1536,8 +1535,11 @@ public class DSSTThirdBody implements DSSTForceModel {
             //-b<sup>|j-s|</sup>
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
-            final Gradient jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, Gradient.variable(1, 0, context.getX()));
+//            final Gradient jac =
+//                    JacobiPolynomials.getValue(l, absJmS, absJpS, Gradient.variable(1, 0, context.getX()));
+            // Jacobi polynomial value (0) and first-order derivative (1)
+            final double[] jac =
+                            JacobiPolynomials.getValueAndDerivatives(l, absJmS, absJpS, context.getX());
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);
@@ -1554,11 +1556,14 @@ public class DSSTThirdBody implements DSSTForceModel {
             final double dcoef2dk = dcoef2db * dbdk;
 
             // the jacobi polynomial value
-            final double jacobi = jac.getValue();
+            // final double jacobi = jac.getValue();
+            final double jacobi = jac[0];
             // the derivative of the Jacobi polynomial by h
-            final double djacobidh = jac.getGradient()[0] * context.getHXXX();
+            //final double djacobidh = jac.getGradient()[0] * context.getHXXX();
+            final double djacobidh = jac[1] * context.getHXXX();
             // the derivative of the Jacobi polynomial by k
-            final double djacobidk = jac.getGradient()[0] * context.getKXXX();
+            //final double djacobidk = jac.getGradient()[0] * context.getKXXX();
+            final double djacobidk = jac[1] * context.getKXXX();
 
             //group the above coefficients to limit the mathematical operations
             final double term1 = factCoef * coef1 * coef2;
