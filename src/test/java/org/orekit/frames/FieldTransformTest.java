@@ -34,11 +34,13 @@ import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -120,9 +122,13 @@ public class FieldTransformTest {
                 FieldPVCoordinates<T> pv = t.transformPVCoordinates(initPV.shiftedBy(dt + i * h));
                 sample.add(new TimeStampedFieldPVCoordinates<>(t.getDate(), pv.getPosition(), pv.getVelocity(), FieldVector3D.getZero(field)));
             }
-            FieldPVCoordinates<T> rebuiltPV = TimeStampedFieldPVCoordinates.interpolate(FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(dt),
-                                                                                        CartesianDerivativesFilter.USE_PV,
-                                                                                        sample);
+
+            // create interpolator
+            final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                    new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), CartesianDerivativesFilter.USE_PV);
+
+            FieldPVCoordinates<T> rebuiltPV = interpolator.interpolate(FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(dt),
+                                                                       sample);
 
             checkVector(rebuiltPV.getPosition(),     transformedPV.getPosition(),     3.0e-15);
             checkVector(rebuiltPV.getVelocity(),     transformedPV.getVelocity(),     2.0e-15);

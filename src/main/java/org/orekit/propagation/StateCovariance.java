@@ -19,7 +19,6 @@ package org.orekit.propagation;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -51,7 +50,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 public class StateCovariance implements TimeStamped {
 
     /** State dimension. */
-    private static final int STATE_DIMENSION = 6;
+    public static final int STATE_DIMENSION = 6;
 
     /** Default position angle for covariance expressed in Cartesian elements. */
     private static final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.TRUE;
@@ -691,15 +690,13 @@ public class StateCovariance implements TimeStamped {
      * @param dt time difference between the two orbits
      * @return the state transition matrix used to shift the covariance matrix
      */
-    private RealMatrix getStm(final Orbit initialOrbit, final double dt) {
+    public static RealMatrix getStm(final Orbit initialOrbit, final double dt) {
 
         // initialize the STM
         final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION);
 
         // State transition matrix using Keplerian contribution only
-        final double mu           = initialOrbit.getMu();
-        final double sma          = initialOrbit.getA();
-        final double contribution = -1.5 * dt * FastMath.sqrt(mu / FastMath.pow(sma, 5));
+        final double contribution = initialOrbit.getMeanAnomalyDotWrtA() * dt;
         stm.setEntry(5, 0, contribution);
 
         // Return

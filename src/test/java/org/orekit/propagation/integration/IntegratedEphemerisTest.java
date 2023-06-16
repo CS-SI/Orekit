@@ -28,6 +28,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.CelestialBodyPointed;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
@@ -43,10 +44,10 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-
 
 public class IntegratedEphemerisTest {
 
@@ -172,7 +173,7 @@ public class IntegratedEphemerisTest {
                                    addAdditionalState(provider1.getName(), new double[provider1.getDimension()]).
                                    addAdditionalState(provider2.getName(), new double[provider2.getDimension()]));
         propagator.propagate(finalDate);
-        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        IntegratedEphemeris ephemeris = (IntegratedEphemeris) generator.getGeneratedEphemeris();
 
         for (double dt = 0; dt < ephemeris.getMaxDate().durationFrom(ephemeris.getMinDate()); dt += 0.1) {
             SpacecraftState state = ephemeris.propagate(ephemeris.getMinDate().shiftedBy(dt));
@@ -180,6 +181,24 @@ public class IntegratedEphemerisTest {
             checkState(dt, state, provider2);
         }
 
+        // Test getters
+        Assertions.assertEquals(SpacecraftState.DEFAULT_MASS, ephemeris.getMass(initialOrbit.getDate()));
+        assertOrbit(initialOrbit, ephemeris.propagateOrbit(initialOrbit.getDate()), 1e-8);
+
+        // Test error thrown when trying to reset intermediate state
+        Exception thrown = Assertions.assertThrows(OrekitException.class,
+                                                   () -> ephemeris.resetIntermediateState(new SpacecraftState(initialOrbit), true));
+        Assertions.assertEquals(
+                "reset state not allowed", thrown.getMessage());
+
+    }
+
+    public static void assertOrbit(final Orbit expected, final Orbit actual, final double epsilon) {
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getType(), actual.getType());
+        AbsolutePVCoordinatesTest.assertPV(expected.getPVCoordinates(expected.getFrame()),
+                                           actual.getPVCoordinates(expected.getFrame()),
+                                           epsilon);
     }
 
     private void checkState(final double dt, final SpacecraftState state, final DerivativesProvider provider) {

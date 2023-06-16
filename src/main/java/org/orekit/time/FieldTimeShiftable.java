@@ -24,7 +24,7 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @since 9.0
  */
-public interface FieldTimeShiftable<T extends FieldTimeInterpolable<T, KK>, KK extends CalculusFieldElement<KK>> {
+public interface FieldTimeShiftable<T extends FieldTimeShiftable<T, KK>, KK extends CalculusFieldElement<KK>> {
 
     /** Get a time-shifted instance.
      * @param dt time shift in seconds

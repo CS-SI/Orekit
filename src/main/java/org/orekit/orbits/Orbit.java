@@ -32,7 +32,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -63,8 +62,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements TimeStamped, TimeShiftable<Orbit>, TimeInterpolable<Orbit>,
-               Serializable, PVCoordinatesProvider {
+    implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 438733454597999578L;
@@ -413,6 +411,13 @@ public abstract class Orbit
     public double getKeplerianMeanMotion() {
         final double absA = FastMath.abs(getA());
         return FastMath.sqrt(mu / absA) / absA;
+    }
+
+    /** Get the derivative of the mean anomaly with respect to the semi major axis.
+     * @return derivative of the mean anomaly with respect to the semi major axis
+     */
+    public double getMeanAnomalyDotWrtA() {
+        return -1.5 * getKeplerianMeanMotion() / getA();
     }
 
     /** Get the date of orbital parameters.

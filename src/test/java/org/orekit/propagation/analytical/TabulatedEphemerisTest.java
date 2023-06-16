@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -36,9 +37,11 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
@@ -102,8 +105,10 @@ public class TabulatedEphemerisTest {
                                                         TimeScalesFactory.getUTC());
         double deltaT = finalDate.durationFrom(initDate);
 
+        final Frame frame =  FramesFactory.getEME2000();
+
         Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
-                                            FramesFactory.getEME2000(), initDate, mu);
+                                            frame, initDate, mu);
 
         int nbIntervals = 720;
         EcksteinHechlerPropagator eck =
@@ -134,12 +139,19 @@ public class TabulatedEphemerisTest {
         }
 
         try {
-            new Ephemeris(tab, nbIntervals + 2);
+            // Create interpolator
+            final int interpolationPoints = nbIntervals + 2;
+            final TimeInterpolator<SpacecraftState> interpolator =
+                    new SpacecraftStateInterpolator(interpolationPoints, frame, frame);
+
+            new Ephemeris(tab, interpolator);
             Assertions.fail("an exception should have been thrown");
-        } catch (MathIllegalArgumentException miae) {
+        } catch (OrekitIllegalArgumentException oiae) {
             // expected
         }
-        Ephemeris te = new Ephemeris(tab, 2);
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(2, frame, frame);
+        Ephemeris te = new Ephemeris(tab, interpolator);
 
         Assertions.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
         Assertions.assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
@@ -190,7 +202,9 @@ public class TabulatedEphemerisTest {
         Vector3D v3 = new Vector3D(-0.35873348682393E+04, -0.36248828501784E+04, -0.13660045394149E+03);
         SpacecraftState s3 = new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(p3, v3), frame, t3, mu));
 
-        Ephemeris ephem= new Ephemeris(Arrays.asList(s1, s2, s3), 2);
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(2, frame, frame);
+        Ephemeris ephem= new Ephemeris(Arrays.asList(s1, s2, s3), interpolator);
 
         AbsoluteDate tA = new AbsoluteDate(t0, 24 * 60);
         Vector3D pA = ephem.propagate(tA).getPosition(frame);
@@ -239,7 +253,10 @@ public class TabulatedEphemerisTest {
         // create ephemeris with 2 arbitrary points
         SpacecraftState state = new SpacecraftState(
                 new KeplerianOrbit(1e9, 0.01, 1, 1, 1, 1, PositionAngle.TRUE, frame, date, mu));
-        Ephemeris ephem = new Ephemeris(Arrays.asList(state, state.shiftedBy(1)), 2);
+
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(2, frame, frame);
+        Ephemeris ephem = new Ephemeris(Arrays.asList(state, state.shiftedBy(1)), interpolator);
 
         // action + verify
         Assertions.assertSame(ephem.getFrame(), frame);

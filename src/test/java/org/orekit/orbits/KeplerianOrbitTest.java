@@ -37,7 +37,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -49,8 +48,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
@@ -949,111 +946,6 @@ public class KeplerianOrbitTest {
                           32 * (oP3h.getAnomaly(type)                   - oM3h.getAnomaly(type)) -
                          168 * (oP2h.getAnomaly(type)                   - oM2h.getAnomaly(type)) +
                          672 * (oP1h.getAnomaly(type)                   - oM1h.getAnomaly(type))) / (840 * h);
-
-    }
-
-    @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(true,
-                            397, 4.01, 4.75e-4, 1.28e-7,
-                            2159, 1.05e7, 1.19e-3, 0.773);
-    }
-
-    @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(false,
-                            397, 62.0, 4.75e-4, 2.87e-6,
-                            2159, 79365, 1.19e-3, 3.89e-3);
-    }
-
-    private void doTestInterpolation(boolean useDerivatives,
-                                     double shiftPositionErrorWithin, double interpolationPositionErrorWithin,
-                                     double shiftEccentricityErrorWithin, double interpolationEccentricityErrorWithin,
-                                     double shiftPositionErrorSlightlyPast, double interpolationPositionErrorSlightlyPast,
-                                     double shiftEccentricityErrorSlightlyPast, double interpolationEccentricityErrorSlightlyPast)
-        {
-
-        final double ehMu  = 3.9860047e14;
-        final double ae  = 6.378137e6;
-        final double c20 = -1.08263e-3;
-        final double c30 = 2.54e-6;
-        final double c40 = 1.62e-6;
-        final double c50 = 2.3e-7;
-        final double c60 = -5.5e-7;
-
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
-        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
-        final KeplerianOrbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
-                                                               FramesFactory.getEME2000(), date, ehMu);
-
-        EcksteinHechlerPropagator propagator =
-                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<Orbit> sample = new ArrayList<Orbit>();
-        for (double dt = 0; dt < 300.0; dt += 60.0) {
-            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be slightly better than Keplerian shift
-        // the relative bad behaviour here is due to eccentricity, which cannot be
-        // accurately interpolated with a polynomial in this case
-        double maxShiftPositionError = 0;
-        double maxInterpolationPositionError = 0;
-        double maxShiftEccentricityError = 0;
-        double maxInterpolationEccentricityError = 0;
-        for (double dt = 0; dt < 241.0; dt += 1.0) {
-            AbsoluteDate t         = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shiftedP      = initialOrbit.shiftedBy(dt).getPosition();
-            Vector3D interpolatedP = initialOrbit.interpolate(t, sample).getPosition();
-            Vector3D propagatedP   = propagator.propagate(t).getPosition();
-            double shiftedE        = initialOrbit.shiftedBy(dt).getE();
-            double interpolatedE   = initialOrbit.interpolate(t, sample).getE();
-            double propagatedE     = propagator.propagate(t).getE();
-            maxShiftPositionError = FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
-            maxInterpolationPositionError = FastMath.max(maxInterpolationPositionError, interpolatedP.subtract(propagatedP).getNorm());
-            maxShiftEccentricityError = FastMath.max(maxShiftEccentricityError, FastMath.abs(shiftedE - propagatedE));
-            maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
-        }
-        Assertions.assertEquals(shiftPositionErrorWithin,             maxShiftPositionError,             0.01 * shiftPositionErrorWithin);
-        Assertions.assertEquals(interpolationPositionErrorWithin,     maxInterpolationPositionError,     0.01 * interpolationPositionErrorWithin);
-        Assertions.assertEquals(shiftEccentricityErrorWithin,         maxShiftEccentricityError,         0.01 * shiftEccentricityErrorWithin);
-        Assertions.assertEquals(interpolationEccentricityErrorWithin, maxInterpolationEccentricityError, 0.01 * interpolationEccentricityErrorWithin);
-
-        // slightly past sample end, bad eccentricity interpolation shows up
-        // (in this case, interpolated eccentricity exceeds 1.0 btween 1900
-        // and 1910s, while semi-majaxis remains positive, so this is not
-        // even a proper hyperbolic orbit...)
-        maxShiftPositionError = 0;
-        maxInterpolationPositionError = 0;
-        maxShiftEccentricityError = 0;
-        maxInterpolationEccentricityError = 0;
-        for (double dt = 240; dt < 600; dt += 1.0) {
-            AbsoluteDate t         = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shiftedP      = initialOrbit.shiftedBy(dt).getPosition();
-            Vector3D interpolatedP = initialOrbit.interpolate(t, sample).getPosition();
-            Vector3D propagatedP   = propagator.propagate(t).getPosition();
-            double shiftedE        = initialOrbit.shiftedBy(dt).getE();
-            double interpolatedE   = initialOrbit.interpolate(t, sample).getE();
-            double propagatedE     = propagator.propagate(t).getE();
-            maxShiftPositionError = FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
-            maxInterpolationPositionError = FastMath.max(maxInterpolationPositionError, interpolatedP.subtract(propagatedP).getNorm());
-            maxShiftEccentricityError = FastMath.max(maxShiftEccentricityError, FastMath.abs(shiftedE - propagatedE));
-            maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
-        }
-        Assertions.assertEquals(shiftPositionErrorSlightlyPast,             maxShiftPositionError,             0.01 * shiftPositionErrorSlightlyPast);
-        Assertions.assertEquals(interpolationPositionErrorSlightlyPast,     maxInterpolationPositionError,     0.01 * interpolationPositionErrorSlightlyPast);
-        Assertions.assertEquals(shiftEccentricityErrorSlightlyPast,         maxShiftEccentricityError,         0.01 * shiftEccentricityErrorSlightlyPast);
-        Assertions.assertEquals(interpolationEccentricityErrorSlightlyPast, maxInterpolationEccentricityError, 0.01 * interpolationEccentricityErrorSlightlyPast);
 
     }
 

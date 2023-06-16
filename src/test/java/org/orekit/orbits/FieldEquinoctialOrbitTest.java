@@ -37,15 +37,12 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
@@ -123,22 +120,6 @@ public class FieldEquinoctialOrbitTest {
     @Test
     public void testJacobianFinitedifferences() {
         doTestJacobianFinitedifferences(Binary64Field.getInstance());
-    }
-
-    @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(Binary64Field.getInstance(), true,
-                            397, 1.17e-8,
-                            610, 4.49e-6,
-                            4870, 115);
-    }
-
-    @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(Binary64Field.getInstance(), false,
-                            397, 0.0372,
-                            610.0, 1.23,
-                            4879, 8871);
     }
 
     @Test
@@ -984,91 +965,6 @@ public class FieldEquinoctialOrbitTest {
                          zero.add( 32).multiply(oP3h.getL(type)        .subtract(oM3h.getL(type)))).subtract(
                          zero.add(168).multiply(oP2h.getL(type)        .subtract(oM2h.getL(type)))).add(
                          zero.add(672).multiply(oP1h.getL(type)        .subtract(oM1h.getL(type))))).divide(h.multiply(840));
-
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field, boolean useDerivatives,
-                                                                     double shiftErrorWithin, double interpolationErrorWithin,
-                                                                     double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
-                                                                     double shiftErrorFarPast, double interpolationErrorFarPast)
-        {
-
-        T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-
-        final double ehMu = 3.9860047e14;
-        final double ae   = 6.378137e6;
-        final double c20  = -1.08263e-3;
-        final double c30  =  2.54e-6;
-        final double c40  =  1.62e-6;
-        final double c50  =  2.3e-7;
-        final double c60  =  -5.5e-7;
-
-        date = date.shiftedBy(584.);
-        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
-        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-        final FieldEquinoctialOrbit<T> initialOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                                  FramesFactory.getEME2000(), date, zero.add(ehMu));
-
-        FieldEcksteinHechlerPropagator<T> propagator =
-                new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, zero.add(ehMu), c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<FieldOrbit<T>> sample = new ArrayList<FieldOrbit<T>>();
-        for (double dt = 0; dt < 300.0; dt += 60.0) {
-            FieldOrbit<T> orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                T[] stateVector = MathArrays.buildArray(field, 6);
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be much better than Keplerian shift
-        double maxShiftError = 0;
-        double maxInterpolationError = 0;
-        for (T dt = zero; dt.getReal() < 241.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt.getReal()).getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
-        }
-        Assertions.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
-        Assertions.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
-
-        // slightly past sample end, interpolation should quickly increase, but remain reasonable
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (T dt = zero.add(240); dt.getReal() < 300.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
-        }
-        Assertions.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
-        Assertions.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError, 0.01 * interpolationErrorSlightlyPast);
-
-        // far past sample end, interpolation should become really wrong
-        // (in this test case, break even occurs at around 863 seconds, with a 3.9 km error)
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (T dt = zero.add(300); dt.getReal() < 1000; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
-        }
-        Assertions.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
-        Assertions.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 

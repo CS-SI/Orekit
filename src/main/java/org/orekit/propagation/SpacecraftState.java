@@ -17,13 +17,7 @@
 package org.orekit.propagation;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -40,7 +34,6 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -74,13 +67,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  */
 public class SpacecraftState
-    implements TimeStamped, TimeShiftable<SpacecraftState>, TimeInterpolable<SpacecraftState>, Serializable {
+    implements TimeStamped, TimeShiftable<SpacecraftState>, Serializable {
+
+    /** Default mass. */
+    public static final double DEFAULT_MASS = 1000.0;
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20211119L;
-
-    /** Default mass. */
-    private static final double DEFAULT_MASS = 1000.0;
 
     /**
      * tolerance on date comparison in {@link #checkConsistency(Orbit, Attitude)}. 100 ns
@@ -549,120 +542,6 @@ public class SpacecraftState
         }
 
         return shifted;
-
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The additional states that are interpolated are the ones already present
-     * in the instance. The sample instances must therefore have at least the same
-     * additional states has the instance. They may have more additional states,
-     * but the extra ones will be ignored.
-     * </p>
-     * <p>
-     * The instance and all the sample instances <em>must</em> be based on similar
-     * trajectory data, i.e. they must either all be based on orbits or all be based
-     * on absolute position-velocity-acceleration. Any inconsistency will trigger
-     * an {@link OrekitIllegalStateException}.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * @exception OrekitIllegalStateException if some instances are not based on
-     * similar trajectory data
-     */
-    public SpacecraftState interpolate(final AbsoluteDate date,
-                                       final Stream<SpacecraftState> sample) {
-
-        // prepare interpolators
-        final List<Orbit> orbits;
-        final List<AbsolutePVCoordinates> absPvas;
-        if (isOrbitDefined()) {
-            orbits  = new ArrayList<Orbit>();
-            absPvas = null;
-        } else {
-            orbits  = null;
-            absPvas = new ArrayList<AbsolutePVCoordinates>();
-        }
-        final List<Attitude> attitudes = new ArrayList<>();
-        final HermiteInterpolator massInterpolator = new HermiteInterpolator();
-        final List<DoubleArrayDictionary.Entry> addionalEntries = additional.getData();
-        final Map<String, HermiteInterpolator> additionalInterpolators =
-                new HashMap<String, HermiteInterpolator>(addionalEntries.size());
-        for (final DoubleArrayDictionary.Entry entry : addionalEntries) {
-            additionalInterpolators.put(entry.getKey(), new HermiteInterpolator());
-        }
-        final List<DoubleArrayDictionary.Entry> additionalDotEntries = additionalDot.getData();
-        final Map<String, HermiteInterpolator> additionalDotInterpolators =
-                new HashMap<String, HermiteInterpolator>(additionalDotEntries.size());
-        for (final DoubleArrayDictionary.Entry entry : additionalDotEntries) {
-            additionalDotInterpolators.put(entry.getKey(), new HermiteInterpolator());
-        }
-
-        // extract sample data
-        sample.forEach(state -> {
-            final double deltaT = state.getDate().durationFrom(date);
-            if (isOrbitDefined()) {
-                orbits.add(state.getOrbit());
-            } else {
-                absPvas.add(state.getAbsPVA());
-            }
-            attitudes.add(state.getAttitude());
-            massInterpolator.addSamplePoint(deltaT,
-                                            new double[] {
-                                                state.getMass()
-                                                });
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-            }
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalDotInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalStateDerivative(entry.getKey()));
-            }
-
-        });
-
-        // perform interpolations
-        final Orbit interpolatedOrbit;
-        final AbsolutePVCoordinates interpolatedAbsPva;
-        if (isOrbitDefined()) {
-            interpolatedOrbit  = orbit.interpolate(date, orbits);
-            interpolatedAbsPva = null;
-        } else {
-            interpolatedOrbit  = null;
-            interpolatedAbsPva = absPva.interpolate(date, absPvas);
-        }
-        final Attitude interpolatedAttitude = attitude.interpolate(date, attitudes);
-        final double interpolatedMass       = massInterpolator.value(0)[0];
-        final DoubleArrayDictionary interpolatedAdditional;
-        if (additionalInterpolators.isEmpty()) {
-            interpolatedAdditional = null;
-        } else {
-            interpolatedAdditional = new DoubleArrayDictionary(additionalInterpolators.size());
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(0));
-            }
-        }
-        final DoubleArrayDictionary interpolatedAdditionalDot;
-        if (additionalDotInterpolators.isEmpty()) {
-            interpolatedAdditionalDot = null;
-        } else {
-            interpolatedAdditionalDot = new DoubleArrayDictionary(additionalDotInterpolators.size());
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalDotInterpolators.entrySet()) {
-                interpolatedAdditionalDot.put(entry.getKey(), entry.getValue().value(0));
-            }
-        }
-
-        // create the complete interpolated state
-        if (isOrbitDefined()) {
-            return new SpacecraftState(interpolatedOrbit, interpolatedAttitude, interpolatedMass,
-                                       interpolatedAdditional, interpolatedAdditionalDot);
-        } else {
-            return new SpacecraftState(interpolatedAbsPva, interpolatedAttitude, interpolatedMass,
-                                       interpolatedAdditional, interpolatedAdditionalDot);
-        }
 
     }
 

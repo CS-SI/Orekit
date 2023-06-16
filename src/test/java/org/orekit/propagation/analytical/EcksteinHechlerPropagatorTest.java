@@ -77,6 +77,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -85,6 +86,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -557,8 +559,12 @@ public class EcksteinHechlerPropagatorTest {
         for (double dt : Arrays.asList(-0.5, 0.0, 0.5)) {
             sample.add(propagator.propagate(target.shiftedBy(dt)).getPVCoordinates());
         }
-        TimeStampedPVCoordinates interpolated =
-                TimeStampedPVCoordinates.interpolate(target, CartesianDerivativesFilter.USE_P, sample);
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates interpolated = interpolator.interpolate(target, sample);
         Vector3D computedP     = sample.get(1).getPosition();
         Vector3D computedV     = sample.get(1).getVelocity();
         Vector3D referenceP    = interpolated.getPosition();

@@ -36,13 +36,16 @@ import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 /**
  * This class provides a default attitude provider.
@@ -127,9 +130,13 @@ public class LofOffsetPointing extends GroundPointing {
 
         }
 
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
         // use interpolation to compute properly the time-derivatives
         final TimeStampedPVCoordinates targetBody =
-                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+                interpolator.interpolate(date, sample);
 
         // convert back to caller specified frame
         return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
@@ -171,9 +178,13 @@ public class LofOffsetPointing extends GroundPointing {
 
         }
 
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), CartesianDerivativesFilter.USE_P);
+
         // use interpolation to compute properly the time-derivatives
         final TimeStampedFieldPVCoordinates<T> targetBody =
-                        TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+                interpolator.interpolate(date, sample);
 
         // convert back to caller specified frame
         return centralRefToBody.getInverse().transformPVCoordinates(targetBody);

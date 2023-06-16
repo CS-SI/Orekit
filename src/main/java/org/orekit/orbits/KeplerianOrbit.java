@@ -17,15 +17,10 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -854,105 +849,6 @@ public class KeplerianOrbit extends Orbit {
             // Keplerian-only motion is all we can do
             return keplerianShifted;
         }
-
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on Keplerian elements, without derivatives (which means the interpolation
-     * falls back to Lagrange interpolation only).
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public KeplerianOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
-
-        // first pass to check if derivatives are available throughout the sample
-        final List<Orbit> list = sample.collect(Collectors.toList());
-        boolean useDerivatives = true;
-        for (final Orbit orbit : list) {
-            useDerivatives = useDerivatives && orbit.hasDerivatives();
-        }
-
-        // set up an interpolator
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
-
-        // second pass to feed interpolator
-        AbsoluteDate previousDate = null;
-        double       previousPA   = Double.NaN;
-        double       previousRAAN = Double.NaN;
-        double       previousM    = Double.NaN;
-        for (final Orbit orbit : list) {
-            final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
-            final double continuousPA;
-            final double continuousRAAN;
-            final double continuousM;
-            if (previousDate == null) {
-                continuousPA   = kep.getPerigeeArgument();
-                continuousRAAN = kep.getRightAscensionOfAscendingNode();
-                continuousM    = kep.getMeanAnomaly();
-            } else {
-                final double dt      = kep.getDate().durationFrom(previousDate);
-                final double keplerM = previousM + kep.getKeplerianMeanMotion() * dt;
-                continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
-                continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
-                continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
-            }
-            previousDate = kep.getDate();
-            previousPA   = continuousPA;
-            previousRAAN = continuousRAAN;
-            previousM    = continuousM;
-            if (useDerivatives) {
-                interpolator.addSamplePoint(kep.getDate().durationFrom(date),
-                                            new double[] {
-                                                kep.getA(),
-                                                kep.getE(),
-                                                kep.getI(),
-                                                continuousPA,
-                                                continuousRAAN,
-                                                continuousM
-                                            }, new double[] {
-                                                kep.getADot(),
-                                                kep.getEDot(),
-                                                kep.getIDot(),
-                                                kep.getPerigeeArgumentDot(),
-                                                kep.getRightAscensionOfAscendingNodeDot(),
-                                                kep.getMeanAnomalyDot()
-                                            });
-            } else {
-                interpolator.addSamplePoint(kep.getDate().durationFrom(date),
-                                            new double[] {
-                                                kep.getA(),
-                                                kep.getE(),
-                                                kep.getI(),
-                                                continuousPA,
-                                                continuousRAAN,
-                                                continuousM
-                                            });
-            }
-        }
-
-        // interpolate
-        final double[][] interpolated = interpolator.derivatives(0.0, 1);
-
-        // build a new interpolated instance
-        return new KeplerianOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
-                                  interpolated[0][3], interpolated[0][4], interpolated[0][5],
-                                  interpolated[1][0], interpolated[1][1], interpolated[1][2],
-                                  interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                  PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

@@ -18,11 +18,13 @@ package org.orekit.utils;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Enumerate for selecting which derivatives to use in {@link TimeStampedPVCoordinates} and
  * {@link TimeStampedFieldPVCoordinates} interpolation.
- * @see TimeStampedPVCoordinates#interpolate(org.orekit.time.AbsoluteDate, CartesianDerivativesFilter, java.util.Collection)
- * @see TimeStampedFieldPVCoordinates#interpolate(org.orekit.time.FieldAbsoluteDate, CartesianDerivativesFilter, java.util.Collection)
+ * @see TimeStampedPVCoordinatesHermiteInterpolator#interpolate(AbsoluteDate, java.util.Collection)
+ * @see TimeStampedFieldPVCoordinatesHermiteInterpolator#interpolate(FieldAbsoluteDate, java.util.Collection)
  * @see AngularDerivativesFilter
  * @author Luc Maisonobe
  * @since 7.0

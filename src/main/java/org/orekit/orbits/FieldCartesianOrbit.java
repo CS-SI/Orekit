@@ -18,7 +18,6 @@ package org.orekit.orbits;
 
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -33,7 +32,6 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -424,32 +422,6 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     public FieldCartesianOrbit<T> shiftedBy(final T dt) {
         final FieldPVCoordinates<T> shiftedPV = (getA().getReal() < 0) ? shiftPVHyperbolic(dt) : shiftPVElliptic(dt);
         return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public FieldCartesianOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
-        final TimeStampedFieldPVCoordinates<T> interpolated =
-                TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA,
-                                                          sample.map(orbit -> orbit.getPVCoordinates()));
-        return new FieldCartesianOrbit<>(interpolated, getFrame(), date, getMu());
     }
 
     /** Compute shifted position and velocity in elliptic case.

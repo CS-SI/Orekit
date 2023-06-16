@@ -812,3 +812,24 @@ CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = impossible de changer le type 
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = impossible de changer le type de la covariance si celle-ci est définie dans un référentiel non pseudo-inertiel
+
+# first date {0} does not match second date {1}
+DATES_MISMATCH = La première date {0} ne correspond pas à la seconde date {1}
+
+# first orbit mu {0} does not match second orbit mu {1}
+ORBITS_MUS_MISMATCH = Le mu {0} de la première orbite ne correspond pas au mu {1} de la seconde orbite
+
+# one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
+DIFFERENT_STATE_DEFINITION = un état est défini en utilisant une orbite tandis que l'autre état est défini en utilisant une position-vitesse-accelération absolue
+
+# state date {0} does not match its covariance date {1}
+STATE_AND_COVARIANCE_DATES_MISMATCH = la date {0} de l état est différente de la date {1} de sa covariance
+
+# creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
+NO_INTERPOLATOR_FOR_STATE_DEFINITION = créer un interpolateur de véhicule spatial nécessite au moins un interpolateur d'orbite ou un interpolateur de position-vitesse-accelération absolue
+
+# wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = mauvais interpolateur défini pour ce type de définition du véhicule spatial (orbite ou PV)
+
+# multiple interpolators are used so they may use different numbers of interpolation points
+MULTIPLE_INTERPOLATOR_USED = plusieurs interpolateurs sont utilisés donc le nombre de points d'interpolation défini pour chacun pourrait différer

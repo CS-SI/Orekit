@@ -28,6 +28,8 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -35,7 +37,9 @@ import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 /**
  * This class handles an attitude provider interpolating from a predefined table
@@ -122,9 +126,12 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date).collect(Collectors.toList());
 
+        // create interpolator
+        final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =
+                new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), filter);
+
         // interpolate
-        final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(date, sample);
 
         // construction of the local orbital frame, using PV from inertial frame
         final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
@@ -151,9 +158,12 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
                         map(ac -> new TimeStampedFieldAngularCoordinates<>(date.getField(), ac)).
                         collect(Collectors.toList());
 
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<T>, T> interpolator =
+                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), filter);
+
         // interpolate
-        final TimeStampedFieldAngularCoordinates<T> interpolated =
-                TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedFieldAngularCoordinates<T> interpolated = interpolator.interpolate(date, sample);
 
         // construction of the local orbital frame, using PV from inertial frame
         final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);

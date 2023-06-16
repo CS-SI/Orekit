@@ -18,11 +18,13 @@ package org.orekit.utils;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Enumerate for selecting which derivatives to use in {@link TimeStampedAngularCoordinates}
  * and {@link TimeStampedFieldAngularCoordinates} interpolation.
- * @see TimeStampedAngularCoordinates#interpolate(org.orekit.time.AbsoluteDate, AngularDerivativesFilter, java.util.Collection)
- * @see TimeStampedFieldAngularCoordinates#interpolate(org.orekit.time.AbsoluteDate, AngularDerivativesFilter, java.util.Collection)
+ * @see TimeStampedAngularCoordinatesHermiteInterpolator#interpolate(AbsoluteDate, java.util.Collection)
+ * @see TimeStampedFieldAngularCoordinatesHermiteInterpolator#interpolate(FieldAbsoluteDate, java.util.Collection)
  * @see CartesianDerivativesFilter
  * @author Luc Maisonobe
  * @since 7.0
