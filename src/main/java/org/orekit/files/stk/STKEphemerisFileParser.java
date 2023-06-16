@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -99,7 +100,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *             <td>InterpolationMethod</td>
  *             <td>No</td>
  *             <td>The Orekit EphemerisSegmentPropagator class uses
- *             {@link TimeStampedPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Stream)}
+ *             {@link org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator#interpolate(AbsoluteDate, Stream)}
  *             to do Hermite interpolation, so the value of <code>InterpolationMethod</code>, if present, is
  *             ignored.</td>
  *         </tr>

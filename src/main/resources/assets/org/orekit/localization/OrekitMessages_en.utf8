@@ -812,3 +812,24 @@ CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = cannot change covariance type 
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = cannot change covariance type if defined in a non pseudo-inertial reference frame
+
+# first date {0} does not match second date {1}
+DATES_MISMATCH = first date {0} does not match second date {1}
+
+# first orbit mu {0} does not match second orbit mu {1}
+ORBITS_MUS_MISMATCH = first orbit mu {0} does not match second orbit mu {1}
+
+# one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
+DIFFERENT_STATE_DEFINITION = one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
+
+# state date {0} does not match its covariance date {1}
+STATE_AND_COVARIANCE_DATES_MISMATCH = state date {0} does not match its covariance date {1}
+
+# creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
+NO_INTERPOLATOR_FOR_STATE_DEFINITION = creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
+
+# wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
+
+# multiple interpolators are used so they may use different numbers of interpolation points
+MULTIPLE_INTERPOLATOR_USED = multiple interpolators are used so they may use different numbers of interpolation points

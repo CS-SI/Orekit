@@ -48,12 +48,14 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -228,8 +230,12 @@ public class OrekitEphemerisFileTest {
             }
         });
 
+        // Create interpolator
         final int interpolationPoints = 5;
-        Ephemeris directEphemProp = new Ephemeris(readInStates, interpolationPoints);
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(interpolationPoints, frame, frame);
+
+        Ephemeris directEphemProp = new Ephemeris(readInStates, interpolator);
         final EventsLogger directEphemPropLogger = new EventsLogger();
         directEphemProp.addEventDetector(directEphemPropLogger.monitorDetector(elevationDetector));
         directEphemProp.propagate(segment.getStart(), segment.getStop());

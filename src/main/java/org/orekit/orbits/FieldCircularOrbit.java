@@ -16,18 +16,12 @@
  */
 package org.orekit.orbits;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
-import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -992,93 +986,6 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
             // Keplerian-only motion is all we can do
             return keplerianShifted;
         }
-
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on circular elements, without derivatives (which means the interpolation
-     * falls back to Lagrange interpolation only).
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public FieldCircularOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
-
-        // first pass to check if derivatives are available throughout the sample
-        final List<FieldOrbit<T>> list = sample.collect(Collectors.toList());
-        boolean useDerivatives = true;
-        for (final FieldOrbit<T> orbit : list) {
-            useDerivatives = useDerivatives && orbit.hasDerivatives();
-        }
-
-        // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-
-        // second pass to feed interpolator
-        FieldAbsoluteDate<T> previousDate   = null;
-        T                    previousRAAN   = zero.add(Double.NaN);
-        T                    previousAlphaM = zero.add(Double.NaN);
-        for (final FieldOrbit<T> orbit : list) {
-            final FieldCircularOrbit<T> circ = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
-            final T continuousRAAN;
-            final T continuousAlphaM;
-            if (previousDate == null) {
-                continuousRAAN   = circ.getRightAscensionOfAscendingNode();
-                continuousAlphaM = circ.getAlphaM();
-            } else {
-                final T dt       = circ.getDate().durationFrom(previousDate);
-                final T keplerAM = previousAlphaM .add(circ.getKeplerianMeanMotion().multiply(dt));
-                continuousRAAN   = MathUtils.normalizeAngle(circ.getRightAscensionOfAscendingNode(), previousRAAN);
-                continuousAlphaM = MathUtils.normalizeAngle(circ.getAlphaM(), keplerAM);
-            }
-            previousDate   = circ.getDate();
-            previousRAAN   = continuousRAAN;
-            previousAlphaM = continuousAlphaM;
-            final T[] toAdd = MathArrays.buildArray(one.getField(), 6);
-            toAdd[0] = circ.getA();
-            toAdd[1] = circ.getCircularEx();
-            toAdd[2] = circ.getCircularEy();
-            toAdd[3] = circ.getI();
-            toAdd[4] = continuousRAAN;
-            toAdd[5] = continuousAlphaM;
-            if (useDerivatives) {
-                final T[] toAddDot = MathArrays.buildArray(one.getField(), 6);
-                toAddDot[0] = circ.getADot();
-                toAddDot[1] = circ.getCircularExDot();
-                toAddDot[2] = circ.getCircularEyDot();
-                toAddDot[3] = circ.getIDot();
-                toAddDot[4] = circ.getRightAscensionOfAscendingNodeDot();
-                toAddDot[5] = circ.getAlphaMDot();
-                interpolator.addSamplePoint(circ.getDate().durationFrom(date),
-                                            toAdd, toAddDot);
-            } else {
-                interpolator.addSamplePoint(circ.getDate().durationFrom(date),
-                                            toAdd);
-            }
-        }
-
-        // interpolate
-        final T[][] interpolated = interpolator.derivatives(zero, 1);
-
-        // build a new interpolated instance
-        return new FieldCircularOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
-                                        interpolated[0][3], interpolated[0][4], interpolated[0][5],
-                                        interpolated[1][0], interpolated[1][1], interpolated[1][2],
-                                        interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                        PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

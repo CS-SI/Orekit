@@ -32,7 +32,6 @@ import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.FieldPVCoordinates;
@@ -65,7 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  */
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
-    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T>, FieldTimeInterpolable<FieldOrbit<T>, T> {
+    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T> {
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
@@ -393,6 +392,13 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     public T getKeplerianMeanMotion() {
         final T absA = getA().abs();
         return absA.reciprocal().multiply(mu).sqrt().divide(absA);
+    }
+
+    /** Get the derivative of the mean anomaly with respect to the semi major axis.
+     * @return derivative of the mean anomaly with respect to the semi major axis
+     */
+    public T getMeanAnomalyDotWrtA() {
+        return getKeplerianMeanMotion().divide(getA()).multiply(-1.5);
     }
 
     /** Get the date of orbital parameters.

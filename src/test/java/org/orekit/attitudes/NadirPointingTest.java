@@ -46,12 +46,14 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -254,9 +256,12 @@ public class NadirPointingTest {
             Orbit o = circ.shiftedBy(dt);
             sample.add(nadirAttitudeLaw.getTargetPV(o, o.getDate(), o.getFrame()));
         }
-        TimeStampedPVCoordinates reference =
-                TimeStampedPVCoordinates.interpolate(circ.getDate(),
-                                                     CartesianDerivativesFilter.USE_P, sample);
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates reference = interpolator.interpolate(circ.getDate(), sample);
 
         TimeStampedPVCoordinates target =
                 nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame());

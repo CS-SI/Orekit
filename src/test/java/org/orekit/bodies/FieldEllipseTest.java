@@ -32,11 +32,12 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 
 public class FieldEllipseTest {
 
@@ -119,9 +120,12 @@ public class FieldEllipseTest {
         for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
             sample.add(e.projectToEllipse(linearMotion.shiftedBy(dt)));
         }
-        TimeStampedFieldPVCoordinates<T> ref = TimeStampedFieldPVCoordinates.interpolate(g0.getDate(),
-                                                                                         CartesianDerivativesFilter.USE_P,
-                                                                                         sample);
+
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedFieldPVCoordinates<T> ref = interpolator.interpolate(g0.getDate(), sample);
         Assertions.assertEquals(0,
                                 FieldVector3D.distance(g0.getPosition(), ref.getPosition()).divide(ref.getPosition().getNorm()).getReal(),
                                 1.0e-15);

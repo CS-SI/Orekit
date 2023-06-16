@@ -23,8 +23,10 @@ import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldBlendable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.TimeShiftable;
@@ -46,7 +48,7 @@ import org.orekit.time.TimeShiftable;
  * @see PVCoordinates
  */
 public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
-    implements TimeShiftable<FieldPVCoordinates<T>> {
+    implements TimeShiftable<FieldPVCoordinates<T>>, FieldBlendable<FieldPVCoordinates<T>, T> {
 
     /** The position. */
     private final FieldVector3D<T> position;
@@ -793,4 +795,15 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
                                   append(acceleration.getZ().getReal()).append(")}").toString();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public FieldPVCoordinates<T> blendArithmeticallyWith(final FieldPVCoordinates<T> other,
+                                                         final T blendingValue)
+            throws MathIllegalArgumentException {
+        final FieldVector3D<T> blendedPosition     = position.blendArithmeticallyWith(other.getPosition(), blendingValue);
+        final FieldVector3D<T> blendedVelocity     = velocity.blendArithmeticallyWith(other.getVelocity(), blendingValue);
+        final FieldVector3D<T> blendedAcceleration = acceleration.blendArithmeticallyWith(other.getAcceleration(), blendingValue);
+
+        return new FieldPVCoordinates<>(blendedPosition, blendedVelocity, blendedAcceleration);
+    }
 }

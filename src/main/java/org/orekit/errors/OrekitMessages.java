@@ -354,7 +354,14 @@ public enum OrekitMessages implements Localizable {
     WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}"),
     WRONG_NB_COMPONENTS("{0} expects {1} elements, got {2}"),
     CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF("cannot change covariance type if defined in a local orbital frame"),
-    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME("cannot change covariance type if defined in a non pseudo-inertial reference frame");
+    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME("cannot change covariance type if defined in a non pseudo-inertial reference frame"),
+    DATES_MISMATCH("first date {0} does not match second date {1}"),
+    ORBITS_MUS_MISMATCH("first orbit mu {0} does not match second orbit mu {1}"),
+    DIFFERENT_STATE_DEFINITION("one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration"),
+    STATE_AND_COVARIANCE_DATES_MISMATCH("state date {0} does not match its covariance date {1}"),
+    NO_INTERPOLATOR_FOR_STATE_DEFINITION("creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator"),
+    WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION("wrong interpolator defined for this spacecraft state type (orbit or absolute PV)"),
+    MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */

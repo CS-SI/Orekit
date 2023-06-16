@@ -74,6 +74,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -83,6 +84,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -675,8 +677,12 @@ public class FieldEcksteinHechlerPropagatorTest {
         for (double dt : Arrays.asList(-0.5, 0.0, 0.5)) {
             sample.add(propagator.propagate(target.shiftedBy(dt)).getPVCoordinates());
         }
-        TimeStampedFieldPVCoordinates<T> interpolated =
-                TimeStampedFieldPVCoordinates.interpolate(target, CartesianDerivativesFilter.USE_P, sample);
+
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedFieldPVCoordinates<T> interpolated = interpolator.interpolate(target, sample);
         FieldVector3D<T> computedP     = sample.get(1).getPosition();
         FieldVector3D<T> computedV     = sample.get(1).getVelocity();
         FieldVector3D<T> referenceP    = interpolated.getPosition();

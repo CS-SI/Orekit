@@ -17,10 +17,8 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.Derivative;
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -28,20 +26,17 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeStamped;
 
 /** Position - Velocity - Acceleration linked to a date and a frame.
  */
 public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
-    implements TimeStamped, TimeInterpolable<AbsolutePVCoordinates>,
-               Serializable, PVCoordinatesProvider {
+    implements TimeStamped, Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20150824L;
@@ -315,83 +310,6 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
-    }
-
-    @Override
-    public AbsolutePVCoordinates interpolate(final AbsoluteDate date, final Stream<AbsolutePVCoordinates> sample) {
-        return interpolate(getFrame(), date, CartesianDerivativesFilter.USE_PVA, sample);
-    }
-
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param frame frame for the interpolted instance
-     * @param date interpolation date
-     * @param filter filter for derivatives from the sample to use in interpolation
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitIllegalArgumentException if some elements in the sample do not
-     * have the same defining frame as other
-     */
-    public static AbsolutePVCoordinates interpolate(final Frame frame, final AbsoluteDate date,
-                                                    final CartesianDerivativesFilter filter,
-                                                    final Stream<AbsolutePVCoordinates> sample) {
-
-
-        // set up an interpolator taking derivatives into account
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
-
-        // add sample points
-        switch (filter) {
-            case USE_P :
-                // populate sample with position data, ignoring velocity
-                sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray());
-                });
-                break;
-            case USE_PV :
-                // populate sample with position and velocity data
-                sample.forEach(pv -> {
-                    final Vector3D position = pv.getPosition();
-                    final Vector3D velocity = pv.getVelocity();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray());
-                });
-                break;
-            case USE_PVA :
-                // populate sample with position, velocity and acceleration data
-                sample.forEach(pv -> {
-                    final Vector3D position     = pv.getPosition();
-                    final Vector3D velocity     = pv.getVelocity();
-                    final Vector3D acceleration = pv.getAcceleration();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                position.toArray(), velocity.toArray(), acceleration.toArray());
-                });
-                break;
-            default :
-                // this should never happen
-                throw new OrekitInternalError(null);
-        }
-
-        // interpolate
-        final double[][] p = interpolator.derivatives(0.0, 2);
-
-        // build a new interpolated instance
-        return new AbsolutePVCoordinates(frame, date, new Vector3D(p[0]), new Vector3D(p[1]), new Vector3D(p[2]));
-
     }
 
     /** Replace the instance with a data transfer object for serialization.

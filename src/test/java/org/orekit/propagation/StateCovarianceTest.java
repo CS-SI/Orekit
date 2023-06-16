@@ -119,7 +119,7 @@ public class StateCovarianceTest {
      * @param computed  computed covariance
      * @param threshold threshold for comparison
      */
-    private void compareCovariance(final RealMatrix reference, final RealMatrix computed, final double threshold) {
+    public static void compareCovariance(final RealMatrix reference, final RealMatrix computed, final double threshold) {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
                 if (reference.getEntry(row, column) == 0) {
