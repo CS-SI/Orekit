@@ -26,12 +26,13 @@ import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 
 /** Provider of the Jacobi polynomials P<sub>l</sub><sup>v,w</sup>.
  * <p>
  * This class is used for {@link
  * org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral
- * tesseral contribution} computation.
+ * tesseral contribution} computation and {@link DSSTThirdBody}.
  * </p>
  *
  * @author Nicolas Bernard
@@ -41,24 +42,31 @@ public class JacobiPolynomials {
 
     /** Storage map. */
     private static final Map<JacobiKey, List<PolynomialFunction>> MAP =
-                    new HashMap<JacobiPolynomials.JacobiKey, List<PolynomialFunction>>();
+                    new HashMap<JacobiKey, List<PolynomialFunction>>();
 
     /** Private constructor as class is a utility. */
     private JacobiPolynomials() {
     }
 
     /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
-     * <p>
-     * This method is guaranteed to be thread-safe
-     * </p>
+     * <p>This method is guaranteed to be thread-safe
+     * <p>It was added to improve performances of DSST propagation with tesseral gravity field or third-body perturbations.
+     * <p>See issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1098">1098</a>.
+     * <p>It appeared the "Gradient" version was degrading performances. This last was however kept for validation purposes.
      * @param l degree of the polynomial
      * @param v v value
      * @param w w value
      * @param x x value
      * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
-     * @since 10.2
+     * @since 12.0
      */
-    public static double[] getValueAndDerivatives(final int l, final int v, final int w, final double x) {
+    public static double[] getValueAndDerivative(final int l, final int v, final int w, final double x) {
+
+
+//        System.out.format(Locale.US, "l = %d%n", l);
+//        System.out.format(Locale.US, "v = %d%n", v);
+//        System.out.format(Locale.US, "w = %d%n", w);
+//        System.out.format(Locale.US, "x = %20.12f%n%n", x);
 
         final List<PolynomialFunction> polyList;
         synchronized (MAP) {
@@ -88,29 +96,46 @@ public class JacobiPolynomials {
         return getValueAndDerivatives(polynomial, x);
     }
 
+    /** Get value and 1st-order of a mono-variate polynomial.
+     *
+     * <p> This method was added to improve performances of DSST propagation with tesseral gravity field or third-body perturbations.
+     * <p> See issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1098">1098</a>.
+     * @param polynomial polynomial to evaluate
+     * @param x value to evaluate on
+     * @return value and 1s-order derivative as a double array
+     * @since 12.0
+     */
     private static double[] getValueAndDerivatives(final PolynomialFunction polynomial, final double x) {
 
-        // FIXME: to be checked and optimized
+        // Polynomial coefficients
         final double[] coefficients = polynomial.getCoefficients();
 
+        // Degree of the polynomial
         final int degree = polynomial.degree();
 
+        // Initialize value and 1st-order derivative
         double value      = coefficients[degree];
         double derivative = value * degree;
         for (int j = degree - 1; j >= 1; j--) {
+
+            // Increment both value and derivative
             final double coef = coefficients[j];
             value        = value      * x +  coef;
             derivative   = derivative * x +  coef * j;
         }
-        value = value * x + coefficients[0];
-        return new double[] {value, derivative};
+        // If degree > 0, perform last operation
+        if (degree > 0) {
+            value = value * x + coefficients[0];
+        }
 
+        // Return value and 1st-order derivative as double array
+        return new double[] {value, derivative};
     }
 
     /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
-     * <p>
-     * This method is guaranteed to be thread-safe
-     * </p>
+     *
+     * <p>This method is guaranteed to be thread-safe
+     * <p>It's not used in the code anymore, see {@link #getValueAndDerivative(int, int, int, double)}, but was kept for validation purpose.
      * @param l degree of the polynomial
      * @param v v value
      * @param w w value
@@ -242,5 +267,4 @@ public class JacobiPolynomials {
 
         }
     }
-
 }

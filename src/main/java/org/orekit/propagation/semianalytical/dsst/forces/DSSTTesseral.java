@@ -889,7 +889,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi polynomial and derivative
 //                final Gradient jacobi =
 //                        JacobiPolynomials.getValue(l, v, w, Gradient.variable(1, 0, auxiliaryElements.getGamma()));
-                final double[] jacobi = JacobiPolynomials.getValueAndDerivatives(l, v, w, auxiliaryElements.getGamma());
+                final double[] jacobi = JacobiPolynomials.getValueAndDerivative(l, v, w, auxiliaryElements.getGamma());
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
