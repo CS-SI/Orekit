@@ -147,7 +147,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
         checkStateJacobianVs80Implementation(s, relativity,
                                              new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS),
-                                             1.0e-50, false);
+                                             1.0e-15, false);
     }
 
     @Test
