@@ -43,13 +43,13 @@ public abstract class AbstractStateCovarianceInterpolator
 
     // CHECKSTYLE: stop VisibilityModifier check
     /** Default position angle for covariance expressed in Cartesian elements. */
-    protected final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.MEAN;
+    protected static final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.MEAN;
 
     /** Default column dimension for position-velocity state covariance. */
-    protected final int COLUMN_DIM = 6;
+    protected static final int COLUMN_DIM = 6;
 
     /** Default row dimension for position-velocity state covariance. */
-    protected final int ROW_DIM = 6;
+    protected static final int ROW_DIM = 6;
     // CHECKSTYLE: resume VisibilityModifier check
 
     /** Output frame. */

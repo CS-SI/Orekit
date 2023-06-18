@@ -31,10 +31,8 @@ import org.hipparchus.CalculusFieldElement;
 public class FieldTimeStampedPair<F extends FieldTimeStamped<KK>, S extends FieldTimeStamped<KK>,
         KK extends CalculusFieldElement<KK>> implements FieldTimeStamped<KK> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Default date equality threshold of 1 ns. */
-    public static double DEFAULT_DATE_EQUALITY_THRESHOLD = 1e-9;
-    // CHECKSTYLE: resume VisibilityModifier check
+    public static final double DEFAULT_DATE_EQUALITY_THRESHOLD = 1e-9;
 
     /** First time stamped value. */
     private final F first;

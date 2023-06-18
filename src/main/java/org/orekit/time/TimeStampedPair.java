@@ -30,10 +30,8 @@ import org.orekit.errors.OrekitMessages;
  */
 public class TimeStampedPair<K extends TimeStamped, V extends TimeStamped> implements TimeStamped {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Default date equality threshold of 1 ns. */
-    public static double DEFAULT_DATE_EQUALITY_THRESHOLD = 1e-9;
-    // CHECKSTYLE: resume VisibilityModifier check
+    public static final double DEFAULT_DATE_EQUALITY_THRESHOLD = 1e-9;
 
     /** First time stamped value. */
     private final K first;
