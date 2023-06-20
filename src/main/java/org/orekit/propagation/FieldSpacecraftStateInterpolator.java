@@ -25,7 +25,6 @@ import org.orekit.attitudes.FieldAttitudeInterpolator;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -267,9 +266,19 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
     /**
      * {@inheritDoc}
+     * <p>
+     * The additional states that are interpolated are the ones already present in the first neighbor instance. The sample
+     * instances must therefore have at least the same additional states as this neighbor instance. They may have more
+     * additional states, but the extra ones will be ignored.
+     * <p>
+     * All the sample instances <em>must</em> be based on similar trajectory data, i.e. they must either all be based on
+     * orbits or all be based on absolute position-velocity-acceleration. Any inconsistency will trigger an
+     * {@link OrekitIllegalArgumentException}.
      *
-     * @throws OrekitIllegalStateException if there states defined by orbits and absolute position-velocity-acceleration
-     * coordinates
+     * @throws OrekitIllegalArgumentException if there are states defined by orbits and absolute
+     * position-velocity-acceleration coordinates
+     * @throws OrekitIllegalArgumentException if there is no defined interpolator for given sample spacecraft state
+     * definition type
      */
     @Override
     public FieldSpacecraftState<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate,
@@ -326,16 +335,6 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
     /**
      * {@inheritDoc}
-     * <p>
-     * The additional states that are interpolated are the ones already present in the fist neighbor instance. The sample
-     * instances must therefore have at least the same additional states as this neighbor instance. They may have more
-     * additional states, but the extra ones will be ignored.
-     * <p>
-     * All the sample instances <em>must</em> be based on similar trajectory data, i.e. they must either all be based on
-     * orbits or all be based on absolute position-velocity-acceleration. Any inconsistency will trigger an
-     * {@link OrekitIllegalStateException}.
-     *
-     * @throws OrekitIllegalStateException if some instances are not based on similar trajectory data
      */
     @Override
     protected FieldSpacecraftState<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate) {
@@ -451,6 +450,11 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
     }
 
+    /** @return output frame */
+    public Frame getOutputFrame() {
+        return outputFrame;
+    }
+
     /**
      * @return optional orbit interpolator
      *
@@ -469,13 +473,8 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         return absPVAInterpolator;
     }
 
-    /** @return output frame */
-    public Frame getOutputFrame() {
-        return outputFrame;
-    }
-
     /**
-     * @return mass interpolator
+     * @return optional mass interpolator
      *
      * @see Optional
      */
