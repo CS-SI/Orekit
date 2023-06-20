@@ -16,6 +16,16 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -100,19 +110,51 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 public class DSSTPropagatorTest {
 
     private DSSTPropagator dsstProp;
+
+    /**
+     * Test issue #1029 about DSST short period terms computation.
+     * Issue #1029 is a regression introduced in version 10.0
+     * Test case built from Christophe Le Bris example: https://gitlab.orekit.org/orekit/orekit/-/issues/1029
+     */
+    @Test
+    public void testIssue1029() {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initial state
+        final AbsoluteDate orbitEpoch = new AbsoluteDate(2023, 2, 18, TimeScalesFactory.getUTC());
+        final Frame inertial = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
+        final KeplerianOrbit orbit = new KeplerianOrbit(42166000.0, 0.00028, FastMath.toRadians(0.05), FastMath.toRadians(66.0),
+                                                        FastMath.toRadians(270.0), FastMath.toRadians(11.94), PositionAngle.MEAN,
+                                                        inertial, orbitEpoch, Constants.WGS84_EARTH_MU);
+        final EquinoctialOrbit equinoctial = new EquinoctialOrbit(orbit);
+
+        // create propagator
+        final double[][] tol = DSSTPropagator.tolerances(0.001, equinoctial);
+        final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(3600.0, 86400.0, tol[0], tol[1]);
+        final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
+
+        // add force models
+        final Frame ecefFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getConstantUnnormalizedProvider(8, 8);
+        propagator.addForceModel(new DSSTZonal(gravityProvider));
+        propagator.addForceModel(new DSSTTesseral(ecefFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityProvider));
+        propagator.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(), gravityProvider.getMu()));
+        propagator.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon(), gravityProvider.getMu()));
+
+        // propagate
+        propagator.setInitialState(new SpacecraftState(equinoctial, 6000.0), PropagationType.MEAN);
+        SpacecraftState propagated = propagator.propagate(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY));
+
+        // The purpose is not verifying propagated values, but to check that no exception occurred
+        Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)), Double.MIN_VALUE);
+        Assertions.assertEquals(4.2164648630370155E7, propagated.getA(), Double.MIN_VALUE);
+
+    }
 
     @Test
     public void testIssue363() {

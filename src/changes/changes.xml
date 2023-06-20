@@ -20,6 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="TBD" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="1029">
+        Fixed crash of DSST during propagation with osculating and 3rd body.
+      </action>
+    </release>
     <release version="11.3.2" date="2023-02-17"
              description="Version 11.3.2 is a patch release of Orekit.
              It fixes issues related to the measurement covariance used by the Unscented Kalman Filter,
