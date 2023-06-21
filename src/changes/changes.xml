@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="1100">
+        Fixed thread safety issue in CoefficientFactory.
+      </action>
       <action dev="bryan" type="fix" issue="1029">
         Fixed crash of DSST during propagation with osculating and 3rd body.
       </action>

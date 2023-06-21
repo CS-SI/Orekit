@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.SortedMap;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -115,7 +115,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     private static final int    MAX_ECCPOWER_SP = 4;
 
     /** V<sub>ns</sub> coefficients. */
-    private final TreeMap<NSKey, Double> Vns;
+    private final SortedMap<NSKey, Double> Vns;
 
     /** Force model static context. Initialized with short period terms. */
     private DSSTThirdBodyStaticContext staticContext;
@@ -157,7 +157,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                                                  0.0, Double.POSITIVE_INFINITY));
 
         this.body = body;
-        this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
+        this.Vns  = CoefficientsFactory.computeVnsCoefficients(MAX_POWER);
 
         fieldStaticContext = new HashMap<>();
         fieldShortPeriods  = new HashMap<>();

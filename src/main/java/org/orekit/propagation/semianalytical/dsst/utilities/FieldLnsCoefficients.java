@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.TreeMap;
+import java.util.SortedMap;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
@@ -48,7 +48,7 @@ public class FieldLnsCoefficients <T extends CalculusFieldElement<T>> {
     * @param field field used by default
     */
     public FieldLnsCoefficients(final int nMax, final int sMax,
-                                final T[][] Qns, final TreeMap<NSKey, Double> Vns, final T roa,
+                                final T[][] Qns, final SortedMap<NSKey, Double> Vns, final T roa,
                                 final Field<T> field) {
         final T zero      = field.getZero();
         final int rows    = nMax + 1;
