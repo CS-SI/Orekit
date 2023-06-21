@@ -144,6 +144,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @param mu central attraction coefficient
+     *            (<b>i.e., attraction coefficient of the central body, not the one of the 3rd body</b>)
      *  @see CelestialBodies
      */
     public DSSTThirdBody(final CelestialBody body, final double mu) {
