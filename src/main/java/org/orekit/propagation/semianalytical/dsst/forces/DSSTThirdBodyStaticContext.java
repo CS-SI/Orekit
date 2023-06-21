@@ -30,7 +30,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * don't evolve during propagation.
  * <p>
  * @author Bryan Cazabonne
- * @since 12.0
+ * @since 11.3.3
  */
 public class DSSTThirdBodyStaticContext extends ForceModelContext {
 

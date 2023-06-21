@@ -30,7 +30,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * step.
  * <p>
  * @author Bryan Cazabonne
- * @since 12.0
+ * @since 11.3.3
  */
 public class DSSTThirdBodyDynamicContext extends ForceModelContext {
 
