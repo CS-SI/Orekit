@@ -37,8 +37,6 @@ import com.sun.source.util.TaskListener;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
 import org.orekit.annotation.DefaultDataContext;
 
 /**
@@ -133,7 +131,7 @@ public class DefaultDataContextPlugin implements Plugin, TaskListener {
          * @param tree to check.
          */
         private void check(final Tree tree) {
-            final Element element = TreeInfo.symbolFor((JCTree) tree);
+            final Element element = trees.getElement(trees.getPath(root, tree));
             check(tree, element);
         }
 
