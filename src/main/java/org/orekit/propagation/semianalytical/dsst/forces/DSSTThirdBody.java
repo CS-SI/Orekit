@@ -1535,11 +1535,8 @@ public class DSSTThirdBody implements DSSTForceModel {
             //-b<sup>|j-s|</sup>
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
-//            final Gradient jac =
-//                    JacobiPolynomials.getValue(l, absJmS, absJpS, Gradient.variable(1, 0, context.getX()));
             // Jacobi polynomial value (0) and first-order derivative (1)
-            final double[] jac =
-                            JacobiPolynomials.getValueAndDerivative(l, absJmS, absJpS, context.getX());
+            final double[] jac = JacobiPolynomials.getValueAndDerivative(l, absJmS, absJpS, context.getX());
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);

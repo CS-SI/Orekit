@@ -887,8 +887,6 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-//                final Gradient jacobi =
-//                        JacobiPolynomials.getValue(l, v, w, Gradient.variable(1, 0, auxiliaryElements.getGamma()));
                 final double[] jacobi = JacobiPolynomials.getValueAndDerivative(l, v, w, auxiliaryElements.getGamma());
 
                 // Geopotential coefficients

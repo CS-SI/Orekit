@@ -26,20 +26,41 @@ import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/** This class compares and tests different methods for computing value and 1st-order derivative of Jacobi polynomials.
+ * 
+ * <p>It was added following issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1098">1098</a> when it was discovered that
+ * the Gradient-based method was considerably slowing down the computation of the tesseral contribution to the osculatin parameters.
+ * 
+ * @author Maxime Journot
+ * @since 11.3.3
+ */
 public class JacobiPolynomialsTest {
 
     /** Threshold for test on value. */
     private static final double epsValue      = 1.e-20;
-    
-    /** Threshold for relative difference on 1st order derivative of jacobi polynomials. */
-    // Order 8... ok
+
+    /** Threshold for relative difference on 1st order derivative of Jacobi polynomials. */
+    // Order 8 for tesseral terms
     //private static final double epsDerivative = 4.44e-13;
-    // Order 16... ok
-    private static final double epsDerivative = 1.09e-12;
-    // Order 32... bad
+    // Order 32
     // private static final double epsDerivative = 7.89e-7;
-    // Order 64... fails
+    // Order 64
     // private static final double epsDerivative = 78.44;
+
+    // From this threshold values it is obvious that there is still an issue in the computation of the Jacobi
+    // polynomials 1st order derivative at high order of the gravity field.
+    // The problem comes from the fact that some high-order coefficients of the polynomials are big (e.g. 1e18) while the low
+    // order can still be small(e.g. 1e-6)
+    // The numerous additions and multiplications that are done then are not stable. Meaning that, depending on the order of
+    // these operations the result will be different.
+    // In our case, since the "Gradient" method and the "optimized" method don't order the operations the same way, discrepancies arise...
+    // However it is impossible to know which method is "right", both may return results that are wrong.
+    // Some normalization along the biggest absolute value of the coefficients of the polynomial was attempted in
+    // "getValueAndDerivative". Results are different but once again, there is no way to know who's right or wrong here.
+
+    // Order 16  for tesseral terms
+    private static final double epsDerivative = 1.09e-12;
+
 
     /** Test value and 1st-order derivative of Jacobi polynomials.
      * <p>This test is designed to reproduce the behavior of a 16th order tesseral gravity field
@@ -52,7 +73,7 @@ public class JacobiPolynomialsTest {
         // -----
 
         // Test like a 16x16 gravity field
-        final boolean print = true;
+        final boolean print = false;
         final int maxMdailyTesseralSP = 16;
         final int maxEccPowTesseralSP = 4;
 
@@ -60,6 +81,10 @@ public class JacobiPolynomialsTest {
         final UniformRandomGenerator gen = new UniformRandomGenerator(new Well1024a(0x366a26b94e520f41l));
 
         // Normalizing value for random numbers
+        // Using this will guarantee a uniform random number in [-1, 1]
+        // This is consistent with the input "x" of "JacobiPolynomials.getValueAndDerivative" which is:
+        // - γ = cos(2i) in DSSTTesseral (i = inclination in [0, π])
+        // - X = 1/√(1-e²) in DSSTThirdBody (e = eccentricity in [0, 1[)
         final double sqrt3 = FastMath.sqrt(3.);
 
         // WHEN
@@ -86,6 +111,7 @@ public class JacobiPolynomialsTest {
         // THEN
         // ----
 
+        // Check the number of tests performed
         Assertions.assertEquals(668, nTest);
     }
 
@@ -108,28 +134,30 @@ public class JacobiPolynomialsTest {
         // THEN
         // ----
 
+        // Value: ref (Gradient) and test
         final double refValue  = ref.getValue();
         final double testValue = test[0];
 
+        // Derivative: ref (Gradient) and test
         final double refDer  = ref.getPartialDerivative(0);
         final double testDer = test[1];
 
+        // Threshold and diff: if refDer = 0 → absolute value, else → relative value
+        final double epsDer  = FastMath.abs(refDer) > Precision.SAFE_MIN ? epsDerivative : epsValue;
+        final double diffDer = FastMath.abs(refDer) > Precision.SAFE_MIN ? FastMath.abs((testDer - refDer) / refDer) : FastMath.abs(testDer - refDer);
+
         if (print) {
+            System.out.format(Locale.US,"l = %d%nv = %d%nw = %d%nx = %9.6f%n", l, v, w, x);
             System.out.format(Locale.US,"\tvalue : %n\t\tref  = %15.12e%n\t\ttest = %15.12e%n\t\tdiff = %15.12e%n",
                               refValue, testValue, FastMath.abs(refValue - testValue));
             System.out.format(Locale.US,"\tderiv : %n\t\tref  = %15.12e%n\t\ttest = %15.12e%n\t\tdiff = %15.12e%n",
-                              refDer, testDer, FastMath.abs(refDer - testDer));
+                              refDer, testDer, diffDer);
         }
 
         // Test value directly (absolute difference, should be a clean 0.)
         Assertions.assertEquals(refValue, testValue, epsValue);
 
         // Test relative difference for derivative (if possible)
-        if (FastMath.abs(refDer) > Precision.SAFE_MIN) {
-            Assertions.assertEquals(0., FastMath.abs((testDer - refDer) / refDer), epsDerivative);
-        } else {
-            // Absolute difference for 0 values
-            Assertions.assertEquals(refDer, testDer, epsValue);
-        }
+        Assertions.assertEquals(0., diffDer, epsDer);
     }
 }

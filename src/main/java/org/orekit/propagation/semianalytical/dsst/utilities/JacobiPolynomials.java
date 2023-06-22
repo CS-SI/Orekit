@@ -58,15 +58,9 @@ public class JacobiPolynomials {
      * @param w w value
      * @param x x value
      * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
-     * @since 12.0
+     * @since 11.3.3
      */
     public static double[] getValueAndDerivative(final int l, final int v, final int w, final double x) {
-
-
-//        System.out.format(Locale.US, "l = %d%n", l);
-//        System.out.format(Locale.US, "v = %d%n", v);
-//        System.out.format(Locale.US, "w = %d%n", w);
-//        System.out.format(Locale.US, "x = %20.12f%n%n", x);
 
         final List<PolynomialFunction> polyList;
         synchronized (MAP) {
@@ -93,7 +87,7 @@ public class JacobiPolynomials {
         }
 
         // compute value and derivative
-        return getValueAndDerivatives(polynomial, x);
+        return getValueAndDerivative(polynomial, x);
     }
 
     /** Get value and 1st-order of a mono-variate polynomial.
@@ -103,9 +97,9 @@ public class JacobiPolynomials {
      * @param polynomial polynomial to evaluate
      * @param x value to evaluate on
      * @return value and 1s-order derivative as a double array
-     * @since 12.0
+     * @since 11.3.3
      */
-    private static double[] getValueAndDerivatives(final PolynomialFunction polynomial, final double x) {
+    private static double[] getValueAndDerivative(final PolynomialFunction polynomial, final double x) {
 
         // Polynomial coefficients
         final double[] coefficients = polynomial.getCoefficients();

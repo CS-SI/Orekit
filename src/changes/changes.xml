@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="maxime" type="fix" issue="1098">
+        Fixed DSST osculating performance issues with high degree and order of geopotential.
+      </action>
       <action dev="bryan" type="fix" issue="1100">
         Fixed thread safety issue in CoefficientFactory.
       </action>
