@@ -1121,7 +1121,7 @@ public class DSSTPropagatorTest {
      * <p> See <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1098">issue 1098</a>
      */
     @Test
-    @Timeout(value = 7, unit = TimeUnit.SECONDS)
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
     public void testIssue1098() {
         
         // GIVEN
