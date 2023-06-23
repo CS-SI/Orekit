@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
@@ -45,6 +46,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -1114,11 +1116,12 @@ public class DSSTPropagatorTest {
 
     }
     
-    /** Test performance of DSST propagator with a high order gravity field.
+    /** Test performance of DSST propagator in osculating elements with a high order gravity field.
      * 
      * <p> See <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1098">issue 1098</a>
      */
     @Test
+    @Timeout(value = 7, unit = TimeUnit.SECONDS)
     public void testIssue1098() {
         
         // GIVEN
@@ -1127,13 +1130,14 @@ public class DSSTPropagatorTest {
         Utils.setDataRoot("regular-data:potential/grgs-format");
         
         // Potential coefficients providers
-        final int degree = 16;
-        final int order = 16;
+        // Set to 16x16 to avoid a long test
+        final int degree = 32;
+        final int order = 32;
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         final UnnormalizedSphericalHarmonicsProvider unnormalized =
                         GravityFieldFactory.getConstantUnnormalizedProvider(degree, order);
 
-        // ...
+        // Frames
         final Frame gcrf = FramesFactory.getGCRF();
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         final BodyShape earth = ReferenceEllipsoid.getIers2010(itrf);
@@ -1152,7 +1156,7 @@ public class DSSTPropagatorTest {
         final SpacecraftState oscState0 = new SpacecraftState(oscOrbit0, mass);
 
         // Prop duration
-        final double nOrb = 50.;
+        final double nOrb = 30.;
         final double tOrb = oscOrbit0.getKeplerianPeriod();
         final double duration = nOrb * tOrb;
         final AbsoluteDate tf = t0.shiftedBy(duration);
@@ -1188,7 +1192,6 @@ public class DSSTPropagatorTest {
         // THEN
         // ----
         
-        // FIXME: add a check on max time when issue is solved
         Assertions.assertNotNull(oscStateF);
     }
 
