@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -81,7 +82,7 @@ public class IodLambert {
      * @return an initial Keplerian orbit estimation at the first observation date t1
      * @since 11.0
      */
-    public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
+    public Orbit estimate(final Frame frame, final boolean posigrade,
                                    final int nRev, final Position p1,  final Position p2) {
         return estimate(frame, posigrade, nRev,
                         p1.getPosition(), p1.getDate(), p2.getPosition(), p2.getDate());
@@ -119,7 +120,7 @@ public class IodLambert {
      * @param t2        date of observation 2
      * @return  an initial Keplerian orbit estimate at the first observation date t1
      */
-    public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
+    public Orbit estimate(final Frame frame, final boolean posigrade,
                                    final int nRev,
                                    final Vector3D p1, final AbsoluteDate t1,
                                    final Vector3D p2, final AbsoluteDate t2) {

@@ -24,12 +24,16 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -210,4 +214,32 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
 
         return estimated;
     }
+
+    /** Calculate the Line Of Sight of the given Radec.
+     * @return Vector3D the line of Sight of the Radec
+     */
+    public Vector3D getLineOfSight() {
+        return new Vector3D(this.getObservedValue()[0], this.getObservedValue()[1]);
+    }
+
+    /** Calculate the estimated Line Of Sight of the Radec at a given date.
+     *
+     * @param prop the propagator for the estimation
+     * @param date the AbsoluteDate to use for the propagation
+     *
+     * @return Vector3D the estimate line of Sight of the Radec at the propagate date.
+     */
+    public Vector3D getEstimatedLOS(final Propagator prop, final AbsoluteDate date) {
+        final Frame                    gcrf        = FramesFactory.getGCRF();
+        final TimeStampedPVCoordinates satPV       = prop.getPVCoordinates(date, gcrf);
+        final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(gcrf, satPV);
+        final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
+        final double[]                 angular     = this.estimate(0, 0, satState).getEstimatedValue();
+
+        final double ra = angular[0];
+        final double dec = angular[1];
+
+        return new Vector3D(ra, dec);
+    }
+
 }
