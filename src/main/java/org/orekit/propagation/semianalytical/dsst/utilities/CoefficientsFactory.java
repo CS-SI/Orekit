@@ -244,7 +244,7 @@ public class CoefficientsFactory {
             }
             LAST_VNS_ORDER = order;
         }
-        return new TreeMap<>(VNS);
+        return new ConcurrentSkipListMap<>(VNS);
     }
 
     /** Get the V<sub>n,s</sub><sup>m</sup> coefficient from V<sub>n,s</sub>.
