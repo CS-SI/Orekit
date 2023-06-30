@@ -119,8 +119,8 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Force model static context. Initialized with short period terms. */
     private DSSTThirdBodyStaticContext staticContext;
 
-    /** Force model "Field" static context. Initialized with short period terms. */
-    private Map<Field<?>, FieldDSSTThirdBodyStaticContext<?>> fieldStaticContext;
+    /** If false, the static context needs to be initialized. */
+    private boolean doesStaticContextNeedsInitialization;
 
     /** The 3rd body to consider. */
     private final CelestialBody    body;
@@ -157,8 +157,8 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         this.body = body;
         this.Vns  = CoefficientsFactory.computeVnsCoefficients(MAX_POWER);
+        this.doesStaticContextNeedsInitialization = true;
 
-        fieldStaticContext = new HashMap<>();
         fieldShortPeriods  = new HashMap<>();
         fieldHansen        = new HashMap<>();
     }
@@ -168,6 +168,21 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     public CelestialBody getBody() {
         return body;
+    }
+
+    /** Initializes the static 3rd body context if needed.
+     * @param auxiliaryElements auxiliary elements
+     * @param x DSST Chi element
+     * @param r3 distance from center of mass of the central body to the 3rd body
+     * @param parameters force model parameters
+     */
+    private void initializeStaticContextIfNeeded(final AuxiliaryElements auxiliaryElements,
+                                                 final double x, final double r3,
+                                                 final double[] parameters) {
+        if (doesStaticContextNeedsInitialization) {
+            staticContext = new DSSTThirdBodyStaticContext(auxiliaryElements, x, r3, parameters);
+            doesStaticContextNeedsInitialization = false;
+        }
     }
 
     /** Computes the highest power of the eccentricity and the highest power
@@ -183,14 +198,14 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     @Override
     public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements,
-                                             final PropagationType type,
-                                             final double[] parameters) {
+                                                             final PropagationType type,
+                                                             final double[] parameters) {
 
         // Initializes specific parameters.
         final DSSTThirdBodyDynamicContext context = initializeStep(auxiliaryElements, parameters);
 
         // Static context
-        staticContext = new DSSTThirdBodyStaticContext(context, parameters);
+        initializeStaticContextIfNeeded(auxiliaryElements, context.getX(), context.getR3(), parameters);
 
         // Hansen objects
         hansen = new HansenObjects();
@@ -210,8 +225,8 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final PropagationType type,
-                                                                                     final T[] parameters) {
+                                                                                                         final PropagationType type,
+                                                                                                         final T[] parameters) {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -219,18 +234,17 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Initializes specific parameters.
         final FieldDSSTThirdBodyDynamicContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-        // Static context
-        final FieldDSSTThirdBodyStaticContext<T> currentFieldStaticContext = new FieldDSSTThirdBodyStaticContext<>(context, parameters);
-        fieldStaticContext.put(field, currentFieldStaticContext);
+        // Static context (only provide integers. So, derivatives are not taken into account and getReal() method is accepted)
+        initializeStaticContextIfNeeded(auxiliaryElements.toAuxiliaryElements(), context.getX().getReal(), context.getR3().getReal(), getParameters());
 
         // Hansen object
         fieldHansen.put(field, new FieldHansenObjects<>(field));
 
         // Initialize short period terms
-        final int jMax = currentFieldStaticContext.getMaxAR3Pow() + 1;
+        final int jMax = staticContext.getMaxAR3Pow() + 1;
         final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc =
                         new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,
-                                        currentFieldStaticContext.getMaxFreqF(), body.getName(),
+                                        staticContext.getMaxFreqF(), body.getName(),
                                                                       new FieldTimeSpanMap<>(new FieldSlot<>(jMax,
                                                                                                              INTERPOLATION_POINTS),
                                                                                              field));
@@ -315,22 +329,18 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Container for attributes
         final FieldDSSTThirdBodyDynamicContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-        // Static context
-        @SuppressWarnings("unchecked")
-        final FieldDSSTThirdBodyStaticContext<T> currentStatic = (FieldDSSTThirdBodyStaticContext<T>) fieldStaticContext.get(field);
-
         // a / R3 up to power maxAR3Pow
-        final T[] aoR3Pow = computeAoR3Pow(context, currentStatic);
+        final T[] aoR3Pow = computeAoR3Pow(context);
 
         // Qns coefficients
-        final T[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), currentStatic.getMaxAR3Pow(), FastMath.max(currentStatic.getMaxEccPow(), MAX_ECCPOWER_SP));
+        final T[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), staticContext.getMaxAR3Pow(), FastMath.max(staticContext.getMaxEccPow(), MAX_ECCPOWER_SP));
 
         // Hansen objects
         @SuppressWarnings("unchecked")
         final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
 
         // Access to potential U derivatives
-        final FieldUAnddU<T> udu = new FieldUAnddU<>(context, fho, currentStatic, aoR3Pow, Qns);
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(context, fho, aoR3Pow, Qns);
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
@@ -472,18 +482,15 @@ public class DSSTThirdBody implements DSSTForceModel {
             // Container of attributes
             final FieldDSSTThirdBodyDynamicContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-            // Static context
-            final FieldDSSTThirdBodyStaticContext<T> currentStatic = (FieldDSSTThirdBodyStaticContext<T>) fieldStaticContext.get(field);
-
             // a / R3 up to power maxAR3Pow
-            final T[] aoR3Pow = computeAoR3Pow(context, currentStatic);
+            final T[] aoR3Pow = computeAoR3Pow(context);
 
             // Qns coefficients
-            final T[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), currentStatic.getMaxAR3Pow(), FastMath.max(currentStatic.getMaxEccPow(), MAX_ECCPOWER_SP));
+            final T[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), staticContext.getMaxAR3Pow(), FastMath.max(staticContext.getMaxEccPow(), MAX_ECCPOWER_SP));
 
             final FieldGeneratingFunctionCoefficients<T> gfCoefs =
-                            new FieldGeneratingFunctionCoefficients<>(currentStatic.getMaxAR3Pow(), MAX_ECCPOWER_SP, currentStatic.getMaxAR3Pow() + 1,
-                                                                      context, currentStatic, (FieldHansenObjects<T>) fieldHansen.get(field), field, aoR3Pow, Qns);
+                            new FieldGeneratingFunctionCoefficients<>(staticContext.getMaxAR3Pow(), MAX_ECCPOWER_SP, staticContext.getMaxAR3Pow() + 1,
+                                                                      context, (FieldHansenObjects<T>) fieldHansen.get(field), field, aoR3Pow, Qns);
 
             //Compute additional quantities
             // 2 * a / An
@@ -573,19 +580,17 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /**
      * Computes a / R3 to the power maxAR3Pow.
-     * @param dynamicContext force model dynamic context
-     * @param currentStatic force model static context
+     * @param context force model dynamic context
      * @param <T> type of the elements
      * @return aoR3Pow array
      */
-    private <T extends CalculusFieldElement<T>> T[] computeAoR3Pow(final FieldDSSTThirdBodyDynamicContext<T> dynamicContext,
-                                                                   final FieldDSSTThirdBodyStaticContext<T> currentStatic) {
-        final Field<T> field = dynamicContext.getA().getField();
+    private <T extends CalculusFieldElement<T>> T[] computeAoR3Pow(final FieldDSSTThirdBodyDynamicContext<T> context) {
+        final Field<T> field = context.getA().getField();
         // a / R3 up to power maxAR3Pow
-        final T aoR3 = dynamicContext.getFieldAuxiliaryElements().getSma().divide(dynamicContext.getR3());
-        final T[] aoR3Pow = MathArrays.buildArray(field, currentStatic.getMaxAR3Pow() + 1);
+        final T aoR3 = context.getFieldAuxiliaryElements().getSma().divide(context.getR3());
+        final T[] aoR3Pow = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + 1);
         aoR3Pow[0] = field.getOne();
-        for (int i = 1; i <= currentStatic.getMaxAR3Pow(); i++) {
+        for (int i = 1; i <= staticContext.getMaxAR3Pow(); i++) {
             aoR3Pow[i] = aoR3.multiply(aoR3Pow[i - 1]);
         }
         return aoR3Pow;
@@ -1075,14 +1080,12 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param sMax maximum value for s index
          * @param jMax maximum value for j index
          * @param context container for dynamic force model attributes
-         * @param currentStatic static context
          * @param aoR3Pow a / R3 up to power maxAR3Pow
          * @param qns Qns coefficients
          * @param field field used by default
          */
         FieldFourierCjSjCoefficients(final int nMax, final int sMax, final int jMax,
                                      final FieldDSSTThirdBodyDynamicContext<T> context,
-                                     final FieldDSSTThirdBodyStaticContext<T> currentStatic,
                                      final T[] aoR3Pow, final T[][] qns,
                                      final Field<T> field) {
             //Zero
@@ -1094,7 +1097,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             this.jMax = jMax;
 
             //Create objects
-            wnsjEtomjmsCoefficient = new FieldWnsjEtomjmsCoefficient<>(context, currentStatic, field);
+            wnsjEtomjmsCoefficient = new FieldWnsjEtomjmsCoefficient<>(context, field);
             ABDECoefficients       = new FieldCjSjAlphaBetaKH<>(context, field);
             gns                    = new FieldGnsCoefficients<>(nMax, sMax, context, aoR3Pow, qns, field);
 
@@ -1599,7 +1602,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     *
     * @author Lucian Barbulescu
     */
-    private static class FieldWnsjEtomjmsCoefficient <T extends CalculusFieldElement<T>> {
+    private class FieldWnsjEtomjmsCoefficient <T extends CalculusFieldElement<T>> {
 
         /** The value c.
          * <p>
@@ -1634,12 +1637,9 @@ public class DSSTThirdBody implements DSSTForceModel {
         /**
          * Standard constructor.
          * @param context container for attributes
-         * @param currentStatic static context
          * @param field field used by default
          */
-        FieldWnsjEtomjmsCoefficient(final FieldDSSTThirdBodyDynamicContext<T> context,
-                                    final FieldDSSTThirdBodyStaticContext<T> currentStatic,
-                                    final Field<T> field) {
+        FieldWnsjEtomjmsCoefficient(final FieldDSSTThirdBodyDynamicContext<T> context, final Field<T> field) {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
@@ -1669,21 +1669,21 @@ public class DSSTThirdBody implements DSSTForceModel {
             }
 
             //Compute the powers (1 - c²)<sup>n</sup> and (1 + c²)<sup>n</sup>
-            omc2tn = MathArrays.buildArray(field, currentStatic.getMaxAR3Pow() + currentStatic.getMaxFreqF() + 2);
-            opc2tn = MathArrays.buildArray(field, currentStatic.getMaxAR3Pow() + currentStatic.getMaxFreqF() + 2);
+            omc2tn = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 2);
+            opc2tn = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 2);
             final T omc2 = c2.negate().add(1.);
             final T opc2 = c2.add(1.);
             omc2tn[0] = zero.add(1.);
             opc2tn[0] = zero.add(1.);
-            for (int i = 1; i <= currentStatic.getMaxAR3Pow() + currentStatic.getMaxFreqF() + 1; i++) {
+            for (int i = 1; i <= staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 1; i++) {
                 omc2tn[i] = omc2tn[i - 1].multiply(omc2);
                 opc2tn[i] = opc2tn[i - 1].multiply(opc2);
             }
 
             //Compute the powers of b
-            btjms = MathArrays.buildArray(field, currentStatic.getMaxAR3Pow() + currentStatic.getMaxFreqF() + 1);
+            btjms = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 1);
             btjms[0] = zero.add(1.);
-            for (int i = 1; i <= currentStatic.getMaxAR3Pow() + currentStatic.getMaxFreqF(); i++) {
+            for (int i = 1; i <= staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF(); i++) {
                 btjms[i] = btjms[i - 1].multiply(context.getb());
             }
         }
@@ -2901,7 +2901,6 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param sMax maximum value of s index
          * @param jMax maximum value of j index
          * @param context container for attributes
-         * @param currentStatic current static context
          * @param hansen hansen objects
          * @param field field used by default
          * @param aoR3Pow a / R3 up to power maxAR3Pow
@@ -2909,34 +2908,31 @@ public class DSSTThirdBody implements DSSTForceModel {
          */
         FieldGeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax,
                                             final FieldDSSTThirdBodyDynamicContext<T> context,
-                                            final FieldDSSTThirdBodyStaticContext<T> currentStatic,
                                             final FieldHansenObjects<T> hansen, final Field<T> field,
                                             final T[] aoR3Pow, final T[][] qns) {
             this.jMax = jMax;
-            this.cjsjFourier = new FieldFourierCjSjCoefficients<>(nMax, sMax, jMax, context, currentStatic, aoR3Pow, qns, field);
+            this.cjsjFourier = new FieldFourierCjSjCoefficients<>(nMax, sMax, jMax, context, aoR3Pow, qns, field);
             this.cjCoefs     = MathArrays.buildArray(field, 8, jMax + 1);
             this.sjCoefs     = MathArrays.buildArray(field, 8, jMax + 1);
 
-            computeGeneratingFunctionCoefficients(context, currentStatic, hansen, aoR3Pow, qns);
+            computeGeneratingFunctionCoefficients(context, hansen, aoR3Pow, qns);
         }
 
         /**
          * Compute the coefficients for the generating function S and its derivatives.
          * @param context container for attributes
-         * @param currentStatic current static context
          * @param hansenObjects hansen objects
          * @param aoR3Pow a / R3 up to power maxAR3Pow
          * @param qns Qns coefficients
          */
         private void computeGeneratingFunctionCoefficients(final FieldDSSTThirdBodyDynamicContext<T> context,
-                                                           final FieldDSSTThirdBodyStaticContext<T> currentStatic,
                                                            final FieldHansenObjects<T> hansenObjects,
                                                            final T[] aoR3Pow, final T[][] qns) {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
             // Access to potential U derivatives
-            final FieldUAnddU<T> udu = new FieldUAnddU<>(context, hansenObjects, currentStatic, aoR3Pow, qns);
+            final FieldUAnddU<T> udu = new FieldUAnddU<>(context, hansenObjects, aoR3Pow, qns);
 
             //Compute the C<sup>j</sup> coefficients
             for (int j = 1; j <= jMax; j++) {
@@ -3740,13 +3736,10 @@ public class DSSTThirdBody implements DSSTForceModel {
         /** Simple constuctor.
          * @param context container for attributes
          * @param hansen hansen objects
-         * @param currentStatic static context
          * @param aoR3Pow a / R3 up to power maxAR3Pow
          * @param qns Qns coefficients
          */
-        FieldUAnddU(final FieldDSSTThirdBodyDynamicContext<T> context,
-                    final FieldHansenObjects<T> hansen,
-                    final FieldDSSTThirdBodyStaticContext<T> currentStatic,
+        FieldUAnddU(final FieldDSSTThirdBodyDynamicContext<T> context, final FieldHansenObjects<T> hansen,
                     final T[] aoR3Pow, final T[][] qns) {
 
             // Auxiliary elements related to the current orbit
@@ -3758,7 +3751,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             final T zero = field.getZero();
 
             // Gs and Hs coefficients
-            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), currentStatic.getMaxEccPow(), field);
+            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), staticContext.getMaxEccPow(), field);
 
             // Initialise U.
             U = zero;
@@ -3771,7 +3764,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             dUdBe = zero;
             dUdGa = zero;
 
-            for (int s = 0; s <= currentStatic.getMaxEccPow(); s++) {
+            for (int s = 0; s <= staticContext.getMaxEccPow(); s++) {
                 // initialise the Hansen roots
                 hansen.computeHansenObjectsInitValues(context, auxiliaryElements.getB(), s);
 
@@ -3797,7 +3790,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                 // Kronecker symbol (2 - delta(0,s))
                 final T delta0s = zero.add((s == 0) ? 1. : 2.);
 
-                for (int n = FastMath.max(2, s); n <= currentStatic.getMaxAR3Pow(); n++) {
+                for (int n = FastMath.max(2, s); n <= staticContext.getMaxAR3Pow(); n++) {
                     // (n - s) must be even
                     if ((n - s) % 2 == 0) {
                         // Extract data from previous computation :

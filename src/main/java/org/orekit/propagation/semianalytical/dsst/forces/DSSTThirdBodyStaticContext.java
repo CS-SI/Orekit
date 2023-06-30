@@ -46,15 +46,15 @@ public class DSSTThirdBodyStaticContext extends ForceModelContext {
     /**
      * Constructor.
      *
-     * @param context force model context
+     * @param aux auxiliary elements
+     * @param x DSST Chi element
+     * @param r3 distance from center of mass of the central body to the 3rd body
      * @param parameters force model parameters
      */
-    public DSSTThirdBodyStaticContext(final DSSTThirdBodyDynamicContext context,
+    public DSSTThirdBodyStaticContext(final AuxiliaryElements aux,
+                                      final double x, final double r3,
                                       final double[] parameters) {
-        super(context.getAuxiliaryElements());
-
-        // Auxiliary elements
-        final AuxiliaryElements aux = context.getAuxiliaryElements();
+        super(aux);
 
         // Factorials computation
         final int dim = 2 * DSSTThirdBody.MAX_POWER;
@@ -65,28 +65,25 @@ public class DSSTThirdBodyStaticContext extends ForceModelContext {
         }
 
         // Truncation tolerance.
-        final double aor = aux.getSma() / context.getR3();
+        final double aor = aux.getSma() / r3;
         final double tol = (aor > .3 || aor > .15 && aux.getEcc() > .25) ? DSSTThirdBody.BIG_TRUNCATION_TOLERANCE : DSSTThirdBody.SMALL_TRUNCATION_TOLERANCE;
 
         // Utilities for truncation
         // Set a lower bound for eccentricity
         final double eo2 = FastMath.max(0.0025, 0.5 * aux.getEcc());
-        final double x2o2 = 0.5 * context.getXX();
+        final double x2o2 = 0.5 * x * x;
         final double[] eccPwr = new double[DSSTThirdBody.MAX_POWER];
         final double[] chiPwr = new double[DSSTThirdBody.MAX_POWER];
         eccPwr[0] = 1.;
-        chiPwr[0] = context.getX();
+        chiPwr[0] = x;
         for (int i = 1; i < DSSTThirdBody.MAX_POWER; i++) {
             eccPwr[i] = eccPwr[i - 1] * eo2;
             chiPwr[i] = chiPwr[i - 1] * x2o2;
         }
 
         // Auxiliary quantities.
-        final double ao2rxx = aor / (2. * context.getXX());
-        double xmuarn =
-            ao2rxx *
-                        ao2rxx * parameters[0] /
-                        (context.getX() * context.getR3());
+        final double ao2rxx = aor / (2. * x * x);
+        double xmuarn = ao2rxx * ao2rxx * parameters[0] / (x * r3);
         double term = 0.;
 
         // Compute max power for a/R3 and e.
@@ -103,7 +100,7 @@ public class DSSTThirdBodyStaticContext extends ForceModelContext {
                    (fact[n + m] / (fact[nsmd2] * fact[nsmd2 + m])) *
                    (fact[n + m + 1] / (fact[m] * fact[n + 1])) *
                    (fact[n - m + 1] / fact[n + 1]) * eccPwr[m] *
-                   UpperBounds.getDnl(context.getXX(), chiPwr[m], n + 2, m);
+                   UpperBounds.getDnl(x * x, chiPwr[m], n + 2, m);
 
             if (term < tol) {
                 if (m == 0) {

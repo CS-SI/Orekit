@@ -31,6 +31,9 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 
+    /** Orbit. */
+    private final FieldOrbit<T> orbit;
+
     /** Orbit date. */
     private final FieldAbsoluteDate<T> date;
 
@@ -116,6 +119,9 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
     public FieldAuxiliaryElements(final FieldOrbit<T> orbit, final int retrogradeFactor) {
 
         final T pi = orbit.getDate().getField().getZero().getPi();
+
+        // Orbit
+        this.orbit = orbit;
 
         // Date of the orbit
         date = orbit.getDate();
@@ -339,4 +345,11 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
         return gamma;
     }
 
+    /** Transforms the FieldAuxiliaryElements instance into an AuxiliaryElements instance.
+     * @return the AuxiliaryElements instance
+     * @since 11.3.3
+     */
+    public AuxiliaryElements toAuxiliaryElements() {
+        return new AuxiliaryElements(orbit.toOrbit(), getRetrogradeFactor());
+    }
 }

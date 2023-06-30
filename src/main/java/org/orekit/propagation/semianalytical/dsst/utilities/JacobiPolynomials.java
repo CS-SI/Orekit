@@ -61,33 +61,8 @@ public class JacobiPolynomials {
      * @since 11.3.3
      */
     public static double[] getValueAndDerivative(final int l, final int v, final int w, final double x) {
-
-        final List<PolynomialFunction> polyList;
-        synchronized (MAP) {
-
-            final JacobiKey key = new JacobiKey(v, w);
-
-            // Check the existence of the corresponding key in the map.
-            if (!MAP.containsKey(key)) {
-                MAP.put(key, new ArrayList<PolynomialFunction>());
-            }
-
-            polyList = MAP.get(key);
-
-        }
-
-        final PolynomialFunction polynomial;
-        synchronized (polyList) {
-            // If the l-th degree polynomial has not been computed yet, the polynomials
-            // up to this degree are computed.
-            for (int degree = polyList.size(); degree <= l; degree++) {
-                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
-            }
-            polynomial = polyList.get(l);
-        }
-
         // compute value and derivative
-        return getValueAndDerivative(polynomial, x);
+        return getValueAndDerivative(computePolynomial(l, v, w), x);
     }
 
     /** Get value and 1st-order of a mono-variate polynomial.
@@ -138,33 +113,8 @@ public class JacobiPolynomials {
      * @since 10.2
      */
     public static Gradient getValue(final int l, final int v, final int w, final Gradient gamma) {
-
-        final List<PolynomialFunction> polyList;
-        synchronized (MAP) {
-
-            final JacobiKey key = new JacobiKey(v, w);
-
-            // Check the existence of the corresponding key in the map.
-            if (!MAP.containsKey(key)) {
-                MAP.put(key, new ArrayList<PolynomialFunction>());
-            }
-
-            polyList = MAP.get(key);
-
-        }
-
-        final PolynomialFunction polynomial;
-        synchronized (polyList) {
-            // If the l-th degree polynomial has not been computed yet, the polynomials
-            // up to this degree are computed.
-            for (int degree = polyList.size(); degree <= l; degree++) {
-                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
-            }
-            polynomial = polyList.get(l);
-        }
-
         // compute value and derivative
-        return polynomial.value(gamma);
+        return computePolynomial(l, v, w).value(gamma);
     }
 
     /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
@@ -181,7 +131,18 @@ public class JacobiPolynomials {
      */
     public static <T extends CalculusFieldElement<T>> FieldGradient<T> getValue(final int l, final int v, final int w,
                                                                                 final FieldGradient<T> gamma) {
+        // compute value and derivative
+        return computePolynomial(l, v, w).value(gamma);
 
+    }
+
+    /** Initializes the polynomial to evalutate.
+     * @param l degree of the polynomial
+     * @param v v value
+     * @param w w value
+     * @return the polynomial to evaluate
+     */
+    private static PolynomialFunction computePolynomial(final int l, final int v, final int w) {
         final List<PolynomialFunction> polyList;
         synchronized (MAP) {
 
@@ -206,9 +167,7 @@ public class JacobiPolynomials {
             polynomial = polyList.get(l);
         }
 
-        // compute value and derivative
-        return polynomial.value(gamma);
-
+        return polynomial;
     }
 
     /** Inner class for Jacobi polynomials keys.
