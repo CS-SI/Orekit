@@ -20,7 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="TBD" date="TBD" description="TBD">
+    <release version="11.3.3" date="2023-06-30"
+             description="Version 11.3.3 is a patch release of Orekit.
+             It fixes several issues related to the semi-analytical propagation using DSST model.
+             Specifically, it fixes the propagation using 3x3 geopotential terms. It also fixes
+             the osculating propagation using luni-solar perturbation. Finally, it fixes a performance
+             issue in tesseral terms when high order values are used.">
       <action dev="maxime" type="fix" issue="1106">
         Improved performances for (Field)DSSTPropagatorTest.
       </action>
