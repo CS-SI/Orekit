@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.TreeMap;
+import java.util.SortedMap;
 
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
@@ -44,7 +44,7 @@ public class LnsCoefficients {
      * @param roa (R / a)
      */
     public LnsCoefficients(final int nMax, final int sMax,
-            final double[][] Qns, final TreeMap<NSKey, Double> Vns, final double roa) {
+            final double[][] Qns, final SortedMap<NSKey, Double> Vns, final double roa) {
         final int rows    = nMax + 1;
         final int columns = sMax + 1;
         this.lns          = new double[rows][columns];

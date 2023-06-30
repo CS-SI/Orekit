@@ -16,6 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -44,14 +52,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class DSSTTesseralTest {
 
     @Test
@@ -59,7 +59,7 @@ public class DSSTTesseralTest {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);
 
         final Frame frame = FramesFactory.getEME2000();
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
@@ -165,7 +165,7 @@ public class DSSTTesseralTest {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);
 
         final Frame frame = FramesFactory.getEME2000();
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
@@ -222,7 +222,7 @@ public class DSSTTesseralTest {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);
 
         // Frames and epoch
         final Frame frame = FramesFactory.getEME2000();
@@ -244,9 +244,9 @@ public class DSSTTesseralTest {
 
         // Eccentricity shift
         final Orbit shfitedOrbit = new EquinoctialOrbit(2.655989E7, 0.02, 0.0041543085910249414,
-                                                 -0.3412974060023717, 0.3960084733107685,
-                                                 8.566537840341699, PositionAngle.TRUE,
-                                                 frame, initDate, provider.getMu());
+                                                        -0.3412974060023717, 0.3960084733107685,
+                                                        8.566537840341699, PositionAngle.TRUE,
+                                                        frame, initDate, provider.getMu());
 
         final double[] elements = tesseral.getMeanElementRate(new SpacecraftState(shfitedOrbit), new AuxiliaryElements(shfitedOrbit, 1), parameters);
 
@@ -259,11 +259,124 @@ public class DSSTTesseralTest {
 
     }
 
+    /** Test issue 672:
+     * DSST Propagator was crashing with tesseral harmonics of the gravity field
+     * when the order is lower or equal to 3.
+     */
+    @Test
+    public void testIssue672() {
+
+        // GIVEN
+        // -----
+
+        // Test with a central Body geopotential of 2x2
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getUnnormalizedProvider(2, 2);
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+
+        // GPS Orbit
+        final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400,
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(26559890.,
+                                               0.0041632,
+                                               FastMath.toRadians(55.2),
+                                               FastMath.toRadians(315.4985),
+                                               FastMath.toRadians(130.7562),
+                                               FastMath.toRadians(44.2377),
+                                               PositionAngle.MEAN,
+                                               FramesFactory.getEME2000(),
+                                               initDate,
+                                               provider.getMu());
+
+        // Set propagator with state and force model
+        final SpacecraftState initialState = new SpacecraftState(orbit);
+
+        // Tesseral force model
+        final DSSTTesseral dsstTesseral =
+                        new DSSTTesseral(earthFrame,
+                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+
+        // Initialize short period terms
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        final AuxiliaryElements aux = new AuxiliaryElements(orbit, 1);
+        shortPeriodTerms.addAll(dsstTesseral.initializeShortPeriodTerms(aux,
+                                                                        PropagationType.OSCULATING,
+                                                                        dsstTesseral.getParameters()));
+
+        // WHEN
+        // ----
+
+        // Updating short period terms
+        dsstTesseral.updateShortPeriodTerms(dsstTesseral.getParameters(), initialState);
+
+        // THEN
+        // ----
+
+        // Verify that no exception was raised
+        Assertions.assertNotNull(shortPeriodTerms);
+
+    }
+
+    /** Test issue 672 with OUT_OF_RANGE_SIMPLE exception:
+     * 1. DSSTTesseral should throw an exception if input "maxEccPowTesseralSP" is greater than the order of the gravity field.
+     * 2. DSSTTesseral should not throw an exception if order = 0, even if input "maxEccPowTesseralSP" is greater than the
+     *    order of the gravity field (0 in this case). This last behavior was added for non-regression purposes.
+     */
+    @Test
+    public void testIssue672OutOfRangeException() {
+
+        // Throwing exception
+        // ------------------
+
+        // GIVEN
+        // Test with a central Body geopotential of 3x3
+        int degree = 3;
+        int order  = 2;
+        UnnormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getUnnormalizedProvider(degree, order);
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+
+        try {
+
+            // WHEN
+            // Tesseral force model: force "maxEccPowTesseralSP" to 3 which is greater than the order (2)
+            new DSSTTesseral(earthFrame,
+                             Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                             degree, order, 3,  FastMath.min(12, degree + 4),
+                             degree, order, FastMath.min(4, degree - 2));
+            Assertions.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+
+            // THEN
+            Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+        }
+
+
+        // NOT throwing exception
+        // ----------------------
+
+        // GIVEN
+        // Test with a central Body geopotential of 2x0
+        degree = 2;
+        order  = 0;
+        provider = GravityFieldFactory.getUnnormalizedProvider(degree, order);
+
+        // WHEN
+        // Tesseral force model: force "maxEccPowTesseralSP" to 4 which is greater than the order (0)
+        final DSSTTesseral dsstTesseral = new DSSTTesseral(earthFrame,
+                                                           Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                           degree, order, 4,  FastMath.min(12, degree + 4),
+                                                           degree, order, FastMath.min(4, degree - 2));
+        // THEN: Verify that no exception was raised
+        Assertions.assertNotNull(dsstTesseral);
+
+    }
+
     @Test
     public void testOutOfRangeException() {
         // Central Body geopotential 1x0
         final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(1, 0);
+                        GravityFieldFactory.getUnnormalizedProvider(1, 0);
         // Earth
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -271,8 +384,8 @@ public class DSSTTesseralTest {
         try {
             @SuppressWarnings("unused")
             final DSSTForceModel tesseral = new DSSTTesseral(earth.getBodyFrame(),
-                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                          provider);
+                                                             Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                             provider);
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
@@ -281,20 +394,20 @@ public class DSSTTesseralTest {
 
     @Test
     public void testGetMaxEccPow()
-        throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final UnnormalizedSphericalHarmonicsProvider provider =
                         GravityFieldFactory.getUnnormalizedProvider(4, 4);;
-        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        final DSSTTesseral force = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        Method getMaxEccPow = DSSTTesseral.class.getDeclaredMethod("getMaxEccPow", Double.TYPE);
-        getMaxEccPow.setAccessible(true);
-        Assertions.assertEquals(3,  getMaxEccPow.invoke(force, 0.0));
-        Assertions.assertEquals(4,  getMaxEccPow.invoke(force, 0.01));
-        Assertions.assertEquals(7,  getMaxEccPow.invoke(force, 0.08));
-        Assertions.assertEquals(10, getMaxEccPow.invoke(force, 0.15));
-        Assertions.assertEquals(12, getMaxEccPow.invoke(force, 0.25));
-        Assertions.assertEquals(15, getMaxEccPow.invoke(force, 0.35));
-        Assertions.assertEquals(20, getMaxEccPow.invoke(force, 1.0));
+                        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+                        final DSSTTesseral force = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+                        Method getMaxEccPow = DSSTTesseral.class.getDeclaredMethod("getMaxEccPow", Double.TYPE);
+                        getMaxEccPow.setAccessible(true);
+                        Assertions.assertEquals(3,  getMaxEccPow.invoke(force, 0.0));
+                        Assertions.assertEquals(4,  getMaxEccPow.invoke(force, 0.01));
+                        Assertions.assertEquals(7,  getMaxEccPow.invoke(force, 0.08));
+                        Assertions.assertEquals(10, getMaxEccPow.invoke(force, 0.15));
+                        Assertions.assertEquals(12, getMaxEccPow.invoke(force, 0.25));
+                        Assertions.assertEquals(15, getMaxEccPow.invoke(force, 0.35));
+                        Assertions.assertEquals(20, getMaxEccPow.invoke(force, 1.0));
     }
 
     @BeforeEach

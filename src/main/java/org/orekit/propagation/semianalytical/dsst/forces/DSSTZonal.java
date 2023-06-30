@@ -24,10 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.SortedMap;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
@@ -108,7 +108,7 @@ public class DSSTZonal implements DSSTForceModel {
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
     /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
-    private final TreeMap<NSKey, Double> Vns;
+    private final SortedMap<NSKey, Double> Vns;
 
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -185,7 +185,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY);
 
         // Vns coefficients
-        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
+        this.Vns = CoefficientsFactory.computeVnsCoefficients(provider.getMaxDegree() + 1);
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();

@@ -20,6 +20,28 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="11.3.3" date="2023-06-30"
+             description="Version 11.3.3 is a patch release of Orekit.
+             It fixes several issues related to the semi-analytical propagation using DSST model.
+             Specifically, it fixes the propagation using 3x3 geopotential terms. It also fixes
+             the osculating propagation using luni-solar perturbation. Finally, it fixes a performance
+             issue in tesseral terms when high order values are used.">
+      <action dev="maxime" type="fix" issue="1106">
+        Improved performances for (Field)DSSTPropagatorTest.
+      </action>
+      <action dev="maxime" type="fix" issue="672">
+        Fixed DSST tesseral force model short period terms update when order of gravity potential is lower or equal to 3.
+      </action>
+      <action dev="maxime" type="fix" issue="1098">
+        Fixed DSST osculating performance issues with high degree and order of geopotential.
+      </action>
+      <action dev="bryan" type="fix" issue="1100">
+        Fixed thread safety issue in CoefficientFactory.
+      </action>
+      <action dev="bryan" type="fix" issue="1029">
+        Fixed crash of DSST during propagation with osculating and 3rd body.
+      </action>
+    </release>
     <release version="11.3.2" date="2023-02-17"
              description="Version 11.3.2 is a patch release of Orekit.
              It fixes issues related to the measurement covariance used by the Unscented Kalman Filter,

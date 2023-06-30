@@ -26,12 +26,13 @@ import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 
 /** Provider of the Jacobi polynomials P<sub>l</sub><sup>v,w</sup>.
  * <p>
  * This class is used for {@link
  * org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral
- * tesseral contribution} computation.
+ * tesseral contribution} computation and {@link DSSTThirdBody}.
  * </p>
  *
  * @author Nicolas Bernard
@@ -41,16 +42,69 @@ public class JacobiPolynomials {
 
     /** Storage map. */
     private static final Map<JacobiKey, List<PolynomialFunction>> MAP =
-            new HashMap<JacobiPolynomials.JacobiKey, List<PolynomialFunction>>();
+                    new HashMap<JacobiKey, List<PolynomialFunction>>();
 
     /** Private constructor as class is a utility. */
     private JacobiPolynomials() {
     }
 
     /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
-     * <p>
-     * This method is guaranteed to be thread-safe
-     * </p>
+     * <p>This method is guaranteed to be thread-safe
+     * <p>It was added to improve performances of DSST propagation with tesseral gravity field or third-body perturbations.
+     * <p>See issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1098">1098</a>.
+     * <p>It appeared the "Gradient" version was degrading performances. This last was however kept for validation purposes.
+     * @param l degree of the polynomial
+     * @param v v value
+     * @param w w value
+     * @param x x value
+     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
+     * @since 11.3.3
+     */
+    public static double[] getValueAndDerivative(final int l, final int v, final int w, final double x) {
+        // compute value and derivative
+        return getValueAndDerivative(computePolynomial(l, v, w), x);
+    }
+
+    /** Get value and 1st-order of a mono-variate polynomial.
+     *
+     * <p> This method was added to improve performances of DSST propagation with tesseral gravity field or third-body perturbations.
+     * <p> See issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1098">1098</a>.
+     * @param polynomial polynomial to evaluate
+     * @param x value to evaluate on
+     * @return value and 1s-order derivative as a double array
+     * @since 11.3.3
+     */
+    private static double[] getValueAndDerivative(final PolynomialFunction polynomial, final double x) {
+
+        // Polynomial coefficients
+        final double[] coefficients = polynomial.getCoefficients();
+
+        // Degree of the polynomial
+        final int degree = polynomial.degree();
+
+        // Initialize value and 1st-order derivative
+        double value      = coefficients[degree];
+        double derivative = value * degree;
+        for (int j = degree - 1; j >= 1; j--) {
+
+            // Increment both value and derivative
+            final double coef = coefficients[j];
+            value        = value      * x +  coef;
+            derivative   = derivative * x +  coef * j;
+        }
+        // If degree > 0, perform last operation
+        if (degree > 0) {
+            value = value * x + coefficients[0];
+        }
+
+        // Return value and 1st-order derivative as double array
+        return new double[] {value, derivative};
+    }
+
+    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
+     *
+     * <p>This method is guaranteed to be thread-safe
+     * <p>It's not used in the code anymore, see {@link #getValueAndDerivative(int, int, int, double)}, but was kept for validation purpose.
      * @param l degree of the polynomial
      * @param v v value
      * @param w w value
@@ -59,34 +113,8 @@ public class JacobiPolynomials {
      * @since 10.2
      */
     public static Gradient getValue(final int l, final int v, final int w, final Gradient gamma) {
-
-        final List<PolynomialFunction> polyList;
-        synchronized (MAP) {
-
-            final JacobiKey key = new JacobiKey(v, w);
-
-            // Check the existence of the corresponding key in the map.
-            if (!MAP.containsKey(key)) {
-                MAP.put(key, new ArrayList<PolynomialFunction>());
-            }
-
-            polyList = MAP.get(key);
-
-        }
-
-        final PolynomialFunction polynomial;
-        synchronized (polyList) {
-            // If the l-th degree polynomial has not been computed yet, the polynomials
-            // up to this degree are computed.
-            for (int degree = polyList.size(); degree <= l; degree++) {
-                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
-            }
-            polynomial = polyList.get(l);
-        }
-
         // compute value and derivative
-        return polynomial.value(gamma);
-
+        return computePolynomial(l, v, w).value(gamma);
     }
 
     /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
@@ -102,8 +130,19 @@ public class JacobiPolynomials {
      * @since 10.2
      */
     public static <T extends CalculusFieldElement<T>> FieldGradient<T> getValue(final int l, final int v, final int w,
-                                                                            final FieldGradient<T> gamma) {
+                                                                                final FieldGradient<T> gamma) {
+        // compute value and derivative
+        return computePolynomial(l, v, w).value(gamma);
 
+    }
+
+    /** Initializes the polynomial to evalutate.
+     * @param l degree of the polynomial
+     * @param v v value
+     * @param w w value
+     * @return the polynomial to evaluate
+     */
+    private static PolynomialFunction computePolynomial(final int l, final int v, final int w) {
         final List<PolynomialFunction> polyList;
         synchronized (MAP) {
 
@@ -128,9 +167,7 @@ public class JacobiPolynomials {
             polynomial = polyList.get(l);
         }
 
-        // compute value and derivative
-        return polynomial.value(gamma);
-
+        return polynomial;
     }
 
     /** Inner class for Jacobi polynomials keys.
@@ -183,5 +220,4 @@ public class JacobiPolynomials {
 
         }
     }
-
 }

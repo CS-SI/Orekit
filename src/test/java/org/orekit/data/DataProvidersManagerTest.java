@@ -16,13 +16,6 @@
  */
 package org.orekit.data;
 
-import org.hipparchus.exception.DummyLocalizable;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
-
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -31,6 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.hipparchus.exception.DummyLocalizable;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 
 public class DataProvidersManagerTest {
 
@@ -47,7 +47,7 @@ public class DataProvidersManagerTest {
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         Assertions.assertFalse(DataContext.getDefault().getDataProvidersManager().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assertions.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
-        Assertions.assertEquals(18, crawler.getCount());
+        Assertions.assertEquals(20, crawler.getCount());
     }
 
     @Test
@@ -64,12 +64,12 @@ public class DataProvidersManagerTest {
         Assertions.assertEquals(0, manager.getLoadedDataNames().size());
         CountingLoader txtCounter = new CountingLoader(false);
         Assertions.assertTrue(manager.feed(".*\\.txt$", txtCounter));
-        Assertions.assertEquals(5, txtCounter.getCount());
-        Assertions.assertEquals(5, manager.getLoadedDataNames().size());
+        Assertions.assertEquals(6, txtCounter.getCount());
+        Assertions.assertEquals(6, manager.getLoadedDataNames().size());
         CountingLoader de405Counter = new CountingLoader(false);
         Assertions.assertTrue(manager.feed(".*\\.405$", de405Counter));
         Assertions.assertEquals(4, de405Counter.getCount());
-        Assertions.assertEquals(9, manager.getLoadedDataNames().size());
+        Assertions.assertEquals(10, manager.getLoadedDataNames().size());
         manager.clearLoadedDataNames();
         Assertions.assertEquals(0, manager.getLoadedDataNames().size());
     }
@@ -85,7 +85,7 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assertions.assertEquals(18, crawler.getCount());
+        Assertions.assertEquals(20, crawler.getCount());
     }
 
     @Test
@@ -207,9 +207,9 @@ public class DataProvidersManagerTest {
         DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assertions.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
-        Assertions.assertEquals(18, crawler.getCount());
-        Assertions.assertEquals(18, filter.getFilteredCount());
-        Assertions.assertEquals(18, filter.getOpenedCount());
+        Assertions.assertEquals(20, crawler.getCount());
+        Assertions.assertEquals(20, filter.getFilteredCount());
+        Assertions.assertEquals(20, filter.getOpenedCount());
     }
 
     @Test
@@ -220,8 +220,8 @@ public class DataProvidersManagerTest {
         DataContext.getDefault().getDataProvidersManager().getFiltersManager().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assertions.assertTrue(DataContext.getDefault().getDataProvidersManager().feed(".*", crawler));
-        Assertions.assertEquals(18, crawler.getCount());
-        Assertions.assertEquals(18 * layers, filter.getOpenedCount());
+        Assertions.assertEquals(20, crawler.getCount());
+        Assertions.assertEquals(20 * layers, filter.getOpenedCount());
     }
 
     private static class CountingLoader implements DataLoader {
