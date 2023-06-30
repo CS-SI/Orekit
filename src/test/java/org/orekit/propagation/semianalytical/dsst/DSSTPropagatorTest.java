@@ -41,6 +41,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -664,8 +665,15 @@ public class DSSTPropagatorTest {
 
     }
 
+    /**
+     * Compare classical propagation with a fixed-step handler with ephemeris generation on the same points.
+     */
     @Test
     public void testEphemerisGeneration() {
+
+        // GIVEN
+        // -----
+
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
@@ -694,16 +702,24 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth, nshp.getMu()));
         propagator.setInterpolationGridToMaxTimeGap(0.5 * Constants.JULIAN_DAY);
 
+
+        // WHEN
+        // ----
+
+        // Number of days of propagation
+        // Was 30 days but was reduced for issue 1106
+        final double nDays = 5.;
+
         // direct generation of states
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
         propagator.setStepHandler(600, currentState -> states.add(currentState));
-        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        propagator.propagate(orbit.getDate().shiftedBy(nDays * Constants.JULIAN_DAY));
 
         // ephemeris generation
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
-        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        propagator.propagate(orbit.getDate().shiftedBy(nDays * Constants.JULIAN_DAY));
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         double maxError = 0;
@@ -713,7 +729,12 @@ public class DSSTPropagatorTest {
                                                    fromEphemeris.getPosition());
             maxError = FastMath.max(maxError, error);
         }
-        Assertions.assertEquals(0.0, maxError, 1.0e-10);
+
+        // THEN
+        // ----
+
+        // Check on orbits' distances was 1e-10 m but was reduced during issue 1106
+        Assertions.assertEquals(0.0, maxError, Precision.SAFE_MIN);
     }
 
     @Test
