@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -32,9 +36,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 public class CoefficientFactoryTest {
 
     private static final double eps0  = 0.;
@@ -47,7 +48,7 @@ public class CoefficientFactoryTest {
     @Test
     public void testVns() {
         final int order = 100;
-        TreeMap<NSKey, Double> Vns = CoefficientsFactory.computeVns(order);
+        SortedMap<NSKey, Double> Vns = CoefficientsFactory.computeVnsCoefficients(order);
 
         // Odd terms are null
         for (int i = 0; i < order; i++) {

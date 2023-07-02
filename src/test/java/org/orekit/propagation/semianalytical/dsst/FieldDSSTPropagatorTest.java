@@ -112,6 +112,56 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldDSSTPropagatorTest {
 
+    /**
+     * Test issue #1029 about DSST short period terms computation.
+     * Issue #1029 is a regression introduced in version 10.0
+     * Test case built from Christophe Le Bris example: https://gitlab.orekit.org/orekit/orekit/-/issues/1029
+     */
+    @Test
+    public void testIssue1029() {
+        doTestIssue1029(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue1029(Field<T> field) {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // Zero
+        final T zero = field.getZero();
+
+        // initial state
+        final FieldAbsoluteDate<T> orbitEpoch = new FieldAbsoluteDate<>(field, 2023, 2, 18, TimeScalesFactory.getUTC());
+        final Frame inertial = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
+        final FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(42166000.0), zero.add(0.00028), zero.add(FastMath.toRadians(0.05)),
+                                                                     zero.add(FastMath.toRadians(66.0)), zero.add(FastMath.toRadians(270.0)),
+                                                                     zero.add(FastMath.toRadians(11.94)), PositionAngle.MEAN,
+                                                                     inertial, orbitEpoch, zero.add(Constants.WGS84_EARTH_MU));
+        final FieldEquinoctialOrbit<T> equinoctial = new FieldEquinoctialOrbit<>(orbit);
+
+        // create propagator
+        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(0.001), equinoctial);
+        final AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 3600.0, 86400.0, tol[0], tol[1]);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+
+        // add force models
+        final Frame ecefFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getConstantUnnormalizedProvider(8, 8);
+        propagator.addForceModel(new DSSTZonal(gravityProvider));
+        propagator.addForceModel(new DSSTTesseral(ecefFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityProvider));
+        propagator.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(), gravityProvider.getMu()));
+        propagator.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon(), gravityProvider.getMu()));
+
+        // propagate
+        propagator.setInitialState(new FieldSpacecraftState<>(equinoctial, zero.add(6000.0)), PropagationType.MEAN);
+        FieldSpacecraftState<T> propagated = propagator.propagate(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY));
+
+        // The purpose is not verifying propagated values, but to check that no exception occurred
+        Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)).getReal(), Double.MIN_VALUE);
+        Assertions.assertEquals(4.2164648630370155E7, propagated.getA().getReal(), Double.MIN_VALUE);
+
+    }
+
     @Test
     public void testIssue363() {
         doTestIssue363(Binary64Field.getInstance());
