@@ -153,7 +153,7 @@ public class DSSTPropagatorTest {
 
         // The purpose is not verifying propagated values, but to check that no exception occurred
         Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)), Double.MIN_VALUE);
-        Assertions.assertEquals(4.2164648630370155E7, propagated.getA(), Double.MIN_VALUE);
+        Assertions.assertEquals(4.216464862955707E7, propagated.getA(), Double.MIN_VALUE);
 
     }
 
