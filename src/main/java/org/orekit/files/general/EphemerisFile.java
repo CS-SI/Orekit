@@ -84,7 +84,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter used in {@link #getPropagator()}, in m³/s².
+         * @return the gravitational parameter used in {@link #getPropagator(AttitudeProvider)}, in m³/s².
          */
         double getMu();
 
@@ -163,7 +163,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter used in {@link #getPropagator()}, in m³/s².
+         * @return the gravitational parameter used in {@link #getPropagator(AttitudeProvider)}, in m³/s².
          */
         double getMu();
 
@@ -177,7 +177,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
 
         /**
          * Get the inertial reference frame for this ephemeris segment. Defines the
-         * propagation frame for {@link #getPropagator()}.
+         * propagation frame for {@link #getPropagator(AttitudeProvider)}.
          *
          * <p>The default implementation returns {@link #getFrame()} if it is inertial.
          * Otherwise it returns {@link Frame#getRoot()}. Implementors are encouraged to

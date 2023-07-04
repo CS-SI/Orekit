@@ -361,7 +361,7 @@ public class Transform implements
                 angular.rotationShiftedBy(dt));
     }
 
-    /** {@inheritDoc}
+    /** Interpolate a transform from a sample set of existing transforms.
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
      * CartesianDerivativesFilter, AngularDerivativesFilter, Collection)} with {@code cFilter}
@@ -369,6 +369,9 @@ public class Transform implements
      * {@link AngularDerivativesFilter#USE_RRA}
      * set to true.
      * </p>
+     * @param interpolationDate interpolation date
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
      */
     public Transform interpolate(final AbsoluteDate interpolationDate, final Stream<Transform> sample) {
         return interpolate(interpolationDate,
@@ -398,7 +401,7 @@ public class Transform implements
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-          * @since 7.0
+     * @since 7.0
      */
     public static Transform interpolate(final AbsoluteDate date,
                                         final CartesianDerivativesFilter cFilter,
