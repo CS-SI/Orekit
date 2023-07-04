@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
@@ -108,7 +109,7 @@ public class EphemerisSegmentPropagatorTest {
         };
 
         // action
-        BoundedPropagator propagator = ephemeris.getPropagator();
+        BoundedPropagator propagator = ephemeris.getPropagator(new FrameAlignedProvider(frame));
 
         //verify
         MatcherAssert.assertThat(propagator.getMinDate(), CoreMatchers.is(start));

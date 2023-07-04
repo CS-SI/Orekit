@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
@@ -278,7 +279,7 @@ public class SP3ParserTest {
         // verify
         TimeScale gps = TimeScalesFactory.getGPS();
         SP3Ephemeris ephemeris = file.getSatellites().get("1");
-        BoundedPropagator propagator = ephemeris.getPropagator();
+        BoundedPropagator propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
         Assertions.assertEquals(propagator.getMinDate(), new AbsoluteDate(1994, 12, 17, gps));
         Assertions.assertEquals(propagator.getMaxDate(), new AbsoluteDate(1994, 12, 17, 23, 45, 0, gps));
         SP3Coordinate expected = ephemeris.getCoordinates().get(0);
@@ -293,7 +294,7 @@ public class SP3ParserTest {
                 expected);
 
         ephemeris = file.getSatellites().get("31");
-        propagator = ephemeris.getPropagator();
+        propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
         Assertions.assertEquals(propagator.getMinDate(), new AbsoluteDate(1994, 12, 17, gps));
         Assertions.assertEquals(propagator.getMaxDate(), new AbsoluteDate(1994, 12, 17, 23, 45, 0, gps));
         expected = ephemeris.getCoordinates().get(0);

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -133,12 +134,13 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          *
          * <p> Each call to this method creates a new propagator.
          *
+         * @param attitudeProvider provider for attitude computation
          * @return a propagator for all the data in this ephemeris file.
          */
-        default BoundedPropagator getPropagator() {
+        default BoundedPropagator getPropagator(final  AttitudeProvider attitudeProvider) {
             final List<BoundedPropagator> propagators = new ArrayList<>();
             for (final EphemerisSegment<C> segment : this.getSegments()) {
-                propagators.add(segment.getPropagator());
+                propagators.add(segment.getPropagator(attitudeProvider));
             }
             return new AggregateBoundedPropagator(propagators);
         }
@@ -257,10 +259,11 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          *
          * <p> Each call to this method creates a new propagator.
          *
+         * @param attitudeProvider provider for attitude computation
          * @return a propagator for this ephemeris segment.
          */
-        default BoundedPropagator getPropagator() {
-            return new EphemerisSegmentPropagator<>(this);
+        default BoundedPropagator getPropagator(final  AttitudeProvider attitudeProvider) {
+            return new EphemerisSegmentPropagator<>(this, attitudeProvider);
         }
 
     }
