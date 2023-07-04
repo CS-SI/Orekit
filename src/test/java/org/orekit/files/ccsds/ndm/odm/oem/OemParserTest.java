@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
@@ -258,14 +259,6 @@ public class OemParserTest {
         Assertions.assertEquals(2, segment.getMetadata().getInterpolationDegree());
         Assertions.assertEquals(3, segment.getInterpolationSamples());
         Assertions.assertEquals(segment.getAvailableDerivatives(), CartesianDerivativesFilter.USE_PV);
-        // propagator can't be created since frame can't be created
-        try {
-            satellite.getPropagator();
-            Assertions.fail("Expected Exception");
-        } catch (OrekitException e){
-            Assertions.assertEquals(e.getSpecifier(),
-                    OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
-        }
 
         List<OemSegment> segments = file.getSegments();
         Assertions.assertEquals(3, segments.size());
@@ -529,7 +522,7 @@ public class OemParserTest {
         Assertions.assertEquals(satellite.getSegments().get(0).getMetadata().getStartTime(), actualStart);
         Assertions.assertEquals(satellite.getSegments().get(2).getMetadata().getStopTime(), satellite.getStop());
 
-        final BoundedPropagator propagator = satellite.getPropagator();
+        final BoundedPropagator propagator = satellite.getPropagator(new FrameAlignedProvider(actualFrame));
         Assertions.assertEquals(propagator.getMinDate(), satellite.getStart());
         Assertions.assertEquals(propagator.getMinDate(), satellite.getSegments().get(0).getStart());
         Assertions.assertEquals(propagator.getMaxDate(), satellite.getStop());

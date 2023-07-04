@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -185,7 +186,7 @@ public class OrekitEphemerisFileTest {
         final TopocentricFrame topo = new TopocentricFrame(parentShape, point, "testPoint1");
         final ElevationDetector elevationDetector = new ElevationDetector(topo);
         final EphemerisSegmentPropagator<TimeStampedPVCoordinates> ephemerisSegmentPropagator =
-                        new EphemerisSegmentPropagator<>(segment);
+                        new EphemerisSegmentPropagator<>(segment, new FrameAlignedProvider(segment.getInertialFrame()));
         final EventsLogger lookupLogger = new EventsLogger();
         ephemerisSegmentPropagator.addEventDetector(lookupLogger.monitorDetector(elevationDetector));
 
@@ -207,7 +208,7 @@ public class OrekitEphemerisFileTest {
                          dateEpsilon);
         }
 
-        final Propagator embeddedPropagator = segment.getPropagator();
+        final Propagator embeddedPropagator = segment.getPropagator(new FrameAlignedProvider(segment.getInertialFrame()));
         final EventsLogger embeddedPropLogger = new EventsLogger();
         embeddedPropagator.addEventDetector(embeddedPropLogger.monitorDetector(elevationDetector));
         embeddedPropagator.propagate(segment.getStart(), segment.getStop());

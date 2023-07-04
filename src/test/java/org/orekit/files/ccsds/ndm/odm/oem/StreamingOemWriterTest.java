@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -139,6 +140,7 @@ public class StreamingOemWriterTest {
             OemSegment block = oem.getSegments().get(0);
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
+            Frame frame = satellite.getSegments().get(0).getInertialFrame();
 
             OdmHeader header = new OdmHeader();
             header.setOriginator(originator);
@@ -158,7 +160,7 @@ public class StreamingOemWriterTest {
                                                                                 Constants.JULIAN_DAY, 60),
                                                                new WriterBuilder().buildOemWriter(),
                                                                header, metadata);
-            BoundedPropagator propagator = satellite.getPropagator();
+            BoundedPropagator propagator = satellite.getPropagator(new FrameAlignedProvider(frame));
             propagator.setStepHandler(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
             writer.close();
@@ -185,8 +187,7 @@ public class StreamingOemWriterTest {
                 metadata.setObjectName(objectName);
                 metadata.setStartTime(block.getStart());
                 metadata.setStopTime(block.getStop());
-                final Frame      stateFrame = satellite.getPropagator().getFrame();
-                metadata.setReferenceFrame(FrameFacade.map(stateFrame));
+                metadata.setReferenceFrame(FrameFacade.map(frame));
                 oemWriter.writeMetadata(generator, metadata);
                 for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
                     oemWriter.writeOrbitEphemerisLine(generator, metadata, coordinate, true);
@@ -220,7 +221,8 @@ public class StreamingOemWriterTest {
         final Oem original = oemParser.parse(source);
         final OemSatelliteEphemeris originalEphem =
                 original.getSatellites().values().iterator().next();
-        final BoundedPropagator propagator = originalEphem.getPropagator();
+        final Frame frame = originalEphem.getSegments().get(0).getInertialFrame();
+        final BoundedPropagator propagator = originalEphem.getPropagator(new FrameAlignedProvider(frame));
         StringBuilder buffer = new StringBuilder();
         OdmHeader header = original.getHeader();
         OemMetadata metadata = original.getSegments().get(0).getMetadata();
