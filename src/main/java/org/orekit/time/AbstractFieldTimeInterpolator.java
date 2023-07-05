@@ -161,15 +161,15 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
      *
      * @param optionalSubInterpolator optional sub interpolator to add
      * @param subInterpolators list of sub interpolators
-     * @param <T> type of the field element
+     * @param <S> type of the field element
      */
-    protected <T extends CalculusFieldElement<T>> void addOptionalSubInterpolatorIfDefined(
-            final Optional<? extends FieldTimeInterpolator<? extends FieldTimeStamped<T>, T>> optionalSubInterpolator,
-            final List<FieldTimeInterpolator<? extends FieldTimeStamped<T>, T>> subInterpolators) {
+    protected <S extends CalculusFieldElement<S>> void addOptionalSubInterpolatorIfDefined(
+            final Optional<? extends FieldTimeInterpolator<? extends FieldTimeStamped<S>, S>> optionalSubInterpolator,
+            final List<FieldTimeInterpolator<? extends FieldTimeStamped<S>, S>> subInterpolators) {
 
         // Add all lowest level sub interpolators
         if (optionalSubInterpolator.isPresent()) {
-            final FieldTimeInterpolator<? extends FieldTimeStamped<T>, T> subInterpolator = optionalSubInterpolator.get();
+            final FieldTimeInterpolator<? extends FieldTimeStamped<S>, S> subInterpolator = optionalSubInterpolator.get();
             subInterpolators.addAll(subInterpolator.getSubInterpolators());
         }
 
