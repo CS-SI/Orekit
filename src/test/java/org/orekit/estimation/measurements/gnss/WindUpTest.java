@@ -32,6 +32,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
+import org.orekit.estimation.measurements.generation.GatheringSubscriber;
 import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.SignSemantic;
 import org.orekit.frames.FramesFactory;
@@ -147,7 +148,10 @@ public class WindUpTest {
                                                          withConstantElevation(FastMath.toRadians(5.0)).
                                                          withHandler(new ContinueOnEvent()),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
+        generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         Assertions.assertEquals(120, measurements.size());
 
         WindUp windUp = new WindUpFactory().getWindUp(system, prn, station.getBaseFrame().getName());

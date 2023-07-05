@@ -74,8 +74,11 @@ public class GeneratorTest {
         genR.addPropagator(numProp);
         genR.addScheduler(aeBS);
         genR.addScheduler(eBS);
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        genR.addSubscriber(gatherer);
 
-        SortedSet<ObservedMeasurement<?>> generated = genR.generate(initialDate, finalDate);
+        genR.generate(initialDate, finalDate);
+        SortedSet<ObservedMeasurement<?>> generated = gatherer.getGeneratedMeasurements();
 
         int nbAzEl  = 0;
         int nbRange = 0;

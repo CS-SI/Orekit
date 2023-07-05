@@ -103,25 +103,31 @@ public class TurnAroundRangeBuilderTest {
                                                                                     new ElevationDetector(secondary.getBaseFrame()).
                                                                                     withConstantElevation(FastMath.toRadians(5.0))),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
         final double period = context.initialOrbit.getKeplerianPeriod();
         AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
+        generator.generate(t0, t1);
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         Propagator propagator = buildPropagator();
         double maxError = 0;
         AbsoluteDate previous = null;
-        AbsoluteDate tInf = t0.compareTo(t1) < 0 ? t0 : t1;
-        AbsoluteDate tSup = t0.compareTo(t1) < 0 ? t1 : t0;
+        AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
+        AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
         for (ObservedMeasurement<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
             Assertions.assertTrue(date.compareTo(tInf) >= 0);
             Assertions.assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
-                // measurements are always chronological, even with backward propagation,
-                // due to the SortedSet (which is intended for combining several
-                // measurements types with different builders and schedulers)
-                Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                if (t0.isBefore(t1)) {
+                    // measurements are expected to be chronological
+                    Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                } else {
+                    // measurements are expected to be reverse chronological
+                    Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                }
             }
             previous = date;
             SpacecraftState state = propagator.propagate(date);
