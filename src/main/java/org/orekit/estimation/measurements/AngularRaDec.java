@@ -26,6 +26,7 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -229,6 +230,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      *
      * @return Vector3D the estimate line of Sight of the Radec at the propagate date.
      */
+    @DefaultDataContext
     public Vector3D getEstimatedLOS(final Propagator prop, final AbsoluteDate date) {
         final Frame                    gcrf        = FramesFactory.getGCRF();
         final TimeStampedPVCoordinates satPV       = prop.getPVCoordinates(date, gcrf);

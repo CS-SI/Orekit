@@ -17,6 +17,7 @@
 package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.AngularRaDec;
@@ -45,12 +46,6 @@ public abstract class AbstractAnglesOnlyIod {
 
     /** Final Frame desired to build the result Orbit. */
     private final Frame outputFrame;
-
-    /** GCRF Frame used for intermediate conversion between ECEF and ECI frames. */
-    private final Frame GCRF = FramesFactory.getGCRF();
-
-    /** ITRF frame used for intermediate conversion between ECEF and ECI frames. */
-    private final Frame ITRF = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
     /**
      * Constructor.
@@ -82,12 +77,14 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return orbit estimation of the called child IOD
      */
+    @DefaultDataContext
     public Orbit estimate(final AngularRaDec raDec1, final AngularRaDec raDec2, final AngularRaDec raDec3) {
 
         // Extraction of the position vector of the station at the second time used as a reference, in GCRF
-        final PVCoordinates pv1 = raDec1.getStation().getBaseFrame().getPVCoordinates(raDec1.getDate(), GCRF);
-        final PVCoordinates pv2 = raDec2.getStation().getBaseFrame().getPVCoordinates(raDec2.getDate(), GCRF);
-        final PVCoordinates pv3 = raDec3.getStation().getBaseFrame().getPVCoordinates(raDec3.getDate(), GCRF);
+        final Frame         gcrf = FramesFactory.getGCRF();
+        final PVCoordinates pv1  = raDec1.getStation().getBaseFrame().getPVCoordinates(raDec1.getDate(), gcrf);
+        final PVCoordinates pv2  = raDec2.getStation().getBaseFrame().getPVCoordinates(raDec2.getDate(), gcrf);
+        final PVCoordinates pv3  = raDec3.getStation().getBaseFrame().getPVCoordinates(raDec3.getDate(), gcrf);
 
         // Extraction of the AbsoluteDate of the 3 observations
         final AbsoluteDate obsDate1 = raDec1.getDate();
@@ -142,6 +139,7 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return orbit estimation of the called child IOD
      */
+    @DefaultDataContext
     public Orbit estimate(final Vector3D obsVector, final Frame frameObserver,
                           final AbsoluteDate obsDate1, final Vector3D los1,
                           final AbsoluteDate obsDate2, final Vector3D los2,
@@ -170,6 +168,7 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return PV list of the 3 PVs station positions
      */
+    @DefaultDataContext
     public PVCoordinates[] buildObserverPositions(final PVCoordinates pvObserver, final Frame frameObserver,
                                                   final AbsoluteDate obsDate1, final AbsoluteDate obsDate2,
                                                   final AbsoluteDate obsDate3) {
@@ -180,8 +179,9 @@ public abstract class AbstractAnglesOnlyIod {
         // it is needed to express the vector in an ECEF frame as an intermediate transformation. the ITRF2010 is used,
         // even if any kind of ECEF frame could do the work (due to the fact that it is an intermediate transformation).
         if (frameObserver.isPseudoInertial()) {
-            pv2Int            = frameIntermediate.getTransformTo(ITRF, obsDate2).transformPVCoordinates(pvObserver);
-            frameIntermediate = ITRF;
+            final Frame itrf  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            pv2Int            = frameIntermediate.getTransformTo(itrf, obsDate2).transformPVCoordinates(pvObserver);
+            frameIntermediate = itrf;
 
         }
         final PVCoordinates pv1 = buildObserverPosition(pv2Int, frameIntermediate, obsDate1);
@@ -200,11 +200,13 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return PVCoordinates of the observer at the observation date in GCRF
      */
+    @DefaultDataContext
     private PVCoordinates buildObserverPosition(final PVCoordinates pvObserver, final Frame initialFrame,
                                                 final AbsoluteDate obsDate) {
         // The transformation in GCRF is used as an intermediate transformation for the PV to be in a ECI frame necessary
         // for the child IOD estimation methods
-        return initialFrame.getTransformTo(GCRF, obsDate).transformPVCoordinates(pvObserver);
+        final Frame gcrf = FramesFactory.getGCRF();
+        return initialFrame.getTransformTo(gcrf, obsDate).transformPVCoordinates(pvObserver);
 
     }
 
@@ -225,6 +227,7 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return orbit estimation of the called child IOD
      */
+    @DefaultDataContext
     public Orbit estimate(final PVCoordinates obsPva, final Frame frameObserver,
                           final AbsoluteDate obsDate1, final Vector3D los1,
                           final AbsoluteDate obsDate2, final Vector3D los2,
@@ -255,6 +258,7 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return orbit estimation of the called child IOD
      */
+    @DefaultDataContext
     public Orbit estimate(final Frame frameObserver,
                           final Vector3D obsVector1, final AbsoluteDate obsDate1, final Vector3D los1,
                           final Vector3D obsVector2, final AbsoluteDate obsDate2, final Vector3D los2,
@@ -288,6 +292,7 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return PV list of the 3 PVs for observer positions
      */
+    @DefaultDataContext
     public PVCoordinates[] buildObserverPositions(final double earthRadius, final double earthFlattening,
                                                   final IERSConventions iersConventions, final boolean eopFlag,
                                                   final AbsoluteDate referenceEpoch,
@@ -328,6 +333,7 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return PVCoordinates of the observer at the observation date
      */
+    @DefaultDataContext
     public PVCoordinates buildObserverPosition(final double earthRadius, final double earthFlattening,
                                                final IERSConventions iersConventions, final boolean eopFlag,
                                                final AbsoluteDate referenceEpoch,
@@ -339,7 +345,8 @@ public abstract class AbstractAnglesOnlyIod {
         final GroundStation observer = buildGroundStation(earthRadius, earthFlattening, iersConventions, eopFlag,
                                                           referenceEpoch, latitude, longitude, altitude);
 
-        return observer.getBaseFrame().getPVCoordinates(obsDate, GCRF);
+        final Frame gcrf = FramesFactory.getGCRF();
+        return observer.getBaseFrame().getPVCoordinates(obsDate, gcrf);
     }
 
     /**
@@ -356,6 +363,7 @@ public abstract class AbstractAnglesOnlyIod {
      *
      * @return GroundStation corresponding to the observer
      */
+    @DefaultDataContext
     private GroundStation buildGroundStation(final double earthRadius, final double earthFlattening,
                                              final IERSConventions iersConventions, final boolean eopFlag,
                                              final AbsoluteDate referenceEpoch,

@@ -405,7 +405,7 @@ public class RinexNavigationParser {
 
                              // convert date
                              final SatelliteSystem satSystem = pi.file.getHeader().getSatelliteSystem();
-                             final AbsoluteDate    date      = new GNSSDate(refWeek, refTime, satSystem).getDate();
+                             final AbsoluteDate    date      = new GNSSDate(refWeek, refTime, satSystem, pi.timeScales).getDate();
 
                              // Add to the list
                              final TimeSystemCorrection tsc = new TimeSystemCorrection("GPUT", date, a0, a1);
@@ -451,10 +451,10 @@ public class RinexNavigationParser {
                         if (satSystem == SatelliteSystem.GLONASS) {
                             date = null;
                         } else if (satSystem == SatelliteSystem.BEIDOU) {
-                            date = new GNSSDate(refWeek, refTime, satSystem).getDate();
+                            date = new GNSSDate(refWeek, refTime, satSystem, pi.timeScales).getDate();
                         } else {
                             // all other systems are converted to GPS week in Rinex files!
-                            date = new GNSSDate(refWeek, refTime, SatelliteSystem.GPS).getDate();
+                            date = new GNSSDate(refWeek, refTime, SatelliteSystem.GPS, pi.timeScales).getDate();
                         }
 
                         // Add to the list

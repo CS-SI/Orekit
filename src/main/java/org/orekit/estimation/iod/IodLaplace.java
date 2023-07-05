@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -45,6 +46,7 @@ public class IodLaplace extends AbstractAnglesOnlyIod {
      * @param mu  gravitational constant
      * @param outputFrame  orbit output frame
      */
+    @DefaultDataContext
     public IodLaplace(final double mu, final Frame outputFrame) {
         super(mu, outputFrame);
     }

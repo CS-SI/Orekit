@@ -24,6 +24,7 @@ import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -46,6 +47,7 @@ public class IodGauss extends AbstractAnglesOnlyIod {
      * @param mu gravitational constant
      * @param outputFrame output frame for final Orbit estimation
      */
+    @DefaultDataContext
     public IodGauss(final double mu, final Frame outputFrame) {
         super(mu, outputFrame);
     }

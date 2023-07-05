@@ -18,6 +18,7 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -108,6 +109,7 @@ public class IodGooding extends AbstractAnglesOnlyIod {
      * @param nRev number of complete revolutions between observation1  and 3
      * @param direction true if posigrade (short way)
      */
+    @DefaultDataContext
     public IodGooding(final double mu, final Frame frame, final double rho1init, final double rho3init, final int nRev,
                       final boolean direction) {
         super(mu, frame);
@@ -122,9 +124,17 @@ public class IodGooding extends AbstractAnglesOnlyIod {
         this.directionLambert = direction;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param mu gravitational constant
+     * @param frame Frame for final Orbit
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     */
+    @DefaultDataContext
     public IodGooding(final double mu, final Frame frame, final double rho1init, final double rho3init) {
         this( mu, frame, rho1init, rho3init, 0, true);
-
     }
 
     /** @return the range for observation (1) */
