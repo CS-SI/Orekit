@@ -111,20 +111,20 @@ public class Rtcm1019Test {
         Assertions.assertEquals(5.721445195376873E-4,   gpsMessage.getAf0(),                eps);
         Assertions.assertEquals(695,                    gpsMessage.getIODC());
         Assertions.assertEquals(0.0,                    gpsMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.4587497595315308E-4,  gpsMessage.getMeanMotion(),         eps);
-        Assertions.assertEquals(0.16717753824407455,    gpsMessage.getM0(),                 eps);
+        Assertions.assertEquals(1.458749761151065E-4,   gpsMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(0.1671775426328288,     gpsMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCuc(),                eps);
-        Assertions.assertEquals(0.0389980711042881,     gpsMessage.getE(),                  eps);
+        Assertions.assertEquals(0.03899807028938085,    gpsMessage.getE(),                  eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCus(),                eps);
-        Assertions.assertEquals(5153.5625,              FastMath.sqrt(gpsMessage.getSma()), eps);
+        Assertions.assertEquals(5153.562498092651,      FastMath.sqrt(gpsMessage.getSma()), eps);
         Assertions.assertEquals(560688.0,               gpsMessage.getTime(),               eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCic(),                eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCis(),                eps);
-        Assertions.assertEquals(0.9877147247285952,     gpsMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.987714701321906,      gpsMessage.getI0(),                 eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCrc(),                eps);
         Assertions.assertEquals(0.30049130834913723,    gpsMessage.getPa(),                 eps);
         Assertions.assertEquals(-5.855958209879004E-9,  gpsMessage.getOmegaDot(),           eps);
-        Assertions.assertEquals(0.6980085400002902,     gpsMessage.getOmega0(),             eps);
+        Assertions.assertEquals(0.6980085385373721,     gpsMessage.getOmega0(),             eps);
         Assertions.assertEquals(1.3969839E-9,           gpsMessage.getTGD(),                eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getSvHealth(),           eps);
 

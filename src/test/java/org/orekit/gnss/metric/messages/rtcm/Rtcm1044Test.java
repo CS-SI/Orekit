@@ -110,7 +110,7 @@ public class Rtcm1044Test {
         Assertions.assertEquals(695,                    qzssMessage.getIODC());
         Assertions.assertEquals(0.0,                    qzssMessage.getCrs(),                eps);
         Assertions.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion(),         eps);
-        Assertions.assertEquals(0.16717753824407455,    qzssMessage.getM0(),                 eps);
+        Assertions.assertEquals(0.1671775426328288,     qzssMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCuc(),                eps);
         Assertions.assertEquals(0.0389980711042881,     qzssMessage.getE(),                  eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCus(),                eps);
@@ -118,11 +118,11 @@ public class Rtcm1044Test {
         Assertions.assertEquals(560688.0,               qzssMessage.getTime(),               eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCic(),                eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCis(),                eps);
-        Assertions.assertEquals(0.9877147247285952,     qzssMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.987714701321906,      qzssMessage.getI0(),                 eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCrc(),                eps);
         Assertions.assertEquals(0.30049130834913723,    qzssMessage.getPa(),                 eps);
         Assertions.assertEquals(-5.855958209879004E-9,  qzssMessage.getOmegaDot(),           eps);
-        Assertions.assertEquals(0.6980085400002902,     qzssMessage.getOmega0(),             eps);
+        Assertions.assertEquals(0.6980085385373721,     qzssMessage.getOmega0(),             eps);
         Assertions.assertEquals(1.3969839E-9,           qzssMessage.getTGD(),                eps);
 
         // Verify other data
