@@ -16,12 +16,16 @@
  */
 package org.orekit.gnss.antenna;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
@@ -40,9 +44,11 @@ public class AntexLoaderTest {
     }
 
     @Test
-    public void testSmallAntexFile() {
+    public void testSmallAntexFile() throws URISyntaxException {
 
-        AntexLoader  loader = new AntexLoader("^igs14-small\\.atx$");
+        final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs14-small.atx");
+        AntexLoader  loader = new AntexLoader(new DataSource(url.toURI()),
+                                              TimeScalesFactory.getGPS());
 
         Assertions.assertEquals(16, loader.getSatellitesAntennas().size());
 
