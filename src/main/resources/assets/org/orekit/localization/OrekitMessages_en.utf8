@@ -747,6 +747,12 @@ UNEXPECTED_CONTENT_TYPE = unexpected content type {0}
 # cannot parse GNSS data from {0}
 CANNOT_PARSE_GNSS_DATA = cannot parse GNSS data from {0}
 
+# invalid GNSS data: {0}
+INVALID_GNSS_DATA = invalid GNSS data: {0}
+
+# GNSS parity error on word {0}
+GNSS_PARITY_ERROR = GNSS parity error on word {0}
+
 # unknown host {0}
 UNKNOWN_HOST = unknown host {0}
 

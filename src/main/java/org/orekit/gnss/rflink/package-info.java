@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.parser;
-
-public class ByteArrayEncodedMessagesTest extends AbstractEncodedMessagesTest {
-
-    protected EncodedMessage buildRawMessages(byte[] bytes) {
-        return new ByteArrayEncodedMessages(bytes);
-    }
-
-}
+/**
+ *
+ * This package provides classes related to RF-links binary formats.
+ *
+ * @author Luc Maisonobe
+ * @since 12.0
+ */
+package org.orekit.gnss.rflink;

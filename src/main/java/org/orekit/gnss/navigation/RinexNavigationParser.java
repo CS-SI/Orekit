@@ -964,8 +964,8 @@ public class RinexNavigationParser {
             public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.gpsLNav.setSvAccuracy(parseBroadcastDouble1(line, pi.initialSpaces, Unit.METRE));
                 pi.gpsLNav.setSvHealth(parseBroadcastInt2(line, pi.initialSpaces));
-                pi.gpsLNav.setTGD(parseBroadcastDouble3(line,        pi.initialSpaces, Unit.SECOND));
-                pi.gpsLNav.setIODC(parseBroadcastDouble4(line,       pi.initialSpaces, Unit.SECOND));
+                pi.gpsLNav.setTGD(parseBroadcastDouble3(line,   pi.initialSpaces, Unit.SECOND));
+                pi.gpsLNav.setIODC(parseBroadcastInt4(line,     pi.initialSpaces));
             }
 
             /** {@inheritDoc} */
@@ -1338,8 +1338,8 @@ public class RinexNavigationParser {
             public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.qzssLNav.setSvAccuracy(parseBroadcastDouble1(line,  pi.initialSpaces, Unit.METRE));
                 pi.qzssLNav.setSvHealth(parseBroadcastInt2(line, pi.initialSpaces));
-                pi.qzssLNav.setTGD(parseBroadcastDouble3(line,         pi.initialSpaces, Unit.SECOND));
-                pi.qzssLNav.setIODC(parseBroadcastDouble4(line,        pi.initialSpaces, Unit.SECOND));
+                pi.qzssLNav.setTGD(parseBroadcastDouble3(line,   pi.initialSpaces, Unit.SECOND));
+                pi.qzssLNav.setIODC(parseBroadcastInt4(line,     pi.initialSpaces));
             }
 
             /** {@inheritDoc} */

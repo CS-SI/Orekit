@@ -16,11 +16,11 @@
  */
 package org.orekit.gnss.metric.parser;
 
-/** Encoded messages as a byte array.
+/** Encoded message as a byte array.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ByteArrayEncodedMessages extends AbstractEncodedMessages {
+public class ByteArrayEncodedMessage extends AbstractEncodedMessage {
 
     /** Byte array containing the message. */
     private final byte[] message;
@@ -31,7 +31,7 @@ public class ByteArrayEncodedMessages extends AbstractEncodedMessages {
     /** Simple constructor.
      * @param message byte array containing the message
      */
-    public ByteArrayEncodedMessages(final byte[] message) {
+    public ByteArrayEncodedMessage(final byte[] message) {
         this.message = message.clone();
     }
 

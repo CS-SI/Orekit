@@ -18,7 +18,7 @@
  *
  * This package provides the top level {@link org.orekit.gnss.metric.parser.MessagesParser
  * MessagesParser} class that can extract {@link org.orekit.gnss.metric.messages.ParsedMessage
- * messages} from binary containers like {@link  org.orekit.gnss.metric.parser.ByteArrayEncodedMessages
+ * messages} from binary containers like {@link  org.orekit.gnss.metric.parser.ByteArrayEncodedMessage
  * ByteArrayEncodedMessages} or {link org.orekit.metric.gnss.ssr.parser.InputStreamEncodedMessages
  * InputStreamEncodedMessages}.
  *

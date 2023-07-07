@@ -23,7 +23,7 @@ import java.util.function.Function;
  * @author Luc Maisonobe
  * @since 11.0
  */
-enum DataType {
+public enum DataType {
 
     /** 1 bit. */
     BIT_1(m -> m.extractBits(1)),
@@ -367,7 +367,7 @@ enum DataType {
      * @param message encoded message providing the bits to decode
      * @return data decoded as a Long object, or null if data not available
      */
-    Long decode(final EncodedMessage message) {
+    public Long decode(final EncodedMessage message) {
         return decoder.apply(message);
     }
 

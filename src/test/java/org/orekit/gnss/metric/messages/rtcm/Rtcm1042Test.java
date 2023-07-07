@@ -24,7 +24,7 @@ import org.orekit.Utils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042Data;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
@@ -77,7 +77,7 @@ public class Rtcm1042Test {
                         "0" +                                // SV Health
                         "0";                                 // Reserved
 
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
@@ -166,7 +166,7 @@ public class Rtcm1042Test {
                         "0" +                                // SV Health
                         "0";                                 // Reserved
 
-       final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+       final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
        message.start();
 
        ArrayList<Integer> messages = new ArrayList<>();

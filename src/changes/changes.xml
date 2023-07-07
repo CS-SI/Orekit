@@ -43,6 +43,9 @@
         Introduced Enumerate for norm of control vectors, used by impulses.
       </action>
       <action dev="luc" type="add">
+        Added HexadecimalSequenceEncodedMessage.
+      </action>
+      <action dev="luc" type="add">
         Added a truncating filter for line-oriented files.
       </action>
       <action dev="vincent" type="fix" issue="1096">

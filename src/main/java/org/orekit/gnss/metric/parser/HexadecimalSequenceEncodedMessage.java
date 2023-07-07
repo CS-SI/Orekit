@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,36 +16,44 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-
-/** Encoded message from an input stream.
+/** Encoded message as an hexadecimal characters sequence.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class InputStreamEncodedMessages extends AbstractEncodedMessages {
+public class HexadecimalSequenceEncodedMessage extends AbstractEncodedMessage {
 
-    /** Input stream providing the message. */
-    private final InputStream stream;
+    /** Hexadecimal radix. */
+    private static final int HEXA = 16;
+
+    /** Characters sequence containing the message. */
+    private final CharSequence message;
+
+    /** Index of current character in array. */
+    private int charIndex;
 
     /** Simple constructor.
-     * @param stream input stream providing the message
+     * @param message characters sequence containing the message
      */
-    public InputStreamEncodedMessages(final InputStream stream) {
-        this.stream = stream;
+    public HexadecimalSequenceEncodedMessage(final CharSequence message) {
+        this.message = message;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void start() {
+        super.start();
+        this.charIndex = -1;
     }
 
     /** {@inheritDoc} */
     @Override
     protected int fetchByte() {
-        try {
-            return stream.read();
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, OrekitMessages.END_OF_ENCODED_MESSAGE);
+        if (charIndex + 2 >= message.length()) {
+            return -1;
         }
+        final int high = Character.digit(message.charAt(++charIndex), HEXA);
+        final int low  = Character.digit(message.charAt(++charIndex), HEXA);
+        return high << 4 | low;
     }
 
 }

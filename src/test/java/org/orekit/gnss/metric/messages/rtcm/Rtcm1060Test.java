@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1060;
 import org.orekit.gnss.metric.messages.rtcm.correction.RtcmCombinedCorrectionData;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 
@@ -61,7 +61,7 @@ public class Rtcm1060Test {
                          "001110101111110111111" +             // Delta Clock C1
                          "0011101011111101111111000110000000"; // Delta Clock C2
 
-        message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         messages = new ArrayList<>();
@@ -105,7 +105,7 @@ public class Rtcm1060Test {
     public void testEmptyMessage() {
         try {
             final byte[] array = new byte[0];
-            final EncodedMessage emptyMessage = new ByteArrayEncodedMessages(array);
+            final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
 
             new RtcmMessagesParser(messages).parse(emptyMessage, false);
 
