@@ -23,8 +23,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -140,12 +140,12 @@ public class IodGibbs {
         final PVCoordinates pv   = new PVCoordinates(r2, vlEci);
         final AbsoluteDate  date = date2;
 
-        // compute the equivalent Keplerian orbit
-        final Orbit orbit = new KeplerianOrbit(pv, frame, date, mu);
+        // compute the equivalent Cartesian orbit
+        final CartesianOrbit orbit = new CartesianOrbit(pv, frame, date, mu);
 
         //define the reverse orbit
-        final PVCoordinates pv2    = new PVCoordinates(r2, vlEci.scalarMultiply(-1));
-        final Orbit         orbit2 = new KeplerianOrbit(pv2, frame, date, mu);
+        final PVCoordinates pv2 = new PVCoordinates(r2, vlEci.scalarMultiply(-1));
+        final CartesianOrbit orbit2 = new CartesianOrbit(pv2, frame, date, mu);
 
         //check which orbit is correct
         final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
