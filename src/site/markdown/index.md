@@ -224,6 +224,7 @@
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
+    * ground stations displacements due to plate tectonics
     * several predefined measurements
         * range
         * range rate (one way and two way)
