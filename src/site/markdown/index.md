@@ -279,6 +279,7 @@
     * parsing of RTCM messages (both ephemeris and correction messages)
     * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
+    * decoding of GPS navigation messages
 
   * Orbit file handling
   
