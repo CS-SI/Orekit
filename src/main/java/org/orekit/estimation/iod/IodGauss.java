@@ -26,7 +26,7 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -168,7 +168,7 @@ public class IodGauss extends AbstractAnglesOnlyIod {
         // We can finally build the Orekit Object, PVCoordinates and Orbit from p2 and v2
         final Vector3D p2Vector3D = new Vector3D(p2.toArray());
         final Vector3D v2Vector3D = new Vector3D(v2.toArray());
-        return new KeplerianOrbit(new PVCoordinates(p2Vector3D, v2Vector3D), outputFrame, obsDate2, mu);
+        return new CartesianOrbit(new PVCoordinates(p2Vector3D, v2Vector3D), outputFrame, obsDate2, mu);
 
     }
 }

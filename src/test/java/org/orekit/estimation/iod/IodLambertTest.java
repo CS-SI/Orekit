@@ -359,12 +359,12 @@ public class IodLambertTest {
             // Tolerances
             double dP1Tol, dP2Tol, dV1Tol, dV2Tol;
             if (testCase == 1) {
-                dP1Tol = 4.28e-25;
+                dP1Tol = 5.65e-25;
                 dV1Tol = 5.97e-12;
                 dP2Tol = 7.57e-9;
                 dV2Tol = 7.50e-12;
             } else {
-                dP1Tol = 2.81e-25;
+                dP1Tol = 5.47e-25;
                 dV1Tol = 3.03e-12;
                 dP2Tol = 9.86e-7;
                 dV2Tol = 4.01e-10;

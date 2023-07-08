@@ -22,7 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -83,7 +83,7 @@ public class IodLambert {
      * @since 11.0
      */
     public Orbit estimate(final Frame frame, final boolean posigrade,
-                                   final int nRev, final Position p1,  final Position p2) {
+                          final int nRev, final Position p1,  final Position p2) {
         return estimate(frame, posigrade, nRev,
                         p1.getPosition(), p1.getDate(), p2.getPosition(), p2.getDate());
     }
@@ -121,9 +121,9 @@ public class IodLambert {
      * @return  an initial Keplerian orbit estimate at the first observation date t1
      */
     public Orbit estimate(final Frame frame, final boolean posigrade,
-                                   final int nRev,
-                                   final Vector3D p1, final AbsoluteDate t1,
-                                   final Vector3D p2, final AbsoluteDate t2) {
+                          final int nRev,
+                          final Vector3D p1, final AbsoluteDate t1,
+                          final Vector3D p2, final AbsoluteDate t2) {
 
         final double r1 = p1.getNorm();
         final double r2 = p2.getNorm();
@@ -169,8 +169,8 @@ public class IodLambert {
             final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,
                                                V * Vdep[1] / RT, Pt);
 
-            // compute the equivalent Keplerian orbit
-            return new KeplerianOrbit(new PVCoordinates(p1, Vel1), frame, t1, mu);
+            // compute the equivalent Cartesian orbit
+            return new CartesianOrbit(new PVCoordinates(p1, Vel1), frame, t1, mu);
         }
 
         return null;
