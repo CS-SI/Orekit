@@ -38,7 +38,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
+public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -215,4 +215,10 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public EcksteinHechlerPropagatorBuilder copy() {
+        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngle(),
+                                                    getPositionScale(), getAttitudeProvider());
+    }
 }

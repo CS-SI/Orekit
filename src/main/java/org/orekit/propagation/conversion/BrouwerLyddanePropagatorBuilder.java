@@ -66,7 +66,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Parameters scaling factor.
      * <p>
@@ -237,6 +237,24 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
                                                        templateOrbit.getDate(),
                                                        provider.getMu(),
                                                        templateOrbit.getFrame());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public BrouwerLyddanePropagatorBuilder copy() {
+
+        // Find M2 value
+        double m2 = 0.0;
+        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
+                // setPeriod method should not be called on this driver (to have several values estimated)
+                m2 = driver.getValue();
+            }
+        }
+
+        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngle(),
+                                                   getPositionScale(), getAttitudeProvider(), m2);
     }
 
     /** {@inheritDoc} */

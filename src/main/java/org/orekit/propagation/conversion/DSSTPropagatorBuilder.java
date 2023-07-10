@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
+public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -141,7 +141,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      */
     public DSSTPropagatorBuilder copy() {
         final DSSTPropagatorBuilder copyBuilder =
-                        new DSSTPropagatorBuilder((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit()),
+                        new DSSTPropagatorBuilder(createInitialOrbit(),
                                                   builder,
                                                   getPositionScale(),
                                                   propagationType,
