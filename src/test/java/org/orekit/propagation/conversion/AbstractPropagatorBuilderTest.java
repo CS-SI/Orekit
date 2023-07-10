@@ -33,9 +33,11 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
+import static org.orekit.Utils.assertParametersDriversValues;
+
 public class AbstractPropagatorBuilderTest {
 
-    /** Test method restOrbit. */
+    /** Test method resetOrbit. */
     @Test
     public void testResetOrbit() {
         // Load a context
@@ -45,6 +47,11 @@ public class AbstractPropagatorBuilderTest {
         final Orbit initialOrbit = new CartesianOrbit(context.initialOrbit);
 
         final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngle.TRUE, 10., true) {
+
+            @Override
+            public PropagatorBuilder copy() {
+                return null;
+            }
 
             @Override
             public Propagator buildPropagator(double[] normalizedParameters) {
@@ -78,6 +85,34 @@ public class AbstractPropagatorBuilderTest {
             Assertions.assertEquals(expectedValue, driver.getValue(), 0.);
             Assertions.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
         }
+    }
+
+    /**
+     * Assert that actual {@link PropagatorBuilder} instance et is a copy of expected instance.
+     *
+     * @param expected expected instance to compare to
+     * @param actual actual instance to be compared
+     * @param <B> type of the propagator builder
+     */
+    public static <B extends AbstractPropagatorBuilder> void assertPropagatorBuilderIsACopy(final B expected, final B actual){
+
+        // They should not be the same instance
+        Assertions.assertNotEquals(expected, actual);
+
+        Assertions.assertArrayEquals(expected.getSelectedNormalizedParameters(),
+                                     actual.getSelectedNormalizedParameters());
+
+        assertParametersDriversValues(expected.getOrbitalParametersDrivers(),
+                                       actual.getOrbitalParametersDrivers());
+
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getAttitudeProvider(), actual.getAttitudeProvider());
+        Assertions.assertEquals(expected.getOrbitType(), actual.getOrbitType());
+        Assertions.assertEquals(expected.getPositionAngle(), actual.getPositionAngle());
+        Assertions.assertEquals(expected.getPositionScale(), actual.getPositionScale());
+        Assertions.assertEquals(expected.getInitialOrbitDate(), actual.getInitialOrbitDate());
+        Assertions.assertEquals(expected.getAdditionalDerivativesProviders(), actual.getAdditionalDerivativesProviders());
     }
 }
 

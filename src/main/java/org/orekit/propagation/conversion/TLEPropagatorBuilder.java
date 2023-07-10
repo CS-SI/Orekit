@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Default value for epsilon. */
     private static final double EPSILON_DEFAULT = 1.0e-10;
@@ -176,6 +176,13 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements P
         this.dataContext   = dataContext;
         this.epsilon       = epsilon;
         this.maxIterations = maxIterations;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TLEPropagatorBuilder copy() {
+        return new TLEPropagatorBuilder(templateTLE, getPositionAngle(), getPositionScale(),
+                                        dataContext, epsilon, maxIterations);
     }
 
     /** {@inheritDoc} */

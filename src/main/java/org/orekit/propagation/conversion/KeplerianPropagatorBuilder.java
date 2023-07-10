@@ -34,7 +34,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
+public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Build a new instance.
      * <p>
@@ -81,6 +81,13 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
         super(templateOrbit, positionAngle, positionScale, true, attitudeProvider);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public KeplerianPropagatorBuilder copy() {
+        return new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngle(),
+                                              getPositionScale(), getAttitudeProvider());
     }
 
     /** {@inheritDoc} */

@@ -123,6 +123,12 @@
       <action dev="vincent" type="add" issue="1044">
         Added getter for secondaryPVCoordinatesProvider in ExtremumApproachDetector and made computeDeltaPV method public.
       </action>
+      <action dev="vincent" type="add" issue="1042">
+        Added copy() method in PropagatorBuilder interface.
+      </action>
+      <action dev="vincent" type="fix" issue="623">
+        Improved architecture consistency between propagators and propagator builders
+      </action>
       <action dev="qmor" type="fix" issue="1045">
         Fix error TLE serialization when time is close to next day e.g. 23:59:59.999999999 (also for Field version).
       </action>

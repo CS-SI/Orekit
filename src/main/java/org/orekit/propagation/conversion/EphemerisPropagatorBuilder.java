@@ -43,7 +43,7 @@ import java.util.Optional;
  * @author Vincent Cucchietti
  * @since 11.3
  */
-public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
+public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Default position scale (not used for ephemeris based estimation). */
     private static final double DEFAULT_SCALE = 10.0;
@@ -137,6 +137,14 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder implem
         this.covariances            = Optional.ofNullable(covariances);
         this.covarianceInterpolator = Optional.ofNullable(covarianceInterpolator);
         this.provider               = attitudeProvider;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EphemerisPropagatorBuilder copy() {
+        return new EphemerisPropagatorBuilder(states, stateInterpolator,
+                                              covariances.orElse(null), covarianceInterpolator.orElse(null),
+                                              provider);
     }
 
     /** {@inheritDoc}. */

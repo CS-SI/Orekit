@@ -35,6 +35,11 @@ import org.orekit.utils.ParameterDriversList;
  */
 public interface PropagatorBuilder {
 
+    /** Create a new instance identical to this one.
+     * @return new instance identical to this one
+     */
+    PropagatorBuilder copy();
+
     /** Build a propagator.
      * @param normalizedParameters normalized values for the selected parameters
      * @return an initialized propagator
