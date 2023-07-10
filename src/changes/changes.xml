@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1120">
+        Added MultiplexedMeasurementBuilder.
+      </action>
       <action dev="vincent" type="update" issue="1114">
         Replaced KeplerianOrbit with CartesianOrbit in Gauss, Lambert and Gibbs IOD.
       </action>
