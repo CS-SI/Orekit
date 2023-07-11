@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -249,18 +250,46 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
         /**
          * View this ephemeris segment as a propagator.
          *
-         * <p>In order to view the ephemeris for this satellite as a {@link Propagator}
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
          * several conditions must be met. An Orekit {@link Frame} must be constructable
          * from the frame specification in the ephemeris file. This condition is met when
          * {@link EphemerisSegment#getFrame()} return normally. Additionally,
          * {@link #getMu()} must return a valid value. If these conditions are not met an
          * {@link OrekitException} may be thrown by this method or by one of the methods
          * of the returned {@link Propagator}.
+         * </p>
+         * <p>
+         * The {@link AttitudeProvider attitude provider} used is a {@link FrameAlignedProvider}
+         * aligned with the {@link #getInertialFrame() inertial frame}
+         * </p>
          *
-         * <p> Each call to this method creates a new propagator.
+         * <p>Each call to this method creates a new propagator.</p>
+         *
+         * @return a propagator for this ephemeris segment.
+         */
+        default BoundedPropagator getPropagator() {
+            return new EphemerisSegmentPropagator<>(this, new FrameAlignedProvider(getInertialFrame()));
+        }
+
+        /**
+         * View this ephemeris segment as a propagator.
+         *
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally. Additionally,
+         * {@link #getMu()} must return a valid value. If these conditions are not met an
+         * {@link OrekitException} may be thrown by this method or by one of the methods
+         * of the returned {@link Propagator}.
+         * </p>
+         *
+         * <p>Each call to this method creates a new propagator.</p>
          *
          * @param attitudeProvider provider for attitude computation
          * @return a propagator for this ephemeris segment.
+         * @since 12.0
          */
         default BoundedPropagator getPropagator(final  AttitudeProvider attitudeProvider) {
             return new EphemerisSegmentPropagator<>(this, attitudeProvider);
