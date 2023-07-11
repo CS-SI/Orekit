@@ -136,7 +136,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * </p>
          * <p>
          * The {@link AttitudeProvider attitude provider} used is a {@link FrameAlignedProvider}
-         * aligned with the {@link #getInertialFrame() inertial frame} from the first segment.
+         * aligned with the {@link EphemerisSegment#getInertialFrame() inertial frame} from the first segment.
          * </p>
          *
          * <p>Each call to this method creates a new propagator.</p>
