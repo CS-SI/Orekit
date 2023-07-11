@@ -201,7 +201,7 @@ public class CPFParserTest {
         Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
-        final BoundedPropagator propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
+        final BoundedPropagator propagator = ephemeris.getPropagator();
         // 10 0 58282  78000.00000  0   -5843276.537    1074212.914  -10696380.103
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58282, 78000.00000, file.getTimeScale());
         final Vector3D position = new Vector3D(-5843276.537, 1074212.914, -10696380.103);

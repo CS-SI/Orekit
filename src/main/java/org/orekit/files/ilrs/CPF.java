@@ -268,6 +268,12 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
         /** {@inheritDoc} */
         @Override
+        public BoundedPropagator getPropagator() {
+            return EphemerisSegment.super.getPropagator();
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public BoundedPropagator getPropagator(final AttitudeProvider attitudeProvider) {
             return EphemerisSegment.super.getPropagator(attitudeProvider);
         }

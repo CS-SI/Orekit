@@ -16,6 +16,16 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -26,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
-import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
@@ -51,16 +60,6 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class OemParserTest {
@@ -522,7 +521,7 @@ public class OemParserTest {
         Assertions.assertEquals(satellite.getSegments().get(0).getMetadata().getStartTime(), actualStart);
         Assertions.assertEquals(satellite.getSegments().get(2).getMetadata().getStopTime(), satellite.getStop());
 
-        final BoundedPropagator propagator = satellite.getPropagator(new FrameAlignedProvider(actualFrame));
+        final BoundedPropagator propagator = satellite.getPropagator();
         Assertions.assertEquals(propagator.getMinDate(), satellite.getStart());
         Assertions.assertEquals(propagator.getMinDate(), satellite.getSegments().get(0).getStart());
         Assertions.assertEquals(propagator.getMaxDate(), satellite.getStop());

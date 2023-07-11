@@ -279,7 +279,7 @@ public class SP3ParserTest {
         // verify
         TimeScale gps = TimeScalesFactory.getGPS();
         SP3Ephemeris ephemeris = file.getSatellites().get("1");
-        BoundedPropagator propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
+        BoundedPropagator propagator = ephemeris.getPropagator();
         Assertions.assertEquals(propagator.getMinDate(), new AbsoluteDate(1994, 12, 17, gps));
         Assertions.assertEquals(propagator.getMaxDate(), new AbsoluteDate(1994, 12, 17, 23, 45, 0, gps));
         SP3Coordinate expected = ephemeris.getCoordinates().get(0);

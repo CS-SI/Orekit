@@ -122,7 +122,8 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * View this ephemeris as a propagator, combining data from all {@link
          * #getSegments() segments}.
          *
-         * <p>In order to view the ephemeris for this satellite as a {@link Propagator}
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
          * several conditions must be met. An Orekit {@link Frame} must be constructable
          * from the frame specification in the ephemeris file. This condition is met when
          * {@link EphemerisSegment#getFrame()} return normally for all {@link
@@ -132,11 +133,42 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * and stop times that are different from the ephemeris data start and stop times.
          * If these conditions are not met an {@link OrekitException} may be thrown by
          * this method or by one of the methods of the returned {@link Propagator}.
+         * </p>
+         * <p>
+         * The {@link AttitudeProvider attitude provider} used is a {@link FrameAlignedProvider}
+         * aligned with the {@link #getInertialFrame() inertial frame} from the first segment.
+         * </p>
          *
-         * <p> Each call to this method creates a new propagator.
+         * <p>Each call to this method creates a new propagator.</p>
+         *
+         * @return a propagator for all the data in this ephemeris file.
+         */
+        default BoundedPropagator getPropagator() {
+            return getPropagator(new FrameAlignedProvider(getSegments().get(0).getInertialFrame()));
+        }
+
+        /**
+         * View this ephemeris as a propagator, combining data from all {@link
+         * #getSegments() segments}.
+         *
+         * <p>
+         * In order to view the ephemeris for this satellite as a {@link Propagator}
+         * several conditions must be met. An Orekit {@link Frame} must be constructable
+         * from the frame specification in the ephemeris file. This condition is met when
+         * {@link EphemerisSegment#getFrame()} return normally for all {@link
+         * #getSegments() segments}. If there are multiple segments they must be adjacent
+         * such that there are no duplicates or gaps in the ephemeris. The definition of
+         * adjacent depends on the ephemeris format as some formats define usable start
+         * and stop times that are different from the ephemeris data start and stop times.
+         * If these conditions are not met an {@link OrekitException} may be thrown by
+         * this method or by one of the methods of the returned {@link Propagator}.
+         * </p>
+         *
+         * <p>Each call to this method creates a new propagator.</p>
          *
          * @param attitudeProvider provider for attitude computation
          * @return a propagator for all the data in this ephemeris file.
+         * @since 12.0
          */
         default BoundedPropagator getPropagator(final  AttitudeProvider attitudeProvider) {
             final List<BoundedPropagator> propagators = new ArrayList<>();

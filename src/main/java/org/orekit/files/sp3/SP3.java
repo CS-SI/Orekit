@@ -531,6 +531,11 @@ public class SP3
         }
 
         @Override
+        public BoundedPropagator getPropagator() {
+            return EphemerisSegment.super.getPropagator();
+        }
+
+        @Override
         public BoundedPropagator getPropagator(final AttitudeProvider attitudeProvider) {
             return EphemerisSegment.super.getPropagator(attitudeProvider);
         }
