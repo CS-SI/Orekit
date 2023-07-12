@@ -92,26 +92,26 @@ public class RangeMeasurementCreator extends MeasurementCreator {
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(clockOffset + x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(clockOffset + x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
                 final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
                 final Vector3D stationAtReception =
-                                station.getOffsetToInertial(inertial, receptionDate.shiftedBy(clockOffset)).transformPosition(Vector3D.ZERO);
+                                station.getOffsetToInertial(inertial, receptionDate.shiftedBy(clockOffset), false).transformPosition(Vector3D.ZERO);
                 final double downLinkDistance = Vector3D.distance(position, stationAtReception);
 
                 final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(clockOffset - x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(clockOffset - x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
                 final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
                 final Vector3D stationAtEmission  =
-                                station.getOffsetToInertial(inertial, emissionDate.shiftedBy(clockOffset)).transformPosition(Vector3D.ZERO);
+                                station.getOffsetToInertial(inertial, emissionDate.shiftedBy(clockOffset), false).transformPosition(Vector3D.ZERO);
                 final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
                 addMeasurement(new Range(station, true, receptionDate.shiftedBy(clockOffset),
                                          0.5 * (downLinkDistance + upLinkDistance) + bias, 1.0, 10, satellite));

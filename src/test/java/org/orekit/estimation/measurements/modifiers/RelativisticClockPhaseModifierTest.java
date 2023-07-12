@@ -79,7 +79,7 @@ public class RelativisticClockPhaseModifierTest {
 
         // Station PV
         final Vector3D zero = Vector3D.ZERO;
-        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate()).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
+        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
         final Phase phase = new Phase(station, state.getDate(), 26584264.45, Frequency.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));

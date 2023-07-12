@@ -435,15 +435,20 @@ public class GroundStation {
      * a new offset frame.
      * </p>
      * @param inertial inertial frame to transform to
-     * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
+     * @param date date of the transform
+     * @param clockOffsetAlreadyApplied if true, the specified {@code date} is as read
+     * by the ground station clock (i.e. clock offset <em>not</em> compensated), if false,
+     * the specified {@code date} was already compensated and is a physical absolute date
      * @return transform between offset frame and inertial frame, at <em>real</em> measurement
      * date (i.e. with clock, Earth and station offsets applied)
      */
-    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate clockDate) {
+    public Transform getOffsetToInertial(final Frame inertial,
+                                         final AbsoluteDate date, final boolean clockOffsetAlreadyApplied) {
 
         // take clock offset into account
-        final double offset = clockOffsetDriver.getValue();
-        final AbsoluteDate offsetCompensatedDate = new AbsoluteDate(clockDate, -offset);
+        final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
+                                                   date :
+                                                   new AbsoluteDate(date, -clockOffsetDriver.getValue());
 
         // take Earth offsets into account
         final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(offsetCompensatedDate).getInverse();

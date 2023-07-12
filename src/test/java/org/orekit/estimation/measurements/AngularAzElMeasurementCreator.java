@@ -81,7 +81,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }

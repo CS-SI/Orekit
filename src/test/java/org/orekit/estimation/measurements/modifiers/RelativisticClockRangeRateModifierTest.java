@@ -78,7 +78,7 @@ public class RelativisticClockRangeRateModifierTest {
 
         // Station PV
         final Vector3D zero = Vector3D.ZERO;
-        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate()).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
+        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
         final RangeRate rangeRate = new RangeRate(station, state.getDate(), 26584264.45, 1.0, 1.0, false, new ObservableSatellite(0));

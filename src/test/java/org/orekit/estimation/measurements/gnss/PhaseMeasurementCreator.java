@@ -104,14 +104,14 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
 
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
-                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(groundClk + x));
+                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(groundClk + x), false);
                             final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
                     }, -1.0, 1.0);
                     final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
                     final Vector3D stationAtReception =
-                                    station.getOffsetToInertial(inertial, receptionDate.shiftedBy(groundClk)).transformPosition(Vector3D.ZERO);
+                                    station.getOffsetToInertial(inertial, receptionDate.shiftedBy(groundClk), false).transformPosition(Vector3D.ZERO);
                     final double downLinkDistance = Vector3D.distance(position, stationAtReception);
 
                     final Phase phase = new Phase(station, receptionDate.shiftedBy(groundClk),

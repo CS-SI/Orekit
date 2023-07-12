@@ -88,14 +88,14 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
                 final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
                 final PVCoordinates stationAtReception =
-                                station.getOffsetToInertial(inertial, receptionDate).transformPVCoordinates(PVCoordinates.ZERO);
+                                station.getOffsetToInertial(inertial, receptionDate, false).transformPVCoordinates(PVCoordinates.ZERO);
 
                 // line of sight at reception
                 final Vector3D receptionLOS = (position.subtract(stationAtReception.getPosition())).normalize();
@@ -105,14 +105,14 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
                 final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
                 final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
                 final PVCoordinates stationAtEmission  =
-                                station.getOffsetToInertial(inertial, emissionDate).transformPVCoordinates(PVCoordinates.ZERO);
+                                station.getOffsetToInertial(inertial, emissionDate, false).transformPVCoordinates(PVCoordinates.ZERO);
 
                 // line of sight at emission
                 final Vector3D emissionLOS = (position.subtract(stationAtEmission.getPosition())).normalize();

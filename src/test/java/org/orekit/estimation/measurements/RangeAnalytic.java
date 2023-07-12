@@ -92,7 +92,7 @@ public class RangeAnalytic extends Range {
         // Station position at signal arrival
         final AbsoluteDate downlinkDate = getDate();
         final Transform topoToInertDownlink =
-                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate, false);
         final TimeStampedPVCoordinates stationDownlink =
                         topoToInertDownlink.transformPVCoordinates(new TimeStampedPVCoordinates(downlinkDate,
                                                                                                 PVCoordinates.ZERO));
@@ -115,7 +115,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
-                      groundStation.getOffsetToInertial(state.getFrame(), transitDate);
+                      groundStation.getOffsetToInertial(state.getFrame(), transitDate, false);
         final TimeStampedPVCoordinates stationAtTransitDate = topoToInertAtTransitDate.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
 
@@ -366,7 +366,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at signal arrival
         final Transform topoToInertDownlink =
-                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate, false);
         final PVCoordinates QDownlink = topoToInertDownlink.
                         transformPVCoordinates(PVCoordinates.ZERO);
 
@@ -389,7 +389,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
-                      groundStation.getOffsetToInertial(state.getFrame(), transitT);
+                      groundStation.getOffsetToInertial(state.getFrame(), transitT, false);
         TimeStampedPVCoordinates QAtTransitDate = topoToInertAtTransitDate.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitT, PVCoordinates.ZERO));
 
