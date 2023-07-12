@@ -90,14 +90,14 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
 
             final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = receiver.getOffsetToInertial(inertial, date.shiftedBy(x));
+                    final Transform t = receiver.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }
             }, -1.0, 1.0);
 
             final AbsoluteDate receptionDate = currentState.getDate().shiftedBy(downLinkDelay);
-            final PVCoordinates receiverPV   = receiver.getOffsetToInertial(inertial, receptionDate)
+            final PVCoordinates receiverPV   = receiver.getOffsetToInertial(inertial, receptionDate, false)
                                                        .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at reception
@@ -108,14 +108,14 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
 
             final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = emitter.getOffsetToInertial(inertial, date.shiftedBy(-x));
+                    final Transform t = emitter.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }
             }, -1.0, 1.0);
 
             final AbsoluteDate emissionDate = currentState.getDate().shiftedBy(-upLinkDelay);
-            final PVCoordinates emitterPV   = emitter.getOffsetToInertial(inertial, emissionDate)
+            final PVCoordinates emitterPV   = emitter.getOffsetToInertial(inertial, emissionDate, false)
                                                      .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at emission
