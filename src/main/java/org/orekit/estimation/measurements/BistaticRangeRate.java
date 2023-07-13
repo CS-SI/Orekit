@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,9 +28,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a bistatic range rate measurement using
  *  an emitter ground station and a receiver ground station.
@@ -55,16 +54,13 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Pascal Parraud
  * @since 11.2
  */
-public class BistaticRangeRate extends AbstractMeasurement<BistaticRangeRate> {
+public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRate> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "BistaticRangeRate";
 
     /** Emitter ground station. */
     private final GroundStation emitter;
-
-    /** Receiver ground station. */
-    private final GroundStation receiver;
 
     /** Simple constructor.
      * @param emitter emitter ground station
@@ -78,7 +74,8 @@ public class BistaticRangeRate extends AbstractMeasurement<BistaticRangeRate> {
     public BistaticRangeRate(final GroundStation emitter, final GroundStation receiver,
                              final AbsoluteDate date, final double rangeRate, final double sigma,
                              final double baseWeight, final ObservableSatellite satellite) {
-        super(date, rangeRate, sigma, baseWeight, Collections.singletonList(satellite));
+        super(receiver, true, date, rangeRate, sigma, baseWeight, satellite);
+
         // add parameter drivers for the emitter, clock offset is not used
         addParameterDriver(emitter.getEastOffsetDriver());
         addParameterDriver(emitter.getNorthOffsetDriver());
@@ -89,19 +86,9 @@ public class BistaticRangeRate extends AbstractMeasurement<BistaticRangeRate> {
         addParameterDriver(emitter.getPolarDriftXDriver());
         addParameterDriver(emitter.getPolarOffsetYDriver());
         addParameterDriver(emitter.getPolarDriftYDriver());
-        // add parameter drivers for the receiver
-        addParameterDriver(receiver.getClockOffsetDriver());
-        addParameterDriver(receiver.getEastOffsetDriver());
-        addParameterDriver(receiver.getNorthOffsetDriver());
-        addParameterDriver(receiver.getZenithOffsetDriver());
-        addParameterDriver(receiver.getPrimeMeridianOffsetDriver());
-        addParameterDriver(receiver.getPrimeMeridianDriftDriver());
-        addParameterDriver(receiver.getPolarOffsetXDriver());
-        addParameterDriver(receiver.getPolarDriftXDriver());
-        addParameterDriver(receiver.getPolarOffsetYDriver());
-        addParameterDriver(receiver.getPolarDriftYDriver());
+
         this.emitter  = emitter;
-        this.receiver = receiver;
+
     }
 
     /** Get the emitter ground station.
@@ -115,7 +102,7 @@ public class BistaticRangeRate extends AbstractMeasurement<BistaticRangeRate> {
      * @return receiver ground station
      */
     public GroundStation getReceiverStation() {
-        return receiver;
+        return getStation();
     }
 
     /** {@inheritDoc} */
@@ -157,7 +144,7 @@ public class BistaticRangeRate extends AbstractMeasurement<BistaticRangeRate> {
         // transform between receiver station frame and inertial frame
         // at the real date of measurement, i.e. taking station clock offset into account
         final FieldTransform<Gradient> receiverToInertial =
-                        receiver.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getReceiverStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> measurementDateG = receiverToInertial.getFieldDate();
 
         // Receiver PV in inertial frame at the end of the downlink leg
@@ -188,7 +175,7 @@ public class BistaticRangeRate extends AbstractMeasurement<BistaticRangeRate> {
         // transform between emitter station frame and inertial frame at the transit date
         // clock offset from receiver is already compensated
         final FieldTransform<Gradient> emitterToInertial =
-                        emitter.getOffsetToInertial(state.getFrame(), transitPV.getDate(), nbParams, indices);
+                        getEmitterStation().getOffsetToInertial(state.getFrame(), transitPV.getDate(), nbParams, indices);
 
         // emitter PV in inertial frame at the end of the uplink leg
         final TimeStampedFieldPVCoordinates<Gradient> emitterPV =

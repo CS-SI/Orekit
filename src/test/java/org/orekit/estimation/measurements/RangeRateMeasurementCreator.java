@@ -122,8 +122,8 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
                 // range rate at the date of reception
                 final double rr = twoWay ?
-                                          0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
-                                              deltaVr.dotProduct(receptionLOS) + deltaD;
+                                  0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
+                                  deltaVr.dotProduct(receptionLOS) + deltaD;
 
                 addMeasurement(new RangeRate(station, receptionDate, rr, 1.0, 10, twoWay, satellite));
             }

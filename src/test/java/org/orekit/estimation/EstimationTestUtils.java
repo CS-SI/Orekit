@@ -350,21 +350,13 @@ public class EstimationTestUtils {
             }
         }
 
-        final double rms = FastMath.sqrt(sum / k);
+        final double rms      = FastMath.sqrt(sum / k);
         final double deltaPos = Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition);
         final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
-        Assertions.assertEquals(expectedRMS,
-                            rms,
-                            rmsEps);
-        Assertions.assertEquals(expectedMax,
-                            max,
-                            maxEps);
-        Assertions.assertEquals(expectedDeltaPos,
-                            deltaPos,
-                            posEps);
-        Assertions.assertEquals(expectedDeltaVel,
-                            deltaVel,
-                            velEps);
+        Assertions.assertEquals(expectedRMS,      rms,      rmsEps);
+        Assertions.assertEquals(expectedMax,      max,      maxEps);
+        Assertions.assertEquals(expectedDeltaPos, deltaPos, posEps);
+        Assertions.assertEquals(expectedDeltaVel, deltaVel, velEps);
 
     }
 

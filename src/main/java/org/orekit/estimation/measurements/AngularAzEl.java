@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,9 +30,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
  * The motion of the spacecraft during the signal flight time is taken into
@@ -43,13 +42,10 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
+public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "AngularAzEl";
-
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -63,25 +59,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final ObservableSatellite satellite) {
-        super(date, angular, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(station.getClockOffsetDriver());
-        addParameterDriver(station.getEastOffsetDriver());
-        addParameterDriver(station.getNorthOffsetDriver());
-        addParameterDriver(station.getZenithOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianDriftDriver());
-        addParameterDriver(station.getPolarOffsetXDriver());
-        addParameterDriver(station.getPolarDriftXDriver());
-        addParameterDriver(station.getPolarOffsetYDriver());
-        addParameterDriver(station.getPolarDriftYDriver());
-        this.station = station;
-    }
-
-    /** Get the ground station from which measurement is performed.
-     * @return ground station from which measurement is performed
-     */
-    public GroundStation getStation() {
-        return station;
+        super(station, false, date, angular, sigma, baseWeight, satellite);
     }
 
     /** {@inheritDoc} */
@@ -123,7 +101,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         // Transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
         final FieldTransform<Gradient> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
