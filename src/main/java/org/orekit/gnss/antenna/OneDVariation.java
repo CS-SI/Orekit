@@ -24,7 +24,7 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class OneDVariation implements PhaseCenterVariationFunction {
+public class OneDVariation implements PhaseCenterVariationFunction {
 
     /** Start polar angle. */
     private final double polarStart;
@@ -40,7 +40,7 @@ class OneDVariation implements PhaseCenterVariationFunction {
      * @param polarStep between grid points
      * @param variations sampled phase center variations
      */
-    OneDVariation(final double polarStart, final double polarStep, final double[] variations) {
+    public OneDVariation(final double polarStart, final double polarStep, final double[] variations) {
         this.polarStart = polarStart;
         this.polarStep  = polarStep;
         this.variations = variations.clone();

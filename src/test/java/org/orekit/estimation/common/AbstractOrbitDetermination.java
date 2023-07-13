@@ -75,7 +75,7 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
@@ -375,7 +375,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
-        final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final PhaseCentersRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
@@ -658,7 +658,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
-        final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final PhaseCentersRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, true);
@@ -1341,7 +1341,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @param parser input file parser
      * @return range modifier (may be null if antenna offset is zero or undefined)
      */
-    private OnBoardAntennaRangeModifier createSatAntennaRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
+    private PhaseCentersRangeModifier createSatAntennaRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
         final Vector3D offset;
         if (!parser.containsKey(ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_X)) {
             offset = Vector3D.ZERO;
@@ -1350,7 +1350,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Y,
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Z);
         }
-        return offset.getNorm() > 0 ? new OnBoardAntennaRangeModifier(offset) : null;
+        return offset.getNorm() > 0 ? new PhaseCentersRangeModifier(Vector3D.ZERO, null, offset, null) : null;
     }
 
     /** Set up range modifier taking shapiro effect.
@@ -1990,7 +1990,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           final PVData pvData,
                                                           final ObservableSatellite satellite,
                                                           final Bias<Range> satRangeBias,
-                                                          final OnBoardAntennaRangeModifier satAntennaRangeModifier,
+                                                          final PhaseCentersRangeModifier satAntennaRangeModifier,
                                                           final Weights weights,
                                                           final OutlierFilter<Range> rangeOutliersManager,
                                                           final OutlierFilter<RangeRate> rangeRateOutliersManager,
@@ -2093,7 +2093,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                    final Map<String, StationData> stations,
                                                    final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
-                                                   final OnBoardAntennaRangeModifier satAntennaRangeModifier,
+                                                   final PhaseCentersRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
                                                    final OutlierFilter<Range> rangeOutliersManager,
                                                    final OutlierFilter<RangeRate> rangeRateOutliersManager,
