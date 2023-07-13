@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;

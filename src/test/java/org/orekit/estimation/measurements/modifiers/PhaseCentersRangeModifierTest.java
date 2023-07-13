@@ -169,9 +169,9 @@ public class PhaseCentersRangeModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new TwoWayRangeMeasurementCreator(context,
-                                                                                           Vector3D.ZERO, null,
-                                                                                           Vector3D.ZERO, null,
-                                                                                           0),
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 0),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -192,9 +192,9 @@ public class PhaseCentersRangeModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new TwoWayRangeMeasurementCreator(context,
-                                                                                           stationMeanPosition,   stationPCV,
-                                                                                           satelliteMeanPosition, satellitePCV,
-                                                                                           0),
+                                                                                                 stationMeanPosition,   stationPCV,
+                                                                                                 satelliteMeanPosition, satellitePCV,
+                                                                                                 0),
                                                                1.0, 3.0, 300.0);
 
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,

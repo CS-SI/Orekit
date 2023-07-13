@@ -22,15 +22,9 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.gnss.Phase;
-import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Ground and on-board antennas offsets effect on phase measurements.
  * @author Luc Maisonobe
@@ -38,8 +32,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class PhaseCentersPhaseModifier implements EstimationModifier<Phase> {
 
-    /** Downlink offset model. */
-    private final PhaseCentersOffsetComputer downlink;
+    /** Raw modifier. */
+    private final PhaseCentersGroundReceiverBaseModifier<Phase> modifier;
 
     /** Simple constructor.
      * @param stationMeanPosition mean position of the station Antenna Phase Center in station frame
@@ -51,8 +45,8 @@ public class PhaseCentersPhaseModifier implements EstimationModifier<Phase> {
                                      final PhaseCenterVariationFunction stationPhaseCenterVariation,
                                      final Vector3D satelliteMeanPosition,
                                      final PhaseCenterVariationFunction satellitePhaseCenterVariation) {
-        this.downlink = new PhaseCentersOffsetComputer(satelliteMeanPosition, satellitePhaseCenterVariation,
-                                                       stationMeanPosition, stationPhaseCenterVariation);
+        this.modifier = new PhaseCentersGroundReceiverBaseModifier<>(stationMeanPosition, stationPhaseCenterVariation,
+                                                                     satelliteMeanPosition, satellitePhaseCenterVariation);
     }
 
     /** {@inheritDoc} */
@@ -64,33 +58,9 @@ public class PhaseCentersPhaseModifier implements EstimationModifier<Phase> {
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<Phase> estimated) {
-        // get all participants
-        // note that clock offset is compensated in participants,
-        // so the dates included there are more accurate than the measurement date
-        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-
-        // station at reception date
-        final Frame         inertial       = estimated.getStates()[0].getFrame();
-        final GroundStation station        = estimated.getObservedMeasurement().getStation();
-        final AbsoluteDate  receptionDate  = participants[1].getDate();
-        final Transform     stationToInert = station.getOffsetToInertial(inertial, receptionDate, true);
-
-        // spacecraft at emission date
-        final AbsoluteDate    emissionDate      = participants[0].getDate();
-        final SpacecraftState refState          = estimated.getStates()[0];
-        final SpacecraftState emissionState     = refState.shiftedBy(emissionDate.durationFrom(refState.getDate()));
-        final Transform       spacecraftToInert = emissionState.toTransform().getInverse();
-
-        // compute offset due to phase centers
-        final double downlinkOffset = downlink.offset(spacecraftToInert, stationToInert);
-
-        // get the estimated value before this modifier is applied
-        final double[] value = estimated.getEstimatedValue();
-
-        // modify the value
-        value[0] += downlinkOffset;
-        estimated.setEstimatedValue(value);
-
+        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
+                                    modifier.oneWayDistanceModification(estimated) /
+                                    estimated.getObservedMeasurement().getWavelength());
     }
 
 }

@@ -60,7 +60,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
      * @param estimated estimated measurement to modify
      * @return distance modification to add to raw measurement
      */
-    protected double oneWayDistanceModification(final EstimatedMeasurement<T> estimated) {
+    public double oneWayDistanceModification(final EstimatedMeasurement<T> estimated) {
 
         // get all participants
         // note that clock offset is compensated in participants,
@@ -88,7 +88,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
      * @param estimated estimated measurement to modify
      * @return distance modification to add to raw measurement
      */
-    protected double twoWayDistanceModification(final EstimatedMeasurement<T> estimated) {
+    public double twoWayDistanceModification(final EstimatedMeasurement<T> estimated) {
 
         // get all participants
         // note that clock offset is compensated in participants,

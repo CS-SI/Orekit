@@ -66,6 +66,7 @@ public class TwoWayRangeMeasurementCreator extends MeasurementCreator {
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : provider.getStations()) {
             for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getClockDriftDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
