@@ -28,7 +28,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -55,7 +55,7 @@ public class BiasTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create range biases: one bias for each station

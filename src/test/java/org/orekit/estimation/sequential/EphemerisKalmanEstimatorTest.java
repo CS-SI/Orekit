@@ -19,6 +19,7 @@ package org.orekit.estimation.sequential;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
@@ -33,7 +34,7 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.Frame;
@@ -112,7 +113,10 @@ public class EphemerisKalmanEstimatorTest {
         final double refBias = 1234.56;
         final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(ephemeris,
-                                                                        new RangeMeasurementCreator(context, refBias),
+                                                                        new TwoWayRangeMeasurementCreator(context,
+                                                                                                          Vector3D.ZERO, null,
+                                                                                                          Vector3D.ZERO, null,
+                                                                                                          refBias),
                                                                         1.0, 5.0, 10.0);
 
         // estimated bias

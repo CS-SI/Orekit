@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.gnss;
+package org.orekit.estimation.measurements;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -23,13 +23,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
-import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.estimation.measurements.MeasurementCreator;
-import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.modifiers.PhaseAmbiguityModifier;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.gnss.Frequency;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -38,40 +33,31 @@ import org.orekit.utils.ParameterDriver;
 
 import java.util.Arrays;
 
-public class PhaseMeasurementCreator extends MeasurementCreator {
+public class OneWayRangeMeasurementCreator extends MeasurementCreator {
 
-    private final Context                      context;
-    private final double                       wavelength;
-    private final PhaseAmbiguityModifier       ambiguity;
+    private final Context context;
     private final Vector3D                     stationMeanPosition;
     private final PhaseCenterVariationFunction stationPhaseCenterVariation;
     private final Vector3D                     satelliteMeanPosition;
     private final PhaseCenterVariationFunction satellitePhaseCenterVariation;
     private final ObservableSatellite          satellite;
+    private final double                       bias;
 
-    public PhaseMeasurementCreator(final Context context, final Frequency frequency,
-                                   final int ambiguity, final double satClockOffset) {
-        this(context, frequency, ambiguity, satClockOffset,
-             Vector3D.ZERO, null, Vector3D.ZERO, null);
+    public OneWayRangeMeasurementCreator(final Context context) {
+        this(context, Vector3D.ZERO, null, Vector3D.ZERO, null, 0.0);
     }
 
-    public PhaseMeasurementCreator(final Context context, final Frequency frequency,
-                                   final int ambiguity, final double satClockOffset,
-                                   final Vector3D stationMeanPosition,   final PhaseCenterVariationFunction stationPhaseCenterVariation,
-                                   final Vector3D satelliteMeanPosition, final PhaseCenterVariationFunction satellitePhaseCenterVariation) {
+    public OneWayRangeMeasurementCreator(final Context context,
+                                         final Vector3D stationMeanPosition,   final PhaseCenterVariationFunction stationPhaseCenterVariation,
+                                         final Vector3D satelliteMeanPosition, final PhaseCenterVariationFunction satellitePhaseCenterVariation,
+                                         final double bias) {
         this.context                       = context;
-        this.wavelength                    = frequency.getWavelength();
-        this.ambiguity                     = new PhaseAmbiguityModifier(0, ambiguity);
         this.stationMeanPosition           = stationMeanPosition;
         this.stationPhaseCenterVariation   = stationPhaseCenterVariation;
         this.satelliteMeanPosition         = satelliteMeanPosition;
         this.satellitePhaseCenterVariation = satellitePhaseCenterVariation;
         this.satellite                     = new ObservableSatellite(0);
-        this.satellite.getClockOffsetDriver().setValue(satClockOffset);
-    }
-
-    public ObservableSatellite getSatellite() {
-        return satellite;
+        this.bias                          = bias;
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -93,16 +79,12 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
             }
 
         }
-        if (satellite.getClockOffsetDriver().getReferenceDate() == null) {
-            satellite.getClockOffsetDriver().setReferenceDate(s0.getDate());
-        }
     }
 
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double n      = ambiguity.getParametersDrivers().get(0).getValue();
             for (final GroundStation station : context.stations) {
-            	final AbsoluteDate     date      = currentState.getDate();
+                final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
                 final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(satelliteMeanPosition);
 
@@ -112,7 +94,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
                             final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), true);
-                            final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                            final double d = Vector3D.distance(position, t.transformPosition(stationMeanPosition));
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
                     }, -1.0, 1.0);
@@ -122,7 +104,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                     final double       downLinkDistance        = Vector3D.distance(position, stationAtReception);
 
                     final Vector3D satLosDown = currentState.toTransform().
-                                    transformVector(stationAtReception.subtract(position));
+                                                transformVector(stationAtReception.subtract(position));
                     final double   satPCVDown = satellitePhaseCenterVariation == null ?
                                                 0.0 :
                                                 satellitePhaseCenterVariation.value(0.5 * FastMath.PI - satLosDown.getDelta(),
@@ -134,15 +116,14 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                                                 stationPhaseCenterVariation.value(0.5 * FastMath.PI - staLosDown.getDelta(),
                                                                                   staLosDown.getAlpha());
 
-                    final double groundClk = station.getClockOffsetDriver().getValue(date);
-                    final double satClk    = satellite.getClockOffsetDriver().getValue(date);
+                    final double clockOffset = station.getClockOffsetDriver().getValue(date);
+
                     final double correctedDownLinkDistance = downLinkDistance + satPCVDown + staPCVDown +
-                                                             (groundClk - satClk) * Constants.SPEED_OF_LIGHT;
-                    final Phase  phase = new Phase(station, receptionDate.shiftedBy(groundClk),
-                                                   correctedDownLinkDistance / wavelength + n,
-                                                   wavelength, 1.0, 10, satellite);
-                    phase.addModifier(ambiguity);
-                    addMeasurement(phase);
+                                                             clockOffset * Constants.SPEED_OF_LIGHT;
+
+                    addMeasurement(new Range(station, false, receptionDate.shiftedBy(clockOffset),
+                                             correctedDownLinkDistance + bias,
+                                             1.0, 10, satellite));
                 }
 
             }

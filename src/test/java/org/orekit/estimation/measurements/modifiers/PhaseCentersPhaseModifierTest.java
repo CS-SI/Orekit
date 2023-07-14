@@ -16,8 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
@@ -30,23 +33,21 @@ import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
+import org.orekit.gnss.antenna.TwoDVariation;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.utils.Constants;
 
-import java.util.List;
-
-@Deprecated
-public class OnBoardAntennaPhaseModifierTest {
+public class PhaseCentersPhaseModifierTest {
 
     @Test
     public void testPreliminary() {
 
-        // this test does not check OnBoardAntennaRangeModifier at all,
-        // it just checks RangeMeasurementCreator behaves as necessary for the other test
+        // this test does not check PhaseCentersPhaseModifier at all,
+        // it just checks PhaseMeasurementCreator behaves as necessary for the other test
         // the *real* test is testEffect below
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -55,7 +56,7 @@ public class OnBoardAntennaPhaseModifierTest {
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
-        // create perfect range measurements without antenna offset
+        // create perfect phase measurements without antenna offset
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
@@ -67,11 +68,10 @@ public class OnBoardAntennaPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new PhaseMeasurementCreator(context, Frequency.G01,
-                                                                                           ambiguity, satClockOffset,
-                                                                                           Vector3D.ZERO, null, Vector3D.ZERO, null),
+                                                                                           ambiguity, satClockOffset),
                                                                1.0, 3.0, 300.0);
 
-        // create perfect range measurements with antenna offset
+        // create perfect phase measurements with antenna offset
         final double xOffset = -2.5;
         final Propagator p2 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
@@ -86,10 +86,8 @@ public class OnBoardAntennaPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Phase sr = (Phase) spacecraftCenteredMeasurements.get(i);
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
-            double alphaMax = FastMath.asin(Constants.WGS84_EARTH_EQUATORIAL_RADIUS / sr.getObservedValue()[0]);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() >= xOffset);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() <= xOffset * FastMath.cos(alphaMax) * sr.getWavelength());
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() >= +xOffset);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() <= -xOffset);
         }
     }
 
@@ -102,38 +100,51 @@ public class OnBoardAntennaPhaseModifierTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
-
-        // create perfect range measurements without antenna offset
-        final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        final double groundClockOffset =  12.0e-6;
+        final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 0;
         final double satClockOffset    = 345.0e-6;
+
+        // create perfect Phase measurements without antenna offset
+        final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new PhaseMeasurementCreator(context, Frequency.G01,
                                                                                            ambiguity, satClockOffset,
-                                                                                           Vector3D.ZERO, null, Vector3D.ZERO, null),
+                                                                                           Vector3D.ZERO, null,
+                                                                                           Vector3D.ZERO, null),
                                                                1.0, 3.0, 300.0);
 
-        // create perfect range measurements with antenna offset
-        final Vector3D apc = new Vector3D(-2.5,  0,  0);
+        // create perfect Phase measurements with antenna offset
+        final Vector3D stationMeanPosition   = new Vector3D(0.25, 0.25, -0.5);
+        final PhaseCenterVariationFunction stationPCV = new TwoDVariation(0, FastMath.PI, MathUtils.SEMI_PI,
+                                                                          new double[][] {
+                                                                              { 0.0,  0.25, -0.25, 0.5 },
+                                                                              { 0.0, -0.25,  0.25, 0.5 }
+                                                                          });
+        final Vector3D satelliteMeanPosition = new Vector3D(-2.5,  0,  0);
+        final PhaseCenterVariationFunction satellitePCV = new TwoDVariation(0, FastMath.PI, MathUtils.SEMI_PI,
+                                                                            new double[][] {
+                                                                                { 0.0,  0.5, -0.5, 1.0 },
+                                                                                { 0.0, -0.5,  0.5, 1.0 }
+                                                                            });
         final Propagator p2 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new PhaseMeasurementCreator(context, Frequency.G01,
                                                                                            ambiguity, satClockOffset,
-                                                                                           Vector3D.ZERO, null, apc, null),
+                                                                                           stationMeanPosition,   stationPCV,
+                                                                                           satelliteMeanPosition, satellitePCV),
                                                                1.0, 3.0, 300.0);
 
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
 
-        OnBoardAntennaPhaseModifier modifier = new OnBoardAntennaPhaseModifier(apc);
+        PhaseCentersPhaseModifier modifier = new PhaseCentersPhaseModifier(stationMeanPosition, stationPCV,
+                                                                           satelliteMeanPosition, satellitePCV);
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Phase sr = (Phase) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
@@ -146,3 +157,5 @@ public class OnBoardAntennaPhaseModifierTest {
     }
 
 }
+
+

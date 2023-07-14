@@ -25,7 +25,7 @@ import org.hipparchus.util.MathUtils;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class TwoDVariation implements PhaseCenterVariationFunction {
+public class TwoDVariation implements PhaseCenterVariationFunction {
 
     /** Start polar angle. */
     private final double polarStart;
@@ -45,8 +45,8 @@ class TwoDVariation implements PhaseCenterVariationFunction {
      * @param azimuthStep step between grid points
      * @param variations sampled phase center variations
      */
-    TwoDVariation(final double polarStart, final double polarStep,
-                  final double azimuthStep, final double[][] variations) {
+    public TwoDVariation(final double polarStart, final double polarStep,
+                         final double azimuthStep, final double[][] variations) {
         this.polarStart  = polarStart;
         this.polarStep   = polarStep;
         this.azimuthStep = azimuthStep;

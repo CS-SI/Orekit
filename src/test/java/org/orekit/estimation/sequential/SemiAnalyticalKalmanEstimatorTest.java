@@ -33,7 +33,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -85,7 +85,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         // DSST propagator builder (used for orbit determination)
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
@@ -152,7 +152,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -241,7 +241,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -341,7 +341,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -472,7 +472,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -572,7 +572,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         }
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 

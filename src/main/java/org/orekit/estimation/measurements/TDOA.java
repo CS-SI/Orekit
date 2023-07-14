@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,9 +30,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a Time Difference of Arrival measurement with a satellite as emitter
  * and two ground stations as receivers.
@@ -51,13 +50,10 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Pascal Parraud
  * @since 11.2
  */
-public class TDOA extends AbstractMeasurement<TDOA> {
+public class TDOA extends GroundReceiverMeasurement<TDOA> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "TDOA";
-
-    /** Prime ground station, the one that gives the date of the measurement. */
-    private final GroundStation primeStation;
 
     /** Second ground station, the one that gives the measurement, i.e. the delay. */
     private final GroundStation secondStation;
@@ -74,18 +70,8 @@ public class TDOA extends AbstractMeasurement<TDOA> {
     public TDOA(final GroundStation primeStation, final GroundStation secondStation,
                 final AbsoluteDate date, final double tdoa, final double sigma,
                 final double baseWeight, final ObservableSatellite satellite) {
-        super(date, tdoa, sigma, baseWeight, Collections.singletonList(satellite));
-        // add parameter drivers for the primary station
-        addParameterDriver(primeStation.getClockOffsetDriver());
-        addParameterDriver(primeStation.getEastOffsetDriver());
-        addParameterDriver(primeStation.getNorthOffsetDriver());
-        addParameterDriver(primeStation.getZenithOffsetDriver());
-        addParameterDriver(primeStation.getPrimeMeridianOffsetDriver());
-        addParameterDriver(primeStation.getPrimeMeridianDriftDriver());
-        addParameterDriver(primeStation.getPolarOffsetXDriver());
-        addParameterDriver(primeStation.getPolarDriftXDriver());
-        addParameterDriver(primeStation.getPolarOffsetYDriver());
-        addParameterDriver(primeStation.getPolarDriftYDriver());
+        super(primeStation, false, date, tdoa, sigma, baseWeight, satellite);
+
         // add parameter drivers for the secondary station
         addParameterDriver(secondStation.getClockOffsetDriver());
         addParameterDriver(secondStation.getEastOffsetDriver());
@@ -97,15 +83,15 @@ public class TDOA extends AbstractMeasurement<TDOA> {
         addParameterDriver(secondStation.getPolarDriftXDriver());
         addParameterDriver(secondStation.getPolarOffsetYDriver());
         addParameterDriver(secondStation.getPolarDriftYDriver());
-        this.primeStation  = primeStation;
         this.secondStation = secondStation;
+
     }
 
     /** Get the prime ground station, the one that gives the date of the measurement.
      * @return prime ground station
      */
     public GroundStation getPrimeStation() {
-        return primeStation;
+        return getStation();
     }
 
     /** Get the second ground station, the one that gives the measurement.
@@ -153,7 +139,7 @@ public class TDOA extends AbstractMeasurement<TDOA> {
         // transform between prime station frame and inertial frame
         // at the real date of measurement, i.e. taking station clock offset into account
         final FieldTransform<Gradient> primeToInert =
-                        primeStation.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> measurementDateG = primeToInert.getFieldDate();
 
         // prime station PV in inertial frame at the real date of the measurement
@@ -199,7 +185,7 @@ public class TDOA extends AbstractMeasurement<TDOA> {
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2.getValue()));
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final Gradient offset1 = primeStation.getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
+        final Gradient offset1 = getStation().getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
         final Gradient offset2 = secondStation.getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
         final Gradient tdoaG   = tau1.add(offset1).subtract(tau2.add(offset2));
         final double tdoa      = tdoaG.getValue();

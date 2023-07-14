@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -62,7 +62,7 @@ public class ShapiroRangeModifierTest {
                                                                            propagatorBuilder);
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         if (!twoWay) {
             // convert default two way measurements to one way measurements

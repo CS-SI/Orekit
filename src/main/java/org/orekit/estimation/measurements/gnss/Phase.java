@@ -17,15 +17,14 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.GroundReceiverMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.FieldTransform;
@@ -34,9 +33,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a phase measurement from a ground station.
  * <p>
@@ -53,7 +52,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Maxime Journot
  * @since 9.2
  */
-public class Phase extends AbstractMeasurement<Phase> {
+public class Phase extends GroundReceiverMeasurement<Phase> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Phase";
@@ -63,9 +62,6 @@ public class Phase extends AbstractMeasurement<Phase> {
 
     /** Driver for ambiguity. */
     private final ParameterDriver ambiguityDriver;
-
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
@@ -83,31 +79,12 @@ public class Phase extends AbstractMeasurement<Phase> {
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite) {
-        super(date, phase, sigma, baseWeight, Collections.singletonList(satellite));
+        super(station, false, date, phase, sigma, baseWeight, satellite);
         ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME,
                                                0.0, 1.0,
                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         addParameterDriver(ambiguityDriver);
-        addParameterDriver(satellite.getClockOffsetDriver());
-        addParameterDriver(station.getClockOffsetDriver());
-        addParameterDriver(station.getEastOffsetDriver());
-        addParameterDriver(station.getNorthOffsetDriver());
-        addParameterDriver(station.getZenithOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianDriftDriver());
-        addParameterDriver(station.getPolarOffsetXDriver());
-        addParameterDriver(station.getPolarDriftXDriver());
-        addParameterDriver(station.getPolarOffsetYDriver());
-        addParameterDriver(station.getPolarDriftYDriver());
-        this.station    = station;
         this.wavelength = wavelength;
-    }
-
-    /** Get the ground station from which measurement is performed.
-     * @return ground station from which measurement is performed
-     */
-    public GroundStation getStation() {
-        return station;
     }
 
     /** Get the wavelength.
@@ -158,7 +135,7 @@ public class Phase extends AbstractMeasurement<Phase> {
         // transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
         final FieldTransform<Gradient> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
@@ -193,7 +170,7 @@ public class Phase extends AbstractMeasurement<Phase> {
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
         final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
-        final Gradient            dtg       = station.getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
+        final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

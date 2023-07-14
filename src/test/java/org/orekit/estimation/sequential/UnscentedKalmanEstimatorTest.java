@@ -40,7 +40,7 @@ import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
@@ -273,7 +273,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                 UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
         final NumericalPropagator referencePropagator = propagatorBuilder.
@@ -346,7 +346,7 @@ public class UnscentedKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                 UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
         final NumericalPropagator referencePropagator = propagatorBuilder.
@@ -703,7 +703,7 @@ public class UnscentedKalmanEstimatorTest {
         propagator1 = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                     propagatorBuilder1);
         measurements.addAll(UnscentedEstimationTestUtils.createMeasurements(propagator1,
-                                                                            new RangeMeasurementCreator(context),
+                                                                            new TwoWayRangeMeasurementCreator(context),
                                                                             1.0, 3.0, 60.0));
         measurements.sort(Comparator.naturalOrder());
 
@@ -824,7 +824,10 @@ public class UnscentedKalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
         		UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, 2.0),
+                                                               new TwoWayRangeMeasurementCreator(context,
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 2.0),
                                                                1.0, 3.0, 300.0);
 
         measurements.forEach(measurement -> ((Range) measurement).addModifier(rangeBias));

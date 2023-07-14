@@ -83,7 +83,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // change one station clock
@@ -154,7 +154,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // move one station
@@ -295,7 +295,7 @@ public class GroundStationTest {
                                                                            linearPropagatorBuilder);
         final List<ObservedMeasurement<?>> linearMeasurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(linearEOPContext),
+                                                               new TwoWayRangeMeasurementCreator(linearEOPContext),
                                                                1.0, 5.0, 60.0);
 
         Utils.clearFactories();

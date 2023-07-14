@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,9 +35,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling an Right Ascension - Declination measurement from a ground point (station, telescope).
  * The angles are given in an inertial reference frame.
@@ -50,13 +49,10 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Maxime Journot
  * @since 9.0
  */
-public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
+public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "AngularRaDec";
-
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
 
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
@@ -74,26 +70,8 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final ObservableSatellite satellite) {
-        super(date, angular, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(station.getClockOffsetDriver());
-        addParameterDriver(station.getEastOffsetDriver());
-        addParameterDriver(station.getNorthOffsetDriver());
-        addParameterDriver(station.getZenithOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianDriftDriver());
-        addParameterDriver(station.getPolarOffsetXDriver());
-        addParameterDriver(station.getPolarDriftXDriver());
-        addParameterDriver(station.getPolarOffsetYDriver());
-        addParameterDriver(station.getPolarDriftYDriver());
-        this.station        = station;
+        super(station, false, date, angular, sigma, baseWeight, satellite);
         this.referenceFrame = referenceFrame;
-    }
-
-    /** Get the ground station from which measurement is performed.
-     * @return ground station from which measurement is performed
-     */
-    public GroundStation getStation() {
-        return station;
     }
 
     /** Get the reference frame in which the right ascension - declination angles are given.
@@ -141,7 +119,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
         // Transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
         final FieldTransform<Gradient> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
