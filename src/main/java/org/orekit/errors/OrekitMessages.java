@@ -346,7 +346,6 @@ public enum OrekitMessages implements Localizable {
     ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error"),
     FIND_ROOT(
             "{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})"),
-    BACKWARD_PROPAGATION_NOT_ALLOWED("backward propagation not allowed here"),
     NO_STATION_ECCENTRICITY_FOR_EPOCH(
             "no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}"),
     INCONSISTENT_SELECTION("inconsistent parameters selection between pairs {0}/{1} and {2}/{3}"),

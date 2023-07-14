@@ -789,9 +789,6 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = <MISSING TRANSLATION>
 
-# backward propagation not allowed here
-BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
-
 # no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
 NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
 

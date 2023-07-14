@@ -47,10 +47,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * true or false. This class works well with event detectors that detect entry to or exit
  * from a region, e.g. {@link FieldEclipseDetector}, {@link FieldElevationDetector}, {@link
  * FieldLatitudeCrossingDetector}. Using this detector with detectors that are not based on
- * entry to or exit from a region, e.g. {@link FieldDateDetector}, {@link
- * FieldLongitudeCrossingDetector}, will likely lead to unexpected results. To apply conditions
- * to this latter type of event detectors a {@link FieldEventEnablingPredicateFilter} is
- * usually more appropriate.
+ * entry to or exit from a region, e.g. {@link FieldDateDetector}, will likely lead to
+ * unexpected results. To apply conditions to this latter type of event detectors a
+ * {@link FieldEventEnablingPredicateFilter} is usually more appropriate.
  *
  * @param <T> type of the field elements
  * @since 12.0
@@ -58,7 +57,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author luc Luc Maisonobe
  * @see #andCombine(Collection)
  * @see #orCombine(Collection)
- * @see #notCombine(EventDetector)
+ * @see #notCombine(FieldEventDetector)
  * @see EventEnablingPredicateFilter
  * @see EventSlopeFilter
  */

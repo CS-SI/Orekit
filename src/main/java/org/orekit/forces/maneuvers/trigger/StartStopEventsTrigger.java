@@ -108,6 +108,14 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** {@inheritDoc} */
     @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        startDetector.init(initialState, target);
+        stopDetector.init(initialState, target);
+        super.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected boolean isFiringOnInitialState(final SpacecraftState initialState, final boolean isForward) {
 
         final double startG = startDetector.g(initialState);
