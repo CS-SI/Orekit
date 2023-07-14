@@ -61,9 +61,7 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
         forward = target.isAfterOrEqualTo(initialState);
         firings = new TimeSpanMap<>(Boolean.FALSE);
-        for (final ManeuverTriggersResetter r : resetters) {
-            r.init(initialState, target);
-        }
+        initializeResetters(initialState, target);
 
         if (isFiringOnInitialState(initialState, forward)) {
             if (forward) {

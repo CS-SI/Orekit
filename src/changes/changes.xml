@@ -21,6 +21,21 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="remove" issue="1125">
+        Removed EventBasedManeuverTriggers, obsoleted by StartStopEventsTriggers since Orekit 11.1.
+      </action>
+      <action dev="luc" type="add" issue="1126">
+        Added FieldBooleanDetector.
+      </action>
+      <action dev="luc" type="add" issue="1127">
+        Added FieldEventEnablingPredicateFilter.
+      </action>
+      <action dev="luc" type="add" issue="1128">
+        Added FieldElevationExtremumDetector.
+      </action>
+      <action dev="luc" type="add" issue="1129">
+        Added FieldEventSlopeFilter.
+      </action>
       <action dev="luc" type="add">
         Replaced PhaseCentersPhaseModifier by PhaseCentersPhaseModifier.
       </action>
@@ -78,18 +93,18 @@
       <action dev="vincent" type="fix" issue="1092">
         Fixed typos in parameters name and associated getters when impacted.
       </action>
-       <action dev="luc" type="add" issue="1091">
-	      Added support for old Rinex 2 navigation files.
-       </action>
-       <action dev="luc" type="add" issue="1088">
-	      Added piecewise-polynomial thrust model.
-       </action>
-       <action dev="luc" type="add" issue="1087">
-	      Accept some slightly invalid Rinex navigation files.
-       </action>
-       <action dev="luc" type="add" issue="1080">
-	      Added MultiSatFixedStepHandler.
-       </action>
+      <action dev="luc" type="add" issue="1091">
+         Added support for old Rinex 2 navigation files.
+      </action>
+      <action dev="luc" type="add" issue="1088">
+         Added piecewise-polynomial thrust model.
+      </action>
+      <action dev="luc" type="add" issue="1087">
+         Accept some slightly invalid Rinex navigation files.
+      </action>
+      <action dev="luc" type="add" issue="1080">
+         Added MultiSatFixedStepHandler.
+      </action>
       <action dev="vincent" type="add" issue="1081">
         Added "toOrbitRelativeFrame" method in LOFType enum to allow for a better compatibility between Orekit and CCSDS
         files
@@ -100,37 +115,37 @@
         Fixed OrbitRelativeFrame enum as some instances were not built using their recently introduced inertial LOFType
         equivalent
       </action>
-       <action dev="luc" type="add" issue="1060">
-	      Added support for CCSDS ADM V2.
-       </action>
-       <action dev="luc" type="add">
-	      Added PrecessionFinder to recover precession parameters from
-	      vector first and second derivatives (used by some CCSDS ADM modes).
+      <action dev="luc" type="add" issue="1060">
+         Added support for CCSDS ADM V2.
+      </action>
+      <action dev="luc" type="add">
+         Added PrecessionFinder to recover precession parameters from
+         vector first and second derivatives (used by some CCSDS ADM modes).
       </action>
       <action dev="vincent" type="update" issue="1058">
         Refactored FieldODEIntegratorBuilder interface and its implementing classes
       </action>
       <action dev="luc" type="add" issue="1047">
-	      Added support for Rinex 4.00 (currently only navigation).
+          Added support for Rinex 4.00 (currently only navigation).
       </action>
       <action dev="luc" type="add" issue="1050">
-	      Added prediction of Earth Orientation Parameters.
+          Added prediction of Earth Orientation Parameters.
       </action>
       <action dev="luc" type="add" issue="1051">
-	      Added creation of ITRF from custom Earth Orientation Parameters history.
+          Added creation of ITRF from custom Earth Orientation Parameters history.
       </action>
       <action dev="luc" type="update" issue="860">
-	      Added support for Rinex 3.05 (observation and navigation).
+          Added support for Rinex 3.05 (observation and navigation).
       </action>
       <action dev="luc" type="update">
-	      Replaced RinexObservationLoader by RinexObservationParser.
+          Replaced RinexObservationLoader by RinexObservationParser.
       </action>
       <action dev="luc" type="add">
-	      Allow to write relative dates in CCSDS files, when dates are close enough to a reference.
+          Allow to write relative dates in CCSDS files, when dates are close enough to a reference.
       </action>
       <action dev="luc" type="update">
-	      Properly manage known inconsistency between CCSDS and TLE
-	      concerning units of MEAN_MOTION_DOT and MEAN_MOTION_DDOT.
+          Properly manage known inconsistency between CCSDS and TLE
+          concerning units of MEAN_MOTION_DOT and MEAN_MOTION_DDOT.
       </action>
       <action dev="vincent" type="add" issue="1044">
         Added getter for secondaryPVCoordinatesProvider in ExtremumApproachDetector and made computeDeltaPV method public.
@@ -337,7 +352,7 @@
       <action dev="vincent" type="update" issue="978">
         Improved documentation of StateCovariance class.
       </action>
-	</release>
+    </release>
     <release version="11.3" date="2022-10-25"
              description="Version 11.3 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced in 11.3 are:
