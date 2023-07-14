@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,9 +32,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a turn-around range measurement using a primary ground station and a secondary ground station.
  * <p>
@@ -58,13 +57,10 @@ import org.orekit.utils.TimeSpanMap.Span;
  *
  * @since 9.0
  */
-public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
+public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "TurnAroundRange";
-
-    /** Primary ground station from which measurement is performed. */
-    private final GroundStation primaryStation;
 
     /** Secondary ground station reflecting the signal. */
     private final GroundStation secondaryStation;
@@ -83,17 +79,8 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final ObservableSatellite satellite) {
-        super(date, turnAroundRange, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(primaryStation.getClockOffsetDriver());
-        addParameterDriver(primaryStation.getEastOffsetDriver());
-        addParameterDriver(primaryStation.getNorthOffsetDriver());
-        addParameterDriver(primaryStation.getZenithOffsetDriver());
-        addParameterDriver(primaryStation.getPrimeMeridianOffsetDriver());
-        addParameterDriver(primaryStation.getPrimeMeridianDriftDriver());
-        addParameterDriver(primaryStation.getPolarOffsetXDriver());
-        addParameterDriver(primaryStation.getPolarDriftXDriver());
-        addParameterDriver(primaryStation.getPolarOffsetYDriver());
-        addParameterDriver(primaryStation.getPolarDriftYDriver());
+        super(primaryStation, true, date, turnAroundRange, sigma, baseWeight, satellite);
+
         // the secondary station clock is not used at all, we ignore the corresponding parameter driver
         addParameterDriver(secondaryStation.getEastOffsetDriver());
         addParameterDriver(secondaryStation.getNorthOffsetDriver());
@@ -104,15 +91,15 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         addParameterDriver(secondaryStation.getPolarDriftXDriver());
         addParameterDriver(secondaryStation.getPolarOffsetYDriver());
         addParameterDriver(secondaryStation.getPolarDriftYDriver());
-        this.primaryStation   = primaryStation;
         this.secondaryStation = secondaryStation;
+
     }
 
     /** Get the primary ground station from which measurement is performed.
      * @return primary ground station from which measurement is performed
      */
     public GroundStation getPrimaryStation() {
-        return primaryStation;
+        return getStation();
     }
 
     /** Get the secondary ground station reflecting the signal.
@@ -184,7 +171,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
         // transform between primary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
         final FieldTransform<Gradient> primaryToInert =
-                        primaryStation.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> measurementDateDS = primaryToInert.getFieldDate();
 
         // Primary station PV in inertial frame at measurement date
@@ -253,7 +240,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final FieldAbsoluteDate<Gradient> approxEmissionDate =
                         measurementDateDS.shiftedBy(-2 * (secondaryTauU.getValue() + primaryTauD.getValue()));
         final FieldTransform<Gradient> primaryToInertApprox =
-                        primaryStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
 
         // Primary station PV in inertial frame at approximate emission date
         final TimeStampedFieldPVCoordinates<Gradient> QPrimaryApprox =
