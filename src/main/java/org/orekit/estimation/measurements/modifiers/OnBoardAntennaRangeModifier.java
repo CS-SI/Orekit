@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.gnss.antenna.FrequencyPattern;
 
 /** On-board antenna offset effect on range measurements.
  * @author Luc Maisonobe
@@ -30,7 +31,8 @@ public class OnBoardAntennaRangeModifier extends PhaseCentersRangeModifier {
      * @param antennaPhaseCenter position of the Antenna Phase Center in satellite frame
      */
     public OnBoardAntennaRangeModifier(final Vector3D antennaPhaseCenter) {
-        super(Vector3D.ZERO, null, antennaPhaseCenter, null);
+        super(FrequencyPattern.ZERO_CORRECTION,
+              new FrequencyPattern(antennaPhaseCenter, null));
     }
 
 }

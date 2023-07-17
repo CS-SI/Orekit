@@ -33,6 +33,7 @@ import org.orekit.estimation.measurements.OneWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.gnss.antenna.TwoDVariation;
 import org.orekit.orbits.OrbitType;
@@ -137,8 +138,10 @@ public class PhaseCentersRangeModifierTest {
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
 
-        PhaseCentersRangeModifier modifier = new PhaseCentersRangeModifier(stationMeanPosition, stationPCV,
-                                                                           satelliteMeanPosition, satellitePCV);
+        PhaseCentersRangeModifier modifier = new PhaseCentersRangeModifier(new FrequencyPattern(stationMeanPosition,
+                                                                                                stationPCV),
+                                                                           new FrequencyPattern(satelliteMeanPosition,
+                                                                                                satellitePCV));
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Range sr = (Range) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
@@ -200,8 +203,10 @@ public class PhaseCentersRangeModifierTest {
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
 
-        PhaseCentersRangeModifier modifier = new PhaseCentersRangeModifier(stationMeanPosition, stationPCV,
-                                                                           satelliteMeanPosition, satellitePCV);
+        PhaseCentersRangeModifier modifier = new PhaseCentersRangeModifier(new FrequencyPattern(stationMeanPosition,
+                                                                                                stationPCV),
+                                                                           new FrequencyPattern(satelliteMeanPosition,
+                                                                                                satellitePCV));
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Range sr = (Range) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);

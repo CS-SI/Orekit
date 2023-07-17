@@ -33,6 +33,7 @@ import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.gnss.antenna.TwoDVariation;
 import org.orekit.orbits.OrbitType;
@@ -143,8 +144,10 @@ public class PhaseCentersPhaseModifierTest {
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
 
-        PhaseCentersPhaseModifier modifier = new PhaseCentersPhaseModifier(stationMeanPosition, stationPCV,
-                                                                           satelliteMeanPosition, satellitePCV);
+        PhaseCentersPhaseModifier modifier = new PhaseCentersPhaseModifier(new FrequencyPattern(stationMeanPosition,
+                                                                                                stationPCV),
+                                                                           new FrequencyPattern(satelliteMeanPosition,
+                                                                                                satellitePCV));
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Phase sr = (Phase) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);

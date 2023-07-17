@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1130">
+        Fixed API inconsistencies in antenna phase center handling.
+      </action>
       <action dev="maxime" type="fix" issue="1105">
         Fixed deadlock in threads when successively calling PropagatorsParallelizer.propagate(...).
       </action>

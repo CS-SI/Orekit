@@ -16,13 +16,12 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundReceiverMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -41,19 +40,13 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
     private final PhaseCentersOffsetComputer downlink;
 
     /** Simple constructor.
-     * @param stationMeanPosition mean position of the station Antenna Phase Center in station frame
-     * @param stationPhaseCenterVariation station phase center variation model in station frame (may be null for no variation)
-     * @param satelliteMeanPosition mean position of the satellite Antenna Phase Center in satellite frame
-     * @param satellitePhaseCenterVariation satellite phase center variation model in satellite frame (may be null for no variation)
+     * @param stationPattern station pattern
+     * @param satellitePattern satellite pattern
      */
-    public PhaseCentersGroundReceiverBaseModifier(final Vector3D stationMeanPosition,
-                                                  final PhaseCenterVariationFunction stationPhaseCenterVariation,
-                                                  final Vector3D satelliteMeanPosition,
-                                                  final PhaseCenterVariationFunction satellitePhaseCenterVariation) {
-        this.uplink   = new PhaseCentersOffsetComputer(stationMeanPosition, stationPhaseCenterVariation,
-                                                       satelliteMeanPosition, satellitePhaseCenterVariation);
-        this.downlink = new PhaseCentersOffsetComputer(satelliteMeanPosition, satellitePhaseCenterVariation,
-                                                       stationMeanPosition, stationPhaseCenterVariation);
+    public PhaseCentersGroundReceiverBaseModifier(final FrequencyPattern stationPattern,
+                                                  final FrequencyPattern satellitePattern) {
+        this.uplink   = new PhaseCentersOffsetComputer(stationPattern, satellitePattern);
+        this.downlink = new PhaseCentersOffsetComputer(satellitePattern, stationPattern);
     }
 
     /** Compute distance modification for one way measurement.
