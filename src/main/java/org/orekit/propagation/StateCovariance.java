@@ -212,16 +212,26 @@ public class StateCovariance implements TimeStamped {
     public StateCovariance changeCovarianceType(final Orbit orbit, final OrbitType outOrbitType,
                                                 final PositionAngle outAngleType) {
 
-        // Check if the covariance expressed in a celestial body frame
+        // Handle case where the covariance is already expressed in the output type
+        if (outOrbitType == orbitType && (outAngleType == angleType || outOrbitType == OrbitType.CARTESIAN)) {
+            if (lofType == null) {
+                return new StateCovariance(orbitalCovariance, epoch, frame, orbitType, angleType);
+            }
+            else {
+                return new StateCovariance(orbitalCovariance, epoch, lofType);
+            }
+        }
+
+        // Check if the covariance is expressed in a celestial body frame
         if (frame != null) {
 
-            // Check if the covarianc is defined in inertial frame
+            // Check if the covariance is defined in an inertial frame
             if (frame.isPseudoInertial()) {
                 return changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType, outOrbitType, outAngleType,
                                            orbitalCovariance);
             }
 
-            // The covariance is not defined in inertial frame. The orbit type cannot be changes
+            // The covariance is not defined in an inertial frame. The orbit type cannot be changed
             throw new OrekitException(OrekitMessages.CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME);
 
         }

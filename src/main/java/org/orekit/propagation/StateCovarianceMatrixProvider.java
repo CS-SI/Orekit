@@ -19,6 +19,7 @@ package org.orekit.propagation;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
@@ -115,7 +116,12 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         // Convert the initial state covariance in the same orbit type as the STM
         covInit = covInit.changeCovarianceType(initialState.getOrbit(), stmOrbitType, stmAngleType);
-        covMatrixInit = covInit.getMatrix();
+
+        // Express covariance matrix in the same frame as the STM
+        final Orbit           initialOrbit      = initialState.getOrbit();
+        final StateCovariance covInitInSTMFrame = covInit.changeCovarianceFrame(initialOrbit, initialOrbit.getFrame());
+
+        covMatrixInit = covInitInSTMFrame.getMatrix();
     }
 
     /**
@@ -158,7 +164,8 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     }
 
     /**
-     * Get the state covariance.
+     * Get the state covariance in the same frame/local orbital frame, orbit type and position angle as the initial
+     * covariance.
      *
      * @param state spacecraft state to which the covariance matrix should correspond
      * @return the state covariance
@@ -170,8 +177,17 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         // Get the current propagated covariance
         final RealMatrix covarianceMatrix = toRealMatrix(state.getAdditionalState(additionalName));
 
-        // Return the state covariance
-        return new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitType, covAngleType);
+        // Create associated state covariance
+        final StateCovariance covariance =
+                new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitType, covAngleType);
+
+        // Return the state covariance in same frame/lof as initial covariance
+        if (covInit.getLOFType() == null) {
+            return covariance;
+        }
+        else {
+            return covariance.changeCovarianceFrame(state.getOrbit(), covInit.getLOFType());
+        }
 
     }
 

@@ -147,6 +147,11 @@
           Properly manage known inconsistency between CCSDS and TLE
           concerning units of MEAN_MOTION_DOT and MEAN_MOTION_DDOT.
       </action>
+      <action dev="vincent" type="fix" issue="1052">
+        Fixed error message when propagating state covariance expressed in LOF. Changed behaviour of
+        StateCovarianceMatrixProvider to return the propagated state covariance in same frame/LOF as
+        initial state covariance
+      </action>
       <action dev="vincent" type="add" issue="1044">
         Added getter for secondaryPVCoordinatesProvider in ExtremumApproachDetector and made computeDeltaPV method public.
       </action>
