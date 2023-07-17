@@ -20,6 +20,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +37,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -946,5 +949,73 @@ public class StateCovarianceTest {
 
     }
 
+    @Test
+    @DisplayName("test issue 1052 : Error when propagating covariance defined in non-inertial frame")
+    void testIssue1052() {
+
+        // Initialize orekit
+        Utils.setDataRoot("regular-data");
+
+        // Initialize state and covariance
+        setUp();
+
+        // Given
+        final AbsoluteDate  initialDate      = initialState.getDate();
+        final OrbitType     stmOrbitType     = OrbitType.CARTESIAN;
+        final PositionAngle stmPositionAngle = PositionAngle.MEAN;
+
+        final NumericalPropagator propagator = buildDefaultPropagator(initialState, stmOrbitType, stmPositionAngle);
+
+        // Initialize harvester
+        final String            stmAdditionalName = "stm";
+        final MatricesHarvester harvester         = propagator.setupMatricesComputation(stmAdditionalName, null, null);
+
+        // Initialize covariance
+        final StateCovariance initialCovariance = new StateCovariance(new BlockRealMatrix(initCov),
+                                                                      initialDate, LOFType.QSW);
+
+        // Initialize covariance provider
+        final StateCovarianceMatrixProvider provider =
+                new StateCovarianceMatrixProvider("covariance", stmAdditionalName, harvester,
+                                                  stmOrbitType, stmPositionAngle, initialCovariance);
+
+        propagator.addAdditionalStateProvider(provider);
+
+        // When
+        final SpacecraftState propagatedState      = propagator.propagate(initialDate.shiftedBy(1));
+        final StateCovariance propagatedCovariance = provider.getStateCovariance(propagatedState);
+
+        // Assert that the error message is not thrown anymore (cannot change covariance type if defined in LOF)
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(initialDate.shiftedBy(1)));
+
+        // Assert that propagated covariance is in the same LOF as the initial covariance
+        Assertions.assertEquals(LOFType.QSW, propagatedCovariance.getLOFType());
+
+    }
+
+    private NumericalPropagator buildDefaultPropagator(final SpacecraftState state,
+                                                       final OrbitType orbitType,
+                                                       final PositionAngle positionAngle) {
+
+        // Build default ODEIntegrator
+        final ODEIntegrator integrator = buildDefaultODEIntegrator(state.getOrbit(), orbitType);
+
+        // Build and initialize numerical propagator
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(state);
+        propagator.setOrbitType(orbitType);
+        propagator.setPositionAngleType(positionAngle);
+
+        return propagator;
+    }
+
+    private ODEIntegrator buildDefaultODEIntegrator(final Orbit orbit, final OrbitType orbitType) {
+        final double     dP         = 1;
+        final double     minStep    = 0.001;
+        final double     maxStep    = 60;
+        final double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+
+        return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
+    }
 
 }
