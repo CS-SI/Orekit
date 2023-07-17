@@ -37,6 +37,7 @@ import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -259,7 +260,9 @@ public class DSSTBatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(Vector3D.ZERO, null, antennaPhaseCenter, null);
+        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                                                                    new FrequencyPattern(antennaPhaseCenter,
+                                                                                                         null));
         for (final ObservedMeasurement<?> range : measurements) {
             ((Range) range).addModifier(obaModifier);
             estimator.addMeasurement(range);

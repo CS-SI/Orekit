@@ -19,11 +19,10 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.utils.ParameterDriver;
 
 /** Ground and on-board antennas offsets effect on range measurements.
@@ -36,17 +35,12 @@ public class PhaseCentersRangeModifier implements EstimationModifier<Range> {
     private final PhaseCentersGroundReceiverBaseModifier<Range> modifier;
 
     /** Simple constructor.
-     * @param stationMeanPosition mean position of the station Antenna Phase Center in station frame
-     * @param stationPhaseCenterVariation station phase center variation model in station frame (may be null for no variation)
-     * @param satelliteMeanPosition mean position of the satellite Antenna Phase Center in satellite frame
-     * @param satellitePhaseCenterVariation satellite phase center variation model in satellite frame (may be null for no variation)
+     * @param stationPattern station pattern
+     * @param satellitePattern satellite pattern
      */
-    public PhaseCentersRangeModifier(final Vector3D stationMeanPosition,
-                                     final PhaseCenterVariationFunction stationPhaseCenterVariation,
-                                     final Vector3D satelliteMeanPosition,
-                                     final PhaseCenterVariationFunction satellitePhaseCenterVariation) {
-        this.modifier = new PhaseCentersGroundReceiverBaseModifier<>(stationMeanPosition, stationPhaseCenterVariation,
-                                                                     satelliteMeanPosition, satellitePhaseCenterVariation);
+    public PhaseCentersRangeModifier(final FrequencyPattern stationPattern,
+                                     final FrequencyPattern satellitePattern) {
+        this.modifier = new PhaseCentersGroundReceiverBaseModifier<>(stationPattern, satellitePattern);
     }
 
     /** {@inheritDoc} */

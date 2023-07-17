@@ -43,6 +43,7 @@ import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -335,7 +336,9 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(Vector3D.ZERO, null, antennaPhaseCenter, null);
+        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                                                                    new FrequencyPattern(antennaPhaseCenter,
+                                                                                                         null));
         for (final ObservedMeasurement<?> range : measurements) {
             ((Range) range).addModifier(obaModifier);
             estimator.addMeasurement(range);

@@ -116,6 +116,7 @@ import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.RinexObservationParser;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -1350,7 +1351,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Y,
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Z);
         }
-        return offset.getNorm() > 0 ? new PhaseCentersRangeModifier(Vector3D.ZERO, null, offset, null) : null;
+        return offset.getNorm() > 0 ?
+               new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                             new FrequencyPattern(offset, null)) :
+               null;
     }
 
     /** Set up range modifier taking shapiro effect.

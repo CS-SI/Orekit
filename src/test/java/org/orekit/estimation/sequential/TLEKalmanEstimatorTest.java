@@ -34,6 +34,7 @@ import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -221,7 +222,9 @@ public class TLEKalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // Add antenna offset to the measurements
-        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(Vector3D.ZERO, null, antennaPhaseCenter, null);
+        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                                                                    new FrequencyPattern(antennaPhaseCenter,
+                                                                                                         null));
         for (final ObservedMeasurement<?> range : measurements) {
             ((Range) range).addModifier(obaModifier);
         }
