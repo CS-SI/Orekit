@@ -372,11 +372,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
+        final Map<String, StationData>    stations                 = createStationsData(parser, initialGuess.getDate(),
+                                                                                        stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
-        final PhaseCentersRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final PhaseCentersRangeModifier   satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
@@ -655,7 +656,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
+        final Map<String, StationData>    stations                 = createStationsData(parser, initialGuess.getDate(),
+                                                                                        stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
@@ -1373,6 +1375,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Set up stations.
      * @param parser input file parser
+     * @param refDate reference date (from orbit initial guess)
      * @param sinexPosition sinex file containing station position (can be null)
      * @param sinexEcc sinex file containing station eccentricities (can be null)
      * @param conventions IERS conventions to use
@@ -1381,6 +1384,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
+                                                        final AbsoluteDate refDate,
                                                         final SinexLoader sinexPosition,
                                                         final SinexLoader sinexEcc,
                                                         final IERSConventions conventions,
@@ -1510,12 +1514,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
                 final Station stationEcc = sinexEcc.getStation(stationNames[i]);
-                station.getZenithOffsetDriver().setValue(stationEcc.getEccentricities().getX());
-                station.getZenithOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getX());
-                station.getNorthOffsetDriver().setValue(stationEcc.getEccentricities().getY());
-                station.getNorthOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getY());
-                station.getEastOffsetDriver().setValue(stationEcc.getEccentricities().getZ());
-                station.getEastOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getZ());
+                final Vector3D eccentricities = stationEcc.getEccentricities(refDate);
+                station.getZenithOffsetDriver().setValue(eccentricities.getX());
+                station.getZenithOffsetDriver().setReferenceValue(eccentricities.getX());
+                station.getNorthOffsetDriver().setValue(eccentricities.getY());
+                station.getNorthOffsetDriver().setReferenceValue(eccentricities.getY());
+                station.getEastOffsetDriver().setValue(eccentricities.getZ());
+                station.getEastOffsetDriver().setReferenceValue(eccentricities.getZ());
             }
 
             // range

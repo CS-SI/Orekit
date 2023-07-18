@@ -789,8 +789,8 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentative de génération du fichier {0} av
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} n''a pas réussi à trouver une solution entre {1} (g={2,number,0.0##############E0}) et {3} (g={4,number,0.0##############E0})\nLa dernière itération était à {5} (g={6,number,0.0##############E0})
 
-# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
-NO_STATION_ECCENTRICITY_FOR_EPOCH = pas d''excentricité station pour la date {0}, l''intervalle de validité est entre {1} et {2}
+# missing station data for epoch {0}
+MISSING_STATION_DATA_FOR_EPOCH = donnée station manquante pour la date {0}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = sélection de paramètres incohérents entre les paires {0}/{1} et {2}/{3}

@@ -58,6 +58,14 @@ public class FrequencyPattern {
         return eccentricities;
     }
 
+    /** Get the phase center variation function.
+     * @return phase center variation function (may be null if phase center does not depend on signal direction)
+     * @since 12.0
+     */
+    public PhaseCenterVariationFunction getPhaseCenterVariationFunction() {
+        return phaseCenterVariationFunction;
+    }
+
     /** Get the value of the phase center variation in a signal direction.
      * @param direction signal direction in antenna reference frame
      * @return value of the phase center variation
