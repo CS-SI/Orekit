@@ -45,17 +45,6 @@ public class AntexLoaderTest {
     }
 
     @Test
-    public void testTmp() throws URISyntaxException {
-
-        AntexLoader  loader = new AntexLoader(new DataSource(new File("/home/luc/igs20_2270.atx")),
-                                              TimeScalesFactory.getGPS());
-        for (final ReceiverAntenna antenna :  loader.getReceiversAntennas()) {
-            System.out.println(antenna.getType());
-        }
-
-    }
-
-    @Test
     public void testSmallAntexFile() throws URISyntaxException {
 
         final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs14-small.atx");
