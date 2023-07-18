@@ -16,7 +16,6 @@
  */
 package org.orekit.gnss.antenna;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
