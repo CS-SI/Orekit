@@ -253,7 +253,7 @@ public class Station {
      * @since 12.0
      */
     public void addAntennaTypeValidBefore(final String entry, final AbsoluteDate latestValidityDate) {
-         antennaTypesMap.addValidBefore(entry, latestValidityDate, false);
+        antennaTypesMap.addValidBefore(entry, latestValidityDate, false);
     }
 
     /** Add a antenna type entry valid after a limit date.<br>
@@ -265,7 +265,7 @@ public class Station {
      * @since 12.0
      */
     public void addAntennaTypeValidAfter(final String entry, final AbsoluteDate earliestValidityDate) {
-         antennaTypesMap.addValidAfter(entry, earliestValidityDate, false);
+        antennaTypesMap.addValidAfter(entry, earliestValidityDate, false);
     }
 
     /**
