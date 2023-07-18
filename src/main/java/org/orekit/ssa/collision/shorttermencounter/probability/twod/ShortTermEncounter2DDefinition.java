@@ -69,7 +69,7 @@ import org.orekit.utils.PVCoordinates;
 public class ShortTermEncounter2DDefinition {
 
     /** Default threshold below which values are considered equal to zero. */
-    private final double DEFAULT_ZERO_THRESHOLD = 1e-15;
+    private static final double DEFAULT_ZERO_THRESHOLD = 1e-15;
 
     /**
      * Time of closest approach.

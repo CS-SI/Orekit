@@ -54,7 +54,7 @@ import org.orekit.ssa.metrics.ProbabilityOfCollision;
 public class Patera2005 extends AbstractShortTermEncounter1DNumerical2DPOCMethod {
 
     /** Default threshold defining if miss-distance and combined radius are considered equal (+- 10 cm). */
-    private final double DEFAULT_EQUALITY_THRESHOLD = 1e-1;
+    private static final double DEFAULT_EQUALITY_THRESHOLD = 1e-1;
 
     /** Default constructor built with a trapezoid integrator and a maximum number of evaluation of 5000. */
     public Patera2005() {
