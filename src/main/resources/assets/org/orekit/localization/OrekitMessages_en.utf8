@@ -790,7 +790,7 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = attempt to generate file {0} with a formatt
 FIND_ROOT = {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 
 # missing station data for epoch {0}
-MISSING_STATION_DATA_FOR_EPOCH = missing station data epoch {0}
+MISSING_STATION_DATA_FOR_EPOCH = missing station data for epoch {0}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
