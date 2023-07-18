@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.antenna;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -41,6 +42,17 @@ public class AntexLoaderTest {
     public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:antex");
+    }
+
+    @Test
+    public void testTmp() throws URISyntaxException {
+
+        AntexLoader  loader = new AntexLoader(new DataSource(new File("/home/luc/igs20_2270.atx")),
+                                              TimeScalesFactory.getGPS());
+        for (final ReceiverAntenna antenna :  loader.getReceiversAntennas()) {
+            System.out.println(antenna.getType());
+        }
+
     }
 
     @Test
