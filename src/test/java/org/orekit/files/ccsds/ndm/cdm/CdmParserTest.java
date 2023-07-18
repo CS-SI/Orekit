@@ -24,10 +24,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
@@ -1293,8 +1295,11 @@ public class CdmParserTest {
         }
     }
 
+    /** Test that the Earth is returned by default when no orbit center were explicitly defined. */
     @Test
-    public void testMissingObj1OrbitCenterAsk_getFrame() throws URISyntaxException {
+    public void testMissingObj1OrbitCenterGetFrame() {
+
+        // GIVEN
         final String ex = "/ccsds/cdm/CDM-no-orbit-center-defined-obj1.txt";
 
         // Initialize the parser
@@ -1302,14 +1307,17 @@ public class CdmParserTest {
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
+        // WHEN
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
-        try {
-            file.getMetadataObject1().getFrame();
-            Assertions.fail("Expected Exception");
-        } catch (OrekitException e){
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
-        }
+
+        // WHEN
+        final BodyFacade obj1OrbitCenter     = file.getMetadataObject1().getOrbitCenter();
+        final BodyFacade expectedOrbitCenter = new BodyFacade(CelestialBodyFactory.EARTH, CelestialBodyFactory.getEarth());
+
+        Assertions.assertEquals(expectedOrbitCenter.getName(), obj1OrbitCenter.getName());
+        Assertions.assertEquals(expectedOrbitCenter.getBody(), obj1OrbitCenter.getBody());
+
     }
 
     @Test

@@ -165,7 +165,7 @@ public class StateCovarianceMatrixProviderTest {
         compareCovariance(referenceCov, propagatedCov, 4.0e-7);
         Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
         Assertions.assertEquals(OrbitType.CARTESIAN, propagatedStateCov.getOrbitType());
-        Assertions.assertNull(propagatedStateCov.getLOFType());
+        Assertions.assertNull(propagatedStateCov.getLOF());
 
         ///////////
         // Test the frame transformation

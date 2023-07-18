@@ -182,11 +182,11 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
                 new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitType, covAngleType);
 
         // Return the state covariance in same frame/lof as initial covariance
-        if (covInit.getLOFType() == null) {
+        if (covInit.getLOF() == null) {
             return covariance;
         }
         else {
-            return covariance.changeCovarianceFrame(state.getOrbit(), covInit.getLOFType());
+            return covariance.changeCovarianceFrame(state.getOrbit(), covInit.getLOF());
         }
 
     }

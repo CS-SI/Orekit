@@ -92,7 +92,7 @@ public class CdmMetadata extends Metadata {
     private Maneuvrable maneuverable;
 
     /** Central body around which Object1 and 2 are orbiting. */
-    private BodyFacade orbitCenter;
+    private BodyFacade orbitCenter = new BodyFacade(CelestialBodyFactory.EARTH, CelestialBodyFactory.getEarth());
 
     /** Reference frame in which state vector data are given. */
     private FrameFacade refFrame;
@@ -416,8 +416,13 @@ public class CdmMetadata extends Metadata {
         if (orbitCenter == null || orbitCenter.getBody() == null) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
         }
-        if (refFrame.asFrame() == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, refFrame.getName());
+        if (refFrame == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, "No reference frame");
+        }
+        else  {
+            if (refFrame.asFrame() == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, refFrame.getName());
+            }
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
