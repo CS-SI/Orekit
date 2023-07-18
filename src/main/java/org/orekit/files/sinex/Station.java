@@ -29,8 +29,7 @@ import org.orekit.utils.TimeSpanMap;
  * Station model.
  * <p>
  * Since Orekit 11.1, this class handles multiple site antenna
- * eccentricity. The {@link #getEccentricities()} method
- * provides the last known eccentricity values.
+ * eccentricity.
  * The {@link #getEccentricities(AbsoluteDate)} method can be
  * used to access the site antenna eccentricity values for a
  * given epoch.
