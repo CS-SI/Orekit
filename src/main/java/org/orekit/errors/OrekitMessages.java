@@ -356,6 +356,7 @@ public enum OrekitMessages implements Localizable {
     WRONG_NB_COMPONENTS("{0} expects {1} elements, got {2}"),
     CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF("cannot change covariance type if defined in a local orbital frame"),
     CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME("cannot change covariance type if defined in a non pseudo-inertial reference frame"),
+    DIFFERENT_TIME_OF_CLOSEST_APPROACH("primary collision object time of closest approach is different from the secondary collision object's one"),
     DATES_MISMATCH("first date {0} does not match second date {1}"),
     ORBITS_MUS_MISMATCH("first orbit mu {0} does not match second orbit mu {1}"),
     DIFFERENT_STATE_DEFINITION("one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration"),

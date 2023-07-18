@@ -21,6 +21,15 @@
   </properties>
   <body>
     <release version="12.0" date="TBD" description="TBD">
+      <action dev="vincent" type="add" issue="979">
+        Added the space situational awareness (ssa) package.
+      </action>
+      <action dev="vincent" type="fix" issue="1133">
+        Cdm metadata now consider that the Earth is the default orbit center if not explicitly defined.
+      </action>
+      <action dev="vincent" type="add" issue="987">
+        Added field version of StateCovariance.
+      </action>
       <action dev="luc" type="fix" issue="1130">
         Fixed API inconsistencies in antenna phase center handling.
       </action>
@@ -389,7 +398,7 @@
       </action>
       <action dev="luc" type="fix" issue="974">
         Use Véronique Dehant table for station displacements due to tides.
-      </action>  
+      </action>
       <action dev="luc" type="fix" issue="973">
         Avoid losing last measurements in Kalman filter.
       </action>

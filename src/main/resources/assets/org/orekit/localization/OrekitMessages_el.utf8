@@ -816,6 +816,8 @@ CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSLATION>
 
+# primary collision object time of closest approach is different from the secondary collision object's one
+DIFFERENT_TIME_OF_CLOSEST_APPROACH = <MISSING TRANSLATION>
 # first date {0} does not match second date {1}
 DATES_MISMATCH = <MISSING TRANSLATION>
 

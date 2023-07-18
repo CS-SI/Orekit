@@ -48,13 +48,13 @@ public class CdmMetaDataTest {
         
         final CdmMetadata meta = new CdmMetadata();
         
-        // orbitCenter == null
+        // refFrame == null
         try {
             meta.getFrame();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, oe.getSpecifier());
-            Assertions.assertEquals("No Orbit center name", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assertions.assertEquals("No reference frame", oe.getParts()[0]);
         }
         
         // orbitCenter.getBody() == null

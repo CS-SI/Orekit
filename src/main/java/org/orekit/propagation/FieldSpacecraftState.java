@@ -80,7 +80,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     private static final double DEFAULT_MASS = 1000.0;
 
     /**
-     * tolerance on date comparison in {@link #checkConsistency(FieldOrbit<T>, FieldAttitude<T>)}. 100 ns
+     * tolerance on date comparison in {@link #checkConsistency(FieldOrbit, FieldAttitude)}. 100 ns
      * corresponds to sub-mm accuracy at LEO orbital velocities.
      */
     private static final double DATE_INCONSISTENCY_THRESHOLD = 100e-9;

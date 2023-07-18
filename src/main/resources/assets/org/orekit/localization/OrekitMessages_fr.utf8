@@ -284,7 +284,7 @@ UNSUPPORTED_PARAMETER_NAME = paramètre {0} inconnu, paramètres connus : {1}
 PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES = le paramètre {0} contient plusieurs intervals dans sa TimeSpanMap de valeurs, il faut utiliser la méthode {1}
 
 # setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
-PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la fonction setPeriod a déjà été utilisée pour le paramètre {0}, il faut créer un nouveau paramètre pour changer à nouveau les intervals d''estimation 
+PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la fonction setPeriod a déjà été utilisée pour le paramètre {0}, il faut créer un nouveau paramètre pour changer à nouveau les intervals d''estimation
 
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = le facteur d''échelle pour le paramètre {0} est trop petit : {1}
@@ -815,6 +815,9 @@ CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = impossible de changer le type 
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = impossible de changer le type de la covariance si celle-ci est définie dans un référentiel non pseudo-inertiel
+
+# primary collision object time of closest approach is different from the secondary collision object's one
+DIFFERENT_TIME_OF_CLOSEST_APPROACH = la date de plus proche conjunction du primaire et différente de celle du secondaire
 
 # first date {0} does not match second date {1}
 DATES_MISMATCH = La première date {0} ne correspond pas à la seconde date {1}
