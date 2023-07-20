@@ -18,7 +18,10 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
@@ -92,7 +95,7 @@ public class CdmMetadata extends Metadata {
     private Maneuvrable maneuverable;
 
     /** Central body around which Object1 and 2 are orbiting. */
-    private BodyFacade orbitCenter = new BodyFacade(CelestialBodyFactory.EARTH, CelestialBodyFactory.getEarth());
+    private BodyFacade orbitCenter;
 
     /** Reference frame in which state vector data are given. */
     private FrameFacade refFrame;
@@ -132,8 +135,20 @@ public class CdmMetadata extends Metadata {
 
     /** Simple constructor.
      */
+    @DefaultDataContext
     public CdmMetadata() {
         super(null);
+        orbitCenter = new BodyFacade(CelestialBodyFactory.EARTH.toUpperCase(), CelestialBodyFactory.getEarth());
+    }
+
+    /** Simple constructor.
+     *
+     * @param dataContext data context
+     */
+    public CdmMetadata(final DataContext dataContext) {
+        super(null);
+        final CelestialBody earth = dataContext.getCelestialBodies().getEarth();
+        orbitCenter = new BodyFacade(earth.getName().toUpperCase(), earth);
     }
 
     /** {@inheritDoc} */

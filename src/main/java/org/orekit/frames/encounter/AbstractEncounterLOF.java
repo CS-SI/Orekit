@@ -114,6 +114,7 @@ public abstract class AbstractEncounterLOF implements EncounterLOF {
      *
      * @return field version of other's position and velocity coordinates
      */
+    @SuppressWarnings("unchecked")
     protected <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getFieldOther(final Field<T> field) {
         return fieldOther == null ? new FieldPVCoordinates<>(field, other) : (FieldPVCoordinates<T>) fieldOther;
     }

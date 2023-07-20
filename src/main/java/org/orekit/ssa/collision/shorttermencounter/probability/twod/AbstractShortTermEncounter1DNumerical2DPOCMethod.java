@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.cdm.Cdm;
 import org.orekit.files.ccsds.ndm.cdm.CdmData;
 import org.orekit.files.ccsds.ndm.cdm.CdmMetadata;
@@ -92,15 +93,16 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
         final CdmRelativeMetadata cdmRelativeMetadata = cdm.getRelativeMetadata();
         final CdmData             primaryData         = cdm.getDataObject1();
         final CdmData             secondaryData       = cdm.getDataObject2();
+        final DataContext         cdmDataContext      = cdm.getDataContext();
 
         // Extract primary data
         final Orbit primaryOrbit =
-                getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData, cdm.getMetadataObject1());
+                getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData, cdm.getMetadataObject1(), cdmDataContext);
         final StateCovariance primaryCovariance = getObjectStateCovarianceFromCdm(cdmRelativeMetadata, primaryData);
 
         // Extract secondary data
         final Orbit secondaryOrbit =
-                getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData, cdm.getMetadataObject2());
+                getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData, cdm.getMetadataObject2(), cdmDataContext);
         final StateCovariance secondaryCovariance = getObjectStateCovarianceFromCdm(cdmRelativeMetadata, secondaryData);
 
         return compute(primaryOrbit, primaryCovariance, primaryRadius,
@@ -135,16 +137,19 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
         final CdmData             secondaryData       = cdm.getDataObject2();
         final CdmMetadata         primaryMetadata     = cdm.getMetadataObject1();
         final CdmMetadata         secondaryMetadata   = cdm.getMetadataObject2();
+        final DataContext         cdmDataContext      = cdm.getDataContext();
 
         // Extract primary data
         final FieldOrbit<T> primaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData, primaryMetadata));
+                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData,
+                                                                 primaryMetadata, cdmDataContext));
         final FieldStateCovariance<T> primaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, primaryData));
 
         // Extract secondary data
         final FieldOrbit<T> secondaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData, secondaryMetadata));
+                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData,
+                                                                 secondaryMetadata, cdmDataContext));
         final FieldStateCovariance<T> secondaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, secondaryData));
 

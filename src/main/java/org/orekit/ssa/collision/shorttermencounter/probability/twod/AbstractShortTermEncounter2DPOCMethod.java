@@ -23,12 +23,12 @@ import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.cdm.Cdm;
 import org.orekit.files.ccsds.ndm.cdm.CdmData;
 import org.orekit.files.ccsds.ndm.cdm.CdmMetadata;
 import org.orekit.files.ccsds.ndm.cdm.CdmRelativeMetadata;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.frames.encounter.EncounterLOFType;
@@ -102,13 +102,16 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
         final CdmRelativeMetadata cdmRelativeMetadata = cdm.getRelativeMetadata();
         final CdmData             primaryData         = cdm.getDataObject1();
         final CdmData             secondaryData       = cdm.getDataObject2();
+        final DataContext         cdmDataContext      = cdm.getDataContext();
 
         // Extract primary data
-        final Orbit primaryOrbit = getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData, cdm.getMetadataObject1());
+        final Orbit primaryOrbit = getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData,
+                                                         cdm.getMetadataObject1(), cdmDataContext);
         final StateCovariance primaryCovariance = getObjectStateCovarianceFromCdm(cdmRelativeMetadata, primaryData);
 
         // Extract secondary data
-        final Orbit secondaryOrbit = getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData, cdm.getMetadataObject2());
+        final Orbit secondaryOrbit = getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData,
+                                                           cdm.getMetadataObject2(), cdmDataContext);
         final StateCovariance secondaryCovariance = getObjectStateCovarianceFromCdm(cdmRelativeMetadata, secondaryData);
 
         return compute(primaryOrbit, primaryCovariance, secondaryOrbit, secondaryCovariance, combinedRadius,
@@ -126,16 +129,19 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
         final CdmData             secondaryData       = cdm.getDataObject2();
         final CdmMetadata         primaryMetadata     = cdm.getMetadataObject1();
         final CdmMetadata         secondaryMetadata   = cdm.getMetadataObject2();
+        final DataContext         cdmDataContext      = cdm.getDataContext();
 
         // Extract primary data
         final FieldOrbit<T> primaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData, primaryMetadata));
+                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData,
+                                                                 primaryMetadata, cdmDataContext));
         final FieldStateCovariance<T> primaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, primaryData));
 
         // Extract secondary data
         final FieldOrbit<T> secondaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData, secondaryMetadata));
+                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData,
+                                                                 secondaryMetadata, cdmDataContext));
         final FieldStateCovariance<T> secondaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, secondaryData));
 
@@ -231,12 +237,14 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
      * @param cdmRelativeMetadata conjunction data message relative metadata
      * @param cdmData collision object conjunction data message data
      * @param cdmMetadata collision object conjunction data message metadata
+     * @param cdmDataContext conjunction data message data context
      *
      * @return basic collision object spacecraft state from conjunction data message
      */
     protected Orbit getObjectOrbitFromCdm(final CdmRelativeMetadata cdmRelativeMetadata,
                                           final CdmData cdmData,
-                                          final CdmMetadata cdmMetadata) {
+                                          final CdmMetadata cdmMetadata,
+                                          final DataContext cdmDataContext) {
 
         // Extract orbit
         final Frame        frame = cdmMetadata.getRefFrame().asFrame();
@@ -250,7 +258,7 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
             return new CartesianOrbit(pvInFrame, frame, tca, mu);
         }
         // Otherwise, convert coordinates to default inertial frame
-        final Frame         inertial     = FramesFactory.getGCRF();
+        final Frame         inertial     = cdmDataContext.getFrames().getGCRF();
         final Transform     toInertial   = frame.getTransformTo(inertial, cdmRelativeMetadata.getTca());
         final PVCoordinates pvInInertial = toInertial.transformPVCoordinates(pvInFrame);
 

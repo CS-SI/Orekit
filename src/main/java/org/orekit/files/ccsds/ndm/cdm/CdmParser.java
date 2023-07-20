@@ -200,7 +200,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
             relativeMetadata = new CdmRelativeMetadata();
             relativeMetadata.setTimeSystem(TimeSystem.UTC);
         }
-        metadata  = new CdmMetadata();
+        metadata  = new CdmMetadata(getDataContext());
         metadata.setRelativeMetadata(relativeMetadata);
 
         // As no time system is defined in CDM because all dates are given in UTC,

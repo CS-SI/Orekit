@@ -1313,7 +1313,8 @@ public class CdmParserTest {
 
         // WHEN
         final BodyFacade obj1OrbitCenter     = file.getMetadataObject1().getOrbitCenter();
-        final BodyFacade expectedOrbitCenter = new BodyFacade(CelestialBodyFactory.EARTH, CelestialBodyFactory.getEarth());
+        final BodyFacade expectedOrbitCenter = new BodyFacade(CelestialBodyFactory.EARTH.toUpperCase(),
+                                                              CelestialBodyFactory.getEarth());
 
         Assertions.assertEquals(expectedOrbitCenter.getName(), obj1OrbitCenter.getName());
         Assertions.assertEquals(expectedOrbitCenter.getBody(), obj1OrbitCenter.getBody());
