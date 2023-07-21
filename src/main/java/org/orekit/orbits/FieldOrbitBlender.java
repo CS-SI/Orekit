@@ -42,8 +42,8 @@ import org.orekit.utils.FieldPVCoordinates;
  * @param <KK> type of field element
  *
  * @author Vincent Cucchietti
- * @see SmoothStepFactory
- * @see SmoothStepFactory.FieldSmoothStepFunction
+ * @see org.hipparchus.analysis.polynomials.SmoothStepFactory
+ * @see org.hipparchus.analysis.polynomials.SmoothStepFactory.FieldSmoothStepFunction
  */
 public class FieldOrbitBlender<KK extends CalculusFieldElement<KK>> extends AbstractFieldOrbitInterpolator<KK> {
 

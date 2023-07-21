@@ -262,7 +262,17 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
                        customMaxNbOfEval);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Compute the probability of collision using given collision definition.
+     *
+     * @param encounterDefinition encounter definition between a primary and a secondary collision object
+     * @param customIntegrator custom integrator to use in place of the integrator from the constructor
+     * @param customMaxNbOfEval custom maximum number of evaluations to use in place of the custom maximum number from the
+     * @param zeroThreshold threshold below which values are considered equal to zero
+     * @param <T> type of the field element
+     *
+     * @return probability of collision
+     */
     public <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(
             final FieldShortTermEncounter2DDefinition<T> encounterDefinition,
             final FieldUnivariateIntegrator<T> customIntegrator,
@@ -294,7 +304,27 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
         return compute(xm, ym, sigmaX, sigmaY, radius, integrator, maxNbOfEval);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Compute the probability of collision using arguments specific to the rotated encounter frame.
+     * <p>
+     * The rotated encounter frame is define by the initial encounter frame (defined in
+     * {@link ShortTermEncounter2DDefinition}) rotated by the rotation matrix which is used to diagonalize the combined
+     * covariance matrix.
+     * </p>
+     *
+     * @param xm other collision object projected position onto the collision plane in the rotated encounter frame x-axis
+     * (m)
+     * @param ym other collision object projected position onto the collision plane in the rotated encounter frame y-axis
+     * (m)
+     * @param sigmaX square root of the x-axis eigen value of the diagonalized combined covariance matrix projected onto the
+     * collision plane (m)
+     * @param sigmaY square root of the y-axis eigen value of the diagonalized combined covariance matrix projected onto the
+     * collision plane (m)
+     * @param radius sum of primary and secondary collision object equivalent sphere radii (m)
+     * @param <T> type of the field elements
+     *
+     * @return probability of collision
+     */
     public <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(final T xm, final T ym,
                                                                                       final T sigmaX, final T sigmaY,
                                                                                       final T radius) {
@@ -302,11 +332,58 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
                        maxNbOfEval);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Compute the probability of collision using arguments specific to the rotated encounter frame and custom numerical
+     * configuration.
+     * <p>
+     * The rotated encounter frame is define by the initial encounter frame (defined in
+     * {@link ShortTermEncounter2DDefinition}) rotated by the rotation matrix which is used to diagonalize the combined
+     * covariance matrix.
+     * </p>
+     *
+     * @param xm other collision object projected position onto the collision plane in the rotated encounter frame x-axis
+     * (m)
+     * @param ym other collision object projected position onto the collision plane in the rotated encounter frame y-axis
+     * (m)
+     * @param sigmaX square root of the x-axis eigen value of the diagonalized combined covariance matrix projected onto the
+     * collision plane (m)
+     * @param sigmaY square root of the y-axis eigen value of the diagonalized combined covariance matrix projected onto the
+     * collision plane (m)
+     * @param radius sum of primary and secondary collision object equivalent sphere radii (m)
+     * @param customIntegrator custom integrator to use in place of the integrator from the constructor
+     * @param customMaxNbOfEval custom maximum number of evaluations to use in place of the custom maximum number from the
+     * constructor
+     *
+     * @return probability of collision
+     */
     public abstract ProbabilityOfCollision compute(double xm, double ym, double sigmaX, double sigmaY, double radius,
                                                    UnivariateIntegrator customIntegrator, int customMaxNbOfEval);
 
-    /** {@inheritDoc} */
+    /**
+     * Compute the probability of collision using arguments specific to the rotated encounter frame and custom numerical
+     * configuration.
+     * <p>
+     * The rotated encounter frame is define by the initial encounter frame (defined in
+     * {@link ShortTermEncounter2DDefinition}) rotated by the rotation matrix which is used to diagonalize the combined
+     * covariance matrix.
+     * </p>
+     *
+     * @param xm other collision object projected position onto the collision plane in the rotated encounter frame x-axis
+     * (m)
+     * @param ym other collision object projected position onto the collision plane in the rotated encounter frame y-axis
+     * (m)
+     * @param sigmaX square root of the x-axis eigen value of the diagonalized combined covariance matrix projected onto the
+     * collision plane (m)
+     * @param sigmaY square root of the y-axis eigen value of the diagonalized combined covariance matrix projected onto the
+     * collision plane (m)
+     * @param radius sum of primary and secondary collision object equivalent sphere radii (m)
+     * @param customIntegrator custom integrator to use in place of the integrator from the constructor
+     * @param customMaxNbOfEval custom maximum number of evaluations to use in place of the custom maximum number from the
+     * constructor
+     * @param <T> type of the field element
+     *
+     * @return probability of collision
+     */
     public abstract <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(T xm, T ym,
                                                                                                T sigmaX, T sigmaY,
                                                                                                T radius,
