@@ -91,6 +91,9 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = ikkekronologiske datoer i filen {0}, linje {1}
 
+# inconsistent sampling date: expected {0} but got {1}
+INCONSISTENT_SAMPLING_DATE = <MISSING TRANSLATION>
+
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = ingen IERS UTC-TAI historikk data er lastet
 
@@ -265,8 +268,8 @@ NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = ingen binære JPL efemeridefil funnet
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til {0} efemeridene: {1}
 
-# out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til efemeridene: {0}, [{1}, {2}]
+# out of range date: {0}, [{1}, {2}]
+OUT_OF_RANGE_DATE = dato utenfor gyldighetsperioden: {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>

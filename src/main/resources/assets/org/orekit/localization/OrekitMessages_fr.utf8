@@ -91,6 +91,9 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = données inattendues à la ligne {0} du fichie
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = dates non chronologique dans le fichier {0} à la ligne {1}
 
+# inconsistent sampling date: expected {0} but got {1}
+INCONSISTENT_SAMPLING_DATE = dates d''échantillonnage incohérentes : {0} était attendu, mais {1} a été fourni
+
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = aucune donnée d''historique UTC-TAI n''a été chargée
 
@@ -265,8 +268,8 @@ NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = aucun fichier d''éphémérides du JPL n
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = date hors du domaine de validité des éphémérides « {0} » : {1}
 
-# out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = date hors du domaine de validité des éphémérides : {0}, [{1}, {2}]
+# out of range date: {0}, [{1}, {2}]
+OUT_OF_RANGE_DATE = date hors du domaine de validité : {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = date hors du domaine de validité des éphémérides : {0} est {3,number,0.0##############E0} s avant [{1}, {2}]

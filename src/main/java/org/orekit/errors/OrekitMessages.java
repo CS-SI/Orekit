@@ -146,7 +146,7 @@ public enum OrekitMessages implements Localizable {
             "file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file"),
     NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND("no JPL ephemerides binary files found"),
     OUT_OF_RANGE_BODY_EPHEMERIDES_DATE("out of range date for {0} ephemerides: {1}"),
-    OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
+    OUT_OF_RANGE_DATE("out of range date: {0}, [{1}, {2}]"),
     OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]"),
     OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]"),
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH(
@@ -305,6 +305,7 @@ public enum OrekitMessages implements Localizable {
     INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS(
             "frequencies {0} and {1} are incompatibles for the {2} combination"),
     NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}"),
+    INCONSISTENT_SAMPLING_DATE("inconsistent sampling date: expected {0} but got {1}"),
     EXCEPTIONAL_DATA_CONTEXT(
             "Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
     NON_DIFFERENT_DATES_FOR_OBSERVATIONS(

@@ -86,7 +86,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     @Override
     public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
         if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, minDate, maxDate);
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
         }
         return pvProvMap.get(date).getPosition(date, frame);
     }
@@ -94,7 +94,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, minDate, maxDate);
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
         }
         return pvProvMap.get(date).getPVCoordinates(date, frame);
     }

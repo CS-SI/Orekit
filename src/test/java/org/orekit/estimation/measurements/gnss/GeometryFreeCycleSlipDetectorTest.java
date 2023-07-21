@@ -60,7 +60,7 @@ public class GeometryFreeCycleSlipDetectorTest {
         }
         final RinexObservationParser parser = new RinexObservationParser();
         //RinexLoader  loader = loadCompressed("cycleSlip/shld0440.16d.Z");
-        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         GeometryFreeCycleSlipDetector slipDetectors =
             new GeometryFreeCycleSlipDetector(31, 31.0, 10);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -114,7 +114,7 @@ public class GeometryFreeCycleSlipDetectorTest {
             nd = filter.filter(nd);
         }
         final RinexObservationParser parser = new RinexObservationParser();
-        final List<ObservationDataSet>  obserDataSets = parser.parse(nd);
+        final List<ObservationDataSet>  obserDataSets = parser.parse(nd).getObservationDataSets();
         //With dt = 31 s, cycle slip should not exist, a very huge threshold is used to not detect cycle-slip
         GeometryFreeCycleSlipDetector slipDetectors =
             new GeometryFreeCycleSlipDetector(31, 31.0, 10);
@@ -144,7 +144,7 @@ public class GeometryFreeCycleSlipDetectorTest {
             nd = filter.filter(nd);
         }
         final RinexObservationParser parser = new RinexObservationParser();
-        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         //With dt = 31 s, cycle slip for time gap cannot be detected (see previous test).
         //We use T0 = 60s for threshold time constant as advice from Navipedia page.
         GeometryFreeCycleSlipDetector slipDetectors =

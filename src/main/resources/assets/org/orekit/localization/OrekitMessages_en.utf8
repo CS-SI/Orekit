@@ -91,6 +91,9 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = unexpected data at line {0} in file {1}
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = non-chronological dates in file {0}, line {1}
 
+# inconsistent sampling date: expected {0} but got {1}
+INCONSISTENT_SAMPLING_DATE = inconsistent sampling date: expected {0} but got {1}
+
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = no IERS UTC-TAI history data loaded
 
@@ -265,8 +268,8 @@ NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = no JPL ephemerides binary files found
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = out of range date for {0} ephemerides: {1}
 
-# out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = out of range date for ephemerides: {0}, [{1}, {2}]
+# out of range date: {0}, [{1}, {2}]
+OUT_OF_RANGE_DATE = out of range date: {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]

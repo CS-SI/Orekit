@@ -103,9 +103,9 @@ public class RinexObservationParser {
     /**
      * Parse RINEX observations messages.
      * @param source source providing the data to parse
-     * @return parsed observations
+     * @return parsed observations file
      */
-    public List<ObservationDataSet> parse(final DataSource source) {
+    public RinexObservation parse(final DataSource source) {
 
         Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
 
@@ -141,7 +141,7 @@ public class RinexObservationParser {
             throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
 
-        return parseInfo.observationDataSets;
+        return parseInfo.file;
 
     }
 
@@ -159,11 +159,8 @@ public class RinexObservationParser {
         /** Current line number of the navigation message. */
         private int lineNumber;
 
-        /** Rinex header associated with this data set. */
-        private final RinexObservationHeader header;
-
-        /** List of Observation data sets. */
-        private final List<ObservationDataSet> observationDataSets;
+        /** Rinex file. */
+        private final RinexObservation file;
 
         /** Date of the observation. */
         private AbsoluteDate tObs;
@@ -244,8 +241,7 @@ public class RinexObservationParser {
             // Initialize default values for fields
             this.name                   = name;
             this.timeScales             = RinexObservationParser.this.timeScales;
-            this.header                 = new RinexObservationHeader();
-            this.observationDataSets    = new ArrayList<>();
+            this.file                   = new RinexObservation();
             this.lineNumber             = 0;
             this.tObs                   = AbsoluteDate.PAST_INFINITY;
             this.timeScale              = null;
@@ -271,7 +267,7 @@ public class RinexObservationParser {
 
         /** Parser for version, file type and satellite system. */
         HEADER_VERSION(line -> RinexUtils.matchesLabel(line, "RINEX VERSION / TYPE"),
-                       (line, parseInfo) ->  RinexUtils.parseVersionFileTypeSatelliteSystem(line, parseInfo.name, parseInfo.header,
+                       (line, parseInfo) ->  RinexUtils.parseVersionFileTypeSatelliteSystem(line, parseInfo.name, parseInfo.file.getHeader(),
                                                                                             2.00, 2.10, 2.11, 2.12, 2.20,
                                                                                             3.00, 3.01, 3.02, 3.03, 3.04, 3.05, 4.00),
                        LineParser::headerNext),
@@ -279,58 +275,58 @@ public class RinexObservationParser {
         /** Parser for generating program and emiting agency. */
         HEADER_PROGRAM(line -> RinexUtils.matchesLabel(line, "PGM / RUN BY / DATE"),
                        (line, parseInfo) -> RinexUtils.parseProgramRunByDate(line, parseInfo.lineNumber, parseInfo.name,
-                                                                             parseInfo.timeScales, parseInfo.header),
+                                                                             parseInfo.timeScales, parseInfo.file.getHeader()),
                        LineParser::headerNext),
 
         /** Parser for comments. */
         COMMENT(line -> RinexUtils.matchesLabel(line, "COMMENT"),
-                       (line, parseInfo) -> RinexUtils.parseComment(line, parseInfo.header),
+                       (line, parseInfo) -> RinexUtils.parseComment(line, parseInfo.file.getHeader()),
                        LineParser::commentNext),
 
         /** Parser for marker name. */
         MARKER_NAME(line -> RinexUtils.matchesLabel(line, "MARKER NAME"),
-                    (line, parseInfo) ->  parseInfo.header.setMarkerName(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                    (line, parseInfo) ->  parseInfo.file.getHeader().setMarkerName(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
                     LineParser::headerNext),
 
         /** Parser for marker number. */
         MARKER_NUMBER(line -> RinexUtils.matchesLabel(line, "MARKER NUMBER"),
-                      (line, parseInfo) -> parseInfo.header.setMarkerNumber(RinexUtils.parseString(line, 0, 20)),
+                      (line, parseInfo) -> parseInfo.file.getHeader().setMarkerNumber(RinexUtils.parseString(line, 0, 20)),
                       LineParser::headerNext),
 
         /** Parser for marker type. */
         MARKER_TYPE(line -> RinexUtils.matchesLabel(line, "MARKER TYPE"),
-                    (line, parseInfo) -> parseInfo.header.setMarkerType(RinexUtils.parseString(line, 0, 20)),
+                    (line, parseInfo) -> parseInfo.file.getHeader().setMarkerType(RinexUtils.parseString(line, 0, 20)),
                     LineParser::headerNext),
 
         /** Parser for observer agency. */
         OBSERVER_AGENCY(line -> RinexUtils.matchesLabel(line, "OBSERVER / AGENCY"),
                         (line, parseInfo) -> {
-                            parseInfo.header.setObserverName(RinexUtils.parseString(line, 0, 20));
-                            parseInfo.header.setAgencyName(RinexUtils.parseString(line, 20, 40));
+                            parseInfo.file.getHeader().setObserverName(RinexUtils.parseString(line, 0, 20));
+                            parseInfo.file.getHeader().setAgencyName(RinexUtils.parseString(line, 20, 40));
                         },
                         LineParser::headerNext),
 
         /** Parser for receiver tnumber, type and version. */
         REC_NB_TYPE_VERS(line -> RinexUtils.matchesLabel(line, "REC # / TYPE / VERS"),
                          (line, parseInfo) -> {
-                             parseInfo.header.setReceiverNumber(RinexUtils.parseString(line, 0, 20));
-                             parseInfo.header.setReceiverType(RinexUtils.parseString(line, 20, 20));
-                             parseInfo.header.setReceiverVersion(RinexUtils.parseString(line, 40, 20));
+                             parseInfo.file.getHeader().setReceiverNumber(RinexUtils.parseString(line, 0, 20));
+                             parseInfo.file.getHeader().setReceiverType(RinexUtils.parseString(line, 20, 20));
+                             parseInfo.file.getHeader().setReceiverVersion(RinexUtils.parseString(line, 40, 20));
                          },
                          LineParser::headerNext),
 
         /** Parser for antenna number and type. */
         ANT_NB_TYPE(line -> RinexUtils.matchesLabel(line, "ANT # / TYPE"),
                     (line, parseInfo) -> {
-                        parseInfo.header.setAntennaNumber(RinexUtils.parseString(line, 0, 20));
-                        parseInfo.header.setAntennaType(RinexUtils.parseString(line, 20, 20));
+                        parseInfo.file.getHeader().setAntennaNumber(RinexUtils.parseString(line, 0, 20));
+                        parseInfo.file.getHeader().setAntennaType(RinexUtils.parseString(line, 20, 20));
                     },
                     LineParser::headerNext),
 
         /** Parser for approximative position. */
         APPROX_POSITION_XYZ(line -> RinexUtils.matchesLabel(line, "APPROX POSITION XYZ"),
                             (line, parseInfo) -> {
-                                parseInfo.header.setApproxPos(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                                parseInfo.file.getHeader().setApproxPos(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
                                                                            RinexUtils.parseDouble(line, 14, 14),
                                                                            RinexUtils.parseDouble(line, 28, 14)));
                             },
@@ -339,8 +335,8 @@ public class RinexObservationParser {
         /** Parser for antenna reference point. */
         ANTENNA_DELTA_H_E_N(line -> RinexUtils.matchesLabel(line, "ANTENNA: DELTA H/E/N"),
                             (line, parseInfo) -> {
-                                parseInfo.header.setAntennaHeight(RinexUtils.parseDouble(line, 0, 14));
-                                parseInfo.header.setEccentricities(new Vector2D(RinexUtils.parseDouble(line, 14, 14),
+                                parseInfo.file.getHeader().setAntennaHeight(RinexUtils.parseDouble(line, 0, 14));
+                                parseInfo.file.getHeader().setEccentricities(new Vector2D(RinexUtils.parseDouble(line, 14, 14),
                                                                                 RinexUtils.parseDouble(line, 28, 14)));
                             },
                             LineParser::headerNext),
@@ -348,7 +344,7 @@ public class RinexObservationParser {
         /** Parser for antenna reference point. */
         ANTENNA_DELTA_X_Y_Z(line -> RinexUtils.matchesLabel(line, "ANTENNA: DELTA X/Y/Z"),
                             (line, parseInfo) -> {
-                                parseInfo.header.setAntennaReferencePoint(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
+                                parseInfo.file.getHeader().setAntennaReferencePoint(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
                                                                                        RinexUtils.parseDouble(line, 14, 14),
                                                                                        RinexUtils.parseDouble(line, 28, 14)));
                             },
@@ -358,8 +354,8 @@ public class RinexObservationParser {
         ANTENNA_PHASECENTER(line -> RinexUtils.matchesLabel(line, "ANTENNA: PHASECENTER"),
                             (line, parseInfo) -> {
                                 // we don't parse satellite system here because it was already parsed in HEADER_VERSION
-                                parseInfo.header.setObservationCode(RinexUtils.parseString(line, 2, 3));
-                                parseInfo.header.setAntennaPhaseCenter(new Vector3D(RinexUtils.parseDouble(line, 5, 9),
+                                parseInfo.file.getHeader().setObservationCode(RinexUtils.parseString(line, 2, 3));
+                                parseInfo.file.getHeader().setAntennaPhaseCenter(new Vector3D(RinexUtils.parseDouble(line, 5, 9),
                                                                                     RinexUtils.parseDouble(line, 14, 14),
                                                                                     RinexUtils.parseDouble(line, 28, 14)));
                             },
@@ -368,7 +364,7 @@ public class RinexObservationParser {
         /** Parser for antenna bore sight. */
         ANTENNA_B_SIGHT_XYZ(line -> RinexUtils.matchesLabel(line, "ANTENNA: B.SIGHT XYZ"),
                             (line, parseInfo) -> {
-                                parseInfo.header.setAntennaBSight(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
+                                parseInfo.file.getHeader().setAntennaBSight(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
                                                                                RinexUtils.parseDouble(line, 14, 14),
                                                                                RinexUtils.parseDouble(line, 28, 14)));
                             },
@@ -376,12 +372,12 @@ public class RinexObservationParser {
 
         /** Parser for antenna zero direction. */
         ANTENNA_ZERODIR_AZI(line -> RinexUtils.matchesLabel(line, "ANTENNA: ZERODIR AZI"),
-                            (line, parseInfo) -> parseInfo.header.setAntennaAzimuth(RinexUtils.parseDouble(line, 0, 14)),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setAntennaAzimuth(RinexUtils.parseDouble(line, 0, 14)),
                             LineParser::headerNext),
 
         /** Parser for antenna zero direction. */
         ANTENNA_ZERODIR_XYZ(line -> RinexUtils.matchesLabel(line, "ANTENNA: ZERODIR XYZ"),
-                            (line, parseInfo) -> parseInfo.header.setAntennaZeroDirection(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setAntennaZeroDirection(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
                                                                                                        RinexUtils.parseDouble(line, 14, 14),
                                                                                                        RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
@@ -395,18 +391,18 @@ public class RinexObservationParser {
 
         /** Parser for indicator of receiver clock offset application. */
         RCV_CLOCK_OFFS_APPL(line -> RinexUtils.matchesLabel(line, "RCV CLOCK OFFS APPL"),
-                            (line, parseInfo) -> parseInfo.header.setClkOffset(RinexUtils.parseInt(line, 0, 6)),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setClkOffset(RinexUtils.parseInt(line, 0, 6)),
                             LineParser::headerNext),
 
         /** Parser for observation interval. */
         INTERVAL(line -> RinexUtils.matchesLabel(line, "INTERVAL"),
-                 (line, parseInfo) -> parseInfo.header.setInterval(RinexUtils.parseDouble(line, 0, 10)),
+                 (line, parseInfo) -> parseInfo.file.getHeader().setInterval(RinexUtils.parseDouble(line, 0, 10)),
                  LineParser::headerNext),
 
         /** Parser for time of first observation. */
         TIME_OF_FIRST_OBS(line -> RinexUtils.matchesLabel(line, "TIME OF FIRST OBS"),
                           (line, parseInfo) -> {
-                              if (parseInfo.header.getSatelliteSystem() == SatelliteSystem.MIXED) {
+                              if (parseInfo.file.getHeader().getSatelliteSystem() == SatelliteSystem.MIXED) {
                                   // in case of mixed data, time scale must be specified in the Time of First Observation line
                                   try {
                                       parseInfo.timeScale = ObservationTimeScale.
@@ -419,13 +415,13 @@ public class RinexObservationParser {
                                                                 parseInfo.lineNumber, parseInfo.name, line);
                                   }
                               } else {
-                                  parseInfo.timeScale = parseInfo.header.getSatelliteSystem().getDefaultTimeSystem(parseInfo.timeScales);
+                                  parseInfo.timeScale = parseInfo.file.getHeader().getSatelliteSystem().getDefaultTimeSystem(parseInfo.timeScales);
                                   if (parseInfo.timeScale == null) {
                                       throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                 parseInfo.lineNumber, parseInfo.name, line);
                                   }
                               }
-                              parseInfo.header.setTFirstObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
+                              parseInfo.file.getHeader().setTFirstObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
                                                                              RinexUtils.parseInt(line, 6, 6),
                                                                              RinexUtils.parseInt(line, 12, 6),
                                                                              RinexUtils.parseInt(line, 18, 6),
@@ -438,7 +434,7 @@ public class RinexObservationParser {
         /** Parser for time of last observation. */
         TIME_OF_LAST_OBS(line -> RinexUtils.matchesLabel(line, "TIME OF LAST OBS"),
                          (line, parseInfo) -> {
-                             parseInfo.header.setTLastObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
+                             parseInfo.file.getHeader().setTLastObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
                                                                            RinexUtils.parseInt(line, 6, 6),
                                                                            RinexUtils.parseInt(line, 12, 6),
                                                                            RinexUtils.parseInt(line, 18, 6),
@@ -451,11 +447,11 @@ public class RinexObservationParser {
         /** Parser for leap seconds. */
         LEAP_SECONDS(line -> RinexUtils.matchesLabel(line, "LEAP SECONDS"),
                      (line, parseInfo) -> {
-                         parseInfo.header.setLeapSeconds(RinexUtils.parseInt(line, 0, 6));
-                         if (parseInfo.header.getFormatVersion() >= 3.0) {
-                             parseInfo.header.setLeapSecondsFuture(RinexUtils.parseInt(line, 6, 6));
-                             parseInfo.header.setLeapSecondsWeekNum(RinexUtils.parseInt(line, 12, 6));
-                             parseInfo.header.setLeapSecondsDayNum(RinexUtils.parseInt(line, 18, 6));
+                         parseInfo.file.getHeader().setLeapSeconds(RinexUtils.parseInt(line, 0, 6));
+                         if (parseInfo.file.getHeader().getFormatVersion() >= 3.0) {
+                             parseInfo.file.getHeader().setLeapSecondsFuture(RinexUtils.parseInt(line, 6, 6));
+                             parseInfo.file.getHeader().setLeapSecondsWeekNum(RinexUtils.parseInt(line, 12, 6));
+                             parseInfo.file.getHeader().setLeapSecondsDayNum(RinexUtils.parseInt(line, 18, 6));
                          }
                      },
                      LineParser::headerNext),
@@ -481,7 +477,7 @@ public class RinexObservationParser {
                                i += increment) {
                               final String nb = RinexUtils.parseString(line, i, size);
                               if (nb.length() > 0) {
-                                  parseInfo.header.setNbObsPerSatellite(parseInfo.currentSat, types.get(parseInfo.nbTypes),
+                                  parseInfo.file.getHeader().setNbObsPerSatellite(parseInfo.currentSat, types.get(parseInfo.nbTypes),
                                                                         RinexUtils.parseInt(line, i, size));
                               }
                               ++parseInfo.nbTypes;
@@ -499,22 +495,22 @@ public class RinexObservationParser {
         TYPES_OF_OBSERV(line -> RinexUtils.matchesLabel(line, "# / TYPES OF OBSERV") ||
                                 RinexUtils.matchesLabel(line, "SYS / # / OBS TYPES"),
                            (line, parseInfo) -> {
-                               final double version = parseInfo.header.getFormatVersion();
+                               final double version = parseInfo.file.getHeader().getFormatVersion();
                                if (parseInfo.nbTypes < 0) {
                                    // first line of types of observations
                                    if (version < 3) {
                                        // Rinex 2 has only one system
-                                       parseInfo.currentSystem = parseInfo.header.getSatelliteSystem();
+                                       parseInfo.currentSystem = parseInfo.file.getHeader().getSatelliteSystem();
                                        parseInfo.nbTypes       = RinexUtils.parseInt(line, 0, 6);
                                    } else {
                                        // Rinex 3 and above allows mixed systems
                                        parseInfo.currentSystem = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
                                        parseInfo.nbTypes       = RinexUtils.parseInt(line, 3, 3);
-                                       if (parseInfo.currentSystem               != parseInfo.header.getSatelliteSystem() &&
-                                           parseInfo.header.getSatelliteSystem() != SatelliteSystem.MIXED) {
+                                       if (parseInfo.currentSystem               != parseInfo.file.getHeader().getSatelliteSystem() &&
+                                           parseInfo.file.getHeader().getSatelliteSystem() != SatelliteSystem.MIXED) {
                                            throw new OrekitException(OrekitMessages.INCONSISTENT_SATELLITE_SYSTEM,
                                                                      parseInfo.lineNumber, parseInfo.name,
-                                                                     parseInfo.header.getSatelliteSystem(),
+                                                                     parseInfo.file.getHeader().getSatelliteSystem(),
                                                                      parseInfo.currentSystem);
                                        }
                                    }
@@ -548,7 +544,7 @@ public class RinexObservationParser {
         /** Parser for center of mass. */
         CENTER_OF_MASS_XYZ(line -> RinexUtils.matchesLabel(line, "CENTER OF MASS: XYZ"),
                            (line, parseInfo) -> {
-                               parseInfo.header.setCenterMass(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
+                               parseInfo.file.getHeader().setCenterMass(new Vector3D(RinexUtils.parseDouble(line,  0, 14),
                                                                            RinexUtils.parseDouble(line, 14, 14),
                                                                            RinexUtils.parseDouble(line, 28, 14)));
                            },
@@ -556,19 +552,19 @@ public class RinexObservationParser {
 
         /** Parser for unit of signal strength. */
         SIGNAL_STRENGTH_UNIT(line -> RinexUtils.matchesLabel(line, "SIGNAL STRENGTH UNIT"),
-                             (line, parseInfo) -> parseInfo.header.setSignalStrengthUnit(RinexUtils.parseString(line, 0, 20)),
+                             (line, parseInfo) -> parseInfo.file.getHeader().setSignalStrengthUnit(RinexUtils.parseString(line, 0, 20)),
                              LineParser::headerNext),
 
         /** Parser for differential code bias corrections. */
         SYS_DCBS_APPLIED(line -> RinexUtils.matchesLabel(line, "SYS / DCBS APPLIED"),
-                         (line, parseInfo) -> parseInfo.header.addAppliedDCBS(new AppliedDCBS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
+                         (line, parseInfo) -> parseInfo.file.getHeader().addAppliedDCBS(new AppliedDCBS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
                                                                                               RinexUtils.parseString(line, 2, 17),
                                                                                               RinexUtils.parseString(line, 20, 40))),
                          LineParser::headerNext),
 
         /** Parser for phase center variations corrections. */
         SYS_PCVS_APPLIED(line -> RinexUtils.matchesLabel(line, "SYS / PCVS APPLIED"),
-                         (line, parseInfo) -> parseInfo.header.addAppliedPCVS(new AppliedPCVS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
+                         (line, parseInfo) -> parseInfo.file.getHeader().addAppliedPCVS(new AppliedPCVS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
                                                                                               RinexUtils.parseString(line, 2, 17),
                                                                                               RinexUtils.parseString(line, 20, 40))),
                          LineParser::headerNext),
@@ -595,7 +591,7 @@ public class RinexObservationParser {
 
                              if (parseInfo.typesObsScaleFactor.size() >= parseInfo.nbObsScaleFactor) {
                                  // we have completed the list
-                                 parseInfo.header.addScaleFactorCorrection(parseInfo.currentSystem,
+                                 parseInfo.file.getHeader().addScaleFactorCorrection(parseInfo.currentSystem,
                                                                            new ScaleFactorCorrection(scaleFactor,
                                                                                                      new ArrayList<>(parseInfo.typesObsScaleFactor)));
                                  parseInfo.nbObsScaleFactor = -1;
@@ -629,7 +625,7 @@ public class RinexObservationParser {
 
                             if (parseInfo.satPhaseShift.size() == parseInfo.phaseShiftNbSat) {
                                 // we have completed the list
-                                parseInfo.header.addPhaseShiftCorrection(new PhaseShiftCorrection(parseInfo.currentSystem,
+                                parseInfo.file.getHeader().addPhaseShiftCorrection(new PhaseShiftCorrection(parseInfo.currentSystem,
                                                                                                   parseInfo.phaseShiftTypeObs,
                                                                                                   parseInfo.corrPhaseShift,
                                                                                                   new ArrayList<>(parseInfo.satPhaseShift)));
@@ -650,12 +646,12 @@ public class RinexObservationParser {
                                 }
 
                                 for (int i = 4;
-                                     i < RinexUtils.LABEL_INDEX && parseInfo.header.getGlonassChannels().size() < parseInfo.nbGlonass;
+                                     i < RinexUtils.LABEL_INDEX && parseInfo.file.getHeader().getGlonassChannels().size() < parseInfo.nbGlonass;
                                      i += 7) {
                                     final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, i, 1));
                                     final int             prn    = RinexUtils.parseInt(line, i + 1, 2);
                                     final int             k      = RinexUtils.parseInt(line, i + 4, 2);
-                                    parseInfo.header.addGlonassChannel(new GlonassSatelliteChannel(new SatInSystem(system, prn), k));
+                                    parseInfo.file.getHeader().addGlonassChannel(new GlonassSatelliteChannel(new SatInSystem(system, prn), k));
                                 }
 
                             },
@@ -668,25 +664,25 @@ public class RinexObservationParser {
                                 // C1C signal
                                 final String c1c = RinexUtils.parseString(line, 1, 3);
                                 if (c1c.length() > 0) {
-                                    parseInfo.header.setC1cCodePhaseBias(RinexUtils.parseDouble(line, 5, 8));
+                                    parseInfo.file.getHeader().setC1cCodePhaseBias(RinexUtils.parseDouble(line, 5, 8));
                                 }
 
                                 // C1P signal
                                 final String c1p = RinexUtils.parseString(line, 14, 3);
                                 if (c1p.length() > 0) {
-                                    parseInfo.header.setC1pCodePhaseBias(RinexUtils.parseDouble(line, 18, 8));
+                                    parseInfo.file.getHeader().setC1pCodePhaseBias(RinexUtils.parseDouble(line, 18, 8));
                                 }
 
                                 // C2C signal
                                 final String c2c = RinexUtils.parseString(line, 27, 3);
                                 if (c2c.length() > 0) {
-                                    parseInfo.header.setC2cCodePhaseBias(RinexUtils.parseDouble(line, 31, 8));
+                                    parseInfo.file.getHeader().setC2cCodePhaseBias(RinexUtils.parseDouble(line, 31, 8));
                                 }
 
                                 // C2P signal
                                 final String c2p = RinexUtils.parseString(line, 40, 3);
                                 if (c2p.length() > 0) {
-                                    parseInfo.header.setC2pCodePhaseBias(RinexUtils.parseDouble(line, 44, 8));
+                                    parseInfo.file.getHeader().setC2pCodePhaseBias(RinexUtils.parseDouble(line, 44, 8));
                                 }
 
                             },
@@ -701,7 +697,7 @@ public class RinexObservationParser {
                              for (int i = 0; i < nbObsScaleFactor; i++) {
                                  types.add(ObservationType.valueOf(RinexUtils.parseString(line, 16 + (6 * i), 2)));
                              }
-                             parseInfo.header.addScaleFactorCorrection(parseInfo.header.getSatelliteSystem(),
+                             parseInfo.file.getHeader().addScaleFactorCorrection(parseInfo.file.getHeader().getSatelliteSystem(),
                                                                        new ScaleFactorCorrection(scaleFactor, types));
                          },
                          LineParser::headerNext),
@@ -712,24 +708,24 @@ public class RinexObservationParser {
                                   for (int index = 32; parseInfo.satObs.size() < parseInfo.nbSatObs && index < 68; index += 3) {
                                       // add one PRN to the list of observed satellites
                                       final SatelliteSystem system    = line.charAt(index) == ' ' ?
-                                                                        parseInfo.header.getSatelliteSystem() :
+                                                                        parseInfo.file.getHeader().getSatelliteSystem() :
                                                                         SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line,
                                                                                                                                     index,
                                                                                                                                     1));
-                                      if (system != parseInfo.header.getSatelliteSystem() &&
-                                          parseInfo.header.getSatelliteSystem() != SatelliteSystem.MIXED) {
+                                      if (system != parseInfo.file.getHeader().getSatelliteSystem() &&
+                                          parseInfo.file.getHeader().getSatelliteSystem() != SatelliteSystem.MIXED) {
                                           throw new OrekitException(OrekitMessages.INCONSISTENT_SATELLITE_SYSTEM,
                                                                     parseInfo.lineNumber, parseInfo.name,
-                                                                    parseInfo.header.getSatelliteSystem(),
+                                                                    parseInfo.file.getHeader().getSatelliteSystem(),
                                                                     system);
                                       }
                                       final int             prn       = RinexUtils.parseInt(line, index + 1, 2);
                                       final SatInSystem     satellite = new SatInSystem(system,
                                                                                         system == SatelliteSystem.SBAS ? prn + 100 : prn);
                                       parseInfo.satObs.add(satellite);
-                                      // note that we *must* use parseInfo.header.getSatelliteSystem() as it was used to set up parseInfo.mapTypeObs
+                                      // note that we *must* use parseInfo.file.getHeader().getSatelliteSystem() as it was used to set up parseInfo.mapTypeObs
                                       // and it may be MIXED to be applied to all satellites systems
-                                      final int nbObservables = parseInfo.mapTypeObs.get(parseInfo.header.getSatelliteSystem()).size();
+                                      final int nbObservables = parseInfo.mapTypeObs.get(parseInfo.file.getHeader().getSatelliteSystem()).size();
                                       final int nbLines       = (nbObservables + MAX_OBS_PER_RINEX_2_LINE - 1) / MAX_OBS_PER_RINEX_2_LINE;
                                       parseInfo.nextObsStartLineNumber += nbLines;
                                   }
@@ -817,7 +813,7 @@ public class RinexObservationParser {
         /** Parser for Rinex 2 observation line. */
         RINEX_2_OBSERVATION(line -> true,
                             (line, parseInfo) -> {
-                                final List<ObservationType> types = parseInfo.mapTypeObs.get(parseInfo.header.getSatelliteSystem());
+                                final List<ObservationType> types = parseInfo.mapTypeObs.get(parseInfo.file.getHeader().getSatelliteSystem());
                                 for (int index = 0;
                                      parseInfo.observations.size() < types.size() && index < 80;
                                      index += 16) {
@@ -830,7 +826,7 @@ public class RinexObservationParser {
                                         final ObservationType type = types.get(parseInfo.observations.size());
                                         double scaling = 1.0;
                                         for (final ScaleFactorCorrection scaleFactorCorrection :
-                                            parseInfo.header.getScaleFactorCorrections(parseInfo.currentSystem)) {
+                                            parseInfo.file.getHeader().getScaleFactorCorrections(parseInfo.currentSystem)) {
                                             // check if the next Observation Type to read needs to be scaled
                                             if (scaleFactorCorrection.getTypesObsScaled().contains(type)) {
                                                 scaling = 1.0 / scaleFactorCorrection.getCorrection();
@@ -847,11 +843,10 @@ public class RinexObservationParser {
                                 if (parseInfo.observations.size() == types.size()) {
                                     // we have finished handling observations/cycle slips for one satellite
                                     if (!parseInfo.cycleSlip) {
-                                        parseInfo.observationDataSets.add(new ObservationDataSet(parseInfo.header,
-                                                                                                 parseInfo.satObs.get(parseInfo.indexObsSat),
-                                                                                                 parseInfo.tObs,
-                                                                                                 parseInfo.rcvrClkOffset,
-                                                                                                 new ArrayList<>(parseInfo.observations)));
+                                        parseInfo.file.addObservationDataSet(new ObservationDataSet(parseInfo.satObs.get(parseInfo.indexObsSat),
+                                                                                                    parseInfo.tObs,
+                                                                                                    parseInfo.rcvrClkOffset,
+                                                                                                    new ArrayList<>(parseInfo.observations)));
                                     }
                                     parseInfo.indexObsSat++;
                                     parseInfo.observations.clear();
@@ -882,7 +877,7 @@ public class RinexObservationParser {
                                         final ObservationType type = types.get(parseInfo.observations.size());
                                         double scaling = 1.0;
                                         for (final ScaleFactorCorrection scaleFactorCorrection :
-                                            parseInfo.header.getScaleFactorCorrections(sat.getSystem())) {
+                                            parseInfo.file.getHeader().getScaleFactorCorrections(sat.getSystem())) {
                                             // check if the next Observation Type to read needs to be scaled
                                             if (scaleFactorCorrection.getTypesObsScaled().contains(type)) {
                                                 scaling = 1.0 / scaleFactorCorrection.getCorrection();
@@ -897,11 +892,10 @@ public class RinexObservationParser {
                                 }
 
                                 if (!(parseInfo.specialRecord || parseInfo.cycleSlip)) {
-                                    parseInfo.observationDataSets.add(new ObservationDataSet(parseInfo.header,
-                                                                                             sat,
-                                                                                             parseInfo.tObs,
-                                                                                             parseInfo.rcvrClkOffset,
-                                                                                             new ArrayList<>(parseInfo.observations)));
+                                    parseInfo.file.addObservationDataSet(new ObservationDataSet(sat,
+                                                                                                parseInfo.tObs,
+                                                                                                parseInfo.rcvrClkOffset,
+                                                                                                new ArrayList<>(parseInfo.observations)));
                                 }
                                 parseInfo.observations.clear();
 
@@ -978,21 +972,21 @@ public class RinexObservationParser {
          * @since 12.0
          */
         HEADER_DOI(line -> RinexUtils.matchesLabel(line, "DOI"),
-                   (line, parseInfo) -> parseInfo.header.setDoi(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                   (line, parseInfo) -> parseInfo.file.getHeader().setDoi(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
                    LineParser::headerNext),
 
         /** Parser for license.
          * @since 12.0
          */
         HEADER_LICENSE(line -> RinexUtils.matchesLabel(line, "LICENSE OF USE"),
-                       (line, parseInfo) -> parseInfo.header.setLicense(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                       (line, parseInfo) -> parseInfo.file.getHeader().setLicense(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
                        LineParser::headerNext),
 
         /** Parser for stationInformation.
          * @since 12.0
          */
         HEADER_STATION_INFORMATION(line -> RinexUtils.matchesLabel(line, "STATION INFORMATION"),
-                                   (line, parseInfo) -> parseInfo.header.setStationInformation(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+                                   (line, parseInfo) -> parseInfo.file.getHeader().setStationInformation(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
                                    LineParser::headerNext),
 
         /** Parser for the end of header. */
@@ -1002,28 +996,28 @@ public class RinexObservationParser {
                        parseInfo.headerCompleted = true;
 
                        // get rinex format version
-                       final double version = parseInfo.header.getFormatVersion();
+                       final double version = parseInfo.file.getHeader().getFormatVersion();
 
                        // check mandatory header fields
                        if (version < 3) {
-                           if (parseInfo.header.getMarkerName()                  == null ||
-                               parseInfo.header.getObserverName()                == null ||
-                               parseInfo.header.getReceiverNumber()              == null ||
-                               parseInfo.header.getAntennaNumber()               == null ||
-                               parseInfo.header.getTFirstObs()                   == null ||
-                               version < 2.20 && parseInfo.header.getApproxPos() == null ||
-                               version < 2.20 && Double.isNaN(parseInfo.header.getAntennaHeight()) ||
+                           if (parseInfo.file.getHeader().getMarkerName()                  == null ||
+                               parseInfo.file.getHeader().getObserverName()                == null ||
+                               parseInfo.file.getHeader().getReceiverNumber()              == null ||
+                               parseInfo.file.getHeader().getAntennaNumber()               == null ||
+                               parseInfo.file.getHeader().getTFirstObs()                   == null ||
+                               version < 2.20 && parseInfo.file.getHeader().getApproxPos() == null ||
+                               version < 2.20 && Double.isNaN(parseInfo.file.getHeader().getAntennaHeight()) ||
                                parseInfo.mapTypeObs.isEmpty()) {
                                throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);
                            }
 
                        } else {
-                           if (parseInfo.header.getMarkerName()           == null ||
-                               parseInfo.header.getObserverName()         == null ||
-                               parseInfo.header.getReceiverNumber()       == null ||
-                               parseInfo.header.getAntennaNumber()        == null ||
-                               Double.isNaN(parseInfo.header.getAntennaHeight())  ||
-                               parseInfo.header.getTFirstObs()            == null ||
+                           if (parseInfo.file.getHeader().getMarkerName()           == null ||
+                               parseInfo.file.getHeader().getObserverName()         == null ||
+                               parseInfo.file.getHeader().getReceiverNumber()       == null ||
+                               parseInfo.file.getHeader().getAntennaNumber()        == null ||
+                               Double.isNaN(parseInfo.file.getHeader().getAntennaHeight())  ||
+                               parseInfo.file.getHeader().getTFirstObs()            == null ||
                                parseInfo.mapTypeObs.isEmpty()) {
                                throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);
                            }
@@ -1066,14 +1060,14 @@ public class RinexObservationParser {
          * @return allowed parsers for next line
          */
         private static Iterable<LineParser> headerNext(final ParseInfo parseInfo) {
-            if (parseInfo.header.getFormatVersion() < 3) {
+            if (parseInfo.file.getHeader().getFormatVersion() < 3) {
                 // Rinex 2.x header entries
                 return Arrays.asList(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
                                      REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
                                      ANTENNA_DELTA_X_Y_Z, ANTENNA_B_SIGHT_XYZ, CENTER_OF_MASS_XYZ, NB_OF_SATELLITES,
                                      WAVELENGTH_FACT_L1_2, RCV_CLOCK_OFFS_APPL, INTERVAL, TIME_OF_FIRST_OBS, TIME_OF_LAST_OBS,
                                      LEAP_SECONDS, PRN_NB_OF_OBS, TYPES_OF_OBSERV, OBS_SCALE_FACTOR, HEADER_END);
-            } else if (parseInfo.header.getFormatVersion() < 4) {
+            } else if (parseInfo.file.getHeader().getFormatVersion() < 4) {
                 // Rinex 3.x header entries
                 return Arrays.asList(COMMENT, HEADER_PROGRAM, MARKER_NAME, MARKER_NUMBER, MARKER_TYPE, OBSERVER_AGENCY,
                                      REC_NB_TYPE_VERS, ANT_NB_TYPE, APPROX_POSITION_XYZ, ANTENNA_DELTA_H_E_N,
@@ -1102,7 +1096,7 @@ public class RinexObservationParser {
          * @return allowed parsers for next line
          */
         private static Iterable<LineParser> headerEndNext(final ParseInfo parseInfo) {
-            return Collections.singleton(parseInfo.header.getFormatVersion() < 3 ?
+            return Collections.singleton(parseInfo.file.getHeader().getFormatVersion() < 3 ?
                                          RINEX_2_DATA_FIRST : RINEX_3_DATA_FIRST);
         }
 

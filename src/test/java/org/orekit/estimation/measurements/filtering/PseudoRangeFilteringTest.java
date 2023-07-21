@@ -53,7 +53,7 @@ public class PseudoRangeFilteringTest {
         DataSource nd = new DataSource(file);
         nd = filter.filter(nd);
         final RinexObservationParser parser = new RinexObservationParser();
-        List<ObservationDataSet> listObsDataSet = parser.parse(nd);
+        List<ObservationDataSet> listObsDataSet = parser.parse(nd).getObservationDataSets();
         ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
 
         // Test reset and null condition on doppler
@@ -62,8 +62,7 @@ public class PseudoRangeFilteringTest {
         List<ObservationData> listObsData = new ArrayList<ObservationData>();
         listObsData.add(obsDataDopplerNull);
         listObsData.add(obsDataRange);
-        ObservationDataSet obsDataSetNullDoppler = new ObservationDataSet(lastObsDataSet.getHeader(),
-                                                                          new SatInSystem(system, prnNumber),
+        ObservationDataSet obsDataSetNullDoppler = new ObservationDataSet(new SatInSystem(system, prnNumber),
                                                                           lastObsDataSet.getDate(), prnNumber, listObsData);
 
         ObservationData obsDataRangeNull = new ObservationData(rangeType, 10, 0, 0);
@@ -71,8 +70,7 @@ public class PseudoRangeFilteringTest {
         List<ObservationData> listObsData2 = new ArrayList<ObservationData>();
         listObsData2.add(obsDataDoppler);
         listObsData2.add(obsDataRangeNull);
-        ObservationDataSet obsDataSetNullRange= new ObservationDataSet(lastObsDataSet.getHeader(),
-                                                                       new SatInSystem(system, prnNumber),
+        ObservationDataSet obsDataSetNullRange= new ObservationDataSet(new SatInSystem(system, prnNumber),
                                                                        lastObsDataSet.getDate(), prnNumber, listObsData2);
 
         List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
@@ -127,7 +125,7 @@ public class PseudoRangeFilteringTest {
         final RinexObservationParser parser = new RinexObservationParser();
 
         // Test SatelliteSystem / SNR
-        List<ObservationDataSet> listObsDataSet = parser.parse(nd);
+        List<ObservationDataSet> listObsDataSet = parser.parse(nd).getObservationDataSets();
         ObservationDataSet lastObsDataSet = listObsDataSet.get(listObsDataSet.size() - 1);
 
         ObservationData obsDataRange = new ObservationData(rangeType, 0, 0, 0);
@@ -143,12 +141,10 @@ public class PseudoRangeFilteringTest {
         listObsDataSNR.add(obsDataF1);
         listObsDataSNR.add(obsDataF2);
         listObsDataSNR.add(obsDataRangeSNR);
-        ObservationDataSet obsDataSetRangeGLONASS = new ObservationDataSet(lastObsDataSet.getHeader(),
-                                                                           new SatInSystem(SatelliteSystem.GLONASS, prnNumber),
+        ObservationDataSet obsDataSetRangeGLONASS = new ObservationDataSet(new SatInSystem(SatelliteSystem.GLONASS, prnNumber),
                                                                            lastObsDataSet.getDate(), prnNumber, listObsDataSatSystem);
 
-        ObservationDataSet obsDataSetRangeSNR = new ObservationDataSet(lastObsDataSet.getHeader(),
-                                                                       new SatInSystem(system, prnNumber),
+        ObservationDataSet obsDataSetRangeSNR = new ObservationDataSet(new SatInSystem(system, prnNumber),
                                                                        lastObsDataSet.getDate(), prnNumber, listObsDataSNR);
         //
         List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
@@ -212,7 +208,7 @@ public class PseudoRangeFilteringTest {
         final RinexObservationParser parser = new RinexObservationParser();
 
         DualFrequencySmoother prs = new DualFrequencySmoother(100.0, 60);
-        prs.filterDataSet(parser.parse(nd), system, prnNumber, phaseTypeF1, phaseTypeF2);
+        prs.filterDataSet(parser.parse(nd).getObservationDataSets(), system, prnNumber, phaseTypeF1, phaseTypeF2);
 
         DualFrequencyHatchFilter filterDF = prs.getMapFilters().get(rangeType);
         ArrayList<Double> codeDFArray = filterDF.getCodeHistory();
@@ -228,7 +224,7 @@ public class PseudoRangeFilteringTest {
         ///// Test CarrierHatchFilterSingleFrequency
 
         SingleFrequencySmoother prsSF = new SingleFrequencySmoother(MeasurementType.CARRIER_PHASE, 100.0, 60, 50.0);
-        prsSF.filterDataSet(parser.parse(nd), system, prnNumber, phaseTypeF1);
+        prsSF.filterDataSet(parser.parse(nd).getObservationDataSets(), system, prnNumber, phaseTypeF1);
 
         SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType);
 

@@ -156,7 +156,7 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
             }
         }
 
-        return new CombinedObservationDataSet(observations.getHeader(), observations.getSatelliteSystem(),
+        return new CombinedObservationDataSet(observations.getSatelliteSystem(),
                                               observations.getPrnNumber(), observations.getDate(),
                                               observations.getRcvrClkOffset(), combined);
     }
