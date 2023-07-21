@@ -14,9 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
 
 import java.util.List;
+
+import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.SatelliteSystem;
 
 /** Phase Shift corrections.
  * Contains the phase shift corrections used to

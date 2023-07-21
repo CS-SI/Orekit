@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,25 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.gnss;
+package org.orekit.gnss.navigation;
 
-import java.util.List;
-
-import org.orekit.gnss.observation.ObservationDataSet;
-
-/**
- * Interface for phase measurement cycle-slip detection.
- * @author David Soulard
- * @author Bryan Cazabonne
- * @since 10.2
+/** Enumerate for region code.
+ * @see IonosphereKlobucharMessage
+ * @author Luc Maisonobe
+ * @since 12.0
  */
-public interface CycleSlipDetectors {
+public enum RegionCode {
 
-    /**
-     * Detects if a cycle-slip occurs for a given list of observation data set.
-     * @param observations list of observation data set
-     * @return a list of results computed by the cycle-slip detectors
-     */
-    List<CycleSlipDetectorResults> detect(List<ObservationDataSet> observations);
+    /** Wide Area. */
+    WIDE_AREA,
+
+    /** Japan area (for QZSS only). */
+    JAPAN;
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2023 Luc Maisonobe
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,21 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
 
-import org.orekit.gnss.navigation.IonosphereKlobucharMessage;
-
-/** Enumerate for region code.
- * @see IonosphereKlobucharMessage
+/**
+ * Enumerate for measurement type.
+ *
  * @author Luc Maisonobe
- * @since 12.0
+ * @since 9.2
  */
-public enum RegionCode {
+public enum MeasurementType {
 
-    /** Wide Area. */
-    WIDE_AREA,
+    /** Pseudo-range measurement. */
+    PSEUDO_RANGE,
 
-    /** Japan area (for QZSS only). */
-    JAPAN;
+    /** Carrier-phase measurement. */
+    CARRIER_PHASE,
+
+    /** Doppler measurement. */
+    DOPPLER,
+
+    /** Signal-strength measurement. */
+    SIGNAL_STRENGTH,
+
+    /** Combined pseudo-range carrier-phase measurement. */
+    COMBINED_RANGE_PHASE;
 
 }

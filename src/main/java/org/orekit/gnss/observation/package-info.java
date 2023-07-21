@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,29 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
-
 /**
- * Enumerate for measurement type.
+ *
+ * This package provides classes related to RINEX observation files.
  *
  * @author Luc Maisonobe
- * @since 9.2
+ * @since 12.0
+ *
  */
-public enum MeasurementType {
-
-    /** Pseudo-range measurement. */
-    PSEUDO_RANGE,
-
-    /** Carrier-phase measurement. */
-    CARRIER_PHASE,
-
-    /** Doppler measurement. */
-    DOPPLER,
-
-    /** Signal-strength measurement. */
-    SIGNAL_STRENGTH,
-
-    /** Combined pseudo-range carrier-phase measurement. */
-    COMBINED_RANGE_PHASE;
-
-}
+package org.orekit.gnss.observation;

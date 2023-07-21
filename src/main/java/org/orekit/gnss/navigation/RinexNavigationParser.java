@@ -33,7 +33,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.RegionCode;
 import org.orekit.gnss.RinexUtils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.SbasId;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,12 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.orekit.gnss.AppliedDCBS;
+import org.orekit.gnss.AppliedPCVS;
+import org.orekit.gnss.RinexBaseHeader;
+import org.orekit.gnss.RinexFileType;
+import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for Rinex observation file header.

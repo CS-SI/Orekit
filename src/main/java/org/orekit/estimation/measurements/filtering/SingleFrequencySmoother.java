@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.observation.MeasurementType;
+import org.orekit.gnss.observation.ObservationData;
+import org.orekit.gnss.observation.ObservationDataSet;
+import org.orekit.gnss.observation.ObservationType;
 import org.orekit.time.ChronologicalComparator;
 
 /**

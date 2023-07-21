@@ -25,6 +25,9 @@ import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.observation.ObservationDataSet;
+import org.orekit.gnss.observation.ObservationType;
+import org.orekit.gnss.observation.RinexObservationParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 

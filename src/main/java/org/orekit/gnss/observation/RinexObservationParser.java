@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -36,6 +36,11 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.AppliedDCBS;
+import org.orekit.gnss.AppliedPCVS;
+import org.orekit.gnss.RinexUtils;
+import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
