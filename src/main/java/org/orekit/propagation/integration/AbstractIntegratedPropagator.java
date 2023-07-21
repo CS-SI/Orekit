@@ -793,7 +793,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             int yieldCount = 0;
             while (!pending.isEmpty()) {
                 final AdditionalDerivativesProvider provider = pending.remove();
-                if (provider.yield(updated)) {
+                if (provider.yields(updated)) {
                     // this provider has to wait for another one,
                     // we put it again in the pending queue
                     pending.add(provider);

@@ -217,7 +217,7 @@ public abstract class AbstractPropagator implements Propagator {
         int yieldCount = 0;
         while (!pending.isEmpty()) {
             final AdditionalStateProvider provider = pending.remove();
-            if (provider.yield(updated)) {
+            if (provider.yields(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
                 pending.add(provider);

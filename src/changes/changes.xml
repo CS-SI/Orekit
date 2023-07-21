@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="maxime" type="add" issue="1063">
+        Forbid Python keywords in method, class, interface and enum names.
+      </action>
       <action dev="vincent" type="update" issue="1136">
         Changed Fieldifier to return fielded orbit in the same orbit type as input orbit
       </action>
