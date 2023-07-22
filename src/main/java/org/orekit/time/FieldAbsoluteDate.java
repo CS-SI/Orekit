@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -327,6 +328,15 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
              timeScale);
     }
 
+    /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
+     * @param field field utilized as default
+     * @param instant instant in the time scale
+     * @param timeScale time scale
+     * @since 12.0
+     */
+    public FieldAbsoluteDate(final Field<T> field, final Instant instant, final TimeScale timeScale) {
+        this(field, Date.from(instant), timeScale);
+    }
 
     /** Build an instance from an elapsed duration since to another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
