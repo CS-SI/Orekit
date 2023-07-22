@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -415,6 +416,15 @@ public class AbsoluteDate
                                 (int) (location.getTime() / 86400000l)),
                                  millisToTimeComponents((int) (location.getTime() % 86400000l)),
              timeScale);
+    }
+
+    /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
+     * @param instant instant in the time scale
+     * @param timeScale time scale
+     * @since 12.0
+     */
+    public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
+        this(Date.from(instant), timeScale);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
