@@ -648,6 +648,31 @@ public class CartesianOrbitTest {
         Assertions.assertSame(orbit, orbit.getType().normalize(orbit, null));
     }
 
+    @Test
+    public void testIssue1139() {
+
+        // Create
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+
+        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+
+        double dt = 60.0;
+        AbsoluteDate shiftedEpoch = date.shiftedBy(dt);
+
+        CartesianOrbit p2 = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), shiftedEpoch, mu);
+
+        // Verify
+        Assertions.assertEquals(dt, shiftedEpoch.durationFrom(date));
+        Assertions.assertEquals(dt, p2.durationFrom(p));
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p));
+        Assertions.assertEquals(dt, p2.durationFrom(p.getDate()));
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()));
+        Assertions.assertEquals(-dt, p.durationFrom(p2));
+        
+    }
+
     @BeforeEach
     public void setUp() {
 
