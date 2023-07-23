@@ -372,7 +372,7 @@ public class RinexObservationParser {
 
         /** Parser for antenna zero direction. */
         ANTENNA_ZERODIR_AZI(line -> RinexUtils.matchesLabel(line, "ANTENNA: ZERODIR AZI"),
-                            (line, parseInfo) -> parseInfo.file.getHeader().setAntennaAzimuth(RinexUtils.parseDouble(line, 0, 14)),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setAntennaAzimuth(FastMath.toRadians(RinexUtils.parseDouble(line, 0, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna zero direction. */
@@ -407,15 +407,14 @@ public class RinexObservationParser {
                                   try {
                                       parseInfo.timeScale = ObservationTimeScale.
                                                             valueOf(RinexUtils.parseString(line, 48, 3)).
-                                                            timeScaleSupplier.
-                                                            apply(parseInfo.timeScales);
+                                                            getTimeScale(parseInfo.timeScales);
                                   } catch (IllegalArgumentException iae) {
                                       throw new OrekitException(iae,
                                                                 OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                 parseInfo.lineNumber, parseInfo.name, line);
                                   }
                               } else {
-                                  parseInfo.timeScale = parseInfo.file.getHeader().getSatelliteSystem().getDefaultTimeSystem(parseInfo.timeScales);
+                                  parseInfo.timeScale = parseInfo.file.getHeader().getSatelliteSystem().getObservationTimeScale().getTimeScale(parseInfo.timeScales);
                                   if (parseInfo.timeScale == null) {
                                       throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                 parseInfo.lineNumber, parseInfo.name, line);
@@ -1184,41 +1183,6 @@ public class RinexObservationParser {
          * @param parseInfo holder for transient data
          */
         void parse(String line, ParseInfo parseInfo);
-    }
-
-    /** Observation time scales.
-     * @since 12.0
-     */
-    private enum ObservationTimeScale {
-
-        /** GPS time scale. */
-        GPS(ts -> ts.getGPS()),
-
-        /** Galileo time scale. */
-        GAL(ts -> ts.getGST()),
-
-        /** GLONASS time scale. */
-        GLO(ts -> ts.getGLONASS()),
-
-        /** QZSS time scale. */
-        QZS(ts -> ts.getQZSS()),
-
-        /** Beidou time scale. */
-        BDT(ts -> ts.getBDT()),
-
-        /** IRNSS time scale. */
-        IRN(ts -> ts.getIRNSS());
-
-        /** Supplier for time scale. */
-        private final Function<TimeScales, TimeScale> timeScaleSupplier;
-
-        /** Simple constructor.
-         * @param timeScaleSupplier supplier for time scale
-         */
-        ObservationTimeScale(final Function<TimeScales, TimeScale> timeScaleSupplier) {
-            this.timeScaleSupplier = timeScaleSupplier;
-        }
-
     }
 
 }

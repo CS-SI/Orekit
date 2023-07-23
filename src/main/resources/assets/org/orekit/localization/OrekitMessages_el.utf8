@@ -821,6 +821,7 @@ CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSL
 
 # primary collision object time of closest approach is different from the secondary collision object's one
 DIFFERENT_TIME_OF_CLOSEST_APPROACH = <MISSING TRANSLATION>
+
 # first date {0} does not match second date {1}
 DATES_MISMATCH = <MISSING TRANSLATION>
 
@@ -841,3 +842,9 @@ WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
 
 # multiple interpolators are used so they may use different numbers of interpolation points
 MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>
+
+# header for file {0} has not been written yet
+HEADER_NOT_WRITTEN = <MISSING TRANSLATION>
+
+# header for file {0} has already been written
+HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>

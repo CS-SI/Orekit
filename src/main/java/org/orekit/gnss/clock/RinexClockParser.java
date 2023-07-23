@@ -324,7 +324,7 @@ public class RinexClockParser {
                         // Record satellite system and default time system in clock file object
                         final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
                         pi.file.setSatelliteSystem(satelliteSystem);
-                        pi.file.setTimeScale(satelliteSystem.getDefaultTimeSystem(pi.timeScales));
+                        pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
                     }
                     // Set time scale to UTC by default
                     if (pi.file.getTimeScale() == null) {

@@ -165,7 +165,7 @@ public class RinexObservationParserTest {
                                               header.getAntennaZeroDirection()),
                             1.0e-15);
         Assertions.assertEquals(0.1010,
-                            header.getAntennaAzimuth(),
+                            FastMath.toDegrees(header.getAntennaAzimuth()),
                             1.0e-15);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(new Vector3D(0.1455, -0.3421, 0.0024),

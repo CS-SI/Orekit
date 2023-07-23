@@ -18,12 +18,10 @@ package org.orekit.gnss;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScales;
+import org.orekit.gnss.observation.ObservationTimeScale;
 
 /**
  * Enumerate for satellite system.
@@ -34,28 +32,28 @@ import org.orekit.time.TimeScales;
 public enum SatelliteSystem {
 
     /** GPS system. */
-    GPS('G', timescales -> timescales.getGPS()),
+    GPS('G', ObservationTimeScale.GPS),
 
     /** GLONASS system. */
-    GLONASS('R', timescales -> timescales.getGLONASS()),
+    GLONASS('R', ObservationTimeScale.GLO),
 
     /** Galileo system. */
-    GALILEO('E', timescales -> timescales.getGST()),
+    GALILEO('E', ObservationTimeScale.GAL),
 
     /** Beidou system. */
-    BEIDOU('C', timescales -> timescales.getBDT()),
+    BEIDOU('C', ObservationTimeScale.BDT),
 
     /** Quasi-Zenith Satellite System system. */
-    QZSS('J', timescales -> timescales.getQZSS()),
+    QZSS('J', ObservationTimeScale.QZS),
 
     /** Indian Regional Navigation Satellite System system. */
-    IRNSS('I', timescales -> timescales.getIRNSS()),
+    IRNSS('I', ObservationTimeScale.IRN),
 
     /** SBAS system. */
-    SBAS('S', timescales -> null),
+    SBAS('S', null),
 
     /** Mixed system. */
-    MIXED('M', timescales -> null);
+    MIXED('M', null);
 
     /** Parsing map. */
     private static final Map<Character, SatelliteSystem> KEYS_MAP = new HashMap<>();
@@ -68,18 +66,18 @@ public enum SatelliteSystem {
     /** Key for the system. */
     private final char key;
 
-    /** Provider for default time scale.
+    /** Observation time scale.
      * @since 12.0
      */
-    private final Function<TimeScales, TimeScale> defaultTimeScaleProvider;
+    private final ObservationTimeScale observationTimeScale;
 
     /** Simple constructor.
      * @param key key letter
-     * @param defaultTimeScaleProvider provider for default time scale
+     * @param observationTimeScale observation time scale (may be null)
      */
-    SatelliteSystem(final char key, final Function<TimeScales, TimeScale> defaultTimeScaleProvider) {
-        this.key                      = key;
-        this.defaultTimeScaleProvider = defaultTimeScaleProvider;
+    SatelliteSystem(final char key, final ObservationTimeScale observationTimeScale) {
+        this.key                  = key;
+        this.observationTimeScale = observationTimeScale;
     }
 
     /** Get the key for the system.
@@ -118,13 +116,12 @@ public enum SatelliteSystem {
         return s.isEmpty() ? SatelliteSystem.GPS : parseSatelliteSystem(s);
     }
 
-    /** Get default time scale for satellite system.
-     * @param timeScales the set of timeScales to use
-     * @return the default time scale among the given set matching to satellite system,
-     *         null if there are not
+    /** Get observation time scale for satellite system.
+     * @return observation time scale, null if there are not
+     * @since 12.0
      */
-    public TimeScale getDefaultTimeSystem(final TimeScales timeScales) {
-        return defaultTimeScaleProvider.apply(timeScales);
+    public ObservationTimeScale getObservationTimeScale() {
+        return observationTimeScale;
     }
 
 }

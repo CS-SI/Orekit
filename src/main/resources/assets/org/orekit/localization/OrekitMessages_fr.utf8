@@ -842,3 +842,9 @@ WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = mauvais interpolateur défi
 
 # multiple interpolators are used so they may use different numbers of interpolation points
 MULTIPLE_INTERPOLATOR_USED = plusieurs interpolateurs sont utilisés donc le nombre de points d'interpolation défini pour chacun pourrait différer
+
+# header for file {0} has not been written yet
+HEADER_NOT_WRITTEN = l''en-tête du fichier {0} n''a pas encore été écrit
+
+# header for file {0} has already been written
+HEADER_ALREADY_WRITTEN = l''en-tête du fichier {0} a déjà été écrit

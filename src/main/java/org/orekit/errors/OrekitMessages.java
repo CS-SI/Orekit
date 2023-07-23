@@ -363,7 +363,9 @@ public enum OrekitMessages implements Localizable {
     STATE_AND_COVARIANCE_DATES_MISMATCH("state date {0} does not match its covariance date {1}"),
     NO_INTERPOLATOR_FOR_STATE_DEFINITION("creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator"),
     WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION("wrong interpolator defined for this spacecraft state type (orbit or absolute PV)"),
-    MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points");
+    MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points"),
+    HEADER_NOT_WRITTEN("header for file {0} has not been written yet"),
+    HEADER_ALREADY_WRITTEN("header for file {0} has alrady been written");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */

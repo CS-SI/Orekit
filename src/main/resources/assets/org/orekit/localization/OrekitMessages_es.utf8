@@ -842,3 +842,9 @@ WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
 
 # multiple interpolators are used so they may use different numbers of interpolation points
 MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>
+
+# header for file {0} has not been written yet
+HEADER_NOT_WRITTEN = <MISSING TRANSLATION>
+
+# header for file {0} has already been written
+HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
