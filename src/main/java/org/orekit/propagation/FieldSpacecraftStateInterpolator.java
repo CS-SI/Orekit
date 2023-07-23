@@ -101,8 +101,8 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * The interpolators will have the following configuration :
      * <ul>
      *     <li>Same frame for coordinates and attitude </li>
-     *     <li>Default number of interpolation points of {@value DEFAULT_INTERPOLATION_POINTS}</li>
-     *     <li>Default extrapolation threshold of {@value DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
+     *     <li>Default number of interpolation points of {@code DEFAULT_INTERPOLATION_POINTS}</li>
+     *     <li>Default extrapolation threshold of {@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
      *     <li>Use of position and two time derivatives for absolute position-velocity-acceleration coordinates interpolation</li>
      *     <li>Use of angular and first time derivative for attitude interpolation</li>
      * </ul>
@@ -126,8 +126,8 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * The interpolators will have the following configuration :
      * <ul>
      *     <li>Same frame for coordinates and attitude </li>
-     *     <li>Default number of interpolation points of {@value DEFAULT_INTERPOLATION_POINTS}</li>
-     *     <li>Default extrapolation threshold of {@value DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
+     *     <li>Default number of interpolation points of {@code DEFAULT_INTERPOLATION_POINTS}</li>
+     *     <li>Default extrapolation threshold of {@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
      *     <li>Use of position and two time derivatives for absolute position-velocity-acceleration coordinates interpolation</li>
      *     <li>Use of angular and first time derivative for attitude interpolation</li>
      * </ul>
@@ -151,7 +151,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * <p>
      * The interpolators will have the following configuration :
      * <ul>
-     *     <li>Default extrapolation threshold of {@value DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
+     *     <li>Default extrapolation threshold of {@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
      *     <li>Use of position and two time derivatives for absolute position-velocity-acceleration coordinates interpolation</li>
      *     <li>Use of angular and first time derivative for attitude interpolation</li>
      * </ul>

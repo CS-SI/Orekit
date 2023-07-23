@@ -46,8 +46,8 @@ import java.util.List;
  * between tabulated values.
  *
  * @author Vincent Cucchietti
- * @see SmoothStepFactory
- * @see SmoothStepFactory.SmoothStepFunction
+ * @see org.hipparchus.analysis.polynomials.SmoothStepFactory
+ * @see org.hipparchus.analysis.polynomials.SmoothStepFactory.SmoothStepFunction
  */
 public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator {
 

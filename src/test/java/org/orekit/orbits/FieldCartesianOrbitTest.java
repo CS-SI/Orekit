@@ -16,6 +16,12 @@
  */
 package org.orekit.orbits;
 
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -42,12 +48,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.function.Function;
-
-import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
 public class FieldCartesianOrbitTest {
@@ -189,6 +189,11 @@ public class FieldCartesianOrbitTest {
     @Test
     public void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue1139() {
+        doTestIssue1139(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestCartesianToCartesian(Field<T> field)
@@ -798,6 +803,34 @@ public class FieldCartesianOrbitTest {
                                                               FieldAbsoluteDate.getJ2000Epoch(field),
                                                               field.getZero().newInstance(mu));
         Assertions.assertSame(orbit, orbit.getType().normalize(orbit, null));
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue1139(Field<T> field) {
+
+        // Create
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0));
+        FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-2194.0), zero.add(-2141.0), zero.add(-8.0));
+        FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>( position, velocity);
+        double mu = 3.9860047e14;
+
+        FieldCartesianOrbit<T> p = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
+
+        double dt = 60.0;
+        FieldAbsoluteDate<T> shiftedEpoch = date.shiftedBy(dt);
+
+        FieldCartesianOrbit<T> p2 = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), shiftedEpoch, zero.add(mu));
+
+        // Verify
+        Assertions.assertEquals(dt, shiftedEpoch.durationFrom(date).getReal());
+        Assertions.assertEquals(dt, p2.durationFrom(p).getReal());
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p).getReal());
+        Assertions.assertEquals(dt, p2.durationFrom(p.getDate()).getReal());
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()).getReal());
+        Assertions.assertEquals(-dt, p.durationFrom(p2).getReal());
+
     }
 
 }

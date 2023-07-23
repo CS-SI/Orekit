@@ -72,8 +72,8 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
     /**
      * Constructor with :
      * <ul>
-     *     <li>Default number of interpolation points of {@value DEFAULT_INTERPOLATION_POINTS}</li>
-     *     <li>Default extrapolation threshold value ({@value DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s)</li>
+     *     <li>Default number of interpolation points of {@code DEFAULT_INTERPOLATION_POINTS}</li>
+     *     <li>Default extrapolation threshold value ({@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s)</li>
      *     <li>Use of position and two time derivatives during interpolation</li>
      * </ul>
      * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation
@@ -89,7 +89,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
     /**
      * Constructor with :
      * <ul>
-     *     <li>Default extrapolation threshold value ({@value DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s)</li>
+     *     <li>Default extrapolation threshold value ({@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s)</li>
      *     <li>Use of position and two time derivatives during interpolation</li>
      * </ul>
      * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation
@@ -104,7 +104,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
     }
 
     /**
-     * Constructor with default extrapolation threshold value ({@value DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s).
+     * Constructor with default extrapolation threshold value ({@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s).
      * <p>
      * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation
      * points (about 10-20 points) in order to avoid <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's

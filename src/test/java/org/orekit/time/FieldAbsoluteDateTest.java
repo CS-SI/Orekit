@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -130,6 +131,11 @@ public class FieldAbsoluteDateTest {
     @Test
     public void test1970() {
         doTest1970(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void test1970Instant() {
+        doTest1970Instant(Binary64Field.getInstance());
     }
 
     @Test
@@ -541,6 +547,11 @@ public class FieldAbsoluteDateTest {
     private <T extends CalculusFieldElement<T>> void doTest1970(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new Date(0l), utc);
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", date.toString());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTest1970Instant(final Field<T> field) {
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), utc).toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestUtcGpsOffset(final Field<T> field) {

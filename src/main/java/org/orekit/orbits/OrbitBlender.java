@@ -38,8 +38,8 @@ import org.orekit.utils.PVCoordinates;
  * example).
  *
  * @author Vincent Cucchietti
- * @see SmoothStepFactory
- * @see SmoothStepFactory.SmoothStepFunction
+ * @see org.hipparchus.analysis.polynomials.SmoothStepFactory
+ * @see org.hipparchus.analysis.polynomials.SmoothStepFactory.SmoothStepFunction
  */
 public class OrbitBlender extends AbstractOrbitInterpolator {
 
