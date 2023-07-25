@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
+import org.orekit.frames.LOF;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -55,8 +55,8 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
     /** Inertial frame with respect to which orbit should be computed. */
     private final Frame inertialFrame;
 
-    /** Type of Local Orbital Frame. */
-    private LOFType type;
+    /** Local Orbital Frame. */
+    private final LOF type;
 
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<? extends TimeStampedAngularCoordinates> table;
@@ -75,20 +75,20 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
      * This constructor uses the first and last point samples as the min and max dates.
      * </p>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param type type of Local Orbital Frame
+     * @param lof local orbital frame
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param filter filter for derivatives from the sample to use in interpolation
      */
-    public TabulatedLofOffset(final Frame inertialFrame, final LOFType type,
+    public TabulatedLofOffset(final Frame inertialFrame, final LOF lof,
                               final List<? extends TimeStampedAngularCoordinates> table,
                               final int n, final AngularDerivativesFilter filter) {
-        this(inertialFrame, type, table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate());
+        this(inertialFrame, lof, table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate());
     }
 
     /** Creates new instance.
      * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param type type of Local Orbital Frame
+     * @param lof local orbital frame
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param minDate min date to use
@@ -96,7 +96,7 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
      * @param filter filter for derivatives from the sample to use in interpolation
      * @since 11.0
      */
-    public TabulatedLofOffset(final Frame inertialFrame, final LOFType type,
+    public TabulatedLofOffset(final Frame inertialFrame, final LOF lof,
                               final List<? extends TimeStampedAngularCoordinates> table,
                               final int n, final AngularDerivativesFilter filter,
                               final AbsoluteDate minDate, final AbsoluteDate maxDate) {
@@ -105,7 +105,7 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
                                       inertialFrame.getName());
         }
         this.inertialFrame = inertialFrame;
-        this.type          = type;
+        this.type          = lof;
         this.table         = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
         this.filter        = filter;
         this.minDate       = minDate;
