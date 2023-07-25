@@ -114,9 +114,9 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      * @since 6.1
      */
-    private NodeDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler handler,
-                         final Frame frame) {
+    protected NodeDetector(final double maxCheck, final double threshold,
+                           final int maxIter, final EventHandler handler,
+                           final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
     }

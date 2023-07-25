@@ -83,12 +83,12 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      * @param frame     the reference frame attached to the sensor.
      * @param fov       Field Of View of the sensor.
      */
-    private GroundFieldOfViewDetector(final double maxCheck,
-                                      final double threshold,
-                                      final int maxIter,
-                                      final EventHandler handler,
-                                      final Frame frame,
-                                      final FieldOfView fov) {
+    protected GroundFieldOfViewDetector(final double maxCheck,
+                                        final double threshold,
+                                        final int maxIter,
+                                        final EventHandler handler,
+                                        final Frame frame,
+                                        final FieldOfView fov) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
         this.fov = fov;

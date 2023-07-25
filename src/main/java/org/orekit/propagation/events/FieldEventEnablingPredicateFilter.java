@@ -111,10 +111,10 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      * @param enabler event enabling function to use
      */
     @SuppressWarnings("unchecked")
-    private FieldEventEnablingPredicateFilter(final T maxCheck, final T threshold,
-                                              final int maxIter, final FieldEventHandler<T> handler,
-                                              final FieldEventDetector<T> rawDetector,
-                                              final FieldEnablingPredicate<T> enabler) {
+    protected FieldEventEnablingPredicateFilter(final T maxCheck, final T threshold,
+                                                final int maxIter, final FieldEventHandler<T> handler,
+                                                final FieldEventDetector<T> rawDetector,
+                                                final FieldEnablingPredicate<T> enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;

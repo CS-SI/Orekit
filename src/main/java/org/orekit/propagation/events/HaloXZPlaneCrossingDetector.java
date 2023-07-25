@@ -48,9 +48,9 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold,
-                             final int maxIter,
-                             final EventHandler handler) {
+    protected HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold,
+                                          final int maxIter,
+                                          final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 

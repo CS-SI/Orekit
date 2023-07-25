@@ -99,12 +99,12 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      */
-    private InterSatDirectViewDetector(final OneAxisEllipsoid body,
-                                       final PVCoordinatesProvider secondary,
-                                       final double maxCheck,
-                                       final double threshold,
-                                       final int maxIter,
-                                       final EventHandler handler) {
+    protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
+                                         final PVCoordinatesProvider secondary,
+                                         final double maxCheck,
+                                         final double threshold,
+                                         final int maxIter,
+                                         final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.body  = body;
         this.ae2   = body.getEquatorialRadius() * body.getEquatorialRadius();

@@ -96,12 +96,12 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * @param cap spherical cap surrounding the zone
      * @param margin angular margin to apply to the zone
      */
-    private GeographicZoneDetector(final double maxCheck, final double threshold,
-                                   final int maxIter, final EventHandler handler,
-                                   final BodyShape body,
-                                   final SphericalPolygonsSet zone,
-                                   final EnclosingBall<Sphere2D, S2Point> cap,
-                                   final double margin) {
+    protected GeographicZoneDetector(final double maxCheck, final double threshold,
+                                     final int maxIter, final EventHandler handler,
+                                     final BodyShape body,
+                                     final SphericalPolygonsSet zone,
+                                     final EnclosingBall<Sphere2D, S2Point> cap,
+                                     final double margin) {
         super(maxCheck, threshold, maxIter, handler);
         this.body   = body;
         this.zone   = zone;

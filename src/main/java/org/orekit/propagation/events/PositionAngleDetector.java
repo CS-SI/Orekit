@@ -112,10 +112,10 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * @param angle fixed angle to be crossed
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
-    private PositionAngleDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler handler,
-                                     final OrbitType orbitType, final PositionAngle positionAngle,
-                                     final double angle)
+    protected PositionAngleDetector(final double maxCheck, final double threshold,
+                                    final int maxIter, final EventHandler handler,
+                                    final OrbitType orbitType, final PositionAngle positionAngle,
+                                    final double angle)
         throws OrekitIllegalArgumentException {
 
         super(maxCheck, threshold, maxIter, handler);

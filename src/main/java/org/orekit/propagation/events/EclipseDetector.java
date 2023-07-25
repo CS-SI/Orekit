@@ -103,9 +103,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      * @since 12.0
      */
-    private EclipseDetector(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler handler,
-                            final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
+    protected EclipseDetector(final double maxCheck, final double threshold,
+                              final int maxIter, final EventHandler handler,
+                              final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
         this.occultationEngine = occultationEngine;
         this.margin            = margin;

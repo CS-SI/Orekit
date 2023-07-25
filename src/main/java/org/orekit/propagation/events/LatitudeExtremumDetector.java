@@ -68,9 +68,9 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      */
-    private LatitudeExtremumDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler handler,
-                                     final OneAxisEllipsoid body) {
+    protected LatitudeExtremumDetector(final double maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final OneAxisEllipsoid body) {
         super(maxCheck, threshold, maxIter, handler);
         this.body = body;
     }

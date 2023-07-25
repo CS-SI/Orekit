@@ -59,11 +59,11 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
      * @param newHandler   event handler.
      * @param original     event detector.
      */
-    private NegateDetector(final double newMaxCheck,
-                           final double newThreshold,
-                           final int newMaxIter,
-                           final EventHandler newHandler,
-                           final EventDetector original) {
+    protected NegateDetector(final double newMaxCheck,
+                             final double newThreshold,
+                             final int newMaxIter,
+                             final EventHandler newHandler,
+                             final EventDetector original) {
         super(newMaxCheck, newThreshold, newMaxIter, newHandler);
         this.original = original;
     }

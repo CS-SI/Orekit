@@ -80,12 +80,12 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
      * @param newMaxIter   max iterations.
      * @param newHandler   event handler.
      */
-    private FieldBooleanDetector(final List<FieldEventDetector<T>> detectors,
-                                 final Operator operator,
-                                 final T newMaxCheck,
-                                 final T newThreshold,
-                                 final int newMaxIter,
-                                 final FieldEventHandler<T> newHandler) {
+    protected FieldBooleanDetector(final List<FieldEventDetector<T>> detectors,
+                                   final Operator operator,
+                                   final T newMaxCheck,
+                                   final T newThreshold,
+                                   final int newMaxIter,
+                                   final FieldEventHandler<T> newHandler) {
         super(newMaxCheck, newThreshold, newMaxIter, newHandler);
         this.detectors = detectors;
         this.operator = operator;

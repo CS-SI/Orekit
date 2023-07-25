@@ -98,13 +98,13 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      */
-    private GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
-                                  final double dawnDuskElevation,
-                                  final AtmosphericRefractionModel refractionModel,
-                                  final double maxCheck,
-                                  final double threshold,
-                                  final int maxIter,
-                                  final EventHandler handler) {
+    protected GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
+                                    final double dawnDuskElevation,
+                                    final AtmosphericRefractionModel refractionModel,
+                                    final double maxCheck,
+                                    final double threshold,
+                                    final int maxIter,
+                                    final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.groundLocation    = groundLocation;
         this.sun               = sun;
