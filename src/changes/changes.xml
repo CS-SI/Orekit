@@ -31,6 +31,10 @@
         Allowed creating static BodyFacade with DataContext.
       </action>
       <action dev="vincent" type="update" issue="1136">
+        Replace expected LOFType arguments by recently implemented LOF interface in LocalOrbitalFrame, LofOffset,
+          TabulatedLofOffset and ThrustDirectionAndAttitudeProvider
+      </action>
+      <action dev="vincent" type="update" issue="1136">
         Changed Fieldifier to return fielded orbit in the same orbit type as input orbit
       </action>
       <action dev="luc" type="add" issue="1135">
