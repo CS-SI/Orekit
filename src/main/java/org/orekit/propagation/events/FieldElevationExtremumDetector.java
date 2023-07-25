@@ -87,9 +87,9 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
      */
-    private FieldElevationExtremumDetector(final T maxCheck, final T threshold,
-                                           final int maxIter, final FieldEventHandler<T> handler,
-                                           final TopocentricFrame topo) {
+    protected FieldElevationExtremumDetector(final T maxCheck, final T threshold,
+                                             final int maxIter, final FieldEventHandler<T> handler,
+                                             final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.topo = topo;
     }

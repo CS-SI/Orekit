@@ -70,7 +70,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
      */
-    private FieldFunctionalDetector(
+    protected FieldFunctionalDetector(
             final T maxCheck,
             final T threshold,
             final int maxIter,

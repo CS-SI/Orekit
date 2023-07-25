@@ -121,10 +121,10 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      * @param median median date driver
      * @param duration duration driver
      */
-    private ParameterDrivenDateIntervalDetector(final double maxCheck, final double threshold, final int maxIter,
-                                                final EventHandler handler,
-                                                final DateDriver start, final DateDriver stop,
-                                                final DateDriver median, final ParameterDriver duration) {
+    protected ParameterDrivenDateIntervalDetector(final double maxCheck, final double threshold, final int maxIter,
+                                                  final EventHandler handler,
+                                                  final DateDriver start, final DateDriver stop,
+                                                  final DateDriver median, final ParameterDriver duration) {
         super(maxCheck, threshold, maxIter, handler);
         this.start    = start;
         this.stop     = stop;

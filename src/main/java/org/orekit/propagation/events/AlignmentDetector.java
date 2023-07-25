@@ -106,10 +106,10 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
      * @param body the body to align
      * @param alignAngle the alignment angle (rad)
      */
-    private AlignmentDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler handler,
-                              final PVCoordinatesProvider body,
-                              final double alignAngle) {
+    protected AlignmentDetector(final double maxCheck, final double threshold,
+                                final int maxIter, final EventHandler handler,
+                                final PVCoordinatesProvider body,
+                                final double alignAngle) {
         super(maxCheck, threshold, maxIter, handler);
         final SinCos sc    = FastMath.sinCos(alignAngle);
         this.body          = body;

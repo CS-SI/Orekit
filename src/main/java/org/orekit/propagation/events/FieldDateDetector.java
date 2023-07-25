@@ -92,9 +92,9 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @param dates list of event dates
      */
     @SafeVarargs
-    private FieldDateDetector(final T maxCheck, final T threshold,
-                              final int maxIter, final FieldEventHandler<T> handler,
-                              final FieldTimeStamped<T>... dates) {
+    protected FieldDateDetector(final T maxCheck, final T threshold,
+                                final int maxIter, final FieldEventHandler<T> handler,
+                                final FieldTimeStamped<T>... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;

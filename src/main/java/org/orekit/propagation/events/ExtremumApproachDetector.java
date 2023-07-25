@@ -103,13 +103,11 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * @param maxIter             Maximum number of iterations in the event time search.
      * @param handler             Event handler to call at event occurrences.
      * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
-     *                            * approach.
+     *                            approach.
      * @see EventHandler
      */
-    public ExtremumApproachDetector(
-            final double maxCheck, final double threshold, final int maxIter,
-            final EventHandler handler,
-            final PVCoordinatesProvider secondaryPVProvider) {
+    protected ExtremumApproachDetector(final double maxCheck, final double threshold, final int maxIter,
+                                       final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider) {
         super(maxCheck, threshold, maxIter, handler);
         this.secondaryPVProvider = secondaryPVProvider;
     }

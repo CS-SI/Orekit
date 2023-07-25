@@ -108,9 +108,9 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @param filter filter to use
      * @since 6.1
      */
-    private EventSlopeFilter(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler handler,
-                             final T rawDetector, final FilterType filter) {
+    protected EventSlopeFilter(final double maxCheck, final double threshold,
+                               final int maxIter, final EventHandler handler,
+                               final T rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;

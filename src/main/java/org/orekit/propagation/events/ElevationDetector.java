@@ -98,11 +98,11 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * @param refractionModel reference to refraction model
      * @param topo reference to a topocentric model
      */
-    private ElevationDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler handler,
-                              final double minElevation, final ElevationMask mask,
-                              final AtmosphericRefractionModel refractionModel,
-                              final TopocentricFrame topo) {
+    protected ElevationDetector(final double maxCheck, final double threshold,
+                                final int maxIter, final EventHandler handler,
+                                final double minElevation, final ElevationMask mask,
+                                final AtmosphericRefractionModel refractionModel,
+                                final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.minElevation    = minElevation;
         this.elevationMask   = mask;

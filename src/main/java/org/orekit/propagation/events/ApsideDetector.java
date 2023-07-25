@@ -73,8 +73,8 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param handler event handler to call at event occurrences
      * @since 6.1
      */
-    private ApsideDetector(final double maxCheck, final double threshold,
-                           final int maxIter, final EventHandler handler) {
+    protected ApsideDetector(final double maxCheck, final double threshold,
+                             final int maxIter, final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
