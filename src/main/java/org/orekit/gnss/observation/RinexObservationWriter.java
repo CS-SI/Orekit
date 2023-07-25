@@ -17,13 +17,20 @@
 package org.orekit.gnss.observation;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.AppliedDCBS;
+import org.orekit.gnss.AppliedPCVS;
+import org.orekit.gnss.RinexLabels;
+import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -37,23 +44,35 @@ public class RinexObservationWriter {
     /** Index of label in header lines. */
     private static final int LABEL_INDEX = 60;
 
-    /** Format for two 20 characters fields. */
-    private static final String TWO_TWENTY = "%20s%20s";
+    /** Format for one 2 digits integer field. */
+    private static final String PADDED_TWO_DIGITS_INTEGER = "%02d";
 
-    /** Format for three 20 characters fields. */
-    private static final String THREE_TWENTY = "%20s%20s%20s";
+    /** Format for one 2 digits integer field. */
+    private static final String TWO_DIGITS_INTEGER = "%2d";
 
-    /** Format for one 14 digits characters field. */
-    private static final String ONE_FOURTEEN_DIGIT = "%14.4f";
+    /** Format for one 4 digits integer field. */
+    private static final String PADDED_FOUR_DIGITS_INTEGER = "%04d";
 
-    /** Format for three 14 digits characters fields. */
-    private static final String THREE_FOURTEEN_DIGIT = "%14.4f%14.4f%14.4f";
+    /** Format for one 4 digits integer field. */
+    private static final String FOUR_DIGITS_INTEGER = "%4d";
 
-    /** Format for first/last observation times. */
-    private static final String FIRST_LAST_OBS = "%6d%6d%6d%6d%6d%13.7f     %3s";
+    /** Format for one 6 digits integer field. */
+    private static final String SIX_DIGITS_INTEGER = "%6d";
 
-    /** Label for leap seconds. */
-    private static final String LEAP_SECONDS = "LEAP SECONDS";
+    /** Format for one 8.( digits float field. */
+    private static final String EIGHT_FIVE_DIGITS_FLOAT = "%8.5f";
+
+    /** Format for one 9.4 digits float field. */
+    private static final String NINE_FOUR_DIGITS_FLOAT = "%9.4f";
+
+    /** Format for one 10.3 digits float field. */
+    private static final String TEN_THREE_DIGITS_FLOAT = "%10.3f";
+
+    /** Format for one 13.7 digits float field. */
+    private static final String THIRTEEN_SEVEN_DIGITS_FLOAT = "%13.7f";
+
+    /** Format for one 14.4 digits float field. */
+    private static final String FOURTEEN_FOUR_DIGITS_FLOAT = "%14.4f";
 
     /** Destination of generated output. */
     private final Appendable output;
@@ -64,6 +83,9 @@ public class RinexObservationWriter {
     /** Saved header. */
     private RinexObservationHeader savedHeader;
 
+    /** Column number. */
+    private int column;
+
     /** Simple constructor.
      * @param output destination of generated output
      * @param outputName output name for error messages
@@ -73,6 +95,7 @@ public class RinexObservationWriter {
         this.output      = output;
         this.outputName  = outputName;
         this.savedHeader = null;
+        this.column      = 0;
     }
 
     /** Write a complete observation file.
@@ -116,173 +139,314 @@ public class RinexObservationWriter {
                                                               ObservationTimeScale.GPS;
         final TimeScale timeScale = observationTimeScale.getTimeScale(TimeScalesFactory.getTimeScales());
 
-        writeHeaderLine(String.format(Locale.US,
-                                      "%9.2f           %c                   %c",
-                                      header.getFormatVersion(),
-                                      'O',
-                                      header.getSatelliteSystem().getKey()),
-                        "RINEX VERSION / TYPE");
+        // RINEX VERSION / TYPE
+        outputField("%9.2f", header.getFormatVersion(), 9);
+        outputField("",                 20, true);
+        outputField("OBSERVATION DATA", 40, true);
+        outputField(header.getSatelliteSystem().getKey(), 41);
+        finishHeaderLine(RinexLabels.VERSION);
 
+        // PGM / RUN BY / DATE
+        outputField(header.getProgramName(), 20, true);
+        outputField(header.getRunByName(),   40, true);
         final DateTimeComponents dtc = header.getCreationDateComponents();
-        final String creationDateAndZone;
         if (header.getFormatVersion() < 3.0) {
-            creationDateAndZone = String.format(Locale.US, "%02d-%3s-%02d %02d:%02d %s",
-                                                dtc.getDate().getDay(),
-                                                dtc.getDate().getMonthEnum().getUpperCaseAbbreviation(),
-                                                dtc.getDate().getYear() % 100,
-                                                dtc.getTime().getHour(),
-                                                dtc.getTime().getMinute(),
-                                                header.getCreationTimeZone());
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 42);
+            outputField('-', 43);
+            outputField(dtc.getDate().getMonthEnum().getUpperCaseAbbreviation(), 46,  true);
+            outputField('-', 47);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 49);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 52);
+            outputField(':', 53);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 56);
+            outputField(header.getCreationTimeZone(), 59, true);
         } else {
-            creationDateAndZone = String.format(Locale.US, "%4d%02d%02d %02d:%02d:%02d%s",
-                                                dtc.getDate().getYear(),
-                                                dtc.getDate().getMonth(),
-                                                dtc.getDate().getDay(),
-                                                dtc.getTime().getHour(),
-                                                dtc.getTime().getMinute(),
-                                                dtc.getTime().getSecond(),
-                                                header.getCreationTimeZone());
+            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
+            outputField(':', 52);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 54);
+            outputField(':', 55);
+            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 57);
+            outputField(header.getCreationTimeZone(), 60, true);
         }
-        writeHeaderLine(String.format(Locale.US, THREE_TWENTY,
-                                      header.getProgramName(),
-                                      header.getRunByName(),
-                                      dtc.getDate().getDay(),
-                                      creationDateAndZone),
-                        "PGM / RUN BY / DATE");
+        finishHeaderLine(RinexLabels.PROGRAM);
 
+        // COMMENT
         for (final String comment : header.getComments()) {
-            writeHeaderLine(comment, "COMMENT");
+            outputField(comment, comment.length(), true);
+            finishHeaderLine(RinexLabels.COMMENT);
         }
 
-        writeHeaderLine(header::getMarkerName,   "MARKER NAME");
-        writeHeaderLine(header::getMarkerNumber, "MARKER NUMBER");
-        writeHeaderLine(header::getMarkerType,   "MARKER TYPE");
-        writeHeaderLine(String.format(Locale.US, "%20s%40s",
-                                      header.getObserverName(),
-                                      header.getAgencyName()),
-                        "OBSERVER / AGENCY");
-        writeHeaderLine(String.format(Locale.US, THREE_TWENTY,
-                                      header.getReceiverNumber(),
-                                      header.getReceiverType(),
-                                      header.getReceiverVersion()),
-                        "REC # / TYPE / VERS");
-        writeHeaderLine(String.format(Locale.US, TWO_TWENTY,
-                                      header.getAntennaNumber(),
-                                      header.getAntennaType()),
-                        "ANT # / TYPE");
-        writeHeaderLine(header.getApproxPos(), "APPROX POSITION XYZ");
+        // MARKER NAME
+        outputField(header.getMarkerName(), 60, true);
+        finishHeaderLine(RinexLabels.MARKER_NAME);
+
+        // MARKER NUMBER
+        if (header.getMarkerNumber() != null) {
+            outputField(header.getMarkerNumber(), 20, true);
+            finishHeaderLine(RinexLabels.MARKER_NUMBER);
+        }
+
+        // MARKER TYPE
+        if (header.getFormatVersion() >= 3.0) {
+            outputField(header.getMarkerType(), 20, true);
+            finishHeaderLine( RinexLabels.MARKER_TYPE);
+        }
+
+        // OBSERVER / AGENCY
+        outputField(header.getObserverName(), 20, true);
+        outputField(header.getAgencyName(),   40, true);
+        finishHeaderLine(RinexLabels.OBSERVER_AGENCY);
+
+        // REC # / TYPE / VERS
+        outputField(header.getReceiverNumber(),  20, true);
+        outputField(header.getReceiverType(),    40, true);
+        outputField(header.getReceiverVersion(), 60, true);
+        finishHeaderLine(RinexLabels.REC_NB_TYPE_VERS);
+
+        // ANT # / TYPE
+        outputField(header.getAntennaNumber(), 20, true);
+        outputField(header.getAntennaType(),   40, true);
+        finishHeaderLine(RinexLabels.ANT_NB_TYPE);
+
+        // APPROX POSITION XYZ
+        writeHeaderLine(header.getApproxPos(), RinexLabels.APPROX_POSITION_XYZ);
+
+        // ANTENNA: DELTA H/E/N
         if (!Double.isNaN(header.getAntennaHeight())) {
-            writeHeaderLine(String.format(Locale.US, THREE_FOURTEEN_DIGIT,
-                                          header.getAntennaHeight(),
-                                          header.getEccentricities().getX(),
-                                          header.getEccentricities().getY()),
-                            "ANTENNA: DELTA H/E/N");
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaHeight(),         14);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getEccentricities().getX(), 28);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getEccentricities().getY(), 42);
+            finishHeaderLine(RinexLabels.ANTENNA_DELTA_H_E_N);
         }
-        writeHeaderLine(header.getAntennaReferencePoint(), "ANTENNA: DELTA X/Y/Z");
+
+        // ANTENNA: DELTA X/Y/Z
+        writeHeaderLine(header.getAntennaReferencePoint(), RinexLabels.ANTENNA_DELTA_X_Y_Z);
+
+        // ANTENNA: PHASECENTER
         if (header.getAntennaPhaseCenter() != null) {
-            writeHeaderLine(String.format(Locale.US, "%c %3s%9.4f%14.4f%14.4f",
-                                          header.getSatelliteSystem().getKey(),
-                                          header.getObservationCode(),
-                                          header.getAntennaPhaseCenter().getX(),
-                                          header.getAntennaPhaseCenter().getY(),
-                                          header.getAntennaPhaseCenter().getZ()),
-                            "ANTENNA: PHASECENTER");
+            outputField(header.getSatelliteSystem().getKey(), 1);
+            outputField(header.getObservationCode(), 5, true);
+            outputField(NINE_FOUR_DIGITS_FLOAT,     header.getAntennaPhaseCenter().getX(), 14);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaPhaseCenter().getY(), 28);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaPhaseCenter().getZ(), 42);
+            finishHeaderLine(RinexLabels.ANTENNA_PHASE_CENTER);
         }
-        writeHeaderLine(header.getAntennaBSight(), "ANTENNA: B.SIGHT XYZ");
+
+        // ANTENNA: B.SIGHT XY
+        writeHeaderLine(header.getAntennaBSight(), RinexLabels.ANTENNA_B_SIGHT_XYZ);
+
+        // ANTENNA: ZERODIR AZI
         if (!Double.isNaN(header.getAntennaAzimuth())) {
-            writeHeaderLine(String.format(Locale.US, ONE_FOURTEEN_DIGIT,
-                                          FastMath.toDegrees(header.getAntennaAzimuth())),
-                            "ANTENNA: ZERODIR AZI");
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaAzimuth(), 14);
+            finishHeaderLine(RinexLabels.ANTENNA_ZERODIR_AZI);
         }
-        writeHeaderLine(header.getAntennaZeroDirection(), "ANTENNA: ZERODIR XYZ");
-        if (header.getClkOffset() >= 0) {
-            writeHeaderLine(String.format(Locale.US, "%6d", header.getClkOffset()),
-                            "RCV CLOCK OFFS APPL");
-        }
-        if (!Double.isNaN(header.getInterval())) {
-            writeHeaderLine(String.format(Locale.US, "%10.3f", header.getInterval()),
-                            "INTERVAL");
-        }
-        final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale);
-        writeHeaderLine(String.format(Locale.US, FIRST_LAST_OBS,
-                                      dtcFirst.getDate().getYear(),
-                                      dtcFirst.getDate().getMonth(),
-                                      dtcFirst.getDate().getDay(),
-                                      dtcFirst.getTime().getHour(),
-                                      dtcFirst.getTime().getMinute(),
-                                      dtcFirst.getTime().getSecond(),
-                                      observationTimeScale.name()),
-                        "TIME OF FIRST OBS");
-        final DateTimeComponents dtcLast = header.getTLastObs().getComponents(timeScale);
-        writeHeaderLine(String.format(Locale.US, FIRST_LAST_OBS,
-                                      dtcLast.getDate().getYear(),
-                                      dtcLast.getDate().getMonth(),
-                                      dtcLast.getDate().getDay(),
-                                      dtcLast.getTime().getHour(),
-                                      dtcLast.getTime().getMinute(),
-                                      dtcLast.getTime().getSecond(),
-                                      observationTimeScale.name()),
-                        "TIME OF LAST OBS");
-        if (header.getLeapSeconds() > 0) {
-            if (header.getFormatVersion() < 3.0) {
-                writeHeaderLine(String.format(Locale.US, "%6d",
-                                              header.getLeapSeconds()),
-                                LEAP_SECONDS);
-            } else {
-                writeHeaderLine(String.format(Locale.US, "%6d%6d%6d%6d",
-                                              header.getLeapSeconds(),
-                                              header.getLeapSecondsFuture(),
-                                              header.getLeapSecondsWeekNum(),
-                                              header.getLeapSecondsDayNum()),
-                                LEAP_SECONDS);
+
+        // ANTENNA: ZERODIR XYZ
+        writeHeaderLine(header.getAntennaZeroDirection(), RinexLabels.ANTENNA_ZERODIR_XYZ);
+
+        // OBS SCALE FACTOR
+        if (FastMath.abs(header.getFormatVersion() - 2.20) < 0.001) {
+            for (final SatelliteSystem system : SatelliteSystem.values()) {
+                for (final ScaleFactorCorrection sfc : header.getScaleFactorCorrections(system)) {
+                    if (sfc != null) {
+                        outputField(SIX_DIGITS_INTEGER, (int) FastMath.round(sfc.getCorrection()), 6);
+                        outputField(SIX_DIGITS_INTEGER, sfc.getTypesObsScaled().size(), 12);
+                        for (int i = 0; i < sfc.getTypesObsScaled().size(); ++i) {
+                            outputField(sfc.getTypesObsScaled().get(i).name(), 18 + 6 * i, true);
+                        }
+                        finishHeaderLine(RinexLabels.OBS_SCALE_FACTOR);
+                    }
+                }
             }
         }
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "PRN / # OF OBS");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "# OF SATELLITES");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "SYS / # / OBS TYPES");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "CENTER OF MASS: XYZ");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "SIGNAL STRENGTH UNIT");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "SYS / DCBS APPLIED");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "SYS / PCVS APPLIED");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "SYS / SCALE FACTOR");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "SYS / PHASE SHIFT");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "GLONASS SLOT / FRQ #");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "GLONASS COD/PHS/BIS");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "OBS SCALE FACTOR");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "DOI");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "LICENSE OF USE");
-        writeHeaderLine(String.format(Locale.US,
-                                      ""),
-                        "STATION INFORMATION");
-        writeHeaderLine("", "END OF HEADER");
+
+        // CENTER OF MASS: XYZ
+        writeHeaderLine(header.getCenterMass(), RinexLabels.CENTER_OF_MASS_XYZ);
+
+        // DOI
+        writeHeaderLine(header.getDoi(), RinexLabels.DOI);
+
+        // LICENSE OF USE
+        writeHeaderLine(header.getLicense(), RinexLabels.LICENSE);
+
+        // STATION INFORMATION
+        writeHeaderLine(header.getStationInformation(), RinexLabels.STATION_INFORMATION);
+
+        // SYS / # / OBS TYPES
+        for (Map.Entry<SatelliteSystem, List<ObservationType>> entry : header.getTypeObs().entrySet()) {
+            if (header.getFormatVersion() < 3.0) {
+                outputField(SIX_DIGITS_INTEGER, entry.getValue().size(), 6);
+            } else {
+                outputField(entry.getKey().getKey(), 1);
+                outputField(SIX_DIGITS_INTEGER, entry.getValue().size(), 6);
+            }
+            for (final ObservationType observationType : entry.getValue()) {
+                int next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
+                if (next >= LABEL_INDEX) {
+                    // we need to set up a continuation line
+                    finishHeaderLine(header.getFormatVersion() < 3.0 ?
+                                     RinexLabels.NB_TYPES_OF_OBSERV :
+                                     RinexLabels.SYS_NB_TYPES_OF_OBSERV);
+                    outputField("", 6, true);
+                    next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
+                }
+                outputField(observationType.name(), next, false);
+            }
+            finishHeaderLine(header.getFormatVersion() < 3.0 ?
+                             RinexLabels.NB_TYPES_OF_OBSERV :
+                             RinexLabels.SYS_NB_TYPES_OF_OBSERV);
+        }
+
+        // SIGNAL STRENGTH UNIT
+        writeHeaderLine(header.getSignalStrengthUnit(), RinexLabels.SIGNAL_STRENGTH_UNIT);
+
+        // INTERVAL
+        if (!Double.isNaN(header.getInterval())) {
+            outputField(TEN_THREE_DIGITS_FLOAT, header.getInterval(), 10);
+            finishHeaderLine(RinexLabels.INTERVAL);
+        }
+
+        // TIME OF FIRST OBS
+        final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale);
+        outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getYear(), 6);
+        outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getMonth(), 12);
+        outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getDay(), 18);
+        outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getHour(), 24);
+        outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getMinute(), 30);
+        outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcFirst.getTime().getSecond(), 43);
+        outputField(observationTimeScale.name(), 51, false);
+        finishHeaderLine(RinexLabels.TIME_OF_FIRST_OBS);
+
+        // TIME OF LAST OBS
+        if (!header.getTLastObs().equals(AbsoluteDate.FUTURE_INFINITY)) {
+            final DateTimeComponents dtcLast = header.getTLastObs().getComponents(timeScale);
+            outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getYear(), 6);
+            outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getMonth(), 12);
+            outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getDay(), 18);
+            outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getHour(), 24);
+            outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getMinute(), 30);
+            outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcLast.getTime().getSecond(), 43);
+            outputField(observationTimeScale.name(), 51, false);
+            finishHeaderLine(RinexLabels.TIME_OF_LAST_OBS);
+        }
+
+        // RCV CLOCK OFFS APPL
+        if (header.getClkOffset() >= 0) {
+            outputField(SIX_DIGITS_INTEGER, header.getClkOffset(), 6);
+            finishHeaderLine(RinexLabels.RCV_CLOCK_OFFS_APPL);
+        }
+
+        // SYS / DCBS APPLIED
+        for (final AppliedDCBS appliedDCBS : header.getListAppliedDCBS()) {
+            outputField(appliedDCBS.getSatelliteSystem().getKey(),  1);
+            outputField(appliedDCBS.getProgDCBS(),                 19, true);
+            outputField(appliedDCBS.getSourceDCBS(),               60, true);
+            finishHeaderLine(RinexLabels.SYS_DCBS_APPLIED);
+        }
+
+        // SYS / PCVS APPLIED
+        for (final AppliedPCVS appliedPCVS : header.getListAppliedPCVS()) {
+            outputField(appliedPCVS.getSatelliteSystem().getKey(),  1);
+            outputField(appliedPCVS.getProgPCVS(),                 19, true);
+            outputField(appliedPCVS.getSourcePCVS(),               60, true);
+            finishHeaderLine(RinexLabels.SYS_PCVS_APPLIED);
+        }
+
+        // SYS / SCALE FACTOR
+        if (header.getFormatVersion() >= 3.0) {
+            for (final SatelliteSystem system : SatelliteSystem.values()) {
+                for (final ScaleFactorCorrection sfc : header.getScaleFactorCorrections(system)) {
+                    if (sfc != null) {
+                        outputField(system.getKey(), 1);
+                        outputField(FOUR_DIGITS_INTEGER, (int) FastMath.rint(sfc.getCorrection()), 6);
+                        outputField(TWO_DIGITS_INTEGER,  sfc.getTypesObsScaled().size(), 10);
+                        for (ObservationType observationType : sfc.getTypesObsScaled()) {
+                            int next = column + 4;
+                            if (next >= LABEL_INDEX) {
+                                // we need to set up a continuation line
+                                finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
+                                outputField("", 10, true);
+                                next = column + 4;
+                            }
+                            outputField(observationType.name(), next, true);
+                        }
+                        finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
+                    }
+                }
+            }
+        }
+
+        // SYS / PHASE SHIFT
+        for (final PhaseShiftCorrection psc : header.getPhaseShiftCorrections()) {
+            outputField(psc.getSatelliteSystem().getKey(), 1);
+            outputField(psc.getTypeObs().name(), 5, true);
+            outputField(EIGHT_FIVE_DIGITS_FLOAT, psc.getCorrection(), 14);
+            outputField(TWO_DIGITS_INTEGER, psc.getSatsCorrected().size(), 18);
+            for (final SatInSystem sis : psc.getSatsCorrected()) {
+                int next = column + 4;
+                if (next >= LABEL_INDEX) {
+                    // we need to set up a continuation line
+                    finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
+                    outputField("", 18, true);
+                    next = column + 4;
+                }
+                outputField(sis.getSystem().getKey(), next - 2);
+                outputField(PADDED_TWO_DIGITS_INTEGER, sis.getPRN(), next);
+            }
+            finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
+        }
+
+        if (header.getFormatVersion() >= 3.0) {
+            // GLONASS SLOT / FRQ #
+            writeHeaderLine(String.format(Locale.US, ""), RinexLabels.GLONASS_SLOT_FRQ_NB); // TODO
+        }
+
+        if (header.getFormatVersion() >= 3.0) {
+            // GLONASS COD/PHS/BIS
+            writeHeaderLine(String.format(Locale.US, ""), RinexLabels.GLONASS_COD_PHS_BIS); // TODO
+        }
+
+        // LEAP SECONDS
+        if (header.getLeapSeconds() > 0) {
+            outputField(SIX_DIGITS_INTEGER, header.getLeapSeconds(), 6);
+            if (header.getFormatVersion() >= 3.0) {
+                outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsFuture(),  12);
+                outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsWeekNum(), 18);
+                outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsDayNum(),  24);
+            }
+            finishHeaderLine(RinexLabels.LEAP_SECONDS);
+        }
+
+        if (!header.getNbObsPerSat().isEmpty()) {
+
+            // # OF SATELLITES
+            outputField(SIX_DIGITS_INTEGER, header.getNbObsPerSat().size(), 6);
+            finishHeaderLine(RinexLabels.NB_OF_SATELLITES);
+
+            // PRN / # OF OBS
+            for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
+                outputField(entry1.getKey().getSystem().getKey(), 4);
+                outputField(PADDED_TWO_DIGITS_INTEGER, entry1.getKey().getPRN(), 6);
+                for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
+                    int next = column + 6;
+                    if (next >= LABEL_INDEX) {
+                        // we need to set up a continuation line
+                        finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
+                        outputField("", 6, true);
+                        next = column + 6;
+                    }
+                    outputField(SIX_DIGITS_INTEGER, entry2.getValue(), next);
+                }
+                finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
+            }
+
+        }
+
+        // END OF HEADER
+        writeHeaderLine("", RinexLabels.END);
 
     }
 
@@ -302,40 +466,97 @@ public class RinexObservationWriter {
 
     }
 
+    /** Write one header string.
+     * @param s string data (may be null)
+     * @param label line label
+     * @throws IOException if an I/O error occurs.
+     */
+    private void writeHeaderLine(final String s, final RinexLabels label) throws IOException {
+        if (s != null) {
+            outputField(s, s.length(), true);
+            finishHeaderLine(label);
+        }
+    }
+
     /** Write one header vector.
      * @param vector vector data (may be null)
      * @param label line label
      * @throws IOException if an I/O error occurs.
      */
-    private void writeHeaderLine(final Vector3D vector, final CharSequence label) throws IOException {
+    private void writeHeaderLine(final Vector3D vector, final RinexLabels label) throws IOException {
         if (vector != null) {
-            writeHeaderLine(String.format(Locale.US, THREE_FOURTEEN_DIGIT,
-                                          vector.getX(), vector.getY(), vector.getZ()),
-                            label);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, vector.getX(), 14);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, vector.getY(), 28);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, vector.getZ(), 42);
+            finishHeaderLine(label);
         }
     }
 
-    /** Write one header line.
-     * @param extractor extractor for line data
+    /** Finish one header line.
      * @param label line label
      * @throws IOException if an I/O error occurs.
      */
-    private void writeHeaderLine(final Supplier<String> extractor, final CharSequence label) throws IOException {
-        final String data = extractor.get();
-        writeHeaderLine(data == null ? "" : data, label);
-    }
-
-    /** Write one header line.
-     * @param data data part of the line
-     * @param label line label
-     * @throws IOException if an I/O error occurs.
-     */
-    private void writeHeaderLine(final CharSequence data, final CharSequence label) throws IOException {
-        output.append(data);
-        for (int i = data.length(); i < LABEL_INDEX; ++i) {
+    private void finishHeaderLine(final RinexLabels label) throws IOException {
+        for (int i = column; i < LABEL_INDEX; ++i) {
             output.append(' ');
         }
-        output.append(label);
+        output.append(label.getLabel());
+        output.append(System.lineSeparator());
+        column = 0;
+    }
+
+    /** Output one single character field.
+     * @param c field value
+     * @param next target column for next field
+     * @throws IOException if an I/O error occurs.
+     */
+    private void outputField(final char c, final int next) throws IOException {
+        outputField(Character.toString(c), next, false);
+    }
+
+    /** Output one integer field.
+     * @param format format to use
+     * @param value field value
+     * @param next target column for next field
+     * @throws IOException if an I/O error occurs.
+     */
+    private void outputField(final String format, final int value, final int next) throws IOException {
+        outputField(String.format(Locale.US, format, value), next, false);
+    }
+
+    /** Output one double field.
+     * @param format format to use
+     * @param value field value
+     * @param next target column for next field
+     * @throws IOException if an I/O error occurs.
+     */
+    private void outputField(final String format, final double value, final int next) throws IOException {
+        if (Double.isNaN(value)) {
+            // NaN values are replaced by blank fields
+            outputField("", next, true);
+        } else {
+            outputField(String.format(Locale.US, format, value), next, false);
+        }
+    }
+
+    /** Output one field.
+     * @param field field to output
+     * @param next target column for next field
+     * @param leftJustified if true, field is left-justified
+     * @throws IOException if an I/O error occurs.
+     */
+    private void outputField(final String field, final int next, final boolean leftJustified) throws IOException {
+        final int padding = next - (field == null ? 0 : field.length()) - column;
+        if (leftJustified && field != null) {
+            output.append(field);
+        }
+        for (int i = 0; i < padding; ++i) {
+            output.append(' ');
+        }
+        if (!leftJustified && field != null) {
+            output.append(field);
+        }
+        column = next;
     }
 
 }

@@ -111,7 +111,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** Time of last observation record. */
     private AbsoluteDate tLastObs;
 
-    /** Realtime-derived receiver clock offset. */
+    /** Real time-derived receiver clock offset. */
     private int clkOffset;
 
     /** List of applied differential code bias corrections. */
@@ -135,6 +135,11 @@ public class RinexObservationHeader extends RinexBaseHeader {
      * @since 12.0
      */
     private final Map<SatInSystem, Map<ObservationType, Integer>> nbObsPerSat;
+
+    /** Observation types for each satellite systems.
+     * @since 12.0
+     */
+    private final Map<SatelliteSystem, List<ObservationType>> mapTypeObs;
 
     /** Number of leap seconds since 6-Jan-1980. */
     private int leapSeconds;
@@ -189,6 +194,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
         scaleFactorCorrections = new HashMap<>();
         glonassChannels        = new ArrayList<>();
         nbObsPerSat            = new HashMap<>();
+        mapTypeObs             = new HashMap<>();
         tLastObs               = AbsoluteDate.FUTURE_INFINITY;
     }
 
@@ -700,6 +706,23 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     public Map<SatInSystem, Map<ObservationType, Integer>> getNbObsPerSat() {
         return Collections.unmodifiableMap(nbObsPerSat);
+    }
+
+    /** Set number of observations for a satellite.
+     * @param system satellite system
+     * @param types observation types
+     * @since 12.0
+     */
+    public void setTypeObs(final SatelliteSystem system, final List<ObservationType> types) {
+        mapTypeObs.put(system, new ArrayList<>(types));
+    }
+
+    /** Get an unmodifiable view of the map of observation types.
+     * @return unmodifiable view of the map of observation types
+     * @since 12.0
+     */
+    public Map<SatelliteSystem, List<ObservationType>> getTypeObs() {
+        return Collections.unmodifiableMap(mapTypeObs);
     }
 
     /** Set the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.

@@ -32,6 +32,7 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ilrs.StreamingCpfWriter.HeaderLineWriter;
 import org.orekit.gnss.AppliedDCBS;
 import org.orekit.gnss.AppliedPCVS;
 import org.orekit.gnss.HatanakaCompressFilter;
@@ -812,6 +813,20 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
         Assertions.assertEquals("dcbs-program-name", list.get(1).getProgDCBS());
         Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourceDCBS());
+        Assertions.assertEquals( 4, header.getTypeObs().size());
+        Assertions.assertEquals(12, header.getTypeObs().get(SatelliteSystem.GPS).size());
+        Assertions.assertEquals(12, header.getTypeObs().get(SatelliteSystem.GLONASS).size());
+        Assertions.assertEquals(12, header.getTypeObs().get(SatelliteSystem.GALILEO).size());
+        Assertions.assertEquals( 9, header.getTypeObs().get(SatelliteSystem.BEIDOU).size());
+        Assertions.assertEquals(ObservationType.C1I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(0));
+        Assertions.assertEquals(ObservationType.L1I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(1));
+        Assertions.assertEquals(ObservationType.S1I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(2));
+        Assertions.assertEquals(ObservationType.C7I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(3));
+        Assertions.assertEquals(ObservationType.L7I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(4));
+        Assertions.assertEquals(ObservationType.S7I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(5));
+        Assertions.assertEquals(ObservationType.C6I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(6));
+        Assertions.assertEquals(ObservationType.L6I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(7));
+        Assertions.assertEquals(ObservationType.S6I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(8));
     }
 
     @Test

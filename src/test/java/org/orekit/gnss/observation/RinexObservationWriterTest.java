@@ -50,7 +50,7 @@ public class RinexObservationWriterTest {
     }
 
     @Test
-    public void testNiWriteHeader() throws IOException {
+    public void testNoWriteHeader() throws IOException {
         final RinexObservation       robs   = load("rinex/aiub0000.00o");
         final CharArrayWriter        caw    = new CharArrayWriter();
         final RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy");
