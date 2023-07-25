@@ -145,10 +145,10 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
      * @param controlVector3DNormType increment's norm for mass consumption
      * @since 6.1
      */
-    private ImpulseManeuver(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler handler,
-                            final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
-                            final double isp, final ControlVector3DNormType controlVector3DNormType) {
+    protected ImpulseManeuver(final double maxCheck, final double threshold,
+                              final int maxIter, final EventHandler handler,
+                              final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
+                              final double isp, final ControlVector3DNormType controlVector3DNormType) {
         super(maxCheck, threshold, maxIter, handler);
         this.attitudeOverride = attitudeOverride;
         this.trigger   = trigger;

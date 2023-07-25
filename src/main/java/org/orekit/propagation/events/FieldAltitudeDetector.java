@@ -108,10 +108,10 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * @param bodyShape body shape with respect to which altitude should be evaluated
      * @since 6.1
      */
-    private FieldAltitudeDetector(final T maxCheck, final T threshold,
-                                  final int maxIter, final FieldEventHandler<T> handler,
-                                  final T altitude,
-                                  final BodyShape bodyShape) {
+    protected FieldAltitudeDetector(final T maxCheck, final T threshold,
+                                    final int maxIter, final FieldEventHandler<T> handler,
+                                    final T altitude,
+                                    final BodyShape bodyShape) {
         super(maxCheck, threshold, maxIter, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;

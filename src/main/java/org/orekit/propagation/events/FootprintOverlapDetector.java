@@ -124,13 +124,13 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param sampledZone sampling of the geographic zone
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
      */
-    private FootprintOverlapDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler handler,
-                                     final FieldOfView fov,
-                                     final OneAxisEllipsoid body,
-                                     final SphericalPolygonsSet zone,
-                                     final double samplingStep,
-                                     final List<SamplingPoint> sampledZone) {
+    protected FootprintOverlapDetector(final double maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final FieldOfView fov,
+                                       final OneAxisEllipsoid body,
+                                       final SphericalPolygonsSet zone,
+                                       final double samplingStep,
+                                       final List<SamplingPoint> sampledZone) {
 
         super(maxCheck, threshold, maxIter, handler);
         this.fov          = fov;
