@@ -64,7 +64,10 @@ public class RinexObservationWriter {
     /** Format for one 6 digits integer field. */
     private static final String SIX_DIGITS_INTEGER = "%6d";
 
-    /** Format for one 8.( digits float field. */
+    /** Format for one 8.3 digits float field. */
+    private static final String EIGHT_THREE_DIGITS_FLOAT = "%8.3f";
+
+    /** Format for one 8.5 digits float field. */
     private static final String EIGHT_FIVE_DIGITS_FLOAT = "%8.5f";
 
     /** Format for one 9.4 digits float field. */
@@ -438,7 +441,35 @@ public class RinexObservationWriter {
 
         if (header.getFormatVersion() >= 3.0) {
             // GLONASS COD/PHS/BIS
-            writeHeaderLine(String.format(Locale.US, ""), RinexLabels.GLONASS_COD_PHS_BIS); // TODO
+            if (Double.isNaN(header.getC1cCodePhaseBias())) {
+                outputField("", 13, true);
+            } else {
+                outputField(ObservationType.C1C.name(), 4, false);
+                outputField("", 5, true);
+                outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC1cCodePhaseBias(), 13);
+            }
+            if (Double.isNaN(header.getC1pCodePhaseBias())) {
+                outputField("", 26, true);
+            } else {
+                outputField(ObservationType.C1P.name(), 17, false);
+                outputField("", 18, true);
+                outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC1pCodePhaseBias(), 26);
+            }
+            if (Double.isNaN(header.getC2cCodePhaseBias())) {
+                outputField("", 39, true);
+            } else {
+                outputField(ObservationType.C2C.name(), 30, false);
+                outputField("", 31, true);
+                outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC2cCodePhaseBias(), 39);
+            }
+            if (Double.isNaN(header.getC2pCodePhaseBias())) {
+                outputField("", 52, true);
+            } else {
+                outputField(ObservationType.C2P.name(), 43, false);
+                outputField("", 44, true);
+                outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC2pCodePhaseBias(), 52);
+            }
+            finishHeaderLine(RinexLabels.GLONASS_COD_PHS_BIS);
         }
 
         // LEAP SECONDS

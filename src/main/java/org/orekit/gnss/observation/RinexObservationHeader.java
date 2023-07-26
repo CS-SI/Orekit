@@ -196,6 +196,10 @@ public class RinexObservationHeader extends RinexBaseHeader {
         nbObsPerSat            = new HashMap<>();
         mapTypeObs             = new HashMap<>();
         tLastObs               = AbsoluteDate.FUTURE_INFINITY;
+        c1cCodePhaseBias       = Double.NaN;
+        c1pCodePhaseBias       = Double.NaN;
+        c2cCodePhaseBias       = Double.NaN;
+        c2pCodePhaseBias       = Double.NaN;
     }
 
     /** Set name of the antenna marker.
