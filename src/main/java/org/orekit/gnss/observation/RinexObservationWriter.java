@@ -188,11 +188,9 @@ public class RinexObservationWriter {
             outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
             outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
             outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
-            outputField(':', 52);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 54);
-            outputField(':', 55);
-            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 57);
-            outputField(header.getCreationTimeZone(), 60, true);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
+            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
+            outputField(header.getCreationTimeZone(), 59, false);
         }
         finishHeaderLine(RinexLabels.PROGRAM);
 
@@ -302,7 +300,7 @@ public class RinexObservationWriter {
             }
             for (final ObservationType observationType : entry.getValue()) {
                 int next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
-                if (next >= LABEL_INDEX) {
+                if (next > LABEL_INDEX) {
                     // we need to set up a continuation line
                     finishHeaderLine(header.getFormatVersion() < 3.0 ?
                                      RinexLabels.NB_TYPES_OF_OBSERV :
@@ -382,7 +380,7 @@ public class RinexObservationWriter {
                         outputField(TWO_DIGITS_INTEGER,  sfc.getTypesObsScaled().size(), 10);
                         for (ObservationType observationType : sfc.getTypesObsScaled()) {
                             int next = column + 4;
-                            if (next >= LABEL_INDEX) {
+                            if (next > LABEL_INDEX) {
                                 // we need to set up a continuation line
                                 finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
                                 outputField("", 10, true);
@@ -399,26 +397,43 @@ public class RinexObservationWriter {
         // SYS / PHASE SHIFT
         for (final PhaseShiftCorrection psc : header.getPhaseShiftCorrections()) {
             outputField(psc.getSatelliteSystem().getKey(), 1);
-            outputField(psc.getTypeObs().name(), 5, true);
+            outputField(psc.getTypeObs().name(), 5, false);
             outputField(EIGHT_FIVE_DIGITS_FLOAT, psc.getCorrection(), 14);
-            outputField(TWO_DIGITS_INTEGER, psc.getSatsCorrected().size(), 18);
-            for (final SatInSystem sis : psc.getSatsCorrected()) {
-                int next = column + 4;
-                if (next >= LABEL_INDEX) {
-                    // we need to set up a continuation line
-                    finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
-                    outputField("", 18, true);
-                    next = column + 4;
+            if (!psc.getSatsCorrected().isEmpty()) {
+                outputField(TWO_DIGITS_INTEGER, psc.getSatsCorrected().size(), 18);
+                for (final SatInSystem sis : psc.getSatsCorrected()) {
+                    int next = column + 4;
+                    if (next > LABEL_INDEX) {
+                        // we need to set up a continuation line
+                        finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
+                        outputField("", 18, true);
+                        next = column + 4;
+                    }
+                    outputField(sis.getSystem().getKey(), next - 2);
+                    outputField(PADDED_TWO_DIGITS_INTEGER, sis.getPRN(), next);
                 }
-                outputField(sis.getSystem().getKey(), next - 2);
-                outputField(PADDED_TWO_DIGITS_INTEGER, sis.getPRN(), next);
             }
             finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
         }
 
-        if (header.getFormatVersion() >= 3.0) {
+        if (!header.getGlonassChannels().isEmpty()) {
             // GLONASS SLOT / FRQ #
-            writeHeaderLine(String.format(Locale.US, ""), RinexLabels.GLONASS_SLOT_FRQ_NB); // TODO
+            outputField(THREE_DIGITS_INTEGER, header.getGlonassChannels().size(), 3);
+            outputField("", 4, true);
+            for (final GlonassSatelliteChannel channel : header.getGlonassChannels()) {
+                int next = column + 7;
+                if (next > LABEL_INDEX) {
+                    // we need to set up a continuation line
+                    finishHeaderLine(RinexLabels.GLONASS_SLOT_FRQ_NB);
+                    outputField("", 4, true);
+                    next = column + 7;
+                }
+                outputField(channel.getSatellite().getSystem().getKey(), next - 6);
+                outputField(PADDED_TWO_DIGITS_INTEGER, channel.getSatellite().getPRN(), next - 4);
+                outputField(TWO_DIGITS_INTEGER, channel.getK(), next - 1);
+                outputField("", next, true);
+            }
+            finishHeaderLine(RinexLabels.GLONASS_SLOT_FRQ_NB);
         }
 
         if (header.getFormatVersion() >= 3.0) {
@@ -449,7 +464,7 @@ public class RinexObservationWriter {
                 outputField(PADDED_TWO_DIGITS_INTEGER, entry1.getKey().getPRN(), 6);
                 for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
                     int next = column + 6;
-                    if (next >= LABEL_INDEX) {
+                    if (next > LABEL_INDEX) {
                         // we need to set up a continuation line
                         finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
                         outputField("", 6, true);
