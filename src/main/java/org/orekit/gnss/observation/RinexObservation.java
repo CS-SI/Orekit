@@ -23,16 +23,14 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.RinexFile;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for Rinex observation file.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class RinexObservation {
-
-    /** Header. */
-    private final RinexObservationHeader header;
+public class RinexObservation extends RinexFile<RinexObservationHeader> {
 
     /** Observations. */
     private final List<ObservationDataSet> observations;
@@ -40,15 +38,8 @@ public class RinexObservation {
     /** Simple constructor.
      */
     public RinexObservation() {
-        this.header       = new RinexObservationHeader();
+        super(new RinexObservationHeader());
         this.observations = new ArrayList<>();
-    }
-
-    /** Get the header.
-     * @return header
-     */
-    public RinexObservationHeader getHeader() {
-        return header;
     }
 
     /** Get an unmodifiable view of the observations.
@@ -69,7 +60,8 @@ public class RinexObservation {
      */
     public void addObservationDataSet(final ObservationDataSet observationsDataSet) {
 
-        final AbsoluteDate current = observationsDataSet.getDate();
+        final RinexObservationHeader header  = getHeader();
+        final AbsoluteDate           current = observationsDataSet.getDate();
 
         // check interval from previous observation
         if (!observations.isEmpty()) {

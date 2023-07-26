@@ -309,7 +309,7 @@ public class RinexNavigationParser {
 
         /** Parser for comments. */
         HEADER_COMMENT(line -> RinexUtils.matchesLabel(line, "COMMENT"),
-                       (line, pi) -> RinexUtils.parseComment(line, pi.file.getHeader()),
+                       (line, pi) -> RinexUtils.parseComment(pi.lineNumber, line, pi.file),
                        LineParser::headerNext),
 
         /** Parser for ionospheric correction parameters. */

@@ -39,6 +39,7 @@ public class RinexObservationWriterTest {
         final RinexObservation       robs   = load("rinex/aiub0000.00o");
         final CharArrayWriter        caw    = new CharArrayWriter();
         final RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy");
+        writer.prepareComments(robs.getComments());
         writer.writeHeader(robs.getHeader());
         try {
             writer.writeHeader(robs.getHeader());

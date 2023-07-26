@@ -17,6 +17,7 @@
 package org.orekit.gnss.observation;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.AppliedDCBS;
 import org.orekit.gnss.AppliedPCVS;
+import org.orekit.gnss.RinexComment;
 import org.orekit.gnss.RinexLabels;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
@@ -52,6 +54,9 @@ public class RinexObservationWriter {
 
     /** Format for one 4 digits integer field. */
     private static final String PADDED_FOUR_DIGITS_INTEGER = "%04d";
+
+    /** Format for one 3 digits integer field. */
+    private static final String THREE_DIGITS_INTEGER = "%3d";
 
     /** Format for one 4 digits integer field. */
     private static final String FOUR_DIGITS_INTEGER = "%4d";
@@ -83,6 +88,12 @@ public class RinexObservationWriter {
     /** Saved header. */
     private RinexObservationHeader savedHeader;
 
+    /** Saved comments. */
+    private List<RinexComment> savedComments;
+
+    /** Line number. */
+    private int lineNumber;
+
     /** Column number. */
     private int column;
 
@@ -92,16 +103,19 @@ public class RinexObservationWriter {
      */
     public RinexObservationWriter(final Appendable output, final String outputName)
         throws IOException {
-        this.output      = output;
-        this.outputName  = outputName;
-        this.savedHeader = null;
-        this.column      = 0;
+        this.output        = output;
+        this.outputName    = outputName;
+        this.savedHeader   = null;
+        this.savedComments = Collections.emptyList();
+        this.lineNumber    = 0;
+        this.column        = 0;
     }
 
     /** Write a complete observation file.
      * <p>
-     * This method calls {@link #writeHeader(RinexObservationHeader)} once
-     * and then loops on calling {@link #writeObservationDataSet(ObservationDataSet)}
+     * This method calls {@link #prepareComments(List<RinexComment>)} and
+     * {@link #writeHeader(RinexObservationHeader)} once and then loops on
+     * calling {@link #writeObservationDataSet(ObservationDataSet)}
      * for all observation data sets in the file
      * </p>
      * @param rinexObservation Rinex observation file to write
@@ -111,10 +125,18 @@ public class RinexObservationWriter {
      */
     public void writeCompleteFile(final RinexObservation rinexObservation)
         throws IOException {
+        prepareComments(rinexObservation.getComments());
         writeHeader(rinexObservation.getHeader());
         for (final ObservationDataSet observationDataSet : rinexObservation.getObservationDataSets()) {
             writeObservationDataSet(observationDataSet);
         }
+    }
+
+    /** Prepare comments to be emitted at specified lines.
+     * @param comments comments to be emitted
+     */
+    public void prepareComments(final List<RinexComment> comments) {
+        savedComments = comments;
     }
 
     /** Write header.
@@ -133,6 +155,7 @@ public class RinexObservationWriter {
             throw new OrekitException(OrekitMessages.HEADER_ALREADY_WRITTEN, outputName);
         }
         savedHeader = header;
+        lineNumber  = 1;
 
         final ObservationTimeScale observationTimeScale = header.getSatelliteSystem().getObservationTimeScale() != null ?
                                                           header.getSatelliteSystem().getObservationTimeScale() :
@@ -158,8 +181,8 @@ public class RinexObservationWriter {
             outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 49);
             outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 52);
             outputField(':', 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 56);
-            outputField(header.getCreationTimeZone(), 59, true);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 55);
+            outputField(header.getCreationTimeZone(), 58, true);
         } else {
             outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
             outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
@@ -172,12 +195,6 @@ public class RinexObservationWriter {
             outputField(header.getCreationTimeZone(), 60, true);
         }
         finishHeaderLine(RinexLabels.PROGRAM);
-
-        // COMMENT
-        for (final String comment : header.getComments()) {
-            outputField(comment, comment.length(), true);
-            finishHeaderLine(RinexLabels.COMMENT);
-        }
 
         // MARKER NAME
         outputField(header.getMarkerName(), 60, true);
@@ -281,7 +298,7 @@ public class RinexObservationWriter {
                 outputField(SIX_DIGITS_INTEGER, entry.getValue().size(), 6);
             } else {
                 outputField(entry.getKey().getKey(), 1);
-                outputField(SIX_DIGITS_INTEGER, entry.getValue().size(), 6);
+                outputField(THREE_DIGITS_INTEGER, entry.getValue().size(), 6);
             }
             for (final ObservationType observationType : entry.getValue()) {
                 int next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
@@ -501,8 +518,32 @@ public class RinexObservationWriter {
             output.append(' ');
         }
         output.append(label.getLabel());
+        finishLine();
+    }
+
+    /** Finish one line.
+     * @throws IOException if an I/O error occurs.
+     */
+    private void finishLine() throws IOException {
+
+        // pending line
         output.append(System.lineSeparator());
+        lineNumber++;
         column = 0;
+
+        // emit comments that should be placed at next lines
+        for (final RinexComment comment : savedComments) {
+            if (comment.getLineNumber() == lineNumber) {
+                outputField(comment.getText(), LABEL_INDEX, true);
+                output.append(RinexLabels.COMMENT.getLabel());
+                output.append(System.lineSeparator());
+                lineNumber++;
+                column = 0;
+            } else if (comment.getLineNumber() > lineNumber) {
+                break;
+            }
+        }
+
     }
 
     /** Output one single character field.

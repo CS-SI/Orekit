@@ -32,7 +32,6 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ilrs.StreamingCpfWriter.HeaderLineWriter;
 import org.orekit.gnss.AppliedDCBS;
 import org.orekit.gnss.AppliedPCVS;
 import org.orekit.gnss.HatanakaCompressFilter;

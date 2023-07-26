@@ -275,7 +275,7 @@ public class RinexObservationParser {
 
         /** Parser for comments. */
         COMMENT(line -> RinexLabels.COMMENT.matches(RinexUtils.getLabel(line)),
-                       (line, parseInfo) -> RinexUtils.parseComment(line, parseInfo.file.getHeader()),
+                       (line, parseInfo) -> RinexUtils.parseComment(parseInfo.lineNumber, line, parseInfo.file),
                        LineParser::commentNext),
 
         /** Parser for marker name. */
