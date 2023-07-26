@@ -413,7 +413,10 @@ public class RinexObservationParserTest {
     @Test
     public void testMultipleConstellationsGlonassScaleFactorFile() {
         //Tests Rinex 3 with Multiple Constellations and Scale Factor for some GLONASS Observations
-        List<ObservationDataSet> list = load("rinex/bbbb0000.00o").getObservationDataSets();
+        final RinexObservation obs = load("rinex/bbbb0000.00o");
+        Assertions.assertEquals(87, obs.getHeader().getNbSat());
+
+        List<ObservationDataSet> list = obs.getObservationDataSets();
         String[] typesobsG2 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
         String[] typesobsR2 = {"C1C","L1C","S1C","C2C","L2C","S2C"};
         String[] typesobsE2 = {"C1C","L1C","S1C","C6C","L6C","S6C","C5Q","L5Q","S5Q","C7Q","L7Q","S7Q","C8Q","L8Q","S8Q"};
@@ -462,6 +465,7 @@ public class RinexObservationParserTest {
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 2, 0.0,
                          typesobsR2, ObservationType.S1C, 0.0445, 0, 0);
+
     }
 
     @Test

@@ -131,6 +131,11 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     private final List<GlonassSatelliteChannel> glonassChannels;
 
+    /** Number of satellites.
+     * @since 12.0
+     */
+    private int nbSat;
+
     /** Number of observations per satellite.
      * @since 12.0
      */
@@ -186,6 +191,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
         antennaHeight          = Double.NaN;
         eccentricities         = Vector2D.ZERO;
         clkOffset              = -1;
+        nbSat                  = -1;
         interval               = Double.NaN;
         leapSeconds            = 0;
         listAppliedDCBS        = new ArrayList<>();
@@ -687,6 +693,22 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     public List<GlonassSatelliteChannel> getGlonassChannels() {
         return Collections.unmodifiableList(glonassChannels);
+    }
+
+    /** Set number of satellites.
+     * @param nbSat number of satellites
+     * @since 12.0
+     */
+    public void setNbSat(final int nbSat) {
+        this.nbSat = nbSat;
+    }
+
+    /** Get number of satellites.
+     * @return number of satellites
+     * @since 12.0
+     */
+    public int getNbSat() {
+        return nbSat;
     }
 
     /** Set number of observations for a satellite.

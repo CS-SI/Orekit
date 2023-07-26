@@ -173,9 +173,6 @@ public class RinexObservationParser {
         /** Number of observation types. */
         private int nbTypes;
 
-        /** Number of satellites. */
-        private int nbSat;
-
         /** Number of satellites in the current observations block. */
         private int nbSatObs;
 
@@ -242,7 +239,6 @@ public class RinexObservationParser {
             this.tObs                   = AbsoluteDate.PAST_INFINITY;
             this.timeScale              = null;
             this.nbTypes                = -1;
-            this.nbSat                  = -1;
             this.nbSatObs               = -1;
             this.nbGlonass              = -1;
             this.phaseShiftNbSat        = -1;
@@ -684,7 +680,7 @@ public class RinexObservationParser {
 
         /** Parser for number of satellites. */
         NB_OF_SATELLITES(line -> RinexLabels.NB_OF_SATELLITES.matches(RinexUtils.getLabel(line)),
-                         (line, parseInfo) -> parseInfo.nbSat = RinexUtils.parseInt(line, 0, 6),
+                         (line, parseInfo) -> parseInfo.file.getHeader().setNbSat(RinexUtils.parseInt(line, 0, 6)),
                          LineParser::headerNext),
 
         /** Parser for PRN and number of observations . */
@@ -796,11 +792,12 @@ public class RinexObservationParser {
                                    // regular observation
                                    parseInfo.specialRecord = false;
                                    parseInfo.cycleSlip     = false;
-                                   if (parseInfo.nbSat != -1 && parseInfo.nbSatObs > parseInfo.nbSat) {
+                                   final int nbSat         = parseInfo.file.getHeader().getNbSat();
+                                   if (nbSat != -1 && parseInfo.nbSatObs > nbSat) {
                                        // we check that the number of Sat in the observation is consistent
                                        throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_SATS,
                                                                  parseInfo.lineNumber, parseInfo.name,
-                                                                 parseInfo.nbSatObs, parseInfo.nbSat);
+                                                                 parseInfo.nbSatObs, nbSat);
                                    }
                                    parseInfo.nextObsStartLineNumber = parseInfo.lineNumber + nbLinesSat;
 
@@ -965,11 +962,12 @@ public class RinexObservationParser {
                                    // regular observation
                                    parseInfo.specialRecord = false;
                                    parseInfo.cycleSlip     = false;
-                                   if (parseInfo.nbSat != -1 && parseInfo.nbSatObs > parseInfo.nbSat) {
+                                   final int nbSat         = parseInfo.file.getHeader().getNbSat();
+                                   if (nbSat != -1 && parseInfo.nbSatObs > nbSat) {
                                        // we check that the number of Sat in the observation is consistent
                                        throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_SATS,
                                                                  parseInfo.lineNumber, parseInfo.name,
-                                                                 parseInfo.nbSatObs, parseInfo.nbSat);
+                                                                 parseInfo.nbSatObs, nbSat);
                                    }
                                    parseInfo.nextObsStartLineNumber = parseInfo.lineNumber + parseInfo.nbSatObs + 1;
 

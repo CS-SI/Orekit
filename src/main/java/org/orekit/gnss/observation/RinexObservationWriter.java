@@ -483,29 +483,29 @@ public class RinexObservationWriter {
             finishHeaderLine(RinexLabels.LEAP_SECONDS);
         }
 
-        if (!header.getNbObsPerSat().isEmpty()) {
-
-            // # OF SATELLITES
-            outputField(SIX_DIGITS_INTEGER, header.getNbObsPerSat().size(), 6);
+        // # OF SATELLITES
+        if (header.getNbSat() >= 0) {
+            outputField(SIX_DIGITS_INTEGER, header.getNbSat(), 6);
             finishHeaderLine(RinexLabels.NB_OF_SATELLITES);
+        }
 
-            // PRN / # OF OBS
-            for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
-                outputField(entry1.getKey().getSystem().getKey(), 4);
-                outputField(PADDED_TWO_DIGITS_INTEGER, entry1.getKey().getPRN(), 6);
-                for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
-                    int next = column + 6;
-                    if (next > LABEL_INDEX) {
-                        // we need to set up a continuation line
-                        finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
-                        outputField("", 6, true);
-                        next = column + 6;
-                    }
-                    outputField(SIX_DIGITS_INTEGER, entry2.getValue(), next);
+        // PRN / # OF OBS
+        for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
+            final SatInSystem sis = entry1.getKey();
+            outputField(sis.getSystem().getKey(), 4);
+            final int encodedPrn = sis.getSystem() == SatelliteSystem.SBAS ? sis.getPRN() - 100 : sis.getPRN();
+            outputField(PADDED_TWO_DIGITS_INTEGER, encodedPrn, 6);
+            for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
+                int next = column + 6;
+                if (next > LABEL_INDEX) {
+                    // we need to set up a continuation line
+                    finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
+                    outputField("", 6, true);
+                    next = column + 6;
                 }
-                finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
+                outputField(SIX_DIGITS_INTEGER, entry2.getValue(), next);
             }
-
+            finishHeaderLine(RinexLabels.PRN_NB_OF_OBS);
         }
 
         // END OF HEADER

@@ -36,11 +36,12 @@ public class RinexObservationWriterTest {
 
     @Test
     public void testWriteHeaderTwice() throws IOException {
-        final RinexObservation       robs   = load("rinex/aiub0000.00o");
+        final RinexObservation       robs   = load("rinex/bbbb0000.00o");
         final CharArrayWriter        caw    = new CharArrayWriter();
         final RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy");
         writer.prepareComments(robs.getComments());
         writer.writeHeader(robs.getHeader());
+        System.out.println(caw.toString());
         try {
             writer.writeHeader(robs.getHeader());
             Assertions.fail("an exception should have been thrown");
