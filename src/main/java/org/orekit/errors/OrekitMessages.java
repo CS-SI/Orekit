@@ -365,7 +365,7 @@ public enum OrekitMessages implements Localizable {
     WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION("wrong interpolator defined for this spacecraft state type (orbit or absolute PV)"),
     MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points"),
     HEADER_NOT_WRITTEN("header for file {0} has not been written yet"),
-    HEADER_ALREADY_WRITTEN("header for file {0} has alrady been written");
+    HEADER_ALREADY_WRITTEN("header for file {0} has already been written");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */
