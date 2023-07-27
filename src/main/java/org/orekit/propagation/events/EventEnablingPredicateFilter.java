@@ -107,10 +107,10 @@ public class EventEnablingPredicateFilter
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
      */
-    private EventEnablingPredicateFilter(final double maxCheck, final double threshold,
-                                         final int maxIter, final EventHandler handler,
-                                         final EventDetector rawDetector,
-                                         final EnablingPredicate enabler) {
+    protected EventEnablingPredicateFilter(final double maxCheck, final double threshold,
+                                           final int maxIter, final EventHandler handler,
+                                           final EventDetector rawDetector,
+                                           final EnablingPredicate enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;

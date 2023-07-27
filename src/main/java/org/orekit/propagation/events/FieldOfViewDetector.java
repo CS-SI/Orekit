@@ -101,10 +101,10 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      */
-    private FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
-                                final EventHandler handler,
-                                final PVCoordinatesProvider pvTarget, final double radiusTarget,
-                                final VisibilityTrigger trigger, final FieldOfView fov) {
+    protected FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
+                                  final EventHandler handler,
+                                  final PVCoordinatesProvider pvTarget, final double radiusTarget,
+                                  final VisibilityTrigger trigger, final FieldOfView fov) {
         super(maxCheck, threshold, maxIter, handler);
         this.targetPVProvider = pvTarget;
         this.radiusTarget     = radiusTarget;

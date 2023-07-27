@@ -62,11 +62,11 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
      */
-    private FunctionalDetector(final double maxCheck,
-                               final double threshold,
-                               final int maxIter,
-                               final EventHandler handler,
-                               final ToDoubleFunction<SpacecraftState> function) {
+    protected FunctionalDetector(final double maxCheck,
+                                 final double threshold,
+                                 final int maxIter,
+                                 final EventHandler handler,
+                                 final ToDoubleFunction<SpacecraftState> function) {
         super(maxCheck, threshold, maxIter, handler);
         this.function = function;
     }

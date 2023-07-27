@@ -23,6 +23,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.models.earth.GeoMagneticField;
+import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
@@ -164,10 +165,10 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param dataContext used to look up the magnetic field model.
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
-    private MagneticFieldDetector(final double maxCheck, final double threshold,
-                                  final int maxIter, final EventHandler handler,
-                                  final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel,
-                                  final DataContext dataContext)
+    protected MagneticFieldDetector(final double maxCheck, final double threshold,
+                                    final int maxIter, final EventHandler handler,
+                                    final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel,
+                                    final DataContext dataContext)
         throws OrekitIllegalArgumentException {
 
         super(maxCheck, threshold, maxIter, handler);
