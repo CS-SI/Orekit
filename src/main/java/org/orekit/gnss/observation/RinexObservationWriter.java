@@ -598,10 +598,8 @@ public class RinexObservationWriter implements AutoCloseable {
             // write the batch of pending observations
             if (savedHeader.getFormatVersion() < 3.0) {
                 writePendingRinex2Observations();
-            } else if (savedHeader.getFormatVersion() < 4.0) {
-                writePendingRinex3Observations();
             } else {
-                writePendingRinex4Observations();
+                writePendingRinex34Observations();
             }
 
             // prepare for next batch
@@ -692,10 +690,10 @@ public class RinexObservationWriter implements AutoCloseable {
 
     }
 
-    /** Write one observation data set in RINEX 3 format.
+    /** Write one observation data set in RINEX 3/4 format.
      * @exception IOException if an I/O error occurs.
      */
-    public void writePendingRinex3Observations()
+    public void writePendingRinex34Observations()
         throws IOException {
 
         final ObservationDataSet first = pending.get(0);
@@ -752,14 +750,6 @@ public class RinexObservationWriter implements AutoCloseable {
             finishLine();
         }
 
-    }
-
-    /** Write one observation data set in RINEX 4 format.
-     * @exception IOException if an I/O error occurs.
-     */
-    public void writePendingRinex4Observations()
-        throws IOException {
-        // TODO
     }
 
     /** Write one header string.
