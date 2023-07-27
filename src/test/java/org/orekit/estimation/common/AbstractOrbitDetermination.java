@@ -2127,8 +2127,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
         final RinexObservation rinexObs = new RinexObservationParser().parse(source);
         for (final ObservationDataSet observationDataSet : rinexObs.getObservationDataSets()) {
-            if (observationDataSet.getSatelliteSystem() == system    &&
-                observationDataSet.getPrnNumber()       == prnNumber) {
+            if (observationDataSet.getSatellite().getSystem() == system    &&
+                observationDataSet.getSatellite().getPRN()    == prnNumber) {
                 for (final ObservationData od : observationDataSet.getObservationData()) {
                     final double snr = od.getSignalStrength();
                     if (!Double.isNaN(od.getValue()) && (snr == 0 || snr >= 4)) {

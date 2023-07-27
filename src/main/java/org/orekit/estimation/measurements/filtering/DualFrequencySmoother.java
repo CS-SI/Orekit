@@ -135,7 +135,7 @@ public class DualFrequencySmoother {
 
         // For each data set, work on those corresping to the PRN and Satellite system.
         for (final ObservationDataSet obsSet : sortedListODS) {
-            if (obsSet.getSatelliteSystem() == satSystem && obsSet.getPrnNumber() == prnNumber) {
+            if (obsSet.getSatellite().getSystem() == satSystem && obsSet.getSatellite().getPRN() == prnNumber) {
                 // Get all observation data
                 final List<ObservationData> listObsData = obsSet.getObservationData();
                 // For each ObservationData check if usable (SNR and !(isNaN))

@@ -79,8 +79,8 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
     protected void manageData(final ObservationDataSet observation) {
 
         // Extract observation data
-        final SatelliteSystem system = observation.getSatelliteSystem();
-        final int             prn    = observation.getPrnNumber();
+        final SatelliteSystem system = observation.getSatellite().getSystem();
+        final int             prn    = observation.getSatellite().getPRN();
         final AbsoluteDate    date   = observation.getDate();
 
         // Initialize list of measurements
@@ -115,7 +115,7 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
                     // Phase minus Code combination
                     final PhaseMinusCodeCombination phaseMinusCode = MeasurementCombinationFactory.getPhaseMinusCodeCombination(system);
                     final CombinedObservationData cod = phaseMinusCode.combine(phaseInMeters, pseudoRange);
-                    final String nameSat = setName(prn, observation.getSatelliteSystem());
+                    final String nameSat = setName(prn, observation.getSatellite().getSystem());
 
                     // Check for cycle-slip detection
                     final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));

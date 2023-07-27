@@ -79,6 +79,11 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** Position of antenna reference point for antenna on vehicle. */
     private Vector3D antRefPoint;
 
+    /** Satellite system for average phasecenter position.
+     * @since 12.0
+     */
+    private SatelliteSystem phaseCenterSystem;
+
     /** Observation code of the average phasecenter position w/r to antenna reference point. */
     private String observationCode;
 
@@ -473,6 +478,22 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     public Vector3D getAntennaReferencePoint() {
         return antRefPoint;
+    }
+
+    /** Set satellite system for average phase center.
+     * @param phaseCenterSystem satellite system for average phase center
+     * @since 12.0
+     */
+    public void setPhaseCenterSystem(final SatelliteSystem phaseCenterSystem) {
+        this.phaseCenterSystem = phaseCenterSystem;
+    }
+
+    /** Get satellite system for average phase center.
+     * @return satellite system for average phase center
+     * @since 12.0
+     */
+    public SatelliteSystem getPhaseCenterSystem() {
+        return phaseCenterSystem;
     }
 
     /** Set the observation code of the average phasecenter position w/r to antenna reference point.

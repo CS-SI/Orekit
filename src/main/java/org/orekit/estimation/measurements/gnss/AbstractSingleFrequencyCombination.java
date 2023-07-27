@@ -91,8 +91,9 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
             }
         }
 
-        return new CombinedObservationDataSet(observations.getSatelliteSystem(),
-                                              observations.getPrnNumber(), observations.getDate(),
+        return new CombinedObservationDataSet(observations.getSatellite().getSystem(),
+                                              observations.getSatellite().getPRN(),
+                                              observations.getDate(),
                                               observations.getRcvrClkOffset(), combined);
     }
 

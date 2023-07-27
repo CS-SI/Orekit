@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.gnss.SatInSystem;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -63,20 +62,6 @@ public class ObservationDataSet implements TimeStamped {
         this.eventFlag       = eventFlag;
         this.observationData = observationData;
         this.rcvrClkOffset   = rcvrClkOffset;
-    }
-
-    /** Get Satellite System.
-     * @return satellite system of observed satellite
-     */
-    public SatelliteSystem getSatelliteSystem() {
-        return satellite.getSystem();
-    }
-
-    /** Get PRN number.
-     * @return PRN number of the observed satellite
-     */
-    public int getPrnNumber() {
-        return satellite.getPRN();
     }
 
     /** Get observed satellite.

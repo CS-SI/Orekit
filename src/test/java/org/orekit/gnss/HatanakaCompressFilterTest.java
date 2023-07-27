@@ -169,8 +169,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(921, ods.size());
 
         Assertions.assertEquals("AROL",              rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(0).getSatelliteSystem());
-        Assertions.assertEquals(24,                  ods.get(0).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(0).getSatellite().getSystem());
+        Assertions.assertEquals(24,                  ods.get(0).getSatellite().getPRN());
         Assertions.assertEquals(90.0,                ods.get(0).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(7,                   ods.get(0).getObservationData().size());
         Assertions.assertEquals(-3351623.823,        ods.get(0).getObservationData().get(0).getValue(), 1.0e-3);
@@ -181,8 +181,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(18.7504,             ods.get(0).getObservationData().get(5).getValue(), 1.0e-3);
         Assertions.assertEquals(19.7504,             ods.get(0).getObservationData().get(6).getValue(), 1.0e-3);
 
-        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(447).getSatelliteSystem());
-        Assertions.assertEquals(10,                  ods.get(447).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(447).getSatellite().getSystem());
+        Assertions.assertEquals(10,                  ods.get(447).getSatellite().getPRN());
         Assertions.assertEquals(2310.0,              ods.get(447).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(7,                   ods.get(447).getObservationData().size());
         Assertions.assertEquals(-8892260.422,        ods.get(447).getObservationData().get(0).getValue(), 1.0e-3);
@@ -193,8 +193,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(14.2504,             ods.get(447).getObservationData().get(5).getValue(), 1.0e-3);
         Assertions.assertEquals(13.2504,             ods.get(447).getObservationData().get(6).getValue(), 1.0e-3);
 
-        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(920).getSatelliteSystem());
-        Assertions.assertEquals(31,                  ods.get(920).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(920).getSatellite().getSystem());
+        Assertions.assertEquals(31,                  ods.get(920).getSatellite().getPRN());
         Assertions.assertEquals(71430.0,             ods.get(920).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(7,                   ods.get(920).getObservationData().size());
         Assertions.assertEquals(-3993480.91843,      ods.get(920).getObservationData().get(0).getValue(), 1.0e-3);
@@ -227,8 +227,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(188, ods.size());
 
         Assertions.assertEquals("GANP",                  rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.BEIDOU,  ods.get(0).getSatelliteSystem());
-        Assertions.assertEquals(2,                       ods.get(0).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.BEIDOU,  ods.get(0).getSatellite().getSystem());
+        Assertions.assertEquals(2,                       ods.get(0).getSatellite().getPRN());
         Assertions.assertEquals(0.0,                     ods.get(0).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(6,                       ods.get(0).getObservationData().size());
         Assertions.assertEquals(40517356.773,            ods.get(0).getObservationData().get(0).getValue(), 1.0e-3);
@@ -238,8 +238,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(35.400,                  ods.get(0).getObservationData().get(4).getValue(), 1.0e-3);
         Assertions.assertEquals(37.900,                  ods.get(0).getObservationData().get(5).getValue(), 1.0e-3);
 
-        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(96).getSatelliteSystem());
-        Assertions.assertEquals(20,                      ods.get(96).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(96).getSatellite().getSystem());
+        Assertions.assertEquals(20,                      ods.get(96).getSatellite().getPRN());
         Assertions.assertEquals(1200.0,                  ods.get(96).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(12,                      ods.get(96).getObservationData().size());
         Assertions.assertEquals(21579038.953,            ods.get(96).getObservationData().get(0).getValue(), 1.0e-3);
@@ -255,8 +255,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(44.000,                  ods.get(96).getObservationData().get(10).getValue(), 1.0e-3);
         Assertions.assertEquals(44.000,                  ods.get(96).getObservationData().get(11).getValue(), 1.0e-3);
 
-        Assertions.assertEquals(SatelliteSystem.SBAS,    ods.get(187).getSatelliteSystem());
-        Assertions.assertEquals(126,                     ods.get(187).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.SBAS,    ods.get(187).getSatellite().getSystem());
+        Assertions.assertEquals(126,                     ods.get(187).getSatellite().getPRN());
         Assertions.assertEquals(3000.0,                  ods.get(187).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(3,                       ods.get(187).getObservationData().size());
         Assertions.assertEquals(38446689.984,            ods.get(187).getObservationData().get(0).getValue(), 1.0e-3);
@@ -338,8 +338,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(114, ods.size());
 
         Assertions.assertEquals("ABER",              rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(0).getSatelliteSystem());
-        Assertions.assertEquals(18,                  ods.get(0).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(0).getSatellite().getSystem());
+        Assertions.assertEquals(18,                  ods.get(0).getSatellite().getPRN());
         Assertions.assertEquals(0.0,                 ods.get(0).getDate().durationFrom(t0), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
@@ -363,8 +363,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(77, ods.size());
 
         Assertions.assertEquals("ABMF",              rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(59).getSatelliteSystem());
-        Assertions.assertEquals(23,                  ods.get(59).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GPS, ods.get(59).getSatellite().getSystem());
+        Assertions.assertEquals(23,                  ods.get(59).getSatellite().getPRN());
         Assertions.assertEquals(60.0,                ods.get(59).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(ObservationType.D2,  ods.get(59).getObservationData().get(7).getObservationType());
         Assertions.assertEquals(-0.096,              ods.get(59).getObservationData().get(7).getValue(), 1.0e-15);
@@ -390,8 +390,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(32, ods.size());
 
         Assertions.assertEquals("AREV",                  rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(16).getSatelliteSystem());
-        Assertions.assertEquals(22,                      ods.get(16).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(16).getSatellite().getSystem());
+        Assertions.assertEquals(22,                      ods.get(16).getSatellite().getPRN());
         Assertions.assertEquals(30.0,                    ods.get(16).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(ObservationType.L2,      ods.get(16).getObservationData().get(1).getObservationType());
         Assertions.assertEquals(79103696.341,            ods.get(16).getObservationData().get(1).getValue(), 1.0e-15);
@@ -551,8 +551,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(87, ods.size());
 
         Assertions.assertEquals("THTG",                 rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.BEIDOU, ods.get(24).getSatelliteSystem());
-        Assertions.assertEquals(12,                     ods.get(24).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.BEIDOU, ods.get(24).getSatellite().getSystem());
+        Assertions.assertEquals(12,                     ods.get(24).getSatellite().getPRN());
         Assertions.assertEquals(0.0,                    ods.get(24).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(ObservationType.L1I,    ods.get(24).getObservationData().get(1).getObservationType());
         Assertions.assertEquals(129123198.213,          ods.get(24).getObservationData().get(1).getValue(), 1.0e-15);
@@ -578,8 +578,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(69, ods.size());
 
         Assertions.assertEquals("TLSG",                 rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.SBAS,   ods.get(37).getSatelliteSystem());
-        Assertions.assertEquals(123,                    ods.get(37).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.SBAS,   ods.get(37).getSatellite().getSystem());
+        Assertions.assertEquals(123,                    ods.get(37).getSatellite().getPRN());
         Assertions.assertEquals(30.0,                   ods.get(37).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(ObservationType.D1C,    ods.get(37).getObservationData().get(2).getObservationType());
         Assertions.assertEquals(2.648,                  ods.get(37).getObservationData().get(2).getValue(), 1.0e-15);
@@ -605,8 +605,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(56, ods.size());
 
         Assertions.assertEquals("VILL",                  rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(35).getSatelliteSystem());
-        Assertions.assertEquals(17,                      ods.get(35).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(35).getSatellite().getSystem());
+        Assertions.assertEquals(17,                      ods.get(35).getSatellite().getPRN());
         Assertions.assertEquals(30.0,                    ods.get(35).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(ObservationType.L1C,     ods.get(35).getObservationData().get(1).getObservationType());
         Assertions.assertEquals(111836179.674,           ods.get(35).getObservationData().get(1).getValue(), 1.0e-15);
@@ -633,8 +633,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(133040, ods.size());
 
         Assertions.assertEquals("DJIG",                  rinexObservation.getHeader().getMarkerName());
-        Assertions.assertEquals(SatelliteSystem.BEIDOU,  ods.get(0).getSatelliteSystem());
-        Assertions.assertEquals(2,                       ods.get(0).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.BEIDOU,  ods.get(0).getSatellite().getSystem());
+        Assertions.assertEquals(2,                       ods.get(0).getSatellite().getPRN());
         Assertions.assertEquals(0.0,                     ods.get(0).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(12,                      ods.get(0).getObservationData().size());
         Assertions.assertEquals(37732983.563,            ods.get(0).getObservationData().get(0).getValue(), 1.0e-3);
@@ -642,8 +642,8 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(37732976.137,            ods.get(0).getObservationData().get(2).getValue(), 1.0e-3);
         Assertions.assertEquals(-2.043,                  ods.get(0).getObservationData().get(3).getValue(), 1.0e-3);
 
-        Assertions.assertEquals(SatelliteSystem.BEIDOU,  ods.get(96).getSatelliteSystem());
-        Assertions.assertEquals(12,                      ods.get(96).getPrnNumber());
+        Assertions.assertEquals(SatelliteSystem.BEIDOU,  ods.get(96).getSatellite().getSystem());
+        Assertions.assertEquals(12,                      ods.get(96).getSatellite().getPRN());
         Assertions.assertEquals(60.0,                    ods.get(96).getDate().durationFrom(t0), 1.0e-15);
         Assertions.assertEquals(12,                      ods.get(96).getObservationData().size());
         Assertions.assertEquals(25161908.281,            ods.get(96).getObservationData().get(0).getValue(), 1.0e-3);

@@ -120,8 +120,9 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
             }
         }
 
-        return new CombinedObservationDataSet(observations.getSatelliteSystem(),
-                                              observations.getPrnNumber(), observations.getDate(),
+        return new CombinedObservationDataSet(observations.getSatellite().getSystem(),
+                                              observations.getSatellite().getPRN(),
+                                              observations.getDate(),
                                               observations.getRcvrClkOffset(), combined);
     }
 

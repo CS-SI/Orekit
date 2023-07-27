@@ -347,7 +347,7 @@ public class RinexObservationParser {
         /** Parser for antenna phase center. */
         ANTENNA_PHASE_CENTER(line -> RinexLabels.ANTENNA_PHASE_CENTER.matches(RinexUtils.getLabel(line)),
                              (line, parseInfo) -> {
-                                 // we don't parse satellite system here because it was already parsed in HEADER_VERSION
+                                 parseInfo.file.getHeader().setPhaseCenterSystem(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)));
                                  parseInfo.file.getHeader().setObservationCode(RinexUtils.parseString(line, 2, 3));
                                  parseInfo.file.getHeader().setAntennaPhaseCenter(new Vector3D(RinexUtils.parseDouble(line, 5, 9),
                                                                                                RinexUtils.parseDouble(line, 14, 14),
@@ -694,7 +694,9 @@ public class RinexObservationParser {
                               final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(systemName);
                               final int             prn    = RinexUtils.parseInt(line, 4, 2);
                               parseInfo.currentSat         = new SatInSystem(system,
-                                                                             system == SatelliteSystem.SBAS ? prn + 100 : prn);
+                                                                             system == SatelliteSystem.SBAS ?
+                                                                             prn + 100 :
+                                                                             (system == SatelliteSystem.QZSS ? prn + 192 : prn));
                               parseInfo.nbTypes            = 0;
                           }
                           final List<ObservationType> types = parseInfo.file.getHeader().getTypeObs().get(parseInfo.currentSat.getSystem());
@@ -872,15 +874,8 @@ public class RinexObservationParser {
                                         observationData = null;
                                     } else {
                                         // this is a regular observation line
-                                        final ObservationType type = types.get(parseInfo.observations.size());
-                                        double scaling = 1.0;
-                                        for (final ScaleFactorCorrection scaleFactorCorrection :
-                                            parseInfo.file.getHeader().getScaleFactorCorrections(parseInfo.currentSystem)) {
-                                            // check if the next Observation Type to read needs to be scaled
-                                            if (scaleFactorCorrection.getTypesObsScaled().contains(type)) {
-                                                scaling = 1.0 / scaleFactorCorrection.getCorrection();
-                                            }
-                                        }
+                                        final ObservationType type    = types.get(parseInfo.observations.size());
+                                        final double          scaling = getScaling(parseInfo, type, parseInfo.currentSystem);
                                         observationData = new ObservationData(type,
                                                                               scaling * RinexUtils.parseDouble(line, index, 14),
                                                                               RinexUtils.parseInt(line, index + 14, 1),
@@ -924,15 +919,8 @@ public class RinexObservationParser {
                                         observationData = null;
                                     } else {
                                         // this is a regular observation line
-                                        final ObservationType type = types.get(parseInfo.observations.size());
-                                        double scaling = 1.0;
-                                        for (final ScaleFactorCorrection scaleFactorCorrection :
-                                            parseInfo.file.getHeader().getScaleFactorCorrections(sat.getSystem())) {
-                                            // check if the next Observation Type to read needs to be scaled
-                                            if (scaleFactorCorrection.getTypesObsScaled().contains(type)) {
-                                                scaling = 1.0 / scaleFactorCorrection.getCorrection();
-                                            }
-                                        }
+                                        final ObservationType type    = types.get(parseInfo.observations.size());
+                                        final double          scaling = getScaling(parseInfo, type, sat.getSystem());
                                         observationData = new ObservationData(type,
                                                                               scaling * RinexUtils.parseDouble(line, index, 14),
                                                                               RinexUtils.parseInt(line, index + 14, 1),
@@ -1166,6 +1154,28 @@ public class RinexObservationParser {
             } else {
                 return Arrays.asList(COMMENT, RINEX_3_DATA_FIRST);
             }
+        }
+
+        /** Get the scaling factor for an observation.
+         * @param parseInfo holder for transient data
+         * @param type type of observation
+         * @param system satellite system for the observation
+         * @return scaling factor
+         */
+        private static double getScaling(final ParseInfo parseInfo, final ObservationType type,
+                                         final SatelliteSystem system) {
+
+            for (final ScaleFactorCorrection scaleFactorCorrection :
+                parseInfo.file.getHeader().getScaleFactorCorrections(system)) {
+                // check if the next Observation Type to read needs to be scaled
+                if (scaleFactorCorrection.getTypesObsScaled().contains(type)) {
+                    return 1.0 / scaleFactorCorrection.getCorrection();
+                }
+            }
+
+            // no scaling
+            return 1.0;
+
         }
 
     }

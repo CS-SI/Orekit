@@ -105,6 +105,9 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Format for one 14.4 digits float field. */
     private static final String FOURTEEN_FOUR_DIGITS_FLOAT = "%14.4f";
 
+    /** Format for one 15.12 digits float field. */
+    private static final String FIFTEEN_TWELVE_DIGITS_FLOAT = "%15.12f";
+
     /** Threshold for considering measurements are at the sate time.
      * (we know the RINEX files encode dates with a resolution of 0.1µs)
      */
@@ -286,7 +289,8 @@ public class RinexObservationWriter implements AutoCloseable {
 
         // ANTENNA: PHASECENTER
         if (header.getAntennaPhaseCenter() != null) {
-            outputField(header.getSatelliteSystem().getKey(), 1);
+            outputField(header.getPhaseCenterSystem().getKey(), 1);
+            outputField("", 2, true);
             outputField(header.getObservationCode(), 5, true);
             outputField(NINE_FOUR_DIGITS_FLOAT,     header.getAntennaPhaseCenter().getX(), 14);
             outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaPhaseCenter().getY(), 28);
@@ -299,7 +303,7 @@ public class RinexObservationWriter implements AutoCloseable {
 
         // ANTENNA: ZERODIR AZI
         if (!Double.isNaN(header.getAntennaAzimuth())) {
-            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, header.getAntennaAzimuth(), 14);
+            outputField(FOURTEEN_FOUR_DIGITS_FLOAT, FastMath.toDegrees(header.getAntennaAzimuth()), 14);
             finishHeaderLine(RinexLabels.ANTENNA_ZERODIR_AZI);
         }
 
@@ -420,17 +424,22 @@ public class RinexObservationWriter implements AutoCloseable {
                 for (final ScaleFactorCorrection sfc : header.getScaleFactorCorrections(system)) {
                     if (sfc != null) {
                         outputField(system.getKey(), 1);
+                        outputField("", 2, true);
                         outputField(FOUR_DIGITS_INTEGER, (int) FastMath.rint(sfc.getCorrection()), 6);
-                        outputField(TWO_DIGITS_INTEGER,  sfc.getTypesObsScaled().size(), 10);
-                        for (ObservationType observationType : sfc.getTypesObsScaled()) {
-                            int next = column + 4;
-                            if (next > LABEL_INDEX) {
-                                // we need to set up a continuation line
-                                finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
-                                outputField("", 10, true);
-                                next = column + 4;
+                        if (sfc.getTypesObsScaled().size() < header.getTypeObs().get(system).size()) {
+                            outputField("", 8, true);
+                            outputField(TWO_DIGITS_INTEGER,  sfc.getTypesObsScaled().size(), 10);
+                            for (ObservationType observationType : sfc.getTypesObsScaled()) {
+                                int next = column + 4;
+                                if (next > LABEL_INDEX) {
+                                    // we need to set up a continuation line
+                                    finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
+                                    outputField("", 10, true);
+                                    next = column + 4;
+                                }
+                                outputField("", next - 3, true);
+                                outputField(observationType.name(), next, true);
                             }
-                            outputField(observationType.name(), next, true);
                         }
                         finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
                     }
@@ -454,7 +463,7 @@ public class RinexObservationWriter implements AutoCloseable {
                         next = column + 4;
                     }
                     outputField(sis.getSystem().getKey(), next - 2);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, sis.getPRN(), next);
+                    outputField(PADDED_TWO_DIGITS_INTEGER, sis.getTwoDigitsRinexPRN(), next);
                 }
             }
             finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
@@ -534,8 +543,7 @@ public class RinexObservationWriter implements AutoCloseable {
         for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
             final SatInSystem sis = entry1.getKey();
             outputField(sis.getSystem().getKey(), 4);
-            final int encodedPrn = sis.getSystem() == SatelliteSystem.SBAS ? sis.getPRN() - 100 : sis.getPRN();
-            outputField(PADDED_TWO_DIGITS_INTEGER, encodedPrn, 6);
+            outputField(PADDED_TWO_DIGITS_INTEGER, sis.getTwoDigitsRinexPRN(), 6);
             for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
                 int next = column + 6;
                 if (next > LABEL_INDEX) {
@@ -606,8 +614,7 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Write one observation data set in RINEX 2 format.
      * @exception IOException if an I/O error occurs.
      */
-    public void writePendingRinex2Observations()
-        throws IOException {
+    public void writePendingRinex2Observations() throws IOException {
 
         final ObservationDataSet first = pending.get(0);
 
@@ -649,8 +656,8 @@ public class RinexObservationWriter implements AutoCloseable {
                 outputField("", 32, true);
                 next = column + 3;
             }
-            outputField(ods.getSatelliteSystem().getKey(), next - 2);
-            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getPrnNumber(), next);
+            outputField(ods.getSatellite().getSystem().getKey(), next - 2);
+            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getSatellite().getTwoDigitsRinexPRN(), next);
         }
         if (!offsetWritten && clockOffset != 0.0) {
             outputField("", 68, true);
@@ -667,7 +674,8 @@ public class RinexObservationWriter implements AutoCloseable {
                     finishLine();
                     next = column + 16;
                 }
-                outputField(FOURTEEN_THREE_DIGITS_FLOAT, od.getValue(), next - 2);
+                final double scaling = getScaling(od.getObservationType(), ods.getSatellite().getSystem());
+                outputField(FOURTEEN_THREE_DIGITS_FLOAT, scaling * od.getValue(), next - 2);
                 if (od.getLossOfLockIndicator() == 0) {
                     outputField("", next - 1, true);
                 } else {
@@ -689,7 +697,61 @@ public class RinexObservationWriter implements AutoCloseable {
      */
     public void writePendingRinex3Observations()
         throws IOException {
-        // TODO
+
+        final ObservationDataSet first = pending.get(0);
+
+        // EPOCH/SAT
+        final DateTimeComponents dtc = first.getDate().getComponents(timeScale);
+        outputField(">",  2, true);
+        outputField(FOUR_DIGITS_INTEGER,         dtc.getDate().getYear(),    6);
+        outputField("",   7, true);
+        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getMonth(),   9);
+        outputField("",  10, true);
+        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getDay(),    12);
+        outputField("", 13, true);
+        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getTime().getHour(),   15);
+        outputField("", 16, true);
+        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getTime().getMinute(), 18);
+        outputField(ELEVEN_SEVEN_DIGITS_FLOAT,   dtc.getTime().getSecond(), 29);
+
+        // event flag
+        outputField("", 31, true);
+        if (first.getEventFlag() == 0) {
+            outputField("", 32, true);
+        } else {
+            outputField(ONE_DIGIT_INTEGER, first.getEventFlag(), 32);
+        }
+
+        // number of satellites and receiver clock offset
+        outputField(THREE_DIGITS_INTEGER, pending.size(), 35);
+        if (first.getRcvrClkOffset() != 0.0) {
+            outputField("", 41, true);
+            outputField(FIFTEEN_TWELVE_DIGITS_FLOAT, first.getRcvrClkOffset(), 56);
+        }
+        finishLine();
+
+        // observations per se
+        for (final ObservationDataSet ods : pending) {
+            outputField(ods.getSatellite().getSystem().getKey(), 1);
+            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getSatellite().getTwoDigitsRinexPRN(), 3);
+            for (final ObservationData od : ods.getObservationData()) {
+                final int next = column + 16;
+                final double scaling = getScaling(od.getObservationType(), ods.getSatellite().getSystem());
+                outputField(FOURTEEN_THREE_DIGITS_FLOAT, scaling * od.getValue(), next - 2);
+                if (od.getLossOfLockIndicator() == 0) {
+                    outputField("", next - 1, true);
+                } else {
+                    outputField(ONE_DIGIT_INTEGER, od.getLossOfLockIndicator(), next - 1);
+                }
+                if (od.getSignalStrength() == 0) {
+                    outputField("", next, true);
+                } else {
+                    outputField(ONE_DIGIT_INTEGER, od.getSignalStrength(), next);
+                }
+            }
+            finishLine();
+        }
+
     }
 
     /** Write one observation data set in RINEX 4 format.
@@ -815,6 +877,25 @@ public class RinexObservationWriter implements AutoCloseable {
             output.append(field);
         }
         column = next;
+    }
+
+    /** Get the scaling factor for an observation.
+     * @param type type of observation
+     * @param system satellite system for the observation
+     * @return scaling factor
+     */
+    private double getScaling(final ObservationType type, final SatelliteSystem system) {
+
+        for (final ScaleFactorCorrection scaleFactorCorrection : savedHeader.getScaleFactorCorrections(system)) {
+            // check if the next Observation Type to read needs to be scaled
+            if (scaleFactorCorrection.getTypesObsScaled().contains(type)) {
+                return scaleFactorCorrection.getCorrection();
+            }
+        }
+
+        // no scaling
+        return 1.0;
+
     }
 
 }

@@ -76,11 +76,50 @@ public class RinexObservationWriterTest {
 
     @Test
     public void testRoundTripRinex2() throws IOException {
+
         final RinexObservation robs = load("rinex/cccc0000.07o");
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
             writer.writeCompleteFile(robs);
         }
+
+        // reparse the written file
+        final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
+        final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
+        final RinexObservation rebuilt = new RinexObservationParser().parse(source);
+
+        checkRinexFile(robs, rebuilt);
+
+    }
+
+    @Test
+    public void testRoundTripRinex3A() throws IOException {
+
+        final RinexObservation robs = load("rinex/bbbb0000.00o");
+        final CharArrayWriter  caw  = new CharArrayWriter();
+        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
+            writer.writeCompleteFile(robs);
+        }
+
+        // reparse the written file
+        final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
+        final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
+        final RinexObservation rebuilt = new RinexObservationParser().parse(source);
+
+        checkRinexFile(robs, rebuilt);
+
+    }
+
+    @Test
+    public void testRoundTripRinex3B() throws IOException {
+
+        final RinexObservation robs = load("rinex/dddd0000.01o");
+        final CharArrayWriter  caw  = new CharArrayWriter();
+        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
+            writer.writeCompleteFile(robs);
+        }
+
+        System.out.println(caw.toString());
 
         // reparse the written file
         final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
