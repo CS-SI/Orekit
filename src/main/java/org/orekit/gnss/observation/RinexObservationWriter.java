@@ -17,6 +17,7 @@
 package org.orekit.gnss.observation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -38,13 +39,26 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
 /** Writer for Rinex observation file.
+ * <p>
+ * As RINEX file are organized in batches of observations at some dates,
+ * these observations are cached and a new batch is output only when
+ * a new date appears when calling {@link #writeObservationDataSet(ObservationDataSet)}
+ * or when the file is closed by calling the {@link #close() close} method.
+ * Failing to call {@link #close() close} would imply the last batch
+ * of measurements is not written. This is the reason why this class implements
+ * {@link AutoCloseable}, so the {@link #close() close} method can be called automatically in
+ * a {@code try-with-resources} statement.
+ * </p>
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class RinexObservationWriter {
+public class RinexObservationWriter implements AutoCloseable {
 
     /** Index of label in header lines. */
     private static final int LABEL_INDEX = 60;
+
+    /** Format for one 1 digit integer field. */
+    private static final String ONE_DIGIT_INTEGER = "%1d";
 
     /** Format for one 2 digits integer field. */
     private static final String PADDED_TWO_DIGITS_INTEGER = "%02d";
@@ -76,11 +90,25 @@ public class RinexObservationWriter {
     /** Format for one 10.3 digits float field. */
     private static final String TEN_THREE_DIGITS_FLOAT = "%10.3f";
 
+    /** Format for one 11.7 digits float field. */
+    private static final String ELEVEN_SEVEN_DIGITS_FLOAT = "%11.7f";
+
+    /** Format for one 12.9 digits float field. */
+    private static final String TWELVE_NINE_DIGITS_FLOAT = "%12.9f";
+
     /** Format for one 13.7 digits float field. */
     private static final String THIRTEEN_SEVEN_DIGITS_FLOAT = "%13.7f";
 
+    /** Format for one 14.3 digits float field. */
+    private static final String FOURTEEN_THREE_DIGITS_FLOAT = "%14.3f";
+
     /** Format for one 14.4 digits float field. */
     private static final String FOURTEEN_FOUR_DIGITS_FLOAT = "%14.4f";
+
+    /** Threshold for considering measurements are at the sate time.
+     * (we know the RINEX files encode dates with a resolution of 0.1µs)
+     */
+    private static final double EPS_DATE = 1.0e-8;
 
     /** Destination of generated output. */
     private final Appendable output;
@@ -88,11 +116,17 @@ public class RinexObservationWriter {
     /** Output name for error messages. */
     private final String outputName;
 
+    /** Time scale for writing dates. */
+    private TimeScale timeScale;
+
     /** Saved header. */
     private RinexObservationHeader savedHeader;
 
     /** Saved comments. */
     private List<RinexComment> savedComments;
+
+    /** Pending observations. */
+    private final List<ObservationDataSet> pending;
 
     /** Line number. */
     private int lineNumber;
@@ -110,8 +144,15 @@ public class RinexObservationWriter {
         this.outputName    = outputName;
         this.savedHeader   = null;
         this.savedComments = Collections.emptyList();
+        this.pending       = new ArrayList<>();
         this.lineNumber    = 0;
         this.column        = 0;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void close() throws IOException {
+        processPending();
     }
 
     /** Write a complete observation file.
@@ -162,8 +203,8 @@ public class RinexObservationWriter {
 
         final ObservationTimeScale observationTimeScale = header.getSatelliteSystem().getObservationTimeScale() != null ?
                                                           header.getSatelliteSystem().getObservationTimeScale() :
-                                                              ObservationTimeScale.GPS;
-        final TimeScale timeScale = observationTimeScale.getTimeScale(TimeScalesFactory.getTimeScales());
+                                                          ObservationTimeScale.GPS;
+        timeScale = observationTimeScale.getTimeScale(TimeScalesFactory.getTimeScales());
 
         // RINEX VERSION / TYPE
         outputField("%9.2f", header.getFormatVersion(), 9);
@@ -176,7 +217,7 @@ public class RinexObservationWriter {
         outputField(header.getProgramName(), 20, true);
         outputField(header.getRunByName(),   40, true);
         final DateTimeComponents dtc = header.getCreationDateComponents();
-        if (header.getFormatVersion() < 3.0) {
+        if (header.getFormatVersion() < 3.0 && dtc.getTime().getSecond() < 0.5) {
             outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 42);
             outputField('-', 43);
             outputField(dtc.getDate().getMonthEnum().getUpperCaseAbbreviation(), 46,  true);
@@ -208,9 +249,9 @@ public class RinexObservationWriter {
         }
 
         // MARKER TYPE
-        if (header.getFormatVersion() >= 3.0) {
+        if (header.getFormatVersion() >= 2.20) {
             outputField(header.getMarkerType(), 20, true);
-            finishHeaderLine( RinexLabels.MARKER_TYPE);
+            finishHeaderLine(RinexLabels.MARKER_TYPE);
         }
 
         // OBSERVER / AGENCY
@@ -514,6 +555,10 @@ public class RinexObservationWriter {
     }
 
     /** Write one observation data set.
+     * <p>
+     * Note that this writers output only regular observations, so
+     * the event flag is always set to 0
+     * </p>
      * @param observationDataSet observation data set to write
      * @exception IOException if an I/O error occurs.
      */
@@ -525,8 +570,134 @@ public class RinexObservationWriter {
             throw new OrekitException(OrekitMessages.HEADER_NOT_WRITTEN, outputName);
         }
 
-        // TODO
+        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.get(0).getDate()) > EPS_DATE) {
+            // the specified observation belongs to the next batch
+            // we must process the current batch of pending observations
+            processPending();
+        }
 
+        // add the observation to the pending list, so it is written later on
+        pending.add(observationDataSet);
+
+    }
+
+    /** Process all pending measurements.
+     */
+    private void processPending() throws IOException {
+
+        if (!pending.isEmpty()) {
+
+            // write the batch of pending observations
+            if (savedHeader.getFormatVersion() < 3.0) {
+                writePendingRinex2Observations();
+            } else if (savedHeader.getFormatVersion() < 4.0) {
+                writePendingRinex3Observations();
+            } else {
+                writePendingRinex4Observations();
+            }
+
+            // prepare for next batch
+            pending.clear();
+
+        }
+
+    }
+
+    /** Write one observation data set in RINEX 2 format.
+     * @exception IOException if an I/O error occurs.
+     */
+    public void writePendingRinex2Observations()
+        throws IOException {
+
+        final ObservationDataSet first = pending.get(0);
+
+        // EPOCH/SAT
+        final DateTimeComponents dtc = first.getDate().getComponents(timeScale);
+        outputField("",  1, true);
+        outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getYear() % 100,    3);
+        outputField("",  4, true);
+        outputField(TWO_DIGITS_INTEGER,          dtc.getDate().getMonth(),         6);
+        outputField("",  7, true);
+        outputField(TWO_DIGITS_INTEGER,          dtc.getDate().getDay(),           9);
+        outputField("", 10, true);
+        outputField(TWO_DIGITS_INTEGER,          dtc.getTime().getHour(),         12);
+        outputField("", 13, true);
+        outputField(TWO_DIGITS_INTEGER,          dtc.getTime().getMinute(),       15);
+        outputField(ELEVEN_SEVEN_DIGITS_FLOAT,   dtc.getTime().getSecond(),       26);
+
+        // event flag
+        outputField("", 28, true);
+        if (first.getEventFlag() == 0) {
+            outputField("", 29, true);
+        } else {
+            outputField(ONE_DIGIT_INTEGER, first.getEventFlag(), 29);
+        }
+
+        // list of satellites and receiver clock offset
+        outputField(THREE_DIGITS_INTEGER, pending.size(), 32);
+        boolean offsetWritten = false;
+        final double  clockOffset   = first.getRcvrClkOffset();
+        for (final ObservationDataSet ods : pending) {
+            int next = column + 3;
+            if (next > 68) {
+                // we need to set up a continuation line
+                if (clockOffset != 0.0) {
+                    outputField(TWELVE_NINE_DIGITS_FLOAT, clockOffset, 80);
+                }
+                offsetWritten = true;
+                finishLine();
+                outputField("", 32, true);
+                next = column + 3;
+            }
+            outputField(ods.getSatelliteSystem().getKey(), next - 2);
+            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getPrnNumber(), next);
+        }
+        if (!offsetWritten && clockOffset != 0.0) {
+            outputField("", 68, true);
+            outputField(TWELVE_NINE_DIGITS_FLOAT, first.getRcvrClkOffset(), 80);
+        }
+        finishLine();
+
+        // observations per se
+        for (final ObservationDataSet ods : pending) {
+            for (final ObservationData od : ods.getObservationData()) {
+                int next = column + 16;
+                if (next > 80) {
+                    // we need to set up a continuation line
+                    finishLine();
+                    next = column + 16;
+                }
+                outputField(FOURTEEN_THREE_DIGITS_FLOAT, od.getValue(), next - 2);
+                if (od.getLossOfLockIndicator() == 0) {
+                    outputField("", next - 1, true);
+                } else {
+                    outputField(ONE_DIGIT_INTEGER, od.getLossOfLockIndicator(), next - 1);
+                }
+                if (od.getSignalStrength() == 0) {
+                    outputField("", next, true);
+                } else {
+                    outputField(ONE_DIGIT_INTEGER, od.getSignalStrength(), next);
+                }
+            }
+            finishLine();
+        }
+
+    }
+
+    /** Write one observation data set in RINEX 3 format.
+     * @exception IOException if an I/O error occurs.
+     */
+    public void writePendingRinex3Observations()
+        throws IOException {
+        // TODO
+    }
+
+    /** Write one observation data set in RINEX 4 format.
+     * @exception IOException if an I/O error occurs.
+     */
+    public void writePendingRinex4Observations()
+        throws IOException {
+        // TODO
     }
 
     /** Write one header string.

@@ -36,6 +36,11 @@ public class ObservationDataSet implements TimeStamped {
     /** Date of the observation. */
     private final AbsoluteDate tObs;
 
+    /** Event flag.
+     * @since 12.0
+     */
+    private final int eventFlag;
+
     /** List of Observation data. */
     private final List<ObservationData> observationData;
 
@@ -46,14 +51,16 @@ public class ObservationDataSet implements TimeStamped {
      * Simple constructor.
      * @param satellite observed satellite
      * @param tObs Observation date
+     * @param eventFlag event flag
      * @param rcvrClkOffset Receiver clock offset (optional, 0 by default)
      * @param observationData List of observation data
      * @since 12.0
      */
-    public ObservationDataSet(final SatInSystem satellite, final AbsoluteDate tObs,
+    public ObservationDataSet(final SatInSystem satellite, final AbsoluteDate tObs, final int eventFlag,
                               final double rcvrClkOffset, final List<ObservationData> observationData) {
         this.satellite       = satellite;
         this.tObs            = tObs;
+        this.eventFlag       = eventFlag;
         this.observationData = observationData;
         this.rcvrClkOffset   = rcvrClkOffset;
     }
@@ -84,6 +91,14 @@ public class ObservationDataSet implements TimeStamped {
     @Override
     public AbsoluteDate getDate() {
         return tObs;
+    }
+
+    /** Get the event flag.
+     * @return event flag
+     * @since 12.0
+     */
+    public int getEventFlag() {
+        return eventFlag;
     }
 
     /** Get list of observation data.

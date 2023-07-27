@@ -63,7 +63,7 @@ public class PseudoRangeFilteringTest {
         listObsData.add(obsDataDopplerNull);
         listObsData.add(obsDataRange);
         ObservationDataSet obsDataSetNullDoppler = new ObservationDataSet(new SatInSystem(system, prnNumber),
-                                                                          lastObsDataSet.getDate(), prnNumber, listObsData);
+                                                                          lastObsDataSet.getDate(), 0, prnNumber, listObsData);
 
         ObservationData obsDataRangeNull = new ObservationData(rangeType, 10, 0, 0);
         ObservationData obsDataDoppler = new ObservationData(dopplerType, Double.NaN, 0, 0);
@@ -71,7 +71,7 @@ public class PseudoRangeFilteringTest {
         listObsData2.add(obsDataDoppler);
         listObsData2.add(obsDataRangeNull);
         ObservationDataSet obsDataSetNullRange= new ObservationDataSet(new SatInSystem(system, prnNumber),
-                                                                       lastObsDataSet.getDate(), prnNumber, listObsData2);
+                                                                       lastObsDataSet.getDate(), 0, prnNumber, listObsData2);
 
         List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
         copiedListObsDataSet.add(obsDataSetNullRange);
@@ -142,10 +142,10 @@ public class PseudoRangeFilteringTest {
         listObsDataSNR.add(obsDataF2);
         listObsDataSNR.add(obsDataRangeSNR);
         ObservationDataSet obsDataSetRangeGLONASS = new ObservationDataSet(new SatInSystem(SatelliteSystem.GLONASS, prnNumber),
-                                                                           lastObsDataSet.getDate(), prnNumber, listObsDataSatSystem);
+                                                                           lastObsDataSet.getDate(), 0, prnNumber, listObsDataSatSystem);
 
         ObservationDataSet obsDataSetRangeSNR = new ObservationDataSet(new SatInSystem(system, prnNumber),
-                                                                       lastObsDataSet.getDate(), prnNumber, listObsDataSNR);
+                                                                       lastObsDataSet.getDate(), 0, prnNumber, listObsDataSNR);
         //
         List<ObservationDataSet> copiedListObsDataSet = new ArrayList<>(listObsDataSet);
         copiedListObsDataSet.add(obsDataSetRangeGLONASS);

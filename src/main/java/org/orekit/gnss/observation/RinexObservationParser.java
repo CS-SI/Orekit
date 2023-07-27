@@ -212,6 +212,9 @@ public class RinexObservationParser {
         /** Indicator for skipping cyckle slip records (enventFlag == 6). */
         private boolean cycleSlip;
 
+        /** Event flag. */
+        private int eventFlag;
+
         /** Scaling factors. */
         private final List<ObservationType> typesObsScaleFactor;
 
@@ -782,13 +785,13 @@ public class RinexObservationParser {
                            (line, parseInfo) -> {
 
                                // flag
-                               final int eventFlag = RinexUtils.parseInt(line, 28, 1);
+                               parseInfo.eventFlag = RinexUtils.parseInt(line, 28, 1);
 
                                // number of sats
                                parseInfo.nbSatObs   = RinexUtils.parseInt(line, 29, 3);
                                final int nbLinesSat = (parseInfo.nbSatObs + MAX_SAT_PER_RINEX_2_LINE - 1) / MAX_SAT_PER_RINEX_2_LINE;
 
-                               if (eventFlag < 2) {
+                               if (parseInfo.eventFlag < 2) {
                                    // regular observation
                                    parseInfo.specialRecord = false;
                                    parseInfo.cycleSlip     = false;
@@ -807,13 +810,13 @@ public class RinexObservationParser {
                                        parseInfo.rcvrClkOffset = 0.0;
                                    }
 
-                               } else if (eventFlag < 6) {
+                               } else if (parseInfo.eventFlag < 6) {
                                    // moving antenna / new site occupation / header information / external event
                                    // here, number of sats means number of lines to skip
                                    parseInfo.specialRecord = true;
                                    parseInfo.cycleSlip     = false;
                                    parseInfo.nextObsStartLineNumber = parseInfo.lineNumber + parseInfo.nbSatObs + 1;
-                               } else if (eventFlag == 6) {
+                               } else if (parseInfo.eventFlag == 6) {
                                    // cycle slip, we will ignore it during observations parsing
                                    parseInfo.specialRecord = false;
                                    parseInfo.cycleSlip     = true;
@@ -891,6 +894,7 @@ public class RinexObservationParser {
                                     if (!parseInfo.cycleSlip) {
                                         parseInfo.file.addObservationDataSet(new ObservationDataSet(parseInfo.satObs.get(parseInfo.indexObsSat),
                                                                                                     parseInfo.tObs,
+                                                                                                    parseInfo.eventFlag,
                                                                                                     parseInfo.rcvrClkOffset,
                                                                                                     new ArrayList<>(parseInfo.observations)));
                                     }
@@ -940,6 +944,7 @@ public class RinexObservationParser {
                                 if (!(parseInfo.specialRecord || parseInfo.cycleSlip)) {
                                     parseInfo.file.addObservationDataSet(new ObservationDataSet(sat,
                                                                                                 parseInfo.tObs,
+                                                                                                parseInfo.eventFlag,
                                                                                                 parseInfo.rcvrClkOffset,
                                                                                                 new ArrayList<>(parseInfo.observations)));
                                 }
@@ -953,12 +958,12 @@ public class RinexObservationParser {
                            (line, parseInfo) -> {
 
                                // flag
-                               final int eventFlag = RinexUtils.parseInt(line, 31, 1);
+                               parseInfo.eventFlag = RinexUtils.parseInt(line, 31, 1);
 
                                // number of sats
                                parseInfo.nbSatObs   = RinexUtils.parseInt(line, 32, 3);
 
-                               if (eventFlag < 2) {
+                               if (parseInfo.eventFlag < 2) {
                                    // regular observation
                                    parseInfo.specialRecord = false;
                                    parseInfo.cycleSlip     = false;
@@ -977,13 +982,13 @@ public class RinexObservationParser {
                                        parseInfo.rcvrClkOffset = 0.0;
                                    }
 
-                               } else if (eventFlag < 6) {
+                               } else if (parseInfo.eventFlag < 6) {
                                    // moving antenna / new site occupation / header information / external event
                                    // here, number of sats means number of lines to skip
                                    parseInfo.specialRecord = true;
                                    parseInfo.cycleSlip     = false;
                                    parseInfo.nextObsStartLineNumber = parseInfo.lineNumber + parseInfo.nbSatObs + 1;
-                               } else if (eventFlag == 6) {
+                               } else if (parseInfo.eventFlag == 6) {
                                    // cycle slip, we will ignore it during observations parsing
                                    parseInfo.specialRecord = false;
                                    parseInfo.cycleSlip     = true;

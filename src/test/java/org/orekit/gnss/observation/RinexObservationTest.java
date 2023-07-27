@@ -95,7 +95,7 @@ public class RinexObservationTest {
 
     private ObservationDataSet dummyMeasurement(final AbsoluteDate date) {
         return new ObservationDataSet(new SatInSystem(SatelliteSystem.GALILEO, 11),
-                                      date, 0, new ArrayList<>());
+                                      date, 0, 0, new ArrayList<>());
     }
 
 }

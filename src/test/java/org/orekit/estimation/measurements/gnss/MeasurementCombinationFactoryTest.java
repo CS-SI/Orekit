@@ -125,7 +125,7 @@ public class MeasurementCombinationFactoryTest {
         // Build empty observation data set
         final ObservationDataSet emptyDataSet = new ObservationDataSet(new SatInSystem(dataSetRinex2.getSatelliteSystem(),
                                                                                        dataSetRinex2.getPrnNumber()),
-                                                                       dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
+                                                                       dataSetRinex2.getDate(), 0, dataSetRinex2.getRcvrClkOffset(),
                                                                        new ArrayList<ObservationData>());
         // Test first method signature
         final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);
