@@ -16,8 +16,8 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
@@ -37,9 +37,9 @@ import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -183,7 +183,7 @@ public class Geoid implements EarthShape {
         this.referenceEllipsoid = referenceEllipsoid;
         this.harmonics = new HolmesFeatherstoneAttractionModel(
                 referenceEllipsoid.getBodyFrame(), potential);
-        this.defaultDate = geopotential.getReferenceDate();
+        this.defaultDate = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     @Override
@@ -234,7 +234,7 @@ public class Geoid implements EarthShape {
                 .getNormalGravity(geodeticLatitude);
 
         // calculate disturbing potential, T, eq 30.
-        final double mu = this.harmonics.getMu();
+        final double mu = this.harmonics.getMu(date);
         final double T  = this.harmonics.nonCentralPart(date, position, mu);
         // calculate undulation, eq 30
         return T / normalGravity;
@@ -300,11 +300,6 @@ public class Geoid implements EarthShape {
         @Override
         public AbsoluteDate getReferenceDate() {
             return this.provider.getReferenceDate();
-        }
-
-        @Override
-        public double getOffset(final AbsoluteDate date) {
-            return this.provider.getOffset(date);
         }
 
         @Override
@@ -386,7 +381,8 @@ public class Geoid implements EarthShape {
          */
         // transform to body frame
         final Frame bodyFrame = this.getBodyFrame();
-        final Transform frameToBody = frame.getTransformTo(bodyFrame, date);
+        final StaticTransform frameToBody =
+                frame.getStaticTransformTo(bodyFrame, date);
         final Vector3D close = frameToBody.transformPosition(closeInFrame);
         final Line lineInBodyFrame = frameToBody.transformLine(lineInFrame);
 
@@ -453,7 +449,8 @@ public class Geoid implements EarthShape {
         final GeodeticPoint gp = this.transform(point, frame, date);
         final GeodeticPoint gpZero =
                 new GeodeticPoint(gp.getLatitude(), gp.getLongitude(), 0);
-        final Transform bodyToFrame = this.getBodyFrame().getTransformTo(frame, date);
+        final StaticTransform bodyToFrame =
+                this.getBodyFrame().getStaticTransformTo(frame, date);
         return bodyToFrame.transformPosition(this.transform(gpZero));
     }
 
@@ -476,7 +473,7 @@ public class Geoid implements EarthShape {
          */
         // transform to body frame
         final Frame bodyFrame = this.getBodyFrame();
-        final FieldTransform<T> frameToBody = frame.getTransformTo(bodyFrame, date);
+        final FieldStaticTransform<T> frameToBody = frame.getStaticTransformTo(bodyFrame, date);
         final FieldVector3D<T> close = frameToBody.transformPosition(closeInFrame);
         final FieldLine<T> lineInBodyFrame = frameToBody.transformLine(lineInFrame);
 

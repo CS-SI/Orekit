@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,100 +16,97 @@
  */
 package org.orekit.gnss;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
-import org.orekit.gnss.RinexObservationLoader.Parser.PhaseShiftCorrection;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for Rinex observation file header.
  * @since 9.2
  */
-public class RinexObservationHeader {
-
-    /** Rinex Version. */
-    private final double rinexVersion;
-
-    /** Satellite System of the Rinex file (G/R/S/E/M). */
-    private final SatelliteSystem satelliteSystem;
+public class RinexObservationHeader extends RinexBaseHeader {
 
     /** Name of the Antenna Marker. */
-    private final String markerName;
+    private String markerName;
 
     /** Number of Antenna marker. */
-    private final String markerNumber;
+    private String markerNumber;
 
     /** Type of Antenna marker. */
     private String markerType;
 
     /** Name of Observer. */
-    private final String observerName;
+    private String observerName;
 
     /** Name of Agency. */
-    private final String agencyName;
+    private String agencyName;
 
     /** Receiver Number. */
-    private final String receiverNumber;
+    private String receiverNumber;
 
     /** Receiver Type. */
-    private final String receiverType;
+    private String receiverType;
 
     /** Receiver version. */
-    private final String receiverVersion;
+    private String receiverVersion;
 
     /** Antenna Number. */
-    private final String antennaNumber;
+    private String antennaNumber;
 
     /** Antenna Type. */
-    private final String antennaType;
+    private String antennaType;
 
     /** Approximate Marker Position (WGS84). */
-    private final Vector3D approxPos;
+    private Vector3D approxPos;
 
     /** Antenna Height. */
-    private final double antHeight;
+    private double antennaHeight;
 
     /** Eccentricities of antenna center. */
-    private final Vector2D eccentricities;
+    private Vector2D eccentricities;
 
     /** Position of antenna reference point for antenna on vehicle. */
     private Vector3D antRefPoint;
 
     /** Observation code of the average phasecenter position w/r to antenna reference point. */
-    private String obsCode;
+    private String observationCode;
 
     /** Antenna phasecenter.
      * North/East/Up (fixed station) or X/Y/Z in body fixed system (vehicle). */
-    private Vector3D antPhaseCenter;
+    private Vector3D antennaPhaseCenter;
 
     /** Antenna B.Sight.
      * Direction of the “vertical” antenna axis towards the GNSS satellites.  */
-    private Vector3D antBSight;
+    private Vector3D antennaBSight;
 
     /** Azimuth of the zero direction of a fixed antenna (degrees, from north). */
-    private double antAzi;
+    private double antennaAzimuth;
 
     /** Zero direction of antenna. */
-    private Vector3D antZeroDir;
+    private Vector3D antennaZeroDirection;
 
     /** Current center of mass (X,Y,Z, meters) of vehicle in body fixed coordinate system. */
     private Vector3D centerMass;
 
     /** Unit of the carrier to noise ratio observables Snn (if present) DBHZ: S/N given in dbHz. */
-    private String sigStrengthUnit;
+    private String signalStrengthUnit;
 
     /** Observation interval in seconds. */
-    private final double interval;
+    private double interval;
 
     /** Time of First observation record. */
-    private final AbsoluteDate tFirstObs;
+    private AbsoluteDate tFirstObs;
 
-    /** Time of las observation record. */
-    private final AbsoluteDate tLastObs;
+    /** Time of last observation record. */
+    private AbsoluteDate tLastObs;
 
     /** Realtime-derived receiver clock offset. */
-    private final int clkOffset;
+    private int clkOffset;
 
     /** List of applied differential code bias corrections. */
     private List<AppliedDCBS> listAppliedDCBS;
@@ -120,178 +117,80 @@ public class RinexObservationHeader {
     /** List of phase shift correction used to generate phases consistent w/r to cycle shifts. */
     private List<PhaseShiftCorrection> phaseShiftCorrections;
 
+    /** List of scale factor corrections. */
+    private Map<SatelliteSystem, List<ScaleFactorCorrection>> scaleFactorCorrections;
+
+    /** List of GLONASS satellite-channel associations.
+     * @since 12.0
+     */
+    private final List<GlonassSatelliteChannel> glonassChannels;
+
+    /** Number of observations per satellite.
+     * @since 12.0
+     */
+    private final Map<SatInSystem, Map<ObservationType, Integer>> nbObsPerSat;
+
     /** Number of leap seconds since 6-Jan-1980. */
-    private final int leapSeconds;
+    private int leapSeconds;
 
     /** Future or past leap seconds ΔtLSF (BNK).
-     * i.e. future leap second if the week and day number are in the future. */
+     * i.e. future leap second if the week and day number are in the future.
+     */
     private int leapSecondsFuture;
 
     /** Respective leap second week number.
      * For GPS, GAL, QZS and IRN, weeks since 6-Jan-1980.
-     * When BDS only file leap seconds specified, weeks since 1-Jan-2006 */
+     * When BDS only file leap seconds specified, weeks since 1-Jan-2006
+     */
     private int leapSecondsWeekNum;
 
     /** Respective leap second day number. */
     private int leapSecondsDayNum;
 
-    /** Simple constructor, for Rinex 2 Header.
-     * @param rinexVersion rinex version
-     * @param satelliteSystem Satellite System of the observation file (G/R/S/E/M)
+    /** Code phase bias correction for GLONASS C1C signal.
+     * @since 12.0
+     */
+    private double c1cCodePhaseBias;
+
+    /** Code phase bias correction for GLONASS C1P signal.
+     * @since 12.0
+     */
+    private double c1pCodePhaseBias;
+
+    /** Code phase bias correction for GLONASS C2C signal.
+     * @since 12.0
+     */
+    private double c2cCodePhaseBias;
+
+    /** Code phase bias correction for GLONASS C2P signal.
+     * @since 12.0
+     */
+    private double c2pCodePhaseBias;
+
+    /** Simple constructor.
+     */
+    public RinexObservationHeader() {
+        super(RinexFileType.OBSERVATION);
+        antennaAzimuth         = Double.NaN;
+        antennaHeight          = Double.NaN;
+        eccentricities         = Vector2D.ZERO;
+        clkOffset              = -1;
+        interval               = Double.NaN;
+        leapSeconds            = 0;
+        listAppliedDCBS        = new ArrayList<>();
+        listAppliedPCVS        = new ArrayList<>();
+        phaseShiftCorrections  = new ArrayList<>();
+        scaleFactorCorrections = new HashMap<>();
+        glonassChannels        = new ArrayList<>();
+        nbObsPerSat            = new HashMap<>();
+        tLastObs               = AbsoluteDate.FUTURE_INFINITY;
+    }
+
+    /** Set name of the antenna marker.
      * @param markerName name of the antenna marker
-     * @param markerNumber number of the antenna marker
-     * @param markerType Type of Antenna marker
-     * @param observerName name of the observer
-     * @param agencyName name of the agency
-     * @param receiverNumber number of the receiver
-     * @param receiverType type of the receiver
-     * @param receiverVersion version of the receiver
-     * @param antennaNumber antenna number
-     * @param antennaType type of the antenna
-     * @param approxPos Approximate Marker Position (WGS84)
-     * @param antHeight antenna height
-     * @param eccentricities Eccentricities of antenna center
-     * @param antRefPoint Position of antenna reference point for antenna on vehicle
-     * @param antBSight Antenna B.Sight
-     * @param centerMass Current center of mass of vehicle in body fixed coordinate system
-     * @param interval Observation interval in seconds
-     * @param tFirstObs Time of First observation record
-     * @param tLastObs Time of last observation record
-     * @param clkOffset Realtime-derived receiver clock offset
-     * @param leapSeconds Number of leap seconds since 6-Jan-1980
      */
-    public RinexObservationHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
-                       final String markerName, final String markerNumber, final String markerType,
-                       final String observerName, final String agencyName, final String receiverNumber,
-                       final String receiverType, final String receiverVersion, final String antennaNumber,
-                       final String antennaType, final Vector3D approxPos, final double antHeight,
-                       final Vector2D eccentricities, final Vector3D antRefPoint, final Vector3D antBSight,
-                       final Vector3D centerMass, final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
-                       final int clkOffset, final int leapSeconds) {
-        this.rinexVersion = rinexVersion;
-        this.satelliteSystem = satelliteSystem;
+    public void setMarkerName(final String markerName) {
         this.markerName = markerName;
-        this.markerNumber = markerNumber;
-        this.markerType = markerType;
-        this.observerName = observerName;
-        this.agencyName = agencyName;
-        this.receiverNumber = receiverNumber;
-        this.receiverType = receiverType;
-        this.receiverVersion = receiverVersion;
-        this.antennaNumber = antennaNumber;
-        this.antennaType = antennaType;
-        this.approxPos = approxPos;
-        this.antHeight = antHeight;
-        this.eccentricities = eccentricities;
-        this.antRefPoint = antRefPoint;
-        this.antBSight = antBSight;
-        this.centerMass = centerMass;
-        this.interval = interval;
-        this.tFirstObs = tFirstObs;
-        this.tLastObs = tLastObs;
-        this.clkOffset = clkOffset;
-        this.leapSeconds = leapSeconds;
-
-    }
-
-    /** Simple constructor, for Rinex 3 Header.
-    * @param rinexVersion rinex version
-    * @param satelliteSystem Satellite System of the observation file (G/R/S/E/M)
-    * @param markerName name of the antenna marker
-    * @param markerNumber number of the antenna marker
-    * @param markerType Type of Antenna marker
-    * @param observerName name of the observer
-    * @param agencyName name of the agency
-    * @param receiverNumber number of the receiver
-    * @param receiverType type of the receiver
-    * @param receiverVersion version of the receiver
-    * @param antennaNumber antenna number
-    * @param antennaType type of the antenna
-    * @param approxPos Approximate Marker Position (WGS84)
-    * @param antHeight antenna height
-    * @param eccentricities Eccentricities of antenna center
-    * @param antRefPoint Position of antenna reference point for antenna on vehicle
-    * @param obsCode Observation code of the average phasecenter position w/r to antenna reference point
-    * @param antPhaseCenter Antenna phasecenter
-    * @param antBSight Antenna B.Sight
-    * @param antAzi Azimuth of the zero direction of a fixed antenna
-    * @param antZeroDir Zero direction of antenna
-    * @param centerMass Current center of mass of vehicle in body fixed coordinate system
-    * @param sigStrengthUnit Unit of the carrier to noise ratio observables
-    * @param interval Observation interval in seconds
-    * @param tFirstObs Time of First observation record
-    * @param tLastObs Time of last observation record
-    * @param clkOffset Realtime-derived receiver clock offset
-    * @param listAppliedDCBS List of applied differential code bias corrections
-    * @param listAppliedPCVS List of antenna center variation corrections
-    * @param phaseShiftCorrections List of phase shift correction used to generate phases consistent w/r to cycle shifts
-    * @param leapSeconds Number of leap seconds since 6-Jan-1980
-    * @param leapSecondsFuture Future or past leap seconds
-    * @param leapSecondsWeekNum Respective leap second week number
-    * @param leapSecondsDayNum Respective leap second day number
-    */
-    public RinexObservationHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
-                       final String markerName, final String markerNumber, final String markerType,
-                       final String observerName, final String agencyName, final String receiverNumber,
-                       final String receiverType, final String receiverVersion, final String antennaNumber,
-                       final String antennaType, final Vector3D approxPos, final double antHeight,
-                       final Vector2D eccentricities, final Vector3D antRefPoint, final String obsCode,
-                       final Vector3D antPhaseCenter, final Vector3D antBSight, final double antAzi,
-                       final Vector3D antZeroDir, final Vector3D centerMass, final String sigStrengthUnit,
-                       final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
-                       final int clkOffset, final List<AppliedDCBS> listAppliedDCBS,
-                       final List<AppliedPCVS> listAppliedPCVS,
-                       final List<PhaseShiftCorrection> phaseShiftCorrections, final int leapSeconds,
-                       final int leapSecondsFuture, final int leapSecondsWeekNum, final int leapSecondsDayNum) {
-        this.rinexVersion = rinexVersion;
-        this.satelliteSystem = satelliteSystem;
-        this.markerName = markerName;
-        this.markerNumber = markerNumber;
-        this.observerName = observerName;
-        this.agencyName = agencyName;
-        this.receiverNumber = receiverNumber;
-        this.receiverType = receiverType;
-        this.receiverVersion = receiverVersion;
-        this.antennaNumber = antennaNumber;
-        this.antennaType = antennaType;
-        this.approxPos = approxPos;
-        this.antHeight = antHeight;
-        this.eccentricities = eccentricities;
-        this.clkOffset = clkOffset;
-        this.interval = interval;
-        this.tFirstObs = tFirstObs;
-        this.tLastObs = tLastObs;
-        this.leapSeconds = leapSeconds;
-        this.markerType = markerType;
-        this.sigStrengthUnit = sigStrengthUnit;
-        this.phaseShiftCorrections = phaseShiftCorrections;
-        this.obsCode = obsCode;
-        this.listAppliedDCBS = listAppliedDCBS;
-        this.listAppliedPCVS = listAppliedPCVS;
-        this.leapSecondsDayNum = leapSecondsDayNum;
-        this.leapSecondsFuture = leapSecondsFuture;
-        this.leapSecondsWeekNum = leapSecondsWeekNum;
-        this.centerMass = centerMass;
-        this.antAzi = antAzi;
-        this.antBSight = antBSight;
-        this.antZeroDir = antZeroDir;
-        this.antRefPoint = antRefPoint;
-        this.antPhaseCenter = antPhaseCenter;
-
-    }
-
-    /** Get Rinex Version.
-     * @return rinex version of the file
-     */
-    public double getRinexVersion() {
-        return rinexVersion;
-    }
-
-    /** Get Satellite System.
-     * @return satellite system of the observation file
-     */
-    public SatelliteSystem getSatelliteSystem() {
-        return satelliteSystem;
     }
 
     /** Get name of the antenna marker.
@@ -301,11 +200,25 @@ public class RinexObservationHeader {
         return markerName;
     }
 
+    /** Set number of the antenna marker.
+     * @param markerNumber number of the antenna marker
+     */
+    public void setMarkerNumber(final String markerNumber) {
+        this.markerNumber = markerNumber;
+    }
+
     /** Get number of the antenna marker.
      * @return number of the antenna marker
      */
     public String getMarkerNumber() {
         return markerNumber;
+    }
+
+    /** Set name of the observer.
+     * @param observerName name of the observer
+     */
+    public void setObserverName(final String observerName) {
+        this.observerName = observerName;
     }
 
     /** Get name of the observer.
@@ -315,11 +228,26 @@ public class RinexObservationHeader {
         return observerName;
     }
 
+    /**
+     * Setter for the agency name.
+     * @param agencyName the agency name to set
+     */
+    public void setAgencyName(final String agencyName) {
+        this.agencyName = agencyName;
+    }
+
     /** Get name of the agency.
      * @return name of the agency
      */
     public String getAgencyName() {
         return agencyName;
+    }
+
+    /** Set the number of the receiver.
+     * @param receiverNumber number of the receiver
+     */
+    public void setReceiverNumber(final String receiverNumber) {
+        this.receiverNumber = receiverNumber;
     }
 
     /** Get the number of the receiver.
@@ -329,11 +257,25 @@ public class RinexObservationHeader {
         return receiverNumber;
     }
 
+    /** Set the type of the receiver.
+     * @param receiverType type of the receiver
+     */
+    public void setReceiverType(final String receiverType) {
+        this.receiverType = receiverType;
+    }
+
     /** Get the type of the receiver.
      * @return type of the receiver
      */
     public String getReceiverType() {
         return receiverType;
+    }
+
+    /** Set the version of the receiver.
+     * @param receiverVersion version of the receiver
+     */
+    public void setReceiverVersion(final String receiverVersion) {
+        this.receiverVersion = receiverVersion;
     }
 
     /** Get the version of the receiver.
@@ -343,11 +285,25 @@ public class RinexObservationHeader {
         return receiverVersion;
     }
 
+    /** Set the number of the antenna.
+     * @param antennaNumber number of the antenna
+     */
+    public void setAntennaNumber(final String antennaNumber) {
+        this.antennaNumber = antennaNumber;
+    }
+
     /** Get the number of the antenna.
      * @return number of the antenna
      */
     public String getAntennaNumber() {
         return antennaNumber;
+    }
+
+    /** Set the type of the antenna.
+     * @param antennaType type of the antenna
+     */
+    public void setAntennaType(final String antennaType) {
+        this.antennaType = antennaType;
     }
 
     /** Get the type of the antenna.
@@ -357,6 +313,13 @@ public class RinexObservationHeader {
         return antennaType;
     }
 
+    /** Set the Approximate Marker Position.
+     * @param approxPos Approximate Marker Position
+     */
+    public void setApproxPos(final Vector3D approxPos) {
+        this.approxPos = approxPos;
+    }
+
     /** Get the Approximate Marker Position.
      * @return Approximate Marker Position
      */
@@ -364,11 +327,25 @@ public class RinexObservationHeader {
         return approxPos;
     }
 
+    /** Set the antenna height.
+     * @param antennaHeight height of the antenna
+     */
+    public void setAntennaHeight(final double antennaHeight) {
+        this.antennaHeight = antennaHeight;
+    }
+
     /** Get the antenna height.
      * @return height of the antenna
      */
     public double getAntennaHeight() {
-        return antHeight;
+        return antennaHeight;
+    }
+
+    /** Set the eccentricities of antenna center.
+     * @param eccentricities Eccentricities of antenna center
+     */
+    public void setEccentricities(final Vector2D eccentricities) {
+        this.eccentricities = eccentricities;
     }
 
     /** Get the eccentricities of antenna center.
@@ -378,11 +355,25 @@ public class RinexObservationHeader {
         return eccentricities;
     }
 
+    /** Set the realtime-derived receiver clock offset.
+     * @param clkOffset realtime-derived receiver clock offset
+     */
+    public void setClkOffset(final int clkOffset) {
+        this.clkOffset = clkOffset;
+    }
+
     /** Get the realtime-derived receiver clock offset.
      * @return realtime-derived receiver clock offset
      */
     public int getClkOffset() {
         return clkOffset;
+    }
+
+    /** Set the observation interval in seconds.
+     * @param interval Observation interval in seconds
+     */
+    public void setInterval(final double interval) {
+        this.interval = interval;
     }
 
     /** Get the observation interval in seconds.
@@ -392,11 +383,25 @@ public class RinexObservationHeader {
         return interval;
     }
 
+    /** Set the time of First observation record.
+     * @param firstObs Time of First observation record
+     */
+    public void setTFirstObs(final AbsoluteDate firstObs) {
+        this.tFirstObs = firstObs;
+    }
+
     /** Get the time of First observation record.
      * @return Time of First observation record
      */
     public AbsoluteDate getTFirstObs() {
         return tFirstObs;
+    }
+
+    /** Set the time of last observation record.
+     * @param lastObs Time of last observation record
+     */
+    public void setTLastObs(final AbsoluteDate lastObs) {
+        this.tLastObs = lastObs;
     }
 
     /** Get the time of last observation record.
@@ -406,11 +411,25 @@ public class RinexObservationHeader {
         return tLastObs;
     }
 
+    /** Set the Number of leap seconds since 6-Jan-1980.
+     * @param leapSeconds Number of leap seconds since 6-Jan-1980
+     */
+    public void setLeapSeconds(final int leapSeconds) {
+        this.leapSeconds = leapSeconds;
+    }
+
     /** Get the Number of leap seconds since 6-Jan-1980.
      * @return Number of leap seconds since 6-Jan-1980
      */
     public int getLeapSeconds() {
         return leapSeconds;
+    }
+
+    /** Set type of the antenna marker.
+     * @param markerType type of the antenna marker
+     */
+    public void setMarkerType(final String markerType) {
+        this.markerType = markerType;
     }
 
     /** Get type of the antenna marker.
@@ -420,6 +439,13 @@ public class RinexObservationHeader {
         return markerType;
     }
 
+    /** Set the position of antenna reference point for antenna on vehicle.
+     * @param refPoint Position of antenna reference point for antenna on vehicle
+     */
+    public void setAntennaReferencePoint(final Vector3D refPoint) {
+        this.antRefPoint = refPoint;
+    }
+
     /** Get the position of antenna reference point for antenna on vehicle.
      * @return Position of antenna reference point for antenna on vehicle
      */
@@ -427,39 +453,81 @@ public class RinexObservationHeader {
         return antRefPoint;
     }
 
+    /** Set the observation code of the average phasecenter position w/r to antenna reference point.
+     * @param observationCode Observation code of the average phasecenter position w/r to antenna reference point
+     */
+    public void setObservationCode(final String observationCode) {
+        this.observationCode = observationCode;
+    }
+
     /** Get the observation code of the average phasecenter position w/r to antenna reference point.
      * @return Observation code of the average phasecenter position w/r to antenna reference point
      */
     public String getObservationCode() {
-        return obsCode;
+        return observationCode;
+    }
+
+    /** Set the antenna phasecenter.
+     * @param antennaPhaseCenter Antenna phasecenter
+     */
+    public void setAntennaPhaseCenter(final Vector3D antennaPhaseCenter) {
+        this.antennaPhaseCenter = antennaPhaseCenter;
     }
 
     /** Get the antenna phasecenter.
      * @return Antenna phasecenter
      */
     public Vector3D getAntennaPhaseCenter() {
-        return antPhaseCenter;
+        return antennaPhaseCenter;
+    }
+
+    /** Set the antenna B.Sight.
+     * @param antennaBSight Antenna B.Sight
+     */
+    public void setAntennaBSight(final Vector3D antennaBSight) {
+        this.antennaBSight = antennaBSight;
     }
 
     /** Get the antenna B.Sight.
      * @return Antenna B.Sight
      */
     public Vector3D getAntennaBSight() {
-        return antBSight;
+        return antennaBSight;
+    }
+
+    /** Set the azimuth of the zero direction of a fixed antenna.
+     * @param antennaAzimuth Azimuth of the zero direction of a fixed antenna
+     */
+    public void setAntennaAzimuth(final double antennaAzimuth) {
+        this.antennaAzimuth = antennaAzimuth;
     }
 
     /** Get the azimuth of the zero direction of a fixed antenna.
      * @return Azimuth of the zero direction of a fixed antenna
      */
     public double getAntennaAzimuth() {
-        return antAzi;
+        return antennaAzimuth;
+    }
+
+    /** Set the zero direction of antenna.
+     * @param antennaZeroDirection Zero direction of antenna
+     */
+    public void setAntennaZeroDirection(final Vector3D antennaZeroDirection) {
+        this.antennaZeroDirection = antennaZeroDirection;
     }
 
     /** Get the zero direction of antenna.
      * @return Zero direction of antenna
      */
     public Vector3D getAntennaZeroDirection() {
-        return antZeroDir;
+        return antennaZeroDirection;
+    }
+
+    /** Set the current center of mass of vehicle in body fixed coordinate system.
+     * @param centerMass Current center of mass of vehicle in body fixed coordinate system
+     */
+    public void setCenterMass(final Vector3D centerMass) {
+        this.centerMass = centerMass;
     }
 
     /** Get the current center of mass of vehicle in body fixed coordinate system.
@@ -469,11 +537,25 @@ public class RinexObservationHeader {
         return centerMass;
     }
 
+    /** Set the unit of the carrier to noise ratio observables.
+     * @param signalStrengthUnit Unit of the carrier to noise ratio observables
+     */
+    public void setSignalStrengthUnit(final String signalStrengthUnit) {
+        this.signalStrengthUnit = signalStrengthUnit;
+    }
+
     /** Get the unit of the carrier to noise ratio observables.
      * @return Unit of the carrier to noise ratio observables
      */
     public String getSignalStrengthUnit() {
-        return sigStrengthUnit;
+        return signalStrengthUnit;
+    }
+
+    /** Set the future or past leap seconds.
+     * @param leapSecondsFuture Future or past leap seconds
+     */
+    public void setLeapSecondsFuture(final int leapSecondsFuture) {
+        this.leapSecondsFuture = leapSecondsFuture;
     }
 
     /** Get the future or past leap seconds.
@@ -483,11 +565,25 @@ public class RinexObservationHeader {
         return leapSecondsFuture;
     }
 
+    /** Set the respective leap second week number.
+     * @param leapSecondsWeekNum Respective leap second week number
+     */
+    public void setLeapSecondsWeekNum(final int leapSecondsWeekNum) {
+        this.leapSecondsWeekNum = leapSecondsWeekNum;
+    }
+
     /** Get the respective leap second week number.
      * @return Respective leap second week number
      */
     public int getLeapSecondsWeekNum() {
         return leapSecondsWeekNum;
+    }
+
+    /** Set the respective leap second day number.
+     * @param leapSecondsDayNum Respective leap second day number
+     */
+    public void setLeapSecondsDayNum(final int leapSecondsDayNum) {
+        this.leapSecondsDayNum = leapSecondsDayNum;
     }
 
     /** Get the respective leap second day number.
@@ -497,25 +593,171 @@ public class RinexObservationHeader {
         return leapSecondsDayNum;
     }
 
+    /** Add applied differential code bias corrections.
+     * @param appliedDCBS applied differential code bias corrections to add
+     */
+    public void addAppliedDCBS(final AppliedDCBS appliedDCBS) {
+        listAppliedDCBS.add(appliedDCBS);
+    }
+
     /** Get the list of applied differential code bias corrections.
      * @return list of applied differential code bias corrections
      */
     public List<AppliedDCBS> getListAppliedDCBS() {
-        return listAppliedDCBS;
+        return Collections.unmodifiableList(listAppliedDCBS);
+    }
+
+    /** Add antenna center variation corrections.
+     * @param appliedPCVS antenna center variation corrections
+     */
+    public void addAppliedPCVS(final AppliedPCVS appliedPCVS) {
+        listAppliedPCVS.add(appliedPCVS);
     }
 
     /** Get the list of antenna center variation corrections.
      * @return List of antenna center variation corrections
      */
     public List<AppliedPCVS> getListAppliedPCVS() {
-        return listAppliedPCVS;
+        return Collections.unmodifiableList(listAppliedPCVS);
+    }
+
+    /** Add phase shift correction used to generate phases consistent w/r to cycle shifts.
+     * @param phaseShiftCorrection phase shift correction used to generate phases consistent w/r to cycle shifts
+     */
+    public void addPhaseShiftCorrection(final PhaseShiftCorrection phaseShiftCorrection) {
+        phaseShiftCorrections.add(phaseShiftCorrection);
     }
 
     /** Get the list of phase shift correction used to generate phases consistent w/r to cycle shifts.
      * @return List of phase shift correction used to generate phases consistent w/r to cycle shifts
      */
     public List<PhaseShiftCorrection> getPhaseShiftCorrections() {
-        return phaseShiftCorrections;
+        return Collections.unmodifiableList(phaseShiftCorrections);
+    }
+
+    /** Add scale factor correction.
+     * @param satelliteSystem system to which this scaling factor applies
+     * @param scaleFactorCorrection scale factor correction
+     */
+    public void addScaleFactorCorrection(final SatelliteSystem satelliteSystem, final ScaleFactorCorrection scaleFactorCorrection) {
+        List<ScaleFactorCorrection> sfc = scaleFactorCorrections.get(satelliteSystem);
+        if (sfc == null) {
+            sfc = new ArrayList<>();
+            scaleFactorCorrections.put(satelliteSystem, sfc);
+        }
+        sfc.add(scaleFactorCorrection);
+    }
+
+    /** Get the list of scale factor correction.
+     * @param satelliteSystem system to which this scaling factor applies
+     * @return List of scale factor correction
+     */
+    public List<ScaleFactorCorrection> getScaleFactorCorrections(final SatelliteSystem satelliteSystem) {
+        final List<ScaleFactorCorrection> sfc = scaleFactorCorrections.get(satelliteSystem);
+        return sfc == null ? Collections.emptyList() : Collections.unmodifiableList(sfc);
+    }
+
+    /** Add GLONASS satellite/channel association.
+     * @param glonassChannel GLONASS satellite/channel association
+     * @since 12.0
+     */
+    public void addGlonassChannel(final GlonassSatelliteChannel glonassChannel) {
+        glonassChannels.add(glonassChannel);
+    }
+
+    /** Get the list of GLONASS satellite/channel associations.
+     * @return List of GLONASS satellite/channel associations
+     * @since 12.0
+     */
+    public List<GlonassSatelliteChannel> getGlonassChannels() {
+        return Collections.unmodifiableList(glonassChannels);
+    }
+
+    /** Set number of observations for a satellite.
+     * @param sat satellite
+     * @param type observation type
+     * @param nbObs number of observations of this type for this satellite
+     * @since 12.0
+     */
+    public void setNbObsPerSatellite(final SatInSystem sat, final ObservationType type, final int nbObs) {
+        Map<ObservationType, Integer> satNbObs = nbObsPerSat.get(sat);
+        if (satNbObs == null) {
+            satNbObs = new HashMap<>();
+            nbObsPerSat.put(sat, satNbObs);
+        }
+        satNbObs.put(type, nbObs);
+    }
+
+    /** Get an unmodifiable view of the map of number of observations per satellites.
+     * @return unmodifiable view of the map of number of observations per satellites
+     * @since 12.0
+     */
+    public Map<SatInSystem, Map<ObservationType, Integer>> getNbObsPerSat() {
+        return Collections.unmodifiableMap(nbObsPerSat);
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.
+     * @param c1cCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C1C} signal
+     * @since 12.0
+     */
+    public void setC1cCodePhaseBias(final double c1cCodePhaseBias) {
+        this.c1cCodePhaseBias = c1cCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C1C} signal
+     * @since 12.0
+     */
+    public double getC1cCodePhaseBias() {
+        return c1cCodePhaseBias;
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C1P} signal.
+     * @param c1pCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C1P} signal
+     * @since 12.0
+     */
+    public void setC1pCodePhaseBias(final double c1pCodePhaseBias) {
+        this.c1pCodePhaseBias = c1pCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C1P} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C1P} signal
+     * @since 12.0
+     */
+    public double getC1pCodePhaseBias() {
+        return c1pCodePhaseBias;
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C2C} signal.
+     * @param c2cCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C2C} signal
+     * @since 12.0
+     */
+    public void setC2cCodePhaseBias(final double c2cCodePhaseBias) {
+        this.c2cCodePhaseBias = c2cCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C2C} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C2C} signal
+     * @since 12.0
+     */
+    public double getC2cCodePhaseBias() {
+        return c2cCodePhaseBias;
+    }
+
+    /** Set the code phase bias correction for GLONASS {@link ObservationType#C2P} signal.
+     * @param c2pCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C2P} signal
+     * @since 12.0
+     */
+    public void setC2pCodePhaseBias(final double c2pCodePhaseBias) {
+        this.c2pCodePhaseBias = c2pCodePhaseBias;
+    }
+
+    /** Get the code phase bias correction for GLONASS {@link ObservationType#C2P} signal.
+     * @return code phase bias correction for GLONASS {@link ObservationType#C2P} signal
+     * @since 12.0
+     */
+    public double getC2pCodePhaseBias() {
+        return c2pCodePhaseBias;
     }
 
 }

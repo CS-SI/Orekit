@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -313,10 +313,10 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
                 // Fill ah, aw, zhd and zwd lists
                 if (line.length() > 0 && !line.startsWith("!")) {
                     final String[] values_line = SEPARATOR.split(line);
-                    ah.add(Double.valueOf(values_line[2]));
-                    aw.add(Double.valueOf(values_line[3]));
-                    zhd.add(Double.valueOf(values_line[4]));
-                    zwd.add(Double.valueOf(values_line[5]));
+                    ah.add(Double.parseDouble(values_line[2]));
+                    aw.add(Double.parseDouble(values_line[3]));
+                    zhd.add(Double.parseDouble(values_line[4]));
+                    zwd.add(Double.parseDouble(values_line[5]));
                 }
             }
 

@@ -22,12 +22,15 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * A writer for OEM files.
@@ -74,27 +77,84 @@ public class StreamingOemWriter implements AutoCloseable {
     private final OemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final OdmHeader header;
 
     /** Current metadata. */
     private final OemMetadata metadata;
 
+    /** If the propagator's frame should be used. */
+    private final boolean useAttitudeFrame;
+
+    /** If acceleration should be included in the output. */
+    private final boolean includeAcceleration;
+
     /** Indicator for writing header. */
     private boolean headerWritePending;
 
-    /** Simple constructor.
+    /**
+     * Construct a writer that for each segment uses the reference frame of the
+     * first state's attitude.
+     *
      * @param generator generator for OEM output
-     * @param writer writer for the AEM message format
-     * @param header file header (may be null)
-     * @param template template for metadata
+     * @param writer    writer for the AEM message format
+     * @param header    file header (may be null)
+     * @param template  template for metadata
      * @since 11.0
+     * @see #StreamingOemWriter(Generator, OemWriter, OdmHeader, OemMetadata, boolean)
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
-                              final Header header, final OemMetadata template) {
+                              final OdmHeader header, final OemMetadata template) {
+        this(generator, writer, header, template, true);
+    }
+
+    /**
+     * Construct a writer that writes position, velocity, and acceleration at
+     * each time step.
+     *
+     * @param generator        generator for OEM output
+     * @param writer           writer for the AEM message format
+     * @param header           file header (may be null)
+     * @param template         template for metadata
+     * @param useAttitudeFrame if {@code true} then the reference frame for each
+     *                         segment is taken from the first state's attitude.
+     *                         Otherwise the {@code template}'s reference frame
+     *                         is used, {@link OemMetadata#getReferenceFrame()}.
+     * @see #StreamingOemWriter(Generator, OemWriter, OdmHeader, OemMetadata, boolean, boolean)
+     * @since 11.1.2
+     */
+    public StreamingOemWriter(final Generator generator, final OemWriter writer,
+                              final OdmHeader header, final OemMetadata template,
+                              final boolean useAttitudeFrame) {
+        this(generator, writer, header, template, useAttitudeFrame, true);
+    }
+
+    /**
+     * Simple constructor.
+     *
+     * @param generator           generator for OEM output
+     * @param writer              writer for the AEM message format
+     * @param header              file header (may be null)
+     * @param template            template for metadata
+     * @param useAttitudeFrame    if {@code true} then the reference frame for
+     *                            each segment is taken from the first state's
+     *                            attitude. Otherwise the {@code template}'s
+     *                            reference frame is used, {@link
+     *                            OemMetadata#getReferenceFrame()}.
+     * @param includeAcceleration if {@code true} then acceleration is included
+     *                            in the OEM file produced. Otherwise only
+     *                            position and velocity is included.
+     * @since 11.1.2
+     */
+    public StreamingOemWriter(final Generator generator, final OemWriter writer,
+                              final OdmHeader header, final OemMetadata template,
+                              final boolean useAttitudeFrame,
+                              final boolean includeAcceleration) {
         this.generator          = generator;
         this.writer             = writer;
         this.header             = header;
         this.metadata           = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.useAttitudeFrame   = useAttitudeFrame;
+        this.includeAcceleration = includeAcceleration;
         this.headerWritePending = true;
     }
 
@@ -116,6 +176,9 @@ public class StreamingOemWriter implements AutoCloseable {
 
     /** A writer for a segment of an OEM. */
     public class SegmentWriter implements OrekitFixedStepHandler {
+
+        /** Reference frame of this segment. */
+        private Frame frame;
 
         /**
          * {@inheritDoc}
@@ -144,7 +207,12 @@ public class StreamingOemWriter implements AutoCloseable {
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
-                metadata.setReferenceFrame(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
+                if (useAttitudeFrame) {
+                    frame = s0.getAttitude().getReferenceFrame();
+                    metadata.setReferenceFrame(FrameFacade.map(frame));
+                } else {
+                    frame = metadata.getFrame();
+                }
                 writer.writeMetadata(generator, metadata);
                 writer.startData(generator);
             } catch (IOException e) {
@@ -156,7 +224,9 @@ public class StreamingOemWriter implements AutoCloseable {
         @Override
         public void handleStep(final SpacecraftState currentState) {
             try {
-                writer.writeOrbitEphemerisLine(generator, metadata, currentState.getPVCoordinates(), true);
+                final TimeStampedPVCoordinates pv =
+                        currentState.getPVCoordinates(frame);
+                writer.writeOrbitEphemerisLine(generator, metadata, pv, includeAcceleration);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }

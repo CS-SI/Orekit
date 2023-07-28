@@ -16,8 +16,8 @@
  */
 package org.orekit.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Hank Grabowski
@@ -32,7 +32,7 @@ public class OrekitConfigurationTest {
     public void testGetSetCacheSlotsNumber() {
         int defaultSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assert.assertNotEquals(defaultSlots, 0);
+        Assertions.assertNotEquals(defaultSlots, 0);
 
         int setSlots = 105;
 
@@ -40,7 +40,7 @@ public class OrekitConfigurationTest {
 
         int getSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assert.assertEquals(getSlots, setSlots);
+        Assertions.assertEquals(getSlots, setSlots);
 
     }
 }

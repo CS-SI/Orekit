@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,9 @@
  * EventDetector} instances are registered to any {@link org.orekit.propagation.Propagator
  * Propagator}. When the event associated with the detector occurs, the propagator interrupts
  * the propagation and calls the {@link
- * org.orekit.propagation.events.EventDetector#eventOccurred(SpacecraftState, boolean) eventOccurred}
- * method of the event detector, which can do whatever the user want and either stop or resume
+ * org.orekit.propagation.events.handlers.EventHandler#eventOccurred(org.orekit.propagation.SpacecraftState,
+ * org.orekit.propagation.events.EventDetector, boolean) eventOccurred}
+ * method of the event handler, which can do whatever the user want and either stop or resume
  * propagation, optionally resetting the state.
  *
  * <p>

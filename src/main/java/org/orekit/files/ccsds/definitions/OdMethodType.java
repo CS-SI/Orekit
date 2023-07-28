@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.orekit.files.ccsds.ndm.odm.ocm.Ocm;
 
-/** Type of orbit determination method used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
+/** Type of orbit determination method used in CCSDS
+ * {@link org.orekit.files.ccsds.ndm.odm.ocm.Ocm Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */

@@ -248,9 +248,13 @@ public class LazyLoadedGravityFields implements GravityFields {
     @Override
     public NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
                                                                               final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(true, degree, order);
-        return new WrappingNormalizedProvider(provider);
+        final RawSphericalHarmonicsProvider provider;
+        synchronized (readers) {
+            final PotentialCoefficientsReader reader = readGravityField(degree, order);
+            provider = reader.getProvider(true, degree, order);
+        }
+        final ConstantSphericalHarmonics frozen = new ConstantSphericalHarmonics(provider.getReferenceDate(), provider);
+        return new WrappingNormalizedProvider(frozen);
     }
 
     /**
@@ -266,8 +270,11 @@ public class LazyLoadedGravityFields implements GravityFields {
     @Override
     public NormalizedSphericalHarmonicsProvider getNormalizedProvider(final int degree,
                                                                       final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getProvider(true, degree, order);
+        final RawSphericalHarmonicsProvider provider;
+        synchronized (readers) {
+            final PotentialCoefficientsReader reader = readGravityField(degree, order);
+            provider = reader.getProvider(true, degree, order);
+        }
         return new WrappingNormalizedProvider(provider);
     }
 
@@ -284,9 +291,13 @@ public class LazyLoadedGravityFields implements GravityFields {
     @Override
     public UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
                                                                                   final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(false, degree, order);
-        return new WrappingUnnormalizedProvider(provider);
+        final RawSphericalHarmonicsProvider provider;
+        synchronized (readers) {
+            final PotentialCoefficientsReader reader = readGravityField(degree, order);
+            provider = reader.getProvider(false, degree, order);
+        }
+        final ConstantSphericalHarmonics frozen = new ConstantSphericalHarmonics(provider.getReferenceDate(), provider);
+        return new WrappingUnnormalizedProvider(frozen);
     }
 
     /**
@@ -302,8 +313,11 @@ public class LazyLoadedGravityFields implements GravityFields {
     @Override
     public UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final int degree,
                                                                           final int order) {
-        final PotentialCoefficientsReader reader = readGravityField(degree, order);
-        final RawSphericalHarmonicsProvider provider = reader.getProvider(false, degree, order);
+        final RawSphericalHarmonicsProvider provider;
+        synchronized (readers) {
+            final PotentialCoefficientsReader reader = readGravityField(degree, order);
+            provider = reader.getProvider(false, degree, order);
+        }
         return new WrappingUnnormalizedProvider(provider);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,12 +35,12 @@ public class HeaderProcessingState implements ProcessingState {
     private final ContextBinding context;
 
     /** Parser for the complete message. */
-    private final AbstractConstituentParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?, ?> parser;
 
     /** Simple constructor.
      * @param parser parser for the complete message
      */
-    public HeaderProcessingState(final AbstractConstituentParser<?, ?> parser) {
+    public HeaderProcessingState(final AbstractConstituentParser<?, ?, ?> parser) {
         this.context = new ContextBinding(
             parser::getConventions, parser::isSimpleEOP,
             parser::getDataContext, parser::getParsedUnitsBehavior, () -> null,

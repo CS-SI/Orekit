@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -300,11 +300,17 @@ suited for elliptical orbits. In other words, there is no problem having a small
 (or big) eccentricity or inclination. Lyddane helped to solve this issue with
 the Brouwer model by summing the long and short periodic variations of the mean anomaly
 with the ones of the argument of perigee. One needs still to be careful with
-eccentricities lower than 5e-4. For singularity reason, the computation should not
-be done for the critical inclination : 63.4°.
+eccentricities lower than 5e-4. Singularity for the critical inclination i = 63.4° is
+avoided using the method developed in Warren Phipps' 1992 thesis.
 
 The Brouwer-Lyddane model considers J2 to J5 potential zonal coefficients, and uses the
 mean and short periodic variation of the keplerian elements to compute the position.
+However, for low Earth orbits, the magnitude of the perturbative acceleration due to
+atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
+drag by time derivatives of the mean mean anomaly using the catch-all coefficient M2.
+Usually, M2 is adjusted during an orbit determination process and it represents the
+combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
+The behavior of M2 is close to the B* parameter for the TLE.
 
 ### GNSS propagation
 

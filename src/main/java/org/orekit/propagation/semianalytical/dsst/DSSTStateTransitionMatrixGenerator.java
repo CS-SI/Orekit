@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -152,7 +154,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     }
 
     /** {@inheritDoc} */
-    public double[] derivatives(final SpacecraftState state) {
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         final double[] p = state.getAdditionalState(getName());
         final double[] res = new double[p.length];
@@ -170,7 +172,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
             }
         }
 
-        return res;
+        return new CombinedDerivatives(res, null);
 
     }
 
@@ -189,7 +191,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
         for (final DSSTForceModel forceModel : forceModels) {
 
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
@@ -212,21 +214,23 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
             int paramsIndex = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
+                    // for each span (for each estimated value) corresponding name is added
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                    // get the partials derivatives for this driver
-                    DoubleArrayDictionary.Entry entry = meanElementsPartials.getEntry(driver.getName());
-                    if (entry == null) {
-                        // create an entry filled with zeroes
-                        meanElementsPartials.put(driver.getName(), new double[STATE_DIMENSION]);
-                        entry = meanElementsPartials.getEntry(driver.getName());
+                        // get the partials derivatives for this driver
+                        DoubleArrayDictionary.Entry entry = meanElementsPartials.getEntry(span.getData());
+                        if (entry == null) {
+                            // create an entry filled with zeroes
+                            meanElementsPartials.put(span.getData(), new double[STATE_DIMENSION]);
+                            entry = meanElementsPartials.getEntry(span.getData());
+                        }
+                        // add the contribution of the current force model
+                        entry.increment(new double[] {
+                            derivativesA[paramsIndex], derivativesEx[paramsIndex], derivativesEy[paramsIndex],
+                            derivativesHx[paramsIndex], derivativesHy[paramsIndex], derivativesL[paramsIndex]
+                        });
+                        ++paramsIndex;
                     }
-
-                    // add the contribution of the current force model
-                    entry.increment(new double[] {
-                        derivativesA[paramsIndex], derivativesEx[paramsIndex], derivativesEy[paramsIndex],
-                        derivativesHx[paramsIndex], derivativesHy[paramsIndex], derivativesL[paramsIndex]
-                    });
-                    ++paramsIndex;
 
                 }
             }

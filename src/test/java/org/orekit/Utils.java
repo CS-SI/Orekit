@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,9 @@
  */
 package org.orekit;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
@@ -51,6 +42,16 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriversList;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
 
@@ -97,7 +98,7 @@ public class Utils {
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         DataContext.getDefault().getDataProvidersManager().resetFiltersToDefault();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
-        
+
     }
 
     public static DataContext setDataRoot(String root) {
@@ -129,7 +130,7 @@ public class Utils {
                 }
             }
         } catch (IllegalAccessException iae) {
-            Assert.fail(iae.getMessage());
+            Assertions.fail(iae.getMessage());
         }
     }
 
@@ -143,7 +144,7 @@ public class Utils {
                 }
             }
         } catch (IllegalAccessException iae) {
-            Assert.fail(iae.getMessage());
+            Assertions.fail(iae.getMessage());
         }
     }
 
@@ -157,7 +158,7 @@ public class Utils {
                 }
             }
         } catch (IllegalAccessException iae) {
-            Assert.fail(iae.getMessage());
+            Assertions.fail(iae.getMessage());
         }
     }
 
@@ -219,13 +220,40 @@ public class Utils {
     }
 
     /**
+     * Assert that the normalized values of given expected and actual {@link ParameterDriversList} are identical.
+     *
+     * @param expected expected {@link ParameterDriversList}
+     * @param actual actual {@link ParameterDriversList}
+     */
+    public static void assertParametersDriversValues(final ParameterDriversList expected,
+                                                     final ParameterDriversList actual) {
+
+        final List<ParameterDriversList.DelegatingDriver> expectedDriversList = expected.getDrivers();
+        final List<ParameterDriversList.DelegatingDriver> actualDriversList   = actual.getDrivers();
+        for (int i = 0; i < expectedDriversList.size(); i++) {
+            final ParameterDriversList.DelegatingDriver currentExpectedDriver = expectedDriversList.get(i);
+            final ParameterDriversList.DelegatingDriver currentActualDriver = actualDriversList.get(i);
+
+            Assertions.assertArrayEquals(currentExpectedDriver.getValues(), currentActualDriver.getValues());
+            Assertions.assertEquals(currentExpectedDriver.getValue(), currentActualDriver.getValue());
+            Assertions.assertEquals(currentExpectedDriver.getNormalizedValue(), currentActualDriver.getNormalizedValue());
+            Assertions.assertEquals(currentExpectedDriver.getMaxValue(), currentActualDriver.getMaxValue());
+            Assertions.assertEquals(currentExpectedDriver.getMinValue(), currentActualDriver.getMinValue());
+            Assertions.assertEquals(currentExpectedDriver.getName(), currentActualDriver.getName());
+            Assertions.assertEquals(currentExpectedDriver.getNbOfValues(), currentActualDriver.getNbOfValues());
+            Assertions.assertEquals(currentExpectedDriver.getReferenceValue(), currentActualDriver.getReferenceValue());
+
+        }
+    }
+
+    /**
      * An attitude law compatible with the old Propagator.DEFAULT_LAW. This is used so as
      * not to change the results of tests written against the old implementation.
      *
      * @return an attitude law.
      */
     public static AttitudeProvider defaultLaw() {
-        return InertialProvider.of(FramesFactory.getEME2000());
+        return FrameAlignedProvider.of(FramesFactory.getEME2000());
     }
 
 }

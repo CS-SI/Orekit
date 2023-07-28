@@ -1,0 +1,124 @@
+' Copyright 2002-2023 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam linetype              ortho
+  skinparam ClassFontSize         11
+
+  package org.hipparchus.filtering #ECEBD8 {
+
+      package unscented #DDEBD8 {
+    
+        interface UnscentedProcess {
+          + UnscentedEvolution getEvolution()
+          + RealVector getInnovations()
+        }
+    
+        class UnscentedEvolution {
+          + RealVector[] getCurrentStates()
+          + double getCurrentTime()
+          + RealVector[] getCurrentMeasurements()
+          + RealMatrix getProcessNoiseMatrix()
+        }
+    
+        class "UnscentedKalmanFilter<T extends Measurement>" as UnscentedKalmanFilter_T {
+          - ProcessEstimate predicted
+          - ProcessEstimate corrected
+          - UnscentedTransformProvider utProvider
+          + RealVector[] unscentedTransform()
+          + predict(double time, RealVector[] predictedStates, RealMatrix noise)
+          + correct(T measurement, RealMatrix innovationCovarianceMatrix, RealMatrix crossCovarianceMatrix, RealVector innovation)
+        }
+    
+        UnscentedKalmanFilter_T o-->"1"  UnscentedProcess : estimate
+        UnscentedKalmanFilter_T --> UnscentedEvolution
+        UnscentedProcess --> UnscentedEvolution : generate
+    
+      }
+
+  }
+
+  package org.orekit #ECEBD8 {
+
+    package propagation #DDEBD8 {
+
+      package sampling #F3EFEB {
+         interface OrekitStepHandler {
+           + init()
+           + handleStep(OrekitStepInterpolator interpolator)
+         }
+      }
+
+      package seminalytical.dsst #F3EFEB {
+
+         class DSSTPropagator {
+           + void addAdditionalEquations(AdditionalEquations additional)
+           + SpacecraftState propagate(AbsoluteDate start, AbsoluteDate end)
+           + void setStepHandler(OrekitStepHandler handler)
+         }
+
+         DSSTPropagator *-->  OrekitStepHandler
+
+      }
+
+    }
+
+    package estimation.sequential #DDEBD8 {
+
+      class SemiAnalyticalUnscentedKalmanEstimator {
+         - UnscentedKalmanFilter filter
+         - SemiAnalyticalUnscentedKalmanModel processModel
+         + DSSTPropagator processMeasurements(List<ObservedMeasurement> measurements)
+      }
+
+      class SemiAnalyticalUnscentedKalmanEstimatorBuilder {
+        + decomposer(MatrixDecomposer decomposer)
+        + addPropagationConfiguration(DSSTPropagator propagator, CovarianceMatrixProvider initialCovariance)
+        + unscentedTransformProvider(UnscentedTransformProvider transformProvider)
+        + SemiAnalyticalUnscentedKalmanEstimator build()
+      }
+
+      class SemiAnalyticalUnscentedKalmanModel {
+         - DSSTPropagator dsstPropagator
+         + DSSTPropagator processMeasurements(List<ObservedMeasurement> measurements)
+         - void updateNominalSpacecraftState(SpacecraftState nominal)
+         - updateShortPeriods()
+         - initializeShortPeriodicTerms()
+         - computeOsculatingElements()
+      }
+
+      class SemiAnalyticalMeasurementHandler
+
+      OrekitStepHandler <|..  SemiAnalyticalMeasurementHandler
+      SemiAnalyticalUnscentedKalmanEstimator <--   SemiAnalyticalUnscentedKalmanEstimatorBuilder
+      UnscentedProcess <|..  SemiAnalyticalUnscentedKalmanModel
+      SemiAnalyticalUnscentedKalmanModel <--   SemiAnalyticalUnscentedKalmanEstimator
+      SemiAnalyticalUnscentedKalmanEstimator *-left-> UnscentedKalmanFilter_T
+      SemiAnalyticalMeasurementHandler <--   SemiAnalyticalUnscentedKalmanModel
+
+    }
+
+  }
+
+@enduml

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,16 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 /**
  * This class handles an attitude provider interpolating from a predefined table.
@@ -98,9 +101,12 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date).collect(Collectors.toList());
 
+        // create interpolator
+        final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =
+                new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), filter);
+
         // interpolate
-        final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(date, sample);
 
         // build the attitude
         return builder.build(frame, pvProv, interpolated);
@@ -119,9 +125,12 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
                         map(ac -> new TimeStampedFieldAngularCoordinates<>(date.getField(), ac)).
                         collect(Collectors.toList());
 
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<T>, T> interpolator =
+                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), filter);
+
         // interpolate
-        final TimeStampedFieldAngularCoordinates<T> interpolated =
-                TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedFieldAngularCoordinates<T> interpolated = interpolator.interpolate(date, sample);
 
         // build the attitude
         return builder.build(frame, pvProv, interpolated);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,14 @@
 
 package org.orekit.estimation.common;
 
+import org.hipparchus.stat.descriptive.StreamingStatistics;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+
 import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 
 /** Local class for measurement-specific log.
  * @param T type of mesurement

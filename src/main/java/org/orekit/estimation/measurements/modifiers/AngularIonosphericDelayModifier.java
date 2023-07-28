@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -76,7 +76,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         return delay;
     }
 
@@ -101,7 +101,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
 
         // Update estimated value taking into account the ionospheric delay.
         final AbsoluteDate date     = transitState.getDate();
-        final Vector3D     position = transitState.getPVCoordinates().getPosition();
+        final Vector3D     position = transitState.getPosition();
         final Frame        inertial = transitState.getFrame();
 
         // Elevation and azimuth in radians

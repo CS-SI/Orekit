@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 public class CommonMetadataWriter extends AbstractWriter {
 
     /** Metadata. */
-    private final CommonMetadata metadata;
+    private final OdmCommonMetadata metadata;
 
     /** Converter for dates. */
     private final TimeConverter timeConverter;
@@ -42,7 +42,7 @@ public class CommonMetadataWriter extends AbstractWriter {
      * @param metadata metadata to write
      * @param timeConverter converter for dates
      */
-    public CommonMetadataWriter(final CommonMetadata metadata, final TimeConverter timeConverter) {
+    public CommonMetadataWriter(final OdmCommonMetadata metadata, final TimeConverter timeConverter) {
         super(XmlStructureKey.metadata.name(), null);
         this.metadata      = metadata;
         this.timeConverter = timeConverter;
@@ -61,7 +61,7 @@ public class CommonMetadataWriter extends AbstractWriter {
         // frames
         generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          null, true);
         generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  null, true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), false);
+        generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), true, false);
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),   metadata.getTimeSystem(), true);

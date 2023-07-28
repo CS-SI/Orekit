@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,16 +62,11 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
     double getAe();
 
     /** Get the reference date for the harmonics.
-     * @return reference date for the harmonics
+     * <p>
+     * For piecewise models, the latest reference date is returned.
+     * </p>
+     * @return reference date for the harmonics (may be null if no reference date is defined)
      */
     AbsoluteDate getReferenceDate();
-
-    /** Get the offset from {@link #getReferenceDate reference date} for the harmonics.
-     * @param date current date
-     * @return offset between current date and reference date if there is a reference
-     * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
-     * returns null)
-     */
-    double getOffset(AbsoluteDate date);
 
 }

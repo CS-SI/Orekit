@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,6 @@
 
 package org.orekit.estimation.common;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.gnss.Frequency;
@@ -29,6 +26,9 @@ import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** Ionospheric modifiers.
  * @author Bryan Cazabonne

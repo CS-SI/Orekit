@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,20 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -56,23 +56,23 @@ import org.orekit.utils.IERSConventions;
 
 public class FieldNiellMappingFunctionModelTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(Decimal64Field.getInstance());
+        doTestMappingFactors(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
-        
+
         final T zero = field.getZero();
 
         // Site (Le Mans, France):      latitude:  48.0°
@@ -87,11 +87,11 @@ public class FieldNiellMappingFunctionModelTest {
         //                                    wet -> 10.75 (Ref)
 
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 1994, 1, 1, TimeScalesFactory.getUTC());
-        
+
         final double latitude    = FastMath.toRadians(48.0);
         final double longitude   = FastMath.toRadians(0.20);
         final double height      = 68.0;
-        
+
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
         final double elevation     = FastMath.toRadians(5.0);
@@ -99,16 +99,16 @@ public class FieldNiellMappingFunctionModelTest {
         final double expectedWet   = 10.75;
 
         final MappingFunction model = new NiellMappingFunctionModel();
-        
+
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
-        
-        Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-2);
-        Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-2);
+
+        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-2);
+        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-2);
     }
 
     @Test
     public void testFixedHeight() {
-        doTestFixedHeight(Decimal64Field.getInstance());
+        doTestFixedHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
@@ -123,8 +123,8 @@ public class FieldNiellMappingFunctionModelTest {
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final T[] factors = model.mappingFactors(zero.add(FastMath.toRadians(elev)), point,
                                                      date);
-            Assert.assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
-            Assert.assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
+            Assertions.assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
+            Assertions.assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }
@@ -147,7 +147,7 @@ public class FieldNiellMappingFunctionModelTest {
 
         // Station
         final GroundStation station = new GroundStation(baseFrame);
-        
+
         // Mapping Function model
         final MappingFunction model = new NiellMappingFunctionModel();
 
@@ -173,7 +173,7 @@ public class FieldNiellMappingFunctionModelTest {
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
         final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
 
         // Compute mapping factors with state derivatives
@@ -195,53 +195,53 @@ public class FieldNiellMappingFunctionModelTest {
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
-            final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
+            final Vector3D positionM4 = stateM4.getPosition();
             final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
             double[]  delayM4 = model.mappingFactors(elevationM4, point, stateM4.getDate());
-            
+
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
-            final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
+            final Vector3D positionM3 = stateM3.getPosition();
             final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
             double[]  delayM3 = model.mappingFactors(elevationM3, point, stateM3.getDate());
-            
+
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
-            final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
+            final Vector3D positionM2 = stateM2.getPosition();
             final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
             double[]  delayM2 = model.mappingFactors(elevationM2, point, stateM2.getDate());
- 
+
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
-            final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
+            final Vector3D positionM1 = stateM1.getPosition();
             final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
             double[]  delayM1 = model.mappingFactors(elevationM1, point, stateM1.getDate());
-           
+
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
-            final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
+            final Vector3D positionP1 = stateP1.getPosition();
             final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
             double[]  delayP1 = model.mappingFactors(elevationP1, point, stateP1.getDate());
-            
+
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
-            final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
+            final Vector3D positionP2 = stateP2.getPosition();
             final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
             double[]  delayP2 = model.mappingFactors(elevationP2, point, stateP2.getDate());
-            
+
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
-            final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
+            final Vector3D positionP3 = stateP3.getPosition();
             final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
             double[]  delayP3 = model.mappingFactors(elevationP3, point, stateP3.getDate());
-            
+
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
-            final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
+            final Vector3D positionP4 = stateP4.getPosition();
             final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
             double[]  delayP4 = model.mappingFactors(elevationP4, point, stateP4.getDate());
-            
+
             fillJacobianColumn(refMF, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compMFH[i + 1], refMF[0][i], 6.5e-12);
-            Assert.assertEquals(compMFW[i + 1], refMF[1][i], 1.6e-11);
+            Assertions.assertEquals(compMFH[i + 1], refMF[0][i], 6.5e-12);
+            Assertions.assertEquals(compMFW[i + 1], refMF[1][i], 1.6e-11);
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,22 +29,41 @@ import org.orekit.utils.units.Unit;
 public enum ApmQuaternionKey {
 
     /** Quaternion wrapping element in XML files. */
-    quaternion((token, context, container) -> true),
+    quaternion((token, context, container, epochSetter) -> true),
 
-    /** Quaternion wrapping element in XML files. */
-    quaternionRate((token, context, container) -> true),
+    /** Quaternion derivative wrapping element in XML files (ADM V1 only). */
+    quaternionRate((token, context, container, epochSetter) -> true),
 
-    /** Epoch entry. */
-    EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
+    /** Quaternion derivative wrapping element in XML files.
+     * @since 12.0
+     */
+    quaternionDot((token, context, container, epochSetter) -> true),
 
-    /** First reference frame entry. */
-    Q_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
+    /** Comment entry. */
+    COMMENT((token, context, container, epochSetter) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
-    /** Second reference frame entry. */
-    Q_FRAME_B((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameB, context, true, true, true)),
+    /** Epoch entry (only for ADM V1). */
+    EPOCH((token, context, container, epochSetter) -> token.processAsDate(epochSetter, context)),
+
+    /** First reference frame entry (ADM V1 only). */
+    Q_FRAME_A((token, context, container, epochSetter) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
+
+    /** First reference frame entry.
+     * @since 12.0
+     */
+    REF_FRAME_A((token, context, container, epochSetter) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
+
+    /** Second reference frame entry (ADM V1 only). */
+    Q_FRAME_B((token, context, container, epochSetter) -> token.processAsFrame(container.getEndpoints()::setFrameB, context, true, true, true)),
+
+    /** Second reference frame entry.
+     * @since 12.0
+     */
+    REF_FRAME_B((token, context, container, epochSetter) -> token.processAsFrame(container.getEndpoints()::setFrameB, context, true, true, true)),
 
     /** Rotation direction entry. */
-    Q_DIR((token, context, container) -> {
+    Q_DIR((token, context, container, epochSetter) -> {
         if (token.getType() == TokenType.ENTRY) {
             container.getEndpoints().setA2b(token.getContentAsUppercaseCharacter() == 'A');
         }
@@ -52,36 +71,36 @@ public enum ApmQuaternionKey {
     }),
 
     /** Scalar part of the quaternion entry. */
-    QC((token, context, container) -> token.processAsIndexedDouble(0, Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                   container::setQ)),
+    QC((token, context, container, epochSetter) -> token.processAsIndexedDouble(0, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                                container::setQ)),
 
     /** First component of the vector part of the quaternion entry. */
-    Q1((token, context, container) -> token.processAsIndexedDouble(1, Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                   container::setQ)),
+    Q1((token, context, container, epochSetter) -> token.processAsIndexedDouble(1, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                                container::setQ)),
 
     /** Second component of the vector part of the quaternion entry. */
-    Q2((token, context, container) -> token.processAsIndexedDouble(2, Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                   container::setQ)),
+    Q2((token, context, container, epochSetter) -> token.processAsIndexedDouble(2, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                                container::setQ)),
 
     /** Third component of the vector part of the quaternion entry. */
-    Q3((token, context, container) -> token.processAsIndexedDouble(3, Unit.ONE, context.getParsedUnitsBehavior(),
-                                                                   container::setQ)),
+    Q3((token, context, container, epochSetter) -> token.processAsIndexedDouble(3, Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                                container::setQ)),
 
     /** Scalar part of the quaternion derivative entry. */
-    QC_DOT((token, context, container) -> token.processAsIndexedDouble(0, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
-                                                                       container::setQDot)),
+    QC_DOT((token, context, container, epochSetter) -> token.processAsIndexedDouble(0, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                                    container::setQDot)),
 
     /** First component of the vector part of the quaternion derivative entry. */
-    Q1_DOT((token, context, container) -> token.processAsIndexedDouble(1, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
-                                                                       container::setQDot)),
+    Q1_DOT((token, context, container, epochSetter) -> token.processAsIndexedDouble(1, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                                    container::setQDot)),
 
     /** Second component of the vector part of the quaternion derivative entry. */
-    Q2_DOT((token, context, container) -> token.processAsIndexedDouble(2, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
-                                                                       container::setQDot)),
+    Q2_DOT((token, context, container, epochSetter) -> token.processAsIndexedDouble(2, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                                    container::setQDot)),
 
     /** Third component of the vector part of the quaternion derivative entry. */
-    Q3_DOT((token, context, container) -> token.processAsIndexedDouble(3, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
-                                                                       container::setQDot));
+    Q3_DOT((token, context, container, epochSetter) -> token.processAsIndexedDouble(3, Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                                    container::setQDot));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -97,10 +116,12 @@ public enum ApmQuaternionKey {
      * @param token token to process
      * @param context context binding
      * @param container container to fill
+         * @param epochSetter setter for the epoch (used only in ADM V1 XML files)
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final ApmQuaternion container) {
-        return processor.process(token, context, container);
+    public boolean process(final ParseToken token, final ContextBinding context,
+                           final ApmQuaternion container, final ParseToken.DateConsumer epochSetter) {
+        return processor.process(token, context, container, epochSetter);
     }
 
     /** Interface for processing one token. */
@@ -109,9 +130,11 @@ public enum ApmQuaternionKey {
          * @param token token to process
          * @param context context binding
          * @param container container to fill
+         * @param epochSetter setter for the epoch (used only in ADM V1 XML files)
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, ApmQuaternion container);
+        boolean process(ParseToken token, ContextBinding context,
+                        ApmQuaternion container, ParseToken.DateConsumer epochSetter);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,9 @@
  */
 package org.orekit.utils;
 
-import java.util.NavigableSet;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 
 /** Container for objects that apply to spans of time.
@@ -101,20 +98,6 @@ public class TimeSpanMap<T> {
 
     /** Add an entry valid before a limit date.
      * <p>
-     * Calling this method is equivalent to call {@link #addValidAfter(Object,
-     * AbsoluteDate, boolean) addValidAfter(entry, latestValidityDate, false)}.
-     * </p>
-     * @param entry entry to add
-     * @param latestValidityDate date before which the entry is valid
-     * @deprecated as of 11.1, replaced by {@link #addValidBefore(Object, AbsoluteDate, boolean)}
-     */
-    @Deprecated
-    public void addValidBefore(final T entry, final AbsoluteDate latestValidityDate) {
-        addValidBefore(entry, latestValidityDate, false);
-    }
-
-    /** Add an entry valid before a limit date.
-     * <p>
      * As an entry is valid, it truncates or overrides the validity of the neighboring
      * entries already present in the map.
      * </p>
@@ -141,9 +124,10 @@ public class TimeSpanMap<T> {
      * @param latestValidityDate date before which the entry is valid
      * @param erasesEarlier if true, the entry erases all existing transitions
      * that are earlier than {@code latestValidityDate}
+     * @return span with added entry
      * @since 11.1
      */
-    public synchronized void addValidBefore(final T entry, final AbsoluteDate latestValidityDate, final boolean erasesEarlier) {
+    public synchronized Span<T> addValidBefore(final T entry, final AbsoluteDate latestValidityDate, final boolean erasesEarlier) {
 
         // update current reference to transition date
         locate(latestValidityDate);
@@ -185,20 +169,8 @@ public class TimeSpanMap<T> {
         // we consider the last added transition as the new current one
         current = span;
 
-    }
+        return span;
 
-    /** Add an entry valid after a limit date.
-     * <p>
-     * Calling this method is equivalent to call {@link #addValidAfter(Object,
-     * AbsoluteDate, boolean) addValidAfter(entry, earliestValidityDate, false)}.
-     * </p>
-     * @param entry entry to add
-     * @param earliestValidityDate date after which the entry is valid
-     * @deprecated as of 11.1, replaced by {@link #addValidAfter(Object, AbsoluteDate, boolean)}
-     */
-    @Deprecated
-    public void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate) {
-        addValidAfter(entry, earliestValidityDate, false);
     }
 
     /** Add an entry valid after a limit date.
@@ -207,31 +179,32 @@ public class TimeSpanMap<T> {
      * entries already present in the map.
      * </p>
      * <p>
-     * If the map already contains transitions that occur earlier than {@code earliestValidityDate},
-     * the {@code erasesEarlier} parameter controls what to do with them. Lets consider
+     * If the map already contains transitions that occur later than {@code earliestValidityDate},
+     * the {@code erasesLater} parameter controls what to do with them. Lets consider
      * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
      * {@code earliestValidityDate} prior to the call to the method (i.e. tₖ &lt;
      * {@code earliestValidityDate} &lt; tₖ₊₁).
      * </p>
      * <ul>
-     *  <li>if {@code erasesEarlier} is {@code true}, then all earlier transitions
-     *      up to and including tₖ are erased, and the {@code entry} will be valid from past infinity
-     *      to {@code earliestValidityDate}</li>
-     *  <li>if {@code erasesEarlier} is {@code false}, then all earlier transitions
-     *      are preserved, and the {@code entry} will be valid from tₖ
-     *      to {@code earliestValidityDate}</li>
+     *  <li>if {@code erasesLater} is {@code true}, then all later transitions
+     *      from and including tₖ₊₁ are erased, and the {@code entry} will be valid from
+     *      {@code earliestValidityDate} to future infinity</li>
+     *  <li>if {@code erasesLater} is {@code false}, then all later transitions
+     *      are preserved, and the {@code entry} will be valid from {@code earliestValidityDate}
+     *      to tₖ₊₁</li>
      *  </ul>
      * <p>
      * In both cases, the existing entry eₖ time span will be truncated and will be valid
-     * only from {@code earliestValidityDate} to tₖ₊₁.
+     * only from tₖ to {@code earliestValidityDate}.
      * </p>
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
      * @param erasesLater if true, the entry erases all existing transitions
      * that are later than {@code earliestValidityDate}
+     * @return span with added entry
      * @since 11.1
      */
-    public synchronized void addValidAfter(final T entry, final AbsoluteDate earliestValidityDate, final boolean erasesLater) {
+    public synchronized Span<T> addValidAfter(final T entry, final AbsoluteDate earliestValidityDate, final boolean erasesLater) {
 
         // update current reference to transition date
         locate(earliestValidityDate);
@@ -267,6 +240,8 @@ public class TimeSpanMap<T> {
         // we consider the last added transition as the new current one
         current = span;
 
+        return span;
+
     }
 
     /** Add an entry valid between two limit dates.
@@ -277,43 +252,63 @@ public class TimeSpanMap<T> {
      * @param entry entry to add
      * @param earliestValidityDate date after which the entry is valid
      * @param latestValidityDate date before which the entry is valid
+     * @return span with added entry
      * @since 11.1
      */
-    public synchronized void addValidBetween(final T entry, final AbsoluteDate earliestValidityDate, final AbsoluteDate latestValidityDate) {
+    public synchronized Span<T> addValidBetween(final T entry, final AbsoluteDate earliestValidityDate, final AbsoluteDate latestValidityDate) {
 
-        // locate spans at earliest and latest dates
-        locate(earliestValidityDate);
-        Span<T> latest = current;
-        while (latest.getEndTransition() != null && latest.getEnd().isBeforeOrEqualTo(latestValidityDate)) {
-            latest = latest.next();
-            --nbSpans;
-        }
-        if (latest == current) {
-            // the interval splits one transition in the middle, we need to duplicate the instance
-            latest = new Span<>(current.data);
-            if (current.getEndTransition() != null) {
-                current.getEndTransition().setBefore(latest);
+        // handle special cases
+        if (AbsoluteDate.PAST_INFINITY.equals(earliestValidityDate)) {
+            if (AbsoluteDate.FUTURE_INFINITY.equals(latestValidityDate)) {
+                // we wipe everything in the map
+                current = new Span<>(entry);
+                return current;
+            } else {
+                // we wipe from past infinity
+                return addValidBefore(entry, latestValidityDate, true);
             }
-        }
-
-        final Span<T> span = new Span<>(entry);
-
-        // manage earliest transition
-        final Transition<T> start = current.getStartTransition();
-        if (start != null && start.getDate().equals(earliestValidityDate)) {
-            // the transition at start of the current span is at the exact same date
-            // we update it, without adding a new transition
-            start.setAfter(span);
+        } else if (AbsoluteDate.FUTURE_INFINITY.equals(latestValidityDate)) {
+            // we wipe up to future infinity
+            return addValidAfter(entry, earliestValidityDate, true);
         } else {
-            // we need to add a new transition somewhere inside the current span
-            insertTransition(earliestValidityDate, current, span);
+
+            // locate spans at earliest and latest dates
+            locate(earliestValidityDate);
+            Span<T> latest = current;
+            while (latest.getEndTransition() != null && latest.getEnd().isBeforeOrEqualTo(latestValidityDate)) {
+                latest = latest.next();
+                --nbSpans;
+            }
+            if (latest == current) {
+                // the interval splits one transition in the middle, we need to duplicate the instance
+                latest = new Span<>(current.data);
+                if (current.getEndTransition() != null) {
+                    current.getEndTransition().setBefore(latest);
+                }
+            }
+
+            final Span<T> span = new Span<>(entry);
+
+            // manage earliest transition
+            final Transition<T> start = current.getStartTransition();
+            if (start != null && start.getDate().equals(earliestValidityDate)) {
+                // the transition at start of the current span is at the exact same date
+                // we update it, without adding a new transition
+                start.setAfter(span);
+            } else {
+                // we need to add a new transition somewhere inside the current span
+                insertTransition(earliestValidityDate, current, span);
+            }
+
+            // manage latest transition
+            insertTransition(latestValidityDate, span, latest);
+
+            // we consider the last added transition as the new current one
+            current = span;
+
+            return span;
+
         }
-
-        // manage latest transition
-        insertTransition(latestValidityDate, span, latest);
-
-        // we consider the last added transition as the new current one
-        current = span;
 
     }
 
@@ -349,9 +344,9 @@ public class TimeSpanMap<T> {
     /** Locate the time span containing a specified date.
      * <p>
      * The {@link current} field is updated to the located span.
-     * After the method returns, {@code current.getStart()} is either
+     * After the method returns, {@code current.getStartTransition()} is either
      * null or its date is before or equal to date, and {@code
-     * current.getEnd()} is either null or its date is after date.
+     * current.getEndTransition()} is either null or its date is after date.
      * </p>
      * @param date date belonging to the desired time span
      */
@@ -463,20 +458,6 @@ public class TimeSpanMap<T> {
 
         return range;
 
-    }
-
-    /** Get copy of the sorted transitions.
-     * @return copy of the sorted transitions
-     * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}, {@link #getLastSpan()},
-     * {@link #getFirstTransition()}, {@link #getLastTransition()}, and {@link #getSpansNumber()}
-     */
-    @Deprecated
-    public synchronized NavigableSet<Transition<T>> getTransitions() {
-        final NavigableSet<Transition<T>> set = new TreeSet<>(new ChronologicalComparator());
-        for (Transition<T> transition = getFirstTransition(); transition != null; transition = transition.next()) {
-            set.add(transition);
-        }
-        return set;
     }
 
     /**

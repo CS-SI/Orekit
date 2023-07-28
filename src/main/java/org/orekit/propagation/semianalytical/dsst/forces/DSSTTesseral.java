@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,10 +27,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -44,15 +43,14 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -207,7 +205,7 @@ public class DSSTTesseral implements DSSTForceModel {
      * <ul>
      *    <li> {@link #maxDegreeTesseralSP} is set to {@code provider.getMaxDegree()} </li>
      *    <li> {@link #maxOrderTesseralSP} is set to {@code provider.getMaxOrder()}. </li>
-     *    <li> {@link #maxEccPowTesseralSP} is set to 4 </li>
+     *    <li> {@link #maxEccPowTesseralSP} is set to {@code min(4, provider.getMaxOrder())} </li>
      *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code min(provider.getMaxDegree() + 4, 12)}.
      *         This parameter should not exceed 12 as higher values will exceed computer capacity </li>
      *    <li> {@link #maxDegreeMdailyTesseralSP} is set to {@code provider.getMaxDegree()} </li>
@@ -224,7 +222,7 @@ public class DSSTTesseral implements DSSTForceModel {
                         final double centralBodyRotationRate,
                         final UnnormalizedSphericalHarmonicsProvider provider) {
         this(centralBodyFrame, centralBodyRotationRate, provider, provider.getMaxDegree(),
-             provider.getMaxOrder(), 4,  FastMath.min(12, provider.getMaxDegree() + 4),
+             provider.getMaxOrder(), FastMath.min(4, provider.getMaxOrder()),  FastMath.min(12, provider.getMaxDegree() + 4),
              provider.getMaxDegree(), provider.getMaxOrder(), FastMath.min(4, provider.getMaxDegree() - 2));
     }
 
@@ -239,6 +237,8 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param maxEccPowTesseralSP maximum power of the eccentricity to use in summation over s for
      * short periodic tesseral harmonics (without m-daily), should typically not exceed 4 as higher
      * values will exceed computer capacity
+     * (must be between 0 and {@code provider.getMaxOrder()} though, however if order = 0 the value can be anything
+     *  since it won't be used in the code)
      * @param maxFrequencyShortPeriodics maximum frequency in mean longitude for short periodic computations
      * (typically {@code maxDegreeTesseralSP} + {@code maxEccPowTesseralSP and no more than 12})
      * @param maxDegreeMdailyTesseralSP maximal degree to consider for short periodics m-daily tesseral harmonics potential
@@ -290,6 +290,10 @@ public class DSSTTesseral implements DSSTForceModel {
         this.maxOrderMdailyTesseralSP  = maxOrderMdailyTesseralSP;
 
         // set the maximum value for eccentricity power
+        if (maxOrder > 0) {
+            // Range check can be silently ignored if order = 0
+            checkIndexRange(maxEccPowTesseralSP, 0, maxOrder);
+        }
         this.maxEccPowTesseralSP       = maxEccPowTesseralSP;
 
         checkIndexRange(maxEccPowMdailyTesseralSP, 0, maxDegreeMdailyTesseralSP - 2);
@@ -328,6 +332,7 @@ public class DSSTTesseral implements DSSTForceModel {
                                              final double[] parameters) {
 
         // Initializes specific parameters.
+
         final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
         // Set the highest power of the eccentricity in the analytical power
@@ -434,7 +439,10 @@ public class DSSTTesseral implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
+     *  @param parameters values of the force model parameters (only 1 value for each parameter)
+     *  that is to say that the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     *  should have be called before or the parameters list given in argument must correspond
+     *  to the extraction of parameter for a precise date {@link #getParameters(AbsoluteDate)}.
      *  @return new force model context
      */
     private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
@@ -447,7 +455,8 @@ public class DSSTTesseral implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
+     *  @param parameters list of each estimated values for each driver of the force model parameters
+         *                (each span of each driver)
      *  @return new force model context
      */
     private <T extends CalculusFieldElement<T>> FieldDSSTTesseralContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
@@ -461,6 +470,7 @@ public class DSSTTesseral implements DSSTForceModel {
                                        final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container for attributes
+
         final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
         // Access to potential U derivatives
@@ -494,6 +504,7 @@ public class DSSTTesseral implements DSSTForceModel {
         final Field<T> field = auxiliaryElements.getDate().getField();
 
         // Container for attributes
+
         final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         @SuppressWarnings("unchecked")
@@ -538,7 +549,9 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid at date from the input array
+            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final DSSTTesseralContext context = initializeStep(auxiliaryElements, extractedParameters);
 
             // Initialise the Hansen coefficients
             for (int s = -maxDegree; s <= maxDegree; s++) {
@@ -601,7 +614,9 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
-            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid at date from the input array
+            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
             final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
             // Initialise the Hansen coefficients
@@ -749,12 +764,6 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public EventDetector[] getEventsDetectors() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
         return null;
     }
@@ -888,8 +897,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final Gradient jacobi =
-                        JacobiPolynomials.getValue(l, v, w, Gradient.variable(1, 0, auxiliaryElements.getGamma()));
+                final double[] jacobi = JacobiPolynomials.getValueAndDerivative(l, v, w, auxiliaryElements.getGamma());
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -897,7 +905,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                 // Common factors from expansion of equations 3.3-4
                 final double cf_0      = roaPow[n] * Im * vMNS;
-                final double cf_1      = cf_0 * gaMNS * jacobi.getValue();
+                final double cf_1      = cf_0 * gaMNS * jacobi[0]; //jacobi.getValue();
                 final double cf_2      = cf_1 * kJNS;
                 final double gcPhs     = gMSJ * cnm + hMSJ * snm;
                 final double gsMhc     = gMSJ * snm - hMSJ * cnm;
@@ -905,7 +913,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
                 final double dUdaCoef  = (n + 1) * cf_2;
                 final double dUdlCoef  = j * cf_2;
-                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getGradient()[0]);
+                //final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getGradient()[0]);
+                final double dUdGaCoef = cf_0 * kJNS * (jacobi[0] * dGaMNS + gaMNS * jacobi[1]);
 
                 // dU / da components
                 dUdaCos  += dUdaCoef * gcPhs;
@@ -1753,7 +1762,9 @@ public class DSSTTesseral implements DSSTForceModel {
                 final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanOrbit, I);
 
                 // Central body rotation angle from equation 2.7.1-(3)(4).
-                final Transform t = bodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+                final StaticTransform t = bodyFrame.getStaticTransformTo(
+                        auxiliaryElements.getFrame(),
+                        auxiliaryElements.getDate());
                 final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
                 final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
                 final Vector3D  f = auxiliaryElements.getVectorF();
@@ -1988,7 +1999,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanOrbit, I);
 
                 // Central body rotation angle from equation 2.7.1-(3)(4).
-                final FieldTransform<T> t = bodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+                final FieldStaticTransform<T> t = bodyFrame.getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
                 final FieldVector3D<T> xB = t.transformVector(Vector3D.PLUS_I);
                 final FieldVector3D<T> yB = t.transformVector(Vector3D.PLUS_J);
                 final FieldVector3D<T>  f = auxiliaryElements.getVectorF();

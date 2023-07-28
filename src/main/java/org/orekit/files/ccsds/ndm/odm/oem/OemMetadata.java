@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,14 @@
 
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.time.AbsoluteDate;
 
 /** Metadata for Orbit Ephemeris Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OemMetadata extends CommonMetadata {
+public class OemMetadata extends OdmCommonMetadata {
 
     /** Start of total time span covered by ephemerides data and covariance data. */
     private AbsoluteDate startTime;
@@ -57,8 +57,8 @@ public class OemMetadata extends CommonMetadata {
     @Override
     public void validate(final double version) {
         checkMandatoryEntriesExceptDates(version);
-        checkNotNull(startTime, OemMetadataKey.START_TIME);
-        checkNotNull(stopTime,  OemMetadataKey.STOP_TIME);
+        checkNotNull(startTime, OemMetadataKey.START_TIME.name());
+        checkNotNull(stopTime,  OemMetadataKey.STOP_TIME.name());
     }
 
     /** Check is mandatory entries EXCEPT DATES have been initialized.

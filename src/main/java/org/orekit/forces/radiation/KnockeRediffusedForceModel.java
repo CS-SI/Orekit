@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,7 @@
 package org.orekit.forces.radiation;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
@@ -41,8 +39,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -63,7 +59,7 @@ import org.orekit.utils.ParameterDriver;
  * The radiative model of the satellite, and its ability to diffuse, reflect  or absorb radiation is handled
  * by a {@link RadiationSensitive radiation sensitive model}.
  * </p> <p>
- * <b>Caution:</b> The spacecraft state must be defined in an Earth centered frame.
+ * <b>Caution:</b> This model is only suitable for Earth. Using it with another central body is prone to error..
  * </p>
  *
  * @author Thomas Paulet
@@ -167,18 +163,6 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.of();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.of();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Vector3D acceleration(final SpacecraftState s,
                                  final double[] parameters) {
 
@@ -189,10 +173,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final Frame frame = s.getFrame();
 
         // Get satellite position
-        final Vector3D satellitePosition = s.getPVCoordinates().getPosition();
+        final Vector3D satellitePosition = s.getPosition();
 
         // Get Sun position
-        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D sunPosition = sun.getPosition(date, frame);
 
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
@@ -241,8 +225,8 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
-        return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
-                                                        s.getMass(), rediffusedFlux, parameters);
+
+        return spacecraft.radiationPressureAcceleration(s, rediffusedFlux, parameters);
     }
 
 
@@ -260,10 +244,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final T zero = date.getField().getZero();
 
         // Get satellite position
-        final FieldVector3D<T> satellitePosition = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T> satellitePosition = s.getPosition();
 
         // Get Sun position
-        final FieldVector3D<T> sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        final FieldVector3D<T> sunPosition = sun.getPosition(date, frame);
 
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
@@ -316,8 +300,8 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
-        return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
-                                                        s.getMass(), rediffusedFlux, parameters);
+
+        return spacecraft.radiationPressureAcceleration(s, rediffusedFlux, parameters);
     }
 
 
@@ -499,7 +483,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                                            final double elementArea) {
 
         // Get satellite position
-        final Vector3D satellitePosition = state.getPVCoordinates().getPosition();
+        final Vector3D satellitePosition = state.getPosition();
 
         // Get current date
         final AbsoluteDate date = state.getDate();
@@ -573,7 +557,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                                                                                    final T elementArea) {
 
         // Get satellite position
-        final FieldVector3D<T> satellitePosition = state.getPVCoordinates().getPosition();
+        final FieldVector3D<T> satellitePosition = state.getPosition();
 
         // Get current date
         final FieldAbsoluteDate<T> date = state.getDate();

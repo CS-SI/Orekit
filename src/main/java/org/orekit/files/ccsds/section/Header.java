@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,10 @@ public class Header extends CommentsContainer {
     /** CCSDS Format version. */
     private double formatVersion;
 
-    /** File creation date and time in UTC. */
+    /** Classification. */
+    private String classification;
+
+    /** Message creation date and time in UTC. */
     private AbsoluteDate creationDate;
 
     /** Creating agency or operator. */
@@ -40,22 +43,31 @@ public class Header extends CommentsContainer {
     /** Minimum version for {@link HeaderKey#MESSAGE_ID}. */
     private final double minVersionMessageId;
 
+    /** Minimum version for {@link HeaderKey#CLASSIFICATION}. */
+    private final double minVersionClassification;
+
     /**
      * Constructor.
      * @param minVersionMessageId minimum version for {@link HeaderKey#MESSAGE_ID}
+     * @param minVersionClassification minimum version for {@link HeaderKey#CLASSIFICATION}
      */
-    public Header(final double minVersionMessageId) {
-        this.formatVersion       = Double.NaN;
-        this.minVersionMessageId = minVersionMessageId;
+    public Header(final double minVersionMessageId,
+                  final double minVersionClassification) {
+        this.formatVersion            = Double.NaN;
+        this.minVersionMessageId      = minVersionMessageId;
+        this.minVersionClassification = minVersionClassification;
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(creationDate, HeaderKey.CREATION_DATE);
-        checkNotNull(originator,   HeaderKey.ORIGINATOR);
-        checkAllowed(version, messageId, HeaderKey.MESSAGE_ID, minVersionMessageId, Double.POSITIVE_INFINITY);
+        checkNotNull(creationDate, HeaderKey.CREATION_DATE.name());
+        checkNotNull(originator,   HeaderKey.ORIGINATOR.name());
+        checkAllowed(version, messageId,      HeaderKey.MESSAGE_ID.name(),
+                     minVersionMessageId, Double.POSITIVE_INFINITY);
+        checkAllowed(version, classification, HeaderKey.CLASSIFICATION.name(),
+                     minVersionClassification, Double.POSITIVE_INFINITY);
     }
 
     /**
@@ -75,15 +87,32 @@ public class Header extends CommentsContainer {
     }
 
     /**
-     * Get the file creation date and time in UTC.
-     * @return the file creation date and time in UTC.
+     * Get the classification/caveats.
+     * @return classification/caveats.
+     */
+    public String getClassification() {
+        return classification;
+    }
+
+    /**
+     * Set the classification/caveats.
+     * @param classification classification/caveats to be set
+     */
+    public void setClassification(final String classification) {
+        refuseFurtherComments();
+        this.classification = classification;
+    }
+
+    /**
+     * Get the message creation date and time in UTC.
+     * @return the message creation date and time in UTC.
      */
     public AbsoluteDate getCreationDate() {
         return creationDate;
     }
 
     /**
-     * Set the file creation date and time in UTC.
+     * Set the message creation date and time in UTC.
      * @param creationDate the creation date to be set
      */
     public void setCreationDate(final AbsoluteDate creationDate) {
@@ -92,15 +121,15 @@ public class Header extends CommentsContainer {
     }
 
     /**
-     * Get the file originator.
-     * @return originator the file originator.
+     * Get the message originator.
+     * @return originator the message originator.
      */
     public String getOriginator() {
         return originator;
     }
 
     /**
-     * Set the file originator.
+     * Set the message originator.
      * @param originator the originator to be set
      */
     public void setOriginator(final String originator) {

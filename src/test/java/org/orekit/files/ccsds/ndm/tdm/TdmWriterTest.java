@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 
-public class TdmWriterTest extends AbstractWriterTest<Header, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
+public class TdmWriterTest extends AbstractWriterTest<TdmHeader, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
 
     protected TdmParser getParser() {
         return new ParserBuilder().

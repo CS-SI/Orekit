@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,14 +35,38 @@ public class XmlGenerator extends AbstractGenerator {
     /** Name of the units attribute. */
     public static final String UNITS = "units";
 
+    /** NDM/XML version 3 location.
+     * @since 12.0
+     */
+    public static final String NDM_XML_V3_SCHEMA_LOCATION = "https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-3.0.0-master-3.0.xsd";
+
     /** XML prolog. */
     private static final String PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n";
 
-    /** Root element start tag. */
-    private static final String ROOT_START = "<%s id=\"%s\" version=\"%.1f\">%n";
+    /** Root element start tag, with schema.
+     * @since 12.0
+     */
+    private static final String ROOT_START_WITH_SCHEMA = "<%s xmlns:xsi=\"%s\" xsi:noNamespaceSchemaLocation=\"%s\" id=\"%s\" version=\"%.1f\">%n";
 
-    /** Element end tag. */
-    private static final String START_TAG = "<%s>%n";
+    /** Root element start tag, without schema.
+     * @since 12.0
+     */
+    private static final String ROOT_START_WITHOUT_SCHEMA = "<%s id=\"%s\" version=\"%.1f\">%n";
+
+    /** Constant for XML schema instance.
+     * @since 12.0
+     */
+    private static final String XMLNS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
+
+    /** Element end tag.
+     * @since 12.0
+     */
+    private static final String START_TAG_WITH_SCHEMA = "<%s xmlns:xsi=\"%s\" xsi:noNamespaceSchemaLocation=\"%s\">%n";
+
+    /** Element end tag.
+     * @since 12.0
+     */
+    private static final String START_TAG_WITHOUT_SCHEMA = "<%s>%n";
 
     /** Element end tag. */
     private static final String END_TAG = "</%s>%n";
@@ -59,6 +83,9 @@ public class XmlGenerator extends AbstractGenerator {
     /** Comment key. */
     private static final String COMMENT = "COMMENT";
 
+    /** Schema location. */
+    private final String schemaLocation;
+
     /** Indentation size. */
     private final int indentation;
 
@@ -69,15 +96,21 @@ public class XmlGenerator extends AbstractGenerator {
      * @param output destination of generated output
      * @param indentation number of space for each indentation level
      * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param writeUnits if true, units must be written
+     * @param schemaLocation schema location to use, may be null
      * @see #DEFAULT_INDENT
+     * @see #NDM_XML_V3_SCHEMA_LOCATION
      * @throws IOException if an I/O error occurs.
      */
     public XmlGenerator(final Appendable output, final int indentation,
-                        final String outputName, final boolean writeUnits) throws IOException {
-        super(output, outputName, writeUnits);
-        this.indentation = indentation;
-        this.level       = 0;
+                        final String outputName, final double maxRelativeOffset,
+                        final boolean writeUnits, final String schemaLocation) throws IOException {
+        super(output, outputName, maxRelativeOffset, writeUnits);
+        this.schemaLocation = schemaLocation;
+        this.indentation    = indentation;
+        this.level          = 0;
         writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, PROLOG));
     }
 
@@ -91,8 +124,13 @@ public class XmlGenerator extends AbstractGenerator {
     @Override
     public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
         indent();
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START,
-                                   root, messageTypeKey, version));
+        if (schemaLocation == null || level > 0) {
+            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START_WITHOUT_SCHEMA,
+                                       root, messageTypeKey, version));
+        } else {
+            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START_WITH_SCHEMA,
+                                       root, XMLNS_XSI, schemaLocation, messageTypeKey, version));
+        }
         ++level;
     }
 
@@ -169,7 +207,13 @@ public class XmlGenerator extends AbstractGenerator {
     @Override
     public void enterSection(final String name) throws IOException {
         indent();
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG, name));
+        if (schemaLocation != null && level == 0) {
+            // top level tag for ndm messages (it is called before enterMessage)
+            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG_WITH_SCHEMA,
+                                       name, XMLNS_XSI, schemaLocation));
+        } else {
+            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG_WITHOUT_SCHEMA, name));
+        }
         ++level;
         super.enterSection(name);
     }

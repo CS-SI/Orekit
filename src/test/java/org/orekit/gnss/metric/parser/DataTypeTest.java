@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class DataTypeTest {
 
@@ -635,12 +635,12 @@ public class DataTypeTest {
 
     @Test
     public void testNumber() {
-        Assert.assertEquals(68, DataType.values().length);
+        Assertions.assertEquals(68, DataType.values().length);
     }
 
     private void check(DataType dataType, long rawMessage, Long expected) {
         final EncodedMessage rm = (n) -> rawMessage >>> (64 - n);
         final Long result = dataType.decode(rm);
-        Assert.assertEquals(expected, result);
+        Assertions.assertEquals(expected, result);
     }
 }

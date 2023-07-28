@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,6 +91,19 @@ class L2TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        final PVCoordinates pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final Vector3D      translation = getL2(pv21.getPosition()).negate();
+        final Rotation      rotation    = new Rotation(pv21.getPosition(), pv21.getVelocity(),
+                Vector3D.PLUS_I, Vector3D.PLUS_J);
+        return StaticTransform.compose(
+                date,
+                StaticTransform.of(date, translation),
+                StaticTransform.of(date, rotation));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<T>      translation = getL2(pv21.getPosition()).negate();
@@ -101,6 +114,19 @@ class L2TransformProvider implements TransformProvider {
         return new FieldTransform<T>(date,
                                      new FieldTransform<>(date, translation),
                                      new FieldTransform<>(date, rotation));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final FieldVector3D<T>      translation = getL2(pv21.getPosition()).negate();
+        final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getVelocity(),
+                FieldVector3D.getPlusI(date.getField()), FieldVector3D.getPlusJ(date.getField()));
+        return FieldStaticTransform.compose(
+                date,
+                FieldStaticTransform.of(date, translation),
+                FieldStaticTransform.of(date, rotation));
     }
 
     /** Compute the coordinates of the L2 point.

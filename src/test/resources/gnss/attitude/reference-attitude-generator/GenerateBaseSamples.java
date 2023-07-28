@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -268,7 +268,7 @@ public class GenerateBaseSamples {
             Transform     t          = s.getFrame().getTransformTo(itrf, s.getDate());
             Vector3D      pSat       = t.transformPosition(pvSatInert.getPosition());
             Vector3D      vSat       = t.transformVector(pvSatInert.getVelocity());
-            Vector3D      pSun       = t.transformPosition(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition());
+            Vector3D      pSun       = t.transformPosition(sun.getPosition(s.getDate(), s.getFrame()));
             out.format(Locale.US,
                        "%s %4d %16.6f %3s %-11s  %-4s" +
                        " %16.6f  %16.6f  %16.6f %16.9f  %16.9f  %16.9f" +
@@ -282,14 +282,14 @@ public class GenerateBaseSamples {
         }
 
         private double beta(final SpacecraftState s) {
-            final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+            final Vector3D pSun = sun.getPosition(s.getDate(), s.getFrame());
             final Vector3D mSat = s.getPVCoordinates().getMomentum();
             return FastMath.toDegrees(0.5 * FastMath.PI - Vector3D.angle(pSun, mSat));
         }
 
         private double delta(final SpacecraftState s) {
-            final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            return FastMath.toDegrees(Vector3D.angle(pSun, s.getPVCoordinates().getPosition()));
+            final Vector3D pSun = sun.getPosition(s.getDate(), s.getFrame());
+            return FastMath.toDegrees(Vector3D.angle(pSun, s.getPosition()));
         }
 
     }

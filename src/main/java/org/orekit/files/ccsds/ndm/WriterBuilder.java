@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,10 @@ package org.orekit.files.ccsds.ndm;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.adm.acm.AcmWriter;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmWriter;
+import org.orekit.files.ccsds.ndm.cdm.CdmWriter;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmWriter;
@@ -141,11 +143,26 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
         return new AemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.acm.Acm Attitude Comprehensive Messages}.
+     * @return a new writer
+     * @since 12.0
+     */
+    public AcmWriter buildAcmWriter() {
+        return new AcmWriter(getConventions(), getDataContext());
+    }
+
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.
      * @return a new writer
      */
     public TdmWriter buildTdmWriter() {
         return new TdmWriter(getConventions(), getDataContext(), getRangeUnitsConverter());
+    }
+
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.cdm.Cdm Conjunction Data Messages}.
+     * @return a new writer
+     */
+    public CdmWriter buildCdmWriter() {
+        return new CdmWriter(getConventions(), getDataContext());
     }
 
 }

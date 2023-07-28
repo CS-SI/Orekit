@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -54,8 +54,8 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider)
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit) {
-        this(initialFieldOrbit, InertialProvider.of(initialFieldOrbit.getFrame()),
-                initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, FrameAlignedProvider.of(initialFieldOrbit.getFrame()),
+             initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
@@ -66,8 +66,8 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      * @see #FieldKeplerianPropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement)
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final T mu) {
-        this(initialFieldOrbit, InertialProvider.of(initialFieldOrbit.getFrame()),
-                mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, FrameAlignedProvider.of(initialFieldOrbit.getFrame()),
+             mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and attitude provider.

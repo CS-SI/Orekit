@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -184,7 +184,7 @@ class GNSSAttitudeContext implements TimeStamped {
      */
     public double beta(final AbsoluteDate d) {
         final TimeStampedPVCoordinates svPV = pvProv.getPVCoordinates(d, inertialFrame);
-        return 0.5 * FastMath.PI - Vector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum());
+        return 0.5 * FastMath.PI - Vector3D.angle(sun.getPosition(d, inertialFrame), svPV.getMomentum());
     }
 
     /** Compute Sun elevation.
@@ -194,7 +194,7 @@ class GNSSAttitudeContext implements TimeStamped {
     private DerivativeStructure betaDS(final FieldAbsoluteDate<DerivativeStructure> d) {
         final TimeStampedPVCoordinates svPV = pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame);
         final FieldPVCoordinates<DerivativeStructure> svPVDS  = svPV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
-        return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPVDS.getMomentum()).
+        return FieldVector3D.angle(sun.getPosition(d, inertialFrame), svPVDS.getMomentum()).
                negate().
                add(0.5 * FastMath.PI);
     }
@@ -252,7 +252,7 @@ class GNSSAttitudeContext implements TimeStamped {
         final double dt0 = turnSpan.getTurnEndDate().durationFrom(date);
         final UnivariateFunction yawReached = dt -> {
             final AbsoluteDate  t       = date.shiftedBy(dt);
-            final Vector3D      pSun    = sun.getPVCoordinates(t, inertialFrame).getPosition();
+            final Vector3D      pSun    = sun.getPosition(t, inertialFrame);
             final PVCoordinates pv      = pvProv.getPVCoordinates(t, inertialFrame);
             final Vector3D      pSat    = pv.getPosition();
             final Vector3D      targetX = Vector3D.crossProduct(pSat, Vector3D.crossProduct(pSun, pSat)).normalize();

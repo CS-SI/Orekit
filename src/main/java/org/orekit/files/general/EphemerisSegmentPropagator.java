@@ -17,9 +17,10 @@
 package org.orekit.files.general;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
@@ -31,8 +32,10 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 /**
  * A {@link Propagator} based on a {@link EphemerisSegment}.
@@ -65,9 +68,11 @@ class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends Abs
      * Create a {@link Propagator} from an ephemeris segment.
      *
      * @param ephemeris segment containing the data for this propagator.
+     * @param attitudeProvider provider for attitude computation
      */
-    EphemerisSegmentPropagator(final EphemerisSegment<C> ephemeris) {
-        super(new InertialProvider(ephemeris.getInertialFrame()));
+    EphemerisSegmentPropagator(final EphemerisSegment<C> ephemeris,
+                               final AttitudeProvider attitudeProvider) {
+        super(attitudeProvider);
         this.cache = new ImmutableTimeStampedCache<>(
                 ephemeris.getInterpolationSamples(),
                 ephemeris.getCoordinates());
@@ -96,8 +101,18 @@ class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends Abs
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         final Stream<C> neighbors = this.cache.getNeighbors(date);
-        final TimeStampedPVCoordinates point =
-                TimeStampedPVCoordinates.interpolate(date, ephemeris.getAvailableDerivatives(), neighbors);
+
+        // cast stream to super type
+        final Stream<TimeStampedPVCoordinates> castedNeighbors = neighbors.map(neighbor -> (TimeStampedPVCoordinates) neighbor);
+
+        // convert to list
+        final List<TimeStampedPVCoordinates> castedNeighborsList = castedNeighbors.collect(Collectors.toList());
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(castedNeighborsList.size(), ephemeris.getAvailableDerivatives());
+
+        final TimeStampedPVCoordinates point = interpolator.interpolate(date, castedNeighborsList);
         return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(point);
     }
 

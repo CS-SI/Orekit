@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,11 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -41,7 +38,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -54,6 +51,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * used together with the {@code positionScale} to convert from the {@link
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param templateOrbit reference orbit from which real orbits will be built
@@ -72,7 +70,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final PositionAngle positionAngle,
                                             final double positionScale) {
         this(templateOrbit, provider, positionAngle, positionScale,
-                InertialProvider.of(templateOrbit.getFrame()));
+             FrameAlignedProvider.of(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -100,7 +98,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final double positionScale,
                                             final AttitudeProvider attitudeProvider) {
         super(overrideMu(templateOrbit, provider, positionAngle), positionAngle,
-                positionScale, true, attitudeProvider);
+              positionScale, true, attitudeProvider);
         this.provider = provider;
     }
 
@@ -210,20 +208,17 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+    public EcksteinHechlerPropagatorBuilder copy() {
+        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngle(),
+                                                    getPositionScale(), getAttitudeProvider());
     }
-
 }

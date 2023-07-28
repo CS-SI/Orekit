@@ -16,17 +16,20 @@
  */
 package org.orekit.forces.maneuvers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -34,7 +37,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
-import org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
+import org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -49,10 +53,15 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.BooleanDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldNegateDetector;
 import org.orekit.propagation.events.NegateDetector;
 import org.orekit.propagation.events.PositionAngleDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -78,12 +87,12 @@ public class ConfigurableLowThrustManeuverTest {
     /** */
     private double halfThrustArc = FastMath.PI / 4;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
-    public abstract class EquinoctialLongitudeIntervalDetector<T extends EventDetector>
+    private abstract class EquinoctialLongitudeIntervalDetector<T extends EventDetector>
             extends AbstractDetector<EquinoctialLongitudeIntervalDetector<T>> {
 
         /** */
@@ -91,21 +100,9 @@ public class ConfigurableLowThrustManeuverTest {
         /** */
         private final PositionAngle type;
 
-        /**
-         * Constructor.
-         *
-         * @param halfArcLength half length of the thrust arc. Must be in [0, pi]
-         * @param type
-         * @param handler
-         */
-        protected EquinoctialLongitudeIntervalDetector(final double halfArcLength, final PositionAngle type,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<T>> handler) {
-            this(halfArcLength, type, maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
-        }
-
         public EquinoctialLongitudeIntervalDetector(final double halfArcLength, final PositionAngle type,
                 final double maxCheck, final double threshold, final int maxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<T>> handler) {
+                final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
             this.halfArcLength = halfArcLength;
             this.type = type;
@@ -153,41 +150,20 @@ public class ConfigurableLowThrustManeuverTest {
             return type;
         }
 
-        /**
-         * 0 to disable the detector (will return -1 for g).
-         *
-         * @param halfArcLength
-         */
-        public void setHalfArcLength(final double halfArcLength) {
-            if (Double.isNaN(halfArcLength)) {
-                throw new RuntimeException("Trying to set an half arc with NaN value on " + getClass().getSimpleName());
-            }
-            if (halfArcLength < 0) {
-                throw new RuntimeException("Trying to set a negative value (" + FastMath.toDegrees(halfArcLength) +
-                        "deg) on  " + getClass().getSimpleName());
-            }
-            if (halfArcLength >= FastMath.PI) {
-                throw new RuntimeException("Trying to set an half arc higher than PI (" +
-                        FastMath.toDegrees(halfArcLength) + "deg) on " + getClass().getSimpleName());
-            }
-
-            this.halfArcLength = halfArcLength;
-        }
-
     }
 
-    public class PerigeeCenteredIntervalDetector
+    private class PerigeeCenteredIntervalDetector
             extends EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector> {
 
         protected PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
                 final double maxCheck, final double threshold, final int maxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector>> handler) {
+                final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, threshold, maxIter, handler);
         }
 
         public PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector>> handler) {
+                final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
         }
@@ -205,25 +181,23 @@ public class ConfigurableLowThrustManeuverTest {
         @Override
         protected EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector> create(final double newMaxCheck,
                 final double newThreshold, final int newMaxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector>> newHandler) {
+                final EventHandler newHandler) {
             return new PerigeeCenteredIntervalDetector(getHalfArcLength(), getType(), newMaxCheck, newThreshold,
                     newMaxIter, newHandler);
         }
     }
 
-    public class ApogeeCenteredIntervalDetector
+    private class ApogeeCenteredIntervalDetector
             extends EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector> {
 
         protected ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
                 final double maxCheck, final double threshold, final int maxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector>> handler) {
+                final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, threshold, maxIter, handler);
         }
 
-        public ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector>> handler) {
-
+        public ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type, final EventHandler handler) {
             super(halfArcLength, type, maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
         }
 
@@ -240,28 +214,25 @@ public class ConfigurableLowThrustManeuverTest {
 
         @Override
         protected EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector> create(final double newMaxCheck,
-                final double newThreshold, final int newMaxIter,
-                final EventHandler<? super EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector>> newHandler) {
+                final double newThreshold, final int newMaxIter, final EventHandler newHandler) {
 
             return new ApogeeCenteredIntervalDetector(getHalfArcLength(), getType(), newMaxCheck, newThreshold,
                     newMaxIter, newHandler);
         }
     }
 
-    public class DateIntervalDetector extends AbstractDetector<DateIntervalDetector> {
+    private static class DateIntervalDetector extends AbstractDetector<DateIntervalDetector> {
 
-        /** */
         private final AbsoluteDate startDate;
-        /** */
         private final AbsoluteDate endDate;
 
         public DateIntervalDetector(final AbsoluteDate startDate, final AbsoluteDate endDate) {
             this(startDate, endDate, 1.0e10, 1.e-9 /* values from DateDetector */, DEFAULT_MAX_ITER,
-                    new StopOnEvent<DateIntervalDetector>());
+                    new StopOnEvent());
         }
 
         protected DateIntervalDetector(final AbsoluteDate startDate, final AbsoluteDate endDate, final double maxCheck,
-                final double threshold, final int maxIter, final EventHandler<? super DateIntervalDetector> handler) {
+                final double threshold, final int maxIter, final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
             this.startDate = startDate;
             this.endDate = endDate;
@@ -291,8 +262,135 @@ public class ConfigurableLowThrustManeuverTest {
 
         @Override
         protected DateIntervalDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
-                final EventHandler<? super DateIntervalDetector> newHandler) {
+                final EventHandler newHandler) {
             return new DateIntervalDetector(startDate, endDate, newMaxCheck, newThreshold, newMaxIter, newHandler);
+        }
+
+    }
+
+    private static class DateIntervalFieldDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<DateIntervalFieldDetector<T>, T> {
+
+        private final FieldAbsoluteDate<T> startDate;
+        private final FieldAbsoluteDate<T> endDate;
+
+        public DateIntervalFieldDetector(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate) {
+            this(startDate, endDate,
+                 startDate.getField().getZero().newInstance(1.0e10),
+                 startDate.getField().getZero().newInstance(1.e-9) /* values from DateDetector */,
+                 DEFAULT_MAX_ITER,
+                 new FieldStopOnEvent<>());
+        }
+
+        protected DateIntervalFieldDetector(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate,
+                                            final T maxCheck, final T threshold, final int maxIter,
+                                            final FieldEventHandler<T> handler) {
+            super(maxCheck, threshold, maxIter, handler);
+            this.startDate = startDate;
+            this.endDate = endDate;
+            if (startDate.durationFrom(endDate).getReal() >= 0) {
+                throw new RuntimeException("StartDate(" + startDate + ") should be before EndDate(" + endDate + ")");
+            }
+        }
+
+        @Override
+        public T g(final FieldSpacecraftState<T> s) {
+            final FieldAbsoluteDate<T> gDate = s.getDate();
+            final T durationFromStart = gDate.durationFrom(startDate);
+            if (durationFromStart.getReal() < 0) {
+                return durationFromStart; // before interval
+            }
+            final T durationBeforeEnd = endDate.durationFrom(gDate);
+            if (durationBeforeEnd.getReal() < 0) {
+                return durationBeforeEnd; // after interval
+            }
+
+            final T ret = FastMath.min(durationFromStart, durationBeforeEnd); // take the closest date
+            if (ret.isNaN()) {
+                throw new RuntimeException("Detector of type " + this.getClass().getSimpleName() + " returned NaN");
+            }
+            return ret;
+        }
+
+        @Override
+        protected DateIntervalFieldDetector<T> create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
+                                                      final FieldEventHandler<T> newHandler) {
+            return new DateIntervalFieldDetector<>(startDate, endDate, newMaxCheck, newThreshold, newMaxIter, newHandler);
+        }
+
+    }
+
+    private static class StartStopInterval extends StartStopEventsTrigger<DateIntervalDetector, NegateDetector> {
+
+        public StartStopInterval(final DateIntervalDetector intervalDetector) {
+            super(intervalDetector, BooleanDetector.notCombine(intervalDetector));
+        }
+
+        @Override
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
+            FieldAbstractDetector<D, S> convertStartDetector(Field<S> field, DateIntervalDetector detector) {
+            final FieldAbsoluteDate<S> fieldStart = new FieldAbsoluteDate<>(field, detector.startDate);
+            final FieldAbsoluteDate<S> fieldEnd   = new FieldAbsoluteDate<>(field, detector.endDate);
+            @SuppressWarnings("unchecked")
+            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new DateIntervalFieldDetector<>(fieldStart, fieldEnd);
+            return converted;
+        }
+
+        @Override
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
+            FieldAbstractDetector<D, S> convertStopDetector(Field<S> field, NegateDetector detector) {
+            DateIntervalDetector       did        = (DateIntervalDetector) detector.getOriginal();
+            final FieldAbsoluteDate<S> fieldStart = new FieldAbsoluteDate<>(field, did.startDate);
+            final FieldAbsoluteDate<S> fieldEnd   = new FieldAbsoluteDate<>(field, did.endDate);
+            @SuppressWarnings("unchecked")
+            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>)
+            new FieldNegateDetector<>(new FieldDateDetector<S>(field.getZero().newInstance(did.getMaxCheckInterval()),
+                                                               field.getZero().newInstance(did.getThreshold()),
+                                                               fieldStart, fieldEnd));
+            return converted;
+        }
+
+    }
+
+    private static class StartStopNoField<A extends AbstractDetector<A>>
+        extends StartStopEventsTrigger<A, NegateDetector> {
+
+        public StartStopNoField(final A intervalDetector) {
+            super(intervalDetector, BooleanDetector.notCombine(intervalDetector));
+        }
+
+        @Override
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
+            FieldAbstractDetector<D, S> convertStartDetector(Field<S> field, A detector) {
+            throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
+                                      "StartStopNoField with CalculusFieldElement");
+        }
+
+        @Override
+        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
+            FieldAbstractDetector<D, S> convertStopDetector(Field<S> field, NegateDetector detector) {
+            throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
+                                      "StartStopNoField with CalculusFieldElement");
+        }
+
+    }
+
+    private static class RegisteringResetter implements ManeuverTriggersResetter {
+
+        private final List<AbsoluteDate> startStates = new ArrayList<>();
+        private final List<AbsoluteDate> stopStates  = new ArrayList<>();
+        
+        @Override
+        public void maneuverTriggered(SpacecraftState state, boolean start) {
+            if (start) {
+                startStates.add(state.getDate());
+            } else {
+                stopStates.add(state.getDate());
+            }
+        }
+
+        @Override
+        public SpacecraftState resetState(SpacecraftState state) {
+            return state;
         }
 
     }
@@ -339,24 +437,23 @@ public class ConfigurableLowThrustManeuverTest {
     private ConfigurableLowThrustManeuver buildApogeeManeuver() {
 
         final ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent<>());
-        final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
+                PositionAngle.MEAN, new ContinueOnEvent());
 
         // thrust in velocity direction to increase semi-major-axis
-        return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(), maneuverStartDetector,
-                maneuverStopDetector, thrust, isp);
+        return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                 new StartStopNoField<>(maneuverStartDetector),
+                                                 thrust, isp);
     }
 
     private ConfigurableLowThrustManeuver buildPerigeeManeuver() {
 
         final PerigeeCenteredIntervalDetector maneuverStartDetector = new PerigeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent<>());
-
-        final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
+                PositionAngle.MEAN, new ContinueOnEvent());
 
         // thrust in velocity direction to increase semi-major-axis
-        return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(), maneuverStartDetector,
-                maneuverStopDetector, thrust, isp);
+        return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                 new StartStopNoField<>(maneuverStartDetector),
+                                                 thrust, isp);
     }
 
     private ConfigurableLowThrustManeuver buildPsoManeuver() {
@@ -364,12 +461,10 @@ public class ConfigurableLowThrustManeuverTest {
         final PositionAngleDetector maneuverStartDetector = new PositionAngleDetector(OrbitType.EQUINOCTIAL,
                                                                                       PositionAngle.MEAN, FastMath.toRadians(0.0));
 
-        final PositionAngleDetector maneuverStopDetector = new PositionAngleDetector(OrbitType.EQUINOCTIAL,
-                                                                                     PositionAngle.MEAN, FastMath.toRadians(90.0));
-
         // thrust in velocity direction to increase semi-major-axis
-        return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(), maneuverStartDetector,
-                maneuverStopDetector, thrust, isp);
+        return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                 new StartStopNoField<>(maneuverStartDetector),
+                                                 thrust, isp);
     }
 
     @Test
@@ -393,37 +488,14 @@ public class ConfigurableLowThrustManeuverTest {
         /////////////////// results check /////////////////////////////////
         final double expectedPropellantConsumption = -0.022;
         final double expectedDeltaSemiMajorAxisRealized = 16397;
-        Assert.assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
+        Assertions.assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
                 0.005);
-        Assert.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
-    }
-
-    @Test
-    public void testBackwardPropagationDisabled() {
-        /////////////////// initial conditions /////////////////////////////////
-        final KeplerianOrbit initOrbit = buildInitOrbit();
-        final double initMass = 20;
-        final SpacecraftState initialState = new SpacecraftState(initOrbit, initMass);
-        final AbsoluteDate initialDate = initOrbit.getDate();
-        final double simulationDuration = -2 * 86400; // backward
-        final AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
-
-        /////////////////// propagation /////////////////////////////////
-        final NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(initOrbit);
-        numericalPropagatorForward.addForceModel(buildApogeeManeuver());
-        numericalPropagatorForward.setInitialState(initialState);
-        try {
-            numericalPropagatorForward.propagate(finalDate);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.BACKWARD_PROPAGATION_NOT_ALLOWED, oe.getSpecifier());
-        }
-
+        Assertions.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
     }
 
     @Test
     public void testFielddPropagationDisabled() {
-        doTestFielddPropagationDisabled(Decimal64Field.getInstance());
+        doTestFielddPropagationDisabled(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFielddPropagationDisabled(Field<T> field) {
@@ -452,10 +524,10 @@ public class ConfigurableLowThrustManeuverTest {
         propagator.setInitialState(initialState);
         try {
             propagator.propagate(finalDate);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals("EventBasedManeuverTriggers.getFieldEventsDetectors", oe.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, oe.getSpecifier());
+            Assertions.assertEquals("StartStopNoField with CalculusFieldElement", oe.getParts()[0]);
         }
 
     }
@@ -466,7 +538,7 @@ public class ConfigurableLowThrustManeuverTest {
         final double f = 0.1;
         final double isp = 2000;
         final double duration = 3000.0;
- 
+
         final Orbit orbit =
             new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
                                FastMath.toRadians(180), FastMath.toRadians(261),
@@ -498,9 +570,9 @@ public class ConfigurableLowThrustManeuverTest {
         final SpacecraftState recoveredStateNumerical = backwardPropagator.propagate(orbit.getDate());
 
         /////////////////// results check /////////////////////////////////
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(orbit.getPVCoordinates().getPosition(),
-                                              recoveredStateNumerical.getPVCoordinates().getPosition()),
+        Assertions.assertEquals(0.0,
+                            Vector3D.distance(orbit.getPosition(),
+                                              recoveredStateNumerical.getPosition()),
                             0.015);
 
     }
@@ -511,7 +583,7 @@ public class ConfigurableLowThrustManeuverTest {
         final double f = 0.1;
         final double isp = 2000;
         final double duration = 3000.0;
- 
+
         final Orbit orbit =
             new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
                                FastMath.toRadians(180), FastMath.toRadians(261),
@@ -529,40 +601,40 @@ public class ConfigurableLowThrustManeuverTest {
 
         // forward propagation
         final NumericalPropagator forwardPropagator = buildNumericalPropagator(orbit);
-        final EventBasedManeuverTriggers forwardDetector = new EventBasedManeuverTriggers(intervalDetector,
-                                                                                          BooleanDetector.notCombine(intervalDetector),
-                                                                                          true);
+        final StartStopEventsTrigger<DateIntervalDetector, NegateDetector> forwardDetector = new StartStopInterval(intervalDetector);
+        final RegisteringResetter forwardRegistering = new RegisteringResetter();
+        forwardDetector.addResetter(forwardRegistering);
         forwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
                                                                           forwardDetector, f, isp));
         forwardPropagator.setInitialState(initialState);
         final SpacecraftState finalStateNumerical = forwardPropagator.propagate(startDate.shiftedBy(duration + 900.0));
-        Assert.assertEquals(0.0, forwardDetector.getTriggeredStart().durationFrom(startDate), 1.0e-16);
-        Assert.assertEquals(duration, forwardDetector.getTriggeredEnd().durationFrom(startDate), 1.0e-16);
+        Assertions.assertEquals(0.0, forwardRegistering.startStates.get(0).durationFrom(startDate), 1.0e-16);
+        Assertions.assertEquals(duration, forwardRegistering.stopStates.get(0).durationFrom(startDate), 1.0e-16);
 
         // backward propagation
         final NumericalPropagator backwardPropagator = buildNumericalPropagator(finalStateNumerical.getOrbit());
-        final EventBasedManeuverTriggers backwardDetector = new EventBasedManeuverTriggers(intervalDetector,
-                                                                                           BooleanDetector.notCombine(intervalDetector),
-                                                                                           true);
+        final StartStopEventsTrigger<DateIntervalDetector, NegateDetector> backwardDetector = new StartStopInterval(intervalDetector);
+        final RegisteringResetter backwardRegistering = new RegisteringResetter();
+        backwardDetector.addResetter(backwardRegistering);
         backwardPropagator.addForceModel(new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
                                                                            backwardDetector, f, isp));
         backwardPropagator.setInitialState(finalStateNumerical);
         final SpacecraftState recoveredStateNumerical = backwardPropagator.propagate(orbit.getDate());
-        Assert.assertEquals(0.0, backwardDetector.getTriggeredStart().durationFrom(startDate), 1.0e-16);
-        Assert.assertEquals(duration, backwardDetector.getTriggeredEnd().durationFrom(startDate), 1.0e-16);
+        Assertions.assertEquals(0.0, backwardRegistering.startStates.get(0).durationFrom(startDate), 1.0e-16);
+        Assertions.assertEquals(duration, backwardRegistering.stopStates.get(0).durationFrom(startDate), 1.0e-16);
 
-        Assert.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(-0.001)),
+        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(-0.001)),
                                                      null));
-        Assert.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(+0.001)),
+        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(+0.001)),
                                                      null));
-        Assert.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(duration - 0.001)),
+        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration - 0.001)),
                                                      null));
-        Assert.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Decimal64Field.getInstance(), startDate.shiftedBy(duration + 0.001)),
+        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration + 0.001)),
                                                      null));
         /////////////////// results check /////////////////////////////////
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(orbit.getPVCoordinates().getPosition(),
-                                              recoveredStateNumerical.getPVCoordinates().getPosition()),
+        Assertions.assertEquals(0.0,
+                            Vector3D.distance(orbit.getPosition(),
+                                              recoveredStateNumerical.getPosition()),
                             0.015);
 
     }
@@ -584,7 +656,7 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happened
-        Assert.assertTrue(finalState.getMass() == initialState.getMass());
+        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
     }
 
     @Test
@@ -609,11 +681,11 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing happened
-        Assert.assertTrue(finalState.getMass() < initialState.getMass());
+        Assertions.assertTrue(finalState.getMass() < initialState.getMass());
 
         // call init again, to check nothing weir happens (and improving test coverage)
         maneuver.init(initialState, finalDate);
-         
+
     }
 
     @Test
@@ -628,10 +700,11 @@ public class ConfigurableLowThrustManeuverTest {
 
         final DateIntervalDetector maneuverStartDetector = new DateIntervalDetector(initialDate,
                 initialDate.shiftedBy(60));
-        final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
 
-        final ConfigurableLowThrustManeuver maneuver = new ConfigurableLowThrustManeuver(
-                buildVelocityThrustDirectionProvider(), maneuverStartDetector, maneuverStopDetector, thrust, isp);
+        final ConfigurableLowThrustManeuver maneuver =
+                        new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                          new StartStopNoField<>(maneuverStartDetector),
+                                                          thrust, isp);
 
         /////////////////// propagation /////////////////////////////////
         final NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(initOrbit);
@@ -639,7 +712,7 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing happened
-        Assert.assertTrue(finalState.getMass() < initialState.getMass());
+        Assertions.assertTrue(finalState.getMass() < initialState.getMass());
     }
 
     @Test
@@ -659,7 +732,7 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing happened
-        Assert.assertTrue(finalState.getMass() < initialState.getMass());
+        Assertions.assertTrue(finalState.getMass() < initialState.getMass());
     }
 
     @Test
@@ -684,7 +757,7 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happened
-        Assert.assertTrue(finalState.getMass() == initialState.getMass());
+        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
     }
 
     @Test
@@ -699,10 +772,11 @@ public class ConfigurableLowThrustManeuverTest {
 
         final DateIntervalDetector maneuverStartDetector = new DateIntervalDetector(initialDate.shiftedBy(-60),
                 initialDate);
-        final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
 
-        final ConfigurableLowThrustManeuver maneuver = new ConfigurableLowThrustManeuver(
-                buildVelocityThrustDirectionProvider(), maneuverStartDetector, maneuverStopDetector, thrust, isp);
+        final ConfigurableLowThrustManeuver maneuver =
+                        new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
+                                                          new StartStopNoField<>(maneuverStartDetector),
+                                                          thrust, isp);
 
         /////////////////// propagation /////////////////////////////////
         final NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(initOrbit);
@@ -710,7 +784,7 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happen
-        Assert.assertTrue(finalState.getMass() == initialState.getMass());
+        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
     }
 
     @Test
@@ -730,21 +804,22 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happened
-        Assert.assertTrue(finalState.getMass() == initialState.getMass());
+        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
     }
 
     @Test
     public void testGetters() {
         final ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent<>());
-        final NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
+                PositionAngle.MEAN, new ContinueOnEvent());
 
         final ThrustDirectionAndAttitudeProvider attitudeProvider = buildVelocityThrustDirectionProvider();
-        final ConfigurableLowThrustManeuver maneuver = new ConfigurableLowThrustManeuver(attitudeProvider,
-                maneuverStartDetector, maneuverStopDetector, thrust, isp);
-        Assert.assertEquals(isp, maneuver.getISP(), 1e-9);
-        Assert.assertEquals(thrust, maneuver.getThrust(), 1e-9);
-        Assert.assertEquals(attitudeProvider, maneuver.getThrustDirectionProvider());
+        final ConfigurableLowThrustManeuver maneuver =
+                        new ConfigurableLowThrustManeuver(attitudeProvider,
+                                                          new StartStopNoField<>(maneuverStartDetector),
+                                                          thrust, isp);
+        Assertions.assertEquals(isp, maneuver.getISP(), 1e-9);
+        Assertions.assertEquals(thrust, maneuver.getThrust(), 1e-9);
+        Assertions.assertEquals(attitudeProvider, maneuver.getThrustDirectionProvider());
 
     }
 
@@ -766,27 +841,11 @@ public class ConfigurableLowThrustManeuverTest {
         final SpacecraftState finalStateNumerical = numericalPropagator.propagate(finalDate);
 
         /////////////////// results check /////////////////////////////////
-        final double expectedPropellantConsumption = -0.028;
-        final double expectedDeltaSemiMajorAxisRealized = 20920;
-        Assert.assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
+        final double expectedPropellantConsumption = -0.0227;
+        final double expectedDeltaSemiMajorAxisRealized = 16838;
+        Assertions.assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
                 0.005);
-        Assert.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
-    }
-
-    @Test(expected = OrekitException.class)
-    public void testStartDetectorNotSet() {
-        new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(), null,
-                new ApogeeCenteredIntervalDetector(halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>()), thrust,
-                isp);
-
-    }
-
-    @Test(expected = OrekitException.class)
-    public void testStopDetectorNotSet() {
-        new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
-                new ApogeeCenteredIntervalDetector(halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>()), null,
-                thrust, isp);
-
+        Assertions.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
     }
 
 }

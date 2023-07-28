@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,7 +65,7 @@ class MeanKeplerianElementsWriter extends AbstractWriter {
 
         // Keplerian elements block
         generator.writeComments(keplerianElements.getComments());
-        generator.writeEntry(KeplerianElementsKey.EPOCH.name(), timeConverter, keplerianElements.getEpoch(), true);
+        generator.writeEntry(KeplerianElementsKey.EPOCH.name(), timeConverter, keplerianElements.getEpoch(), true, true);
         if (theoryIsSgpSdp) {
             generator.writeEntry(KeplerianElementsKey.MEAN_MOTION.name(), keplerianElements.getMeanMotion(), Units.REV_PER_DAY, true);
         } else {

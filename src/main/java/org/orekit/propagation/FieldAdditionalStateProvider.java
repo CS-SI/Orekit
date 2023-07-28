@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
@@ -77,6 +78,15 @@ public interface FieldAdditionalStateProvider<T extends CalculusFieldElement<T>>
      * @return name of the additional state
      */
     String getName();
+
+    /** Initialize the additional state provider at the start of propagation.
+     * @param initialState initial state information at the start of propagation
+     * @param target       date of propagation
+     * @since 11.2
+     */
+    default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+        // nothing by default
+    }
 
     /** Check if this provider should yield so another provider has an opportunity to add missing parts.
      * <p>

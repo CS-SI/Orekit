@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,11 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.SortedSet;
-
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
@@ -39,6 +37,8 @@ import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
+
+import java.util.SortedSet;
 
 public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMeasurement<T>> {
 
@@ -62,28 +62,34 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
                                                         generator.getPropagator(satellite),
                                                         new ElevationDetector(context.stations.get(0).getBaseFrame()).
                                                         withConstantElevation(FastMath.toRadians(5.0)).
-                                                        withHandler(new ContinueOnEvent<>()),
+                                                        withHandler(new ContinueOnEvent()),
                                                         SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
+       final GatheringSubscriber gatherer = new GatheringSubscriber();
+       generator.addSubscriber(gatherer);
        final double period = context.initialOrbit.getKeplerianPeriod();
        AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
        AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
-       SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
-       Assert.assertEquals(expectedMeasurements, measurements.size());
+       generator.generate(t0, t1);
+       SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+       Assertions.assertEquals(expectedMeasurements, measurements.size());
        Propagator propagator = buildPropagator();
        double maxError = 0;
        AbsoluteDate previous = null;
-       AbsoluteDate tInf = t0.compareTo(t1) < 0 ? t0 : t1;
-       AbsoluteDate tSup = t0.compareTo(t1) < 0 ? t1 : t0;
+       AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
+       AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
        for (ObservedMeasurement<?> measurement : measurements) {
            AbsoluteDate date = measurement.getDate();
            double[] m = measurement.getObservedValue();
-           Assert.assertTrue(date.compareTo(tInf) >= 0);
-           Assert.assertTrue(date.compareTo(tSup) <= 0);
+           Assertions.assertTrue(date.compareTo(tInf) >= 0);
+           Assertions.assertTrue(date.compareTo(tSup) <= 0);
            if (previous != null) {
-               // measurements are always chronological, even with backward propagation,
-               // due to the SortedSet (which is intended for combining several
-               // measurements types with different builders and schedulers)
-               Assert.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+               if (t0.isBefore(t1)) {
+                   // measurements are expected to be chronological
+                   Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+               } else {
+                   // measurements are expected to be reverse chronological
+                   Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+               }
            }
            previous = date;
            SpacecraftState state = propagator.propagate(date);
@@ -92,10 +98,10 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
                maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
            }
        }
-       Assert.assertEquals(0.0, maxError, tolerance);
+       Assertions.assertEquals(0.0, maxError, tolerance);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

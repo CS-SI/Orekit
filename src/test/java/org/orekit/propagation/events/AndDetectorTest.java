@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.orekit.propagation.events;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 
-import org.hipparchus.ode.events.Action;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -45,7 +44,7 @@ public class AndDetectorTest {
     private BooleanDetector and;
 
     /** create subject under test and dependencies. */
-    @Before
+    @BeforeEach
     public void setUp() {
         a = new MockDetector();
         b = new MockDetector();
@@ -60,37 +59,37 @@ public class AndDetectorTest {
     public void testG() {
         // test both zero
         a.g = b.g = 0.0;
-        Assert.assertEquals(0.0, and.g(s), 0);
+        Assertions.assertEquals(0.0, and.g(s), 0);
 
         // test either zero
         a.g = 1;
         b.g = 0;
-        Assert.assertEquals(0.0, and.g(s), 0);
+        Assertions.assertEquals(0.0, and.g(s), 0);
         a.g = 0;
         b.g = 1;
-        Assert.assertEquals(0.0, and.g(s), 0);
+        Assertions.assertEquals(0.0, and.g(s), 0);
 
         // test either negative
         a.g = 0;
         b.g = -1;
-        Assert.assertTrue("negative", and.g(s) < 0);
+        Assertions.assertTrue(and.g(s) < 0, "negative");
         a.g = 1;
         b.g = -1;
-        Assert.assertTrue("negative", and.g(s) < 0);
+        Assertions.assertTrue(and.g(s) < 0, "negative");
         a.g = -1;
         b.g = 0;
-        Assert.assertTrue("negative", and.g(s) < 0);
+        Assertions.assertTrue(and.g(s) < 0, "negative");
         a.g = -1;
         b.g = 1;
-        Assert.assertTrue("negative", and.g(s) < 0);
+        Assertions.assertTrue(and.g(s) < 0, "negative");
         a.g = -1;
         b.g = -1;
-        Assert.assertTrue("negative", and.g(s) < 0);
+        Assertions.assertTrue(and.g(s) < 0, "negative");
 
         // test both positive
         a.g = 1;
         b.g = 1;
-        Assert.assertTrue("positive", and.g(s) > 0);
+        Assertions.assertTrue(and.g(s) > 0, "positive");
 
     }
 
@@ -101,16 +100,16 @@ public class AndDetectorTest {
     public void testCancellation() {
         a.g = -1e-10;
         b.g = 1e10;
-        Assert.assertTrue("negative", and.g(s) < 0);
+        Assertions.assertTrue(and.g(s) < 0, "negative");
         a.g = 1e10;
         b.g = -1e-10;
-        Assert.assertTrue("negative", and.g(s) < 0);
+        Assertions.assertTrue(and.g(s) < 0, "negative");
         a.g = 1e10;
         b.g = 1e-10;
-        Assert.assertTrue("positive", and.g(s) > 0);
+        Assertions.assertTrue(and.g(s) > 0, "positive");
         a.g = 1e-10;
         b.g = 1e10;
-        Assert.assertTrue("positive", and.g(s) > 0);
+        Assertions.assertTrue(and.g(s) > 0, "positive");
     }
 
     /**
@@ -120,9 +119,12 @@ public class AndDetectorTest {
     public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventDetector b = Mockito.mock(EventDetector.class);
-        @SuppressWarnings("unchecked")
-        EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        EventHandler c = Mockito.mock(EventHandler.class);
         BooleanDetector and = BooleanDetector.andCombine(a, b).withHandler(c);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
         s = Mockito.mock(SpacecraftState.class);
@@ -132,7 +134,7 @@ public class AndDetectorTest {
         and.init(s, t);
 
         // verify
-        Assert.assertEquals(2, and.getDetectors().size());
+        Assertions.assertEquals(2, and.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
         Mockito.verify(c).init(s, t, and);
@@ -144,7 +146,7 @@ public class AndDetectorTest {
         // action
         try {
             BooleanDetector.andCombine(Collections.emptyList());
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (NoSuchElementException e) {
             // expected
         }
@@ -168,12 +170,12 @@ public class AndDetectorTest {
 
         @Override
         public double getThreshold() {
-            return 0;
+            return AbstractDetector.DEFAULT_THRESHOLD;
         }
 
         @Override
         public double getMaxCheckInterval() {
-            return 0;
+            return AbstractDetector.DEFAULT_MAXCHECK;
         }
 
         @Override
@@ -182,12 +184,7 @@ public class AndDetectorTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
-            return null;
-        }
-
-        @Override
-        public SpacecraftState resetState(SpacecraftState oldState) {
+        public EventHandler getHandler() {
             return null;
         }
     }

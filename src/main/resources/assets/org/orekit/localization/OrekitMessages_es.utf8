@@ -1,5 +1,5 @@
 # internal error, please notify development team by creating a new topic at {0}
-INTERNAL_ERROR = error interno, por favor, informe de este problema abriento un nuevo debate en {0}
+INTERNAL_ERROR = error interno, por favor, informe de este problema abriendo un nuevo debate en {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitud ({0} m) inferior al umbral permitido {1} m
@@ -23,13 +23,13 @@ UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = después de {0} iteraciones
 UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = después de {0} iteraciones no se han conseguido calcular los parámetros medios de Brouwer-Lyddane
 
 # unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE = después de {0} iteraciones no se han conseguido calcular el TLE
+UNABLE_TO_COMPUTE_TLE = después de {0} iteraciones no se ha conseguido calcular el TLE
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = sistema de referencia {0} huérfano en el árbol de sistemas de referencia
 
 # frame {0} is already attached to frame {1}
-FRAME_ALREADY_ATTACHED = el sistema de referencia {0} está ya ligado al sistema de referencia {1}
+FRAME_ALREADY_ATTACHED = el sistema de referencia {0} ya está ligado al sistema de referencia {1}
 
 # frame {0} is not attached to the main frames tree
 FRAME_NOT_ATTACHED = el sistema de referencia {0} todavía no está ligado al árbol principal de sistemas de referencia
@@ -65,7 +65,7 @@ NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} no es ni un repertorio ni un fichero de a
 UNABLE_TO_FIND_RESOURCE = {0} no existe en el "classpath"
 
 # no Earth Orientation Parameters loaded
-NO_EARTH_ORIENTATION_PARAMETERS_LOADED = los parámetros de orientación de la Tierra no están cargados
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = no se han cargado los parámetros de orientación de la Tierra
 
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan parámetros de orientación de la Tierra entre {0} y {1}
@@ -115,17 +115,14 @@ UNABLE_TO_PARSE_ELEMENT_IN_FILE = imposible de analizar el elemento {0} de la l�
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposible de encontrar el fichero {0}
 
-# spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = masa del vehículo adquiere un valor negativo : {0} kg
-
 # positive flow rate (q: {0})
 POSITIVE_FLOW_RATE = flujo de masa positiva (q : {0})
 
 # no gravity field data loaded
-NO_GRAVITY_FIELD_DATA_LOADED = los datos del campo de gravedad no están cargados
+NO_GRAVITY_FIELD_DATA_LOADED = los datos del campo gravitacional no están cargados
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético en la normalización de un campo de gravedad para grado {0} y orden {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético en la normalización de un campo gravitacional para grado {0} y orden {1}
 
 # no ocean tide data loaded
 NO_OCEAN_TIDE_DATA_LOADED = los datos de las mareas oceánicas no están cargados
@@ -143,16 +140,19 @@ POLAR_TRAJECTORY = trayectoria polar (distancia al eje de los polos : {0})
 UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = error de formato imprevisto para el fichero {0} al cargarlo con {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
-DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficiente {0}({1}, {2}) de campo de gravedad duplicado en el fichero {3}
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficiente {0}({1}, {2}) de campo gravitacional duplicado en el fichero {3}
 
 # missing gravity field coefficient {0}({1}, {2}) in file {3}
-MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = falta el coeficiente {0}({1}, {2}) de campo de gravedad en el fichero {3}
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = falta el coeficiente {0}({1}, {2}) del campo gravitacional en el fichero {3}
 
 # too large degree (n = {0}, potential maximal degree is {1})
 TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grado demasiado alto (n = {0}, el grado de potencial máximo es {1})
 
 # too large order (m = {0}, potential maximal order is {1})
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = orden demasiado alto (n = {0}, el orden de potencial máximo es {1})
+
+# no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
+WRONG_DEGREE_OR_ORDER = ningún término ({0}, {1}) en una descomposición armónica esférica de {2}x{3}
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
@@ -203,7 +203,7 @@ NON_EXISTENT_WEEK_DATE = fecha de la semana inexistente {0}-W{1}-{2}
 NON_EXISTENT_DATE = fecha inexistente {0}
 
 # no day number {0} in year {1}
-NON_EXISTENT_DAY_NUMBER_IN_YEAR = no hay día número {0} en el año {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = no hay número de día {0} en el año {1}
 
 # non-existent time {0}:{1}:{2}
 NON_EXISTENT_HMS_TIME = hora inexistente {0}:{1}:{2}
@@ -221,7 +221,7 @@ OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = número de segundos fuera de rango : {0} no
 ANGLE_TYPE_NOT_SUPPORTED = tipo de ángulo no reconocido, ángulos reconocidos : {0}, {1} y {2}
 
 # satellite collided with target
-SATELLITE_COLLIDED_WITH_TARGET = el satélite se estrella contra su objetivo
+SATELLITE_COLLIDED_WITH_TARGET = el satélite colisiona contra su objetivo
 
 # attitude pointing law misses ground
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = la ley de actitud no apunta hacia el suelo
@@ -280,6 +280,12 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = datos inesperados, dos valores
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = nombre de parámetro no conocido {0}, parámetro conocido {1}
 
+# {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
+PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES = {0} parámetro contiene varios intervalos en su valor TimeSpanMap, es necessario utilizar {1}
+
+# setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
+PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la función setPeriod ya ha sido utilizada para el parámetro {0}, se debe crear un nuevo parámetro
+
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = el factor de escala para el parámetro {0} es demasiado pequeño: {1}
 
@@ -296,13 +302,13 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matriz jacobiana asociada al tipo {0} es s
 STATE_JACOBIAN_NOT_INITIALIZED = la matriz jacobiana del estado no ha sido todavía inicializada
 
 # state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
-STATE_JACOBIAN_NOT_6X6 = la matriz jacobiana del estado es una matriz {0}x{1}, y debería ser una matriz 6x6
+STATE_JACOBIAN_NOT_6X6 = la matriz jacobiana de estado es una matriz {0}x{1}, y debería ser una matriz 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
-STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = la matriz jacobiana del estado tiene {0} líneas mientras que la matriz jacobiana de parámetros tiene {1}
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = la matriz jacobiana de estado tiene {0} líneas mientras que la matriz jacobiana de parámetros tiene {1}
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
-INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matriz jacobiana inicial tiene {0} columnas mientras que {1} parámetros fueron seleccionados
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matriz jacobiana inicial tiene {0} columnas, mientras que {1} parámetros fueron seleccionados
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
 ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = la órbita debería ser elíptica con a > 0 y e < 1 o bien hiperbólica con a < 0 y e > 1, a = {0}, e = {1}
@@ -343,6 +349,9 @@ CCSDS_UNKNOWN_CONVENTIONS = no se ha inicializado ninguna convención IERS antes
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = el sistema de referencia {0} no es válido en este contexto de fichero CCSDS
 
+# this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
+CCSDS_DIFFERENT_LVLH_DEFINITION = <MISSING TRANSLATION>
+
 # inconsistent time systems: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemas temporales inconsistentes: {0} ≠ {1}
 
@@ -355,8 +364,11 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = no se ha encontrado ningún convertido
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = el sistema temporal tendría que haber sido inicializado antes de la línea {0} del fichero {1}
 
+# cannot estimate precession without proper derivatives
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = <MISSING TRANSLATION>
+
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya está utilizado para un estado adicional
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya se está utilizando para un estado adicional
 
 # reset state not allowed
 NON_RESETABLE_STATE = reinicialización del estado no autorizada
@@ -382,11 +394,20 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = se han encontrado {0} épocas en el fichero {1} e
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = final inesperado de un fichero sp3 (después de la línea {0})
 
+# STK coordinate system "{0}" is invalid or not yet supported
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+
+# STK coordinate system "{0}" has not been mapped to an Orekit frame
+STK_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+
+# unexpected end of STK file (after line {0})
+STK_UNEXPECTED_END_OF_FILE = final inesperado de un fichero STK (después de la línea {0})
+
 # unsupported clock file version {0}
 CLOCK_FILE_UNSUPPORTED_VERSION = versión de archivo de reloj {0} no reconocida
 
-# unsupported navigation messages file version {0}
-NAVIGATION_FILE_UNSUPPORTED_VERSION = versión de formato de los mensajes de navegación {0} no reconocida
+# version {0} from file {1} is not supported, supported version: {2}
+UNSUPPORTED_FILE_FORMAT_VERSION = <MISSING TRANSLATION>
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = no existe el fichero de modelo geomagnético {0} para el año {1}
@@ -466,11 +487,11 @@ NOT_ENOUGH_GNSS_FOR_DOP = sólo se han especificado {0} órbitas GNSS y se neces
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = para utilizar el sistema temporal {0} en los ficheros CCSDS se requiere un ICD adicional y no está disponible en Orekit
 
-# inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporales incoherentes en los bloques de actitud : {0} ≠ {1}
+# unknown attitude type {0}
+CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
 
-# attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = el modo de actitud {0} de los ficheros CCSDS AEM no está todavía implementado en Orekit
+# incomplete data
+CCSDS_INCOMPLETE_DATA = <MISSING TRANSLATION>
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE = secuencia de rotación {0} inválida en la línea {1} del fichero {2}
@@ -481,14 +502,26 @@ CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = todavía no hay soporte para el tipo de ele
 # retrograde factor not supported in element set {0}
 CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = factor retrógrado sin soporte en el tipo de elementos {0}
 
-# element set type {0} ({1}) expects {2} elements
-CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = el tipo de elementos {0} ({1}) necesita {2} elementos
-
 # wrong number of units for maneuver {0}
 CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = número incorrecto de unidades para la maniobra {0}
 
 # missing time field for maneuver {0}
 CCSDS_MANEUVER_MISSING_TIME = falta campo temporal para la maniobra {0}
+
+# attitude type {0} and rate type {1} calls for {2} states, got {3}
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = <MISSING TRANSLATION>
+
+# incompatible keys {0} and {1} should not both be used
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = <MISSING TRANSLATION>
+
+# sensor index {0} is already used
+CCSDS_SENSOR_INDEX_ALREADY_USED = <MISSING TRANSLATION>
+
+# missing sensor index {0}
+CCSDS_MISSING_SENSOR_INDEX = <MISSING TRANSLATION>
+
+# inconsistent number of elements: expected {0}, got {1}
+INCONSISTENT_NUMBER_OF_ELEMENTS = <MISSING TRANSLATION>
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = para crear un propagador combinado se necesita al menos un propagador, pero no se ha especificado ninguno
@@ -523,6 +556,9 @@ UNKNOWN_SATELLITE_SYSTEM = sistema de satélites desconocido {0}
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistema de tiempo desconocido {0}
 
+# unknown UTC Id {0}
+UNKNOWN_UTC_ID = <MISSING TRANSLATION>
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloj desconocido {0}
 
@@ -540,6 +576,9 @@ UNKNOWN_RINEX_FREQUENCY = frecuencia RINEX desconocida en el fichero {1}, línea
 
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
 MISMATCHED_FREQUENCIES = frecuencias incoherentes en el fichero {0}, línea {1} (se esperaba {2} y se encontró {3})
+
+# wrong parsing type for file {0}
+WRONG_PARSING_TYPE = <MISSING TRANSLATION>
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER = número de columnas erróneo en el fichero {0}, línea {1} (se esperaban {2} columnas y se encontraron {3})
@@ -604,10 +643,10 @@ NO_EPOCH_IN_IONEX_HEADER = el fichero {0} no contiene épocas del primer o últi
 ITRF_VERSIONS_PREFIX_ONLY = la primera columna del fichero itrf-versions.conf es un prefijo simple que se compara a los nombres de cada uno de los ficheros cargados. No debería contener ninguna expresión racional ni ningún separador de directorio, por ejemplo: \"/\" o \"\\\". El valor real es: \"{0}\".
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
-CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = no puede calcular la dirección objetivo en el punto singular latitud = {0}, longitud = {1}
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = no se puede calcular la dirección objetivo en el punto singular latitud = {0}, longitud = {1}
 
 # STEC integration did not converge
-STEC_INTEGRATION_DID_NOT_CONVERGE = la intefración STEC no ha llegado a convergencia
+STEC_INTEGRATION_DID_NOT_CONVERGE = la integración STEC no ha llegado a convergencia
 
 # MODIP grid not be loaded from {0}
 MODIP_GRID_NOT_LOADED = no se ha podido cargar la cuadrícula MODIP desde {0}
@@ -708,6 +747,12 @@ UNEXPECTED_CONTENT_TYPE = tipo de contenido {0} inesperado
 # cannot parse GNSS data from {0}
 CANNOT_PARSE_GNSS_DATA = no se pueden analizar los datos GNSS de {0}
 
+# invalid GNSS data: {0}
+INVALID_GNSS_DATA = <MISSING TRANSLATION>
+
+# GNSS parity error on word {0}
+GNSS_PARITY_ERROR = <MISSING TRANSLATION>
+
 # unknown host {0}
 UNKNOWN_HOST = anfitrión {0} desconocido
 
@@ -744,11 +789,53 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentativa de generar el fichero {0} con un 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = {0} ha fallado buscando una solución entre {1} (g={2,number,0.0##############E0}) y {3} (g={4,number,0.0##############E0})\nÚltima iteración en {5} (g={6,number,0.0##############E0})
 
-# backward propagation not allowed here
-BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
-
-# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
-NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+# missing station data for epoch {0}
+MISSING_STATION_DATA_FOR_EPOCH = <MISSING TRANSLATION>
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
-INCONSISTENT_SELECTION = <MISSING TRANSLATION>
+INCONSISTENT_SELECTION = selección de parámetros inconsistente entre los pares {0}/{1} y {2}/{3}
+
+# no unscented transform configured
+NO_UNSCENTED_TRANSFORM_CONFIGURED = <MISSING TRANSLATION>
+
+# value is not strictly positive: {0}
+NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
+
+# transform from {0} to {1} is not implemented
+UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
+
+# orbital parameters type: {0} is different from expected orbital type : {1}
+WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
+
+# {0} expects {1} elements, got {2}
+WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+
+# cannot change covariance type if defined in a local orbital frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>
+
+# cannot change covariance type if defined in a non pseudo-inertial reference frame
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSLATION>
+
+# primary collision object time of closest approach is different from the secondary collision object's one
+DIFFERENT_TIME_OF_CLOSEST_APPROACH = <MISSING TRANSLATION>
+
+# first date {0} does not match second date {1}
+DATES_MISMATCH = <MISSING TRANSLATION>
+
+# first orbit mu {0} does not match second orbit mu {1}
+ORBITS_MUS_MISMATCH = <MISSING TRANSLATION>
+
+# one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
+DIFFERENT_STATE_DEFINITION = <MISSING TRANSLATION>
+
+# state date {0} does not match its covariance date {1}
+STATE_AND_COVARIANCE_DATES_MISMATCH = <MISSING TRANSLATION>
+
+# creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
+NO_INTERPOLATOR_FOR_STATE_DEFINITION = <MISSING TRANSLATION>
+
+# wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
+
+# multiple interpolators are used so they may use different numbers of interpolation points
+MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>

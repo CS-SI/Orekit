@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -28,9 +27,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
@@ -61,28 +60,26 @@ import org.orekit.utils.PVCoordinates;
 
 public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Override
-    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final AbsoluteDate date,
-                                                                         final Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass) {
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final FieldSpacecraftState<DerivativeStructure> state) {
 
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyField = SingleBodyRelativeAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.
+                        getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
+                        getValue(date);
 
-            final Field<DerivativeStructure> field = position.getX().getField();
             // compute bodies separation vectors and squared norm
-            final FieldPVCoordinates<DerivativeStructure> bodyPV = body.getPVCoordinates(new FieldAbsoluteDate<>(field, date), frame);
+            final FieldPVCoordinates<DerivativeStructure> bodyPV = body.getPVCoordinates(state.getDate(), state.getFrame());
             final FieldVector3D<DerivativeStructure> satToBody = position.subtract(bodyPV.getPosition()).negate();
             final DerivativeStructure r2Sat = satToBody.getNormSq();
 
@@ -99,22 +96,20 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     }
 
     @Override
-    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final AbsoluteDate date,
-                                                                      final Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass) {
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final FieldSpacecraftState<Gradient> state) {
 
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyField = SingleBodyRelativeAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            double gm = forceModel.getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
+            double gm = forceModel.
+                        getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
+                        getValue(date);
 
-            final Field<Gradient> field = position.getX().getField();
             // compute bodies separation vectors and squared norm
-            final FieldPVCoordinates<Gradient> bodyPV = body.getPVCoordinates(new FieldAbsoluteDate<>(field, date), frame);
+            final FieldPVCoordinates<Gradient> bodyPV = body.getPVCoordinates(state.getDate(), state.getFrame());
             final FieldVector3D<Gradient> satToBody = position.subtract(bodyPV.getPosition()).negate();
             final Gradient r2Sat = satToBody.getNormSq();
 
@@ -179,7 +174,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 5.0e-10, 3.0e-11, 3.0e-10,
@@ -235,7 +230,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 1.4e-3,
@@ -298,9 +293,9 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
 
     @Test
@@ -316,7 +311,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
-        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
         final String name = moon.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivative(state, forceModel, name, 1.0, 7.0e-15);
 
@@ -335,7 +330,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
-        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
         final String name = moon.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, forceModel, name, 1.0, 7.0e-15);
 
@@ -357,7 +352,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
-                                             1.0e-16, false);
+                                             5.0e-16, false);
     }
 
     @Test

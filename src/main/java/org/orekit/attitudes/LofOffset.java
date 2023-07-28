@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
+import org.orekit.frames.LOF;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -45,8 +45,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class LofOffset implements AttitudeProvider {
 
-    /** Type of Local Orbital Frame. */
-    private LOFType type;
+    /** Local Orbital Frame. */
+    private final LOF lof;
 
     /** Rotation from local orbital frame.  */
     private final Rotation offset;
@@ -57,13 +57,13 @@ public class LofOffset implements AttitudeProvider {
     /** Create a LOF-aligned attitude.
      * <p>
      * Calling this constructor is equivalent to call
-     * {@code LofOffset(inertialFrame, LOFType, RotationOrder.XYZ, 0, 0, 0)}
+     * {@code LofOffset(inertialFrame, LOF, RotationOrder.XYZ, 0, 0, 0)}
      * </p>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param type type of Local Orbital Frame
+     * @param lof local orbital frame
      */
-    public LofOffset(final Frame inertialFrame, final LOFType type) {
-        this(inertialFrame, type, RotationOrder.XYZ, 0, 0, 0);
+    public LofOffset(final Frame inertialFrame, final LOF lof) {
+        this(inertialFrame, lof, RotationOrder.XYZ, 0, 0, 0);
     }
 
     /** Creates new instance.
@@ -76,9 +76,9 @@ public class LofOffset implements AttitudeProvider {
      * to use {@link RotationConvention#FRAME_TRANSFORM} as in the following code snippet:
      * </p>
      * <pre>
-     *   LofOffset law          = new LofOffset(inertial, lofType, order, alpha1, alpha2, alpha3);
+     *   LofOffset law          = new LofOffset(inertial, LOF, order, alpha1, alpha2, alpha3);
      *   Rotation  offsetAtt    = law.getAttitude(orbit).getRotation();
-     *   Rotation  alignedAtt   = new LofOffset(inertial, lofType).getAttitude(orbit).getRotation();
+     *   Rotation  alignedAtt   = new LofOffset(inertial, LOF).getAttitude(orbit).getRotation();
      *   Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
      *
      *   // note the call to revert and the conventions in the following statement
@@ -94,16 +94,16 @@ public class LofOffset implements AttitudeProvider {
      *   System.out.format(Locale.US, "%f == %f%n", alpha3, anglesF[2]);
      * </pre>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param type type of Local Orbital Frame
+     * @param lof local orbital frame
      * @param order order of rotations to use for (alpha1, alpha2, alpha3) composition
      * @param alpha1 angle of the first elementary rotation
      * @param alpha2 angle of the second elementary rotation
      * @param alpha3 angle of the third elementary rotation
      */
-    public LofOffset(final Frame inertialFrame, final LOFType type,
+    public LofOffset(final Frame inertialFrame, final LOF lof,
                      final RotationOrder order, final double alpha1,
                      final double alpha2, final double alpha3) {
-        this.type = type;
+        this.lof    = lof;
         this.offset = new Rotation(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3).revert();
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
@@ -119,7 +119,7 @@ public class LofOffset implements AttitudeProvider {
 
         // construction of the local orbital frame, using PV from inertial frame
         final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
-        final Transform inertialToLof = type.transformFromInertial(date, pv);
+        final Transform inertialToLof = lof.transformFromInertial(date, pv);
 
         // take into account the specified start frame (which may not be an inertial one)
         final Transform frameToInertial = frame.getTransformTo(inertialFrame, date);
@@ -140,7 +140,7 @@ public class LofOffset implements AttitudeProvider {
 
         // construction of the local orbital frame, using PV from inertial frame
         final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);
-        final FieldTransform<T> inertialToLof = type.transformFromInertial(date, pv);
+        final FieldTransform<T> inertialToLof = lof.transformFromInertial(date, pv);
 
         // take into account the specified start frame (which may not be an inertial one)
         final FieldTransform<T> frameToInertial = frame.getTransformTo(inertialFrame, date);

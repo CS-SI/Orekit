@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.gnss.metric.messages.ssr.igm;
+
+import org.orekit.gnss.metric.messages.common.OrbitCorrection;
 
 /**
  * Container for SSR IGM01 data.

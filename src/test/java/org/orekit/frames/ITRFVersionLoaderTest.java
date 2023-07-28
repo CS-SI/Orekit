@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.frames;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -139,9 +139,9 @@ public class ITRFVersionLoaderTest {
         Utils.setDataRoot("obsolete-data");
         try {
             new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
-            Assert.fail("Expected Exception");
+            Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assert.assertEquals(e.getSpecifier(), OrekitMessages.ITRF_VERSIONS_PREFIX_ONLY);
+            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.ITRF_VERSIONS_PREFIX_ONLY);
         }
     }
 

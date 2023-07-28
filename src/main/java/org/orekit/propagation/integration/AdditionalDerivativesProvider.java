@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ public interface AdditionalDerivativesProvider {
      * }</pre>
      * <p>
      * The default implementation returns {@code false}, meaning that derivative data can be
-     * {@link #derivatives(SpacecraftState) computed} immediately.
+     * {@link #combinedDerivatives(SpacecraftState) computed} immediately.
      * </p>
      * @param state state to handle
      * @return true if this provider should yield so another provider has an opportunity to add missing parts
@@ -95,12 +95,14 @@ public interface AdditionalDerivativesProvider {
         return false;
     }
 
-    /** Compute the derivatives related to the additional state parameters.
+    /** Compute the derivatives related to the additional state (and optionally main state increments).
      * @param s current state information: date, kinematics, attitude, and
      * additional states this equations depend on (according to the
      * {@link #yield(SpacecraftState) yield} method)
-     * @return computed derivatives
+     * @return computed combined derivatives, which may include some incremental
+     * coupling effect to add to main state derivatives
+     * @since 11.2
      */
-    double[] derivatives(SpacecraftState s);
+    CombinedDerivatives combinedDerivatives(SpacecraftState s);
 
 }

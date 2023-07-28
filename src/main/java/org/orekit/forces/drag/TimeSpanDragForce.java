@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.forces.drag;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NavigableSet;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -230,15 +229,6 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         return dragSensitiveTimeSpanMap.extractRange(start, end);
     }
 
-    /** Get the {@link Transition}s of the drag sensitive time span map.
-     * @return the {@link Transition}s for the drag sensitive time span map
-     * @deprecated as of 11.1, replaced by {@link #getFirstSpan()}
-     */
-    @Deprecated
-    public NavigableSet<Transition<DragSensitive>> getTransitions() {
-        return dragSensitiveTimeSpanMap.getTransitions();
-    }
-
     /** Get the first {@link Span time span} of the drag sensitive time span map.
      * @return the first {@link Span time span} of the drag sensitive time span map
      * @since 11.1
@@ -254,7 +244,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         // Local atmospheric density
         final AbsoluteDate date     = s.getDate();
         final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
+        final Vector3D     position = s.getPosition();
         final double rho    = atmosphere.getDensity(date, position, frame);
 
         // Spacecraft relative velocity with respect to the atmosphere
@@ -265,8 +255,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final double[] extractedParameters = extractParameters(parameters, date);
 
         // Compute and return drag acceleration
-        return getDragSensitive(date).dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                       s.getMass(), rho, relativeVelocity, extractedParameters);
+        return getDragSensitive(date).dragAcceleration(s, rho, relativeVelocity, extractedParameters);
 
     }
 
@@ -278,7 +267,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         // Local atmospheric density
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
-        final FieldVector3D<T>     position = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>     position = s.getPosition();
 
         // Density and its derivatives
         final T rho;
@@ -302,8 +291,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final T[] extractedParameters = extractParameters(parameters, date);
 
         // Compute and return drag acceleration
-        return getDragSensitive(date.toAbsoluteDate()).dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                                        s.getMass(), rho, relativeVelocity, extractedParameters);
+        return getDragSensitive(date.toAbsoluteDate()).dragAcceleration(s, rho, relativeVelocity, extractedParameters);
     }
 
     /**{@inheritDoc}
@@ -321,9 +309,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         // Initialize the date detector
         final DateDetector datesDetector = new DateDetector(transitionDates[0]).
                         withMaxCheck(60.).
-                        withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                            return Action.RESET_DERIVATIVES;
-                        });
+                        withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         // Add all transitions' dates to the date detector
         for (int i = 1; i < transitionDates.length; i++) {
             datesDetector.addEventDate(transitionDates[i]);
@@ -349,9 +335,8 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final FieldDateDetector<T> datesDetector =
                         new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates[0])).
                         withMaxCheck(field.getZero().add(60.)).
-                        withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                            return Action.RESET_DERIVATIVES;
-                        });
+                        withHandler((FieldSpacecraftState<T> state, FieldEventDetector<T> detector, boolean increasing) ->
+                                    Action.RESET_DERIVATIVES);
         // Add all transitions' dates to the date detector
         for (int i = 1; i < transitionDates.length; i++) {
             datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates[i]));
@@ -494,7 +479,9 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
 
             // If the name is the default name for DragSensitive parameter drivers
             // Modify the name to add the prefix and the date
-            if (driverName.equals(DragSensitive.DRAG_COEFFICIENT) || driverName.equals(DragSensitive.LIFT_RATIO)) {
+            if (driverName.equals(DragSensitive.GLOBAL_DRAG_FACTOR) ||
+                driverName.equals(DragSensitive.DRAG_COEFFICIENT) ||
+                driverName.equals(DragSensitive.LIFT_RATIO)) {
                 driver.setName(driverName + datePrefix + date.toString(timeScale));
             }
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -128,10 +128,13 @@ public class Unit implements Serializable {
     public static final Unit TESLA = VOLT.multiply(null, SECOND).divide("T", METRE.power(null, Fraction.TWO));
 
     /** Solar Flux Unit. */
-    public static final Unit SOLAR_FLUX_UNIT = WATT.divide(null, METRE.power(null, Fraction.TWO).multiply(null, HERTZ)).scale("sfu", 1.0e-22);
+    public static final Unit SOLAR_FLUX_UNIT = WATT.divide(null, METRE.power(null, Fraction.TWO).multiply(null, HERTZ)).scale("SFU", 1.0e-22);
 
     /** Total Electron Content Unit. */
     public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);
+
+    /** Earth Radii used as Bstar unit in CCSDS OMM. */
+    public static final Unit EARTH_RADII = new Unit("ER", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20210402L;
@@ -252,6 +255,35 @@ public class Unit implements Serializable {
             builder.append('1');
         }
         return new Unit(builder.toString(), 1.0, mass, length, time, current, angle);
+    }
+
+    /** Ensure some units are compatible with reference units.
+     * @param description description of the units list (for error message generation)
+     * @param reference reference units
+     * @param units units to check
+     * @param allowScaleDifferences if true, unit with same dimension but different
+     * scale (like {@link #KILOMETRE} versus {@link #METRE}) are allowed, otherwise they will trigger an exception
+     * @exception OrekitException if units are not compatible (number of elements, dimensions or scaling)
+     */
+    public static void ensureCompatible(final String description, final List<Unit> reference,
+                                        final boolean allowScaleDifferences, final List<Unit> units) {
+        if (units.size() != reference.size()) {
+            throw new OrekitException(OrekitMessages.WRONG_NB_COMPONENTS,
+                                      description, reference.size(), units.size());
+        }
+        for (int i = 0; i < reference.size(); ++i) {
+            if (!reference.get(i).sameDimension(units.get(i))) {
+                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
+                                          reference.get(i).getName(),
+                                          units.get(i).getName());
+            }
+            if (!(allowScaleDifferences ||
+                  Precision.equals(reference.get(i).getScale(), units.get(i).getScale(), 1))) {
+                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
+                                          reference.get(i).getName(),
+                                          units.get(i).getName());
+            }
+        }
     }
 
     /** Append a dimension contribution to a unit name.
@@ -411,18 +443,20 @@ public class Unit implements Serializable {
      * <dl>
      *   <dt>year</dt>
      *   <dd>the accepted non-SI unit for Julian year is "a" but we also accept "yr"</dd>
+     *   <dt>day</dt>
+     *   <dd>the accepted non-SI unit for day is "d" but we also accept "day"</dd>
      *   <dt>dimensionless</dt>
      *   <dd>both "1" and "#" (U+0023, NUMBER SIGN) are accepted</dd>
      *   <dt>mass</dt>
-     *   <dd>"g" is the standard symbol, despite the unit is "kg" (its the only
+     *   <dd>"g" is the standard symbol, despite the unit is "kg" (it is the only
      *       unit that has a prefix in its name, so all multiples must be based on "g")</dd>
      *   <dt>degrees</dt>
      *   <dd>the base symbol for degrees is "°" (U+00B0, DEGREE SIGN), but we also accept
      *       "◦" (U+25E6, WHITE BULLET) and "deg"</dd>
      *   <dt>arcminute</dt>
-     *   <dd>The base symbol for  is "′" (U+2032, PRIME) but we also accept "'" (U+0027, APOSTROPHE)</dd>
+     *   <dd>The base symbol for arcminute is "′" (U+2032, PRIME) but we also accept "'" (U+0027, APOSTROPHE)</dd>
      *   <dt>arcsecond</dt>
-     *   <dd>The base symbol for  is "″" (U+2033, DOUBLE PRIME) but we also accept
+     *   <dd>The base symbol for arcsecond is "″" (U+2033, DOUBLE PRIME) but we also accept
      *   "''" (two occurrences of U+0027, APOSTROPHE), "\"" (U+0022, QUOTATION MARK) and "as"</dd>
      * </dl>
      * <p>
@@ -463,7 +497,7 @@ public class Unit implements Serializable {
      *   as in "Pa^(11/12)"</li>
      * </ul>
      * For integer exponents, the digits must be ASCII digits from the Basic Latin block from
-     * unicode if explicit exponent maker "**" or "^" was used, or using unicode superscript
+     * unicode if explicit exponent marker "**" or "^" is used, or using unicode superscript
      * digits if implicit exponentiation (i.e. no markers at all) is used. Unicode superscripts
      * are not allowed for fractional exponents because unicode does not provide a superscript solidus.
      * Negative exponents can be used too.

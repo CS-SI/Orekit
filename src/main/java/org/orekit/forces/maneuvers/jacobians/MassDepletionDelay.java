@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 
 /** Generator for effect of delaying mass depletion when delaying a maneuver.
@@ -79,7 +80,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double[] derivatives(final SpacecraftState state) {
+    public CombinedDerivatives combinedDerivatives(final SpacecraftState state) {
 
         // retrieve current Jacobian column
         final double[] p = state.getAdditionalState(getName());
@@ -88,14 +89,16 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
         if (forward == manageStart) {
 
             // current acceleration
-            final double[] parameters   = maneuver.getParameters();
+            final double[] parameters   = maneuver.getParameters(state.getDate());
+            // for the acceleration method we need all the span values of all the parameters driver
+            // as in the acceleration method an exctractParameter method is called
             final Vector3D acceleration = maneuver.acceleration(state, parameters);
 
             // we have acceleration Γ = F/m and m = m₀ - q (t - tₛ)
             // where m is current mass, m₀ is initial mass and tₛ is maneuver trigger time
             // a delay dtₛ on trigger time induces delaying mass depletion
             // we get: dΓ = -F/m² dm = -F/m² q dtₛ = -Γ q/m dtₛ
-            final double minusQ = maneuver.getPropulsionModel().getMassDerivatives(state, parameters);
+            final double minusQ = maneuver.getPropulsionModel().getMassDerivatives(state, maneuver.getParameters(state.getDate()));
             final double m      = state.getMass();
             final double ratio  = minusQ / m;
 
@@ -108,7 +111,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
         }
 
-        return pDot;
+        return new CombinedDerivatives(pDot, null);
 
     }
 

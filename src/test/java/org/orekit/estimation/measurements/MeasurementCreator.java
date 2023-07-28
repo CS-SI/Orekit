@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,12 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class MeasurementCreator implements OrekitFixedStepHandler {
 

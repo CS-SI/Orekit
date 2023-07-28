@@ -24,11 +24,12 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.hipparchus.exception.Localizable;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -53,102 +54,6 @@ import org.orekit.time.TimeStamped;
  * @since 10.2
  */
 public class CssiSpaceWeatherDataLoader implements DataLoader {
-
-    /** Helper class to parse line data and to raise exceptions if needed. */
-    public static class LineReader {
-
-        /** Name of the file. Used in error messages. */
-        private final String name;
-
-        /** The input stream. */
-        private final BufferedReader in;
-
-        /** The last line read from the file. */
-        private String line;
-
-        /** The number of the last line read from the file. */
-        private long lineNo;
-
-        /**
-         * Create a line reader.
-         *
-         * @param name of the data source for error messages.
-         * @param in   the input data stream.
-         */
-        public LineReader(final String name, final BufferedReader in) {
-            this.name = name;
-            this.in = in;
-            this.line = null;
-            this.lineNo = 0;
-        }
-
-        /**
-         * Read a line from the input data stream.
-         *
-         * @return the next line without the line termination character, or {@code null}
-         *         if the end of the stream has been reached.
-         * @throws IOException if an I/O error occurs.
-         * @see BufferedReader#readLine()
-         */
-        public String readLine() throws IOException {
-            line = in.readLine();
-            lineNo++;
-            return line;
-        }
-
-        /**
-         * Read a line from the input data stream, or if the end of the stream has been
-         * reached throw an exception.
-         *
-         * @param message for the exception if the end of the stream is reached.
-         * @param args    for the exception if the end of stream is reached.
-         * @return the next line without the line termination character, or {@code null}
-         *         if the end of the stream has been reached.
-         * @throws IOException     if an I/O error occurs.
-         * @throws OrekitException if a line could not be read because the end of the
-         *                         stream has been reached.
-         * @see #readLine()
-         */
-        public String readLineOrThrow(final Localizable message, final Object... args)
-                throws IOException, OrekitException {
-
-            final String text = readLine();
-            if (text == null) {
-                throw new OrekitException(message, args);
-            }
-            return text;
-        }
-
-        /**
-         * Annotate an exception with the file context.
-         *
-         * @param cause the reason why the line could not be parsed.
-         * @return an exception with the cause, file name, line number, and line text.
-         */
-        public OrekitException unableToParseLine(final Throwable cause) {
-            return new OrekitException(cause, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNo, name, line);
-        }
-
-        /**
-         * Get the last line read from the stream.
-         *
-         * @return May be {@code null} if no lines have been read or the end of stream
-         *         has been reached.
-         */
-        public String getLine() {
-            return line;
-        }
-
-        /**
-         * Get the line number of the last line read from the file.
-         *
-         * @return the line number.
-         */
-        public long getLineNumber() {
-            return lineNo;
-        }
-
-    }
 
     /** Container class for Solar activity indexes. */
     public static class LineParameters implements TimeStamped, Serializable {
@@ -355,7 +260,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     private AbsoluteDate lastDate;
 
     /** Data set. */
-    private SortedSet<TimeStamped> set;
+    private SortedSet<LineParameters> set;
 
     /**
      * Constructor.
@@ -374,7 +279,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
      * Getter for the data set.
      * @return the data set
      */
-    public SortedSet<TimeStamped> getDataSet() {
+    public SortedSet<LineParameters> getDataSet() {
         return set;
     }
 
@@ -435,10 +340,11 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         // read the data
         int lineNumber = 0;
         String line = null;
+        final Set<AbsoluteDate> parsedEpochs = new HashSet<>();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            final LineReader reader = new LineReader(name, br);
+            final CommonLineReader reader = new CommonLineReader(br);
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
@@ -461,7 +367,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
                         final int day = Integer.parseInt(line.substring(8, 10));
                         final AbsoluteDate date = new AbsoluteDate(year, month, day, this.utc);
 
-                        if (!set.contains(date)) { // Checking if entry doesn't exist yet
+                        if (parsedEpochs.add(date)) { // Checking if entry doesn't exist yet
                             final double[] threeHourlyKp = new double[8];
                             /**
                              * Kp is written as an integer where a unit equals 0.1, the conversion is

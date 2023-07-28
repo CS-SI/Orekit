@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,6 @@ import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 import org.hamcrest.MatcherAssert;
@@ -34,18 +32,17 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -59,7 +56,7 @@ public class FieldCartesianOrbitTest {
     // Body mu
     private double mu;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         // Body mu
@@ -69,136 +66,134 @@ public class FieldCartesianOrbitTest {
     @Test
     public void testCartesianToCartesian()
         throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        doTestCartesianToCartesian(Decimal64Field.getInstance());
+        doTestCartesianToCartesian(Binary64Field.getInstance());
     }
 
     @Test
     public void testCartesianToEquinoctial() {
-        doTestCartesianToEquinoctial(Decimal64Field.getInstance());
+        doTestCartesianToEquinoctial(Binary64Field.getInstance());
     }
 
     @Test
     public void testCartesianToKeplerian() {
-        doTestCartesianToKeplerian(Decimal64Field.getInstance());
+        doTestCartesianToKeplerian(Binary64Field.getInstance());
     }
 
     @Test
     public void testPositionVelocityNorms() {
-        doTestPositionVelocityNorms(Decimal64Field.getInstance());
+        doTestPositionVelocityNorms(Binary64Field.getInstance());
     }
 
     @Test
     public void testGeometry() {
-        doTestGeometry(Decimal64Field.getInstance());
+        doTestGeometry(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbola1() {
-        doTestHyperbola1(Decimal64Field.getInstance());
+        doTestHyperbola1(Binary64Field.getInstance());
     }
 
     @Test
     public void testHyperbola2() {
-        doTestHyperbola2(Decimal64Field.getInstance());
+        doTestHyperbola2(Binary64Field.getInstance());
     }
 
     @Test
     public void testNumericalIssue25() {
-        doTestNumericalIssue25(Decimal64Field.getInstance());
+        doTestNumericalIssue25(Binary64Field.getInstance());
     }
 
     @Test
     public void testDerivativesConversionSymmetry() {
-        doTestDerivativesConversionSymmetry(Decimal64Field.getInstance());
+        doTestDerivativesConversionSymmetry(Binary64Field.getInstance());
     }
 
     @Test
     public void testDerivativesConversionSymmetryHyperbolic() {
-        doTestDerivativesConversionSymmetryHyperbolic(Decimal64Field.getInstance());
+        doTestDerivativesConversionSymmetryHyperbolic(Binary64Field.getInstance());
     }
 
     @Test
     public void testShiftElliptic() {
-        doTestShiftElliptic(Decimal64Field.getInstance());
+        doTestShiftElliptic(Binary64Field.getInstance());
     }
 
     @Test
     public void testShiftCircular() {
-        doTestShiftCircular(Decimal64Field.getInstance());
+        doTestShiftCircular(Binary64Field.getInstance());
     }
 
     @Test
     public void testShiftEquinoctial() {
-        doTestShiftEquinoctial(Decimal64Field.getInstance());
+        doTestShiftEquinoctial(Binary64Field.getInstance());
     }
 
     @Test
     public void testShiftHyperbolic() {
-        doTestShiftHyperbolic(Decimal64Field.getInstance());
+        doTestShiftHyperbolic(Binary64Field.getInstance());
     }
 
     @Test
     public void testNumericalIssue135() {
-        doTestNumericalIssue135(Decimal64Field.getInstance());
+        doTestNumericalIssue135(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testNumericalIssue1015() {
+        doTestNumericalIssue1015(Binary64Field.getInstance());
     }
 
     @Test
     public void testJacobianReference() {
-        doTestJacobianReference(Decimal64Field.getInstance());
+        doTestJacobianReference(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(Decimal64Field.getInstance(), true,
-                            394, 2.28e-8, 3.21, 1.39e-9,
-                            2474, 6842, 6.55, 186);
-    }
-
-    @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(Decimal64Field.getInstance(), false,
-                            394, 2.61, 3.21, 0.154,
-                            2474, 2.28e12, 6.55, 6.22e10);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
     public void testErr1(){
-        doTestErr1(Decimal64Field.getInstance());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            doTestErr1(Binary64Field.getInstance());
+        });
     }
 
     @Test
     public void testToOrbitWithoutDerivatives() {
-        doTestToOrbitWithoutDerivatives(Decimal64Field.getInstance());
+        doTestToOrbitWithoutDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testToOrbitWithDerivatives() {
-        doTestToOrbitWithDerivatives(Decimal64Field.getInstance());
+        doTestToOrbitWithDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testToString() {
-        doTestToString(Decimal64Field.getInstance());
+        doTestToString(Binary64Field.getInstance());
     }
 
     @Test
     public void testNonKeplerianDerivatives() {
-        doTestNonKeplerianDerivatives(Decimal64Field.getInstance());
+        doTestNonKeplerianDerivatives(Binary64Field.getInstance());
     }
 
     @Test
     public void testEquatorialRetrograde() {
-        doTestEquatorialRetrograde(Decimal64Field.getInstance());
+        doTestEquatorialRetrograde(Binary64Field.getInstance());
     }
 
     @Test
     public void testCopyNonKeplerianAcceleration() {
-        doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
+        doTestCopyNonKeplerianAcceleration(Binary64Field.getInstance());
     }
 
     @Test
     public void testNormalize() {
-        doTestNormalize(Decimal64Field.getInstance());
+        doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue1139() {
+        doTestIssue1139(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestCartesianToCartesian(Field<T> field)
@@ -214,16 +209,16 @@ public class FieldCartesianOrbitTest {
 
         FieldCartesianOrbit<T> p = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
 
-        Assert.assertEquals(p.getPVCoordinates().getPosition().getX().getReal(), FieldPVCoordinates.getPosition().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getX().getReal()));
-        Assert.assertEquals(p.getPVCoordinates().getPosition().getY().getReal(), FieldPVCoordinates.getPosition().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getY().getReal()));
-        Assert.assertEquals(p.getPVCoordinates().getPosition().getZ().getReal(), FieldPVCoordinates.getPosition().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getZ().getReal()));
-        Assert.assertEquals(p.getPVCoordinates().getVelocity().getX().getReal(), FieldPVCoordinates.getVelocity().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getX().getReal()));
-        Assert.assertEquals(p.getPVCoordinates().getVelocity().getY().getReal(), FieldPVCoordinates.getVelocity().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getY().getReal()));
-        Assert.assertEquals(p.getPVCoordinates().getVelocity().getZ().getReal(), FieldPVCoordinates.getVelocity().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getZ().getReal()));
+        Assertions.assertEquals(p.getPosition().getX().getReal(), FieldPVCoordinates.getPosition().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getX().getReal()));
+        Assertions.assertEquals(p.getPosition().getY().getReal(), FieldPVCoordinates.getPosition().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getY().getReal()));
+        Assertions.assertEquals(p.getPosition().getZ().getReal(), FieldPVCoordinates.getPosition().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getZ().getReal()));
+        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getX().getReal(), FieldPVCoordinates.getVelocity().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getX().getReal()));
+        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getY().getReal(), FieldPVCoordinates.getVelocity().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getY().getReal()));
+        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getZ().getReal(), FieldPVCoordinates.getVelocity().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getZ().getReal()));
 
         Method initPV = FieldCartesianOrbit.class.getDeclaredMethod("initPVCoordinates", new Class[0]);
         initPV.setAccessible(true);
-        Assert.assertSame(p.getPVCoordinates(), initPV.invoke(p, new Object[0]));
+        Assertions.assertSame(p.getPVCoordinates(), initPV.invoke(p, new Object[0]));
 
     }
 
@@ -237,31 +232,31 @@ public class FieldCartesianOrbitTest {
         FieldCartesianOrbit<T> p = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                              FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
 
-        Assert.assertEquals(42255170.0028257,  p.getA().getReal(), Utils.epsilonTest * p.getA().getReal());
-        Assert.assertEquals(0.592732497856475e-03,  p.getEquinoctialEx().getReal(), Utils.epsilonE * FastMath.abs(p.getE().getReal()));
-        Assert.assertEquals(-0.206274396964359e-02, p.getEquinoctialEy().getReal(), Utils.epsilonE * FastMath.abs(p.getE().getReal()));
-        Assert.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), p.getE().getReal(), Utils.epsilonAngle * FastMath.abs(p.getE().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), p.getI().getReal()), p.getI().getReal(), Utils.epsilonAngle * FastMath.abs(p.getI().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, p.getLM().getReal()), p.getLM().getReal(), Utils.epsilonAngle * FastMath.abs(p.getLM().getReal()));
+        Assertions.assertEquals(42255170.0028257,  p.getA().getReal(), Utils.epsilonTest * p.getA().getReal());
+        Assertions.assertEquals(0.592732497856475e-03,  p.getEquinoctialEx().getReal(), Utils.epsilonE * FastMath.abs(p.getE().getReal()));
+        Assertions.assertEquals(-0.206274396964359e-02, p.getEquinoctialEy().getReal(), Utils.epsilonE * FastMath.abs(p.getE().getReal()));
+        Assertions.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), p.getE().getReal(), Utils.epsilonAngle * FastMath.abs(p.getE().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), p.getI().getReal()), p.getI().getReal(), Utils.epsilonAngle * FastMath.abs(p.getI().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, p.getLM().getReal()), p.getLM().getReal(), Utils.epsilonAngle * FastMath.abs(p.getLM().getReal()));
 
         // trigger a specific path in copy constructor
         FieldCartesianOrbit<T> q = new FieldCartesianOrbit<>(p);
 
-        Assert.assertEquals(42255170.0028257,  q.getA().getReal(), Utils.epsilonTest * q.getA().getReal());
-        Assert.assertEquals(0.592732497856475e-03,  q.getEquinoctialEx().getReal(), Utils.epsilonE * FastMath.abs(q.getE().getReal()));
-        Assert.assertEquals(-0.206274396964359e-02, q.getEquinoctialEy().getReal(), Utils.epsilonE * FastMath.abs(q.getE().getReal()));
-        Assert.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), q.getE().getReal(), Utils.epsilonAngle * FastMath.abs(q.getE().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), q.getI().getReal()), q.getI().getReal(), Utils.epsilonAngle * FastMath.abs(q.getI().getReal()));
-        Assert.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, q.getLM().getReal()), q.getLM().getReal(), Utils.epsilonAngle * FastMath.abs(q.getLM().getReal()));
+        Assertions.assertEquals(42255170.0028257,  q.getA().getReal(), Utils.epsilonTest * q.getA().getReal());
+        Assertions.assertEquals(0.592732497856475e-03,  q.getEquinoctialEx().getReal(), Utils.epsilonE * FastMath.abs(q.getE().getReal()));
+        Assertions.assertEquals(-0.206274396964359e-02, q.getEquinoctialEy().getReal(), Utils.epsilonE * FastMath.abs(q.getE().getReal()));
+        Assertions.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), q.getE().getReal(), Utils.epsilonAngle * FastMath.abs(q.getE().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), q.getI().getReal()), q.getI().getReal(), Utils.epsilonAngle * FastMath.abs(q.getI().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, q.getLM().getReal()), q.getLM().getReal(), Utils.epsilonAngle * FastMath.abs(q.getLM().getReal()));
 
-        Assert.assertNull(q.getADot());
-        Assert.assertNull(q.getEquinoctialExDot());
-        Assert.assertNull(q.getEquinoctialEyDot());
-        Assert.assertNull(q.getHxDot());
-        Assert.assertNull(q.getHyDot());
-        Assert.assertNull(q.getLvDot());
-        Assert.assertNull(q.getEDot());
-        Assert.assertNull(q.getIDot());
+        Assertions.assertNull(q.getADot());
+        Assertions.assertNull(q.getEquinoctialExDot());
+        Assertions.assertNull(q.getEquinoctialEyDot());
+        Assertions.assertNull(q.getHxDot());
+        Assertions.assertNull(q.getHyDot());
+        Assertions.assertNull(q.getLvDot());
+        Assertions.assertNull(q.getEDot());
+        Assertions.assertNull(q.getIDot());
 
     }
 
@@ -277,17 +272,17 @@ public class FieldCartesianOrbitTest {
                                                              FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
         FieldKeplerianOrbit<T> kep = new FieldKeplerianOrbit<>(p);
 
-        Assert.assertEquals(22979265.3030773,  p.getA().getReal(), Utils.epsilonTest  * p.getA().getReal());
-        Assert.assertEquals(0.743502611664700, p.getE().getReal(), Utils.epsilonE     * FastMath.abs(p.getE().getReal()));
-        Assert.assertEquals(0.122182096220906, p.getI().getReal(), Utils.epsilonAngle * FastMath.abs(p.getI().getReal()));
+        Assertions.assertEquals(22979265.3030773,  p.getA().getReal(), Utils.epsilonTest  * p.getA().getReal());
+        Assertions.assertEquals(0.743502611664700, p.getE().getReal(), Utils.epsilonE     * FastMath.abs(p.getE().getReal()));
+        Assertions.assertEquals(0.122182096220906, p.getI().getReal(), Utils.epsilonAngle * FastMath.abs(p.getI().getReal()));
         T pa = kep.getPerigeeArgument();
-        Assert.assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa.getReal()), pa.getReal(),
+        Assertions.assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa.getReal()), pa.getReal(),
                      Utils.epsilonAngle * FastMath.abs(pa.getReal()));
         T raan = kep.getRightAscensionOfAscendingNode();
-        Assert.assertEquals(MathUtils.normalizeAngle(2.32231010979999, raan.getReal()), raan.getReal(),
+        Assertions.assertEquals(MathUtils.normalizeAngle(2.32231010979999, raan.getReal()), raan.getReal(),
                      Utils.epsilonAngle * FastMath.abs(raan.getReal()));
         T m = kep.getMeanAnomaly();
-        Assert.assertEquals(MathUtils.normalizeAngle(3.22888977629034, m.getReal()), m.getReal(),
+        Assertions.assertEquals(MathUtils.normalizeAngle(3.22888977629034, m.getReal()), m.getReal(),
                      Utils.epsilonAngle * FastMath.abs(FastMath.abs(m.getReal())));
     }
 
@@ -309,12 +304,12 @@ public class FieldCartesianOrbitTest {
         T na = a.reciprocal().multiply(mu).sqrt();
 
         // validation of: r = a .(1 - e2) / (1 + e.cos(v))
-        Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
-                     p.getPVCoordinates().getPosition().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm().getReal()));
+        Assertions.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
+                     p.getPosition().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm().getReal()));
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
-        Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu .getReal()* nu.getReal()) / epsilon.getReal(),
+        Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu .getReal()* nu.getReal()) / epsilon.getReal(),
                      p.getPVCoordinates().getVelocity().getNorm().getReal(),
                      Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
 
@@ -339,14 +334,14 @@ public class FieldCartesianOrbitTest {
             p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
                                             p.getHx(), p.getHy(), lv, PositionAngle.TRUE, p.getFrame(),
                                             FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
-            position = p.getPVCoordinates().getPosition();
+            position = p.getPosition();
 
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
-            Assert.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
-            Assert.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
-            // Assert.assertTrue(position.getNorm() <= apogeeRadius);
-            // Assert.assertTrue(position.getNorm() >= perigeeRadius);
+            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
+            // Assertions.assertTrue(position.getNorm() <= apogeeRadius);
+            // Assertions.assertTrue(position.getNorm() >= perigeeRadius);
 
             position= position.normalize();
             velocity = p.getPVCoordinates().getVelocity().normalize();
@@ -354,9 +349,9 @@ public class FieldCartesianOrbitTest {
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(position, momentum).getReal()) < Utils.epsilonTest);
+            Assertions.assertTrue(FastMath.abs(FieldVector3D.dotProduct(position, momentum).getReal()) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(velocity, momentum).getReal()) < Utils.epsilonTest);
+            Assertions.assertTrue(FastMath.abs(FieldVector3D.dotProduct(velocity, momentum).getReal()) < Utils.epsilonTest);
         }
     }
 
@@ -367,7 +362,7 @@ public class FieldCartesianOrbitTest {
                                                                                            PositionAngle.TRUE,
                                                                                            FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
                                                                                            zero.add(mu)));
-        FieldVector3D<T> perigeeP  = orbit.getPVCoordinates().getPosition();
+        FieldVector3D<T> perigeeP  = orbit.getPosition();
         FieldVector3D<T> u = perigeeP.normalize();
         FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
         FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
@@ -375,11 +370,11 @@ public class FieldCartesianOrbitTest {
             FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
             T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
             T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
-            Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
+            Assertions.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
             FieldCartesianOrbit<T> rebuilt =
                             new FieldCartesianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), zero.add(mu));
-            Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
-            Assert.assertEquals(2.5, rebuilt.getE().getReal(), 1.0e-13);
+            Assertions.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
+            Assertions.assertEquals(2.5, rebuilt.getE().getReal(), 1.0e-13);
         }
     }
 
@@ -393,7 +388,7 @@ public class FieldCartesianOrbitTest {
         FieldVector3D<T> perigeeP  = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
                                                                zero, zero, zero,
                                                                PositionAngle.TRUE,
-                                                               orbit.getFrame(), orbit.getDate(), orbit.getMu()).getPVCoordinates().getPosition();
+                                                               orbit.getFrame(), orbit.getDate(), orbit.getMu()).getPosition();
         FieldVector3D<T> u = perigeeP.normalize();
         FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
         FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
@@ -401,11 +396,11 @@ public class FieldCartesianOrbitTest {
             FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
             T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
             T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
-            Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
+            Assertions.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
             FieldCartesianOrbit<T> rebuilt =
                             new FieldCartesianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), zero.add(mu));
-            Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
-            Assert.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
+            Assertions.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
+            Assertions.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
         }
     }
 
@@ -418,7 +413,7 @@ public class FieldCartesianOrbitTest {
                                                                  new FieldAbsoluteDate<>(field, "2004-01-01T23:00:00.000",
                                                                                          TimeScalesFactory.getUTC()),
                                                                  zero.add(3.986004415E14));
-        Assert.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
+        Assertions.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) {
@@ -436,21 +431,21 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  date, zero.add(Constants.EIGEN5C_EARTH_MU));
-        Assert.assertTrue(orbit.hasDerivatives());
+        Assertions.assertTrue(orbit.hasDerivatives());
         T r2 = position.getNormSq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
-        Assert.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
+        Assertions.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
 
         for (OrbitType type : OrbitType.values()) {
             FieldOrbit<T> converted = type.convertType(orbit);
-            Assert.assertTrue(converted.hasDerivatives());
+            Assertions.assertTrue(converted.hasDerivatives());
             FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitType.CARTESIAN.convertType(converted);
-            Assert.assertTrue(rebuilt.hasDerivatives());
-            Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getPosition(),     position).getReal(),     2.0e-9);
-            Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity).getReal(),     7.0e-12);
-            Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration).getReal(), 4.9e-15);
+            Assertions.assertTrue(rebuilt.hasDerivatives());
+            Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPosition(),     position).getReal(),     2.0e-9);
+            Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity).getReal(),     7.0e-12);
+            Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration).getReal(), 4.9e-15);
         }
 
     }
@@ -470,21 +465,21 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  date, zero.add(Constants.EIGEN5C_EARTH_MU));
-        Assert.assertTrue(orbit.hasDerivatives());
+        Assertions.assertTrue(orbit.hasDerivatives());
         T r2 = position.getNormSq();
         T r  = r2.sqrt();
         FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
-        Assert.assertEquals(4.78e-4, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-6);
+        Assertions.assertEquals(4.78e-4, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-6);
 
         OrbitType type = OrbitType.KEPLERIAN;
         FieldOrbit<T> converted = type.convertType(orbit);
-        Assert.assertTrue(converted.hasDerivatives());
+        Assertions.assertTrue(converted.hasDerivatives());
         FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitType.CARTESIAN.convertType(converted);
-        Assert.assertTrue(rebuilt.hasDerivatives());
-        Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getPosition(),     position).getReal(),     1.0e-15);
-        Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity).getReal(),     1.0e-15);
-        Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration).getReal(), 1.0e-15);
+        Assertions.assertTrue(rebuilt.hasDerivatives());
+        Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPosition(),     position).getReal(),     1.0e-15);
+        Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity).getReal(),     1.0e-15);
+        Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration).getReal(), 1.0e-15);
 
     }
 
@@ -495,7 +490,7 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>( position, velocity);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                                  FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
-        testShift(orbit, new FieldKeplerianOrbit<>(orbit), 2e-15);
+        testShift(orbit, new FieldKeplerianOrbit<>(orbit), 1e-13);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircular(Field<T> field) {
@@ -539,6 +534,17 @@ public class FieldCartesianOrbitTest {
         testShift(orbit, new FieldKeplerianOrbit<>(orbit), 6.0e-15);
     }
 
+    private <T extends CalculusFieldElement<T>> void doTestNumericalIssue1015(Field<T> field) {
+        T zero = field.getZero();
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(-1466739.735988), zero.add(1586390.713569), zero.add(6812901.677773));
+        FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-9532.812), zero.add(-4321.894), zero.add(-1409.018));
+        FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>(position, velocity);
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(),
+                                                                 FieldAbsoluteDate.getJ2000Epoch(field),
+                                                                 zero.add(3.986004415E14));
+        testShift(orbit, new FieldKeplerianOrbit<>(orbit), 1.0e-10);
+    }
+
     private <T extends CalculusFieldElement<T>> void testShift(FieldCartesianOrbit<T> tested, FieldOrbit<T> reference, double threshold) {
         Field<T> field = tested.getA().getField();
         T zero = field.getZero();
@@ -551,8 +557,8 @@ public class FieldCartesianOrbitTest {
             FieldPVCoordinates<T> pvReference = reference.shiftedBy(dt).getPVCoordinates();
             FieldVector3D<T>      pReference  = pvReference.getPosition();
             FieldVector3D<T>      vReference  = pvReference.getVelocity();
-            Assert.assertEquals(0.0, pTested.subtract(pReference).getNorm().getReal(), threshold * pReference.getNorm().getReal());
-            Assert.assertEquals(0.0, vTested.subtract(vReference).getNorm().getReal(), threshold * vReference.getNorm().getReal());
+            Assertions.assertEquals(0.0, pTested.subtract(pReference).getNorm().getReal(), threshold * pReference.getNorm().getReal());
+            Assertions.assertEquals(0.0, vTested.subtract(vReference).getNorm().getReal(), threshold * vReference.getNorm().getReal());
 
         }
     }
@@ -578,10 +584,10 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
         FieldCartesianOrbit<T>  fieldOrbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
         CartesianOrbit orbit = fieldOrbit.toOrbit();
-        Assert.assertFalse(orbit.hasDerivatives());
-        MatcherAssert.assertThat(orbit.getPVCoordinates().getPosition().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getX().getReal(), 0));
-        MatcherAssert.assertThat(orbit.getPVCoordinates().getPosition().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getY().getReal(), 0));
-        MatcherAssert.assertThat(orbit.getPVCoordinates().getPosition().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getZ().getReal(), 0));
+        Assertions.assertFalse(orbit.hasDerivatives());
+        MatcherAssert.assertThat(orbit.getPosition().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getX().getReal(), 0));
+        MatcherAssert.assertThat(orbit.getPosition().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getY().getReal(), 0));
+        MatcherAssert.assertThat(orbit.getPosition().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getZ().getReal(), 0));
         MatcherAssert.assertThat(orbit.getPVCoordinates().getVelocity().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getX().getReal(), 0));
         MatcherAssert.assertThat(orbit.getPVCoordinates().getVelocity().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getY().getReal(), 0));
         MatcherAssert.assertThat(orbit.getPVCoordinates().getVelocity().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getZ().getReal(), 0));
@@ -599,15 +605,14 @@ public class FieldCartesianOrbitTest {
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
         T r2 = position.getNormSq();
         T r = r2.sqrt();
-        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
-                                                                       new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu),
-                                                                                           position));
+        FieldVector3D<T> acceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu).add(0.1), position);
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,acceleration);
         FieldCartesianOrbit<T>  fieldOrbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
         CartesianOrbit orbit = fieldOrbit.toOrbit();
-        Assert.assertTrue(orbit.hasDerivatives());
-        MatcherAssert.assertThat(orbit.getPVCoordinates().getPosition().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getX().getReal(), 0));
-        MatcherAssert.assertThat(orbit.getPVCoordinates().getPosition().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getY().getReal(), 0));
-        MatcherAssert.assertThat(orbit.getPVCoordinates().getPosition().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getZ().getReal(), 0));
+        Assertions.assertTrue(orbit.hasDerivatives());
+        MatcherAssert.assertThat(orbit.getPosition().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getX().getReal(), 0));
+        MatcherAssert.assertThat(orbit.getPosition().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getY().getReal(), 0));
+        MatcherAssert.assertThat(orbit.getPosition().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getZ().getReal(), 0));
         MatcherAssert.assertThat(orbit.getPVCoordinates().getVelocity().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getX().getReal(), 0));
         MatcherAssert.assertThat(orbit.getPVCoordinates().getVelocity().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getY().getReal(), 0));
         MatcherAssert.assertThat(orbit.getPVCoordinates().getVelocity().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getZ().getReal(), 0));
@@ -630,7 +635,7 @@ public class FieldCartesianOrbitTest {
         for (int i = 0; i < jacobian.length; i++) {
             T[] row    = jacobian[i];
             for (int j = 0; j < row.length; j++) {
-                Assert.assertEquals((i == j) ? 1 : 0, row[j].getReal(), 1.0e-15);
+                Assertions.assertEquals((i == j) ? 1 : 0, row[j].getReal(), 1.0e-15);
             }
         }
 
@@ -644,109 +649,13 @@ public class FieldCartesianOrbitTest {
             }
 
             public void visit(int row, int column, T value) {
-                Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-15);
+                Assertions.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-15);
             }
 
             public T end() {
                 return null;
             }
         });
-
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field, boolean useDerivatives,
-                                                                     double shiftPositionErrorWithin, double interpolationPositionErrorWithin,
-                                                                     double shiftVelocityErrorWithin, double interpolationVelocityErrorWithin,
-                                                                     double shiftPositionErrorFarPast, double interpolationPositionErrorFarPast,
-                                                                     double shiftVelocityErrorFarPast, double interpolationVelocityErrorFarPast)
-        {
-        T zero = field.getZero();
-        final T ehMu       = zero.add(3.9860047e14);
-        
-        final double ae    = 6.378137e6;
-        final double c20   = -1.08263e-3;
-        final double c30   =  2.54e-6;
-        final double c40   =  1.62e-6;
-        final double c50   =  2.3e-7;
-        final double c60   =  -5.5e-7;
-
-        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
-        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
-        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-        final FieldCartesianOrbit<T> initialOrbit = new FieldCartesianOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                              FramesFactory.getEME2000(), date, ehMu);
-
-        FieldEcksteinHechlerPropagator<T> propagator =
-                new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<FieldOrbit<T>> sample = new ArrayList<FieldOrbit<T>>();
-        for (T dt = zero; dt.getReal() < 251.0; dt = dt.add(60.0)) {
-            FieldOrbit<T> orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                T[] stateVector = MathArrays.buildArray(field, 6);
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be much better than Keplerian shift
-        // this is bacause we take the full non-Keplerian acceleration into account in
-        // the Cartesian parameters, which in this case is preserved by the
-        // Eckstein-Hechler propagator
-        double maxShiftPError = 0;
-        double maxInterpolationPError = 0;
-        double maxShiftVError = 0;
-        double maxInterpolationVError = 0;
-        for (T dt = zero; dt.getReal() < 240.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
-            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
-            FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.shiftedBy(dt.getReal()).getPVCoordinates());
-            FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.interpolate(t, sample).getPVCoordinates());
-            maxShiftPError                   = FastMath.max(maxShiftPError,
-                                                            shiftError.getPosition().getNorm().getReal());
-            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
-                                                            interpolationError.getPosition().getNorm().getReal());
-            maxShiftVError                   = FastMath.max(maxShiftVError,
-                                                            shiftError.getVelocity().getNorm().getReal());
-            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm().getReal());
-        }
-        Assert.assertEquals(shiftPositionErrorWithin,         maxShiftPError,         0.01 * shiftPositionErrorWithin);
-        Assert.assertEquals(interpolationPositionErrorWithin, maxInterpolationPError, 0.01 * interpolationPositionErrorWithin);
-        Assert.assertEquals(shiftVelocityErrorWithin,         maxShiftVError,         0.01 * shiftVelocityErrorWithin);
-        Assert.assertEquals(interpolationVelocityErrorWithin, maxInterpolationVError, 0.01 * interpolationVelocityErrorWithin);
-
-        // if we go far past sample end, interpolation becomes worse than Keplerian shift
-        maxShiftPError = 0;
-        maxInterpolationPError = 0;
-        maxShiftVError = 0;
-        maxInterpolationVError = 0;
-        for (T dt = zero.add(500.0); dt.getReal() < 650.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
-            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
-            FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.shiftedBy(dt).getPVCoordinates());
-            FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.interpolate(t, sample).getPVCoordinates());
-            maxShiftPError                   = FastMath.max(maxShiftPError,
-                                                            shiftError.getPosition().getNorm().getReal());
-            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
-                                                            interpolationError.getPosition().getNorm().getReal());
-            maxShiftVError                   = FastMath.max(maxShiftVError,
-                                                            shiftError.getVelocity().getNorm().getReal());
-            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm().getReal());
-        }
-        Assert.assertEquals(shiftPositionErrorFarPast,         maxShiftPError,         0.01 * shiftPositionErrorFarPast);
-        Assert.assertEquals(interpolationPositionErrorFarPast, maxInterpolationPError, 0.01 * interpolationPositionErrorFarPast);
-        Assert.assertEquals(shiftVelocityErrorFarPast,         maxShiftVError,         0.01 * shiftVelocityErrorFarPast);
-        Assert.assertEquals(interpolationVelocityErrorFarPast, maxInterpolationVError, 0.01 * interpolationVelocityErrorFarPast);
 
     }
 
@@ -761,34 +670,34 @@ public class FieldCartesianOrbitTest {
         final T mu   = zero.add(Constants.EIGEN5C_EARTH_MU);
         final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pv, frame, zero.add(mu));
 
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
                             orbit.getADot().getReal(),
                             4.3e-8);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
                             orbit.getEquinoctialExDot().getReal(),
                             2.1e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
                             orbit.getEquinoctialEyDot().getReal(),
                             5.3e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
                             orbit.getHxDot().getReal(),
                             4.4e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
                             orbit.getHyDot().getReal(),
                             8.0e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
                             orbit.getLvDot().getReal(),
                             1.2e-15);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
                             orbit.getLEDot().getReal(),
                             7.8e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
                             orbit.getLMDot().getReal(),
                             8.8e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
                             orbit.getEDot().getReal(),
                             7.0e-16);
-        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
                             orbit.getIDot().getReal(),
                             5.7e-16);
 
@@ -819,16 +728,16 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity, acceleration);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
-        Assert.assertEquals(10637829.465, orbit.getA().getReal(), 1.0e-3);
-        Assert.assertEquals(-738.145, orbit.getADot().getReal(), 1.0e-3);
-        Assert.assertEquals(0.05995861, orbit.getE().getReal(), 1.0e-8);
-        Assert.assertEquals(-6.523e-5, orbit.getEDot().getReal(), 1.0e-8);
-        Assert.assertEquals(FastMath.PI, orbit.getI().getReal(), 1.0e-15);
-        Assert.assertTrue(Double.isNaN(orbit.getIDot().getReal()));
-        Assert.assertTrue(Double.isNaN(orbit.getHx().getReal()));
-        Assert.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
-        Assert.assertTrue(Double.isNaN(orbit.getHy().getReal()));
-        Assert.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
+        Assertions.assertEquals(10637829.465, orbit.getA().getReal(), 1.0e-3);
+        Assertions.assertEquals(-738.145, orbit.getADot().getReal(), 1.0e-3);
+        Assertions.assertEquals(0.05995861, orbit.getE().getReal(), 1.0e-8);
+        Assertions.assertEquals(-6.523e-5, orbit.getEDot().getReal(), 1.0e-8);
+        Assertions.assertEquals(FastMath.PI, orbit.getI().getReal(), 1.0e-15);
+        Assertions.assertTrue(Double.isNaN(orbit.getIDot().getReal()));
+        Assertions.assertTrue(Double.isNaN(orbit.getHx().getReal()));
+        Assertions.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
+        Assertions.assertTrue(Double.isNaN(orbit.getHy().getReal()));
+        Assertions.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestToString(Field<T> field) {
@@ -842,7 +751,7 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
                                                                  FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
-        Assert.assertEquals("Cartesian parameters: {P(-2.9536113E7, 3.0329259E7, -100125.0), V(-2194.0, -2141.0, -8.0)}",
+        Assertions.assertEquals("Cartesian parameters: {P(-2.9536113E7, 3.0329259E7, -100125.0), V(-2194.0, -2141.0, -8.0)}",
                             orbit.toString());
     }
 
@@ -871,11 +780,11 @@ public class FieldCartesianOrbitTest {
         final FieldOrbit<T> shiftedOrbit     = orbit.shiftedBy(10); // This works good
         final FieldOrbit<T> shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
 
-        Assert.assertEquals(0.0,
-                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
-                                                   shiftedOrbitCopy.getPVCoordinates().getPosition()).getReal(),
+        Assertions.assertEquals(0.0,
+                            FieldVector3D.distance(shiftedOrbit.getPosition(),
+                                                   shiftedOrbitCopy.getPosition()).getReal(),
                             1.0e-10);
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                             FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
                                                    shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-10);
@@ -893,7 +802,35 @@ public class FieldCartesianOrbitTest {
                                                               FramesFactory.getEME2000(),
                                                               FieldAbsoluteDate.getJ2000Epoch(field),
                                                               field.getZero().newInstance(mu));
-        Assert.assertSame(orbit, orbit.getType().normalize(orbit, null));
+        Assertions.assertSame(orbit, orbit.getType().normalize(orbit, null));
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue1139(Field<T> field) {
+
+        // Create
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0));
+        FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-2194.0), zero.add(-2141.0), zero.add(-8.0));
+        FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>( position, velocity);
+        double mu = 3.9860047e14;
+
+        FieldCartesianOrbit<T> p = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
+
+        double dt = 60.0;
+        FieldAbsoluteDate<T> shiftedEpoch = date.shiftedBy(dt);
+
+        FieldCartesianOrbit<T> p2 = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), shiftedEpoch, zero.add(mu));
+
+        // Verify
+        Assertions.assertEquals(dt, shiftedEpoch.durationFrom(date).getReal());
+        Assertions.assertEquals(dt, p2.durationFrom(p).getReal());
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p).getReal());
+        Assertions.assertEquals(dt, p2.durationFrom(p.getDate()).getReal());
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()).getReal());
+        Assertions.assertEquals(-dt, p.durationFrom(p2).getReal());
+
     }
 
 }

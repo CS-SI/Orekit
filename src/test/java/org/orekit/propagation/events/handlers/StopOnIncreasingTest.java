@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,12 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -36,7 +35,7 @@ public class StopOnIncreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(s, new StopOnIncreasing<EventDetector>().resetState(null, s));
+        Assertions.assertSame(s, new StopOnIncreasing().resetState(null, s));
     }
 
     @Test
@@ -46,7 +45,7 @@ public class StopOnIncreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(Action.STOP, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, true));
+        Assertions.assertSame(Action.STOP, new StopOnIncreasing().eventOccurred(s, null, true));
     }
 
     @Test
@@ -56,7 +55,7 @@ public class StopOnIncreasingTest {
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assert.assertSame(Action.CONTINUE, new StopOnIncreasing<EventDetector>().eventOccurred(s, null, false));
+        Assertions.assertSame(Action.CONTINUE, new StopOnIncreasing().eventOccurred(s, null, false));
     }
 
 }

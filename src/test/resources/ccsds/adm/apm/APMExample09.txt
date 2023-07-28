@@ -1,0 +1,61 @@
+CCSDS_APM_VERS = 2.0
+CREATION_DATE  = 2023-02-05T12:00:00
+ORIGINATOR  = GSFC
+MESSAGE_ID  = A000003
+
+COMMENT          SPINNING
+OBJECT_NAME    = MMS1
+OBJECT_ID      = 2015-011A
+CENTER_NAME    = EARTH
+TIME_SYSTEM    = TAI
+
+COMMENT          Full message
+COMMENT          Added Inertia and Maneuver
+
+
+EPOCH          = 2023-01-01T00:00:00.0000
+
+EULER_START
+REF_FRAME_A          = EME2000
+REF_FRAME_B          = SC_BODY
+
+EULER_ROT_SEQ        = ZXZ
+ANGLE_1              = 10 [deg]
+ANGLE_2              = 20 [deg]
+ANGLE_3              = 0 [deg]
+EULER_STOP
+
+SPIN_START
+REF_FRAME_A          = EME2000
+REF_FRAME_B          = SC_BODY
+
+SPIN_ALPHA           = -80 [deg]
+SPIN_DELTA           = 70 [deg]
+SPIN_ANGLE           = 0 [deg]
+SPIN_ANGLE_VEL       = 1 [deg/s]
+NUTATION             = 0.1 [deg]
+NUTATION_PER         = 720 [s]
+NUTATION_PHASE       = -85 [deg]
+SPIN_STOP
+
+INERTIA_START
+INERTIA_REF_FRAME  = SC_BODY
+IXX                = 1443.1 [kg*m**2]
+IYY                = 1445.2 [kg*m**2]
+IZZ                = 1760.2 [kg*m**2]
+IXY                = -86.4 [kg*m**2]
+IXZ                = 0.0 [kg*m**2]
+IYZ                = -0.09 [kg*m**2]
+INERTIA_STOP
+
+MAN_START
+COMMENT           Radial Torque
+
+MAN_EPOCH_START    = 2023-01-01T01:00:00.0000
+MAN_DURATION       = 1 [s]
+MAN_REF_FRAME      = SC_BODY
+MAN_TOR_X          = 1
+MAN_TOR_Y          = 0
+MAN_TOR_Z          = 0
+MAN_DELTA_MASS     = -0.001 [kg]
+MAN_STOP

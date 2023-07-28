@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
@@ -29,12 +29,12 @@ public class EventHandlerTest {
     public void testEnums() {
         // this test is here only for test coverage ...
 
-        Assert.assertEquals(5, Action.values().length);
-        Assert.assertSame(Action.STOP,              Action.valueOf("STOP"));
-        Assert.assertSame(Action.RESET_STATE,       Action.valueOf("RESET_STATE"));
-        Assert.assertSame(Action.RESET_DERIVATIVES, Action.valueOf("RESET_DERIVATIVES"));
-        Assert.assertSame(Action.RESET_EVENTS,      Action.valueOf("RESET_EVENTS"));
-        Assert.assertSame(Action.CONTINUE,          Action.valueOf("CONTINUE"));
+        Assertions.assertEquals(5, Action.values().length);
+        Assertions.assertSame(Action.STOP,              Action.valueOf("STOP"));
+        Assertions.assertSame(Action.RESET_STATE,       Action.valueOf("RESET_STATE"));
+        Assertions.assertSame(Action.RESET_DERIVATIVES, Action.valueOf("RESET_DERIVATIVES"));
+        Assertions.assertSame(Action.RESET_EVENTS,      Action.valueOf("RESET_EVENTS"));
+        Assertions.assertSame(Action.CONTINUE,          Action.valueOf("CONTINUE"));
 
     }
 
@@ -43,12 +43,12 @@ public class EventHandlerTest {
 
         // Create detector
         final Detector detector = new Detector();
-        Assert.assertFalse(detector.isInitialized());
+        Assertions.assertFalse(detector.isInitialized());
 
         // Create handler
         final Handler handler = new Handler();
         handler.init(null, null, detector);
-        Assert.assertTrue(detector.isInitialized());
+        Assertions.assertTrue(detector.isInitialized());
 
     }
 
@@ -59,7 +59,7 @@ public class EventHandlerTest {
         public Detector() {
             this.initialized = false;
         }
- 
+
         public boolean isInitialized() {
             return initialized;
         }
@@ -90,23 +90,21 @@ public class EventHandlerTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
-            return Action.CONTINUE;
+        public EventHandler getHandler() {
+            return new Handler();
         }
     }
 
-    private static class Handler implements EventHandler<Detector> {
+    private static class Handler implements EventHandler {
 
         @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target,
-                         Detector detector) {
+        public void init(SpacecraftState initialState, AbsoluteDate target, EventDetector detector) {
             detector.init(initialState, target);
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, Detector detector,
-                                    boolean increasing) {
-            return detector.eventOccurred(s, increasing);
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+            return Action.CONTINUE;
         }
 
     }

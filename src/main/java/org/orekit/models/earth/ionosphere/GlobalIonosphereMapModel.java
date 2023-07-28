@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -242,7 +242,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                             final double frequency, final double[] parameters) {
 
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -298,7 +298,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                                        final double frequency, final T[] parameters) {
 
         // Elevation in radians
-        final FieldVector3D<T> position = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position = state.getPosition(baseFrame);
         final T elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -548,7 +548,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                 for (line = br.readLine(); line != null; line = br.readLine()) {
                     ++lineNumber;
                     if (line.length() > LABEL_START) {
-                        switch(line.substring(LABEL_START).trim()) {
+                        switch (line.substring(LABEL_START).trim()) {
                             case "EPOCH OF FIRST MAP" :
                                 firstEpoch = parseDate(line);
                                 break;
@@ -621,7 +621,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                         line = line.trim();
                                         final String[] readLine = SEPARATOR.split(line);
                                         for (final String s : readLine) {
-                                            values.add(Double.valueOf(s));
+                                            values.add(Double.parseDouble(s));
                                         }
                                     }
                                 }
@@ -634,7 +634,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                             line = line.trim();
                             final String[] readLine = SEPARATOR.split(line);
                             for (final String s : readLine) {
-                                values.add(Double.valueOf(s));
+                                values.add(Double.parseDouble(s));
                             }
                         }
                     }

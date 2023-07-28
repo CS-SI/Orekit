@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,8 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -49,6 +49,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 public class OneWayGNSSRangeTest {
 
@@ -234,11 +235,14 @@ public class OneWayGNSSRangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 1.3e-7);
-        Assert.assertEquals(0.0, absErrorsMin,    6.5e-6);
-        Assert.assertEquals(0.0, absErrorsMax,    1.7e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 5.3e-12);
-        Assert.assertEquals(0.0, relErrorsMax,    7.6e-11);
+        Assertions.assertEquals(0.0, absErrorsMedian, 1.3e-7);
+        Assertions.assertEquals(0.0, absErrorsMin,    6.5e-6);
+        Assertions.assertEquals(0.0, absErrorsMax,    1.7e-7);
+        Assertions.assertEquals(0.0, relErrorsMedian, 5.3e-12);
+        Assertions.assertEquals(0.0, relErrorsMax,    7.6e-11);
+
+        // Test measurement type
+        Assertions.assertEquals(OneWayGNSSRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -314,8 +318,8 @@ public class OneWayGNSSRangeTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
 
-                    Assert.assertEquals(jacobianRef.length, jacobian.length);
-                    Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
+                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -388,12 +392,12 @@ public class OneWayGNSSRangeTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
+        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
+        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
+        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean printResults,
@@ -458,27 +462,30 @@ public class OneWayGNSSRangeTest {
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i]);
-                        Assert.assertEquals(1, measurement.getDimension());
-                        Assert.assertEquals(1, gradient.length);
+                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                        // Compute a reference value using finite differences
-                        final ParameterFunction dMkdP =
-                                        Differentiation.differentiate(new ParameterFunction() {
-                                            /** {@inheritDoc} */
-                                            @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, states).getEstimatedValue()[0];
-                                            }
-                                        }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
-
-                        if (printResults) {
-                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
+                            Assertions.assertEquals(1, measurement.getDimension());
+                            Assertions.assertEquals(1, gradient.length);
+                            
+                            // Compute a reference value using finite differences
+                            final ParameterFunction dMkdP =
+                                            Differentiation.differentiate(new ParameterFunction() {
+                                                /** {@inheritDoc} */
+                                                @Override
+                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                    return measurement.estimate(0, 0, states).getEstimatedValue()[0];
+                                                }
+                                            }, 3, 20.0 * drivers[i].getScale());
+                            final double ref = dMkdP.value(drivers[i], date);
+                            
+                            if (printResults) {
+                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
+                            }
+                            
+                            final double relError = FastMath.abs((ref-gradient[0])/ref);
+                            relErrorList.add(relError);
                         }
-
-                        final double relError = FastMath.abs((ref-gradient[0])/ref);
-                        relErrorList.add(relError);
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");
@@ -524,9 +531,9 @@ public class OneWayGNSSRangeTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assert.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
+        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 

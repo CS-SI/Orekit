@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,11 +46,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using
@@ -74,9 +76,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalEquations additional equations}
+ *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalDerivativesProvider additional derivatives providers}
  *   should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.FieldAdditionalEquations)}),
+ *   ({@link #addAdditionalDerivativesProvider(org.orekit.propagation.integration.FieldAdditionalDerivativesProvider)}),
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>
@@ -191,7 +193,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     public FieldNumericalPropagator(final Field<T> field,
                                     final FieldODEIntegrator<T> integrator,
                                     final AttitudeProvider attitudeProvider) {
-        super(field, integrator, PropagationType.MEAN);
+        super(field, integrator, PropagationType.OSCULATING);
         this.field = field;
         forceModels = new ArrayList<ForceModel>();
         initMapper(field);
@@ -263,7 +265,14 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
+                        // mu PDriver should have only 1 span
+                        superSetMu(field.getZero().add(driver.getValue(date)));
+                    }
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                        // mu PDriver should have only 1 span
                         superSetMu(field.getZero().add(driver.getValue()));
                     }
                 });
@@ -413,7 +422,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             final T mass = y[6];
             if (mass.getReal() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             if (superGetOrbitType() == null) {
@@ -545,7 +554,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
+                    final FieldVector3D<T> position = currentState.getPosition();
                     final T r2         = position.getNormSq();
                     final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
                     yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
@@ -588,7 +597,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
      * we get at constant energy (i.e. on a Keplerian trajectory):
      * <pre>
-     * V² r |dV| = mu |dr|
+     * V r² |dV| = mu |dr|
      * </pre>
      * So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent errors
@@ -679,7 +688,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
         }
 
-        Arrays.fill(relTol, dP.divide(orbit.getPVCoordinates().getPosition().getNormSq().sqrt()).getReal());
+        Arrays.fill(relTol, dP.divide(orbit.getPosition().getNormSq().sqrt()).getReal());
 
         return new double[][] { absTol, relTol };
 

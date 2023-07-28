@@ -49,7 +49,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      */
     public FunctionalDetector() {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new ContinueOnEvent<>(),
+                new ContinueOnEvent(),
                 (ToDoubleFunction<SpacecraftState>) value -> 1.0);
     }
 
@@ -62,11 +62,11 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
      */
-    private FunctionalDetector(final double maxCheck,
-                               final double threshold,
-                               final int maxIter,
-                               final EventHandler<? super FunctionalDetector> handler,
-                               final ToDoubleFunction<SpacecraftState> function) {
+    protected FunctionalDetector(final double maxCheck,
+                                 final double threshold,
+                                 final int maxIter,
+                                 final EventHandler handler,
+                                 final ToDoubleFunction<SpacecraftState> function) {
         super(maxCheck, threshold, maxIter, handler);
         this.function = function;
     }
@@ -82,7 +82,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
             final double newMaxCheck,
             final double newThreshold,
             final int newMaxIter,
-            final EventHandler<? super FunctionalDetector> newHandler) {
+            final EventHandler newHandler) {
 
         return new FunctionalDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                       function);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,30 +16,49 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
-import java.util.function.Function;
-
 import org.orekit.gnss.metric.messages.ParsedMessage;
+
+import java.util.concurrent.Phaser;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 
 
 public class CountingObserver implements MessageObserver {
 
     private Function<ParsedMessage, Boolean> filter;
-    private int count;
+    private AtomicInteger received = new AtomicInteger(0);
+    private Phaser phaser = new Phaser(1);
 
     public CountingObserver(final Function<ParsedMessage, Boolean> filter) {
         this.filter = filter;
-        this.count  = 0;
     }
 
     public void messageAvailable(String mountPoint, ParsedMessage message) {
         if (filter.apply(message)) {
-            ++count;
+            received.incrementAndGet();
+            phaser.arrive();
         }
     }
 
-    public int getCount() {
-        return count;
+    /**
+     * Wait for a certain number of messages to be received.
+     *
+     * @param count   number of messages to wait for.
+     * @param timeout when waiting in ms.
+     * @throws InterruptedException if interrupted while waiting.
+     * @throws TimeoutException     if timeout is reached while waiting.
+     */
+    public void awaitCount(int count, long timeout) throws InterruptedException, TimeoutException {
+        final long start = System.currentTimeMillis();
+        final long end = start + timeout;
+        int phase = phaser.getPhase();
+        while (received.get() < count && (timeout = end - System.currentTimeMillis()) > 0) {
+            phase = phaser.awaitAdvanceInterruptibly(phase, timeout, TimeUnit.MILLISECONDS);
+        }
     }
 
 }
+

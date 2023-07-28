@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,14 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.DSSTForce;
@@ -43,8 +37,13 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DSSTBatchLSModelTest {
 
@@ -80,23 +79,23 @@ public class DSSTBatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                Assert.assertEquals(1, newOrbits.length);
-                Assert.assertEquals(0,
+                Assertions.assertEquals(1, newOrbits.length);
+                Assertions.assertEquals(0,
                                     context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                                     1.0e-15);
-                Assert.assertEquals(0,
-                                    Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                                      newOrbits[0].getPVCoordinates().getPosition()),
+                Assertions.assertEquals(0,
+                                    Vector3D.distance(context.initialOrbit.getPosition(),
+                                                      newOrbits[0].getPosition()),
                                     1.0e-15);
-                Assert.assertEquals(measurements.size(), newEvaluations.size());
+                Assertions.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
+        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
-        
+
         // Test forward propagation flag to true
-        assertEquals(true, model.isForwardPropagation());
+        Assertions.assertEquals(true, model.isForwardPropagation());
 
         // evaluate model on perfect start point
         final double[] normalizedProp = propagatorBuilder.getSelectedNormalizedParameters();
@@ -104,20 +103,20 @@ public class DSSTBatchLSModelTest {
         System.arraycopy(normalizedProp, 0, normalized, 0, normalizedProp.length);
         int i = normalizedProp.length;
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            normalized[i++] = driver.getNormalizedValue();
+            normalized[i++] = driver.getNormalizedValue(new AbsoluteDate());
         }
         Pair<RealVector, RealMatrix> value = model.value(new ArrayRealVector(normalized));
         int index = 0;
         for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
-                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 6.3e-8);
+                Assertions.assertEquals(0.0, value.getFirst().getEntry(index++), 6.3e-8);
             }
         }
-        Assert.assertEquals(index, value.getFirst().getDimension());
+        Assertions.assertEquals(index, value.getFirst().getDimension());
 
     }
-    
+
     @Test
     public void testBackwardPropagation() {
 
@@ -149,12 +148,12 @@ public class DSSTBatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                // Do nothing here 
+                // Do nothing here
             }
         };
-        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
+        final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
         // Test forward propagation flag to false
-        assertEquals(false, model.isForwardPropagation());
+        Assertions.assertEquals(false, model.isForwardPropagation());
     }
 
     @Test
@@ -191,16 +190,16 @@ public class DSSTBatchLSModelTest {
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
                 // Verify length
-                Assert.assertEquals(1, newOrbits.length);
+                Assertions.assertEquals(1, newOrbits.length);
                 // Verify first orbit
-                Assert.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
-                Assert.assertEquals(0, Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                                         newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+                Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
+                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPosition(),
+                                                         newOrbits[0].getPosition()), 1.0e-15);
 
             }
         };
-        
-        final DSSTBatchLSModel modelMean = propagatorBuilderMean.buildLSModel(new DSSTPropagatorBuilder[] {propagatorBuilderMean}, measurements, estimatedMeasurementsParameters, observerMean);
+
+        final DSSTBatchLSModel modelMean = propagatorBuilderMean.buildLeastSquaresModel(new DSSTPropagatorBuilder[] {propagatorBuilderMean}, measurements, estimatedMeasurementsParameters, observerMean);
         modelMean.setIterationsCounter(new Incrementor(100));
         modelMean.setEvaluationsCounter(new Incrementor(100));
 
@@ -216,16 +215,16 @@ public class DSSTBatchLSModelTest {
                 // Compute mean state from osculating propagator
                 final SpacecraftState meanState = DSSTPropagator.computeMeanState(propagatorOsc.getInitialState(), propagatorOsc.getAttitudeProvider(), forces);
                 // Verify length
-                Assert.assertEquals(1, newOrbits.length);
+                Assertions.assertEquals(1, newOrbits.length);
                 // Verify first orbit
-                Assert.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
-                Assert.assertEquals(0, Vector3D.distance(meanState.getPVCoordinates().getPosition(),
-                                                         newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+                Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
+                Assertions.assertEquals(0, Vector3D.distance(meanState.getPosition(),
+                                                         newOrbits[0].getPosition()), 1.0e-15);
 
             }
         };
 
-        final DSSTBatchLSModel modelOsc = propagatorBuilderOsc.buildLSModel(new DSSTPropagatorBuilder[] {propagatorBuilderOsc}, measurements, estimatedMeasurementsParameters, observerOsc);
+        final DSSTBatchLSModel modelOsc = propagatorBuilderOsc.buildLeastSquaresModel(new DSSTPropagatorBuilder[] {propagatorBuilderOsc}, measurements, estimatedMeasurementsParameters, observerOsc);
         modelOsc.setIterationsCounter(new Incrementor(100));
         modelOsc.setEvaluationsCounter(new Incrementor(100));
 

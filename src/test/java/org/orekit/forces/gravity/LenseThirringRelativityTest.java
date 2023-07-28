@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.forces.gravity;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -27,9 +26,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.forces.AbstractLegacyForceModelTest;
@@ -68,18 +67,18 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure>
-        accelerationDerivatives(ForceModel forceModel, AbsoluteDate date,
-                                Frame frame,
-                                FieldVector3D<DerivativeStructure> position,
-                                FieldVector3D<DerivativeStructure> velocity,
-                                FieldRotation<DerivativeStructure> rotation,
-                                DerivativeStructure mass) {
+        accelerationDerivatives(ForceModel forceModel, FieldSpacecraftState<DerivativeStructure> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field bodyFrameField = LenseThirringRelativity.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
 
-            double gm = forceModel.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+            double gm = forceModel.
+                        getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
+                        getValue(date);
             // Radius
             final DerivativeStructure r  = position.getNorm();
             final DerivativeStructure r2 = r.multiply(r);
@@ -101,19 +100,20 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
     @Override
     protected FieldVector3D<Gradient>
         accelerationDerivativesGradient(ForceModel forceModel,
-                                        AbsoluteDate date, Frame frame,
-                                        FieldVector3D<Gradient> position,
-                                        FieldVector3D<Gradient> velocity,
-                                        FieldRotation<Gradient> rotation,
-                                        Gradient mass) {
+                                        FieldSpacecraftState<Gradient> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field bodyFrameField = LenseThirringRelativity.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
 
             // Useful constant
             final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
-            double gm = forceModel.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+            double gm = forceModel.
+                        getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
+                        getValue(date);
             // Radius
             final Gradient r  = position.getNorm();
             final Gradient r2 = r.multiply(r);
@@ -147,7 +147,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
         checkStateJacobianVs80Implementation(s, relativity,
                                              new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS),
-                                             1.0e-50, false);
+                                             1.0e-15, false);
     }
 
     @Test
@@ -223,7 +223,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(relativity);
         NP.addForceModel(relativity);
-        
+
         // Do the test
         checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 1.4e-3,
@@ -242,7 +242,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         LenseThirringRelativity relativity = new LenseThirringRelativity(Constants.EIGEN5C_EARTH_MU, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assert.assertFalse(relativity.dependsOnPositionOnly());
+        Assertions.assertFalse(relativity.dependsOnPositionOnly());
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
@@ -278,7 +278,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

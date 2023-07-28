@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -45,6 +45,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 
 /** This class provides elements to propagate TLE's.
@@ -243,7 +244,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
         return selectExtrapolator(
                 tle,
-                InertialProvider.of(frames.getTEME()),
+                FrameAlignedProvider.of(frames.getTEME()),
                 DEFAULT_MASS,
                 frames.getTEME());
     }
@@ -262,7 +263,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
                                                    final double mass) {
         return selectExtrapolator(tle, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+                                  DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -594,7 +595,12 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
-        return new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Create the harvester
+        final TLEHarvester harvester = new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
+        // Update the list of additional state provider
+        addAdditionalStateProvider(harvester);
+        // Return the configured harvester
+        return harvester;
     }
 
     /**
@@ -604,8 +610,13 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : tle.getParametersDrivers()) {
-            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
-                columnsNames.add(driver.getName());
+
+            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                // As driver with same name should have same NamesSpanMap we only check the if condition on the
+                // first span map and then if the condition is OK all the span names are added to the jacobian column names
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    columnsNames.add(span.getData());
+                }
             }
         }
         Collections.sort(columnsNames);

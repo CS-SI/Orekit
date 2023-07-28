@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -36,6 +32,11 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -61,8 +62,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class RangeAnalytic extends Range {
 
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "RangeAnalytic";
+
     /** Constructor from parent Range class
-     * @param Range parent class
+     * @param range parent class
      */
     public RangeAnalytic(final Range range) {
         super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
@@ -77,7 +81,6 @@ public class RangeAnalytic extends Range {
      * @param iteration current LS estimator iteration
      * @param evaluation current LS estimator evaluation
      * @param state spacecraft state. At measurement date on first iteration then close to emission date on further iterations
-     * @param interpolator Orekit step interpolator
      * @return
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
@@ -89,7 +92,7 @@ public class RangeAnalytic extends Range {
         // Station position at signal arrival
         final AbsoluteDate downlinkDate = getDate();
         final Transform topoToInertDownlink =
-                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate, false);
         final TimeStampedPVCoordinates stationDownlink =
                         topoToInertDownlink.transformPVCoordinates(new TimeStampedPVCoordinates(downlinkDate,
                                                                                                 PVCoordinates.ZERO));
@@ -108,11 +111,11 @@ public class RangeAnalytic extends Range {
         // Transit state position
         final SpacecraftState transitState = state.shiftedBy(dt);
         final AbsoluteDate    transitDate  = transitState.getDate();
-        final Vector3D        transitP     = transitState.getPVCoordinates().getPosition();
+        final Vector3D        transitP     = transitState.getPosition();
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
-                      groundStation.getOffsetToInertial(state.getFrame(), transitDate);
+                      groundStation.getOffsetToInertial(state.getFrame(), transitDate, false);
         final TimeStampedPVCoordinates stationAtTransitDate = topoToInertAtTransitDate.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
 
@@ -232,13 +235,13 @@ public class RangeAnalytic extends Range {
             final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
 
             if (groundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), dRdQT.getX());
+                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQT.getX());
             }
             if (groundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), dRdQT.getY());
+                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQT.getY());
             }
             if (groundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), dRdQT.getZ());
+                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQT.getZ());
             }
 
         }
@@ -266,8 +269,11 @@ public class RangeAnalytic extends Range {
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                if (driver.isSelected()) {
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -340,9 +346,12 @@ public class RangeAnalytic extends Range {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 
@@ -357,7 +366,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at signal arrival
         final Transform topoToInertDownlink =
-                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate, false);
         final PVCoordinates QDownlink = topoToInertDownlink.
                         transformPVCoordinates(PVCoordinates.ZERO);
 
@@ -368,7 +377,7 @@ public class RangeAnalytic extends Range {
         // Transit state position
         final AbsoluteDate    transitT = state.getDate().shiftedBy(dt);
         final SpacecraftState transit  = state.shiftedBy(dt);
-        final Vector3D        transitP = transitState.getPVCoordinates().getPosition();
+        final Vector3D        transitP = transitState.getPosition();
 
         // Station position at signal departure
         // First guess
@@ -380,7 +389,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
-                      groundStation.getOffsetToInertial(state.getFrame(), transitT);
+                      groundStation.getOffsetToInertial(state.getFrame(), transitT, false);
         TimeStampedPVCoordinates QAtTransitDate = topoToInertAtTransitDate.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitT, PVCoordinates.ZERO));
 
@@ -409,7 +418,7 @@ public class RangeAnalytic extends Range {
         // Qt = Primary station position at tmeas = t = signal arrival at primary station
         final Vector3D vel     = state.getPVCoordinates().getVelocity();
         final Vector3D Qt_V    = QDownlink.getVelocity();
-        final Vector3D Ptr     = transit.getPVCoordinates().getPosition();
+        final Vector3D Ptr     = transit.getPosition();
         final Vector3D Ptr_Qt  = QDownlink.getPosition().subtract(Ptr);
         final double   dDown   = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * td -
                         Vector3D.dotProduct(Ptr_Qt, vel);

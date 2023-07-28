@@ -13,9 +13,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -57,7 +58,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -79,10 +80,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class ExtendedSemiAnalyticalKalmanFilterTest {
 
-	/** Print. */
-	private static boolean print;
+    /** Print. */
+    private static boolean print;
 
-	/** Header. */
+    /** Header. */
     private static final String HEADER = "%-25s\t%16s\t%16s\t%16s";
 
     /** Data line. */
@@ -91,8 +92,8 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
     @Test
     public void testLageos() throws URISyntaxException, IOException {
 
-    	// Print
-    	print = false;
+        // Print
+        print = false;
 
         // Configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
@@ -123,9 +124,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final boolean useSrp  = true;
         final boolean useMoon = true;
         final boolean useSun  = true;
-        final OrbitDeterminationPropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField, step,
-        		                                                                    mass, surface, useDrag, useSrp, useSun, useMoon,
-        		                                                                    initialStateType);
+        final PropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField, step,
+                                                                  mass, surface, useDrag, useSrp, useSun, useMoon,
+                                                                  initialStateType);
 
         // Measurements
         final double sigma = 2.0;
@@ -154,23 +155,23 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final StreamingStatistics statX = observer.getXStatistics();
         final StreamingStatistics statY = observer.getYStatistics();
         final StreamingStatistics statZ = observer.getZStatistics();
-        Assert.assertEquals(0.0, statX.getMean(), 1.09e-4);
-        Assert.assertEquals(0.0, statY.getMean(), 1.03e-4);
-        Assert.assertEquals(0.0, statZ.getMean(), 1.12e-4);
-        Assert.assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
-        Assert.assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
-        Assert.assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value
-        Assert.assertEquals(0.0, statX.getMax(),  0.031);
-        Assert.assertEquals(0.0, statY.getMax(),  0.029);
-        Assert.assertEquals(0.0, statX.getMax(),  0.033);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.26e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.18e-4);
+        Assertions.assertEquals(0.0, statZ.getMean(), 1.29e-4);
+        Assertions.assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
+        Assertions.assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
+        Assertions.assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value
+        Assertions.assertEquals(0.0, statX.getMax(),  0.031);
+        Assertions.assertEquals(0.0, statY.getMax(),  0.029);
+        Assertions.assertEquals(0.0, statX.getMax(),  0.033);
 
         // Check that "physical" matrices are null
         final KalmanEstimation estimation = observer.getEstimation();
-        Assert.assertNotNull(estimation.getPhysicalEstimatedState());
-        Assert.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
-        Assert.assertNotNull(estimation.getPhysicalKalmanGain());
-        Assert.assertNotNull(estimation.getPhysicalMeasurementJacobian());
-        Assert.assertNotNull(estimation.getPhysicalStateTransitionMatrix());
+        Assertions.assertNotNull(estimation.getPhysicalEstimatedState());
+        Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
+        Assertions.assertNotNull(estimation.getPhysicalKalmanGain());
+        Assertions.assertNotNull(estimation.getPhysicalMeasurementJacobian());
+        Assertions.assertNotNull(estimation.getPhysicalStateTransitionMatrix());
 
     }
 
@@ -243,7 +244,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();
@@ -280,35 +281,35 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
      * @param initialStateType initial state type (MEAN or OSCULATING)
      * @return a configured propagator builder
      */
-    private static OrbitDeterminationPropagatorBuilder initializePropagator(final Orbit orbit,
-                                                                            final OneAxisEllipsoid centralBody,
-                                                                            final SphericalHarmonicsProvider gravityField,
-                                                                            final double step, final double mass, final double surface,
-                                                                            final boolean useDrag, final boolean useSrp,
-                                                                            final boolean useSun, final boolean useMoon,
-                                                                            final PropagationType initialStateType) {
+    private static PropagatorBuilder initializePropagator(final Orbit orbit,
+                                                          final OneAxisEllipsoid centralBody,
+                                                          final SphericalHarmonicsProvider gravityField,
+                                                          final double step, final double mass, final double surface,
+                                                          final boolean useDrag, final boolean useSrp,
+                                                          final boolean useSun, final boolean useMoon,
+                                                          final PropagationType initialStateType) {
 
         // Initialize numerical integrator
         final ODEIntegratorBuilder integrator = new ClassicalRungeKuttaIntegratorBuilder(step);
 
         // Initialize the builder
-        final OrbitDeterminationPropagatorBuilder builder;
+        final PropagatorBuilder builder;
 
         // Convert initial orbit in equinoctial elements
         final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
-        
+
         // Initialize the numerical builder
         final DSSTPropagatorBuilder propagator = new DSSTPropagatorBuilder(equinoctial, integrator, 1.0, PropagationType.MEAN, initialStateType);
-        
+
         // Add the force models to the DSST propagator
         addDSSTForceModels(propagator, centralBody, gravityField, surface, useDrag, useSrp, useSun, useMoon);
-        
+
         // Mass
         propagator.setMass(mass);
-        
+
         // Set
         builder = propagator;
-        
+
         // Reset the orbit
         builder.resetOrbit(equinoctial);
 
@@ -367,7 +368,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft, gravityField.getMu());
+            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft, gravityField.getMu());
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);
@@ -440,12 +441,11 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
      * Initialize the estimator used for the orbit determination and run the estimation.
      * @param propagator orbit propagator
      * @param measurements list of measurements
-     * @param initialOrbit initial orbit
      * @param provider covariance matrix provider
      */
-    private static Observer initializeEstimator(final OrbitDeterminationPropagatorBuilder propagator,
-                                            final List<ObservedMeasurement<?>> measurements,
-                                            final CovarianceMatrixProvider provider) {
+    private static Observer initializeEstimator(final PropagatorBuilder propagator,
+                                                final List<ObservedMeasurement<?>> measurements,
+                                                final CovarianceMatrixProvider provider) {
 
        // Initialize builder
        final SemiAnalyticalKalmanEstimatorBuilder builder = new SemiAnalyticalKalmanEstimatorBuilder();
@@ -492,8 +492,6 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
 
         /**
          * Constructor.
-         * @param startEpoch start epoch
-         * @param nbOfMeasurement expected number of measurements
          */
         public Observer() {
             statX = new StreamingStatistics();
@@ -514,13 +512,13 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
             final EstimatedMeasurement<?> estimatedMeasurement = estimation.getCorrectedMeasurement();
 
             // Check
-            if (estimatedMeasurement.getObservedMeasurement() instanceof Position) {
+            if (estimatedMeasurement.getObservedMeasurement().getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
 
-            	if (estimatedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED) {
-            		if (print) {
-            			System.out.println("REJECTED");
-            		}
-            	} else {
+                if (estimatedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED) {
+                    if (print) {
+                        System.out.println("REJECTED");
+                    }
+                } else {
                     final double[] estimated = estimatedMeasurement.getEstimatedValue();
                     final double[] observed  = estimatedMeasurement.getObservedValue();
 
@@ -538,7 +536,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
                         System.out.println(line);
                     }
 
-            	}
+                }
 
             }
 
@@ -551,10 +549,10 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
          * @return the statistics on the X coordinate residuals
          */
         public StreamingStatistics getXStatistics() {
-        	if (print) {
-        		System.out.println("Min X res (m): " + statX.getMin() + " Max X res (m): " + statX.getMax() + " Mean X res (m): " + statX.getMean() + " STD: " + statX.getStandardDeviation());
-        	}
-        	return statX;
+            if (print) {
+                System.out.println("Min X res (m): " + statX.getMin() + " Max X res (m): " + statX.getMax() + " Mean X res (m): " + statX.getMean() + " STD: " + statX.getStandardDeviation());
+            }
+            return statX;
         }
 
         /**
@@ -562,10 +560,10 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
          * @return the statistics on the Y coordinate residuals
          */
         public StreamingStatistics getYStatistics() {
-        	if (print) {
-        		System.out.println("Min Y res (m): " + statY.getMin() + " Max Y res (m): " + statY.getMax() + " Mean Y res (m): " + statY.getMean() + " STD: " + statY.getStandardDeviation());
-        	}
-        	return statY;
+            if (print) {
+                System.out.println("Min Y res (m): " + statY.getMin() + " Max Y res (m): " + statY.getMax() + " Mean Y res (m): " + statY.getMean() + " STD: " + statY.getStandardDeviation());
+            }
+            return statY;
         }
 
         /**
@@ -573,10 +571,10 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
          * @return the statistics on the Z coordinate residuals
          */
         public StreamingStatistics getZStatistics() {
-        	if (print) {
-        		System.out.println("Min Z res (m): " + statZ.getMin() + " Max Z res (m): " + statZ.getMax() + " Mean Z res (m): " + statZ.getMean() + " STD: " + statZ.getStandardDeviation());
-        	}
-        	return statZ;
+            if (print) {
+                System.out.println("Min Z res (m): " + statZ.getMin() + " Max Z res (m): " + statZ.getMax() + " Mean Z res (m): " + statZ.getMean() + " STD: " + statZ.getStandardDeviation());
+            }
+            return statZ;
         }
 
         /**

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
@@ -532,6 +533,11 @@ public class SP3
         @Override
         public BoundedPropagator getPropagator() {
             return EphemerisSegment.super.getPropagator();
+        }
+
+        @Override
+        public BoundedPropagator getPropagator(final AttitudeProvider attitudeProvider) {
+            return EphemerisSegment.super.getPropagator(attitudeProvider);
         }
 
         /**

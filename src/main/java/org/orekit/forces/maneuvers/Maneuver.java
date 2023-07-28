@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -144,7 +144,7 @@ public class Maneuver extends AbstractForceModel {
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final double[] parameters = getParameters();
+        final double[] parameters = getParameters(s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -166,7 +166,7 @@ public class Maneuver extends AbstractForceModel {
                         final FieldTimeDerivativesEquations<T> adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final T[] parameters = getParameters(s.getDate().getField());
+        final T[] parameters = getParameters(s.getDate().getField(), s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -174,6 +174,8 @@ public class Maneuver extends AbstractForceModel {
         if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Compute thrust acceleration in inertial frame
+            // the acceleration method extracts the parameter in its core, that is why we call it with
+            // parameters and not extracted parameters
             adder.addNonKeplerianAcceleration(acceleration(s, parameters));
 
             // Compute flow rate using the propulsion model
@@ -235,15 +237,17 @@ public class Maneuver extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventsDetectors() {
-        // Event detectors are extracted from the maneuver triggers
-        return maneuverTriggers.getEventsDetectors();
+        // Event detectors are extracted from both the maneuver triggers and the propulsion model
+        return Stream.concat(maneuverTriggers.getEventsDetectors(),
+                             propulsionModel.getEventsDetectors());
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        // Event detectors are extracted from the maneuver triggers
-        return maneuverTriggers.getFieldEventsDetectors(field);
+        // Event detectors are extracted from both the maneuver triggers and the propulsion model
+        return Stream.concat(maneuverTriggers.getFieldEventsDetectors(field),
+                             propulsionModel.getFieldEventsDetectors(field));
     }
 
     @Override

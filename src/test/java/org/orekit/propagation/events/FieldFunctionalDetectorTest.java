@@ -16,17 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.function.Function;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64Field;
-import org.junit.Test;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -34,6 +32,8 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
+
+import java.util.function.Function;
 
 /**
  * Unit tests for {@link FieldFunctionalDetector}
@@ -47,7 +47,7 @@ public class FieldFunctionalDetectorTest {
      */
     @Test
     public void testFunctionalDetector() {
-        doTestFunctionalDetector(Decimal64Field.getInstance());
+        doTestFunctionalDetector(Binary64Field.getInstance());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestFunctionalDetector(Field<T> field) {
@@ -55,8 +55,7 @@ public class FieldFunctionalDetectorTest {
         T zero = field.getZero();
         T one = field.getOne();
         Function<FieldSpacecraftState<T>, T> g = FieldSpacecraftState::getMass;
-        FieldEventHandler<FieldEventDetector<T>, T> handler =
-                (s, detector, increasing) -> Action.STOP;
+        FieldEventHandler<T> handler = (s, detector, increasing) -> Action.STOP;
 
         // action
         FieldFunctionalDetector<T> detector = new FieldFunctionalDetector<>(field)
@@ -81,7 +80,7 @@ public class FieldFunctionalDetectorTest {
                         zero.add(4)),
                 zero.add(5));
         MatcherAssert.assertThat(detector.g(state).getReal(), CoreMatchers.is(5.0));
-        MatcherAssert.assertThat(detector.eventOccurred(null, false),
+        MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false),
                 CoreMatchers.is(Action.STOP));
         MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
     }

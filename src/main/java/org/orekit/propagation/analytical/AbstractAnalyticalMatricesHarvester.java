@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.AbstractMatricesHarvester;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -31,6 +32,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Base class harvester between two-dimensional Jacobian
@@ -39,7 +42,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester {
+public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester implements AdditionalStateProvider {
 
     /** Columns names for parameters. */
     private List<String> columnsNames;
@@ -94,11 +97,28 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
+    public String getName() {
+        return getStmName();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getAdditionalState(final SpacecraftState state) {
         // Update the partial derivatives if needed
         updateDerivativesIfNeeded(state);
-        //return the state transition matrix
-        return MatrixUtils.createRealMatrix(analyticalDerivativesStm);
+        // Return the state transition matrix in an array
+        return toArray(analyticalDerivativesStm);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
+        // Check if additional state is defined
+        if (!state.hasAdditionalState(getName())) {
+            return null;
+        }
+        // Return the state transition matrix
+        return toRealMatrix(state.getAdditionalState(getName()));
     }
 
     /** {@inheritDoc} */
@@ -172,21 +192,24 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         for (ParameterDriver driver : converter.getParametersDrivers()) {
             if (driver.isSelected()) {
 
-                // get the partials derivatives for this driver
-                DoubleArrayDictionary.Entry entry = analyticalDerivativesJacobianColumns.getEntry(driver.getName());
-                if (entry == null) {
-                    // create an entry filled with zeroes
-                    analyticalDerivativesJacobianColumns.put(driver.getName(), new double[STATE_DIMENSION]);
-                    entry = analyticalDerivativesJacobianColumns.getEntry(driver.getName());
+                final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+                // for each span (for each estimated value) corresponding name is added
+                for (Span<String> span = driverNameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+                    // get the partials derivatives for this driver
+                    DoubleArrayDictionary.Entry entry = analyticalDerivativesJacobianColumns.getEntry(span.getData());
+                    if (entry == null) {
+                        // create an entry filled with zeroes
+                        analyticalDerivativesJacobianColumns.put(span.getData(), new double[STATE_DIMENSION]);
+                        entry = analyticalDerivativesJacobianColumns.getEntry(span.getData());
+                    }
+
+                    // add the contribution of the current force model
+                    entry.increment(new double[] {
+                        derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
+                        derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
+                    });
+                    ++paramsIndex;
                 }
-
-                // add the contribution of the current force model
-                entry.increment(new double[] {
-                    derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
-                    derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
-                });
-                ++paramsIndex;
-
             }
         }
 
@@ -212,6 +235,37 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         for (int i = 0; i < 6; i++) {
             analyticalDerivativesStm[index][i] += derivatives[i];
         }
+    }
+
+    /** Convert an array to a matrix (6x6 dimension).
+     * @param array input array
+     * @return the corresponding matrix
+     */
+    private RealMatrix toRealMatrix(final double[] array) {
+        final RealMatrix matrix = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+        int index = 0;
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
+                matrix.setEntry(i, j, array[index++]);
+            }
+        }
+        return matrix;
+    }
+
+    /** Set the STM data into an array.
+     * @param matrix STM matrix
+     * @return an array containing the STM data
+     */
+    private double[] toArray(final double[][] matrix) {
+        final double[] array = new double[STATE_DIMENSION * STATE_DIMENSION];
+        int index = 0;
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            final double[] row = matrix[i];
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
+                array[index++] = row[j];
+            }
+        }
+        return array;
     }
 
     /**

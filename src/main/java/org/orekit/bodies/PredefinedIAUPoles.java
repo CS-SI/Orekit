@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1161,7 +1161,7 @@ abstract class PredefinedIAUPoles implements IAUPole {
     public static PredefinedIAUPoles getIAUPole(final EphemerisType body,
                                                 final TimeScales timeScales) {
 
-        switch(body) {
+        switch (body) {
             case SUN :
                 return new Sun(timeScales);
             case MERCURY :

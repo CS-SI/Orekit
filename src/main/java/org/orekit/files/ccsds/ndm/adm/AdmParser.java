@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.time.AbsoluteDate;
@@ -47,8 +45,8 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends AbstractConstituentParser<T, ?>>
-    extends AbstractConstituentParser<T, P> {
+public abstract class AdmParser<T extends NdmConstituent<AdmHeader, ?>, P extends AbstractConstituentParser<AdmHeader, T, ?>>
+    extends AbstractConstituentParser<AdmHeader, T, P> {
 
     /** Index rotation element name. */
     private static final String ROTATION_1 = "rotation1";
@@ -71,11 +69,14 @@ public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends Abstra
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     protected AdmParser(final String root, final String formatVersionKey, final IERSConventions conventions,
                         final boolean simpleEOP, final DataContext dataContext,
-                        final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
+                        final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior,
+                        final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
         this.missionReferenceDate = missionReferenceDate;
     }
 
@@ -100,36 +101,6 @@ public abstract class AdmParser<T extends NdmConstituent<?, ?>, P extends Abstra
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
-    }
-
-    /** Process a CCSDS Euler angles sequence as a {@link RotationOrder}.
-     * @param sequence Euler angles sequence token
-     * @param consumer consumer of the rotation order
-     * @return always return {@code true}
-     */
-    public static boolean processRotationOrder(final ParseToken sequence,
-                                               final RotationOrderConsumer consumer) {
-        if (sequence.getType() == TokenType.ENTRY) {
-            try {
-                consumer.accept(RotationOrder.valueOf(sequence.getContentAsUppercaseString().
-                                                      replace('1', 'X').
-                                                      replace('2', 'Y').
-                                                      replace('3', 'Z')));
-            } catch (IllegalArgumentException iae) {
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE,
-                                          sequence.getContentAsUppercaseString(),
-                                          sequence.getLineNumber(), sequence.getFileName());
-            }
-        }
-        return true;
-    }
-
-    /** Interface representing instance methods that consume otation order values. */
-    public interface RotationOrderConsumer {
-        /** Consume a data.
-         * @param value value to consume
-         */
-        void accept(RotationOrder value);
     }
 
 }
