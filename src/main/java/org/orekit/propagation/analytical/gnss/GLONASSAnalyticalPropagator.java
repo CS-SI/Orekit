@@ -140,6 +140,8 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = ecef;
+        // Sets initial state
+        super.resetInitialState(new SpacecraftState(propagateOrbit(getStartDate()), mass));
     }
 
     /**

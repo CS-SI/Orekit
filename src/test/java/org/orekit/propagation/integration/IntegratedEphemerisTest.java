@@ -24,6 +24,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.CelestialBodyPointed;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -35,6 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.MatricesHarvester;
@@ -190,6 +192,29 @@ public class IntegratedEphemerisTest {
                                                    () -> ephemeris.resetIntermediateState(new SpacecraftState(initialOrbit), true));
         Assertions.assertEquals(
                 "reset state not allowed", thrown.getMessage());
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    void testIssue949() {
+        // GIVEN
+        final AbsoluteDate initialDate = new AbsoluteDate();
+        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // Setup integrated ephemeris
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
+        numericalPropagator.propagate(initialDate.shiftedBy(1));
+
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
 
     }
 

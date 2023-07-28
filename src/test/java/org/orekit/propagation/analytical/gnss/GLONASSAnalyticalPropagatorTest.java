@@ -22,12 +22,14 @@ import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
@@ -186,6 +188,22 @@ public class GLONASSAnalyticalPropagatorTest {
         // Verify that an infinite loop did not occur
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    void testIssue949() {
+        // GIVEN
+        // Setup propagator
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
 
     }
 
