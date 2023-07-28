@@ -22,7 +22,7 @@ package org.orekit.estimation.measurements;
  * measurement epoch is taken from.
  *
  * @author Tommy Fryer
- * @since 11.1
+ * @since 12.0
  */
 public enum TimeTagSpecificationType {
 

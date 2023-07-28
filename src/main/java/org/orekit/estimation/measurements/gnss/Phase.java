@@ -27,6 +27,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundReceiverMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.TimeTagSpecificationType;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -66,7 +67,7 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
-    /** Simple constructor.
+    /** Simple constructor with timetag of observed value set to reception time.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param phase observed value (cycles)
@@ -79,10 +80,33 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite) {
-        super(station, false, date, phase, sigma, baseWeight, satellite);
+        super(station, false, date, phase, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
         ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME,
                                                0.0, 1.0,
                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        addParameterDriver(ambiguityDriver);
+        this.wavelength = wavelength;
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param phase observed value (cycles)
+     * @param wavelength phase observed value wavelength (m)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
+     * @since 12.0
+     */
+    public Phase(final GroundStation station, final AbsoluteDate date,
+                 final double phase, final double wavelength, final double sigma,
+                 final double baseWeight, final ObservableSatellite satellite,
+                 final TimeTagSpecificationType timeTagSpecificationType) {
+        super(station, false, date, phase, sigma, baseWeight, satellite, timeTagSpecificationType);
+        ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME,
+                                              0.0, 1.0,
+                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         addParameterDriver(ambiguityDriver);
         this.wavelength = wavelength;
     }

@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -768,7 +769,7 @@ public class RangeTest {
             gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
             gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
 
-            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate(), false);
             TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
             double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
@@ -792,9 +793,9 @@ public class RangeTest {
 
             //Static time of flight does not take into account motion during tof. Very small differences expected however
             //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
-            Assert.assertEquals("TX", transitRangeTX, estRangeTX.getEstimatedValue()[0], 1e-3);
-            Assert.assertEquals("RX", transitRangeRX, estRangeRX.getEstimatedValue()[0], 1e-3);
-            Assert.assertEquals("Transit", transitRangeT, estRangeTransit.getEstimatedValue()[0], 1e-6);
+            Assertions.assertEquals( transitRangeTX, estRangeTX.getEstimatedValue()[0], 1e-3,"TX");
+            Assertions.assertEquals( transitRangeRX, estRangeRX.getEstimatedValue()[0], 1e-3,"RX");
+            Assertions.assertEquals( transitRangeT, estRangeTransit.getEstimatedValue()[0], 1e-6,"Transit");
 
             //Test providing pre corrected states + an arbitarily shifted case - since this should have no significant effect on the value.
             EstimatedMeasurement<Range> estRangeTXPreCorr = rangeTX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
@@ -802,13 +803,13 @@ public class RangeTest {
             EstimatedMeasurement<Range> estRangeTransitPreCorr = rangeTransit.estimate(0,0,new SpacecraftState[]{state.shiftedBy(0.1)});
 
             //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
-            Assert.assertEquals("TX shifted", estRangeTXPreCorr.getEstimatedValue()[0], estRangeTX.getEstimatedValue()[0],1e-7);
-            Assert.assertEquals("RX shifted", estRangeRXPreCorr.getEstimatedValue()[0], estRangeRX.getEstimatedValue()[0],1e-7);
-            Assert.assertEquals("Transit shifted", estRangeTransitPreCorr.getEstimatedValue()[0], estRangeTransit.getEstimatedValue()[0], 1e-7);
+            Assertions.assertEquals( estRangeTXPreCorr.getEstimatedValue()[0], estRangeTX.getEstimatedValue()[0],1e-7,"TX shifted");
+            Assertions.assertEquals( estRangeRXPreCorr.getEstimatedValue()[0], estRangeRX.getEstimatedValue()[0],1e-7,"RX shifted");
+            Assertions.assertEquals( estRangeTransitPreCorr.getEstimatedValue()[0], estRangeTransit.getEstimatedValue()[0], 1e-7,"Transit shifted");
 
             //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
             //of a static time of flight correction.
-            Assert.assertTrue(Math.abs(transitRangeTX - transitRangeRX)>100.0);
+            Assertions.assertTrue(Math.abs(transitRangeTX - transitRangeRX)>100.0);
         }
 
     }

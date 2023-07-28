@@ -70,9 +70,8 @@ public class RangeAnalytic extends Range {
      */
     public RangeAnalytic(final Range range) {
         super(range.getStation(), true, range.getDate(), range.getObservedValue()[0],
-              range.getTheoreticalStandardDeviation()[0],
-              range.getBaseWeight()[0],
-              new ObservableSatellite(0));
+              range.getTheoreticalStandardDeviation()[0], range.getBaseWeight()[0],
+              new ObservableSatellite(0), range.getTimeTagSpecificationType());
     }
 
     /**

@@ -58,30 +58,8 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec>
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
 
-    /** Enum indicating the time tag specification of a range observation. */
-    private final TimeTagSpecificationType timeTagSpecificationType;
 
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param referenceFrame Reference frame in which the right ascension - declination angles are given
-     * @param date date of the measurement
-     * @param angular observed value
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param satellite satellite related to this measurement
-     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
-     * @since xx.xx
-     */
-    public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
-                        final double[] angular, final double[] sigma, final double[] baseWeight,
-                        final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
-        super(station, false, date, angular, sigma, baseWeight, satellite);
-        this.referenceFrame = referenceFrame;
-        this.timeTagSpecificationType = timeTagSpecificationType;
-    }
-
-
-    /** Simple constructor.
+    /** Simple constructor with timetag of observed value set to reception time.
      * @param station ground station from which measurement is performed
      * @param referenceFrame Reference frame in which the right ascension - declination angles are given
      * @param date date of the measurement
@@ -95,6 +73,24 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec>
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final ObservableSatellite satellite) {
         this(station, referenceFrame, date, angular, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param referenceFrame Reference frame in which the right ascension - declination angles are given
+     * @param date date of the measurement
+     * @param angular observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
+     * @since 12.0
+     */
+    public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
+                        final double[] angular, final double[] sigma, final double[] baseWeight,
+                        final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
+        super(station, false, date, angular, sigma, baseWeight, satellite, timeTagSpecificationType);
+        this.referenceFrame = referenceFrame;
     }
 
     /** Get the reference frame in which the right ascension - declination angles are given.
@@ -165,7 +161,8 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec>
         final SpacecraftState transitState;
         final Gradient tauD;
 
-        if (timeTagSpecificationType == TimeTagSpecificationType.TX || timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
+        if (getTimeTagSpecificationType() == TimeTagSpecificationType.TX ||
+                getTimeTagSpecificationType() == TimeTagSpecificationType.TXRX) {
             //Date = epoch of transmission.
             //Vary position of receiver -> in case of uplink leg, receiver is satellite
             final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
@@ -182,14 +179,14 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec>
 
             stationDownlink = stationObsEpoch.shiftedBy(tauU.add(tauD));
             //Decide whether observation is transmit or receive apparent.
-            if (timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
+            if (getTimeTagSpecificationType() == TimeTagSpecificationType.TXRX) {
                 stationPositionEstimated = stationDownlink;
             } else {
                 stationPositionEstimated = stationObsEpoch;
             }
         }
 
-        else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
+        else if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
 
             transitStateDS = pvaDS.shiftedBy(delta);
             transitState = state.shiftedBy(delta.getValue());

@@ -58,7 +58,7 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
     /** Second ground station, the one that gives the measurement, i.e. the delay. */
     private final GroundStation secondStation;
 
-    /** Simple constructor.
+    /** Simple constructor with timetag of observed value set to reception time.
      * @param primeStation ground station that gives the date of the measurement
      * @param secondStation ground station that gives the measurement
      * @param date date of the measurement
@@ -70,7 +70,38 @@ public class TDOA extends GroundReceiverMeasurement<TDOA> {
     public TDOA(final GroundStation primeStation, final GroundStation secondStation,
                 final AbsoluteDate date, final double tdoa, final double sigma,
                 final double baseWeight, final ObservableSatellite satellite) {
-        super(primeStation, false, date, tdoa, sigma, baseWeight, satellite);
+        super(primeStation, false, date, tdoa, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
+
+        // add parameter drivers for the secondary station
+        addParameterDriver(secondStation.getClockOffsetDriver());
+        addParameterDriver(secondStation.getEastOffsetDriver());
+        addParameterDriver(secondStation.getNorthOffsetDriver());
+        addParameterDriver(secondStation.getZenithOffsetDriver());
+        addParameterDriver(secondStation.getPrimeMeridianOffsetDriver());
+        addParameterDriver(secondStation.getPrimeMeridianDriftDriver());
+        addParameterDriver(secondStation.getPolarOffsetXDriver());
+        addParameterDriver(secondStation.getPolarDriftXDriver());
+        addParameterDriver(secondStation.getPolarOffsetYDriver());
+        addParameterDriver(secondStation.getPolarDriftYDriver());
+        this.secondStation = secondStation;
+
+    }
+
+    /** Simple constructor.
+     * @param primeStation ground station that gives the date of the measurement
+     * @param secondStation ground station that gives the measurement
+     * @param date date of the measurement
+     * @param tdoa observed value (s)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
+     */
+    public TDOA(final GroundStation primeStation, final GroundStation secondStation,
+                final AbsoluteDate date, final double tdoa, final double sigma,
+                final double baseWeight, final ObservableSatellite satellite,
+                final TimeTagSpecificationType timeTagSpecificationType) {
+        super(primeStation, false, date, tdoa, sigma, baseWeight, satellite, timeTagSpecificationType);
 
         // add parameter drivers for the secondary station
         addParameterDriver(secondStation.getClockOffsetDriver());

@@ -65,7 +65,7 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
     /** Secondary ground station reflecting the signal. */
     private final GroundStation secondaryStation;
 
-    /** Simple constructor.
+    /** Simple constructor with timetag of observed value set to reception time.
      * @param primaryStation ground station from which measurement is performed
      * @param secondaryStation ground station reflecting the signal
      * @param date date of the measurement
@@ -79,7 +79,38 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final ObservableSatellite satellite) {
-        super(primaryStation, true, date, turnAroundRange, sigma, baseWeight, satellite);
+        super(primaryStation, true, date, turnAroundRange, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
+
+        // the secondary station clock is not used at all, we ignore the corresponding parameter driver
+        addParameterDriver(secondaryStation.getEastOffsetDriver());
+        addParameterDriver(secondaryStation.getNorthOffsetDriver());
+        addParameterDriver(secondaryStation.getZenithOffsetDriver());
+        addParameterDriver(secondaryStation.getPrimeMeridianOffsetDriver());
+        addParameterDriver(secondaryStation.getPrimeMeridianDriftDriver());
+        addParameterDriver(secondaryStation.getPolarOffsetXDriver());
+        addParameterDriver(secondaryStation.getPolarDriftXDriver());
+        addParameterDriver(secondaryStation.getPolarOffsetYDriver());
+        addParameterDriver(secondaryStation.getPolarDriftYDriver());
+        this.secondaryStation = secondaryStation;
+
+    }
+
+    /** Simple constructor.
+     * @param primaryStation ground station from which measurement is performed
+     * @param secondaryStation ground station reflecting the signal
+     * @param date date of the measurement
+     * @param turnAroundRange observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
+     * @since 9.3
+     */
+    public TurnAroundRange(final GroundStation primaryStation, final GroundStation secondaryStation,
+                           final AbsoluteDate date, final double turnAroundRange,
+                           final double sigma, final double baseWeight,
+                           final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
+        super(primaryStation, true, date, turnAroundRange, sigma, baseWeight, satellite, timeTagSpecificationType);
 
         // the secondary station clock is not used at all, we ignore the corresponding parameter driver
         addParameterDriver(secondaryStation.getEastOffsetDriver());

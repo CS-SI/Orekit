@@ -288,7 +288,7 @@ public class AngularAzElTest {
             gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
             gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
 
-            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate(), false);
             TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
             double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
@@ -333,17 +333,17 @@ public class AngularAzElTest {
 
             //Static time of flight does not take into account motion during tof. Very small differences expected however
             //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
-            Assert.assertEquals("TX", transitAzTx, estAzElTx.getEstimatedValue()[0], 2e-8);
-            Assert.assertEquals("TX", transitElTx, estAzElTx.getEstimatedValue()[1], 2e-8);
+            Assertions.assertEquals( transitAzTx, estAzElTx.getEstimatedValue()[0], 2e-8,"TX");
+            Assertions.assertEquals( transitElTx, estAzElTx.getEstimatedValue()[1], 2e-8,"TX");
 
-            Assert.assertEquals("TXRX", transitAzTxRx, estAzElTxRx.getEstimatedValue()[0], 2e-8);
-            Assert.assertEquals("TXRX", transitElTxRx, estAzElTxRx.getEstimatedValue()[1], 2e-8);
+            Assertions.assertEquals( transitAzTxRx, estAzElTxRx.getEstimatedValue()[0], 2e-8,"TXRX");
+            Assertions.assertEquals( transitElTxRx, estAzElTxRx.getEstimatedValue()[1], 2e-8,"TXRX");
 
-            Assert.assertEquals("RX", transitAzRx, estAzElRx.getEstimatedValue()[0], 2e-8);
-            Assert.assertEquals("RX", transitElRx, estAzElRx.getEstimatedValue()[1], 2e-8);
+            Assertions.assertEquals( transitAzRx, estAzElRx.getEstimatedValue()[0], 2e-8,"RX");
+            Assertions.assertEquals( transitElRx, estAzElRx.getEstimatedValue()[1], 2e-8,"RX");
 
-            Assert.assertEquals("Transit", transitAzT, estAzElTransit.getEstimatedValue()[0], 2e-8);
-            Assert.assertEquals("Transit", transitElT, estAzElTransit.getEstimatedValue()[1], 2e-8);
+            Assertions.assertEquals( transitAzT, estAzElTransit.getEstimatedValue()[0], 2e-8,"Transit");
+            Assertions.assertEquals( transitElT, estAzElTransit.getEstimatedValue()[1], 2e-8,"Transit");
 
             //Test providing pre corrected states + an arbitarily shifted case - since this should have no significant effect on the value.
             EstimatedMeasurement<AngularAzEl> estAzElTxShifted = azElTx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
@@ -351,19 +351,19 @@ public class AngularAzElTest {
             EstimatedMeasurement<AngularAzEl> estAzElTransitShifted = azElT.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(0.1)});
 
             //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
-            Assert.assertEquals("TX shifted", estAzElTxShifted.getEstimatedValue()[0], estAzElTx.getEstimatedValue()[0], 1e-11);
-            Assert.assertEquals("TX shifted", estAzElTxShifted.getEstimatedValue()[1], estAzElTx.getEstimatedValue()[1], 1e-11);
+            Assertions.assertEquals( estAzElTxShifted.getEstimatedValue()[0], estAzElTx.getEstimatedValue()[0], 1e-11,"TX shifted");
+            Assertions.assertEquals( estAzElTxShifted.getEstimatedValue()[1], estAzElTx.getEstimatedValue()[1], 1e-11,"TX shifted");
 
-            Assert.assertEquals("RX shifted", estAzElRxShifted.getEstimatedValue()[0], estAzElRx.getEstimatedValue()[0], 1e-11);
-            Assert.assertEquals("RX shifted", estAzElRxShifted.getEstimatedValue()[1], estAzElRx.getEstimatedValue()[1], 1e-11);
+            Assertions.assertEquals( estAzElRxShifted.getEstimatedValue()[0], estAzElRx.getEstimatedValue()[0], 1e-11,"RX shifted");
+            Assertions.assertEquals( estAzElRxShifted.getEstimatedValue()[1], estAzElRx.getEstimatedValue()[1], 1e-11,"RX shifted");
 
-            Assert.assertEquals("Transit shifted", estAzElTransitShifted.getEstimatedValue()[0], estAzElTransit.getEstimatedValue()[0], 1e-11);
-            Assert.assertEquals("Transit shifted", estAzElTransitShifted.getEstimatedValue()[1], estAzElTransit.getEstimatedValue()[1], 1e-11);
+            Assertions.assertEquals( estAzElTransitShifted.getEstimatedValue()[0], estAzElTransit.getEstimatedValue()[0], 1e-11,"Transit shifted");
+            Assertions.assertEquals( estAzElTransitShifted.getEstimatedValue()[1], estAzElTransit.getEstimatedValue()[1], 1e-11,"Transit shifted");
 
             //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
             //of a static time of flight correction.
-            Assert.assertTrue("Proof of difference - Azimuth", (Math.abs(transitAzRx - transitAzTx) > 1e-5));
-            Assert.assertTrue("Proof of difference - Elevation", (Math.abs(transitAzRx - transitAzTx) > 1e-5));
+            Assertions.assertTrue((Math.abs(transitAzRx - transitAzTx) > 1e-5), "Proof of difference - Azimuth");
+            Assertions.assertTrue((Math.abs(transitAzRx - transitAzTx) > 1e-5), "Proof of difference - Elevation");
         }
     }
 }

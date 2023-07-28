@@ -76,7 +76,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
               turnAroundRange.getDate(), turnAroundRange.getObservedValue()[0],
               turnAroundRange.getTheoreticalStandardDeviation()[0],
               turnAroundRange.getBaseWeight()[0],
-              new ObservableSatellite(0));
+              new ObservableSatellite(0),
+              turnAroundRange.getTimeTagSpecificationType());
     }
 
 

@@ -745,15 +745,15 @@ public class RangeRateTest {
             gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
             gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
 
-            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate(), false);
             TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
             double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
             double staticTimeOfFlight = staticDistance / Constants.SPEED_OF_LIGHT;
 
-            RangeRate rangeRateTX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TX);
-            RangeRate rangeRateRX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.RX);
-            RangeRate rangeRateTransit = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, obsSat, TimeTagSpecificationType.TRANSIT);
+            RangeRate rangeRateTX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.TX);
+            RangeRate rangeRateRX = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.RX);
+            RangeRate rangeRateTransit = new RangeRate(gs, state.getDate(), 1.0, 1.0, 1.0, true, obsSat, TimeTagSpecificationType.TRANSIT);
 
             EstimatedMeasurement<RangeRate> estRangeRateTX = rangeRateTX.estimate(0,0,new SpacecraftState[]{state});
             EstimatedMeasurement<RangeRate> estRangeRateRX = rangeRateRX.estimate(0,0,new SpacecraftState[]{state});
@@ -769,9 +769,9 @@ public class RangeRateTest {
 
             //Static time of flight does not take into account motion during tof. Very small differences expected however
             //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
-            Assert.assertEquals("TX", transitRangeRateTX, estRangeRateTX.getEstimatedValue()[0],1e-6);
-            Assert.assertEquals("RX", transitRangeRateRX, estRangeRateRX.getEstimatedValue()[0],1e-6);
-            Assert.assertEquals("Transit", transitRangeRateT, estRangeRateTransit.getEstimatedValue()[0], 1e-11);
+            Assertions.assertEquals( transitRangeRateTX, estRangeRateTX.getEstimatedValue()[0],1e-6,"TX");
+            Assertions.assertEquals( transitRangeRateRX, estRangeRateRX.getEstimatedValue()[0],1e-6,"RX");
+            Assertions.assertEquals( transitRangeRateT, estRangeRateTransit.getEstimatedValue()[0], 1e-11,"Transit");
 
             //Test for case in which the state has been precorrected for propagation delay / an arbitary shift
             EstimatedMeasurement<RangeRate> estRangeRateTXPrecorr = rangeRateTX.estimate(0,0,new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
@@ -779,13 +779,13 @@ public class RangeRateTest {
             EstimatedMeasurement<RangeRate> estRangeRateTransitShift = rangeRateTransit.estimate(0,0,new SpacecraftState[]{state.shiftedBy(0.05)});
 
             //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
-            Assert.assertEquals("TX shifted", estRangeRateTXPrecorr.getEstimatedValue()[0], estRangeRateTX.getEstimatedValue()[0],1e-6);
-            Assert.assertEquals("RX shifted", estRangeRateRXPrecorr.getEstimatedValue()[0], estRangeRateRX.getEstimatedValue()[0],1e-6);
-            Assert.assertEquals("Transit shifted", estRangeRateTransitShift.getEstimatedValue()[0], estRangeRateTransit.getEstimatedValue()[0], 1e-6);
+            Assertions.assertEquals( estRangeRateTXPrecorr.getEstimatedValue()[0], estRangeRateTX.getEstimatedValue()[0],1e-6,"TX shifted");
+            Assertions.assertEquals( estRangeRateRXPrecorr.getEstimatedValue()[0], estRangeRateRX.getEstimatedValue()[0],1e-6,"RX shifted");
+            Assertions.assertEquals( estRangeRateTransitShift.getEstimatedValue()[0], estRangeRateTransit.getEstimatedValue()[0], 1e-6,"Transit shifted");
 
             //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
             //of a static time of flight correction.
-            Assert.assertTrue(Math.abs(transitRangeRateRX - transitRangeRateTX) > 5e-3);
+            Assertions.assertTrue(Math.abs(transitRangeRateRX - transitRangeRateTX) > 5e-3);
         }
 
     }

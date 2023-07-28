@@ -48,8 +48,20 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl>
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "AngularAzEl";
 
-    /** Enum indicating the time tag specification of a range observation. */
-    private final TimeTagSpecificationType timeTagSpecificationType;
+    /** Simple constructor with timetag of observed value set to reception time.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param angular observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @since xx.xx
+     */
+    public AngularAzEl(final GroundStation station, final AbsoluteDate date,
+                       final double[] angular, final double[] sigma, final double[] baseWeight,
+                       final ObservableSatellite satellite) {
+        super(station, false, date, angular, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
+    }
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -59,12 +71,12 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl>
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @param timeTagSpecificationType specify the timetag configuration of the provided angular AzEl observation
-     * @since xx.xx
+     * @since 12.0
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
-                       final ObservableSatellite satellite) {
-        super(station, false, date, angular, sigma, baseWeight, satellite);
+                       final ObservableSatellite satellite, final TimeTagSpecificationType timeTagSpecificationType) {
+        super(station, false, date, angular, sigma, baseWeight, satellite, timeTagSpecificationType);
     }
 
     /** {@inheritDoc} */
@@ -130,7 +142,7 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl>
         final SpacecraftState transitState;
         final Gradient tauD;
 
-        if (timeTagSpecificationType == TimeTagSpecificationType.TX || timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
+        if (getTimeTagSpecificationType() == TimeTagSpecificationType.TX || getTimeTagSpecificationType() == TimeTagSpecificationType.TXRX) {
             //Date = epoch of transmission.
             //Vary position of receiver -> in case of uplink leg, receiver is satellite
             final Gradient tauU = signalTimeOfFlightFixedEmission(pvaDS, stationObsEpoch.getPosition(), stationObsEpoch.getDate());
@@ -148,14 +160,14 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl>
             stationDownlink = stationObsEpoch.shiftedBy(tauU.add(tauD));
 
             //Decide whether observation is transmit or receive apparent.
-            if (timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
+            if (getTimeTagSpecificationType() == TimeTagSpecificationType.TXRX) {
                 stationPositionEstimated = stationDownlink;
             } else {
                 stationPositionEstimated = stationObsEpoch;
             }
         }
 
-        else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
+        else if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
             transitStateDS = pvaDS.shiftedBy(delta);
             transitState = state.shiftedBy(delta.getValue());
 
@@ -183,7 +195,8 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl>
             stationPositionEstimated = stationDownlink;
         }
 
-        final FieldTransform<Gradient> offsetToInertialEstimationTime = station.getOffsetToInertial(state.getFrame(), stationPositionEstimated.getDate(), nbParams, indices);
+        final FieldTransform<Gradient> offsetToInertialEstimationTime =
+                getStation().getOffsetToInertial(state.getFrame(), stationPositionEstimated.getDate(), nbParams, indices);
 
         // Station topocentric frame (east-north-zenith) in inertial frame expressed as Gradient
         final FieldVector3D<Gradient> east   = offsetToInertialEstimationTime.transformVector(FieldVector3D.getPlusI(field));

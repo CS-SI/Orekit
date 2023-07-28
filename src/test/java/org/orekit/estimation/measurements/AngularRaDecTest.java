@@ -329,8 +329,6 @@ public class AngularRaDecTest {
 
     }
 
-}
-
     /**
      * Test the estimated values when the observed angular ra dec value is provided at TX (Transmit),
      * RX (Receive (default)), transit (bounce)
@@ -352,7 +350,7 @@ public class AngularRaDecTest {
             gs.getPolarOffsetYDriver().setReferenceDate(state.getDate());
             gs.getPolarDriftYDriver().setReferenceDate(state.getDate());
 
-            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate());
+            Transform gsToInertialTransform = gs.getOffsetToInertial(state.getFrame(), state.getDate(), false);
             TimeStampedPVCoordinates stationPosition = gsToInertialTransform.transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
             double staticDistance = stationPosition.getPosition().distance(state.getPVCoordinates().getPosition());
@@ -386,17 +384,17 @@ public class AngularRaDecTest {
             //Static time of flight does not take into account motion during tof. Very small differences expected however
             //delta expected vs actual <<< difference between TX, RX and transit predictions by a few orders of magnitude.
 
-            Assert.assertEquals("TX", transitRaDecTx[0], estRaDecTx.getEstimatedValue()[0], 1e-9);
-            Assert.assertEquals("TX", transitRaDecTx[1], estRaDecTx.getEstimatedValue()[1], 1e-9);
+            Assertions.assertEquals( transitRaDecTx[0], estRaDecTx.getEstimatedValue()[0], 1e-9,"TX");
+            Assertions.assertEquals( transitRaDecTx[1], estRaDecTx.getEstimatedValue()[1], 1e-9,"TX");
 
-            Assert.assertEquals("TXRX", transitRaDecTxRx[0], estRaDecTxRx.getEstimatedValue()[0], 1e-9);
-            Assert.assertEquals("TXRX", transitRaDecTxRx[1], estRaDecTxRx.getEstimatedValue()[1], 1e-9);
+            Assertions.assertEquals( transitRaDecTxRx[0], estRaDecTxRx.getEstimatedValue()[0], 1e-9,"TXRX");
+            Assertions.assertEquals( transitRaDecTxRx[1], estRaDecTxRx.getEstimatedValue()[1], 1e-9,"TXRX");
 
-            Assert.assertEquals("RX", transitRaDecRx[0], estRaDecRx.getEstimatedValue()[0], 1e-9);
-            Assert.assertEquals("RX", transitRaDecRx[1], estRaDecRx.getEstimatedValue()[1], 1e-9);
+            Assertions.assertEquals( transitRaDecRx[0], estRaDecRx.getEstimatedValue()[0], 1e-9,"RX");
+            Assertions.assertEquals( transitRaDecRx[1], estRaDecRx.getEstimatedValue()[1], 1e-9,"RX");
 
-            Assert.assertEquals("Transit", transitRaDecT[0], estRaDecTransit.getEstimatedValue()[0], 1e-9);
-            Assert.assertEquals("Transit", transitRaDecT[1], estRaDecTransit.getEstimatedValue()[1], 1e-9);
+            Assertions.assertEquals( transitRaDecT[0], estRaDecTransit.getEstimatedValue()[0], 1e-9,"Transit");
+            Assertions.assertEquals( transitRaDecT[1], estRaDecTransit.getEstimatedValue()[1], 1e-9,"Transit");
 
             //Test providing pre corrected states + an arbitarily shifted case - since this should have no significant effect on the value.
             EstimatedMeasurement<AngularRaDec> estRaDecTxShifted = raDecTx.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(staticTimeOfFlight)});
@@ -404,20 +402,20 @@ public class AngularRaDecTest {
             EstimatedMeasurement<AngularRaDec> estRaDecTransitShifted = raDecT.estimate(0, 0, new SpacecraftState[]{state.shiftedBy(0.1)});
 
             //tolerances are required since shifting the state forwards and backwards produces slight estimated value changes
-            Assert.assertEquals("TX shifted", estRaDecTxShifted.getEstimatedValue()[0], estRaDecTx.getEstimatedValue()[0], 1e-11);
-            Assert.assertEquals("TX shifted", estRaDecTxShifted.getEstimatedValue()[1], estRaDecTx.getEstimatedValue()[1], 1e-11);
+            Assertions.assertEquals( estRaDecTxShifted.getEstimatedValue()[0], estRaDecTx.getEstimatedValue()[0], 1e-11,"TX shifted");
+            Assertions.assertEquals( estRaDecTxShifted.getEstimatedValue()[1], estRaDecTx.getEstimatedValue()[1], 1e-11,"TX shifted");
 
-            Assert.assertEquals("RX shifted", estRaDecRxShifted.getEstimatedValue()[0], estRaDecRx.getEstimatedValue()[0], 1e-11);
-            Assert.assertEquals("RX shifted", estRaDecRxShifted.getEstimatedValue()[1], estRaDecRx.getEstimatedValue()[1], 1e-11);
+            Assertions.assertEquals( estRaDecRxShifted.getEstimatedValue()[0], estRaDecRx.getEstimatedValue()[0], 1e-11,"RX shifted");
+            Assertions.assertEquals( estRaDecRxShifted.getEstimatedValue()[1], estRaDecRx.getEstimatedValue()[1], 1e-11,"RX shifted");
 
-            Assert.assertEquals("Transit shifted", estRaDecTransitShifted.getEstimatedValue()[0], estRaDecTransit.getEstimatedValue()[0], 1e-11);
-            Assert.assertEquals("Transit shifted", estRaDecTransitShifted.getEstimatedValue()[1], estRaDecTransit.getEstimatedValue()[1], 1e-11);
+            Assertions.assertEquals( estRaDecTransitShifted.getEstimatedValue()[0], estRaDecTransit.getEstimatedValue()[0], 1e-11,"Transit shifted");
+            Assertions.assertEquals( estRaDecTransitShifted.getEstimatedValue()[1], estRaDecTransit.getEstimatedValue()[1], 1e-11,"Transit shifted");
 
 
             //Show the effect of the change in time tag specification is far greater than the test tolerance due to usage
             //of a static time of flight correction.
-            Assert.assertTrue("Proof of difference - RA", (Math.abs(transitRaDecRx[0] - transitRaDecTx[0]) > 1e-5));
-            Assert.assertTrue("Proof of difference - DEC", (Math.abs(transitRaDecRx[1] - transitRaDecTx[1]) > 1e-5));
+            Assertions.assertTrue((Math.abs(transitRaDecRx[0] - transitRaDecTx[0]) > 1e-5),"Proof of difference - RA");
+            Assertions.assertTrue((Math.abs(transitRaDecRx[1] - transitRaDecTx[1]) > 1e-5), "Proof of difference - DEC");
         }
     }
 

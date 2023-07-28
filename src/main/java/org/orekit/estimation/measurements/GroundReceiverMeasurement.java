@@ -34,6 +34,9 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
 
+    /** Enum indicating the time tag specification of a range observation. */
+    private final TimeTagSpecificationType timeTagSpecificationType;
+
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param twoWay flag indicating whether it is a two-way measurement
@@ -42,11 +45,13 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided range rate observation
      * @since 12.0
      */
     public GroundReceiverMeasurement(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                                      final double observed, final double sigma, final double baseWeight,
-                                     final ObservableSatellite satellite) {
+                                     final ObservableSatellite satellite,
+                                     final TimeTagSpecificationType timeTagSpecificationType) {
         super(date, observed, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getClockDriftDriver());
@@ -64,8 +69,9 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
             addParameterDriver(satellite.getClockOffsetDriver());
             addParameterDriver(satellite.getClockDriftDriver());
         }
-        this.station = station;
-        this.twoway  = twoWay;
+        this.station                  = station;
+        this.twoway                   = twoWay;
+        this.timeTagSpecificationType = timeTagSpecificationType;
     }
 
     /** Simple constructor.
@@ -76,11 +82,13 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided range rate observation
      * @since 12.0
      */
     public GroundReceiverMeasurement(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                                      final double[] observed, final double[] sigma, final double[] baseWeight,
-                                     final ObservableSatellite satellite) {
+                                     final ObservableSatellite satellite,
+                                     final TimeTagSpecificationType timeTagSpecificationType) {
         super(date, observed, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getClockDriftDriver());
@@ -98,8 +106,9 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
             addParameterDriver(satellite.getClockOffsetDriver());
             addParameterDriver(satellite.getClockDriftDriver());
         }
-        this.station = station;
-        this.twoway  = twoWay;
+        this.station                  = station;
+        this.twoway                   = twoWay;
+        this.timeTagSpecificationType = timeTagSpecificationType;
     }
 
     /** Get the ground station from which measurement is performed.
@@ -116,4 +125,8 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         return twoway;
     }
 
+    /** @return enum indicating the time tag specification of a range observation */
+    public TimeTagSpecificationType getTimeTagSpecificationType() {
+        return timeTagSpecificationType;
+    }
 }

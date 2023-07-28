@@ -62,7 +62,7 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
     /** Emitter ground station. */
     private final GroundStation emitter;
 
-    /** Simple constructor.
+    /** Simple constructor with timetag of observed value set to reception time.
      * @param emitter emitter ground station
      * @param receiver receiver ground station
      * @param date date of the measurement
@@ -74,7 +74,38 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
     public BistaticRangeRate(final GroundStation emitter, final GroundStation receiver,
                              final AbsoluteDate date, final double rangeRate, final double sigma,
                              final double baseWeight, final ObservableSatellite satellite) {
-        super(receiver, true, date, rangeRate, sigma, baseWeight, satellite);
+        super(receiver, true, date, rangeRate, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
+
+        // add parameter drivers for the emitter, clock offset is not used
+        addParameterDriver(emitter.getEastOffsetDriver());
+        addParameterDriver(emitter.getNorthOffsetDriver());
+        addParameterDriver(emitter.getZenithOffsetDriver());
+        addParameterDriver(emitter.getPrimeMeridianOffsetDriver());
+        addParameterDriver(emitter.getPrimeMeridianDriftDriver());
+        addParameterDriver(emitter.getPolarOffsetXDriver());
+        addParameterDriver(emitter.getPolarDriftXDriver());
+        addParameterDriver(emitter.getPolarOffsetYDriver());
+        addParameterDriver(emitter.getPolarDriftYDriver());
+
+        this.emitter  = emitter;
+
+    }
+
+    /** Simple constructor.
+     * @param emitter emitter ground station
+     * @param receiver receiver ground station
+     * @param date date of the measurement
+     * @param rangeRate observed value, m/s
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param satellite satellite related to this measurement
+     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
+     */
+    public BistaticRangeRate(final GroundStation emitter, final GroundStation receiver,
+                             final AbsoluteDate date, final double rangeRate, final double sigma,
+                             final double baseWeight, final ObservableSatellite satellite,
+                             final TimeTagSpecificationType timeTagSpecificationType) {
+        super(receiver, true, date, rangeRate, sigma, baseWeight, satellite, timeTagSpecificationType);
 
         // add parameter drivers for the emitter, clock offset is not used
         addParameterDriver(emitter.getEastOffsetDriver());
