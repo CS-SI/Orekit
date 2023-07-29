@@ -31,29 +31,119 @@ import org.orekit.gnss.observation.ObservationTimeScale;
  */
 public enum SatelliteSystem {
 
-    /** GPS system. */
-    GPS('G', ObservationTimeScale.GPS),
+    /** User-defined system A.
+     * @since 12.0
+     */
+    USER_DEFINED_A('A', null),
 
-    /** GLONASS system. */
-    GLONASS('R', ObservationTimeScale.GLO),
-
-    /** Galileo system. */
-    GALILEO('E', ObservationTimeScale.GAL),
+    /** User-defined system B.
+     * @since 12.0
+     */
+    USER_DEFINED_B('B', null),
 
     /** Beidou system. */
     BEIDOU('C', ObservationTimeScale.BDT),
 
+    /** User-defined system D.
+     * @since 12.0
+     */
+    USER_DEFINED_D('D', null),
+
+    /** Galileo system. */
+    GALILEO('E', ObservationTimeScale.GAL),
+
+    /** User-defined system F.
+     * @since 12.0
+     */
+    USER_DEFINED_F('F', null),
+
+    /** GPS system. */
+    GPS('G', ObservationTimeScale.GPS),
+
+    /** User-defined system H.
+     * @since 12.0
+     */
+    USER_DEFINED_H('H', null),
+
+    /** Indian Regional Navigation Satellite System system (NavIC). */
+    IRNSS('I', ObservationTimeScale.IRN),
+
     /** Quasi-Zenith Satellite System system. */
     QZSS('J', ObservationTimeScale.QZS),
 
-    /** Indian Regional Navigation Satellite System system. */
-    IRNSS('I', ObservationTimeScale.IRN),
+    /** User-defined system K.
+     * @since 12.0
+     */
+    USER_DEFINED_K('K', null),
+
+    /** User-defined system L.
+     * @since 12.0
+     */
+    USER_DEFINED_L('L', null),
+
+    /** Mixed system. */
+    MIXED('M', null),
+
+    /** User-defined system N.
+     * @since 12.0
+     */
+    USER_DEFINED_N('N', null),
+
+    /** User-defined system O.
+     * @since 12.0
+     */
+    USER_DEFINED_O('O', null),
+
+    /** User-defined system P.
+     * @since 12.0
+     */
+    USER_DEFINED_P('P', null),
+
+    /** User-defined system Q.
+     * @since 12.0
+     */
+    USER_DEFINED_Q('Q', null),
+
+    /** GLONASS system. */
+    GLONASS('R', ObservationTimeScale.GLO),
 
     /** SBAS system. */
     SBAS('S', null),
 
-    /** Mixed system. */
-    MIXED('M', null);
+    /** User-defined system T.
+     * @since 12.0
+     */
+    USER_DEFINED_T('T', null),
+
+    /** User-defined system U.
+     * @since 12.0
+     */
+    USER_DEFINED_U('U', null),
+
+    /** User-defined system V.
+     * @since 12.0
+     */
+    USER_DEFINED_V('V', null),
+
+    /** User-defined system W.
+     * @since 12.0
+     */
+    USER_DEFINED_W('W', null),
+
+    /** User-defined system X.
+     * @since 12.0
+     */
+    USER_DEFINED_X('X', null),
+
+    /** User-defined system Y.
+     * @since 12.0
+     */
+    USER_DEFINED_Y('Y', null),
+
+    /** User-defined system Z.
+     * @since 12.0
+     */
+    USER_DEFINED_Z('Z', null);
 
     /** Parsing map. */
     private static final Map<Character, SatelliteSystem> KEYS_MAP = new HashMap<>();
