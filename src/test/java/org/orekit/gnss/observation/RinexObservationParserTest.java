@@ -30,7 +30,6 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.AppliedDCBS;
 import org.orekit.gnss.AppliedPCVS;
@@ -733,14 +732,9 @@ public class RinexObservationParserTest {
 
     @Test
     public void testUnknownSatelliteSystemHeader() {
-        try {
-            //Test with RinexV3 Unknown Satellite System inside Header
-            load("rinex/unknown-satsystem.00o");
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oe) {
-            Assertions.assertEquals(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM, oe.getSpecifier());
-            Assertions.assertEquals('Z', oe.getParts()[0]);
-        }
+        //Test with RinexV3 Unknown Satellite System inside Header
+        final RinexObservation robs = load("rinex/unknown-satsystem.00o");
+        Assertions.assertEquals(9, robs.getHeader().getTypeObs().get(SatelliteSystem.USER_DEFINED_Z).size());
     }
 
     @Test

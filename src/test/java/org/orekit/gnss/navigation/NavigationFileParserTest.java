@@ -1956,7 +1956,7 @@ public class NavigationFileParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM, oe.getSpecifier());
-            Assertions.assertEquals('X',  oe.getParts()[0]);
+            Assertions.assertEquals('Ω',  oe.getParts()[0]);
         }
     }
 
