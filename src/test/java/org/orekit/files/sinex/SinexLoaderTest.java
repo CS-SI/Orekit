@@ -67,9 +67,9 @@ public class SinexLoaderTest {
 
         // Test date computation using format description
         try {
-            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class);
+            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class, AbsoluteDate.class);
             method.setAccessible(true);
-            final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399");
+            final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399", null);
             final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
             Assertions.assertEquals(0., refDate.durationFrom(date), 0.);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -225,6 +225,16 @@ public class SinexLoaderTest {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
         }
+    }
+
+    @Test
+    public void testIssue1150() {
+        SinexLoader        loader = new SinexLoader("JAX0MGXFIN_20202440000_01D_000_SOL.SNX");
+        final AbsoluteDate date   = new AbsoluteDate(2020, 8, 31, 12, 0, 0.0, TimeScalesFactory.getGPS());
+        final Vector3D     ecc    = loader.getStation("ABPO").getEccentricities(date);
+        Assertions.assertEquals(0.0083, ecc.getX(), 1.0e-10);
+        Assertions.assertEquals(0.0000, ecc.getY(), 1.0e-10);
+        Assertions.assertEquals(0.0000, ecc.getZ(), 1.0e-10);
     }
 
     @Test
