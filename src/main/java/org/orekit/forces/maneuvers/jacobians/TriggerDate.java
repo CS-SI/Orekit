@@ -182,7 +182,7 @@ public class TriggerDate
      * </p>
      */
     @Override
-    public boolean yield(final SpacecraftState state) {
+    public boolean yields(final SpacecraftState state) {
         return !(state.hasAdditionalState(stmName) && state.hasAdditionalState(massDepletionDelay.getName()));
     }
 

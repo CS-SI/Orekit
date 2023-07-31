@@ -269,7 +269,7 @@ public class AdditionalDerivativesProvidersTest {
         }
 
         @Override
-        public boolean yield(final SpacecraftState state) {
+        public boolean yields(final SpacecraftState state) {
             return dependency != null && !state.hasAdditionalStateDerivative(dependency);
         }
 

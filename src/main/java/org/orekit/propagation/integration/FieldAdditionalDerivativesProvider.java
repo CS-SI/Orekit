@@ -92,14 +92,14 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
      * @return true if this provider should yield so another provider has an opportunity to add missing parts
      * as the state is incrementally built up
      */
-    default boolean yield(FieldSpacecraftState<T> state) {
+    default boolean yields(FieldSpacecraftState<T> state) {
         return false;
     }
 
     /** Compute the derivatives related to the additional state (and optionally main state increments).
      * @param s current state information: date, kinematics, attitude, and
      * additional states this equations depend on (according to the
-     * {@link #yield(FieldSpacecraftState) yield} method)
+     * {@link #yields(FieldSpacecraftState) yield} method)
      * @return computed combined derivatives, which may include some incremental
      * coupling effect to add to main state derivatives
      * @since 11.2
