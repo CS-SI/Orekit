@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -106,11 +107,11 @@ public class SinexLoader implements EOPHistoryLoader {
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile(":");
 
-    /** Pattern for regular data. */
-    private static final Pattern PATTERN_SPACE = Pattern.compile("\\s+");
-
     /** Pattern to check beginning of SINEX files.*/
-    private static final Pattern PATTERN_BEGIN = Pattern.compile("(%=).*");
+    private static final Pattern PATTERN_BEGIN = Pattern.compile("%=SNX \\d\\.\\d\\d ..." +
+                                                                 " \\d{2}:\\d{3}:\\d{5} ..." +
+                                                                 " (\\d{2}:\\d{3}:\\d{5}) (\\d{2}:\\d{3}:\\d{5})" +
+                                                                 " . .*");
 
     /** List of all EOP parameter types. */
     private static final List<String> EOP_TYPES = Arrays.asList(LOD, UT, XPO, YPO, NUT_LN, NUT_OB, NUT_X, NUT_Y);
@@ -302,18 +303,23 @@ public class SinexLoader implements EOPHistoryLoader {
                     // The first line is parsed in order to get the creation date of the file, which might be used
                     // in the case of an absent date as the final date of the data.
                     // Its position is fixed in the file, at the first line, in the 4th column.
-                    if (lineNumber == 1 && PATTERN_BEGIN.matcher(line).matches()) {
-                        final String[]     splitFirstLine = PATTERN_SPACE.split(line);
-                        final AbsoluteDate fileStartDate  = stringEpochToAbsoluteDate(splitFirstLine[5]);
-                        final AbsoluteDate fileEndDate    = stringEpochToAbsoluteDate(splitFirstLine[6]);
-                        if (startDate == null) {
-                            // First data loading, needs to initialize the start and end dates for EOP history
-                            startDate = fileStartDate;
-                            endDate   = fileEndDate;
+                    if (lineNumber == 1) {
+                        final Matcher matcher = PATTERN_BEGIN.matcher(line);
+                        if (matcher.matches()) {
+                            final AbsoluteDate fileStartDate = stringEpochToAbsoluteDate(matcher.group(1));
+                            final AbsoluteDate fileEndDate   = stringEpochToAbsoluteDate(matcher.group(2));
+                            if (startDate == null) {
+                                // First data loading, needs to initialize the start and end dates for EOP history
+                                startDate = fileStartDate;
+                                endDate   = fileEndDate;
+                            }
+                            // In case of multiple files used for EOP history, the start and end dates can be updated
+                            startDate = fileStartDate.isBefore(startDate) ? fileStartDate : startDate;
+                            endDate   = fileEndDate.isAfter(endDate) ? fileEndDate : endDate;
+                        } else {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, line);
                         }
-                        // In case of multiple files used for EOP history, the start and end dates can be updated
-                        startDate = fileStartDate.isBefore(startDate) ? fileStartDate : startDate;
-                        endDate   = fileEndDate.isAfter(endDate) ? fileEndDate : endDate;
                     }
 
                     switch (line.trim()) {

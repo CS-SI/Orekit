@@ -211,6 +211,23 @@ public class SinexLoaderTest {
     }
 
     @Test
+    public void testIssue1149() {
+        SinexLoader loader = new SinexLoader("JAX0MGXFIN_20202440000_01D_000_SOL.SNX");
+        Assertions.assertEquals(133, loader.getStations().size());
+    }
+
+    @Test
+    public void testCorruptedHeader() {
+        try {
+            new SinexLoader("corrupted-header.snx");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+        }
+    }
+
+    @Test
     public void testNoDataForEpoch() {
 
         // Load file (it corresponds to a small version of the real complete file)
