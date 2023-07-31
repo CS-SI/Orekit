@@ -25,7 +25,6 @@ public class SatelliteSystemParserTest {
     @Test
     public void testAllLetters() {
         for (char c = 'A'; c <= 'Z'; ++c) {
-            System.out.println(SatelliteSystem.parseSatelliteSystem(Character.toString(c)));
             Assertions.assertNotNull(SatelliteSystem.parseSatelliteSystem(Character.toString(c)));
         }
     }
