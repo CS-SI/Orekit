@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.AppliedDCBS;
@@ -170,6 +171,7 @@ public class RinexObservationWriter implements AutoCloseable {
      * @see #writeObservationDataSet(ObservationDataSet)
      * @exception IOException if an I/O error occurs.
      */
+    @DefaultDataContext
     public void writeCompleteFile(final RinexObservation rinexObservation)
         throws IOException {
         prepareComments(rinexObservation.getComments());
@@ -194,6 +196,7 @@ public class RinexObservationWriter implements AutoCloseable {
      * @param header header to write
      * @exception IOException if an I/O error occurs.
      */
+    @DefaultDataContext
     public void writeHeader(final RinexObservationHeader header)
         throws IOException {
 
