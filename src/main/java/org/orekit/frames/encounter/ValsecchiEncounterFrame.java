@@ -98,4 +98,10 @@ public class ValsecchiEncounterFrame extends AbstractEncounterLOF {
     public Vector3D getAxisNormalToCollisionPlane() {
         return Vector3D.PLUS_J;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return "VALSECCHI_ENCOUNTER_LOF";
+    }
 }

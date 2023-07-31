@@ -103,4 +103,10 @@ public class DefaultEncounterLOF extends AbstractEncounterLOF {
     public Vector3D getAxisNormalToCollisionPlane() {
         return Vector3D.PLUS_K;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return "DEFAULT_ENCOUNTER_LOF";
+    }
 }
