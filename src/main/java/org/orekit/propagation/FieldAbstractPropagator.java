@@ -187,7 +187,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
         int yieldCount = 0;
         while (!pending.isEmpty()) {
             final FieldAdditionalStateProvider<T> provider = pending.remove();
-            if (provider.yield(updated)) {
+            if (provider.yields(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
                 pending.add(provider);

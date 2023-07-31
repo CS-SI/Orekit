@@ -938,7 +938,7 @@ public class KeplerianPropagatorTest {
             return name;
         }
 
-        public boolean yield(final SpacecraftState state) {
+        public boolean yields(final SpacecraftState state) {
             return dependency != null && state.getAdditionalStatesValues().getEntry(dependency) == null;
         }
 

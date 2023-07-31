@@ -30,6 +30,12 @@
       <action dev="luc" type="update" issue="1147">
         Allow custom satellite systems in GNSS.
       </action>
+      <action dev="maxime" type="add" issue="1023">
+        Forbid Python keywords in method, class, interface and enum names.
+      </action>
+      <action dev="vincent" type="update" issue="1148">
+        Added getName method in LOF interface and moved toOrbitRelativeFrame from LOF to LOFType
+      </action>
       <action dev="maxime" type="update" issue="854">
         Moved method AbstractManeuverTriggers.addResetter to interface level, in ManeuverTriggers.
       </action>

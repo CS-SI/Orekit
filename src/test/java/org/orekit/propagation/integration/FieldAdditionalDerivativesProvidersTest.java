@@ -306,7 +306,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         }
 
         @Override
-        public boolean yield(final FieldSpacecraftState<T> state) {
+        public boolean yields(final FieldSpacecraftState<T> state) {
             return dependency != null && !state.hasAdditionalStateDerivative(dependency);
         }
 

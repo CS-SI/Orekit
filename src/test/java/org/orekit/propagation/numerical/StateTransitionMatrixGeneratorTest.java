@@ -473,7 +473,7 @@ public class StateTransitionMatrixGeneratorTest {
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
         propagator.addAdditionalDerivativesProvider(stmGenerator);
-        Assertions.assertTrue(stmGenerator.yield(new SpacecraftState(initialOrbit)));
+        Assertions.assertTrue(stmGenerator.yields(new SpacecraftState(initialOrbit)));
      }
 
     @Test

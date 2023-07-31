@@ -682,6 +682,20 @@ public enum LOFType implements LOF {
             return OrbitRelativeFrame.NTW_INERTIAL;
         }
 
+    };
+
+    /** {@inheritDoc} */
+    public String getName() {
+        return this.name();
     }
+
+    /**
+     * Convert current local orbital frame to CCSDS equivalent orbit relative frame when possible, null otherwise.
+     *
+     * @return CCSDS equivalent orbit relative frame when possible, null otherwise
+     *
+     * @see OrbitRelativeFrame
+     */
+    public abstract OrbitRelativeFrame toOrbitRelativeFrame();
 
 }
