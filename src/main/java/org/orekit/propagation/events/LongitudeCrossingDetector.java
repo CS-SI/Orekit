@@ -79,9 +79,9 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * @param body body on which the longitude is defined
      * @param longitude longitude to be crossed
      */
-    private LongitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler handler,
-                                     final OneAxisEllipsoid body, final double longitude) {
+    protected LongitudeCrossingDetector(final double maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler handler,
+                                        final OneAxisEllipsoid body, final double longitude) {
 
         super(maxCheck, threshold, maxIter, handler);
 
@@ -157,8 +157,8 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
          * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          */
-        private RawLongitudeCrossingDetector(final double maxCheck, final double threshold,  final int maxIter,
-                                             final EventHandler handler) {
+        protected RawLongitudeCrossingDetector(final double maxCheck, final double threshold, final int maxIter,
+                                               final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 

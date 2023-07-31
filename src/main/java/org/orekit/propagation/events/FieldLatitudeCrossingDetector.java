@@ -84,7 +84,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
      * @param body body on which the latitude is defined
      * @param latitude latitude to be crossed
      */
-    private FieldLatitudeCrossingDetector(
+    protected FieldLatitudeCrossingDetector(
             final T maxCheck,
             final T threshold,
             final int maxIter,

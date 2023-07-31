@@ -111,9 +111,9 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * @param filter filter to use
      */
     @SuppressWarnings("unchecked")
-    private FieldEventSlopeFilter(final T maxCheck, final T threshold,
-                                  final int maxIter, final FieldEventHandler<T> handler,
-                                  final D rawDetector, final FilterType filter) {
+    protected FieldEventSlopeFilter(final T maxCheck, final T threshold,
+                                    final int maxIter, final FieldEventHandler<T> handler,
+                                    final D rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;

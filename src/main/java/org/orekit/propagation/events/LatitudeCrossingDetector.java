@@ -72,9 +72,9 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      * @param body body on which the latitude is defined
      * @param latitude latitude to be crossed
      */
-    private LatitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler handler,
-                                     final OneAxisEllipsoid body, final double latitude) {
+    protected LatitudeCrossingDetector(final double maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final OneAxisEllipsoid body, final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
         this.body     = body;
         this.latitude = latitude;

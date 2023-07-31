@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -194,20 +194,6 @@ class DefaultEncounterLOFTest {
 
         TestUtils.validateVector3D(expectedAxis, gottenAxis, 1e-15);
         TestUtils.validateFieldVector3D(expectedAxis, gottenFieldAxis, 1e-15);
-    }
-
-    @Test
-    void testOrbitRelativeFrameIsNull() {
-        // GIVEN
-        final PVCoordinates otherMock = Mockito.mock(PVCoordinates.class);
-
-        final EncounterLOF encounterLOF = new DefaultEncounterLOF(otherMock);
-
-        // WHEN
-        final OrbitRelativeFrame orbitRelativeFrame = encounterLOF.toOrbitRelativeFrame();
-
-        // THEN
-        Assertions.assertNull(orbitRelativeFrame);
     }
 
 }

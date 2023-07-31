@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,5 +102,11 @@ public class DefaultEncounterLOF extends AbstractEncounterLOF {
     @Override
     public Vector3D getAxisNormalToCollisionPlane() {
         return Vector3D.PLUS_K;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return "DEFAULT_ENCOUNTER_LOF";
     }
 }

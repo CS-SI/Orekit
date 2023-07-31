@@ -127,18 +127,14 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
         return firings;
     }
 
-    /** Add a resetter.
-     * @param resetter resetter to add
-     */
+    /** {@inheritDoc} */
+    @Override
     public void addResetter(final ManeuverTriggersResetter resetter) {
         resetters.add(resetter);
     }
 
-    /** Add a resetter.
-     * @param field field to which the state belongs
-     * @param resetter resetter to add
-     * @param <T> type of the field elements
-     */
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> void addResetter(final Field<T> field, final FieldManeuverTriggersResetter<T> resetter) {
 
         // check if we already have resetters for this field

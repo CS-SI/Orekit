@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -299,17 +298,11 @@ public interface LOF {
      */
     Rotation rotationFromInertial(PVCoordinates pv);
 
-    /**
-     * Convert current local orbital frame to CCSDS equivalent orbit relative frame when possible, null otherwise.
-     *
-     * @return CCSDS equivalent orbit relative frame when possible, null otherwise
-     *
-     * @see OrbitRelativeFrame
-     */
-    OrbitRelativeFrame toOrbitRelativeFrame();
-
     /** @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial */
     default boolean isQuasiInertial() {
         return false;
     }
+
+    /** @return name of the local orbital frame */
+    String getName();
 }

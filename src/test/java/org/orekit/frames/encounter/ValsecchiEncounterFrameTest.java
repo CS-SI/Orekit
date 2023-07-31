@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -180,6 +180,22 @@ class ValsecchiEncounterFrameTest {
 
         TestUtils.validateVector3D(expectedAxis, gottenAxis, 1e-15);
         TestUtils.validateFieldVector3D(expectedAxis, gottenFieldAxis, 1e-15);
+    }
+
+    @Test
+    void testReturnExpectedName() {
+        // GIVEN
+        final PVCoordinates pvMock = Mockito.mock(PVCoordinates.class);
+
+        final ValsecchiEncounterFrame encounterLOF = new ValsecchiEncounterFrame(pvMock);
+
+        // WHEN
+        final String name = encounterLOF.getName();
+
+        // THEN
+        final String expectedName = "VALSECCHI_ENCOUNTER_LOF";
+
+        Assertions.assertEquals(expectedName, name);
     }
 
 }

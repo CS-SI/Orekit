@@ -73,8 +73,8 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private FieldApsideDetector(final T maxCheck, final T threshold,
-                                final int maxIter, final FieldEventHandler<T> handler) {
+    protected FieldApsideDetector(final T maxCheck, final T threshold,
+                                  final int maxIter, final FieldEventHandler<T> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 

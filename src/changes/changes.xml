@@ -24,6 +24,28 @@
       <action dev="maxime" type="add" issue="1063">
         Forbid Python keywords in method, class, interface and enum names.
       </action>
+      <action dev="vincent" type="update" issue="1148">
+        Added getName method in LOF interface and moved toOrbitRelativeFrame from LOF to LOFType
+      </action>
+      <action dev="maxime" type="update" issue="854">
+        Moved method AbstractManeuverTriggers.addResetter to interface level, in ManeuverTriggers.
+      </action>
+      <action dev="vincent" type="update" issue="1143">
+        Changed all EventDetector (including field version) complete constructors to protected.
+      </action>
+      <action dev="bryan" type="add" issue="1107">
+        Added constructor of AbsoluteDate using Instant.
+      </action>
+      <action dev="bryan" type="add" issue="1139">
+        Added {Field}TimeStamped#durationFrom({Field}TimeStamped) method.
+      </action>
+      <action dev="bryan" type="add" issue="1137">
+        Allowed creating static BodyFacade with DataContext.
+      </action>
+      <action dev="vincent" type="update" issue="1136">
+        Replace expected LOFType arguments by recently implemented LOF interface in LocalOrbitalFrame, LofOffset,
+          TabulatedLofOffset and ThrustDirectionAndAttitudeProvider
+      </action>
       <action dev="vincent" type="update" issue="1136">
         Changed Fieldifier to return fielded orbit in the same orbit type as input orbit
       </action>
