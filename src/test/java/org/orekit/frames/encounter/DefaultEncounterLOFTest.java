@@ -196,18 +196,4 @@ class DefaultEncounterLOFTest {
         TestUtils.validateFieldVector3D(expectedAxis, gottenFieldAxis, 1e-15);
     }
 
-    @Test
-    void testOrbitRelativeFrameIsNull() {
-        // GIVEN
-        final PVCoordinates otherMock = Mockito.mock(PVCoordinates.class);
-
-        final EncounterLOF encounterLOF = new DefaultEncounterLOF(otherMock);
-
-        // WHEN
-        final OrbitRelativeFrame orbitRelativeFrame = encounterLOF.toOrbitRelativeFrame();
-
-        // THEN
-        Assertions.assertNull(orbitRelativeFrame);
-    }
-
 }

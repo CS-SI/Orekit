@@ -50,4 +50,20 @@ class EncounterLOFTypeTest {
         Assertions.assertInstanceOf(ValsecchiEncounterFrame.class, valsecchiEncounterField);
     }
 
+    @Test
+    void testReturnExpectedName() {
+       // GIVEN
+        final PVCoordinates pvMock = Mockito.mock(PVCoordinates.class);
+
+        final DefaultEncounterLOF encounterLOF = new DefaultEncounterLOF(pvMock);
+
+       // WHEN
+        final String name = encounterLOF.getName();
+
+       // THEN
+        final String expectedName = "DEFAULT_ENCOUNTER_LOF";
+
+        Assertions.assertEquals(expectedName, name);
+    }
+
 }

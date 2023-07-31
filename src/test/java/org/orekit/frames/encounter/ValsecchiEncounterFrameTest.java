@@ -182,4 +182,20 @@ class ValsecchiEncounterFrameTest {
         TestUtils.validateFieldVector3D(expectedAxis, gottenFieldAxis, 1e-15);
     }
 
+    @Test
+    void testReturnExpectedName() {
+        // GIVEN
+        final PVCoordinates pvMock = Mockito.mock(PVCoordinates.class);
+
+        final ValsecchiEncounterFrame encounterLOF = new ValsecchiEncounterFrame(pvMock);
+
+        // WHEN
+        final String name = encounterLOF.getName();
+
+        // THEN
+        final String expectedName = "VALSECCHI_ENCOUNTER_LOF";
+
+        Assertions.assertEquals(expectedName, name);
+    }
+
 }

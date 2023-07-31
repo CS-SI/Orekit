@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -97,12 +96,6 @@ public abstract class AbstractEncounterLOF implements EncounterLOF {
      */
     public Rotation rotationFromInertial(final PVCoordinates origin) {
         return rotationFromInertial(origin, getOther());
-    }
-
-    /** No encounter local orbital frame are currently defined in CCSDS so this will necessarily return null. */
-    @Override
-    public OrbitRelativeFrame toOrbitRelativeFrame() {
-        return null;
     }
 
     /**
