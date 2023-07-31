@@ -63,7 +63,7 @@ public class Duration implements AdditionalStateProvider {
      * </p>
      */
     @Override
-    public boolean yield(final SpacecraftState state) {
+    public boolean yields(final SpacecraftState state) {
         return !(state.hasAdditionalState(startName) && state.hasAdditionalState(stopName));
     }
 
