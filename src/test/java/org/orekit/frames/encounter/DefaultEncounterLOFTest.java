@@ -37,7 +37,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.TestUtils;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
